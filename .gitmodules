@@ -1,3 +1,4 @@
 [submodule "modules/webs_demo"]
 	path = modules/webs_demo
-	url = https://github.com/autoppia/autoppia_subnet_webs_demo.git
+	url = https://github.com/autoppia/autoppia_webs_demo.git
+	branch = main
