@@ -1,0 +1,15 @@
+[tool.isort]
+profile = "black"
+line_length = 200
+known_third_party = ["PIL", "PyPDF2", "aiohttp", "bs4", "dependency_injector", "discord", "dotenv", "examples", "fastapi", "flask", "flask_cors", "google", "gradio", "langchain_anthropic", "langchain_aws", "langchain_core", "langchain_google_genai", "langchain_ollama", "langchain_openai", "llama_cpp", "lmnr", "main_content_extractor", "markdownify", "matplotlib", "networkx", "numpy", "openai", "playwright", "posthog", "pydantic", "pymongo", "pyperclip", "pytest", "requests", "rich", "selenium", "setuptools", "slack_sdk", "tiktoken", "tokencost", "webdriver_manager"]
+
+[tool.black]
+line-length = 200
+target-version = ["py311"]  # o la tuya
+skip-string-normalization = true  # (opcional)
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]

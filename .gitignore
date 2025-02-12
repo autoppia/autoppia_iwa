@@ -1,0 +1,15 @@
+/*__pycache__/
+__pycache__/  
+*.pyc  
+*.config
+notebooks/
+.ipynb_checkpoints
+.env
+.venv
+env/
+venv/
+.idea
+data/web_analysis_files/*
+*.gif
+*.egg-info
+build/

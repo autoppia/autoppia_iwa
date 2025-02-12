@@ -1,0 +1,10 @@
+{
+  "editor.defaultFormatter": "ms-python.black-formatter",
+  "black-formatter.args": [
+    "line--line-length 200"
+  ],
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8"
+  }
+}
