@@ -5,8 +5,8 @@ from typing import Dict, List
 
 from flask import Flask, request
 from flask_cors import CORS
-from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -15,15 +15,15 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
-# Load your model and tokenizer globally (so it's not reloaded on every request)
+# REPLACE THE MODEL NAME WITH A 2.7B GPT-Neo
 # -----------------------------------------------------------------------------
-MODEL_NAME = "learnanything/llama-7b-huggingface"  # Change to your model of choice
+MODEL_NAME = "EleutherAI/gpt-neo-1.3B"
 
-logger.info("Loading the model and tokenizer from Hugging Face...")
+logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
-# If you have a GPU available, move the model to GPU
-model.to("cuda")  
+# If you have a GPU available, uncomment the next line:
+model.to("cuda")
 model.eval()
 
 
@@ -48,7 +48,7 @@ def generate_data(
         inputs = tokenizer(
             message_payload, return_tensors="pt"
         )
-        # If on GPU, move inputs to cuda
+        # If running on GPU, move the input to the GPU:
         # inputs = inputs.to("cuda")
 
         # Generate text
@@ -69,7 +69,6 @@ def generate_data(
         return f"Generation error: {e}"
 
     finally:
-        # Optional: clear memory (especially if calling this function repeatedly)
         gc.collect()
 
 
@@ -89,25 +88,18 @@ def handler():
     """
     try:
         inputs = request.json
-
-        # Extract the user prompt from JSON body
         message_payload = inputs.get("input", {}).get("text", "")
         if not message_payload:
             raise ValueError("Input 'text' is missing or empty")
 
-        # We map 'ctx' to 'max_new_tokens' for generation
         max_new_tokens = int(inputs.get("input", {}).get("ctx", 256))
-
-        # Optional extra generation arguments
         generation_kwargs = inputs.get("input", {}).get("generation_kwargs", {})
 
-        # Generate the text
         output = generate_data(
             message_payload=message_payload,
             max_new_tokens=max_new_tokens,
             generation_kwargs=generation_kwargs,
         )
-
         return {"output": output}
 
     except ValueError as ve:
