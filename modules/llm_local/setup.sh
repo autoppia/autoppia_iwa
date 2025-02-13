@@ -36,7 +36,7 @@ export CMAKE_ARGS="-DLLAMA_CUBLAS=on"
 export FORCE_CMAKE=1
 
 echo "Installing llama-cpp-python..."
-pip install --no-cache-dir llama-cpp-python==0.2.90 #--extra-index-url "https://abetlen.github.io/llama-cpp-python/whl/$CUDA_VERSION"
+pip install --no-cache-dir llama-cpp-python==0.2.90 --extra-index-url "https://abetlen.github.io/llama-cpp-python/whl/cu121"
 
 echo "Installing project dependencies from local_llm_requirements.txt..."
 pip install -r autoppia_iwa_module/modules/llm_local/requirements.txt
