@@ -320,7 +320,7 @@ class IdleAction(BaseAction):
         pass
 
 
-ACTION_CLASS_MAP = {
+ACTION_CLASS_MAP_LOWER = {
     "click": ClickAction,
     "type": TypeAction,
     "hover": HoverAction,
@@ -333,6 +333,26 @@ ACTION_CLASS_MAP = {
     "wait": WaitAction,
     "assert": AssertAction,
     "select": SelectAction,
-    "idle":IdleAction,
+    "idle": IdleAction,
     "undefined": UndefinedAction
 }
+
+ACTION_CLASS_MAP_CAPS = {
+    "ClickAction": ClickAction,
+    "TypeAction": TypeAction,
+    "HoverAction": HoverAction,
+    "NavigateAction": NavigateAction,
+    "DragAndDropAction": DragAndDropAction,
+    "SubmitAction": SubmitAction,
+    "DoubleClickAction": DoubleClickAction,
+    "ScrollAction": ScrollAction,
+    "ScreenshotAction": ScreenshotAction,
+    "WaitAction": WaitAction,
+    "AssertAction": AssertAction,
+    "SelectAction": SelectAction,
+    "IdleAction": IdleAction,
+    "UndefinedAction": UndefinedAction
+}
+
+# Merge both dictionaries to form a complete ACTION_CLASS_MAP
+ACTION_CLASS_MAP = {**ACTION_CLASS_MAP_CAPS, **ACTION_CLASS_MAP_LOWER}
