@@ -7,19 +7,10 @@ sudo apt-get install -y python3 python3-pip python3-dev python3.10 python3.10-ve
 python3.10 -m venv llm_env && source llm_env/bin/activate
 echo "Checking CUDA installation..."
 
-# Check if CUDA is installed and verify version 12.1
+# Check if CUDA is installed
 if ! command -v nvcc &> /dev/null; then
     echo "❌ CUDA Toolkit not found."
     exit 1
-else
-    CUDA_VERSION=$(nvcc --version | grep "release" | awk '{print $6}' | cut -d',' -f1)
-    if [[ "$CUDA_VERSION" != "12.1" ]]; then
-        echo "❌ Error: Required CUDA version 12.1 not found. Current version: $CUDA_VERSION"
-        echo "Please install CUDA 12.1 before continuing."
-        exit 1
-    else
-        echo "✅ CUDA Toolkit found: Version $CUDA_VERSION"
-    fi
 fi
 
 MODEL_FILE="qwen2.5-coder-14b-instruct-q4_k_m.gguf"
@@ -35,7 +26,7 @@ export CMAKE_ARGS="-DLLAMA_CUBLAS=on"
 export FORCE_CMAKE=1
 
 echo "Installing llama-cpp-python..."
-pip install --no-cache-dir llama-cpp-python==0.2.90 --extra-index-url "https://abetlen.github.io/llama-cpp-python/whl/cu121"
+pip install llama-cpp-python
 
 echo "Installing project dependencies from local_llm_requirements.txt..."
 pip install -r autoppia_iwa_module/modules/llm_local/requirements.txt
