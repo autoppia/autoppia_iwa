@@ -30,7 +30,7 @@ class WebAnalysisPipeline:
 
         self.web_crawler = WebCrawler(start_url=start_url)
         self.page_structure_extractor = WebPageStructureExtractor()
-        self.llm_analyzer = WebLLMAnalyzer(self.llm_service)
+        self.llm_analyzer = WebLLMAnalyzer(llm_service=self.llm_service)
 
         self.analyzed_urls: List[SinglePageAnalysis] = []
 
