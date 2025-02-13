@@ -1,17 +1,17 @@
+# setup.py (in the root of the submodule)
 from pathlib import Path
-
-import setuptools
+from setuptools import setup, find_packages
 
 here = Path(__file__).parent.resolve()
 
 with open(here / "requirements.txt", encoding="utf-8") as f:
     required = f.read().splitlines()
 
-setuptools.setup(
+setup(
     name="autoppia_iwa",
     version="0.0.1",
     description="A short description of the autoppia_iwa package",
-    packages=["autoppia_iwa"],
+    packages=find_packages(),  # or find_packages(include=["autoppia_iwa*"])
     install_requires=required,
     python_requires=">=3.11",
 )
