@@ -96,7 +96,6 @@ class TaskTestGenerator:
     Generates and classifies test cases into FrontendTest and BackendTest based on a task description and web analysis.
     """
 
-    @inject
     def __init__(
         self,
         web_project: WebProject,

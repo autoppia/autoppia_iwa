@@ -41,7 +41,6 @@ Rules for generating tasks:
 
 
 class TaskPromptGenerator:
-    @inject
     def __init__(
         self,
         web_analysis: DomainAnalysis,

@@ -17,7 +17,6 @@ from .task_tests_generator import TaskTestGenerator
 
 
 class TaskGenerationPipeline:
-    @inject
     def __init__(
         self,
         config: TaskGenerationConfig,
