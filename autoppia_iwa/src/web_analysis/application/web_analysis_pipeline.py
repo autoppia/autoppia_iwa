@@ -17,7 +17,6 @@ MAX_TOKENS_ELEMENT_ANALYZER = 10000
 
 
 class WebAnalysisPipeline:
-    @inject
     def __init__(
         self,
         start_url: str,
