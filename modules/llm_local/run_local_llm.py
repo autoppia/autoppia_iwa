@@ -5,7 +5,8 @@ from typing import Dict, List
 
 from flask import Flask, request
 from flask_cors import CORS
-from llama_cpp import Llama
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -13,49 +14,62 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-MODEL_PATH = "qwen2.5-coder-14b-instruct-q4_k_m.gguf"
+# -----------------------------------------------------------------------------
+# REPLACE THE MODEL NAME WITH A 2.7B GPT-Neo
+# -----------------------------------------------------------------------------
+MODEL_NAME = "EleutherAI/gpt-neo-1.3B"
+
+logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+# If you have a GPU available, uncomment the next line:
+model.to("cuda")
+model.eval()
 
 
 def generate_data(
-    model_path: str,
-    message_payload: List[Dict[str, str]],
-    ctx: int,
-    llm_kwargs: dict = None,
-    chat_completion_kwargs: dict = None,
+    message_payload: str,
+    max_new_tokens: int = 256,
+    generation_kwargs: dict = None,
 ) -> str:
     """
-    Generate data using the Llama model.
+    Generate text using a Hugging Face Transformers model.
 
-    :param model_path: Path to the Llama model file.
-    :param message_payload: The input text for model generation.
-    :param ctx: The context length for the model.
-    :param llm_kwargs: Additional keyword arguments for Llama initialization.
-    :param chat_completion_kwargs: Additional keyword arguments for chat completion.
-    :return: Generated response from the model or None if an error occurred.
+    :param message_payload: The input text (prompt) for the model.
+    :param max_new_tokens: Maximum number of new tokens to generate.
+    :param generation_kwargs: Additional keyword args for model.generate().
+    :return: The generated text (string).
     """
-    llm = None
+    if generation_kwargs is None:
+        generation_kwargs = {}
+
     try:
-        llm = Llama(
-            model_path=model_path,
-            n_ctx=ctx,
-            n_gpu_layers=-1,
-            **llm_kwargs,
+        # Prepare the input tensor
+        inputs = tokenizer(
+            message_payload, return_tensors="pt"
+        )
+        # If running on GPU, move the input to the GPU:
+        # inputs = inputs.to("cuda")
+
+        # Generate text
+        output_tokens = model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            **generation_kwargs
+        )
+        # Decode the output
+        output_text = tokenizer.decode(
+            output_tokens[0], skip_special_tokens=True
         )
 
-        response = llm.create_chat_completion(messages=message_payload, **chat_completion_kwargs)
+        return output_text
 
-        return response["choices"][0]["message"]["content"]
-    except FileNotFoundError as e:
-        logger.error(f"Model file not found: {e}")
-        return None
     except Exception as e:
         logger.error(f"Error generating data: {e}")
-        return None
+        return f"Generation error: {e}"
+
     finally:
-        if llm:
-            llm.reset()
-            del llm
-            gc.collect()
+        gc.collect()
 
 
 @app.route("/generate", methods=["POST"])
@@ -63,28 +77,31 @@ def handler():
     """
     Handle incoming POST requests to generate data using the model.
 
-    :return: A JSON response containing the output or error message.
+    Expects JSON of the form:
+    {
+       "input": {
+           "text": "Your prompt here",
+           "ctx": 256,
+           "generation_kwargs": {...}
+       }
+    }
     """
     try:
         inputs = request.json
         message_payload = inputs.get("input", {}).get("text", "")
-        ctx = int(inputs.get("input", {}).get("ctx", 32768))
-
         if not message_payload:
             raise ValueError("Input 'text' is missing or empty")
 
-        llm_kwargs = inputs.get("input", {}).get("llm_kwargs", {})
-        chat_completion_kwargs = inputs.get("input", {}).get("chat_completion_kwargs", {})
+        max_new_tokens = int(inputs.get("input", {}).get("ctx", 256))
+        generation_kwargs = inputs.get("input", {}).get("generation_kwargs", {})
 
         output = generate_data(
-            model_path=MODEL_PATH,
             message_payload=message_payload,
-            ctx=ctx,
-            llm_kwargs=llm_kwargs,
-            chat_completion_kwargs=chat_completion_kwargs,
+            max_new_tokens=max_new_tokens,
+            generation_kwargs=generation_kwargs,
         )
-
         return {"output": output}
+
     except ValueError as ve:
         logger.error(f"Invalid input value: {ve}")
         return {"error": str(ve)}, 400
@@ -94,7 +111,7 @@ def handler():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run LLM service.")
+    parser = argparse.ArgumentParser(description="Run Hugging Face LLM service.")
     parser.add_argument("--port", type=int, default=6000, help="Port to run the service on")
     args = parser.parse_args()
 

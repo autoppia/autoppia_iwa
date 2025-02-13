@@ -308,6 +308,18 @@ class SelectDropDownOption(BaseActionWithSelector):
         action_logger.info(msg)
 
 
+class UndefinedAction(BaseAction):
+    @log_action("UndefinedAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        pass
+
+
+class IdleAction(BaseAction):
+    @log_action("IdleAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        pass
+
+
 ACTION_CLASS_MAP = {
     "click": ClickAction,
     "type": TypeAction,
@@ -321,4 +333,6 @@ ACTION_CLASS_MAP = {
     "wait": WaitAction,
     "assert": AssertAction,
     "select": SelectAction,
+    "idle":IdleAction,
+    "undefined": UndefinedAction
 }
