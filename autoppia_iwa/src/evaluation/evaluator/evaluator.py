@@ -200,7 +200,7 @@ class ConcurrentEvaluator(IEvaluator):
         async with async_playwright() as playwright:
             browser, context = None, None
             try:
-                browser = await playwright.chromium.launch(headless=False)
+                browser = await playwright.chromium.launch(headless=True)
                 context = await browser.new_context(extra_http_headers={"X-WebAgent-Id": web_agent_id})
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
