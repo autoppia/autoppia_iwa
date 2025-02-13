@@ -39,7 +39,7 @@ echo "Installing llama-cpp-python..."
 pip install --no-cache-dir llama-cpp-python==0.2.90 --extra-index-url "https://abetlen.github.io/llama-cpp-python/whl/$CUDA_VERSION"
 
 echo "Installing project dependencies from local_llm_requirements.txt..."
-pip install -r autoppia_iwa/modules/llm_local/requirements.txt
+pip install -r autoppia_iwa_modules/modules/llm_local/requirements.txt
 
 echo "Installing and configuring PM2 service..."
 sudo apt install -y npm
