@@ -1,9 +1,7 @@
 import inspect
 import logging
-from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type
-
 from playwright.async_api import Page
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
