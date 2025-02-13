@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 # -----------------------------------------------------------------------------
 # Load your model and tokenizer globally (so it's not reloaded on every request)
 # -----------------------------------------------------------------------------
-MODEL_NAME = "learnanything/llama-7b-huggingface"  # Change to your model of choice
+MODEL_NAME = "EleutherAI/gpt-neo-2.7B"
 
 logger.info("Loading the model and tokenizer from Hugging Face...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
