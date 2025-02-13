@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 from urllib.parse import urlparse
 
-from dependency_injector.wiring import Provide, inject
+from dependency_injector.wiring import Provide
 
 from ...di_container import DIContainer
 from ...llms.domain.interfaces import ILLMService

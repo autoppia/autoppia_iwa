@@ -1,4 +1,3 @@
-import os
 import sys
 from pathlib import Path
 
@@ -6,9 +5,9 @@ from autoppia_iwa.src.data_generation.domain.classes import WebProject
 
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
+from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
 from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED as events_allowed_web_1
 
-from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT,DEMO_WEBS_STARTING_PORT
 
 def get_frontend_url(index):
     return f"{DEMO_WEBS_ENDPOINT}:{str(8000 + index)}"

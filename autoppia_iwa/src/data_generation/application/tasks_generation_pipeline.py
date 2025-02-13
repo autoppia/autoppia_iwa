@@ -2,7 +2,7 @@ import traceback
 from datetime import datetime
 from typing import Optional, Tuple
 
-from dependency_injector.wiring import Provide, inject
+from dependency_injector.wiring import Provide
 
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, TasksGenerationOutput
 from autoppia_iwa.src.di_container import DIContainer

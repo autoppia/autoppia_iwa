@@ -1,5 +1,7 @@
 import asyncio
+
 from flask import Flask, request
+
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
@@ -13,7 +15,7 @@ def solve_task():
     task_json = request.get_json()
     task = Task.parse_obj(task_json)
     agent = EXPOSED_WEB_AGENT()
-    solution:TaskSolution = asyncio.run(agent.solve_task(task))
+    solution: TaskSolution = asyncio.run(agent.solve_task(task))
     return solution.model_dump()
 
 
