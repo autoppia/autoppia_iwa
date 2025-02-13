@@ -25,7 +25,7 @@ class DIContainer(containers.DeclarativeContainer):
 
     # Configuration
     config = providers.Configuration()
-    wiring_config = containers.WiringConfiguration(packages=["src"])
+    wiring_config = containers.WiringConfiguration(packages=["autoppia_iwa.src"])
 
     # Initialize MongoDB client as Singleton
     mongo_client = providers.Singleton(lambda: MongoClient(MONGODB_URL))
