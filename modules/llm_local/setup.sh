@@ -1,3 +1,4 @@
+#!/bin/bash
 
 echo "Creating and activating virtual environment..."
 apt update -y && apt upgrade -y && apt install -y sudo
@@ -6,21 +7,19 @@ sudo apt-get install -y python3 python3-pip python3-dev python3.10 python3.10-ve
 python3.10 -m venv llm_env && source llm_env/bin/activate
 echo "Checking CUDA installation..."
 
-# Check if CUDA is installed
+# Check if CUDA is installed and verify version 12.1
 if ! command -v nvcc &> /dev/null; then
-    echo "❌ CUDA Toolkit not found. Installing..."
-    
-    # Add NVIDIA repository
-    sudo apt-get install -y software-properties-common
-    sudo add-apt-repository -y ppa:graphics-drivers/ppa
-    sudo apt-get update
-
-    # Install CUDA (latest available from the repo)
-    sudo apt-get install -y nvidia-cuda-toolkit
-
+    echo "❌ CUDA Toolkit not found."
+    exit 1
 else
     CUDA_VERSION=$(nvcc --version | grep "release" | awk '{print $6}' | cut -d',' -f1)
-    echo "✅ CUDA Toolkit found: Version $CUDA_VERSION"
+    if [[ "$CUDA_VERSION" != "12.1" ]]; then
+        echo "❌ Error: Required CUDA version 12.1 not found. Current version: $CUDA_VERSION"
+        echo "Please install CUDA 12.1 before continuing."
+        exit 1
+    else
+        echo "✅ CUDA Toolkit found: Version $CUDA_VERSION"
+    fi
 fi
 
 MODEL_FILE="qwen2.5-coder-14b-instruct-q4_k_m.gguf"
