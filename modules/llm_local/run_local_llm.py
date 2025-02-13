@@ -23,7 +23,7 @@ logger.info("Loading the model and tokenizer from Hugging Face...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 # If you have a GPU available, move the model to GPU
-# model.to("cuda")  
+model.to("cuda")  
 model.eval()
 
 
