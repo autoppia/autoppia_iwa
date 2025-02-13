@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 # -----------------------------------------------------------------------------
 # REPLACE THE MODEL NAME WITH A 2.7B GPT-Neo
 # -----------------------------------------------------------------------------
-MODEL_NAME = "openlm-research/open_llama_3b_600bt"
+MODEL_NAME = "EleutherAI/gpt-neo-1.3B"
 
 logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
