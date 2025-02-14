@@ -4,7 +4,7 @@ URL = "http://127.0.0.1:6000/generate"
 
 payload = {
     "input": {
-        "text": "Hello, how are you?",
+        "text": "Hello, how are you? Explain me who are you, what model are you and what benefits you have",
         "ctx": 256,
         "llm_kwargs": {},
         "chat_completion_kwargs": {},
