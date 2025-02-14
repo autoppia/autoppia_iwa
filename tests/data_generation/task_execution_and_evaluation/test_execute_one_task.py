@@ -40,10 +40,10 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
 
         # Sample task data
         task_data = {
-            "prompt": "Click on the \"Login\" link in the header. Then fill the form with email:test@gmail.com adn password:test1234 and click on login",
+            "prompt": "Click on the \"Login\" link in the header. Then fill the form with email:admin@jobsapp.com and password:admin123 and click on login",
             "url": "http://localhost:8000/",
             "tests": [
-                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view"},
+                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view","page_view_url":"login"},
                 {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["email"]},
                 {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "login"},
                 {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["logout"]},
