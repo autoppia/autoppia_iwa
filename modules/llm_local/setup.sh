@@ -16,7 +16,7 @@ fi
 echo "Installing project dependencies from local_llm_requirements.txt..."
 pip install -r autoppia_iwa_module/modules/llm_local/requirements.txt
 
-# NOTE - VERSION 12.8
+# NOTE - VERSION 12.6
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 
 echo "Installing and configuring PM2 service..."
