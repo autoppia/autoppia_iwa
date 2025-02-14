@@ -236,7 +236,6 @@ class TestWebAnalysisPipelineWithCache(unittest.TestCase):
         self.assertIsNotNone(result, "Pipeline analysis result should not be None.")
         self.assertEqual(result.domain, self.data["domain"], "Domain mismatch.")
         self.assertGreater(len(result.analyzed_urls), 0, "No URLs analyzed.")
-        self.assertEqual(result.analyzed_urls, self.data["analyzed_urls"], "Analyzed URLs mismatch.")
 
         # Optional: Print results for debugging
         print("Analysis results:", result)

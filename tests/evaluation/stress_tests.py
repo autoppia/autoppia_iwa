@@ -101,7 +101,7 @@ class ConcurrentTaskEvaluationTest(unittest.TestCase):
         evaluated_tasks = asyncio.run(evaluator.evaluate_all_tasks(evaluator_input))
 
         # Save evaluated tasks
-        tasks_data["tasks"] = evaluated_tasks
+        tasks_data["tasks"] = [_.model_dump() for _ in evaluated_tasks]
         if self.save_results_in_db:
             self.save_tasks_to_file(tasks_data, "evaluation_results", self.output_dir, output_file)
 
