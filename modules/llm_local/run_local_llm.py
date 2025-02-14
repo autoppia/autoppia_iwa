@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
-# REPLACE THE MODEL NAME WITH A mistralai/Mistral-7B-Instruct
+# REPLACE THE MODEL NAME WITH A deepseek-ai/DeepSeek-R1-Distill-Llama-8B
 # -----------------------------------------------------------------------------
-MODEL_NAME = "mistralai/Mistral-7B-Instruct"
+MODEL_NAME = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
 
 logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
