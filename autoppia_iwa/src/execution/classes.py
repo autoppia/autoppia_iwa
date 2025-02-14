@@ -23,14 +23,14 @@ class BrowserSnapshot(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of the snapshot")
     current_url: str = Field(..., description="Current URL of the browser")
 
-    # def model_dump(self, *args, **kwargs):
-    #     base_dump = super().model_dump(*args, **kwargs)
-    #     base_dump["timestamp"] = self.timestamp.isoformat() if self.timestamp else None
-    #     base_dump["backend_events"] = [event.model_dump() for event in self.backend_events]
-    #     base_dump.pop("prev_html", None)
-    #     base_dump.pop("current_html", None)
-    #     base_dump.pop("action", None)
-    #     return base_dump
+    def model_dump(self, *args, **kwargs):
+        base_dump = super().model_dump(*args, **kwargs)
+        base_dump["timestamp"] = self.timestamp.isoformat() if self.timestamp else None
+        base_dump["backend_events"] = [event.model_dump() for event in self.backend_events]
+        base_dump.pop("prev_html", None)
+        base_dump.pop("current_html", None)
+        base_dump.pop("action", None)
+        return base_dump
 
 
 class ActionExecutionResult(BaseModel):
@@ -43,7 +43,7 @@ class ActionExecutionResult(BaseModel):
     execution_time: Optional[float] = Field(None, description="Time taken to execute the action, in seconds")
     browser_snapshot: BrowserSnapshot = Field(..., description="Snapshot of the browser state after execution")
 
-    # def model_dump(self, *args, **kwargs):
-    #     base_dump = super().model_dump(*args, **kwargs)
-    #     base_dump["browser_snapshot"] = self.browser_snapshot.model_dump()
-    #     return base_dump
+    def model_dump(self, *args, **kwargs):
+        base_dump = super().model_dump(*args, **kwargs)
+        base_dump["browser_snapshot"] = self.browser_snapshot.model_dump()
+        return base_dump

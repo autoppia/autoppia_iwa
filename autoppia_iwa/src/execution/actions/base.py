@@ -190,9 +190,9 @@ class BaseAction(BaseModel):
 
         return filtered_params
 
-    # def model_dump(self, *args, **kwargs) -> Dict[str, Any]:
-    #     """Generate a structured dictionary representation of the model."""
-    #     return {"type": self.__class__.__name__, **super().model_dump(mode="json", *args, **kwargs)}
+    def model_dump(self, *args, **kwargs) -> Dict[str, Any]:
+        """Generate a structured dictionary representation of the model."""
+        return {"type": self.__class__.__name__, **super().model_dump(mode="json", *args, **kwargs)}
 
 
 class BaseActionWithSelector(BaseAction):

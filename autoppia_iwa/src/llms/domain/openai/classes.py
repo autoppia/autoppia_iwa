@@ -62,5 +62,5 @@ class BaseOpenAIResponseFormat(BaseModel):
 
         return updated_value
 
-    # def model_dump(self, *args, **kwargs) -> Dict[str, Any]:
-    #     return {"json_schema": self.schema_data, "type": self.type}
+    def model_dump(self, *args, **kwargs) -> Dict[str, Any]:
+        return {"json_schema": self.schema_data, "type": self.type}

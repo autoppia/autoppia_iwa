@@ -59,10 +59,10 @@ class EvaluationResult(BaseModel):
     execution_history: List[ActionExecutionResult]  # History of all actions executed
     feedback: Optional[Feedback] = None  # Feedback generated during the evaluation
 
-    # def model_dump(self, *args, **kwargs):
-    #     base_dump = super().model_dump(*args, **kwargs)
-    #     base_dump["execution_history"] = [action.model_dump() for action in self.execution_history]
-    #     # Remove unwanted keys from feedback
-    #     base_dump["feedback"].pop("execution_history", None)
-    #     base_dump["feedback"].pop("test_results", None)
-    #     return base_dump
+    def model_dump(self, *args, **kwargs):
+        base_dump = super().model_dump(*args, **kwargs)
+        base_dump["execution_history"] = [action.model_dump() for action in self.execution_history]
+        # Remove unwanted keys from feedback
+        base_dump["feedback"].pop("execution_history", None)
+        base_dump["feedback"].pop("test_results", None)
+        return base_dump
