@@ -32,24 +32,14 @@ def generate_data(
     max_new_tokens: int = 256,
     generation_kwargs: dict = None,
 ) -> str:
-    """
-    Generate text using a Hugging Face Transformers model.
-
-    :param message_payload: The input text (prompt) for the model.
-    :param max_new_tokens: Maximum number of new tokens to generate.
-    :param generation_kwargs: Additional keyword args for model.generate().
-    :return: The generated text (string).
-    """
     if generation_kwargs is None:
         generation_kwargs = {}
 
     try:
         # Prepare the input tensor
-        inputs = tokenizer(
-            message_payload, return_tensors="pt"
-        )
-        # If running on GPU, move the input to the GPU:
-        # inputs = inputs.to("cuda")
+        inputs = tokenizer(message_payload, return_tensors="pt")
+        # Move them to GPU
+        inputs = {k: v.to("cuda") for k, v in inputs.items()}
 
         # Generate text
         output_tokens = model.generate(
@@ -57,6 +47,7 @@ def generate_data(
             max_new_tokens=max_new_tokens,
             **generation_kwargs
         )
+
         # Decode the output
         output_text = tokenizer.decode(
             output_tokens[0], skip_special_tokens=True
