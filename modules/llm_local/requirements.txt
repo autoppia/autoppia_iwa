@@ -3,3 +3,4 @@ Flask_Cors==4.0.2
 requests==2.32.3
 transformers
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+
