@@ -65,8 +65,8 @@ class BaseTaskTest(BaseModel, ABC):
             # Instantiate the appropriate class based on test_type and configuration
             if test_type == "frontend" and "keywords" in config:
                 assigned_tests.append(FindInHtmlTest(**config))
-            elif test_type == "backend" and config.get("event_name") == "page_view":
-                assigned_tests.append(CheckPageViewEventTest(page_view_url=config["event_name"], **config))
+            elif test_type == "backend" and "page_view_url" in config:
+                assigned_tests.append(CheckPageViewEventTest(**config))
             elif test_type == "backend" and "event_name" in config:
                 assigned_tests.append(CheckEventEmittedTest(**config))
             else:
