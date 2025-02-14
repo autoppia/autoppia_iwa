@@ -1,12 +1,10 @@
 import argparse
 import gc
 import logging
-from typing import Dict, List
 
 from flask import Flask, request
 from flask_cors import CORS
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -49,9 +47,7 @@ def generate_data(
         )
 
         # Decode the output
-        output_text = tokenizer.decode(
-            output_tokens[0], skip_special_tokens=True
-        )
+        output_text = tokenizer.decode(output_tokens[0], skip_special_tokens=True)
 
         return output_text
 

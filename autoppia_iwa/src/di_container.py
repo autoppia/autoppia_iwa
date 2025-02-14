@@ -1,12 +1,12 @@
 from dependency_injector import containers, providers
 from pymongo import MongoClient
 
-from autoppia_iwa.config.config import (
+from ..config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
+    LLM_ENPOINT,
     LLM_PROVIDER,
     LLM_THRESHOLD,
-    LLM_ENPOINT,
     MONGODB_NAME,
     MONGODB_URL,
     OPENAI_API_KEY,
@@ -15,7 +15,6 @@ from autoppia_iwa.config.config import (
     OPENAI_TEMPERATURE,
     TASKS_COLLECTION,
 )
-
 from .llms.infrastructure.llm_service import LocalLLMService, OpenAIService
 from .shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 

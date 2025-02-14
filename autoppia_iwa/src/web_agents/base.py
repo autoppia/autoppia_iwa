@@ -1,8 +1,9 @@
 import random
 import string
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.web_agents.classes import TaskSolution
 from abc import ABC, abstractmethod
+
+from ..data_generation.domain.classes import Task
+from ..web_agents.classes import TaskSolution
 
 
 class IWebAgent(ABC):

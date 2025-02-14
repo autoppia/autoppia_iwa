@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Optional
 
-from dependency_injector.wiring import Provide, inject
+from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.di_container import DIContainer

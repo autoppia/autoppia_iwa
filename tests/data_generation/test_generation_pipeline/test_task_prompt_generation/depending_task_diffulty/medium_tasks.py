@@ -13,9 +13,10 @@ from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator,
 from autoppia_iwa.src.execution.actions.actions import ACTION_CLASS_MAP
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id, instantiate_test
-from autoppia_iwa.src.web_agents.autoppia_agent.agent import AutoppiaWebAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from modules.webs_demo.web_1_demo_django_jobs.events.events_test_for_subnet import EVENTS_ALLOWED_FOR_TASK_TEST
+from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
+from tests import test_container
 
 
 class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
@@ -26,11 +27,12 @@ class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
         """
         cls.app_bootstrap = AppBootstrap()
         cls.llm_service = cls.app_bootstrap.container.llm_service()
+        cls.web_agent: ApifiedWebAgent = test_container.web_agent()
         cls.domain = "localhost:8000"
-        cls.start_url = "http://localhost:8000/"
+        cls.start_url = f"http://{cls.domain}/"
         cls.difficulty_level = TaskDifficultyLevel.MEDIUM
         cls.file_name = "medium_tasks.json"
-        cls.output_dir = Path(__file__).resolve().parents[1] / "sample_tasks_data_files"
+        cls.output_dir = Path(__file__).resolve().parents[4] / "sample_tasks_data_files"
         cls.output_dir.mkdir(parents=True, exist_ok=True)
 
     def _get_file_path(self, folder_name: str) -> Path:
@@ -92,7 +94,7 @@ class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
                 backend_url=self.start_url,
                 frontend_url=self.start_url,
                 name="jobs",
-                events_to_check=EVENTS_ALLOWED_FOR_TASK_TEST,
+                events_to_check=EVENTS_ALLOWED,
             )
             task_input = TaskGenerationConfig(web_project=web_project)
             task_generator = TaskGenerationPipeline(task_input, llm_service=self.llm_service)
@@ -125,8 +127,7 @@ class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
                 if "actions" not in task:
                     tests = [instantiate_test(test) for test in task["tests"]]
                     current_task = Task(prompt=task["prompt"], url=task["url"], tests=tests)
-                    actions_generator = AutoppiaWebAgent(llm_service=self.llm_service)
-                    task_solution = actions_generator.solve_task(task=current_task)
+                    task_solution = self.web_agent.solve_task_sync(task=current_task)
                     task["actions"] = [action.model_dump() for action in task_solution.actions]
             except Exception as e:
                 logging.warning(f"Failed to generate actions for task {task['id']}: {e}")

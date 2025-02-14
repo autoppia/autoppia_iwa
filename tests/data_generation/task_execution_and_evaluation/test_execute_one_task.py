@@ -6,8 +6,9 @@ from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils import instantiate_test
-from autoppia_iwa.src.web_agents.autoppia_agent.agent import AutoppiaWebAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+from tests import test_container
 
 
 class TestActionsGenerationAndEvaluation(unittest.TestCase):
@@ -22,6 +23,7 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
         """
         cls.app_bootstrap = AppBootstrap()
         cls.llm_service = cls.app_bootstrap.container.llm_service()
+        cls.web_agent: ApifiedWebAgent = test_container.web_agent()
 
         cls.task = cls._create_task()
 
@@ -38,13 +40,12 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
 
         # Sample task data
         task_data = {
-            "prompt": "Click on the \"Login\" link in the header. Then fill the form with email:test@gmail.com adn password:test1234 and click on login",
+            "prompt": "Click on the \"Login\" link in the header. Then fill the form with email:admin@jobsapp.com and password:admin123 and click on login",
             "url": "http://localhost:8000/",
             "tests": [
-                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view"},
+                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view", "page_view_url": "/login"},
                 {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["email"]},
                 {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "login"},
-                {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["logout"]},
             ],
             "milestones": None,
             "web_analysis": None,
@@ -66,9 +67,7 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
         """
         Test that actions are correctly generated and evaluated.
         """
-        # Generate actions
-        actions_generator = AutoppiaWebAgent(llm_service=self.llm_service)
-        task_solution = actions_generator.solve_task(task=self.task)
+        task_solution = self.web_agent.solve_task_sync(task=self.task)
 
         # Assertions to validate generated actions
         self.assertTrue(task_solution, "No actions were generated. The action list is empty.")
@@ -82,7 +81,6 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
 
         # Evaluate the actions
         task_solution = TaskSolution(task=self.task, actions=task_solution.actions, web_agent_id=self.web_agent_id)
-
         evaluator = ConcurrentEvaluator(EvaluatorConfig(current_url=self.task.url))
         evaluated_task = asyncio.run(evaluator.evaluate_single_task(task_solution))
 

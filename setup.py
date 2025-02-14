@@ -1,5 +1,6 @@
 from pathlib import Path
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 here = Path(__file__).parent.resolve()
 
@@ -10,7 +11,7 @@ setup(
     name="autoppia_iwa",
     version="0.0.1",
     description="A short description of the autoppia_iwa package",
-    packages=find_packages(), 
+    packages=find_packages(),
     install_requires=required,
     python_requires=">=3.11",
 )

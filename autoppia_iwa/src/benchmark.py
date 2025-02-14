@@ -5,6 +5,7 @@ from typing import List
 import matplotlib.pyplot as plt
 
 from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
+from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, TaskGenerationConfig
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, FindInHtmlTest
@@ -14,7 +15,6 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import Task, TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.bootstrap import AppBootstrap
 
 app = AppBootstrap()
 TASKS = [

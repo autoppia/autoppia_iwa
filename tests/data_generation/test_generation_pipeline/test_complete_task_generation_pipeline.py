@@ -3,7 +3,7 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, WebProject
-from modules.webs_demo.web_1_demo_django_jobs.events.events_test_for_subnet import EVENTS_ALLOWED_FOR_TASK_TEST
+from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
 
 
 class TestTaskGenerationPipeline(unittest.TestCase):
@@ -36,7 +36,7 @@ class TestTaskGenerationPipeline(unittest.TestCase):
         - Ensuring the output contains tasks.
         """
         # Create task generation input
-        web_project = WebProject(backend_url=self.page_url, frontend_url=self.page_url, name="jobs", events_to_check=EVENTS_ALLOWED_FOR_TASK_TEST)
+        web_project = WebProject(backend_url=self.page_url, frontend_url=self.page_url, name="jobs", events_to_check=EVENTS_ALLOWED)
 
         task_input = TaskGenerationConfig(web_project=web_project, save_web_analysis_in_db=True, save_task_in_db=True)
 

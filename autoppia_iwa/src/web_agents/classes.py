@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.execution.actions.base import BaseAction
+from ..data_generation.domain.classes import Task
+from ..execution.actions.base import BaseAction
 
 
 class TaskSolution(BaseModel):
