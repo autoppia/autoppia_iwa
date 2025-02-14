@@ -3,7 +3,8 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.shared.utils import instantiate_test
-from autoppia_iwa.src.web_agents.autoppia_agent.agent import AutoppiaWebAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from tests import test_container
 
 
 class TestNewActionsGeneration(unittest.TestCase):
@@ -19,7 +20,7 @@ class TestNewActionsGeneration(unittest.TestCase):
         # Initialize the application bootstrap and LLM service
         cls.app_bootstrap = AppBootstrap()
         cls.llm_service = cls.app_bootstrap.container.llm_service()
-
+        cls.web_agent: ApifiedWebAgent = test_container.web_agent()
         # Create the task configuration
         cls.task = cls._create_task()
 
@@ -61,8 +62,7 @@ class TestNewActionsGeneration(unittest.TestCase):
     def test_new_actions_generation(self):
         """Test that actions are generated correctly from a goal and URL."""
         # Generate actions using the configured task
-        actions_generator = AutoppiaWebAgent(llm_service=self.llm_service)
-        task_solution = actions_generator.solve_task(task=self.task)
+        task_solution = self.web_agent.solve_task_sync(task=self.task)
 
         # Assertions
         self.assertTrue(task_solution, "No task solution were generated.")
