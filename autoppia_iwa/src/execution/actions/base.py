@@ -100,9 +100,9 @@ class BaseAction(BaseModel):
         """Returns a user-friendly string representation of the action."""
         return f"{self.__class__.__name__}(type={self.__class__.__name__})"
 
-    def __repr__(self) -> str:
-        """Returns a detailed string representation useful for debugging."""
-        return f"{self.__class__.__name__}({self.model_dump()})"
+    # def __repr__(self) -> str:
+    #     """Returns a detailed string representation useful for debugging."""
+    #     return f"{self.__class__.__name__}({self.model_dump()})"
 
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
         raise NotImplementedError("Execute method must be implemented by subclasses.")
