@@ -63,6 +63,7 @@ class Task(BaseModel):
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
 
+    # DONT MODIFY BASE MODEL_DUMP METHOD!
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         """
         Serializes the Task model to a dictionary, including nested models.
