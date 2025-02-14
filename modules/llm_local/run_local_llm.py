@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
-# REPLACE THE MODEL NAME WITH A 2.7B GPT-Neo
+# REPLACE THE MODEL NAME WITH A mistralai/Mistral-7B-Instruct
 # -----------------------------------------------------------------------------
-MODEL_NAME = "EleutherAI/gpt-neo-1.3B"
+MODEL_NAME = "mistralai/Mistral-7B-Instruct"
 
 logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
