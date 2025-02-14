@@ -56,8 +56,8 @@ class EvaluationResult(BaseModel):
 
     final_score: float = 0
     test_results: List[TestEvaluated]  # List of test evaluation results
-    feedback: Feedback  # Feedback generated during the evaluation
     execution_history: List[ActionExecutionResult]  # History of all actions executed
+    feedback: Optional[Feedback] = None  # Feedback generated during the evaluation
 
     def model_dump(self, *args, **kwargs):
         base_dump = super().model_dump(*args, **kwargs)
