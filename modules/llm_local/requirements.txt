@@ -1,4 +1,5 @@
 Flask==3.1.0
 Flask_Cors==4.0.2
 requests==2.32.3
-# Follow llm_local_setup.md guide for imstatlling llama_cpp, whichis required to be instaled
+transformers
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
