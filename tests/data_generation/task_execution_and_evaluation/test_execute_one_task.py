@@ -81,7 +81,6 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
 
         # Evaluate the actions
         task_solution = TaskSolution(task=self.task, actions=task_solution.actions, web_agent_id=self.web_agent_id)
-
         evaluator = ConcurrentEvaluator(EvaluatorConfig(current_url=self.task.url))
         evaluated_task = asyncio.run(evaluator.evaluate_single_task(task_solution))
 
