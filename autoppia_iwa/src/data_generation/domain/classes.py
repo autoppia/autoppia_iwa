@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
-from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
+from ...web_analysis.domain.analysis_classes import DomainAnalysis
+from ..domain.tests_classes import BaseTaskTest
 
 
 class WebProject(BaseModel):
@@ -71,6 +71,34 @@ class Task(BaseModel):
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["tests"] = [test.model_dump() for test in self.tests]
         return base_dump
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Task":
+        """
+        Creates a Task instance from a dictionary, including nested test instances.
+
+        Args:
+            data (Dict[str, Any]): Dictionary containing the Task attributes.
+
+        Returns:
+            Task: The Task object created from the dictionary.
+        """
+        # Extract and construct tests
+        test_data = data.get("tests", [])
+        tests = BaseTaskTest.assign_tests(test_data)
+
+        # Handle milestones recursively if provided
+        milestones = data.get("milestones", [])
+
+        # Create and return Task instance
+        return cls(
+            prompt=data.get("prompt"),
+            url=data.get("url"),
+            specifications=BrowserSpecification.model_validate(data.get("specifications", {})),
+            tests=tests,
+            milestones=milestones,
+            web_analysis=DomainAnalysis.model_validate(data.get("web_analysis", {})) if data.get("web_analysis") else None,
+        )
 
 
 class TaskGenerationConfig(BaseModel):

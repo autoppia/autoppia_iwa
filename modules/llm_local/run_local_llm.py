@@ -1,12 +1,10 @@
 import argparse
 import gc
 import logging
-from typing import Dict, List
 
 from flask import Flask, request
 from flask_cors import CORS
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -45,22 +43,14 @@ def generate_data(
 
     try:
         # Prepare the input tensor
-        inputs = tokenizer(
-            message_payload, return_tensors="pt"
-        )
+        inputs = tokenizer(message_payload, return_tensors="pt")
         # If running on GPU, move the input to the GPU:
         # inputs = inputs.to("cuda")
 
         # Generate text
-        output_tokens = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            **generation_kwargs
-        )
+        output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens, **generation_kwargs)
         # Decode the output
-        output_text = tokenizer.decode(
-            output_tokens[0], skip_special_tokens=True
-        )
+        output_text = tokenizer.decode(output_tokens[0], skip_special_tokens=True)
 
         return output_text
 

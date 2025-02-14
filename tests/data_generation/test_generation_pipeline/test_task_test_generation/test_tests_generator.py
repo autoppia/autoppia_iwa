@@ -4,7 +4,7 @@ from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.task_tests_generator import TaskTestGenerator
 from autoppia_iwa.src.data_generation.domain.classes import WebProject
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
-from modules.webs_demo.web_1_demo_django_jobs.events.events_test_for_subnet import EVENTS_ALLOWED_FOR_TASK_TEST
+from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
 
 
 class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         cls.local_enable_crawl = False
         cls.local_task_description = "Click on the Login button and then introduce your username and password."
 
-        # Real web testing setup (Wikipedia)
+        # Real web testing setup
         cls.example_url = "https://example.com/"
         cls.example_enable_crawl = False
         cls.example_task_description = "Navigate to the homepage and verify the page title."
@@ -51,7 +51,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         )
 
         # Initialize Web Project
-        web_project = WebProject(backend_url=url, frontend_url=url, name="example" if is_real_web else "Local Web App", events_to_check=EVENTS_ALLOWED_FOR_TASK_TEST, is_real_web=is_real_web)
+        web_project = WebProject(backend_url=url, frontend_url=url, name="example" if is_real_web else "Local Web App", events_to_check=EVENTS_ALLOWED, is_real_web=is_real_web)
 
         # Generate task-based tests
         task_test_generator = TaskTestGenerator(web_project=web_project, web_analysis=web_analysis, llm_service=self.llm_service)
@@ -71,10 +71,10 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
 
     def test_task_test_generation_for_real_web_example(self) -> None:
         """
-        Test generating task-based tests for Wikipedia (real web).
+        Test generating task-based tests for real web.
         """
         tests = self._generate_tests_for_web_project(url=self.example_url, task_description=self.example_task_description, enable_crawl=self.example_enable_crawl, is_real_web=True)
-        print("Generated Tests (Wikipedia - Real Web):", tests)
+        print("Generated Tests (Real Web):", tests)
 
 
 if __name__ == "__main__":

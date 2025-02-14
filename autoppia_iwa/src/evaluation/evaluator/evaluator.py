@@ -9,7 +9,8 @@ from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.backend_demo_web.backend_demo_web_service import BackendDemoWebService
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
-from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult, Feedback
+from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult
+from autoppia_iwa.src.evaluation.classes import Feedback
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
@@ -38,11 +39,7 @@ class ConcurrentEvaluator(IEvaluator):
         self.config = config
 
     async def evaluate_single_task(self, task_solution: TaskSolution) -> EvaluationResult:
-        return await self._evaluate_single_task(
-            task_solution.task,
-            task_solution.actions,
-            task_solution.web_agent_id
-        )
+        return await self._evaluate_single_task(task_solution.task, task_solution.actions, task_solution.web_agent_id)
 
     async def evaluate_all_tasks(self, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         return await self._group_and_evaluate_tasks(task_solutions)
@@ -53,10 +50,7 @@ class ConcurrentEvaluator(IEvaluator):
             grouped_tasks[self._hash_actions(task_solution.actions)].append(task_solution)
 
         semaphore = asyncio.Semaphore(self.config.chunk_size)
-        group_tasks = [
-            self._evaluate_group_with_semaphore(group, semaphore)
-            for group in grouped_tasks.values()
-        ]
+        group_tasks = [self._evaluate_group_with_semaphore(group, semaphore) for group in grouped_tasks.values()]
 
         raw_results = await asyncio.gather(*group_tasks, return_exceptions=True)
         final_results = []
@@ -74,11 +68,7 @@ class ConcurrentEvaluator(IEvaluator):
             representative = group[0]
             try:
                 # Evaluate the representative actions
-                rep_result = await self._evaluate_single_task(
-                    representative.task,
-                    representative.actions,
-                    representative.web_agent_id
-                )
+                rep_result = await self._evaluate_single_task(representative.task, representative.actions, representative.web_agent_id)
                 # Clone results for each web_agent in the group
                 results: List[EvaluationResult] = []
                 for task_solution in group:
@@ -90,39 +80,19 @@ class ConcurrentEvaluator(IEvaluator):
             except Exception as e:
                 print(f"Error evaluating actions for group: {e}")
                 print(traceback.format_exc())
-                return [EvaluationResult(
-                    web_agent_id=ts.web_agent_id,
-                    final_score=0,
-                    test_results=[],
-                    feedback=None,
-                    execution_history=[]
-                ) for ts in group]
+                return [EvaluationResult(web_agent_id=ts.web_agent_id, final_score=0, test_results=[], feedback=None, execution_history=[]) for ts in group]
 
     @staticmethod
     def _hash_actions(actions: List[BaseAction]) -> str:
         try:
-            return hashlib.sha256(
-                "|".join(str(action.model_dump()) for action in actions).encode()
-            ).hexdigest()
+            return hashlib.sha256("|".join(str(action.model_dump()) for action in actions).encode()).hexdigest()
         except Exception:
             print("Error generating hash for actions.")
             return ""
 
-    async def _evaluate_single_task(
-        self,
-        task: Task,
-        actions: List[BaseAction],
-        web_agent_id: str,
-        delay: float = None
-    ) -> EvaluationResult:
+    async def _evaluate_single_task(self, task: Task, actions: List[BaseAction], web_agent_id: str, delay: float = None) -> EvaluationResult:
         if not actions:
-            return EvaluationResult(
-                web_agent_id=web_agent_id,
-                final_score=0,
-                test_results=[],
-                feedback=None,
-                execution_history=[]
-            )
+            return EvaluationResult(web_agent_id=web_agent_id, final_score=0, test_results=[], feedback=None, execution_history=[])
 
         if delay:
             await asyncio.sleep(delay)
@@ -130,12 +100,7 @@ class ConcurrentEvaluator(IEvaluator):
         backend_service = BackendDemoWebService(task.url)
         backend_service.reset_backend_events_db(web_agent_id)
 
-        execution_history = await self._evaluate_in_browser(
-            task,
-            web_agent_id,
-            actions,
-            backend_service
-        )
+        execution_history = await self._evaluate_in_browser(task, web_agent_id, actions, backend_service)
         test_results = self._run_tests(task, execution_history)
         feedback = self._generate_feedback(task, execution_history, test_results)
 
@@ -154,13 +119,7 @@ class ConcurrentEvaluator(IEvaluator):
 
         return result
 
-    async def _evaluate_in_browser(
-        self,
-        task: Task,
-        web_agent_id: str,
-        actions: List[BaseAction],
-        backend_service: BackendDemoWebService
-    ) -> List[ActionExecutionResult]:
+    async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], backend_service: BackendDemoWebService) -> List[ActionExecutionResult]:
         async with async_playwright() as playwright:
             browser, context = None, None
             try:
@@ -171,11 +130,7 @@ class ConcurrentEvaluator(IEvaluator):
                 print(f"Started evaluation for task URL: {task.url}, Miner ID: {web_agent_id}")
 
                 monitor_task = asyncio.create_task(self._monitor_browser(task.url, page, web_agent_id))
-                browser_executor = PlaywrightBrowserExecutor(
-                    BrowserSpecification(),
-                    backend_service,
-                    page
-                )
+                browser_executor = PlaywrightBrowserExecutor(BrowserSpecification(), backend_service, page)
 
                 try:
                     results = await browser_executor.execute_actions_standalone(actions, web_agent_id)
@@ -200,12 +155,7 @@ class ConcurrentEvaluator(IEvaluator):
         def on_frame_navigated(frame):
             try:
                 if frame.url:
-                    asyncio.create_task(
-                        BackendDemoWebService(task_url).send_page_view_event(
-                            frame.url,
-                            web_agent_id
-                        )
-                    )
+                    asyncio.create_task(BackendDemoWebService(task_url).send_page_view_event(frame.url, web_agent_id))
             except Exception as e:
                 print(f"Error handling frame navigation: {e}")
 
@@ -228,8 +178,4 @@ class ConcurrentEvaluator(IEvaluator):
 
     @staticmethod
     def _generate_feedback(task: Task, execution_history: List[ActionExecutionResult], test_results: List) -> Feedback:
-        return FeedbackGenerator().generate_feedback(
-            task_prompt=task.prompt,
-            execution_history=execution_history,
-            test_results=test_results
-        )
+        return FeedbackGenerator().generate_feedback(task_prompt=task.prompt, execution_history=execution_history, test_results=test_results)

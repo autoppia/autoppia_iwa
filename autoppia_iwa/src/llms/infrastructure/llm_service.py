@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Optional
 import requests
 from openai import OpenAI
 
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
-from autoppia_iwa.src.llms.domain.openai.classes import BaseOpenAIResponseFormat, OpenAILLMModelMixin
+from ..domain.interfaces import ILLMService
+from ..domain.openai.classes import BaseOpenAIResponseFormat, OpenAILLMModelMixin
 
 
 class BaseLLMService(ILLMService):

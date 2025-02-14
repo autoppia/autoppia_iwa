@@ -1,15 +1,15 @@
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, List, Literal
+from typing import Any, Dict, List, Literal
 
 from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, field_validator
 
-from autoppia_iwa.config.config import PROJECT_BASE_DIR
-from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.execution.classes import BrowserSnapshot
-from autoppia_iwa.src.llms.infrastructure.llm_service import OpenAIService
+from ....config.config import PROJECT_BASE_DIR
+from ...di_container import DIContainer
+from ...execution.classes import BrowserSnapshot
+from ...llms.infrastructure.llm_service import OpenAIService
 
 
 class BaseTaskTest(BaseModel, ABC):
@@ -45,6 +45,34 @@ class BaseTaskTest(BaseModel, ABC):
             bool: True if the test passes, otherwise False.
         """
         raise NotImplementedError("Subclasses must implement this method.")
+
+    @classmethod
+    def assign_tests(cls, test_configs: List[Dict]) -> List["BaseTaskTest"]:
+        """
+        Assigns and instantiates tests based on the provided test configurations.
+
+        Args:
+            test_configs (List[Dict]): A list of test configurations.
+
+        Returns:
+            List[BaseTaskTest]: A list of instantiated test objects.
+        """
+        assigned_tests = []
+
+        for config in test_configs:
+            test_type = config.get("test_type")
+
+            # Instantiate the appropriate class based on test_type and configuration
+            if test_type == "frontend" and "keywords" in config:
+                assigned_tests.append(FindInHtmlTest(**config))
+            elif test_type == "backend" and config.get("event_name") == "page_view":
+                assigned_tests.append(CheckPageViewEventTest(page_view_url=config["event_name"], **config))
+            elif test_type == "backend" and "event_name" in config:
+                assigned_tests.append(CheckEventEmittedTest(**config))
+            else:
+                raise ValueError(f"Unsupported test configuration: {config}")
+
+        return assigned_tests
 
 
 class FindInHtmlTest(BaseTaskTest):

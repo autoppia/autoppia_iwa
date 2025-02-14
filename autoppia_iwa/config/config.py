@@ -56,3 +56,10 @@ PROJECT_BASE_DIR = Path(__file__).resolve().parents[1]
 # ============================
 DEMO_WEBS_ENDPOINT = os.getenv("DEMO_WEBS_ENDPOINT", "http://localhost")
 DEMO_WEBS_STARTING_PORT = int(os.getenv("DEMO_WEBS_STARTING_PORT", '8000'))
+
+# ============================
+# Agent Configurations
+# ============================
+AGENT_NAME = os.getenv("AGENT_NAME")
+AGENT_HOST = os.getenv("AGENT_HOST", 'localhost')
+AGENT_PORT = int(os.getenv("AGENT_PORT", '8080'))

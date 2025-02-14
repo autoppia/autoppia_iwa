@@ -334,7 +334,7 @@ ACTION_CLASS_MAP_LOWER = {
     "assert": AssertAction,
     "select": SelectAction,
     "idle": IdleAction,
-    "undefined": UndefinedAction
+    "undefined": UndefinedAction,
 }
 
 ACTION_CLASS_MAP_CAPS = {
@@ -351,7 +351,7 @@ ACTION_CLASS_MAP_CAPS = {
     "AssertAction": AssertAction,
     "SelectAction": SelectAction,
     "IdleAction": IdleAction,
-    "UndefinedAction": UndefinedAction
+    "UndefinedAction": UndefinedAction,
 }
 
 # Merge both dictionaries to form a complete ACTION_CLASS_MAP

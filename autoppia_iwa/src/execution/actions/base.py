@@ -2,6 +2,7 @@ import inspect
 import logging
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type
+
 from playwright.async_api import Page
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -140,7 +141,9 @@ class BaseAction(BaseModel):
         Returns:
             Optional[BaseAction]: An instance of the appropriate action class, or None if parsing fails.
         """
-        action_info = action_data.get("action", {})
+        action_info = action_data
+        if "type" not in action_data:
+            action_info = action_data.get("action", {})
         action_type = action_info.get("type")
         if not action_type:
             logger.warning("Action type is missing in action data.")
