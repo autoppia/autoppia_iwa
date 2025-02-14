@@ -59,7 +59,7 @@ class NavigateAction(BaseAction):
 
 
 class TypeAction(BaseActionWithSelector):
-    text: str = Field(..., alias="value")
+    text: str
 
     @log_action("TypeAction")
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
