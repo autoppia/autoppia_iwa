@@ -1,9 +1,7 @@
 import inspect
 import logging
-from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type
-
 from playwright.async_api import Page
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -93,7 +91,7 @@ class Selector(BaseModel):
 # -----------------------------------------
 
 
-class BaseAction(BaseModel, ABC):
+class BaseAction(BaseModel):
     """
     Base class for all actions.
     """
@@ -102,14 +100,11 @@ class BaseAction(BaseModel, ABC):
         """Returns a user-friendly string representation of the action."""
         return f"{self.__class__.__name__}(type={self.__class__.__name__})"
 
-    def __repr__(self) -> str:
-        """Returns a detailed string representation useful for debugging."""
-        return f"{self.__class__.__name__}({self.model_dump()})"
+    # def __repr__(self) -> str:
+    #     """Returns a detailed string representation useful for debugging."""
+    #     return f"{self.__class__.__name__}({self.model_dump()})"
 
-    @abstractmethod
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
-        if not page or page.is_closed():
-            raise ValueError("Page is not initialized or already closed.")
         raise NotImplementedError("Execute method must be implemented by subclasses.")
 
     @classmethod

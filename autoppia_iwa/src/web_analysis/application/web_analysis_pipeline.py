@@ -36,7 +36,7 @@ class WebAnalysisPipeline:
 
     def analyze(
         self,
-        save_results_in_db: bool = False,
+        save_results_in_db: bool = True,
         get_analysis_from_cache: bool = True,
         enable_crawl: bool = True,
     ) -> DomainAnalysis:

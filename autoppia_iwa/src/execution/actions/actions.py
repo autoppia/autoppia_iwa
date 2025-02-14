@@ -308,7 +308,19 @@ class SelectDropDownOption(BaseActionWithSelector):
         action_logger.info(msg)
 
 
-ACTION_CLASS_MAP = {
+class UndefinedAction(BaseAction):
+    @log_action("UndefinedAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        pass
+
+
+class IdleAction(BaseAction):
+    @log_action("IdleAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        pass
+
+
+ACTION_CLASS_MAP_LOWER = {
     "click": ClickAction,
     "type": TypeAction,
     "hover": HoverAction,
@@ -321,4 +333,26 @@ ACTION_CLASS_MAP = {
     "wait": WaitAction,
     "assert": AssertAction,
     "select": SelectAction,
+    "idle": IdleAction,
+    "undefined": UndefinedAction
 }
+
+ACTION_CLASS_MAP_CAPS = {
+    "ClickAction": ClickAction,
+    "TypeAction": TypeAction,
+    "HoverAction": HoverAction,
+    "NavigateAction": NavigateAction,
+    "DragAndDropAction": DragAndDropAction,
+    "SubmitAction": SubmitAction,
+    "DoubleClickAction": DoubleClickAction,
+    "ScrollAction": ScrollAction,
+    "ScreenshotAction": ScreenshotAction,
+    "WaitAction": WaitAction,
+    "AssertAction": AssertAction,
+    "SelectAction": SelectAction,
+    "IdleAction": IdleAction,
+    "UndefinedAction": UndefinedAction
+}
+
+# Merge both dictionaries to form a complete ACTION_CLASS_MAP
+ACTION_CLASS_MAP = {**ACTION_CLASS_MAP_CAPS, **ACTION_CLASS_MAP_LOWER}

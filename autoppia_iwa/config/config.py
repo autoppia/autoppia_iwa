@@ -54,5 +54,5 @@ PROJECT_BASE_DIR = Path(__file__).resolve().parents[1]
 # ============================
 # DEMO WEBS
 # ============================
-DEMO_WEBS_ENDPOINT = os.getenv("DEMO_WEBS_ENDPOINT")
+DEMO_WEBS_ENDPOINT = os.getenv("DEMO_WEBS_ENDPOINT", "http://localhost")
 DEMO_WEBS_STARTING_PORT = int(os.getenv("DEMO_WEBS_STARTING_PORT", '8000'))

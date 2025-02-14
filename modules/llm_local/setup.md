@@ -78,28 +78,19 @@ path, update the model path in `test.py`.
 
 ---
 
-### **Final Checks**
-
-After completing the setup, run a model server for inference and confirm everything is working as expected:
+## Start the LLM service using PM2
 ```bash
 echo "Starting the LLM service in the background using PM2..."
-pm2 start run_local_llm.py --name llm_local --interpreter python3.10 -- --port $PORT
-echo "Setup complete. LLM service is running on port $PORT in the background."
+pm2 start autoppia_iwa/modules/llm_local/run_local_llm.py --name llm_local --interpreter ./llm_env/bin/python -- --port 6000
+echo "Setup complete. LLM service is running on port 6000 in the background."
 ```
 
 In addition, a test has been created in the test folder you can run it using
 
 ```bash
-python3 test/test.py
+python3 autoppia_iwa/modules/llm_local/test/test.py
 ```
 
 If you encounter issues, verify the CUDA version, Python installation, and network connectivity to the local model
 server.
 
-
-## Start the LLM service using PM2
-```bash
-echo "Starting the LLM service in the background using PM2..."
-pm2 start run_local_llm.py --name llm_local --interpreter python3.10 -- --port $PORT
-echo "Setup complete. LLM service is running on port $PORT in the background."
-```

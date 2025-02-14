@@ -1,4 +1,3 @@
-# setup.py (in the root of the submodule)
 from pathlib import Path
 
 from setuptools import find_packages, setup
@@ -12,7 +11,7 @@ setup(
     name="autoppia_iwa",
     version="0.0.1",
     description="A short description of the autoppia_iwa package",
-    packages=find_packages(),  # or find_packages(include=["autoppia_iwa*"])
+    packages=find_packages(), 
     install_requires=required,
     python_requires=">=3.11",
 )

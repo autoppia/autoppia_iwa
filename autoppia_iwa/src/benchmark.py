@@ -14,7 +14,9 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import Task, TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.bootstrap import AppBootstrap
 
+app = AppBootstrap()
 TASKS = [
     # Task(
     #     prompt="Get the interactive elements from the services by using strictly the 'get_dropdown_options' option only",
@@ -54,14 +56,14 @@ TASKS = [
     #     milestones=None,
     #     web_analysis=None,
     # ),
-    # Task(
-    #     prompt="Navigate to the 'About Us' section by clicking on the 'About Us' link in the header menu.",
-    #     url='http://localhost:8000',
-    #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
-    #     tests=[],
-    #     milestones=None,
-    #     web_analysis=None,
-    # ),
+    Task(
+        prompt="Navigate to the 'About Us' section by clicking on the 'About Us' link in the header menu.",
+        url='http://localhost:8000',
+        specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
+        tests=[],
+        milestones=None,
+        web_analysis=None,
+    ),
     # Task(
     #     prompt='Fill out the contact form by entering your name, email, and message, then submit the form to send your inquiry.',
     #     url='http://localhost:8000',
@@ -227,12 +229,12 @@ def generate_tasks_for_project(demo_project):
     If TASKS is provided, it will be used. Otherwise, tasks are generated
     through the TaskGenerationPipeline.
     """
-    task_input = TaskGenerationConfig(demo_web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False)
-    if TASKS:
-        tasks = TASKS
-    else:
-        task_output = TaskGenerationPipeline(task_input).generate()
-        tasks = task_output.tasks
+    task_input = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False)
+    # if TASKS:
+    #     tasks = TASKS
+    # else:
+    task_output = TaskGenerationPipeline(task_input).generate()
+    tasks = task_output.tasks
     return tasks
 
 
