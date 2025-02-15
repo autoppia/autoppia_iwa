@@ -1,3 +1,5 @@
+# file: base.py
+
 import inspect
 import logging
 from enum import Enum
@@ -7,14 +9,8 @@ from abc import ABC, abstractmethod
 from playwright.async_api import Page
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-# -----------------------------------------
-# Logger Setup
-# -----------------------------------------
 logger = logging.getLogger(__name__)
 
-# -----------------------------------------
-# Selector and related definitions
-# -----------------------------------------
 ATTRIBUTE_FORMATS = {
     "id": "#",
     "class": ".",
@@ -88,27 +84,20 @@ class Selector(BaseModel):
                 raise ValueError(f"Unsupported selector type: {self.type}")
 
 
-# -----------------------------------------
-# BaseAction interface
-# -----------------------------------------
 class IAction(ABC):
     @abstractmethod
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
-        """Método abstracto que todas las acciones deben implementar"""
         pass
 
 
 class BaseAction(BaseModel, IAction):
-    """
-    Base class for all actions.
-    """
-
-    type: str = Field(discriminator=True)  # Esto es más limpio que usar model_config
+    # Removed discriminator=True
+    type: str = Field("", description="Action type identifier")
 
     class Config:
-        # Allow unknown fields so we don't lose them.
-        from_attributes = True
+        # Let Pydantic store extra/unknown fields
         extra = "allow"
+        from_attributes = True
 
     def __init__(self, **data):
         if 'type' not in data:
@@ -120,13 +109,6 @@ class BaseAction(BaseModel, IAction):
 
     @classmethod
     def from_response(cls, actions_response: List[Dict[str, Any]], action_class_map: Dict[str, Type["BaseAction"]]) -> List["BaseAction"]:
-        """
-        Converts raw action data into instances of BaseAction subclasses.
-
-        :param actions_response: List of raw action data.
-        :param action_class_map: Mapping of action types to their corresponding classes.
-        :return: List of instantiated BaseAction subclasses.
-        """
         actions: List[BaseAction] = []
         for action_data in actions_response:
             try:
@@ -141,16 +123,6 @@ class BaseAction(BaseModel, IAction):
 
     @classmethod
     def _parse_action_data(cls, action_data: Dict[str, Any], action_class_map: Dict[str, Type["BaseAction"]]) -> Optional["BaseAction"]:
-        """
-        Parses a single action data dictionary into a BaseAction instance.
-
-        Args:
-            action_data: Raw action data.
-            action_class_map: Mapping of action types to their corresponding classes.
-
-        Returns:
-            Optional[BaseAction]: An instance of the appropriate action class, or None if parsing fails.
-        """
         action_info = action_data
         if "type" not in action_data:
             action_info = action_data.get("action", {})
@@ -169,17 +141,6 @@ class BaseAction(BaseModel, IAction):
 
     @staticmethod
     def _prepare_action_parameters(action_info: Dict[str, Any], selector_data: Optional[Dict[str, Any]], action_class: Type["BaseAction"]) -> Dict[str, Any]:
-        """
-        Prepares the parameters for instantiating an action class.
-
-        Args:
-            action_info: The action information dictionary.
-            selector_data: The selector data dictionary.
-            action_class: The action class to instantiate.
-
-        Returns:
-            Dict[str, Any]: A dictionary of parameters for the action class.
-        """
         action_params = {**action_info.get("parameters", {}), **{k: v for k, v in action_info.items() if k != "type"}}
 
         # Add default values for specific action types
@@ -193,11 +154,9 @@ class BaseAction(BaseModel, IAction):
         if not action_params:
             action_params.update(defaults.get(action_info.get("type"), {}))
 
-        # Keep only required parameters
         required_params = set(inspect.signature(action_class).parameters.keys())
         filtered_params = {k: v for k, v in action_params.items() if k in required_params}
 
-        # Include selector if required
         if "selector" in required_params and selector_data:
             filtered_params["selector"] = Selector(**selector_data)
 
