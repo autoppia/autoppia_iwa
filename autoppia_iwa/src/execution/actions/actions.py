@@ -14,6 +14,9 @@ from autoppia_iwa.src.execution.actions.utils import action_logger, log_action
 
 
 class ClickAction(BaseActionWithSelector):
+    class Config:
+        extra = "allow"
+
     x: Optional[int] = None
     y: Optional[int] = None
 
