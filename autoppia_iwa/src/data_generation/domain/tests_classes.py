@@ -12,7 +12,22 @@ from ...execution.classes import BrowserSnapshot
 from ...llms.infrastructure.llm_service import OpenAIService
 
 
-class BaseTaskTest(BaseModel, ABC):
+class ITest(ABC):
+    @abstractmethod
+    def _execute_test(self, test_context: BrowserSnapshot) -> bool:
+        """
+        Abstract method to implement the specific logic for the test.
+
+        Args:
+            test_context (BrowserSnapshot): The context containing data for the test.
+
+        Returns:
+            bool: True if the test passes, otherwise False.
+        """
+        pass
+
+
+class BaseTaskTest(BaseModel, ITest):
     """
     Abstract base class for task tests.
     Defines a common interface and structure for test execution.
@@ -33,17 +48,7 @@ class BaseTaskTest(BaseModel, ABC):
         """
         return self._execute_test(test_context)
 
-    @abstractmethod
     def _execute_test(self, test_context: BrowserSnapshot) -> bool:
-        """
-        Abstract method to implement the specific logic for the test.
-
-        Args:
-            test_context (BrowserSnapshot): The context containing data for the test.
-
-        Returns:
-            bool: True if the test passes, otherwise False.
-        """
         raise NotImplementedError("Subclasses must implement this method.")
 
     @classmethod

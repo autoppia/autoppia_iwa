@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Type
 
 from playwright.async_api import Page
 from pydantic import BaseModel, Field, ValidationError, field_validator
+from abc import ABC,abstractmethod
 
 # -----------------------------------------
 # Logger Setup
@@ -91,11 +92,23 @@ class Selector(BaseModel):
 # BaseAction interface
 # -----------------------------------------
 
+class IAction(ABC):
+    @abstractmethod
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        pass
 
-class BaseAction(BaseModel):
+
+class BaseAction(BaseModel, IAction):
     """
     Base class for all actions.
     """
+
+    class Config:
+        # Allow unknown fields so we don't lose them.
+        extra = "allow"
+
+    def __init__(self):
+        pass
 
     def __str__(self) -> str:
         """Returns a user-friendly string representation of the action."""
