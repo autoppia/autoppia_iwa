@@ -105,7 +105,10 @@ class BaseAction(BaseModel, IAction):
 
     type: str = Field(discriminator=True)  # Esto es más limpio que usar model_config
 
-    model_config = ConfigDict(from_attributes=True, extra="allow")
+    class Config:
+        # Allow unknown fields so we don't lose them.
+        from_attributes = True
+        extra = "allow"
 
     def __init__(self, **data):
         if 'type' not in data:
