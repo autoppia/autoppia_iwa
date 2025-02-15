@@ -3,14 +3,9 @@ import logging
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type
 from abc import ABC, abstractmethod
-
 from playwright.async_api import Page
-<< << << < HEAD
 from pydantic import BaseModel, Field, ValidationError, field_validator
-from abc import ABC,abstractmethod
-== == == =
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
->>>>>> > cba8a93ad96270e6e403fa3668eb84d86206363a
+
 
 # -----------------------------------------
 # Logger Setup
