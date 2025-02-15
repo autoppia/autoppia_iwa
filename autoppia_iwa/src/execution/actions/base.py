@@ -1,31 +1,33 @@
-# file: base.py
-
-import inspect
+import asyncio
+import json
 import logging
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
-from abc import ABC, abstractmethod
+from typing import Optional, Union, List
+from typing_extensions import Annotated, Literal
+from pydantic import BaseModel, Field
 
 from playwright.async_api import Page
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-logger = logging.getLogger(__name__)
+action_logger = logging.getLogger(__name__)
 
-ATTRIBUTE_FORMATS = {
-    "id": "#",
-    "class": ".",
-    "placeholder": "[placeholder='{value}']",
-    "name": "[name='{value}']",
-    "role": "[role='{value}']",
-    "value": "[value='{value}']",
-    "type": "[type='{value}']",
-    "aria-label": "[aria-label='{value}']",
-    "aria-labelledby": "[aria-labelledby='{value}']",
-    "data-testid": "[data-testid='{value}']",
-    "data-custom": "[data-custom='{value}']",
-    "href": "a[href='{value}']",
-}
 
+def log_action(action_name: str):
+    """Decorator to log action execution."""
+    def decorator(func):
+        async def wrapper(self, page: Optional[Page], backend_service, web_agent_id: str):
+            action_logger.debug(f"Executing {action_name} with data: {self.model_dump()}")
+            try:
+                return await func(self, page, backend_service, web_agent_id)
+            except Exception as e:
+                action_logger.error(f"{action_name} failed: {e}")
+                raise
+        return wrapper
+    return decorator
+
+
+# --------------------------------------------------------------------------------
+# BASE CLASSES
+# --------------------------------------------------------------------------------
 
 class SelectorType(str, Enum):
     ATTRIBUTE_VALUE_SELECTOR = "attributeValueSelector"
@@ -34,142 +36,381 @@ class SelectorType(str, Enum):
 
 
 class Selector(BaseModel):
-    type: SelectorType = Field(..., description="The type of selector.")
-    attribute: Optional[str] = Field(None, description="The attribute name.")
-    value: str = Field(..., description="The value for this selector.")
-    case_sensitive: bool = Field(False, description="Whether the match is case-sensitive.")
-
-    @field_validator("attribute")
-    @classmethod
-    def validate_attribute(cls, value: Optional[str], values: Dict[str, Any]) -> Optional[str]:
-        if values.data.get("type") == SelectorType.ATTRIBUTE_VALUE_SELECTOR and not value:
-            raise ValueError("Attribute must be provided for ATTRIBUTE_VALUE_SELECTOR.")
-        return value
-
-    @field_validator("value")
-    @classmethod
-    def validate_value(cls, value: str, values: Dict[str, Any]) -> str:
-        if values.data.get("type") == SelectorType.XPATH_SELECTOR:
-            cls._validate_xpath(value)
-        return value
-
-    @staticmethod
-    def _validate_xpath(xpath: str):
-        from lxml import etree
-
-        try:
-            etree.XPath(xpath)
-        except ImportError:
-            raise ValueError("lxml library is required for XPath validation.")
-        except etree.XPathSyntaxError as e:
-            raise ValueError(f"Invalid XPath: {xpath}. Error: {e}")
+    type: SelectorType
+    attribute: Optional[str] = None
+    value: str
+    case_sensitive: bool = False
 
     def to_playwright_selector(self) -> str:
-        match self.type:
-            case SelectorType.ATTRIBUTE_VALUE_SELECTOR:
-                if self.attribute in ATTRIBUTE_FORMATS:
-                    if self.attribute in ["id", "class"]:
-                        return f"{ATTRIBUTE_FORMATS[self.attribute]}{self.value}"
-                    return ATTRIBUTE_FORMATS[self.attribute].format(value=self.value)
-                return f"[{self.attribute}='{self.value}']"
-            case SelectorType.TAG_CONTAINS_SELECTOR:
-                if self.case_sensitive:
-                    return f'text="{self.value}"'
-                return f"text={self.value}"
-            case SelectorType.XPATH_SELECTOR:
-                if not self.value.startswith("//"):
-                    return f"xpath=//{self.value}"
-                return f"xpath={self.value}"
-            case _:
-                raise ValueError(f"Unsupported selector type: {self.type}")
+        ATTRIBUTE_FORMATS = {
+            "id": "#",
+            "class": ".",
+            "placeholder": "[placeholder='{value}']",
+            "name": "[name='{value}']",
+            "role": "[role='{value}']",
+            "value": "[value='{value}']",
+            "type": "[type='{value}']",
+            "aria-label": "[aria-label='{value}']",
+            "aria-labelledby": "[aria-labelledby='{value}']",
+            "data-testid": "[data-testid='{value}']",
+            "data-custom": "[data-custom='{value}']",
+            "href": "a[href='{value}']",
+        }
+
+        if self.type == SelectorType.ATTRIBUTE_VALUE_SELECTOR:
+            if self.attribute in ATTRIBUTE_FORMATS:
+                fmt = ATTRIBUTE_FORMATS[self.attribute]
+                if self.attribute in ["id", "class"]:
+                    return f"{fmt}{self.value}"
+                return fmt.format(value=self.value)
+            return f"[{self.attribute}='{self.value}']"
+
+        elif self.type == SelectorType.TAG_CONTAINS_SELECTOR:
+            if self.case_sensitive:
+                return f'text="{self.value}"'
+            return f"text={self.value}"
+
+        elif self.type == SelectorType.XPATH_SELECTOR:
+            if not self.value.startswith("//"):
+                return f"xpath=//{self.value}"
+            return f"xpath={self.value}"
+
+        else:
+            raise ValueError(f"Unsupported selector type: {self.type}")
 
 
-class IAction(ABC):
-    @abstractmethod
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
-        pass
-
-
-class BaseAction(BaseModel, IAction):
-    # Removed discriminator=True
-    type: str = Field("", description="Action type identifier")
+class BaseAction(BaseModel):
+    """
+    Base for all actions with a discriminating 'type' field.
+    """
+    type: str = Field(..., description="Discriminated action type")
 
     class Config:
-        # Let Pydantic store extra/unknown fields
         extra = "allow"
-        from_attributes = True
-
-    def __init__(self, **data):
-        if 'type' not in data:
-            data['type'] = self.__class__.__name__
-        super().__init__(**data)
 
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
         raise NotImplementedError("Execute method must be implemented by subclasses.")
-
-    @classmethod
-    def from_response(cls, actions_response: List[Dict[str, Any]], action_class_map: Dict[str, Type["BaseAction"]]) -> List["BaseAction"]:
-        actions: List[BaseAction] = []
-        for action_data in actions_response:
-            try:
-                action = cls._parse_action_data(action_data, action_class_map)
-                if action:
-                    actions.append(action)
-            except ValidationError as e:
-                logger.error(f"[Validation Error] Failed to process action data: {action_data}. Exception: {e}")
-            except Exception as e:
-                logger.error(f"[Processing Error] Unexpected error for action data: {action_data}. Exception: {e}")
-        return actions
-
-    @classmethod
-    def _parse_action_data(cls, action_data: Dict[str, Any], action_class_map: Dict[str, Type["BaseAction"]]) -> Optional["BaseAction"]:
-        action_info = action_data
-        if "type" not in action_data:
-            action_info = action_data.get("action", {})
-        action_type = action_info.get("type")
-        if not action_type:
-            logger.warning("Action type is missing in action data.")
-            return None
-
-        action_class = action_class_map.get(action_type)
-        if not action_class or not issubclass(action_class, BaseAction):
-            logger.warning(f"Unsupported or invalid action type '{action_type}' encountered.")
-            return None
-
-        action_params = cls._prepare_action_parameters(action_info, action_data.get("selector"), action_class)
-        return action_class(**action_params)
-
-    @staticmethod
-    def _prepare_action_parameters(action_info: Dict[str, Any], selector_data: Optional[Dict[str, Any]], action_class: Type["BaseAction"]) -> Dict[str, Any]:
-        action_params = {**action_info.get("parameters", {}), **{k: v for k, v in action_info.items() if k != "type"}}
-
-        # Add default values for specific action types
-        defaults = {
-            "type": {"value": ""},
-            "navigate": {"url": ""},
-            "dragAndDrop": {"sourceSelector": "", "targetSelector": ""},
-            "scroll": {"direction": ""},
-            "assert": {"assertion": ""},
-        }
-        if not action_params:
-            action_params.update(defaults.get(action_info.get("type"), {}))
-
-        required_params = set(inspect.signature(action_class).parameters.keys())
-        filtered_params = {k: v for k, v in action_params.items() if k in required_params}
-
-        if "selector" in required_params and selector_data:
-            filtered_params["selector"] = Selector(**selector_data)
-
-        return filtered_params
 
 
 class BaseActionWithSelector(BaseAction):
     selector: Optional[Selector] = None
 
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
-        raise NotImplementedError("This action requires an execution implementation.")
-
-    def validate_selector(self):
+    def validate_selector(self) -> str:
         if not self.selector:
             raise ValueError("Selector is required for this action.")
         return self.selector.to_playwright_selector()
+
+
+# --------------------------------------------------------------------------------
+# CONCRETE ACTION CLASSES
+# --------------------------------------------------------------------------------
+
+class ClickAction(BaseActionWithSelector):
+    type: Literal["ClickAction"] = "ClickAction"
+    x: Optional[int] = None
+    y: Optional[int] = None
+
+    @log_action("ClickAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        if self.selector:
+            selector_str = self.validate_selector()
+            await page.click(selector_str)
+        elif self.x is not None and self.y is not None:
+            await page.mouse.click(self.x, self.y)
+        else:
+            raise ValueError("Either selector or (x, y) must be provided.")
+
+
+class DoubleClickAction(BaseActionWithSelector):
+    type: Literal["DoubleClickAction"] = "DoubleClickAction"
+
+    @log_action("DoubleClickAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        selector_str = self.validate_selector()
+        await page.dblclick(selector_str)
+
+
+class NavigateAction(BaseAction):
+    type: Literal["NavigateAction"] = "NavigateAction"
+    url: Optional[str] = ""
+    go_back: bool = False
+    go_forward: bool = False
+
+    @log_action("NavigateAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        if self.go_back:
+            await page.go_back()
+        elif self.go_forward:
+            await page.go_forward()
+        elif not self.url:
+            raise ValueError("URL must be provided for navigation.")
+        else:
+            await page.goto(self.url)
+
+
+class TypeAction(BaseActionWithSelector):
+    type: Literal["TypeAction"] = "TypeAction"
+    text: str
+
+    @log_action("TypeAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        selector_str = self.validate_selector()
+        await page.fill(selector_str, self.text)
+
+
+class SelectAction(BaseActionWithSelector):
+    type: Literal["SelectAction"] = "SelectAction"
+    value: str
+
+    @log_action("SelectAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        selector_str = self.validate_selector()
+        await page.select_option(selector_str, self.value)
+
+
+class HoverAction(BaseActionWithSelector):
+    type: Literal["HoverAction"] = "HoverAction"
+
+    @log_action("HoverAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        selector_str = self.validate_selector()
+        await page.hover(selector_str)
+
+
+class WaitAction(BaseActionWithSelector):
+    type: Literal["WaitAction"] = "WaitAction"
+    time_seconds: Optional[float] = None
+
+    @log_action("WaitAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        if self.selector:
+            selector_str = self.validate_selector()
+            await page.wait_for_selector(selector_str, timeout=self.time_seconds * 1000 if self.time_seconds else None)
+        elif self.time_seconds:
+            await page.wait_for_timeout(self.time_seconds * 1000)
+        else:
+            raise ValueError("Either selector or time_seconds must be provided.")
+
+
+class ScrollAction(BaseAction):
+    type: Literal["ScrollAction"] = "ScrollAction"
+    value: Optional[Union[str, int]] = None
+    up: bool = False
+    down: bool = False
+
+    @log_action("ScrollAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        if self.up:
+            try:
+                await page.evaluate(f"window.scrollBy(0, -{self.value});")
+            except:
+                await page.keyboard.press("PageUp")
+        elif self.down:
+            try:
+                await page.evaluate(f"window.scrollBy(0, {self.value});")
+            except:
+                await page.keyboard.press("PageDown")
+        else:
+            locators = [
+                page.get_by_text(str(self.value), exact=False),
+                page.locator(f"text={self.value}"),
+                page.locator(f"//*[contains(text(), '{self.value}')]"),
+            ]
+            for locator in locators:
+                try:
+                    if await locator.count() > 0 and await locator.first.is_visible():
+                        await locator.first.scroll_into_view_if_needed()
+                        await asyncio.sleep(0.5)
+                        return
+                except:
+                    continue
+            raise ValueError(f"Could not scroll to: {self.value}")
+
+
+class SubmitAction(BaseActionWithSelector):
+    type: Literal["SubmitAction"] = "SubmitAction"
+
+    @log_action("SubmitAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        selector_str = self.validate_selector()
+        await page.locator(selector_str).press("Enter")
+
+
+class AssertAction(BaseAction):
+    type: Literal["AssertAction"] = "AssertAction"
+    text_to_assert: str
+
+    @log_action("AssertAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        content = await page.content()
+        if self.text_to_assert not in content:
+            raise AssertionError(f"'{self.text_to_assert}' not found in page source.")
+
+
+class DragAndDropAction(BaseAction):
+    type: Literal["DragAndDropAction"] = "DragAndDropAction"
+    source_selector: str = Field(..., alias="sourceSelector")
+    target_selector: str = Field(..., alias="targetSelector")
+
+    @log_action("DragAndDropAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        await page.drag_and_drop(self.source_selector, self.target_selector)
+
+
+class ScreenshotAction(BaseAction):
+    type: Literal["ScreenshotAction"] = "ScreenshotAction"
+    file_path: str
+
+    @log_action("ScreenshotAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        await page.screenshot(path=self.file_path)
+
+
+class SendKeysIWAAction(BaseAction):
+    type: Literal["SendKeysIWAAction"] = "SendKeysIWAAction"
+    keys: str
+
+    @log_action("SendKeysIWAAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        await page.keyboard.press(self.keys)
+
+
+class GetDropDownOptions(BaseActionWithSelector):
+    type: Literal["GetDropDownOptions"] = "GetDropDownOptions"
+
+    @log_action("GetDropDownOptions")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        xpath = self.validate_selector()
+        all_options = []
+        frame_index = 0
+
+        for frame in page.frames:
+            try:
+                options = await frame.evaluate(
+                    """
+                    (xp) => {
+                        const select = document.evaluate(xp, document, null,
+                            XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                        if (!select) return null;
+                        return {
+                            options: Array.from(select.options).map(opt => ({
+                                text: opt.text,
+                                value: opt.value,
+                                index: opt.index
+                            })),
+                            id: select.id,
+                            name: select.name
+                        };
+                    }
+                    """,
+                    xpath
+                )
+                if options:
+                    action_logger.debug(f"Found dropdown in frame {frame_index}")
+                    formatted = []
+                    for opt in options["options"]:
+                        encoded_text = json.dumps(opt["text"])
+                        formatted.append(f'{opt["index"]}: text={encoded_text}')
+                    all_options.extend(formatted)
+            except Exception as e:
+                action_logger.debug(f"Frame {frame_index} evaluation failed: {str(e)}")
+            frame_index += 1
+
+        if all_options:
+            msg = "\n".join(all_options) + "\nUse the exact string in SelectDropDownOption"
+            action_logger.info(msg)
+        else:
+            action_logger.info("No options found in any frame for dropdown")
+
+
+class SelectDropDownOption(BaseActionWithSelector):
+    type: Literal["SelectDropDownOption"] = "SelectDropDownOption"
+    text: str
+
+    @log_action("SelectDropDownOption")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        xpath = self.validate_selector()
+        frame_index = 0
+        found = False
+
+        for frame in page.frames:
+            try:
+                dropdown_info = await frame.evaluate(
+                    """
+                    (xp) => {
+                        const select = document.evaluate(xp, document, null,
+                            XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                        if (!select) return { found: false, error: 'No select found' };
+                        if (select.tagName.toLowerCase() !== 'select') {
+                            return {
+                                found: false,
+                                error: `Element is ${select.tagName}, not SELECT`
+                            };
+                        }
+                        return {
+                            found: true,
+                            id: select.id,
+                            name: select.name,
+                            optionCount: select.options.length,
+                            currentValue: select.value,
+                            availableOptions: Array.from(select.options).map(o => o.text.trim())
+                        };
+                    }
+                    """,
+                    xpath
+                )
+                if dropdown_info.get("found"):
+                    selected = await frame.locator(xpath).nth(0).select_option(label=self.text, timeout=1000)
+                    action_logger.info(f"Selected '{self.text}' => {selected} in frame {frame_index}")
+                    found = True
+                    break
+            except Exception as e:
+                action_logger.debug(f"Frame {frame_index} attempt failed: {e}")
+            frame_index += 1
+
+        if not found:
+            action_logger.info(f"Could not select option '{self.text}' in any frame")
+
+
+class UndefinedAction(BaseAction):
+    type: Literal["UndefinedAction"] = "UndefinedAction"
+
+    @log_action("UndefinedAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        pass
+
+
+class IdleAction(BaseAction):
+    type: Literal["IdleAction"] = "IdleAction"
+
+    @log_action("IdleAction")
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        pass
+
+
+# --------------------------------------------------------------------------------
+# UNION OF ALL ACTIONS (Discriminator: type)
+# --------------------------------------------------------------------------------
+
+AllActionsUnion = Annotated[
+    Union[
+        ClickAction,
+        DoubleClickAction,
+        NavigateAction,
+        TypeAction,
+        SelectAction,
+        HoverAction,
+        WaitAction,
+        ScrollAction,
+        SubmitAction,
+        AssertAction,
+        DragAndDropAction,
+        ScreenshotAction,
+        SendKeysIWAAction,
+        GetDropDownOptions,
+        SelectDropDownOption,
+        UndefinedAction,
+        IdleAction
+    ],
+    Field(discriminator="type")
+]
