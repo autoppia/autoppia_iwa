@@ -2,9 +2,10 @@ import inspect
 import logging
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type
+from abc import ABC, abstractmethod 
 
 from playwright.async_api import Page
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 # -----------------------------------------
 # Logger Setup
@@ -90,20 +91,24 @@ class Selector(BaseModel):
 # -----------------------------------------
 # BaseAction interface
 # -----------------------------------------
+class IAction(ABC):
+    @abstractmethod
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+        """Método abstracto que todas las acciones deben implementar"""
+        pass
 
 
-class BaseAction(BaseModel):
+class BaseAction(BaseModel, IAction):
     """
     Base class for all actions.
     """
+    model_config = ConfigDict(discriminator='type')
+    type: str
 
-    def __str__(self) -> str:
-        """Returns a user-friendly string representation of the action."""
-        return f"{self.__class__.__name__}(type={self.__class__.__name__})"
-
-    # def __repr__(self) -> str:
-    #     """Returns a detailed string representation useful for debugging."""
-    #     return f"{self.__class__.__name__}({self.model_dump()})"
+    def __init__(self, **data):
+        if 'type' not in data:
+            data['type'] = self.__class__.__name__
+        super().__init__(**data)
 
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
         raise NotImplementedError("Execute method must be implemented by subclasses.")
@@ -192,10 +197,6 @@ class BaseAction(BaseModel):
             filtered_params["selector"] = Selector(**selector_data)
 
         return filtered_params
-
-    def model_dump(self, *args, **kwargs) -> Dict[str, Any]:
-        """Generate a structured dictionary representation of the model."""
-        return {"type": self.__class__.__name__, **super().model_dump(mode="json", *args, **kwargs)}
 
 
 class BaseActionWithSelector(BaseAction):

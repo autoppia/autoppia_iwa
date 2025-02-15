@@ -2,18 +2,18 @@ import asyncio
 import statistics
 from typing import List
 import matplotlib.pyplot as plt
-from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, TaskGenerationConfig
-from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, FindInHtmlTest
+from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.base import BaseAgent
-from autoppia_iwa.src.web_agents.classes import Task, TaskSolution
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
 from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
+
 app = AppBootstrap()
 AGENTS = [RandomClickerWebAgent()]
 
@@ -34,7 +34,6 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
         # Agent solves the task.
         task_solution: TaskSolution = await agent.solve_task(task)
         actions: List[BaseAction] = task_solution.actions
-        print(actions[0].model_dump())
 
         # Prepare evaluator input and configuration.
         evaluator_input = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
