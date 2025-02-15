@@ -1,9 +1,7 @@
 import asyncio
 import statistics
 from typing import List
-
 import matplotlib.pyplot as plt
-
 from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
@@ -17,6 +15,7 @@ from autoppia_iwa.src.web_agents.classes import Task, TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
 app = AppBootstrap()
+AGENTS = [RandomClickerWebAgent()]
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -141,7 +140,7 @@ async def main():
     # ---------------------------
     # 1. Initialize Agents and Results Storage.
     # ---------------------------
-    agents: List[BaseAgent] = [RandomClickerWebAgent()]  # You can add more agents if desired.
+    agents: List[BaseAgent] = AGENTS 
     results = {}
     for agent in agents:
         results[agent.id] = {"global_scores": [], "projects": {}}
