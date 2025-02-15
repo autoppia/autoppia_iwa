@@ -2,7 +2,7 @@ import inspect
 import logging
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type
-from abc import ABC, abstractmethod 
+from abc import ABC, abstractmethod
 
 from playwright.async_api import Page
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
@@ -102,8 +102,10 @@ class BaseAction(BaseModel, IAction):
     """
     Base class for all actions.
     """
-    model_config = ConfigDict(discriminator='type')
-    type: str
+
+    type: str = Field(discriminator=True)  # Esto es más limpio que usar model_config
+
+    model_config = ConfigDict(from_attributes=True)
 
     def __init__(self, **data):
         if 'type' not in data:
