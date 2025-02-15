@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
-# REPLACE THE MODEL NAME WITH A Qwen/Qwen2.5-Coder-14B-Instruct-GGUF
+# REPLACE THE MODEL NAME WITH A Qwen/Qwen2.5-Coder-14B-Instruct
 # -----------------------------------------------------------------------------
-MODEL_NAME = "Qwen/Qwen2.5-Coder-14B-Instruct-GGUF"
+MODEL_NAME = "Qwen/Qwen2.5-Coder-14B-Instruct"
 
 logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
