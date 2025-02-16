@@ -8,9 +8,8 @@ from typing_extensions import Annotated, Literal
 from pydantic import Field
 from playwright.async_api import Page
 
-# Import from your combined "base.py"
+# Use your new combined base classes
 from .base import BaseAction, BaseActionWithSelector
-# If in same package, use relative import. Adjust accordingly.
 
 action_logger = logging.getLogger(__name__)
 
@@ -131,12 +130,12 @@ class ScrollAction(BaseAction):
         if self.up:
             try:
                 await page.evaluate(f"window.scrollBy(0, -{self.value});")
-            except Exception:
+            except:
                 await page.keyboard.press("PageUp")
         elif self.down:
             try:
                 await page.evaluate(f"window.scrollBy(0, {self.value});")
-            except Exception:
+            except:
                 await page.keyboard.press("PageDown")
         else:
             # Attempt text-based scroll
@@ -151,7 +150,7 @@ class ScrollAction(BaseAction):
                         await locator.first.scroll_into_view_if_needed()
                         await asyncio.sleep(0.5)
                         return
-                except Exception:
+                except:
                     continue
             raise ValueError(f"Could not scroll to: {self.value}")
 
@@ -320,6 +319,7 @@ class IdleAction(BaseAction):
 # -------------------------------------------------------------------
 # Union Type to Handle All Actions by Discriminator
 # -------------------------------------------------------------------
+
 AllActionsUnion = Annotated[
     Union[
         ClickAction,
@@ -342,3 +342,50 @@ AllActionsUnion = Annotated[
     ],
     Field(discriminator="type")
 ]
+
+
+# -------------------------------------------------------------------
+# MAPS (as requested, appended at the end)
+# -------------------------------------------------------------------
+
+ACTION_CLASS_MAP_LOWER = {
+    "click": ClickAction,
+    "type": TypeAction,
+    "hover": HoverAction,
+    "navigate": NavigateAction,
+    "dragAndDrop": DragAndDropAction,
+    "submit": SubmitAction,
+    "doubleClick": DoubleClickAction,
+    "scroll": ScrollAction,
+    "screenshot": ScreenshotAction,
+    "wait": WaitAction,
+    "assert": AssertAction,
+    "select": SelectAction,
+    "idle": IdleAction,
+    "undefined": UndefinedAction,
+    "sendkeysiwa": SendKeysIWAAction,
+    "getdropdownoptions": GetDropDownOptions,
+    "selectdropdownoption": SelectDropDownOption,
+}
+
+ACTION_CLASS_MAP_CAPS = {
+    "ClickAction": ClickAction,
+    "TypeAction": TypeAction,
+    "HoverAction": HoverAction,
+    "NavigateAction": NavigateAction,
+    "DragAndDropAction": DragAndDropAction,
+    "SubmitAction": SubmitAction,
+    "DoubleClickAction": DoubleClickAction,
+    "ScrollAction": ScrollAction,
+    "ScreenshotAction": ScreenshotAction,
+    "WaitAction": WaitAction,
+    "AssertAction": AssertAction,
+    "SelectAction": SelectAction,
+    "IdleAction": IdleAction,
+    "UndefinedAction": UndefinedAction,
+    "SendKeysIWAAction": SendKeysIWAAction,
+    "GetDropDownOptions": GetDropDownOptions,
+    "SelectDropDownOption": SelectDropDownOption,
+}
+
+ACTION_CLASS_MAP = {**ACTION_CLASS_MAP_CAPS, **ACTION_CLASS_MAP_LOWER}
