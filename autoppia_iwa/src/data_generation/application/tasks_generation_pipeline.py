@@ -36,7 +36,7 @@ class TaskGenerationPipeline:
         self.llm_service = llm_service
         self.web_analysis_repository = web_analysis_repository
 
-    def generate(self, task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY) -> TasksGenerationOutput:
+    async def generate(self, task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY) -> TasksGenerationOutput:
         """
         Main method for task generation. Runs web analysis, generates prompts, and processes tasks.
         """
@@ -45,18 +45,19 @@ class TaskGenerationPipeline:
 
         try:
             # WEB ANALYSIS
-            web_analysis = self._run_web_analysis()
+            web_analysis = await self._run_web_analysis()
             if not web_analysis:
                 raise ValueError("Failed to run web analysis!")
 
             # Initialize generators only once
             task_prompt_generator, task_test_generator = self._initialize_generators(web_analysis)
 
+            print("Generating Tasks...")
             # TASK PROMPT
             for page_analysis in web_analysis.analyzed_urls:
-                current_html = self._get_page_html(page_analysis)
+                current_html = await self._get_page_html(page_analysis)
 
-                prompts_for_url = task_prompt_generator.generate_task_prompts_for_url(
+                prompts_for_url = await task_prompt_generator.generate_task_prompts_for_url(
                     task_difficulty_level=task_difficulty_level,
                     specific_url=page_analysis.page_url,
                     current_html=current_html,
@@ -64,7 +65,7 @@ class TaskGenerationPipeline:
 
                 for task_prompts in prompts_for_url.task_prompts:
                     # TASK TEST
-                    task_tests = task_test_generator.generate_task_tests(
+                    task_tests = await task_test_generator.generate_task_tests(
                         task_description=task_prompts,
                         page_url=prompts_for_url.page_url,
                         page_html=current_html,
@@ -88,12 +89,12 @@ class TaskGenerationPipeline:
 
         return global_tasks_output
 
-    def _run_web_analysis(self) -> Optional[DomainAnalysis]:
+    async def _run_web_analysis(self) -> Optional[DomainAnalysis]:
         """
         Executes the web analysis pipeline to gather information from the target page.
         """
         analyzer = WebAnalysisPipeline(start_url=self.task_config.web_project.frontend_url, llm_service=self.llm_service, analysis_repository=self.web_analysis_repository)
-        return analyzer.analyze(
+        return await analyzer.analyze(
             save_results_in_db=self.task_config.save_web_analysis_in_db,
             enable_crawl=self.task_config.enable_crawl,
         )
@@ -107,8 +108,8 @@ class TaskGenerationPipeline:
         return task_prompt_generator, task_test_generator
 
     @staticmethod
-    def _get_page_html(page_analysis: SinglePageAnalysis) -> str:
+    async def _get_page_html(page_analysis: SinglePageAnalysis) -> str:
         """
         Retrieves the HTML for the current page from analysis or HTML source.
         """
-        return extract_html(page_analysis.page_url) or page_analysis.html_source
+        return await extract_html(page_analysis.page_url) or page_analysis.html_source

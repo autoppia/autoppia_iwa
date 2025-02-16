@@ -34,7 +34,7 @@ class WebAnalysisPipeline:
 
         self.analyzed_urls: List[SinglePageAnalysis] = []
 
-    def analyze(
+    async def analyze(
         self,
         save_results_in_db: bool = True,
         get_analysis_from_cache: bool = True,
@@ -59,7 +59,8 @@ class WebAnalysisPipeline:
         urls_to_analyze = self._get_urls_to_analyze(enable_crawl)
         for url in urls_to_analyze:
             try:
-                self._analyze_url(url)
+                print(url)
+                await self._analyze_url(url)
             except Exception as e:
                 print(f"Error analyzing {url}: {e}")
         self._finalize_analysis()
@@ -119,7 +120,7 @@ class WebAnalysisPipeline:
             print(f"Error crawling URLs for {self.start_url}: {e}")
             return []
 
-    def _analyze_url(self, url: str):
+    async def _analyze_url(self, url: str):
         """
         Analyze a URL with error handling to ensure the pipeline continues.
 
@@ -128,7 +129,7 @@ class WebAnalysisPipeline:
         """
         try:
             # Extract HTML structure
-            elements, html_source = self.page_structure_extractor.get_elements(url)
+            elements, html_source = await self.page_structure_extractor.get_elements(url)
 
             # Analyze each element using the LLM
             elements_analysis_result = []

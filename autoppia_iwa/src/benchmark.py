@@ -64,7 +64,7 @@ def compute_statistics(scores: List[float]) -> dict:
     return stats
 
 
-def generate_tasks_for_project(demo_project):
+async def generate_tasks_for_project(demo_project):
     """
     Generate tasks for the given demo project.
 
@@ -72,10 +72,10 @@ def generate_tasks_for_project(demo_project):
     through the TaskGenerationPipeline.
     """
     task_input = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False)
-    if TASK_EXAMPLES:
+    if False and TASK_EXAMPLES:
         tasks = TASK_EXAMPLES
     else:
-        task_output = TaskGenerationPipeline(task_input).generate()
+        task_output = await TaskGenerationPipeline(task_input).generate()
         tasks = task_output.tasks
     return tasks
 
@@ -148,7 +148,7 @@ async def main():
     # 2. Process Each Demo Web Project.
     # ---------------------------
     for demo_project in demo_web_projects:
-        tasks = generate_tasks_for_project(demo_project)
+        tasks = await generate_tasks_for_project(demo_project)
         for agent in agents:
             await evaluate_project_for_agent(agent, demo_project, tasks, results)
 

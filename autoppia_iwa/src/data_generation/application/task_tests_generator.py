@@ -106,7 +106,7 @@ class TaskTestGenerator:
         self.web_analysis = web_analysis
         self.llm_service = llm_service
 
-    def generate_task_tests(self, task_description: str, page_url: str, page_html: Optional[str] = None) -> List[BaseTaskTest]:
+    async def generate_task_tests(self, task_description: str, page_url: str, page_html: Optional[str] = None) -> List[BaseTaskTest]:
         """
         Generates and classifies test cases for a specific task description on a given page,
         using the configuration provided by WebProject.
@@ -128,7 +128,7 @@ class TaskTestGenerator:
 
         # 3) Fetch page analysis (or fallback to local HTML if provided)
         page_analysis = self._get_page_analysis(page_url)
-        effective_html = page_html or extract_html(page_url) or page_analysis.html_source
+        effective_html = page_html or await extract_html(page_url) or page_analysis.html_source
 
         relevant_fields = [field for element_analysis in (page_analysis.elements_analysis_result or []) for field in (element_analysis.get("analysis", {}) or {}).get("relevant_fields", []) or []]
 

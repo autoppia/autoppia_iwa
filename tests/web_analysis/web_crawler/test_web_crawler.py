@@ -4,9 +4,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from playwright.async_api import async_playwright
 
 from autoppia_iwa.src.web_analysis.domain.classes import WebCrawlerConfig
 
@@ -21,15 +19,14 @@ class WebCrawler:
         all_urls = []
 
         def strip_query_params(url):
-            parsed = urlparse(url)
-            return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+            parsed_local = urlparse(url)
+            return f"{parsed_local.scheme}://{parsed_local.netloc}{parsed_local.path}"
 
         def _crawl(url, depth):
             if not url.startswith(self.domain):
                 return
 
             normalized_url = strip_query_params(url)
-
             if normalized_url in visited_urls:
                 return
             if depth > max_depth:
@@ -47,29 +44,34 @@ class WebCrawler:
             if response.status_code != 200:
                 return
 
-            soup = BeautifulSoup(response.text, "html.parser")
-
-            for a_tag in soup.find_all("a"):
+            soup_local = BeautifulSoup(response.text, "html.parser")
+            for a_tag in soup_local.find_all("a"):
                 new_url = a_tag.get("href")
                 if new_url:
                     new_url = urljoin(url, new_url)
                     _crawl(new_url, depth + 1)
 
         _crawl(start_url, 0)
-
         return all_urls
 
-    def get_links_selenium(self, url):
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        driver.get(url)
-        driver.implicitly_wait(10)
+    async def get_links_selenium(self, url):
+        """
+        Renamed to 'get_links_selenium' but uses async Playwright.
+        """
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context()
+            page = await context.new_page()
+            await page.goto(url)
+            await page.wait_for_timeout(10000)
 
-        soup = BeautifulSoup(driver.page_source, "html.parser")
-        links = soup.find_all("a", href=True)
-        urls = [link["href"] for link in links if link["href"].startswith("http")]
+            html = await page.content()
+            soup_local = BeautifulSoup(html, "html.parser")
+            links = soup_local.find_all("a", href=True)
+            urls = [link["href"] for link in links if link["href"].startswith("http")]
 
-        driver.quit()
-
+            await context.close()
+            await browser.close()
         return urls
 
     def create_graph(self, home_url):
@@ -89,26 +91,28 @@ crawler_config = WebCrawlerConfig(start_url="https://ajedrezenmadrid.com", max_d
 # Initialize the web crawler with the start URL
 web_crawler = WebCrawler(crawler_config.start_url)
 
-# Use the crawler to get URLs up to the maximum depth
+# Use the crawler to get URLs (sync method)
 crawled_urls = web_crawler.crawl_urls(crawler_config.start_url, crawler_config.max_depth)
 
-# Print the crawled URLs
 print("Crawled URLs:")
 for url in crawled_urls:
     print(url)
 
-# Get links from a specific URL using Selenium
-selenium_links = web_crawler.get_links_selenium("https://ajedrezenmadrid.com")
+# Get links from a specific URL using async Playwright.
+# (Example usage with asyncio run; adapt to your existing async flow.)
+import asyncio
 
-# Print the links obtained using Selenium
-print("Links obtained using Selenium:")
-for link in selenium_links:
-    print(link)
+async def run_async_playwright():
+    selenium_links = await web_crawler.get_links_selenium("https://ajedrezenmadrid.com")
+    print("Links obtained using async Playwright:")
+    for link in selenium_links:
+        print(link)
+
+asyncio.run(run_async_playwright())
 
 # Create a graph of the crawled URLs
 graph, links = web_crawler.create_graph(crawler_config.start_url)
 
-# Print the links in the graph
 print("Links in the graph:")
 for link in links:
     print(link)

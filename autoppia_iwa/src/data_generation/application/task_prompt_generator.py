@@ -70,7 +70,7 @@ class TaskPromptGenerator:
             domain_prompts.append(prompts_for_url)
         return domain_prompts
 
-    def generate_task_prompts_for_url(
+    async def generate_task_prompts_for_url(
         self,
         specific_url: str,
         current_html: Optional[str] = None,
@@ -91,7 +91,7 @@ class TaskPromptGenerator:
         """
         page_analysis = self._get_page_analysis(specific_url)
         if not current_html:
-            current_html = extract_html(specific_url)
+            current_html = await extract_html(specific_url)
 
         raw_content = self._call_llm_for_raw_tasks(
             html_source=current_html,
