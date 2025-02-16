@@ -28,8 +28,20 @@ class ApifiedWebAgent:
 
                 # Rebuild
                 rebuilt_task = Task.from_dict(task_data)
+                rebuilt_actions = []
+                for action_data in actions_data:
+                    action_type = action_data.get("type")
+                    if action_type in ACTION_CLASS_MAP:
+                        action_class = ACTION_CLASS_MAP[action_type]
+                        action = action_class.model_validate(action_data)
+                        rebuilt_actions.append(action)
+                    else:
+                        # Fallback to BaseAction if type is unknown
+                        print(f"Warning: Unknown action type {action_type}")
+                        action = BaseAction.model_validate(action_data)
+                        rebuilt_actions.append(action)
+
                 print(f"Rebuilt Task: {rebuilt_task}")
-                rebuilt_actions = BaseAction.from_response(actions_data, ACTION_CLASS_MAP)
                 print(f"Rebuilt Actions: {rebuilt_actions}")
 
                 return TaskSolution(task=rebuilt_task, actions=rebuilt_actions, web_agent_id=web_agent_id)

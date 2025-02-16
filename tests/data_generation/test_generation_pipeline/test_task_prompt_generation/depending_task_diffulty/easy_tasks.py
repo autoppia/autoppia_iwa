@@ -147,7 +147,7 @@ class TaskGenerationByEasyDifficultyTest(unittest.TestCase):
                     url=task["url"],
                     tests=[instantiate_test(test) for test in task["tests"]],
                 ),
-                actions=BaseAction.from_response(task.get("actions", []), ACTION_CLASS_MAP),
+                actions=[BaseAction.model_validate(action)for action in task.get("actions", [])],
                 web_agent_id=task.get("web_agent_id", generate_random_web_agent_id()),
             )
             for task in tasks_data["tasks"]

@@ -82,15 +82,15 @@ class TestActionExecution(unittest.TestCase):
         print(f"Final score: {evaluation_result.final_score}")
 
     def test_accurate_task_evaluation(self):
-        actions = BaseAction.from_response(self.accurate_actions_data["actions"], ACTION_CLASS_MAP)
+        actions = [BaseAction.model_validate(action) for action in self.accurate_actions_data["actions"]], 
         self.evaluate(actions)
 
     def test_half_accurate_task_evaluation(self):
-        actions = BaseAction.from_response(self.half_accurate_actions_data["actions"], ACTION_CLASS_MAP)
+        actions = [BaseAction.model_validate(action) for action in self.accurate_actions_data["actions"]]
         self.evaluate(actions)
 
     def test_wrong_task_evaluation(self):
-        actions = BaseAction.from_response(self.wrong_actions_data["actions"], ACTION_CLASS_MAP)
+        actions = [BaseAction.model_validate(action) for action in self.accurate_actions_data["actions"]]
         self.evaluate(actions)
 
 
