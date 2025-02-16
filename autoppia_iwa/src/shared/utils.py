@@ -27,19 +27,21 @@ async def extract_html(page_url):
         if CHROME_PATH and Path(CHROME_PATH).exists():
             launch_options["executable_path"] = str(CHROME_PATH)
 
-        # If PROFILE_DIR is provided
         if PROFILE_DIR and Path(PROFILE_DIR).exists():
-            launch_options["user_data_dir"] = str(PROFILE_DIR)
+            # Use launch_persistent_context when PROFILE_DIR is provided.
+            context = await p.chromium.launch_persistent_context(str(PROFILE_DIR), **launch_options)
+        else:
+            browser = await p.chromium.launch(**launch_options)
+            context = await browser.new_context()
 
-        browser = await p.chromium.launch(**launch_options)
-        context = await browser.new_context()
         page = await context.new_page()
-
         await page.goto(page_url)
         html = await page.content()
 
         await context.close()
-        await browser.close()
+        # If using a non-persistent context, also close the browser.
+        if not (PROFILE_DIR and Path(PROFILE_DIR).exists()):
+            await browser.close()
         return html
 
 
