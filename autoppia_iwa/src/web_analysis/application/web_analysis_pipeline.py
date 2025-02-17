@@ -81,7 +81,7 @@ class WebAnalysisPipeline:
         try:
             cached_result = self.analysis_repository.find_one({"start_url": self.start_url})
             if cached_result:
-                print(f"Cache hit: Analysis for '{self.start_url}' already exists.")
+                print(f"Analysis for '{self.start_url}' already exists in Cache")
                 return DomainAnalysis(**cached_result)
             print(f"No cached data found for url {self.start_url}")
             return None

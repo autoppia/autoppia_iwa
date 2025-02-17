@@ -1,7 +1,3 @@
-import asyncio
-import statistics
-from typing import List
-import matplotlib.pyplot as plt
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
@@ -13,9 +9,15 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
 from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+import asyncio
+import statistics
+from typing import List
+import matplotlib.pyplot as plt
+
 
 app = AppBootstrap()
-AGENTS:List[BaseAgent] = [RandomClickerWebAgent()]
+AGENTS:List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="browser-use", host="84.247.180.39", port=8080)]
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -75,8 +77,10 @@ async def generate_tasks_for_project(demo_project):
     if False and TASK_EXAMPLES:
         tasks = TASK_EXAMPLES
     else:
+        print("Generating Tasks...")
         task_output = await TaskGenerationPipeline(task_input).generate()
         tasks = task_output.tasks
+        print(f"Tasks generated successfully in {task_output.total_phase_time}")
     return tasks
 
 
