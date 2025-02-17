@@ -67,14 +67,16 @@ class WebPageStructureExtractor:
 
             async with async_playwright() as p:
                 launch_options = {"headless": True}
-
-                if PROFILE_DIR and Path(PROFILE_DIR).exists():
-                    launch_options["user_data_dir"] = str(PROFILE_DIR)
                 if CHROME_PATH and Path(CHROME_PATH).exists():
                     launch_options["executable_path"] = str(CHROME_PATH)
 
-                browser = await p.chromium.launch(**launch_options)
-                context = await browser.new_context()
+                if PROFILE_DIR and Path(PROFILE_DIR).exists():
+                    launch_options["user_data_dir"] = str(PROFILE_DIR)
+                    context = await p.chromium.launch_persistent_context(**launch_options)
+                else:
+                    browser = await p.chromium.launch(**launch_options)
+                    context = await browser.new_context()
+
                 page = await context.new_page()
                 await page.goto(source)
                 # Replace time.sleep(2) with async wait
@@ -82,9 +84,10 @@ class WebPageStructureExtractor:
 
                 html_source = await page.content()
                 soup = BeautifulSoup(html_source, "html.parser")
-
-                await context.close()
-                await browser.close()
+                if context:
+                    await context.close()
+                if not (PROFILE_DIR and Path(PROFILE_DIR).exists()):
+                    await browser.close()
         else:
             soup = source
 
