@@ -134,14 +134,29 @@ class BaseAction(BaseModel):
         Raises:
             ValueError: If the action data is invalid or action creation fails.
         """
-        action_type = action_data.get("type", "")
+        new_action_data = {}
+
+        if "selector" in action_data:
+            new_action_data["selector"] = action_data["selector"]
+        if "action" in action_data:
+            new_action_data.update({**action_data["action"]})
+        else:
+            new_action_data = action_data
+        action_type = new_action_data.get("type", "")
+
         if not action_type:
             raise ValueError("Action data is missing 'type' field.")
+        if action_type == "type":
+            new_action_data["text"] = new_action_data.get("value", "")
+
+        # Ensure the action type ends with "Action" for consistency
+        if not action_type.endswith("Action"):
+            new_action_data["type"] = f"{action_type.capitalize()}Action"
 
         try:
             # Retrieve the appropriate action class from the registry
             action_class = ActionRegistry.get(action_type)
-            return action_class(**action_data)
+            return action_class(**new_action_data)
         except KeyError:
             raise ValueError(f"Action type '{action_type}' is not recognized.")
         except Exception as e:
