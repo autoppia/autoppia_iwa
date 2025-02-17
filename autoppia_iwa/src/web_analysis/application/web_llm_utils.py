@@ -4,11 +4,11 @@ from typing import Any, Dict, List
 
 from dependency_injector.wiring import Provide
 
-from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
-from autoppia_iwa.src.web_analysis.domain.analysis_classes import LLMWebAnalysis
-from autoppia_iwa.src.web_analysis.domain.classes import Element
-from autoppia_iwa.src.web_analysis.domain.prompt_llm_template import PromptLLMTemplate
+from ...di_container import DIContainer
+from ...llms.domain.interfaces import ILLMService
+from ..domain.analysis_classes import LLMWebAnalysis
+from ..domain.classes import Element
+from ..domain.prompt_llm_template import PromptLLMTemplate
 
 CONVERT_RESPONSE_TO_JSON_PROMPT = """
 You are an expert JSON content reviewer tasked with analyzing the given RAW JSON/Unstructured

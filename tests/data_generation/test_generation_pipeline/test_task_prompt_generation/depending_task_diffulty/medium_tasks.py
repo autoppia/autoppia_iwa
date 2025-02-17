@@ -10,7 +10,6 @@ from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline impo
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, WebProject
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-from autoppia_iwa.src.execution.actions.actions import ACTION_CLASS_MAP
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id, instantiate_test
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
@@ -147,7 +146,7 @@ class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
                     url=task["url"],
                     tests=[instantiate_test(test) for test in task["tests"]],
                 ),
-                actions=[BaseAction.model_validate(action)for action in task.get("actions", [])],
+                actions=[BaseAction.model_validate(action) for action in task.get("actions", [])],
                 web_agent_id=task.get("web_agent_id", generate_random_web_agent_id()),
             )
             for task in tasks_data["tasks"]

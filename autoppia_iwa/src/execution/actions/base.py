@@ -3,8 +3,8 @@ import logging
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
 from playwright.async_api import Page
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 # ------------------------------------------------------
 # SELECTOR LOGIC
 # ------------------------------------------------------
+
 
 class SelectorType(str, Enum):
     ATTRIBUTE_VALUE_SELECTOR = "attributeValueSelector"
@@ -71,10 +72,12 @@ class Selector(BaseModel):
 # BASE ACTION CLASSES
 # ------------------------------------------------------
 
+
 class BaseAction(BaseModel):
     """
     Base for all actions with a discriminating 'type' field.
     """
+
     type: str = Field(..., description="Discriminated action type")
 
     class Config:

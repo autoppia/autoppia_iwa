@@ -1,7 +1,6 @@
-from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, FindInHtmlTest
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, FindInHtmlTest
 from autoppia_iwa.src.web_agents.classes import Task
-
 
 TASK_EXAMPLES = [
     # Task(

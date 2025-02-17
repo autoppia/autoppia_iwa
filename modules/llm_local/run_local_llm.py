@@ -40,11 +40,7 @@ def generate_data(
         inputs = {k: v.to("cuda") for k, v in inputs.items()}
 
         # Generate text
-        output_tokens = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            **generation_kwargs
-        )
+        output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens, **generation_kwargs)
 
         # Decode the output
         output_text = tokenizer.decode(output_tokens[0], skip_special_tokens=True)

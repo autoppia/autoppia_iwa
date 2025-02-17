@@ -2,9 +2,9 @@ import asyncio
 
 import aiohttp
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.execution.actions.actions import ACTION_CLASS_MAP, BaseAction
-from autoppia_iwa.src.web_agents.classes import TaskSolution
+from ..data_generation.domain.classes import Task
+from ..execution.actions.actions import ACTION_CLASS_MAP, BaseAction
+from .classes import TaskSolution
 
 
 class ApifiedWebAgent:

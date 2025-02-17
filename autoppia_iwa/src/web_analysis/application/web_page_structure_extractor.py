@@ -1,13 +1,12 @@
-import asyncio
 from dataclasses import fields
-from typing import List, Optional, Union
 from pathlib import Path
+from typing import List, Optional, Union
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
-from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE, PROFILE_DIR
-from autoppia_iwa.src.web_analysis.domain.classes import Element
+from ....config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
+from ..domain.classes import Element
 
 
 class WebPageStructureExtractor:
@@ -97,9 +96,7 @@ class WebPageStructureExtractor:
             cleaned_soup_body = cleaned_soup
 
         for soup_element in cleaned_soup_body.find_all(allowed_tags, recursive=False):
-            element, element_id_counter = self.__convert_soup_element_to_element(
-                soup_element, allowed_tags, None, "/", element_id_counter
-            )
+            element, element_id_counter = self.__convert_soup_element_to_element(soup_element, allowed_tags, None, "/", element_id_counter)
             if element:
                 elements.append(element)
 
@@ -155,9 +152,7 @@ class WebPageStructureExtractor:
             "element_id": element_id,
             "parent_element_id": parent_id,
             "path": path,
-            "data_attributes": {
-                k: v for k, v in soup_element.attrs.items() if k.startswith("data-")
-            },
+            "data_attributes": {k: v for k, v in soup_element.attrs.items() if k.startswith("data-")},
         }
 
         if not info["data_attributes"]:
@@ -183,9 +178,7 @@ class WebPageStructureExtractor:
         element = Element(**filtered_info)
 
         for child in soup_element.children:
-            child_info, current_id = self.__convert_soup_element_to_element(
-                child, allowed_tags, element_id, path, current_id
-            )
+            child_info, current_id = self.__convert_soup_element_to_element(child, allowed_tags, element_id, path, current_id)
             if child_info:
                 element.children.append(child_info)
 

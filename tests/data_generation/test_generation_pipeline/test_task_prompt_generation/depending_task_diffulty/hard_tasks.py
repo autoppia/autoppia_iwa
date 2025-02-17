@@ -10,7 +10,6 @@ from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline impo
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, WebProject
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-from autoppia_iwa.src.execution.actions.actions import ACTION_CLASS_MAP
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id, instantiate_test
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent

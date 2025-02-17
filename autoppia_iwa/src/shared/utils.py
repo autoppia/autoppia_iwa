@@ -5,12 +5,8 @@ from pathlib import Path
 from bs4 import BeautifulSoup, Comment
 from playwright.async_api import async_playwright
 
-from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE, PROFILE_DIR
-from autoppia_iwa.src.data_generation.domain.tests_classes import (
-    CheckEventEmittedTest,
-    CheckPageViewEventTest,
-    FindInHtmlTest,
-)
+from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest
 
 
 async def extract_html(page_url):

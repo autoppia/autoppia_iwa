@@ -24,7 +24,6 @@ class ITest(ABC):
         Returns:
             bool: True if the test passes, otherwise False.
         """
-        pass
 
 
 class BaseTaskTest(BaseModel, ITest):

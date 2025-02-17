@@ -4,7 +4,6 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-from autoppia_iwa.src.execution.actions.actions import ACTION_CLASS_MAP
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id, instantiate_test
 from autoppia_iwa.src.web_agents.classes import TaskSolution
@@ -82,7 +81,7 @@ class TestActionExecution(unittest.TestCase):
         print(f"Final score: {evaluation_result.final_score}")
 
     def test_accurate_task_evaluation(self):
-        actions = [BaseAction.model_validate(action) for action in self.accurate_actions_data["actions"]], 
+        actions = ([BaseAction.model_validate(action) for action in self.accurate_actions_data["actions"]],)
         self.evaluate(actions)
 
     def test_half_accurate_task_evaluation(self):

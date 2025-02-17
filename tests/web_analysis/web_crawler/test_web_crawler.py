@@ -102,11 +102,13 @@ for url in crawled_urls:
 # (Example usage with asyncio run; adapt to your existing async flow.)
 import asyncio
 
+
 async def run_async_playwright():
     selenium_links = await web_crawler.get_links_selenium("https://ajedrezenmadrid.com")
     print("Links obtained using async Playwright:")
     for link in selenium_links:
         print(link)
+
 
 asyncio.run(run_async_playwright())
 
