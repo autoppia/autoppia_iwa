@@ -69,7 +69,7 @@ class Task(BaseModel):
         Serializes the Task model to a dictionary, including nested models.
         """
         base_dump = super().model_dump(*args, **kwargs)
-        base_dump["tests"] = [test.model_dump() for test in self.tests]
+        base_dump["tests"] = BaseTaskTest.nested_tests_model_dump(tests=self.tests)
         return base_dump
 
     @classmethod

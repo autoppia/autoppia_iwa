@@ -50,6 +50,18 @@ class BaseTaskTest(BaseModel, ITest):
     def _execute_test(self, test_context: BrowserSnapshot) -> bool:
         raise NotImplementedError("Subclasses must implement this method.")
 
+    @staticmethod
+    def nested_tests_model_dump(tests: List["BaseTaskTest"]) -> List[Dict[str, Any]]:
+        data = []
+
+        for test in tests:
+            try:
+                test_data = test.model_dump()
+                data.append(test_data)
+            except Exception as e:
+                print(f"Error serializing test '{test.description}': {e}")
+        return data
+
     @classmethod
     def assign_tests(cls, test_configs: List[Dict]) -> List["BaseTaskTest"]:
         """
