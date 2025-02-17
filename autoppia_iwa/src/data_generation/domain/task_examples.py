@@ -13,7 +13,7 @@ TASK_EXAMPLES = [
     # ), # ONLY for testing as it throws errors due to service not found
     # Task(
     #     prompt="Click the 'Login' button to access the login page.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[CheckPageViewEventTest(page_view_url='/login'), FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['login', 'log in'])],
     #     milestones=None,
@@ -21,7 +21,7 @@ TASK_EXAMPLES = [
     # ),
     Task(
         prompt="Enter your email and password in the respective fields and click the 'Log in' button to authenticate and access your account. Email:test@test.com, password:test@test.com",
-        url='http://localhost:8000',
+        url='http://localhost:8000/',
         specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
         tests=[
             CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='login'),
@@ -32,7 +32,7 @@ TASK_EXAMPLES = [
     ),
     # Task(
     #     prompt="Click the 'Register' dropdown in the navigation bar and select 'Employee' to register as an employee on the website.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
     #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
@@ -43,7 +43,7 @@ TASK_EXAMPLES = [
     # ),
     Task(
         prompt="Navigate to the 'About Us' section by clicking on the 'About Us' link in the header menu.",
-        url='http://localhost:8000',
+        url='http://localhost:8000/',
         specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
         tests=[],
         milestones=None,
@@ -51,7 +51,7 @@ TASK_EXAMPLES = [
     ),
     # Task(
     #     prompt='Fill out the contact form by entering your name, email, and message, then submit the form to send your inquiry.',
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
     #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='message_sent'),
@@ -62,7 +62,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt="Click the 'Register' button in the navigation menu and then select 'Employers' to access the employer registration form.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
     #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
@@ -77,7 +77,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt="Click the 'Register' button in the navigation menu to open the employee registration form.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
     #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
@@ -88,7 +88,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt="Click the 'Login' button to access the login page.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[],
     #     milestones=None,
@@ -96,7 +96,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt="Click the 'Register' dropdown in the navigation bar and select 'Employee' to register as an employee on the website.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
     #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
@@ -107,7 +107,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt="Navigate to the 'About Us' section by clicking on the 'About Us' link in the header menu.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[],
     #     milestones=None,
@@ -115,7 +115,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt='Fill out the contact form by entering your name, email, and message, then submit the form to send your inquiry.',
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
     #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='message_sent'),
@@ -126,7 +126,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt="Click the 'Register' button in the navigation menu and then select 'Employers' to access the employer registration form.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
     #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
@@ -141,7 +141,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt="Click the 'Register' button in the navigation menu to open the employee registration form.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
     #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
@@ -152,7 +152,7 @@ TASK_EXAMPLES = [
     # ),
     # Task(
     #     prompt="Click the 'Login' button to access the login page.",
-    #     url='http://localhost:8000',
+    #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[],
     #     milestones=None,
