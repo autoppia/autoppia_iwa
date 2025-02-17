@@ -8,6 +8,7 @@ from typing import List
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, WebProject
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -124,7 +125,7 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
         for task in tasks_data["tasks"]:
             try:
                 if "actions" not in task:
-                    tests = [instantiate_test(test) for test in task["tests"]]
+                    tests = BaseTaskTest.assign_tests(task["tests"])
                     current_task = Task(prompt=task["prompt"], url=task["url"], tests=tests)
                     task_solution = self.web_agent.solve_task_sync(task=current_task)
                     task["actions"] = [action.model_dump() for action in task_solution.actions]
@@ -144,9 +145,9 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
                 task=Task(
                     prompt=task["prompt"],
                     url=task["url"],
-                    tests=[instantiate_test(test) for test in task["tests"]],
+                    tests=BaseTaskTest.assign_tests(task["tests"]),
                 ),
-                actions=[BaseAction.model_validate(action) for action in task.get("actions", [])],
+                actions=[BaseAction.create_action(action) for action in task.get("actions", [])],
                 web_agent_id=task.get("web_agent_id", generate_random_web_agent_id()),
             )
             for task in tasks_data["tasks"]
