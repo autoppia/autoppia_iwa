@@ -3,9 +3,9 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.shared.utils import instantiate_test
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from tests import test_container
@@ -52,7 +52,8 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
         }
 
         # Create tests from test data
-        tests = [instantiate_test(test) for test in task_data["tests"]]
+        # tests = [instantiate_test(test) for test in task_data["tests"]]
+        tests = BaseTaskTest.assign_tests(task_data["tests"])
 
         # Create and return a Task instance
         return Task(
