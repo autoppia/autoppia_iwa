@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -17,10 +18,14 @@ class TestWebAnalysisPipeline(unittest.TestCase):
         Test the pipeline with a real website to verify the complete flow.
         """
         # Configure the pipeline with the real dependencies
-        pipeline = WebAnalysisPipeline(start_url=self.start_url, llm_service=self.llm_service, analysis_repository=self.analysis_repository)
+        pipeline = WebAnalysisPipeline(
+            start_url=self.start_url,
+            llm_service=self.llm_service,
+            analysis_repository=self.analysis_repository,
+        )
 
         # Run the analysis
-        result = pipeline.analyze()
+        result = asyncio.run(pipeline.analyze())
 
         # Basic checks
         self.assertIsNotNone(result)

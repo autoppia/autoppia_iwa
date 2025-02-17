@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -229,8 +230,12 @@ class TestWebAnalysisPipelineWithCache(unittest.TestCase):
 
         # Initialize and run the pipeline
         start_url = self.data["start_url"]
-        pipeline = WebAnalysisPipeline(start_url=start_url, llm_service=self.llm_service, analysis_repository=self.analysis_repository)
-        result = pipeline.analyze(enable_crawl=self.enable_crawl)
+        pipeline = WebAnalysisPipeline(
+            start_url=start_url,
+            llm_service=self.llm_service,
+            analysis_repository=self.analysis_repository,
+        )
+        result = asyncio.run(pipeline.analyze(enable_crawl=self.enable_crawl))
 
         # Assertions
         self.assertIsNotNone(result, "Pipeline analysis result should not be None.")
