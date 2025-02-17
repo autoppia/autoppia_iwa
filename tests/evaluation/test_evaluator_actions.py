@@ -42,27 +42,27 @@ class TestActionExecution(unittest.TestCase):
         )
         cls.accurate_actions_data = {
             "actions": [
-                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "action": {"type": "navigate", "url": "http://localhost:8000/"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "href", "value": "/login"}, "action": {"type": "click"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "action": {"type": "type", "value": "employee@employee.com"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "action": {"type": "type", "value": "employee"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "class", "value": "btn-outline-white-primary"}, "action": {"type": "click"}},
+                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "type": "NavigateAction", "url": "http://localhost:8000/"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "href", "value": "/login"}, "type": "ClickAction"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "type": "TypeAction", "text": "employee@employee.com"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "type": "TypeAction", "text": "employee"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "class", "value": "btn-outline-white-primary"}, "type": "ClickAction"},
             ]
         }
         cls.half_accurate_actions_data = {
             "actions": [
-                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "action": {"type": "navigate", "url": "http://localhost:8000/"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "href", "value": "/login"}, "action": {"type": "click"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "action": {"type": "type", "value": "employee@employee.com"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "action": {"type": "type", "value": "employee"}},
+                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "type": "NavigateAction", "url": "http://localhost:8000/"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "href", "value": "/login"}, "type": "ClickAction"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "type": "TypeAction", "text": "employee@employee.com"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "type": "TypeAction", "text": "employee"},
             ]
         }
         cls.wrong_actions_data = {
             "actions": [
-                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "action": {"type": "navigate", "url": "http://localhost:8000/"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "action": {"type": "type", "value": "employee@employee.com"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "action": {"type": "type", "value": "employee"}},
-                {"selector": {"type": "attributeValueSelector", "attribute": "class", "value": "btn-outline-white"}, "action": {"type": "click"}},
+                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "type": "NavigateAction", "url": "http://localhost:8000/"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "type": "TypeAction", "text": "employee@employee.com"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "type": "TypeAction", "text": "employee"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "class", "value": "btn-outline-white"}, "type": "ClickAction"},
             ]
         }
 
@@ -81,15 +81,15 @@ class TestActionExecution(unittest.TestCase):
         print(f"Final score: {evaluation_result.final_score}")
 
     def test_accurate_task_evaluation(self):
-        actions = ([BaseAction.model_validate(action) for action in self.accurate_actions_data["actions"]],)
+        actions = [BaseAction.create_action(action) for action in self.accurate_actions_data["actions"]]
         self.evaluate(actions)
 
     def test_half_accurate_task_evaluation(self):
-        actions = [BaseAction.model_validate(action) for action in self.accurate_actions_data["actions"]]
+        actions = [BaseAction.create_action(action) for action in self.half_accurate_actions_data["actions"]]
         self.evaluate(actions)
 
     def test_wrong_task_evaluation(self):
-        actions = [BaseAction.model_validate(action) for action in self.accurate_actions_data["actions"]]
+        actions = [BaseAction.create_action(action) for action in self.wrong_actions_data["actions"]]
         self.evaluate(actions)
 
 
