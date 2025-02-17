@@ -1,7 +1,7 @@
 # base.py
 import logging
 from enum import Enum
-from typing import Optional
+from typing import Dict, Optional, Type
 
 from playwright.async_api import Page
 from pydantic import BaseModel, Field
@@ -73,6 +73,33 @@ class Selector(BaseModel):
 # ------------------------------------------------------
 
 
+class ActionRegistry:
+    """Registry to store and retrieve action subclasses."""
+
+    _registry: Dict[str, Type["BaseAction"]] = {}
+
+    @classmethod
+    def register(cls, action_type: str, action_class: Type["BaseAction"]):
+        """Register an action class with a simplified key."""
+        # Register with a lowercase version of action_type without "Action"
+        action_key = action_type.replace("Action", "").lower()
+        cls._registry[action_key] = action_class
+        logger.info(f"Registered action: {action_key}")
+
+    @classmethod
+    def get(cls, action_type: str) -> Type["BaseAction"]:
+        """Retrieve an action class by its simplified key."""
+        action_key = action_type.replace("Action", "").lower()
+        if action_key not in cls._registry:
+            raise ValueError(f"Unsupported action type: {action_key}")
+        return cls._registry[action_key]
+
+
+# ------------------------------------------------------
+# BASE ACTION CLASSES
+# ------------------------------------------------------
+
+
 class BaseAction(BaseModel):
     """
     Base for all actions with a discriminating 'type' field.
@@ -83,11 +110,42 @@ class BaseAction(BaseModel):
     class Config:
         extra = "allow"
 
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses in the ActionRegistry."""
+        super().__init_subclass__(**kwargs)
+        if hasattr(cls, "type") and cls.type:
+            ActionRegistry.register(cls.type, cls)
+
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
-        """
-        Each subclass must implement its own `execute` logic.
-        """
+        """Each subclass must implement its own `execute` logic."""
         raise NotImplementedError("Execute method must be implemented by subclasses.")
+
+    @staticmethod
+    def create_action(action_data: Dict) -> "BaseAction":
+        """
+        Create an action instance from action_data.
+
+        Args:
+            action_data: Dictionary containing action type and relevant fields.
+
+        Returns:
+            An instance of the appropriate BaseAction subclass.
+
+        Raises:
+            ValueError: If the action data is invalid or action creation fails.
+        """
+        action_type = action_data.get("type", "")
+        if not action_type:
+            raise ValueError("Action data is missing 'type' field.")
+
+        try:
+            # Retrieve the appropriate action class from the registry
+            action_class = ActionRegistry.get(action_type)
+            return action_class(**action_data)
+        except KeyError:
+            raise ValueError(f"Action type '{action_type}' is not recognized.")
+        except Exception as e:
+            raise ValueError(f"Failed to create action of type '{action_type}': {str(e)}")
 
 
 class BaseActionWithSelector(BaseAction):
