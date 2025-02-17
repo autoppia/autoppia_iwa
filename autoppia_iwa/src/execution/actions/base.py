@@ -130,10 +130,11 @@ class BaseAction(BaseModel):
 
         Returns:
             An instance of the appropriate BaseAction subclass.
-
-        Raises:
-            ValueError: If the action data is invalid or action creation fails.
         """
+        if not isinstance(action_data, dict):
+            logger.error(f"Invalid action_data: {action_data}. Expected a dictionary.")
+            raise ValueError("action_data must be a dictionary.")
+
         new_action_data = {}
 
         if "selector" in action_data:
@@ -145,6 +146,7 @@ class BaseAction(BaseModel):
         action_type = new_action_data.get("type", "")
 
         if not action_type:
+            logger.error("Missing 'type' in action data.")
             raise ValueError("Action data is missing 'type' field.")
         if action_type == "type":
             new_action_data["text"] = new_action_data.get("value", "")
@@ -157,10 +159,10 @@ class BaseAction(BaseModel):
             # Retrieve the appropriate action class from the registry
             action_class = ActionRegistry.get(action_type)
             return action_class(**new_action_data)
-        except KeyError:
-            raise ValueError(f"Action type '{action_type}' is not recognized.")
+        except ValueError as ve:
+            logger.error(f"Failed to create action of type '{action_type}': {str(ve)}")
         except Exception as e:
-            raise ValueError(f"Failed to create action of type '{action_type}': {str(e)}")
+            logger.error(f"Error creating action of type '{action_type}': {str(e)}")
 
 
 class BaseActionWithSelector(BaseAction):
