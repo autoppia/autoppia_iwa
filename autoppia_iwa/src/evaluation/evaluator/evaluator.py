@@ -72,7 +72,7 @@ class ConcurrentEvaluator(IEvaluator):
                 # Clone results for each web_agent in the group
                 results: List[EvaluationResult] = []
                 for task_solution in group:
-                    cloned_result = rep_result.copy(deep=True)
+                    cloned_result = rep_result.model_copy(deep=True)
                     cloned_result.web_agent_id = task_solution.web_agent_id
                     results.append(cloned_result)
 
