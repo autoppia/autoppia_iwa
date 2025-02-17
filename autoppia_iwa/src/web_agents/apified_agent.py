@@ -3,11 +3,12 @@ import asyncio
 import aiohttp
 
 from ..data_generation.domain.classes import Task
-from ..execution.actions.actions import ACTION_CLASS_MAP, BaseAction
+from ..execution.actions.actions import BaseAction
+from .base import IWebAgent
 from .classes import TaskSolution
 
 
-class ApifiedWebAgent:
+class ApifiedWebAgent(IWebAgent):
     """
     Calls a remote /solve_task endpoint and rebuilds a TaskSolution.
     """
@@ -28,19 +29,7 @@ class ApifiedWebAgent:
 
                 # Rebuild
                 rebuilt_task = Task.from_dict(task_data)
-                rebuilt_actions = []
-                for action_data in actions_data:
-                    action_type = action_data.get("type")
-                    if action_type in ACTION_CLASS_MAP:
-                        action_class = ACTION_CLASS_MAP[action_type]
-                        action = action_class.model_validate(action_data)
-                        rebuilt_actions.append(action)
-                    else:
-                        # Fallback to BaseAction if type is unknown
-                        print(f"Warning: Unknown action type {action_type}")
-                        action = BaseAction.model_validate(action_data)
-                        rebuilt_actions.append(action)
-
+                rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
                 print(f"Rebuilt Task: {rebuilt_task}")
                 print(f"Rebuilt Actions: {rebuilt_actions}")
 
