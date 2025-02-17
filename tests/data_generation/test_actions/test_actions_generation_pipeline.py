@@ -2,7 +2,7 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.shared.utils import instantiate_test
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from tests import test_container
 
@@ -48,7 +48,7 @@ class TestNewActionsGeneration(unittest.TestCase):
         }
 
         # Generate test instances from the test data
-        tests = [instantiate_test(test) for test in task_data["tests"]]
+        tests = BaseTaskTest.assign_tests(task_data["tests"])
 
         # Create and return a Task instance with the generated tests
         return Task(

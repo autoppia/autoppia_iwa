@@ -52,7 +52,6 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
         }
 
         # Create tests from test data
-        # tests = [instantiate_test(test) for test in task_data["tests"]]
         tests = BaseTaskTest.assign_tests(task_data["tests"])
 
         # Create and return a Task instance

@@ -8,6 +8,8 @@ from PIL import Image
 
 from autoppia_iwa.config.config import OPENAI_API_KEY, OPENAI_MODEL
 from autoppia_iwa.src.data_generation.domain.tests_classes import OpinionBaseOnScreenshot
+from autoppia_iwa.src.execution.actions.actions import ClickAction
+from autoppia_iwa.src.execution.actions.base import Selector
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.infrastructure.llm_service import OpenAIService
 
@@ -22,6 +24,7 @@ class TestOpinionBaseOnScreenshot(unittest.TestCase):
 
         self.mock_snapshot = BrowserSnapshot(
             iteration=1,
+            action=ClickAction(selector=Selector(type="xpathSelector", value="//button[text()='Click Me']")),
             prev_html="<html><body><button>Click me</button></body></html>",
             current_html="<html><body><button>Clicked!</button></body></html>",
             backend_events=[],
