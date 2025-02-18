@@ -83,8 +83,10 @@ async def generate_tasks_for_project(demo_project):
     if True and TASK_EXAMPLES:
         tasks = TASK_EXAMPLES
     else:
+        print("Generating Tasks...")
         task_output = await TaskGenerationPipeline(task_input).generate()
         tasks = task_output.tasks
+        print(f"Tasks generated successfully in {task_output.total_phase_time}")
     return tasks
 
 

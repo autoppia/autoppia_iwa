@@ -38,7 +38,7 @@ class TaskGenerationPipeline:
 
     async def generate(self, task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY) -> TasksGenerationOutput:
         """
-        Main method for task generation. Runs web analysis, generates prompts, and processes tasks.
+        Main method for task generation for a whole web project. Runs web analysis, generates prompts, and processes tasks.
         """
         start_time = datetime.now()
         global_tasks_output = TasksGenerationOutput(tasks=[], total_phase_time=0.0)
@@ -52,7 +52,6 @@ class TaskGenerationPipeline:
             # Initialize generators only once
             task_prompt_generator, task_test_generator = self._initialize_generators(web_analysis)
 
-            print("Generating Tasks...")
             # TASK PROMPT
             for page_analysis in web_analysis.analyzed_urls:
                 current_html = await self._get_page_html(page_analysis)
@@ -64,6 +63,7 @@ class TaskGenerationPipeline:
                 )
 
                 for task_prompts in prompts_for_url.task_prompts:
+    
                     # TASK TEST
                     task_tests = await task_test_generator.generate_task_tests(
                         task_description=task_prompts,
@@ -82,6 +82,7 @@ class TaskGenerationPipeline:
                         self.synthetic_task_repository.save(global_task.model_dump())
 
                     global_tasks_output.tasks.append(global_task)
+                    print("Task Generated.")
 
             global_tasks_output.total_phase_time = (datetime.now() - start_time).total_seconds()
         except Exception as e:
