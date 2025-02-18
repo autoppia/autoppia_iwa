@@ -3,7 +3,9 @@ from urllib.parse import urljoin, urlparse
 import networkx as nx
 import requests
 from bs4 import BeautifulSoup
-from playwright.async_api import async_playwright
+
+from autoppia_iwa.src.shared.utils import extract_html
+from autoppia_iwa.src.web_analysis.domain.classes import WebCrawlerConfig
 
 
 class WebCrawler:
@@ -17,11 +19,12 @@ class WebCrawler:
         domain (str): The domain of the start URL.
     """
 
-    def __init__(self, start_url):
-        parsed = urlparse(start_url)
+    def __init__(self, crawler_config: WebCrawlerConfig):
+        parsed = urlparse(crawler_config.start_url)
         self.domain = f"{parsed.scheme}://{parsed.netloc}"
+        self.config = crawler_config
 
-    def crawl_urls(self, start_url, max_depth=2):
+    def crawl_urls(self):
         """
         Crawl URLs starting from the given start URL (synchronous - uses requests).
         """
@@ -40,7 +43,7 @@ class WebCrawler:
 
             if normalized_url in visited_urls:
                 return
-            if depth > max_depth:
+            if depth > self.config.max_depth:
                 return
 
             visited_urls.add(normalized_url)
@@ -62,38 +65,28 @@ class WebCrawler:
                     new_url = urljoin(url, new_url)
                     _crawl(new_url, depth + 1)
 
-        _crawl(start_url, 0)
+        _crawl(self.config.start_url, 0)
         return all_urls
 
-    async def get_links_selenium(self, url):
+    @staticmethod
+    async def get_links(url):
         """
         Get links from a URL using the async Playwright API.
         """
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context()
-            page = await context.new_page()
+        html = await extract_html(url)
+        soup_local = BeautifulSoup(html, "html.parser")
+        links = soup_local.find_all("a", href=True)
+        urls = [link["href"] for link in links if link["href"].startswith("http")]
 
-            await page.goto(url)
-            # Wait up to 10 seconds for the page to load
-            await page.wait_for_timeout(10000)
-
-            html = await page.content()
-            soup_local = BeautifulSoup(html, "html.parser")
-            links = soup_local.find_all("a", href=True)
-            urls = [link["href"] for link in links if link["href"].startswith("http")]
-
-            await context.close()
-            await browser.close()
         return urls
 
-    def create_graph(self, home_url):
+    def create_graph(self):
         """
         Creates a directed graph of links from the given home_url, depth=1.
         """
         graph = nx.DiGraph()
-        graph.add_node(home_url)
-        links = self.crawl_urls(start_url=home_url, max_depth=1)
+        graph.add_node(self.config.start_url)
+        links = self.crawl_urls()
         for link in links:
-            graph.add_edge(home_url, link)
+            graph.add_edge(self.config.start_url, link)
         return graph, links
