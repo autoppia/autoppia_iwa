@@ -1,20 +1,21 @@
-from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
-from autoppia_iwa.src.evaluation.classes import EvaluationResult
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.web_agents.base import BaseAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
-from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 import asyncio
 import statistics
 from typing import List
+
 import matplotlib.pyplot as plt
 
+from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
+from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
+from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
+from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
+from autoppia_iwa.src.evaluation.classes import EvaluationResult
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
+from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.base import BaseAgent
+from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 app = AppBootstrap()
 AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
