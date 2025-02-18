@@ -20,7 +20,7 @@ TASK_EXAMPLES = [
     #     web_analysis=None,
     # ),
     Task(
-        prompt="Enter your email and password in the respective fields and click the 'Log in' button to authenticate and access your account. Email:test@test.com, password:test@test.com",
+        prompt="Enter your email and password in the respective fields and click the 'Log in' button to authenticate and access your account. Email:admin@jobsapp.com and password:admin123",
         url='http://localhost:8000/',
         specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
         tests=[

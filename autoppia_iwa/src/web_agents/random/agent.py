@@ -11,8 +11,8 @@ class RandomClickerWebAgent(BaseAgent):
     Web Agent that executes random actions within the screen dimensions.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name="Random clicker"): 
+        super().__init__(name=name) 
 
     async def solve_task(self, task: Task) -> TaskSolution:
         """
