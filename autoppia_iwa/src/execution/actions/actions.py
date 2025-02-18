@@ -8,7 +8,7 @@ from typing import Optional, Union
 
 from playwright.async_api import Page
 from pydantic import Field
-from typing_extensions import Annotated, Literal
+from typing_extensions import Literal
 
 # Use your new combined base classes
 from .base import BaseAction, BaseActionWithSelector
@@ -325,78 +325,3 @@ class IdleAction(BaseAction):
     @log_action("IdleAction")
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
         pass
-
-
-# -------------------------------------------------------------------
-# Union Type to Handle All Actions by Discriminator
-# -------------------------------------------------------------------
-
-AllActionsUnion = Annotated[
-    Union[
-        ClickAction,
-        DoubleClickAction,
-        NavigateAction,
-        TypeAction,
-        SelectAction,
-        HoverAction,
-        WaitAction,
-        ScrollAction,
-        SubmitAction,
-        AssertAction,
-        DragAndDropAction,
-        ScreenshotAction,
-        SendKeysIWAAction,
-        GetDropDownOptions,
-        SelectDropDownOption,
-        UndefinedAction,
-        IdleAction,
-    ],
-    Field(discriminator="type"),
-]
-
-
-# -------------------------------------------------------------------
-# MAPS (as requested, appended at the end)
-# -------------------------------------------------------------------
-
-ACTION_CLASS_MAP_LOWER = {
-    "click": ClickAction,
-    "type": TypeAction,
-    "hover": HoverAction,
-    "navigate": NavigateAction,
-    "dragAndDrop": DragAndDropAction,
-    "submit": SubmitAction,
-    "doubleClick": DoubleClickAction,
-    "scroll": ScrollAction,
-    "screenshot": ScreenshotAction,
-    "wait": WaitAction,
-    "assert": AssertAction,
-    "select": SelectAction,
-    "idle": IdleAction,
-    "undefined": UndefinedAction,
-    "sendkeysiwa": SendKeysIWAAction,
-    "getdropdownoptions": GetDropDownOptions,
-    "selectdropdownoption": SelectDropDownOption,
-}
-
-ACTION_CLASS_MAP_CAPS = {
-    "ClickAction": ClickAction,
-    "TypeAction": TypeAction,
-    "HoverAction": HoverAction,
-    "NavigateAction": NavigateAction,
-    "DragAndDropAction": DragAndDropAction,
-    "SubmitAction": SubmitAction,
-    "DoubleClickAction": DoubleClickAction,
-    "ScrollAction": ScrollAction,
-    "ScreenshotAction": ScreenshotAction,
-    "WaitAction": WaitAction,
-    "AssertAction": AssertAction,
-    "SelectAction": SelectAction,
-    "IdleAction": IdleAction,
-    "UndefinedAction": UndefinedAction,
-    "SendKeysIWAAction": SendKeysIWAAction,
-    "GetDropDownOptions": GetDropDownOptions,
-    "SelectDropDownOption": SelectDropDownOption,
-}
-
-ACTION_CLASS_MAP = {**ACTION_CLASS_MAP_CAPS, **ACTION_CLASS_MAP_LOWER}
