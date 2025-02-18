@@ -153,6 +153,9 @@ async def main():
     # ---------------------------
     for demo_project in demo_web_projects:
         tasks = await generate_tasks_for_project(demo_project)
+        for task in tasks:
+            print(task)
+            input()
         for agent in agents:
             await evaluate_project_for_agent(agent, demo_project, tasks, results)
 

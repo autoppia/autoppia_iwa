@@ -53,7 +53,6 @@ class WebAnalysisPipeline:
         """
         cached_result = self._get_analysis_from_cache() if get_analysis_from_cache else None
         if cached_result:
-            print(f"Find checked Web Analysis: {cached_result}")
             return cached_result
 
         self._initialize_analysis()
