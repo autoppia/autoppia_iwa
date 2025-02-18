@@ -51,7 +51,7 @@ class TaskPromptGenerator:
         self.llm_service = llm_service
         self.num_prompts_per_url = num_prompts_per_url
 
-    def generate_prompts_for_domain(
+    def generate_prompts_for_web_project(
         self,
         task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
     ) -> List[TaskPromptForUrl]:
@@ -65,7 +65,7 @@ class TaskPromptGenerator:
             List[TaskPromptForUrl]: A list of TaskPromptForUrl objects, each containing a page URL and its associated task prompts.
         """
         domain_prompts = []
-        for page_analysis in self.web_analysis.analyzed_urls:
+        for page_analysis in self.web_analysis.page_analyses:
             prompts_for_url = self.generate_task_prompts_for_url(page_analysis.page_url, page_analysis.html_source, task_difficulty_level)
             domain_prompts.append(prompts_for_url)
         return domain_prompts
@@ -134,7 +134,7 @@ class TaskPromptGenerator:
         Finds and returns the SinglePageAnalysis object for a given URL.
         Raises ValueError if not found.
         """
-        for page in self.web_analysis.analyzed_urls:
+        for page in self.web_analysis.page_analyses:
             if page.page_url == target_url:
                 return page
         raise ValueError(f"URL '{target_url}' not found in domain analysis.")

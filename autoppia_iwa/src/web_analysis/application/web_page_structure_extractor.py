@@ -3,11 +3,9 @@ from dataclasses import fields
 from typing import List, Optional, Union
 
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from playwright.sync_api import sync_playwright
 
-from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE, PROFILE_DIR
+from autoppia_iwa.config.config import CHROME_PATH, PROFILE, PROFILE_DIR
 from autoppia_iwa.src.web_analysis.domain.classes import Element
 
 
@@ -49,7 +47,7 @@ class WebPageStructureExtractor:
     ]
 
     def __init__(self):
-        self.driver = None
+        pass
 
     def get_elements(
         self,
@@ -68,41 +66,35 @@ class WebPageStructureExtractor:
         """
         allowed_tags = allowed_tags if allowed_tags else WebPageStructureExtractor.ALLOWED_HTML_TAGS
 
-        # Determine if the source is a URL or BeautifulSoup object
         if isinstance(source, str):
             if not source.startswith("http://") and not source.startswith("https://"):
                 source = "http://" + source
 
-            # Initialize Selenium and navigate to URL
-            chrome_options = Options()
-            chrome_options.add_argument("--headless")
-            chrome_options.add_argument(f"--user-data-dir={PROFILE_DIR}")
-            chrome_options.add_argument(f"--profile-directory={PROFILE}")
-            chrome_options.add_argument("--start-maximized")
-            chrome_options.binary_location = CHROME_PATH
-            self.driver = webdriver.Chrome(service=Service(CHROMEDRIVER_PATH), options=chrome_options)
-            self.driver.get(source)
-            # TODO: Reduced the sleep time for locally deployed app
-            time.sleep(2)  # Wait for the page to load
-            # Get HTML source from Selenium driver
-            html_source = self.driver.page_source
+            # Use Playwright to fetch the page content
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                page = browser.new_page()
+                page.goto(source)
+                page.wait_for_load_state("networkidle")
+                html_source = page.content()
+                browser.close()
             soup = BeautifulSoup(html_source, "html.parser")
         else:
-            # Use the provided BeautifulSoup object
             soup = source
 
-        # Clean the HTML and extract elements
         cleaned_soup = self.__clean_soup(soup)
         elements = []
         cleaned_soup_body = cleaned_soup.find("body")
         element_id_counter = 0
         if cleaned_soup_body is None:
-            # If there's no body, use the entire cleaned_soup
             cleaned_soup_body = cleaned_soup
 
         for soup_element in cleaned_soup_body.find_all(allowed_tags, recursive=False):  # type: ignore
-            element, element_id_counter = self.__convert_soup_element_to_element(soup_element, allowed_tags, None, "/", element_id_counter)
-            elements.append(element)
+            element, element_id_counter = self.__convert_soup_element_to_element(
+                soup_element, allowed_tags, None, "/", element_id_counter
+            )
+            if element:
+                elements.append(element)
         return elements, cleaned_soup.prettify()
 
     def __clean_soup(self, soup: BeautifulSoup) -> BeautifulSoup:
@@ -115,7 +107,6 @@ class WebPageStructureExtractor:
         Returns:
             BeautifulSoup: The cleaned HTML soup.
         """
-        # Tags and attributes to exclude during the cleaning process
         TAGS_TO_EXCLUDE = ["style", "script", "svg"]
         ATTRIBUTES_TO_EXCLUDE = ["class", "name", "style"]
         DATA_ATTRIBUTES_PREFIX = "data-"
@@ -145,7 +136,7 @@ class WebPageStructureExtractor:
         parent_id: Optional[int],
         base_path: str,
         current_id: int,
-    ) -> tuple[Element | None, int]:
+    ) -> tuple[Optional[Element], int]:
         """
         Extract the hierarchy of an HTML element.
 
@@ -157,19 +148,15 @@ class WebPageStructureExtractor:
             current_id (int): The current ID counter.
 
         Returns:
-            Element: The extracted hierarchy of the HTML element.
-            int: The updated current ID counter.
+            tuple: The extracted Element and the updated current ID counter.
         """
-        # If the tag is not allowed, do not process the element
         if soup_element.name not in allowed_tags:
             return None, current_id
 
-        # Assign unique ID to element
         current_id += 1
         element_id = current_id
         path = f"{base_path}/{element_id}"
 
-        # Extract basic information from the element
         info = {
             "tag": soup_element.name,
             "attributes": dict(soup_element.attrs),
@@ -182,11 +169,9 @@ class WebPageStructureExtractor:
             "data_attributes": {k: v for k, v in soup_element.attrs.items() if k.startswith("data-")},
         }
 
-        # Extract attributes starting with "data-"
         if not info["data_attributes"]:
             del info["data_attributes"]
 
-        # Add specific attributes for certain tags
         if soup_element.name == "a":
             info["link_target"] = soup_element.get("href")
         if soup_element.name == "input":
@@ -199,20 +184,18 @@ class WebPageStructureExtractor:
         except Exception:
             pass
 
-        # Filter the information to include only valid keys for the Element class
         valid_keys = {f.name for f in fields(Element)}
         filtered_info = {k: v for k, v in info.items() if k in valid_keys}
 
-        # TODO ESTO NO TIENE SENTIDO
         filtered_info["events_triggered"] = []
         filtered_info["analysis"] = None
 
-        # Create Element object
         element = Element(**filtered_info)
 
-        # Recursively process element children
         for child in soup_element.children:
-            child_info, current_id = self.__convert_soup_element_to_element(child, allowed_tags, element_id, path, current_id)
+            child_info, current_id = self.__convert_soup_element_to_element(
+                child, allowed_tags, element_id, path, current_id
+            )
             if child_info:
                 element.children.append(child_info)
 

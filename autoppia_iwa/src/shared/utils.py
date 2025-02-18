@@ -3,7 +3,7 @@ import string
 from pathlib import Path
 from bs4 import BeautifulSoup, Comment
 from playwright.sync_api import sync_playwright
-from autoppia_iwa.config.config import CHROME_PATH, PROFILE, PROFILE_DIR
+from autoppia_iwa.config.config import CHROME_PATH, PROFILE_DIR
 from autoppia_iwa.src.data_generation.domain.tests_classes import (
     CheckEventEmittedTest,
     CheckPageViewEventTest,

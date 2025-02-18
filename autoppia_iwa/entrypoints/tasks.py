@@ -1,34 +1,39 @@
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
+# file: examples/run_task_generation.py
+
+from autoppia_iwa.src.data_generation.domain.classes import (
+    TaskGenerationConfig,
+    TasksGenerationOutput,
+)
 from autoppia_iwa.src.backend_demo_web.classes import WebProject
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel
 from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.backend_demo_web.config import initialize_test_demo_web_projects
+from typing import List
+
 
 app = AppBootstrap()
 
-# Suppose you have a WebProject object
-my_web_project = WebProject(
-    name="SampleStore",
-    backend_url="",
-    frontend_url="https://wikipedia.com",
-    is_real_web=True,
-    events=[],
-    web_analysis=[],
-    urls=[],
-    data_classes={}
-)
+# 1) Create a WebProject (we let web analysis fill in domain_analysis & pages).
+my_web_project:List[WebProject] = initialize_test_demo_web_projects()[0]
 
-# Then create a config:
+# 2) Create a TaskGenerationConfig specifying how many tasks we want.
 my_config = TaskGenerationConfig(
-    web_project=my_web_project,
     save_task_in_db=False,
-    save_web_analysis_in_db=False,
+    save_web_analysis_in_db=True,
     enable_crawl=True,
     generate_milestones=False,
-    number_of_prompts_per_task=1  # generate 3 tasks per URL
+    # We'll specify how many tasks we want in total (global) and per URL (local):
+    global_tasks_to_generate=3,
+    local_tasks_to_generate_per_url=2,
 )
 
-pipeline = TaskGenerationPipeline(config=my_config)
-output = pipeline.generate(task_difficulty_level=TaskDifficultyLevel.MEDIUM)
+# 3) Instantiate the pipeline with that config.
+pipeline = TaskGenerationPipeline(web_project=my_web_project, config=my_config)
 
-print("Generated tasks:", [t.prompt for t in output.tasks])
+# 4) Run the pipeline.
+output: TasksGenerationOutput = pipeline.generate()
+
+# 5) Print or process the tasks.
+print("Generated tasks:")
+for t in output.tasks:
+    print(f"- Category: {t.category} | URL: {t.url} | Prompt: {t.prompt}")

@@ -44,6 +44,8 @@ class ILLMService(ABC):
         message_payload: List[Dict[str, str]],
         llm_kwargs=None,
         chat_completion_kwargs=None,
+        json_format:bool = False, 
+        schema:str = None
     ) -> str:
         """
         Make a request using LLM Local or serverless.

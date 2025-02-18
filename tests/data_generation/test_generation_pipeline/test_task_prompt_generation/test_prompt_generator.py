@@ -21,7 +21,7 @@ class TestTaskPromptGenerator(unittest.TestCase):
         test_data = {
             "domain": "localhost:8000",
             "status": "done",
-            "analyzed_urls": [
+            "page_analyses": [
                 {
                     "page_url": "http://localhost:8000/",
                     "elements_analysis_result": [
@@ -193,13 +193,13 @@ class TestTaskPromptGenerator(unittest.TestCase):
             "total_time": 38.87642955780029,
             "start_url": "http://localhost:8000/",
         }
-        test_data["analyzed_urls"][0]["web_summary"] = LLMWebAnalysis(**test_data["analyzed_urls"][0]["web_summary"])
+        test_data["page_analyses"][0]["web_summary"] = LLMWebAnalysis(**test_data["page_analyses"][0]["web_summary"])
         return test_data
 
     def test_generate_prompts(self):
         """Test the generation of prompts for a domain."""
         generator = TaskPromptGenerator(web_analysis=self.web_analysis, llm_service=self.llm_service)
-        tasks = generator.generate_prompts_for_domain(task_difficulty_level=TaskDifficultyLevel.MEDIUM)
+        tasks = generator.generate_prompts_for_web_project(task_difficulty_level=TaskDifficultyLevel.MEDIUM)
 
         # Assertions
         self.assertIsNotNone(tasks, "Tasks should not be None.")

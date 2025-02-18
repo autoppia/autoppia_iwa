@@ -53,6 +53,7 @@ class Task(BaseModel):
     tests: List[BaseTaskTest] = Field(default_factory=list, description="List of tests associated with the task")
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
+    category:str = None
 
     # DONT MODIFY BASE MODEL_DUMP METHOD!
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
@@ -93,24 +94,15 @@ class Task(BaseModel):
 
 
 class TaskGenerationConfig(BaseModel):
-    """
-    Configuration for task generation, including options for saving tasks, enabling crawling, and generating milestones.
-    """
+    save_task_in_db: bool = False
+    save_web_analysis_in_db: bool = True
+    enable_crawl: bool = True
+    generate_milestones: bool = False
+    number_of_prompts_per_task: int = 1  # (Optional, if needed in older code)
 
-    web_project: WebProject = Field(..., description="Demo web project configuration")
-    save_task_in_db: bool = Field(False, description="Whether to save the task in the database")
-    save_web_analysis_in_db: bool = Field(False, description="Whether to save the web analysis in the database")
-    enable_crawl: bool = Field(True, description="Whether to enable crawling for task generation")
-    generate_milestones: bool = Field(False, description="Whether to generate milestone tasks")
-    number_of_prompts_per_task: int = Field(1, description="Number of prompts to generate per task")
-
-    @field_validator("number_of_prompts_per_task")
-    @classmethod
-    def validate_prompts_per_task(cls, v: int) -> int:
-        """Ensures at least one prompt per task."""
-        if v < 1:
-            raise ValueError("Number of prompts per task must be at least 1")
-        return v
+    # New fields controlling how many tasks to generate:
+    global_tasks_to_generate: int = 2
+    local_tasks_to_generate_per_url: int = 2
 
 
 class TasksGenerationOutput(BaseModel):

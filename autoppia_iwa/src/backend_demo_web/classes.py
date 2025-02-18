@@ -2,10 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field
 from typing import List
-
-
-class WebProjectData():
-    authentication:dict
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class WebProject(BaseModel):
@@ -14,7 +11,7 @@ class WebProject(BaseModel):
     frontend_url: str = Field(..., description="URL of the frontend application")
     is_real_web: bool = False
     events: List[str] = Field(default_factory=list, description="List of events to monitor")
-    web_analysis:Any = Field(default_factory=list, description="List of urls in the project")
+    web_analysis:Optional[DomainAnalysis] = None
     urls:List[str] = []
 
 

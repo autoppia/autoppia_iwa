@@ -249,7 +249,7 @@ class TaskTestGenerator:
         """
         Retrieves or matches the single page analysis for 'target_url' from self.web_analysis.
         """
-        for page in self.web_analysis.analyzed_urls:
+        for page in self.web_analysis.page_analyses:
             if page.page_url == target_url:
                 return page
         raise ValueError(f"Page analysis not found for URL: {target_url}")

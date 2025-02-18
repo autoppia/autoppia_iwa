@@ -59,7 +59,7 @@ class WebCrawler:
 
         return all_urls
 
-    def get_links_selenium(self, url):
+    def get_links(self, url):
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
         driver.get(url)
         driver.implicitly_wait(10)
@@ -98,7 +98,7 @@ for url in crawled_urls:
     print(url)
 
 # Get links from a specific URL using Selenium
-selenium_links = web_crawler.get_links_selenium("https://ajedrezenmadrid.com")
+selenium_links = web_crawler.get_links("https://ajedrezenmadrid.com")
 
 # Print the links obtained using Selenium
 print("Links obtained using Selenium:")

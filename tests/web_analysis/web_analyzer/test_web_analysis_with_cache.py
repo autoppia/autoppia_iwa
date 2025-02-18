@@ -15,7 +15,7 @@ class TestWebAnalysisPipelineWithCache(unittest.TestCase):
         cls.data = {
             "domain": "localhost:8000",
             "status": "done",
-            "analyzed_urls": [
+            "page_analyses": [
                 {
                     "page_url": "http://localhost:8000/employee/register",
                     "elements_analysis_result": [
@@ -235,7 +235,7 @@ class TestWebAnalysisPipelineWithCache(unittest.TestCase):
         # Assertions
         self.assertIsNotNone(result, "Pipeline analysis result should not be None.")
         self.assertEqual(result.domain, self.data["domain"], "Domain mismatch.")
-        self.assertGreater(len(result.analyzed_urls), 0, "No URLs analyzed.")
+        self.assertGreater(len(result.page_analyses), 0, "No URLs analyzed.")
 
         # Optional: Print results for debugging
         print("Analysis results:", result)

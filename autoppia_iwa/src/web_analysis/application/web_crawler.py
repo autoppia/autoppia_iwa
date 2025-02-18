@@ -3,9 +3,7 @@ from urllib.parse import urljoin, urlparse
 import networkx as nx
 import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from playwright.sync_api import sync_playwright
 
 
 class WebCrawler:
@@ -82,9 +80,9 @@ class WebCrawler:
 
         return all_urls
 
-    def get_links_selenium(self, url):
+    def get_links(self, url):
         """
-        Get links from a URL using Selenium.
+        Get links from a URL using Playwright (replacing Selenium).
 
         Args:
             url (str): The URL to get links from.
@@ -92,23 +90,20 @@ class WebCrawler:
         Returns:
             list[str]: A list of links found on the page.
         """
-        # Set up the Selenium driver
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        # Fetch the page
-        driver.get(url)
-        driver.implicitly_wait(10)  # Wait for 10 seconds to load the page
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url)
+            page.wait_for_load_state("networkidle")
+            html = page.content()
+            browser.close()
 
-        # Get the page source and parse it with BeautifulSoup
-        soup = BeautifulSoup(driver.page_source, "html.parser")
+        soup = BeautifulSoup(html, "html.parser")
         links = soup.find_all("a", href=True)
         urls = [link["href"] for link in links if link["href"].startswith("http")]
 
-        # Close the browser
-        driver.quit()
-
         return urls
 
-    # Function to create a graph
     def create_graph(self, home_url):
         graph = nx.DiGraph()
         graph.add_node(home_url)

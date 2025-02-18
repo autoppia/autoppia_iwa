@@ -12,8 +12,10 @@ from ..domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
 from .web_crawler import WebCrawler
 from .web_llm_utils import WebLLMAnalyzer
 from .web_page_structure_extractor import WebPageStructureExtractor
+from autoppia_iwa.config.config import LLM_CONTEXT_WINDOW
 
-MAX_TOKENS_ELEMENT_ANALYZER = 10000
+
+MAX_TOKENS_ELEMENT_ANALYZER = LLM_CONTEXT_WINDOW
 
 
 class WebAnalysisPipeline:
@@ -57,8 +59,7 @@ class WebAnalysisPipeline:
 
         self._initialize_analysis()
         urls_to_analyze = self._get_urls_to_analyze(enable_crawl)
-        print(urls_to_analyze)
-        input()
+
         for url in urls_to_analyze:
             try:
                 self._analyze_url(url)
@@ -68,8 +69,12 @@ class WebAnalysisPipeline:
 
         if save_results_in_db:
             self._save_results_in_db()
+
         if not isinstance(self.analysis_result, DomainAnalysis):
             self.analysis_result = DomainAnalysis(**self.analysis_result)
+
+        self.analysis_result.urls = urls_to_analyze
+
         return self.analysis_result
 
     def _get_analysis_from_cache(self) -> Optional[DomainAnalysis]:
@@ -98,7 +103,7 @@ class WebAnalysisPipeline:
         self.analysis_result = DomainAnalysis(
             domain=self.domain,
             status="processing",
-            analyzed_urls=[],
+            page_analyses=[],
             started_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             ended_time="",
             total_time=0,
@@ -168,7 +173,7 @@ class WebAnalysisPipeline:
         Finalize the analysis by updating metadata and storing results.
         """
         self.analysis_result.status = "done"
-        self.analysis_result.analyzed_urls = self.analyzed_urls
+        self.analysis_result.page_analyses = self.analyzed_urls
         self.analysis_result.ended_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.analysis_result.total_time = time.time() - self.start_time
 

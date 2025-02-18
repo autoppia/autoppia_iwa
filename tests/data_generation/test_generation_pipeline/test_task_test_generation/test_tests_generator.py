@@ -46,8 +46,8 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
 
         self.assertIsNotNone(web_analysis, f"Web analysis should not return None for {url}.")
         self.assertTrue(
-            hasattr(web_analysis, "analyzed_urls"),
-            f"Web analysis result should contain 'analyzed_urls' for {url}.",
+            hasattr(web_analysis, "page_analyses"),
+            f"Web analysis result should contain 'Page Analysis' for {url}.",
         )
 
         # Initialize Web Project

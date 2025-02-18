@@ -25,7 +25,7 @@ class TestWebAnalysisPipeline(unittest.TestCase):
         # Basic checks
         self.assertIsNotNone(result)
         self.assertEqual(result.domain, "localhost:8000")
-        self.assertGreater(len(result.analyzed_urls), 0)  # At least one URL must be parsed
+        self.assertGreater(len(result.page_analyses), 0)  # At least one URL must be parsed
 
         # Print the results
         print("Analysis results:")

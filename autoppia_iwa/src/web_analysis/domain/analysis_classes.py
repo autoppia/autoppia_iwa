@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
-
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class LLMWebAnalysis(BaseModel):
@@ -29,8 +28,10 @@ class SinglePageAnalysis(BaseModel):
 class DomainAnalysis(BaseModel):
     domain: str
     status: str
-    analyzed_urls: List[SinglePageAnalysis]
+    page_analyses: List[SinglePageAnalysis]
     started_time: str
     ended_time: str
     total_time: float
     start_url: str
+    category:str = ""
+    urls:List[str] = Field(default_factory=list, description="List of urls")

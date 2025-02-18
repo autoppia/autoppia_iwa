@@ -195,6 +195,14 @@
         "documentation": {}
     },
     {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Any",
         "importPath": "typing",
         "description": "typing",
@@ -227,6 +235,14 @@
         "documentation": {}
     },
     {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -267,7 +283,15 @@
         "documentation": {}
     },
     {
-        "label": "Optional",
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -643,6 +667,14 @@
         "documentation": {}
     },
     {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -860,7 +892,7 @@
         "documentation": {}
     },
     {
-        "label": "TaskDifficultyLevel",
+        "label": "TasksGenerationOutput",
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
         "isExtraImport": true,
@@ -892,7 +924,15 @@
         "documentation": {}
     },
     {
-        "label": "TaskDifficultyLevel",
+        "label": "BrowserSpecification",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "Task",
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
         "isExtraImport": true,
@@ -1476,6 +1516,14 @@
         "documentation": {}
     },
     {
+        "label": "initialize_test_demo_web_projects",
+        "importPath": "autoppia_iwa.src.backend_demo_web.config",
+        "description": "autoppia_iwa.src.backend_demo_web.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.backend_demo_web.config",
+        "documentation": {}
+    },
+    {
         "label": "TASK_EXAMPLES",
         "importPath": "autoppia_iwa.src.data_generation.domain.task_examples",
         "description": "autoppia_iwa.src.data_generation.domain.task_examples",
@@ -1493,6 +1541,22 @@
     },
     {
         "label": "BackendEvent",
+        "importPath": "autoppia_iwa.src.backend_demo_web.classes",
+        "description": "autoppia_iwa.src.backend_demo_web.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.backend_demo_web.classes",
+        "documentation": {}
+    },
+    {
+        "label": "WebProject",
+        "importPath": "autoppia_iwa.src.backend_demo_web.classes",
+        "description": "autoppia_iwa.src.backend_demo_web.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.backend_demo_web.classes",
+        "documentation": {}
+    },
+    {
+        "label": "WebProject",
         "importPath": "autoppia_iwa.src.backend_demo_web.classes",
         "description": "autoppia_iwa.src.backend_demo_web.classes",
         "isExtraImport": true,
@@ -1991,6 +2055,102 @@
         "documentation": {}
     },
     {
+        "label": "Field",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "SinglePageAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "SinglePageAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "LLMWebAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "LLMWebAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
         "label": "sys",
         "kind": 6,
         "isExtraImport": true,
@@ -2040,14 +2200,6 @@
         "documentation": {}
     },
     {
-        "label": "PROFILE",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
         "label": "PROFILE_DIR",
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
@@ -2056,7 +2208,7 @@
         "documentation": {}
     },
     {
-        "label": "CHROME_PATH",
+        "label": "LLM_CONTEXT_WINDOW",
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
         "isExtraImport": true,
@@ -2064,7 +2216,7 @@
         "documentation": {}
     },
     {
-        "label": "CHROMEDRIVER_PATH",
+        "label": "CHROME_PATH",
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
         "isExtraImport": true,
@@ -2176,91 +2328,195 @@
         "documentation": {}
     },
     {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "WebAnalysisPipeline",
+        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
+        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "documentation": {}
     },
     {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "WebAnalysisPipeline",
+        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
+        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "documentation": {}
     },
     {
-        "label": "SinglePageAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "WebAnalysisPipeline",
+        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
+        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "documentation": {}
     },
     {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "WebAnalysisPipeline",
+        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
+        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "documentation": {}
     },
     {
-        "label": "SinglePageAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "WebAnalysisPipeline",
+        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
+        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "documentation": {}
     },
     {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "WebAnalysisPipeline",
+        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
+        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "documentation": {}
     },
     {
-        "label": "SinglePageAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "dependency_injector.wiring",
         "documentation": {}
     },
     {
-        "label": "LLMWebAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "dependency_injector.wiring",
         "documentation": {}
     },
     {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "dependency_injector.wiring",
         "documentation": {}
     },
     {
-        "label": "LLMWebAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
         "documentation": {}
     },
     {
         "label": "ILLMService",
-        "importPath": "autoppia_iwa.src.llms.infrastructure.llm_service",
-        "description": "autoppia_iwa.src.llms.infrastructure.llm_service",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.infrastructure.llm_service",
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLMService",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLMService",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "BaseMongoRepository",
+        "importPath": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
+        "description": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
+        "documentation": {}
+    },
+    {
+        "label": "BaseMongoRepository",
+        "importPath": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
+        "description": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
         "documentation": {}
     },
     {
@@ -2305,94 +2561,6 @@
         "documentation": {}
     },
     {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
         "label": "extract_html",
         "importPath": "autoppia_iwa.src.shared.utils",
         "description": "autoppia_iwa.src.shared.utils",
@@ -2401,7 +2569,7 @@
         "documentation": {}
     },
     {
-        "label": "extract_html",
+        "label": "clean_html",
         "importPath": "autoppia_iwa.src.shared.utils",
         "description": "autoppia_iwa.src.shared.utils",
         "isExtraImport": true,
@@ -2519,54 +2687,6 @@
         "importPath": "traceback",
         "description": "traceback",
         "detail": "traceback",
-        "documentation": {}
-    },
-    {
-        "label": "BaseMongoRepository",
-        "importPath": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
-        "description": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
-        "documentation": {}
-    },
-    {
-        "label": "WebAnalysisPipeline",
-        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "WebAnalysisPipeline",
-        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "WebAnalysisPipeline",
-        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "WebAnalysisPipeline",
-        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "WebAnalysisPipeline",
-        "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "documentation": {}
     },
     {
@@ -3024,6 +3144,22 @@
         "documentation": {}
     },
     {
+        "label": "sync_playwright",
+        "importPath": "playwright.sync_api",
+        "description": "playwright.sync_api",
+        "isExtraImport": true,
+        "detail": "playwright.sync_api",
+        "documentation": {}
+    },
+    {
+        "label": "sync_playwright",
+        "importPath": "playwright.sync_api",
+        "description": "playwright.sync_api",
+        "isExtraImport": true,
+        "detail": "playwright.sync_api",
+        "documentation": {}
+    },
+    {
         "label": "ACTION_CLASS_MAP",
         "importPath": "autoppia_iwa.src.execution.actions.actions",
         "description": "autoppia_iwa.src.execution.actions.actions",
@@ -3106,84 +3242,12 @@
         "documentation": {}
     },
     {
-        "label": "webdriver",
-        "importPath": "selenium",
-        "description": "selenium",
-        "isExtraImport": true,
-        "detail": "selenium",
-        "documentation": {}
-    },
-    {
-        "label": "webdriver",
-        "importPath": "selenium",
-        "description": "selenium",
-        "isExtraImport": true,
-        "detail": "selenium",
-        "documentation": {}
-    },
-    {
-        "label": "webdriver",
-        "importPath": "selenium",
-        "description": "selenium",
-        "isExtraImport": true,
-        "detail": "selenium",
-        "documentation": {}
-    },
-    {
-        "label": "Service",
-        "importPath": "selenium.webdriver.chrome.service",
-        "description": "selenium.webdriver.chrome.service",
-        "isExtraImport": true,
-        "detail": "selenium.webdriver.chrome.service",
-        "documentation": {}
-    },
-    {
-        "label": "Service",
-        "importPath": "selenium.webdriver.chrome.service",
-        "description": "selenium.webdriver.chrome.service",
-        "isExtraImport": true,
-        "detail": "selenium.webdriver.chrome.service",
-        "documentation": {}
-    },
-    {
-        "label": "Service",
-        "importPath": "selenium.webdriver.chrome.service",
-        "description": "selenium.webdriver.chrome.service",
-        "isExtraImport": true,
-        "detail": "selenium.webdriver.chrome.service",
-        "documentation": {}
-    },
-    {
-        "label": "ChromeDriverManager",
-        "importPath": "webdriver_manager.chrome",
-        "description": "webdriver_manager.chrome",
-        "isExtraImport": true,
-        "detail": "webdriver_manager.chrome",
-        "documentation": {}
-    },
-    {
-        "label": "ChromeDriverManager",
-        "importPath": "webdriver_manager.chrome",
-        "description": "webdriver_manager.chrome",
-        "isExtraImport": true,
-        "detail": "webdriver_manager.chrome",
-        "documentation": {}
-    },
-    {
         "label": "copy",
         "kind": 6,
         "isExtraImport": true,
         "importPath": "copy",
         "description": "copy",
         "detail": "copy",
-        "documentation": {}
-    },
-    {
-        "label": "ILLMService",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
         "documentation": {}
     },
     {
@@ -3248,14 +3312,6 @@
         "description": "dataclasses",
         "isExtraImport": true,
         "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "Options",
-        "importPath": "selenium.webdriver.chrome.options",
-        "description": "selenium.webdriver.chrome.options",
-        "isExtraImport": true,
-        "detail": "selenium.webdriver.chrome.options",
         "documentation": {}
     },
     {
@@ -6666,6 +6722,30 @@
         "documentation": {}
     },
     {
+        "label": "webdriver",
+        "importPath": "selenium",
+        "description": "selenium",
+        "isExtraImport": true,
+        "detail": "selenium",
+        "documentation": {}
+    },
+    {
+        "label": "Service",
+        "importPath": "selenium.webdriver.chrome.service",
+        "description": "selenium.webdriver.chrome.service",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.chrome.service",
+        "documentation": {}
+    },
+    {
+        "label": "ChromeDriverManager",
+        "importPath": "webdriver_manager.chrome",
+        "description": "webdriver_manager.chrome",
+        "isExtraImport": true,
+        "detail": "webdriver_manager.chrome",
+        "documentation": {}
+    },
+    {
         "label": "find_packages",
         "importPath": "setuptools",
         "description": "setuptools",
@@ -6686,7 +6766,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "LLM_PROVIDER = os.getenv(\"LLM_PROVIDER\", \"local\")  # Can be \"serverless\", \"local\", or \"openai\"\nLLM_THRESHOLD = 100\nLLM_ENPOINT = os.getenv(\"LLM_ENPOINT\", \"http://127.0.0.1:6000/generate\")\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"OPENAI_MAX_TOKENS\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:",
+        "peekOfCode": "LLM_PROVIDER = os.getenv(\"LLM_PROVIDER\", \"local\")  # Can be \"serverless\", \"local\", or \"openai\"\nLLM_THRESHOLD = 100\nLLM_ENPOINT = os.getenv(\"LLM_ENPOINT\", \"http://127.0.0.1:6000/generate\")\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -6695,7 +6775,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "LLM_THRESHOLD = 100\nLLM_ENPOINT = os.getenv(\"LLM_ENPOINT\", \"http://127.0.0.1:6000/generate\")\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"OPENAI_MAX_TOKENS\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")",
+        "peekOfCode": "LLM_THRESHOLD = 100\nLLM_ENPOINT = os.getenv(\"LLM_ENPOINT\", \"http://127.0.0.1:6000/generate\")\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -6704,7 +6784,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "LLM_ENPOINT = os.getenv(\"LLM_ENPOINT\", \"http://127.0.0.1:6000/generate\")\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"OPENAI_MAX_TOKENS\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================",
+        "peekOfCode": "LLM_ENPOINT = os.getenv(\"LLM_ENPOINT\", \"http://127.0.0.1:6000/generate\")\nLLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")",
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "LLM_CONTEXT_WINDOW",
+        "kind": 5,
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "peekOfCode": "LLM_CONTEXT_WINDOW = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 10000))\n# OpenAI Configuration\nOPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -6713,7 +6802,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "OPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"OPENAI_MAX_TOKENS\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================",
+        "peekOfCode": "OPENAI_API_KEY = os.getenv(\"OPENAI_API_KEY\")\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -6722,7 +6811,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "OPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"OPENAI_MAX_TOKENS\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = \"mongodb://localhost:27017\"",
+        "peekOfCode": "OPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = \"mongodb://localhost:27017\"",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -6731,7 +6820,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "OPENAI_MAX_TOKENS = int(os.getenv(\"OPENAI_MAX_TOKENS\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = \"mongodb://localhost:27017\"\nMONGODB_NAME = \"workflow\"",
+        "peekOfCode": "OPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.7))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = \"mongodb://localhost:27017\"\nMONGODB_NAME = \"workflow\"",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -6938,16 +7027,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.tasks",
         "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "app = AppBootstrap()\n# Suppose you have a WebProject object\nmy_web_project = WebProject(\n    name=\"SampleStore\",\n    backend_url=\"\",\n    frontend_url=\"https://wikipedia.com\",\n    is_real_web=True,\n    events=[],\n    web_analysis=[],\n    urls=[],",
+        "peekOfCode": "app = AppBootstrap()\n# 1) Create a WebProject (we let web analysis fill in domain_analysis & pages).\nmy_web_project:List[WebProject] = initialize_test_demo_web_projects()[0]\n# 2) Create a TaskGenerationConfig specifying how many tasks we want.\nmy_config = TaskGenerationConfig(\n    save_task_in_db=False,\n    save_web_analysis_in_db=True,\n    enable_crawl=True,\n    generate_milestones=False,\n    # We'll specify how many tasks we want in total (global) and per URL (local):",
         "detail": "autoppia_iwa.entrypoints.tasks",
         "documentation": {}
     },
     {
-        "label": "my_web_project",
+        "label": "my_web_project:List[WebProject]",
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.tasks",
         "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "my_web_project = WebProject(\n    name=\"SampleStore\",\n    backend_url=\"\",\n    frontend_url=\"https://wikipedia.com\",\n    is_real_web=True,\n    events=[],\n    web_analysis=[],\n    urls=[],\n    data_classes={}\n)",
+        "peekOfCode": "my_web_project:List[WebProject] = initialize_test_demo_web_projects()[0]\n# 2) Create a TaskGenerationConfig specifying how many tasks we want.\nmy_config = TaskGenerationConfig(\n    save_task_in_db=False,\n    save_web_analysis_in_db=True,\n    enable_crawl=True,\n    generate_milestones=False,\n    # We'll specify how many tasks we want in total (global) and per URL (local):\n    global_tasks_to_generate=3,\n    local_tasks_to_generate_per_url=2,",
         "detail": "autoppia_iwa.entrypoints.tasks",
         "documentation": {}
     },
@@ -6956,7 +7045,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.tasks",
         "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "my_config = TaskGenerationConfig(\n    web_project=my_web_project,\n    save_task_in_db=False,\n    save_web_analysis_in_db=False,\n    enable_crawl=True,\n    generate_milestones=False,\n    number_of_prompts_per_task=1  # generate 3 tasks per URL\n)\npipeline = TaskGenerationPipeline(config=my_config)\noutput = pipeline.generate(task_difficulty_level=TaskDifficultyLevel.MEDIUM)",
+        "peekOfCode": "my_config = TaskGenerationConfig(\n    save_task_in_db=False,\n    save_web_analysis_in_db=True,\n    enable_crawl=True,\n    generate_milestones=False,\n    # We'll specify how many tasks we want in total (global) and per URL (local):\n    global_tasks_to_generate=3,\n    local_tasks_to_generate_per_url=2,\n)\n# 3) Instantiate the pipeline with that config.",
         "detail": "autoppia_iwa.entrypoints.tasks",
         "documentation": {}
     },
@@ -6965,16 +7054,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.tasks",
         "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "pipeline = TaskGenerationPipeline(config=my_config)\noutput = pipeline.generate(task_difficulty_level=TaskDifficultyLevel.MEDIUM)\nprint(\"Generated tasks:\", [t.prompt for t in output.tasks])",
-        "detail": "autoppia_iwa.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "output",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.tasks",
-        "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "output = pipeline.generate(task_difficulty_level=TaskDifficultyLevel.MEDIUM)\nprint(\"Generated tasks:\", [t.prompt for t in output.tasks])",
+        "peekOfCode": "pipeline = TaskGenerationPipeline(web_project=my_web_project, config=my_config)\n# 4) Run the pipeline.\noutput: TasksGenerationOutput = pipeline.generate()\n# 5) Print or process the tasks.\nprint(\"Generated tasks:\")\nfor t in output.tasks:\n    print(f\"- Category: {t.category} | URL: {t.url} | Prompt: {t.prompt}\")",
         "detail": "autoppia_iwa.entrypoints.tasks",
         "documentation": {}
     },
@@ -6988,20 +7068,11 @@
         "documentation": {}
     },
     {
-        "label": "WebProjectData",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.backend_demo_web.classes",
-        "description": "autoppia_iwa.src.backend_demo_web.classes",
-        "peekOfCode": "class WebProjectData():\n    authentication:dict\nclass WebProject(BaseModel):\n    name: str = Field(..., min_length=1, description=\"Name of the web project\")\n    backend_url: str = Field(..., description=\"URL of the backend server\")\n    frontend_url: str = Field(..., description=\"URL of the frontend application\")\n    is_real_web: bool = False\n    events: List[str] = Field(default_factory=list, description=\"List of events to monitor\")\n    web_analysis:Any = Field(default_factory=list, description=\"List of urls in the project\")\n    urls:List[str] = []",
-        "detail": "autoppia_iwa.src.backend_demo_web.classes",
-        "documentation": {}
-    },
-    {
         "label": "WebProject",
         "kind": 6,
         "importPath": "autoppia_iwa.src.backend_demo_web.classes",
         "description": "autoppia_iwa.src.backend_demo_web.classes",
-        "peekOfCode": "class WebProject(BaseModel):\n    name: str = Field(..., min_length=1, description=\"Name of the web project\")\n    backend_url: str = Field(..., description=\"URL of the backend server\")\n    frontend_url: str = Field(..., description=\"URL of the frontend application\")\n    is_real_web: bool = False\n    events: List[str] = Field(default_factory=list, description=\"List of events to monitor\")\n    web_analysis:Any = Field(default_factory=list, description=\"List of urls in the project\")\n    urls:List[str] = []\nclass BackendEvent(BaseModel):\n    \"\"\"",
+        "peekOfCode": "class WebProject(BaseModel):\n    name: str = Field(..., min_length=1, description=\"Name of the web project\")\n    backend_url: str = Field(..., description=\"URL of the backend server\")\n    frontend_url: str = Field(..., description=\"URL of the frontend application\")\n    is_real_web: bool = False\n    events: List[str] = Field(default_factory=list, description=\"List of events to monitor\")\n    web_analysis:Optional[DomainAnalysis] = None\n    urls:List[str] = []\nclass BackendEvent(BaseModel):\n    \"\"\"",
         "detail": "autoppia_iwa.src.backend_demo_web.classes",
         "documentation": {}
     },
@@ -7033,11 +7104,20 @@
         "documentation": {}
     },
     {
-        "label": "get_demo_webs_projects",
+        "label": "initialize_demo_webs_projects",
         "kind": 2,
         "importPath": "autoppia_iwa.src.backend_demo_web.config",
         "description": "autoppia_iwa.src.backend_demo_web.config",
-        "peekOfCode": "def get_demo_webs_projects():\n    return demo_web_projects",
+        "peekOfCode": "def initialize_demo_webs_projects():\n    for demo_web_project in demo_web_projects:\n        _load_web_analysis(demo_web_project)\n    return demo_web_projects\ndef initialize_test_demo_web_projects():\n    test_demo_web_projects = [\n        WebProject(\n            name=\"Autoppia\",\n            backend_url=\"\",\n            frontend_url=\"https://www.autoppia.com\",",
+        "detail": "autoppia_iwa.src.backend_demo_web.config",
+        "documentation": {}
+    },
+    {
+        "label": "initialize_test_demo_web_projects",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.backend_demo_web.config",
+        "description": "autoppia_iwa.src.backend_demo_web.config",
+        "peekOfCode": "def initialize_test_demo_web_projects():\n    test_demo_web_projects = [\n        WebProject(\n            name=\"Autoppia\",\n            backend_url=\"\",\n            frontend_url=\"https://www.autoppia.com\",\n            is_real_web=True,\n            events=[],\n            data_classes={}\n        )",
         "detail": "autoppia_iwa.src.backend_demo_web.config",
         "documentation": {}
     },
@@ -7100,25 +7180,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
         "description": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "peekOfCode": "class TaskPromptGenerator:\n    def __init__(\n        self,\n        web_analysis: DomainAnalysis,\n        num_prompts_per_url: int = 1,\n        llm_service: ILLMService = Provide[DIContainer.llm_service],\n    ) -> None:\n        \"\"\"\n        :param web_analysis: domain-level analysis object\n        :param num_prompts_per_url: how many prompts to generate for each URL",
-        "detail": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "documentation": {}
-    },
-    {
-        "label": "SYSTEM_MSG",
-        "kind": 5,
-        "importPath": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "description": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "peekOfCode": "SYSTEM_MSG = \"\"\"You are an expert in creating realistic web-based tasks.\nGenerate tasks that match the given domain context and webpage details.\"\"\"\n# We’ll define some dynamic instructions for each difficulty level\n# so the LLM has explicit instructions to produce varied tasks.\nTASK_INSTRUCTION = {\n    TaskDifficultyLevel.EASY: (\n        \"Generate short, single-step tasks. For example: clicking a button, filling a single text field, \"\n        \"toggling a dropdown, or logging in if it is only one step. The tasks should be feasible in this context.\"\n    ),\n    TaskDifficultyLevel.MEDIUM: (",
-        "detail": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "documentation": {}
-    },
-    {
-        "label": "TASK_INSTRUCTION",
-        "kind": 5,
-        "importPath": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "description": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "peekOfCode": "TASK_INSTRUCTION = {\n    TaskDifficultyLevel.EASY: (\n        \"Generate short, single-step tasks. For example: clicking a button, filling a single text field, \"\n        \"toggling a dropdown, or logging in if it is only one step. The tasks should be feasible in this context.\"\n    ),\n    TaskDifficultyLevel.MEDIUM: (\n        \"Generate moderate tasks that involve multiple steps. For example: logging in and updating profile info, \"\n        \"searching a product and adding it to cart, or filling a multi-field form. The tasks should remain realistic.\"\n    ),\n    TaskDifficultyLevel.HARD: (",
+        "peekOfCode": "class TaskPromptGenerator:\n    \"\"\"\n    Generates both 'global' (multi-page) and 'local' (single-page) tasks \n    for a given WebProject, which must contain:\n      - domain_analysis: DomainAnalysis\n      - pages: List[SinglePageAnalysis]\n    The pipeline is:\n      1) Discover domain-wide use cases (global).\n      2) Generate a certain number of global tasks in total.\n      3) Generate local tasks for each page, with a given number of tasks per page.",
         "detail": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
         "documentation": {}
     },
@@ -7145,7 +7207,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
         "description": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
-        "peekOfCode": "class TaskGenerationPipeline:\n    def __init__(\n        self,\n        config: TaskGenerationConfig,\n        synthetic_task_repository: BaseMongoRepository = Provide[DIContainer.synthetic_task_repository],\n        llm_service: ILLMService = Provide[DIContainer.llm_service],\n        web_analysis_repository: BaseMongoRepository = Provide[DIContainer.analysis_repository],\n    ):\n        \"\"\"\n        Initializes the task generation pipeline.",
+        "peekOfCode": "class TaskGenerationPipeline:\n    \"\"\"\n    Coordinates the entire process of:\n      1) Running web analysis (via WebAnalysisPipeline),\n      2) Building/Updating a WebProject with domain analysis & pages,\n      3) Generating tasks (both global & local) via TaskPromptGenerator,\n      4) Optionally validating and storing tasks in a repository.\n    Returns a TasksGenerationOutput object with the final tasks and timing info.\n    \"\"\"\n    def __init__(",
         "detail": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
         "documentation": {}
     },
@@ -7190,7 +7252,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "peekOfCode": "class TaskGenerationConfig(BaseModel):\n    \"\"\"\n    Configuration for task generation, including options for saving tasks, enabling crawling, and generating milestones.\n    \"\"\"\n    web_project: WebProject = Field(..., description=\"Demo web project configuration\")\n    save_task_in_db: bool = Field(False, description=\"Whether to save the task in the database\")\n    save_web_analysis_in_db: bool = Field(False, description=\"Whether to save the web analysis in the database\")\n    enable_crawl: bool = Field(True, description=\"Whether to enable crawling for task generation\")\n    generate_milestones: bool = Field(False, description=\"Whether to generate milestone tasks\")\n    number_of_prompts_per_task: int = Field(1, description=\"Number of prompts to generate per task\")",
+        "peekOfCode": "class TaskGenerationConfig(BaseModel):\n    save_task_in_db: bool = False\n    save_web_analysis_in_db: bool = True\n    enable_crawl: bool = True\n    generate_milestones: bool = False\n    number_of_prompts_per_task: int = 1  # (Optional, if needed in older code)\n    # New fields controlling how many tasks to generate:\n    global_tasks_to_generate: int = 2\n    local_tasks_to_generate_per_url: int = 2\nclass TasksGenerationOutput(BaseModel):",
         "detail": "autoppia_iwa.src.data_generation.domain.classes",
         "documentation": {}
     },
@@ -7712,7 +7774,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.llms.domain.interfaces",
         "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "peekOfCode": "class ILLMService(ABC):\n    @abstractmethod\n    def make_request(\n        self,\n        message_payload: List[Dict[str, str]],\n        llm_kwargs=None,\n        chat_completion_kwargs=None,\n    ) -> str:\n        \"\"\"\n        Make a request using LLM Local or serverless.",
+        "peekOfCode": "class ILLMService(ABC):\n    @abstractmethod\n    def make_request(\n        self,\n        message_payload: List[Dict[str, str]],\n        llm_kwargs=None,\n        chat_completion_kwargs=None,\n        json_format:bool = False, \n        schema:str = None\n    ) -> str:",
         "detail": "autoppia_iwa.src.llms.domain.interfaces",
         "documentation": {}
     },
@@ -7856,7 +7918,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "description": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
-        "peekOfCode": "MAX_TOKENS_ELEMENT_ANALYZER = 10000\nclass WebAnalysisPipeline:\n    def __init__(\n        self,\n        start_url: str,\n        analysis_repository: BaseMongoRepository = Provide[DIContainer.analysis_repository],\n        llm_service: ILLMService = Provide[DIContainer.llm_service],\n    ):\n        self.start_url = start_url\n        self.domain = urlparse(start_url).netloc",
+        "peekOfCode": "MAX_TOKENS_ELEMENT_ANALYZER = LLM_CONTEXT_WINDOW\nclass WebAnalysisPipeline:\n    def __init__(\n        self,\n        start_url: str,\n        analysis_repository: BaseMongoRepository = Provide[DIContainer.analysis_repository],\n        llm_service: ILLMService = Provide[DIContainer.llm_service],\n    ):\n        self.start_url = start_url\n        self.domain = urlparse(start_url).netloc",
         "detail": "autoppia_iwa.src.web_analysis.application.web_analysis_pipeline",
         "documentation": {}
     },
@@ -7910,7 +7972,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "peekOfCode": "class SinglePageAnalysis(BaseModel):\n    page_url: str\n    elements_analysis_result: List[Dict]\n    web_summary: LLMWebAnalysis\n    html_source: str\nclass DomainAnalysis(BaseModel):\n    domain: str\n    status: str\n    analyzed_urls: List[SinglePageAnalysis]\n    started_time: str",
+        "peekOfCode": "class SinglePageAnalysis(BaseModel):\n    page_url: str\n    elements_analysis_result: List[Dict]\n    web_summary: LLMWebAnalysis\n    html_source: str\nclass DomainAnalysis(BaseModel):\n    domain: str\n    status: str\n    page_analyses: List[SinglePageAnalysis]\n    started_time: str",
         "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "documentation": {}
     },
@@ -7919,7 +7981,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "peekOfCode": "class DomainAnalysis(BaseModel):\n    domain: str\n    status: str\n    analyzed_urls: List[SinglePageAnalysis]\n    started_time: str\n    ended_time: str\n    total_time: float\n    start_url: str",
+        "peekOfCode": "class DomainAnalysis(BaseModel):\n    domain: str\n    status: str\n    page_analyses: List[SinglePageAnalysis]\n    started_time: str\n    ended_time: str\n    total_time: float\n    start_url: str\n    category:str = \"\"\n    urls:List[str] = Field(default_factory=list, description=\"List of urls\")",
         "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "documentation": {}
     },
@@ -11654,7 +11716,7 @@
         "kind": 5,
         "importPath": "tests.web_analysis.web_crawler.test_web_crawler",
         "description": "tests.web_analysis.web_crawler.test_web_crawler",
-        "peekOfCode": "web_crawler = WebCrawler(crawler_config.start_url)\n# Use the crawler to get URLs up to the maximum depth\ncrawled_urls = web_crawler.crawl_urls(crawler_config.start_url, crawler_config.max_depth)\n# Print the crawled URLs\nprint(\"Crawled URLs:\")\nfor url in crawled_urls:\n    print(url)\n# Get links from a specific URL using Selenium\nselenium_links = web_crawler.get_links_selenium(\"https://ajedrezenmadrid.com\")\n# Print the links obtained using Selenium",
+        "peekOfCode": "web_crawler = WebCrawler(crawler_config.start_url)\n# Use the crawler to get URLs up to the maximum depth\ncrawled_urls = web_crawler.crawl_urls(crawler_config.start_url, crawler_config.max_depth)\n# Print the crawled URLs\nprint(\"Crawled URLs:\")\nfor url in crawled_urls:\n    print(url)\n# Get links from a specific URL using Selenium\nselenium_links = web_crawler.get_links(\"https://ajedrezenmadrid.com\")\n# Print the links obtained using Selenium",
         "detail": "tests.web_analysis.web_crawler.test_web_crawler",
         "documentation": {}
     },
@@ -11663,7 +11725,7 @@
         "kind": 5,
         "importPath": "tests.web_analysis.web_crawler.test_web_crawler",
         "description": "tests.web_analysis.web_crawler.test_web_crawler",
-        "peekOfCode": "crawled_urls = web_crawler.crawl_urls(crawler_config.start_url, crawler_config.max_depth)\n# Print the crawled URLs\nprint(\"Crawled URLs:\")\nfor url in crawled_urls:\n    print(url)\n# Get links from a specific URL using Selenium\nselenium_links = web_crawler.get_links_selenium(\"https://ajedrezenmadrid.com\")\n# Print the links obtained using Selenium\nprint(\"Links obtained using Selenium:\")\nfor link in selenium_links:",
+        "peekOfCode": "crawled_urls = web_crawler.crawl_urls(crawler_config.start_url, crawler_config.max_depth)\n# Print the crawled URLs\nprint(\"Crawled URLs:\")\nfor url in crawled_urls:\n    print(url)\n# Get links from a specific URL using Selenium\nselenium_links = web_crawler.get_links(\"https://ajedrezenmadrid.com\")\n# Print the links obtained using Selenium\nprint(\"Links obtained using Selenium:\")\nfor link in selenium_links:",
         "detail": "tests.web_analysis.web_crawler.test_web_crawler",
         "documentation": {}
     },
@@ -11672,7 +11734,7 @@
         "kind": 5,
         "importPath": "tests.web_analysis.web_crawler.test_web_crawler",
         "description": "tests.web_analysis.web_crawler.test_web_crawler",
-        "peekOfCode": "selenium_links = web_crawler.get_links_selenium(\"https://ajedrezenmadrid.com\")\n# Print the links obtained using Selenium\nprint(\"Links obtained using Selenium:\")\nfor link in selenium_links:\n    print(link)\n# Create a graph of the crawled URLs\ngraph, links = web_crawler.create_graph(crawler_config.start_url)\n# Print the links in the graph\nprint(\"Links in the graph:\")\nfor link in links:",
+        "peekOfCode": "selenium_links = web_crawler.get_links(\"https://ajedrezenmadrid.com\")\n# Print the links obtained using Selenium\nprint(\"Links obtained using Selenium:\")\nfor link in selenium_links:\n    print(link)\n# Create a graph of the crawled URLs\ngraph, links = web_crawler.create_graph(crawler_config.start_url)\n# Print the links in the graph\nprint(\"Links in the graph:\")\nfor link in links:",
         "detail": "tests.web_analysis.web_crawler.test_web_crawler",
         "documentation": {}
     },

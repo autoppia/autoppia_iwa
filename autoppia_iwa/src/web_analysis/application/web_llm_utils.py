@@ -1,6 +1,6 @@
 import copy
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from dependency_injector.wiring import Provide
 
@@ -78,13 +78,21 @@ class WebLLMAnalyzer:
         )
         return self._analyze_prompt_template(template=template)
 
-    def _analyze_prompt_template(self, template: PromptLLMTemplate) -> LLMWebAnalysis:
+    def _analyze_prompt_template(self, template: PromptLLMTemplate) -> Optional[LLMWebAnalysis]:
         prompt = PromptLLMTemplate.clean_prompt(template.current_prompt)
         json_schema = template.get_schema()
         llm_message = self._create_llm_message(prompt)
-        response: str = self.llm_service.make_request(llm_message, {"chat_format": "chatml"}, json_schema)
-        json_result = self._parse_json_response(response)
-        analysis = LLMWebAnalysis(**json_result)
+
+        analysis: Optional[LLMWebAnalysis] = None
+        tries = 3
+        for i in range(tries):
+            try:
+                response: str = self.llm_service.make_request(llm_message, {"chat_format": "chatml"}, json_schema)
+                json_result = self._parse_json_response(response)
+                analysis = LLMWebAnalysis(**json_result)
+                break
+            except Exception as e:
+                print(f"Error while parsing llm response into LLMWebAnalysis instance: {e}")
         return analysis
 
     @staticmethod
