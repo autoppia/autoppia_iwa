@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass, field, fields
 from typing import Dict, List, Optional
 
-from autoppia_iwa.src.llms.domain.openai.utils import OpenAIUtilsMixin
+from ...llms.domain.openai.utils import OpenAIUtilsMixin
 
 
 @dataclass

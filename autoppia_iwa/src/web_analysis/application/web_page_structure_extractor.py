@@ -1,13 +1,12 @@
-import asyncio
 from dataclasses import fields
-from typing import List, Optional, Union
 from pathlib import Path
+from typing import List, Optional, Union
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
-from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE, PROFILE_DIR
-from autoppia_iwa.src.web_analysis.domain.classes import Element
+from ....config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
+from ..domain.classes import Element
 
 
 class WebPageStructureExtractor:
@@ -68,14 +67,16 @@ class WebPageStructureExtractor:
 
             async with async_playwright() as p:
                 launch_options = {"headless": True}
-
-                if PROFILE_DIR and Path(PROFILE_DIR).exists():
-                    launch_options["user_data_dir"] = str(PROFILE_DIR)
                 if CHROME_PATH and Path(CHROME_PATH).exists():
                     launch_options["executable_path"] = str(CHROME_PATH)
 
-                browser = await p.chromium.launch(**launch_options)
-                context = await browser.new_context()
+                if PROFILE_DIR and Path(PROFILE_DIR).exists():
+                    launch_options["user_data_dir"] = str(PROFILE_DIR)
+                    context = await p.chromium.launch_persistent_context(**launch_options)
+                else:
+                    browser = await p.chromium.launch(**launch_options)
+                    context = await browser.new_context()
+
                 page = await context.new_page()
                 await page.goto(source)
                 # Replace time.sleep(2) with async wait
@@ -83,9 +84,10 @@ class WebPageStructureExtractor:
 
                 html_source = await page.content()
                 soup = BeautifulSoup(html_source, "html.parser")
-
-                await context.close()
-                await browser.close()
+                if context:
+                    await context.close()
+                if not (PROFILE_DIR and Path(PROFILE_DIR).exists()):
+                    await browser.close()
         else:
             soup = source
 
@@ -97,9 +99,7 @@ class WebPageStructureExtractor:
             cleaned_soup_body = cleaned_soup
 
         for soup_element in cleaned_soup_body.find_all(allowed_tags, recursive=False):
-            element, element_id_counter = self.__convert_soup_element_to_element(
-                soup_element, allowed_tags, None, "/", element_id_counter
-            )
+            element, element_id_counter = self.__convert_soup_element_to_element(soup_element, allowed_tags, None, "/", element_id_counter)
             if element:
                 elements.append(element)
 
@@ -155,9 +155,7 @@ class WebPageStructureExtractor:
             "element_id": element_id,
             "parent_element_id": parent_id,
             "path": path,
-            "data_attributes": {
-                k: v for k, v in soup_element.attrs.items() if k.startswith("data-")
-            },
+            "data_attributes": {k: v for k, v in soup_element.attrs.items() if k.startswith("data-")},
         }
 
         if not info["data_attributes"]:
@@ -183,9 +181,7 @@ class WebPageStructureExtractor:
         element = Element(**filtered_info)
 
         for child in soup_element.children:
-            child_info, current_id = self.__convert_soup_element_to_element(
-                child, allowed_tags, element_id, path, current_id
-            )
+            child_info, current_id = self.__convert_soup_element_to_element(child, allowed_tags, element_id, path, current_id)
             if child_info:
                 element.children.append(child_info)
 

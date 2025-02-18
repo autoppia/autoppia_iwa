@@ -1,13 +1,13 @@
 import asyncio
 import aiohttp
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.execution.actions.actions import ACTION_CLASS_MAP, BaseAction
-from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.base import BaseAgent
+from ..data_generation.domain.classes import Task
+from ..execution.actions.actions import BaseAction
+from .base import IWebAgent
+from .classes import TaskSolution
 
 
-class ApifiedWebAgent(BaseAgent):
+class ApifiedWebAgent(IWebAgent):
     """
     Calls a remote /solve_task endpoint and rebuilds a TaskSolution.
     """
@@ -29,22 +29,11 @@ class ApifiedWebAgent(BaseAgent):
                     actions_data = response_json.get("actions", [])
                     web_agent_id = response_json.get("web_agent_id", "unknown")
 
-                    # Rebuild
-                    rebuilt_actions = []
-                    for action_data in actions_data:
-                        action_type = action_data.get("type")
-                        if action_type in ACTION_CLASS_MAP:
-                            action_class = ACTION_CLASS_MAP[action_type]
-                            action = action_class.model_validate(action_data)
-                            rebuilt_actions.append(action)
-                        else:
-                            print(f"Warning: Unknown action type {action_type}")
-                            action = BaseAction.model_validate(action_data)
-                            rebuilt_actions.append(action)
+                # Rebuild
+                rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
+                print(f"Rebuilt Actions: {rebuilt_actions}")
 
-                    print(f"Rebuilt Actions: {rebuilt_actions}")
-
-                    return TaskSolution(task=task, actions=rebuilt_actions, web_agent_id=web_agent_id)
+                return TaskSolution(task=task, actions=rebuilt_actions, web_agent_id=web_agent_id)
             except Exception as e:
                 print(f"Error during HTTP request: {e}")
                 return TaskSolution(task=task, actions=[], web_agent_id="unknown")

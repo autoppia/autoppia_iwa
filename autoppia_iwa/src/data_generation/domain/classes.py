@@ -1,7 +1,9 @@
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field, field_validator
+
 from ...web_analysis.domain.analysis_classes import DomainAnalysis
 from ..domain.tests_classes import BaseTaskTest
 
@@ -68,6 +70,7 @@ class Task(BaseModel):
         """
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["tests"] = [test.model_dump() for test in self.tests]
+        base_dump.pop("web_analysis", None)
         return base_dump
 
     @classmethod

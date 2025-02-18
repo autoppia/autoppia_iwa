@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -41,8 +42,8 @@ class TestTaskGenerationPipeline(unittest.TestCase):
         task_input = TaskGenerationConfig(web_project=web_project, save_web_analysis_in_db=True, save_task_in_db=True)
 
         # Run the task generation pipeline
-        task_output = TaskGenerationPipeline(config=task_input, llm_service=self.llm_service, synthetic_task_repository=self.task_repo, web_analysis_repository=self.analysis_repo).generate()
-
+        task_generator = TaskGenerationPipeline(config=task_input, llm_service=self.llm_service, synthetic_task_repository=self.task_repo, web_analysis_repository=self.analysis_repo)
+        task_output = asyncio.run(task_generator.generate())
         # Validate the output
         self.assertIsNotNone(task_output, "Task generation pipeline returned None.")
         self.assertIsNotNone(task_output.tasks, "Task generation output has no tasks.")

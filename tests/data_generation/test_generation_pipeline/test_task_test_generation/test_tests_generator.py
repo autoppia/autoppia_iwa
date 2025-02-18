@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -27,7 +28,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         cls.example_enable_crawl = False
         cls.example_task_description = "Navigate to the homepage and verify the page title."
 
-    def _generate_tests_for_web_project(self, url: str, task_description: str, enable_crawl: bool, is_real_web: bool = False) -> list:
+    async def _generate_tests_for_web_project(self, url: str, task_description: str, enable_crawl: bool, is_real_web: bool = False) -> list:
         """
         Helper method to perform web analysis and generate task-based tests.
 
@@ -42,7 +43,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         """
         # Perform web analysis
         web_analysis_pipeline = WebAnalysisPipeline(start_url=url, analysis_repository=self.analysis_repo, llm_service=self.llm_service)
-        web_analysis = web_analysis_pipeline.analyze(enable_crawl=enable_crawl, save_results_in_db=True)
+        web_analysis = await web_analysis_pipeline.analyze(enable_crawl=enable_crawl, save_results_in_db=True)
 
         self.assertIsNotNone(web_analysis, f"Web analysis should not return None for {url}.")
         self.assertTrue(
@@ -55,7 +56,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
 
         # Generate task-based tests
         task_test_generator = TaskTestGenerator(web_project=web_project, web_analysis=web_analysis, llm_service=self.llm_service)
-        tests = task_test_generator.generate_task_tests(task_description, url)
+        tests = await task_test_generator.generate_task_tests(task_description, url)
 
         self.assertIsInstance(tests, list, "Generated tests should be a list.")
         self.assertGreater(len(tests), 0, f"At least one test should be generated for {url}.")
@@ -66,14 +67,28 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         """
         Test generating task-based tests for a local web application.
         """
-        tests = self._generate_tests_for_web_project(url=self.local_page_url, task_description=self.local_task_description, enable_crawl=self.local_enable_crawl, is_real_web=False)
+        tests = asyncio.run(
+            self._generate_tests_for_web_project(
+                url=self.local_page_url,
+                task_description=self.local_task_description,
+                enable_crawl=self.local_enable_crawl,
+                is_real_web=False,
+            )
+        )
         print("Generated Tests (Local Web):", tests)
 
     def test_task_test_generation_for_real_web_example(self) -> None:
         """
         Test generating task-based tests for real web.
         """
-        tests = self._generate_tests_for_web_project(url=self.example_url, task_description=self.example_task_description, enable_crawl=self.example_enable_crawl, is_real_web=True)
+        tests = asyncio.run(
+            self._generate_tests_for_web_project(
+                url=self.example_url,
+                task_description=self.example_task_description,
+                enable_crawl=self.example_enable_crawl,
+                is_real_web=True,
+            )
+        )
         print("Generated Tests (Real Web):", tests)
 
 

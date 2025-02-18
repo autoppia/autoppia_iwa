@@ -2,11 +2,13 @@
 import asyncio
 import json
 import logging
-from typing import Union, Optional
-from typing_extensions import Annotated, Literal
+import traceback
+from functools import wraps
+from typing import Optional, Union
 
-from pydantic import Field
 from playwright.async_api import Page
+from pydantic import Field
+from typing_extensions import Literal
 
 # Use your new combined base classes
 from .base import BaseAction, BaseActionWithSelector
@@ -16,21 +18,27 @@ action_logger = logging.getLogger(__name__)
 
 def log_action(action_name: str):
     """Decorator to log action execution around the `execute` call."""
+
     def decorator(func):
+        @wraps(func)
         async def wrapper(self, page: Optional[Page], backend_service, web_agent_id: str):
             action_logger.debug(f"Executing {action_name} with data: {self.model_dump()}")
             try:
                 return await func(self, page, backend_service, web_agent_id)
             except Exception as e:
-                action_logger.error(f"{action_name} failed: {e}")
+                error_details = traceback.format_exc()
+                action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
                 raise
+
         return wrapper
+
     return decorator
 
 
 # -------------------------------------------------------------------
 # Concrete Actions
 # -------------------------------------------------------------------
+
 
 class ClickAction(BaseActionWithSelector):
     type: Literal["ClickAction"] = "ClickAction"
@@ -130,12 +138,14 @@ class ScrollAction(BaseAction):
         if self.up:
             try:
                 await page.evaluate(f"window.scrollBy(0, -{self.value});")
-            except:
+            except Exception as e:
+                print(e)
                 await page.keyboard.press("PageUp")
         elif self.down:
             try:
                 await page.evaluate(f"window.scrollBy(0, {self.value});")
-            except:
+            except Exception as e:
+                print(e)
                 await page.keyboard.press("PageDown")
         else:
             # Attempt text-based scroll
@@ -150,7 +160,8 @@ class ScrollAction(BaseAction):
                         await locator.first.scroll_into_view_if_needed()
                         await asyncio.sleep(0.5)
                         return
-                except:
+                except Exception as e:
+                    print(e)
                     continue
             raise ValueError(f"Could not scroll to: {self.value}")
 
@@ -231,7 +242,7 @@ class GetDropDownOptions(BaseActionWithSelector):
                         };
                     }
                     """,
-                    xpath
+                    xpath,
                 )
                 if options:
                     action_logger.debug(f"Found dropdown in frame {frame_index}")
@@ -285,7 +296,7 @@ class SelectDropDownOption(BaseActionWithSelector):
                         };
                     }
                     """,
-                    xpath
+                    xpath,
                 )
                 if dropdown_info.get("found"):
                     selected = await frame.locator(xpath).nth(0).select_option(label=self.text, timeout=1000)
@@ -314,78 +325,3 @@ class IdleAction(BaseAction):
     @log_action("IdleAction")
     async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
         pass
-
-
-# -------------------------------------------------------------------
-# Union Type to Handle All Actions by Discriminator
-# -------------------------------------------------------------------
-
-AllActionsUnion = Annotated[
-    Union[
-        ClickAction,
-        DoubleClickAction,
-        NavigateAction,
-        TypeAction,
-        SelectAction,
-        HoverAction,
-        WaitAction,
-        ScrollAction,
-        SubmitAction,
-        AssertAction,
-        DragAndDropAction,
-        ScreenshotAction,
-        SendKeysIWAAction,
-        GetDropDownOptions,
-        SelectDropDownOption,
-        UndefinedAction,
-        IdleAction,
-    ],
-    Field(discriminator="type")
-]
-
-
-# -------------------------------------------------------------------
-# MAPS (as requested, appended at the end)
-# -------------------------------------------------------------------
-
-ACTION_CLASS_MAP_LOWER = {
-    "click": ClickAction,
-    "type": TypeAction,
-    "hover": HoverAction,
-    "navigate": NavigateAction,
-    "dragAndDrop": DragAndDropAction,
-    "submit": SubmitAction,
-    "doubleClick": DoubleClickAction,
-    "scroll": ScrollAction,
-    "screenshot": ScreenshotAction,
-    "wait": WaitAction,
-    "assert": AssertAction,
-    "select": SelectAction,
-    "idle": IdleAction,
-    "undefined": UndefinedAction,
-    "sendkeysiwa": SendKeysIWAAction,
-    "getdropdownoptions": GetDropDownOptions,
-    "selectdropdownoption": SelectDropDownOption,
-}
-
-ACTION_CLASS_MAP_CAPS = {
-    "ClickAction": ClickAction,
-    "TypeAction": TypeAction,
-    "HoverAction": HoverAction,
-    "NavigateAction": NavigateAction,
-    "DragAndDropAction": DragAndDropAction,
-    "SubmitAction": SubmitAction,
-    "DoubleClickAction": DoubleClickAction,
-    "ScrollAction": ScrollAction,
-    "ScreenshotAction": ScreenshotAction,
-    "WaitAction": WaitAction,
-    "AssertAction": AssertAction,
-    "SelectAction": SelectAction,
-    "IdleAction": IdleAction,
-    "UndefinedAction": UndefinedAction,
-    "SendKeysIWAAction": SendKeysIWAAction,
-    "GetDropDownOptions": GetDropDownOptions,
-    "SelectDropDownOption": SelectDropDownOption,
-}
-
-ACTION_CLASS_MAP = {**ACTION_CLASS_MAP_CAPS, **ACTION_CLASS_MAP_LOWER}

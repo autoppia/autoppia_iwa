@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Dict, List, Optional
 
@@ -66,7 +67,7 @@ class TaskPromptGenerator:
         """
         domain_prompts = []
         for page_analysis in self.web_analysis.analyzed_urls:
-            prompts_for_url = self.generate_task_prompts_for_url(page_analysis.page_url, page_analysis.html_source, task_difficulty_level)
+            prompts_for_url = asyncio.run(self.generate_task_prompts_for_url(page_analysis.page_url, page_analysis.html_source, task_difficulty_level))
             domain_prompts.append(prompts_for_url)
         return domain_prompts
 

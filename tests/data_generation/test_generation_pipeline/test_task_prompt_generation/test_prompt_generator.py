@@ -17,7 +17,8 @@ class TestTaskPromptGenerator(unittest.TestCase):
         self.test_data = self._get_mock_web_analysis()
         self.web_analysis = DomainAnalysis(**self.test_data)
 
-    def _get_mock_web_analysis(self):
+    @staticmethod
+    def _get_mock_web_analysis():
         test_data = {
             "domain": "localhost:8000",
             "status": "done",

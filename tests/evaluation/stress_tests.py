@@ -7,10 +7,10 @@ from pathlib import Path
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-from autoppia_iwa.src.execution.actions.actions import ACTION_CLASS_MAP
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.shared.utils import generate_random_web_agent_id, instantiate_test
+from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # Configure logging
@@ -88,14 +88,14 @@ class ConcurrentTaskEvaluationTest(unittest.TestCase):
                 task=Task(
                     prompt=task["prompt"],
                     url=task["url"],
-                    tests=[instantiate_test(test) for test in task["tests"]],
+                    tests=BaseTaskTest.assign_tests(task["tests"]),
                 ),
-                actions=[BaseAction.model_validate(action)for action in task.get("actions", [])],
+                actions=[BaseAction.create_action(action) for action in task.get("actions", [])],
                 web_agent_id=task.get("web_agent_id", generate_random_web_agent_id()),
             )
             for task in tasks_data["tasks"]
         ]
-        evaluator_config = EvaluatorConfig(current_url=self.start_url, save_results_in_db=self.save_results_in_db)
+        evaluator_config = EvaluatorConfig(save_results_in_db=self.save_results_in_db)
 
         evaluator = ConcurrentEvaluator(evaluator_config)
         evaluated_tasks = asyncio.run(evaluator.evaluate_all_tasks(evaluator_input))
