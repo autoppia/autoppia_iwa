@@ -52,13 +52,8 @@ class TaskGenerationPipeline:
             # Initialize generators only once
             task_prompt_generator, task_test_generator = self._initialize_generators(web_analysis)
 
-            print("Web Analysis", web_analysis.analyzed_urls)
-
             # TASK PROMPT
             for page_analysis in web_analysis.analyzed_urls:
-                print()
-                print(page_analysis)
-                print()
                 current_html = await self._get_page_html(page_analysis)
 
                 prompts_for_url = await task_prompt_generator.generate_task_prompts_for_url(
@@ -68,9 +63,7 @@ class TaskGenerationPipeline:
                 )
 
                 for task_prompts in prompts_for_url.task_prompts:
-                    print()
-                    print(task_prompts)
-                    print()
+    
                     # TASK TEST
                     task_tests = await task_test_generator.generate_task_tests(
                         task_description=task_prompts,
