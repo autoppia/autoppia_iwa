@@ -1,4 +1,5 @@
 import asyncio
+
 import aiohttp
 
 from ..data_generation.domain.classes import Task

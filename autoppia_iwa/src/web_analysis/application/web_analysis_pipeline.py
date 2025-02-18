@@ -9,6 +9,7 @@ from ...di_container import DIContainer
 from ...llms.domain.interfaces import ILLMService
 from ...shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 from ..domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
+from ..domain.classes import WebCrawlerConfig
 from .web_crawler import WebCrawler
 from .web_llm_utils import WebLLMAnalyzer
 from .web_page_structure_extractor import WebPageStructureExtractor
@@ -28,7 +29,8 @@ class WebAnalysisPipeline:
         self.llm_service = llm_service
         self.analysis_repository = analysis_repository
 
-        self.web_crawler = WebCrawler(start_url=start_url)
+        crawler_config = WebCrawlerConfig(start_url=start_url)
+        self.web_crawler = WebCrawler(crawler_config)
         self.page_structure_extractor = WebPageStructureExtractor()
         self.llm_analyzer = WebLLMAnalyzer(llm_service=self.llm_service)
 

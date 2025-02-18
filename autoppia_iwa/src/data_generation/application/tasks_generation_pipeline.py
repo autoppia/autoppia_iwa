@@ -63,7 +63,6 @@ class TaskGenerationPipeline:
                 )
 
                 for task_prompts in prompts_for_url.task_prompts:
-    
                     # TASK TEST
                     task_tests = await task_test_generator.generate_task_tests(
                         task_description=task_prompts,
