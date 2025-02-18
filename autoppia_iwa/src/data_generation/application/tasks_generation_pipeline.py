@@ -48,12 +48,12 @@ class TaskGenerationPipeline:
             web_analysis = await self._run_web_analysis()
             if not web_analysis:
                 raise ValueError("Failed to run web analysis!")
-            
+
             print(1)
             # Initialize generators only once
             task_prompt_generator, task_test_generator = self._initialize_generators(web_analysis)
-            print(task_prompt_generator, task_test_generator)
 
+            print(web_analysis.analyzed_urls)
             # TASK PROMPT
             for page_analysis in web_analysis.analyzed_urls:
                 print()
