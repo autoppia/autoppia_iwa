@@ -84,7 +84,6 @@ class ActionRegistry:
         # Register with a lowercase version of action_type without "Action"
         action_key = action_type.replace("Action", "").lower()
         cls._registry[action_key] = action_class
-        logger.info(f"Registered action: {action_key}")
 
     @classmethod
     def get(cls, action_type: str) -> Type["BaseAction"]:
