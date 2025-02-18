@@ -1,5 +1,5 @@
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
-from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, FindInHtmlTest
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, FindInHtmlTest, CheckPageViewEventTest
 from autoppia_iwa.src.web_agents.classes import Task
 
 TASK_EXAMPLES = [
@@ -25,7 +25,8 @@ TASK_EXAMPLES = [
         specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
         tests=[
             CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='login'),
-            FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['logout', 'sign out', 'welcome']),
+            FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['email']),
+            CheckPageViewEventTest(description='Verify if the backend emitted the specified event', test_type='backend', page_view_url="/login"),
         ],
         milestones=None,
         web_analysis=None,
@@ -41,14 +42,14 @@ TASK_EXAMPLES = [
     #     milestones=None,
     #     web_analysis=None,
     # ),
-    Task(
-        prompt="Navigate to the 'About Us' section by clicking on the 'About Us' link in the header menu.",
-        url='http://localhost:8000/',
-        specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
-        tests=[],
-        milestones=None,
-        web_analysis=None,
-    ),
+    # Task(
+    #     prompt="Navigate to the 'About Us' section by clicking on the 'About Us' link in the header menu.",
+    #     url='http://localhost:8000/',
+    #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
+    #     tests=[],
+    #     milestones=None,
+    #     web_analysis=None,
+    # ),
     # Task(
     #     prompt='Fill out the contact form by entering your name, email, and message, then submit the form to send your inquiry.',
     #     url='http://localhost:8000/',
