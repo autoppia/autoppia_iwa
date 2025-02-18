@@ -6,6 +6,7 @@ from ..data_generation.domain.classes import Task
 from ..execution.actions.actions import BaseAction
 from .base import IWebAgent
 from .classes import TaskSolution
+from ...src.shared.utils import generate_random_web_agent_id
 
 
 class ApifiedWebAgent(IWebAgent):
@@ -13,8 +14,9 @@ class ApifiedWebAgent(IWebAgent):
     Calls a remote /solve_task endpoint and rebuilds a TaskSolution.
     """
 
-    def __init__(self, name: str, host: str, port: int, timeout=45):
-        self.name = name
+    def __init__(self, host: str, port: int, id:str | None = None, name: str | None = None, timeout=45):
+        self.id = id or generate_random_web_agent_id()
+        self.name = name or f"Agent {self.id}"
         self.base_url = f"http://{host}:{port}"
         self.timeout = timeout
         super().__init__()

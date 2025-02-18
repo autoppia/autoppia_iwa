@@ -1,29 +1,23 @@
-import asyncio
-import statistics
-import traceback
-from typing import List
-
-import matplotlib.pyplot as plt
-
-from autoppia_iwa.config.config import AGENT_HOST, AGENT_NAME, AGENT_PORT
-from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
-from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.base import IWebAgent
+from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
+from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+import asyncio
+import statistics
+from typing import List
+import matplotlib.pyplot as plt
+
 
 app = AppBootstrap()
-browser_use_agent = ApifiedWebAgent(name=AGENT_NAME, host=AGENT_HOST, port=AGENT_PORT)
-
-AGENTS: List[IWebAgent] = [RandomClickerWebAgent(), browser_use_agent]
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -45,7 +39,7 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
 
         # Prepare evaluator input and configuration.
         evaluator_input = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(save_results_in_db=False)
+        evaluator_config = EvaluatorConfig(current_url=task.url, save_results_in_db=False)
         evaluator = ConcurrentEvaluator(evaluator_config)
 
         # Evaluate the task solution.
@@ -72,7 +66,7 @@ def compute_statistics(scores: List[float]) -> dict:
     return stats
 
 
-async def generate_tasks_for_project(demo_project):
+async def generate_tasks_for_project(demo_project, generate_new_tasks=True):
     """
     Generate tasks for the given demo project.
 
@@ -80,7 +74,7 @@ async def generate_tasks_for_project(demo_project):
     through the TaskGenerationPipeline.
     """
     task_input = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False)
-    if True and TASK_EXAMPLES:
+    if not generate_new_tasks and TASK_EXAMPLES:
         tasks = TASK_EXAMPLES
     else:
         print("Generating Tasks...")
@@ -146,38 +140,33 @@ def plot_agent_results(results, agents):
 
 
 async def main():
-    try:
-        # ---------------------------
-        # 1. Initialize Agents and Results Storage.
-        # ---------------------------
-        agents: List[IWebAgent] = AGENTS
-        results = {}
+    # ---------------------------
+    # 1. Initialize Agents and Results Storage.
+    # ---------------------------
+    agents: List[BaseAgent] = AGENTS
+    results = {}
+    for agent in agents:
+        results[agent.id] = {"global_scores": [], "projects": {}}
+
+    # ---------------------------
+    # 2. Process Each Demo Web Project.
+    # ---------------------------
+    for demo_project in demo_web_projects:
+        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=False)
+        for task in tasks:
+            print(task)
         for agent in agents:
-            if not hasattr(agent, "id"):
-                id = generate_random_web_agent_id()
-                agent.id = id
-            results[agent.id] = {"global_scores": [], "projects": {}}
+            await evaluate_project_for_agent(agent, demo_project, tasks, results)
 
-        # ---------------------------
-        # 2. Process Each Demo Web Project.
-        # ---------------------------
-        for demo_project in demo_web_projects:
-            tasks = await generate_tasks_for_project(demo_project)
-            for agent in agents:
-                await evaluate_project_for_agent(agent, demo_project, tasks, results)
+    # ---------------------------
+    # 3. Print Performance Statistics.
+    # ---------------------------
+    print_performance_statistics(results, agents)
 
-        # ---------------------------
-        # 3. Print Performance Statistics.
-        # ---------------------------
-        print_performance_statistics(results, agents)
-
-        # ---------------------------
-        # 4. Plot the Agent Results.
-        # ---------------------------
-        plot_agent_results(results, agents)
-    except Exception as e:
-        print(e)
-        print(traceback.format_exc())
+    # ---------------------------
+    # 4. Plot the Agent Results.
+    # ---------------------------
+    plot_agent_results(results, agents)
 
 
 if __name__ == "__main__":
