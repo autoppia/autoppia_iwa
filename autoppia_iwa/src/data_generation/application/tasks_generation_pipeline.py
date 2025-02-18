@@ -82,6 +82,7 @@ class TaskGenerationPipeline:
                         self.synthetic_task_repository.save(global_task.model_dump())
 
                     global_tasks_output.tasks.append(global_task)
+                    print("Task Generated.")
 
             global_tasks_output.total_phase_time = (datetime.now() - start_time).total_seconds()
         except Exception as e:
