@@ -62,6 +62,7 @@ class Task(BaseModel):
     tests: List[BaseTaskTest] = Field(default_factory=list, description="List of tests associated with the task")
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
+    is_web_real: bool = False
 
     # DONT MODIFY BASE MODEL_DUMP METHOD!
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:

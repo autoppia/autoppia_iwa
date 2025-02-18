@@ -111,10 +111,10 @@ async def evaluate_tasks(tasks_data: Dict, output_file: Path) -> List[Evaluation
                 prompt=task["prompt"],
                 url=task["url"],
                 tests=BaseTaskTest.assign_tests(task["tests"]),
+                is_web_real=True,
             ),
             actions=[BaseAction.create_action(action) for action in task.get("actions", [])],
             web_agent_id=task.get("web_agent_id", generate_random_web_agent_id()),
-            is_web_real=True,
         )
         for task in tasks_data["tasks"]
     ]

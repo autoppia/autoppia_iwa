@@ -93,7 +93,7 @@ class ConcurrentEvaluator(IEvaluator):
         task = task_solution.task
         actions = task_solution.actions
         web_agent_id = task_solution.web_agent_id
-        is_web_real = task_solution.is_web_real
+        is_web_real = task_solution.task.is_web_real
 
         if not actions:
             return EvaluationResult(web_agent_id=web_agent_id, final_score=0, test_results=[], feedback=None, execution_history=[])
