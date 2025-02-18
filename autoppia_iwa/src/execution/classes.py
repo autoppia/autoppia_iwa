@@ -27,9 +27,10 @@ class BrowserSnapshot(BaseModel):
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["timestamp"] = self.timestamp.isoformat() if self.timestamp else None
         base_dump["backend_events"] = [event.model_dump() for event in self.backend_events]
-        base_dump.pop("prev_html", None)
-        base_dump.pop("current_html", None)
-        base_dump.pop("action", None)
+
+        # Exclude fields that are not needed in the dump
+        base_dump = {key: value for key, value in base_dump.items() if key not in {"prev_html", "current_html", "action", "screenshot_before", "screenshot_after"}}
+
         return base_dump
 
 
