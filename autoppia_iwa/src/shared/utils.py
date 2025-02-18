@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup, Comment
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
-from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest
 
 
 async def extract_html(page_url):
@@ -78,29 +77,6 @@ def clean_html(html_content: str) -> str:
 
     cleaned_html = soup.body if soup.body else soup
     return cleaned_html.prettify()
-
-
-def instantiate_test(test_data):
-    if test_data["test_type"] == "frontend":
-        return FindInHtmlTest(
-            description=test_data["description"],
-            test_type=test_data["test_type"],
-            keywords=test_data["keywords"],
-        )
-    elif test_data["test_type"] == "backend":
-        if "page_view_url" in test_data:
-            return CheckPageViewEventTest(
-                description=test_data["description"],
-                test_type=test_data["test_type"],
-                page_view_url=test_data["page_view_url"],
-            )
-        return CheckEventEmittedTest(
-            description=test_data["description"],
-            test_type=test_data["test_type"],
-            event_name=test_data["event_name"],
-        )
-    else:
-        raise ValueError(f"Unknown test type: {test_data['test_type']}")
 
 
 def generate_random_web_agent_id(length=16):

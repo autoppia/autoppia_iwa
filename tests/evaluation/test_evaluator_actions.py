@@ -3,9 +3,10 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.shared.utils import generate_random_web_agent_id, instantiate_test
+from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
@@ -32,11 +33,10 @@ class TestActionExecution(unittest.TestCase):
             "milestones": None,
             "web_analysis": None,
         }
-        tests = [instantiate_test(test) for test in task_data["tests"]]
         cls.task = Task(
             prompt=task_data["prompt"],
             url=task_data["url"],
-            tests=tests,
+            tests=BaseTaskTest.assign_tests(task_data["tests"]),
             milestones=task_data["milestones"],
             web_analysis=task_data["web_analysis"],
         )
