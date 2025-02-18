@@ -29,7 +29,7 @@ Respond in JSON format including the following information:
 - seo_considerations: Mention any elements that might impact the website's search engine optimization (SEO).
 - additional_notes: use this field to provide extra information that you believe is relevant. 
 
-Do not add boilerplate or not usefull information. Only add quality information that adds value and insights to the understanding of the web purpose. 
+Do not add boilerplate or not useful information. Only add quality information that adds value and insights to the understanding of the web purpose. 
 Avoid explanations of what is a header or footer etc.
 If something do not add value set it as null. 
 Given the limited response size, be concise and focus on the most important information.
