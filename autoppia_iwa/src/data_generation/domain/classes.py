@@ -70,6 +70,7 @@ class Task(BaseModel):
         """
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["tests"] = [test.model_dump() for test in self.tests]
+        base_dump.pop("web_analysis", None)
         return base_dump
 
     @classmethod
