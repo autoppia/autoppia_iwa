@@ -1,6 +1,8 @@
+# file: autoppia_iwa/src/data_generation/application/task_generation_pipeline.py
+
 import traceback
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional, List
 
 from dependency_injector.wiring import Provide
 
@@ -13,7 +15,8 @@ from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebA
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
 
 from .task_prompt_generator import TaskPromptGenerator
-from .task_tests_generator import TaskTestGenerator
+# from .task_tests_generator import TaskTestGenerator  # ignoring tests for now
+from .task_contextual_validator import TaskContextualValidator
 
 
 class TaskGenerationPipeline:
@@ -44,15 +47,28 @@ class TaskGenerationPipeline:
         global_tasks_output = TasksGenerationOutput(tasks=[], total_phase_time=0.0)
 
         try:
-            # WEB ANALYSIS
+            # 1) WEB ANALYSIS
             web_analysis = self._run_web_analysis()
             if not web_analysis:
                 raise ValueError("Failed to run web analysis!")
 
-            # Initialize generators only once
-            task_prompt_generator, task_test_generator = self._initialize_generators(web_analysis)
+            # (Optional) Suppose we set some domain_type or features after analysis:
+            # web_analysis.domain_type = "e-commerce"
+            # web_analysis.features = ["login", "checkout", "search"] 
+            # This would normally come from a domain analysis step or a config file.
 
-            # TASK PROMPT
+            # 2) Initialize TaskGenerators
+            task_prompt_generator = TaskPromptGenerator(
+                num_prompts_per_url=self.task_config.number_of_prompts_per_task,
+                web_analysis=web_analysis,
+                llm_service=self.llm_service
+            )
+            # We'll skip test generation or milestone generation here.
+
+            # 3) Generate Tasks from the LLM
+            all_generated_tasks: List[Task] = []
+
+            # We'll generate tasks for each page in domain
             for page_analysis in web_analysis.analyzed_urls:
                 current_html = self._get_page_html(page_analysis)
 
@@ -62,25 +78,24 @@ class TaskGenerationPipeline:
                     current_html=current_html,
                 )
 
-                for task_prompts in prompts_for_url.task_prompts:
-                    # TASK TEST
-                    task_tests = task_test_generator.generate_task_tests(
-                        task_description=task_prompts,
-                        page_url=prompts_for_url.page_url,
-                        page_html=current_html,
+                # For each text prompt, create a Task object
+                for task_prompt_str in prompts_for_url.task_prompts:
+                    # We'll set the url to the specific page's URL
+                    new_task = Task(
+                        prompt=task_prompt_str,
+                        url=page_analysis.page_url,
                     )
+                    all_generated_tasks.append(new_task)
 
-                    global_task = Task(
-                        prompt=task_prompts,
-                        url=self.task_config.web_project.frontend_url,
-                        tests=task_tests,
-                    )
+            # 4) Validate the tasks
+            validator = TaskContextualValidator(domain_analysis=web_analysis, llm_service=self.llm_service)
+            valid_tasks = validator.validate_tasks(all_generated_tasks)
 
-                    # Save task to database or append to output.
-                    if self.task_config.save_task_in_db:
-                        self.synthetic_task_repository.save(global_task.model_dump())
-
-                    global_tasks_output.tasks.append(global_task)
+            # 5) Optionally, save tasks to DB or just return them
+            for task_obj in valid_tasks:
+                if self.task_config.save_task_in_db:
+                    self.synthetic_task_repository.save(task_obj.model_dump())
+                global_tasks_output.tasks.append(task_obj)
 
             global_tasks_output.total_phase_time = (datetime.now() - start_time).total_seconds()
         except Exception as e:
@@ -92,19 +107,15 @@ class TaskGenerationPipeline:
         """
         Executes the web analysis pipeline to gather information from the target page.
         """
-        analyzer = WebAnalysisPipeline(start_url=self.task_config.web_project.frontend_url, llm_service=self.llm_service, analysis_repository=self.web_analysis_repository)
+        analyzer = WebAnalysisPipeline(
+            start_url=self.task_config.web_project.frontend_url, 
+            llm_service=self.llm_service, 
+            analysis_repository=self.web_analysis_repository
+        )
         return analyzer.analyze(
             save_results_in_db=self.task_config.save_web_analysis_in_db,
             enable_crawl=self.task_config.enable_crawl,
         )
-
-    def _initialize_generators(self, web_analysis: DomainAnalysis) -> Tuple[TaskPromptGenerator, TaskTestGenerator]:
-        """
-        Initializes and returns task prompt and test generators.
-        """
-        task_prompt_generator = TaskPromptGenerator(num_prompts_per_url=self.task_config.number_of_prompts_per_task, web_analysis=web_analysis, llm_service=self.llm_service)
-        task_test_generator = TaskTestGenerator(self.task_config.web_project, web_analysis, llm_service=self.llm_service)
-        return task_prompt_generator, task_test_generator
 
     @staticmethod
     def _get_page_html(page_analysis: SinglePageAnalysis) -> str:

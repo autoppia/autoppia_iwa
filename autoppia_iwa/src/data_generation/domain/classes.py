@@ -4,14 +4,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 from ...web_analysis.domain.analysis_classes import DomainAnalysis
 from ..domain.tests_classes import BaseTaskTest
-
-
-class WebProject(BaseModel):
-    backend_url: str = Field(..., description="URL of the backend server")
-    frontend_url: str = Field(..., description="URL of the frontend application")
-    name: str = Field(..., min_length=1, description="Name of the web project")
-    events_to_check: List[str] = Field(default_factory=list, description="List of events to monitor")
-    is_real_web: bool = False
+from autoppia_iwa.src.backend_demo_web.classes import WebProject
 
 
 class TaskDifficultyLevel(Enum):

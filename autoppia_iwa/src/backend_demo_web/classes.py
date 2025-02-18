@@ -1,7 +1,21 @@
 from datetime import datetime
 from typing import Any, Dict, Optional
+from pydantic import BaseModel, Field
+from typing import List
 
-from pydantic import BaseModel
+
+class WebProjectData():
+    authentication:dict
+
+
+class WebProject(BaseModel):
+    name: str = Field(..., min_length=1, description="Name of the web project")
+    backend_url: str = Field(..., description="URL of the backend server")
+    frontend_url: str = Field(..., description="URL of the frontend application")
+    is_real_web: bool = False
+    events: List[str] = Field(default_factory=list, description="List of events to monitor")
+    web_analysis:Any = Field(default_factory=list, description="List of urls in the project")
+    urls:List[str] = []
 
 
 class BackendEvent(BaseModel):

@@ -57,6 +57,8 @@ class WebAnalysisPipeline:
 
         self._initialize_analysis()
         urls_to_analyze = self._get_urls_to_analyze(enable_crawl)
+        print(urls_to_analyze)
+        input()
         for url in urls_to_analyze:
             try:
                 self._analyze_url(url)

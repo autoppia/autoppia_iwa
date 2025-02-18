@@ -1,9 +1,8 @@
+# file: autoppia_iwa/src/data_generation/application/task_prompt_generator.py
+
 import json
-from typing import Dict, List, Optional
-
+from typing import List, Optional
 from dependency_injector.wiring import Provide
-
-from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.infrastructure.llm_service import ILLMService
 from autoppia_iwa.src.shared.utils import extract_html
@@ -11,33 +10,26 @@ from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 from ..domain.classes import TaskDifficultyLevel, TaskPromptForUrl
 
-# Constants
-SCHEMA_FILE_NAMES = {
-    TaskDifficultyLevel.EASY: "task_prompt_generation_schema_easy.json",
-    TaskDifficultyLevel.MEDIUM: "task_prompt_generation_schema_medium.json",
-    TaskDifficultyLevel.HARD: "task_prompt_generation_schema_hard.json",
-}
-
 # Prompt Templates
-SYSTEM_MSG = """You are an expert in analyzing websites to identify manual tasks users can perform. Your task is to generate high-level, actionable 
-instructions for tasks a user can do using a mouse and/or keyboard. 
+SYSTEM_MSG = """You are an expert in creating realistic web-based tasks.
+Generate tasks that match the given domain context and webpage details."""
 
-Rules for generating tasks:
-1. Focus only on manual actions (e.g., clicking buttons, filling forms).
-2. Do not include visual tasks (e.g., reading content, reviewing images).
-3. Avoid dummy actions like navigating to the homepage or refreshing the page.
-4. Group related or follow-up actions into a single prompt when appropriate.
-
-Ensure all tasks are clear, actionable, and concise."""
-
-USER_MSG = """Imagine you are a user interacting with a website. Your task is to identify all possible manual actions that can be performed on the 
-webpage using a mouse and/or keyboard. Use the provided website data to generate actionable instructions.
-
-Rules for generating tasks:
-1. Include tasks such as clicking buttons, filling out forms, or interacting with dropdowns.
-2. Do not include tasks related to reading content, reviewing images, or dummy actions (e.g., "navigate to homepage").
-3. Combine related or follow-up actions into a single task when appropriate.
-4. Ensure each task is actionable and described clearly."""
+# We’ll define some dynamic instructions for each difficulty level
+# so the LLM has explicit instructions to produce varied tasks.
+TASK_INSTRUCTION = {
+    TaskDifficultyLevel.EASY: (
+        "Generate short, single-step tasks. For example: clicking a button, filling a single text field, "
+        "toggling a dropdown, or logging in if it is only one step. The tasks should be feasible in this context."
+    ),
+    TaskDifficultyLevel.MEDIUM: (
+        "Generate moderate tasks that involve multiple steps. For example: logging in and updating profile info, "
+        "searching a product and adding it to cart, or filling a multi-field form. The tasks should remain realistic."
+    ),
+    TaskDifficultyLevel.HARD: (
+        "Generate longer, multi-step tasks or full workflows. For example: from logging in, searching for an item, "
+        "adding it to the cart, applying a coupon, and checking out, or any end-to-end process with multiple steps."
+    ),
+}
 
 
 class TaskPromptGenerator:
@@ -47,27 +39,52 @@ class TaskPromptGenerator:
         num_prompts_per_url: int = 1,
         llm_service: ILLMService = Provide[DIContainer.llm_service],
     ) -> None:
+        """
+        :param web_analysis: domain-level analysis object
+        :param num_prompts_per_url: how many prompts to generate for each URL
+        :param llm_service: LLM service injection
+        """
         self.web_analysis = web_analysis
         self.llm_service = llm_service
         self.num_prompts_per_url = num_prompts_per_url
 
     def generate_prompts_for_domain(
         self,
-        task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
+        task_difficulty_level: Optional[TaskDifficultyLevel] = None,
     ) -> List[TaskPromptForUrl]:
         """
-        Generates prompts for ALL pages in the domain by calling the single-URL method for each.
+        Generate tasks for all pages in the domain. If no difficulty level is provided,
+        we generate easy, medium, and hard prompts for each page to ensure variety.
 
-        Args:
-            task_difficulty_level (TaskDifficultyLevel): The difficulty level for tasks. Defaults to TaskDifficultyLevel.EASY.
-
-        Returns:
-            List[TaskPromptForUrl]: A list of TaskPromptForUrl objects, each containing a page URL and its associated task prompts.
+        Returns a list of TaskPromptForUrl objects.
         """
         domain_prompts = []
+        difficulty_levels = [task_difficulty_level] if task_difficulty_level else [
+            TaskDifficultyLevel.EASY,
+            TaskDifficultyLevel.MEDIUM,
+            TaskDifficultyLevel.HARD
+        ]
+
         for page_analysis in self.web_analysis.analyzed_urls:
-            prompts_for_url = self.generate_task_prompts_for_url(page_analysis.page_url, page_analysis.html_source, task_difficulty_level)
-            domain_prompts.append(prompts_for_url)
+            page_url = page_analysis.page_url
+            current_html = page_analysis.html_source or extract_html(page_url)
+
+            # For each difficulty level, generate prompts
+            combined_prompts = []
+            for lvl in difficulty_levels:
+                single_set = self._generate_prompts_for_url_and_level(
+                    specific_url=page_url,
+                    current_html=current_html,
+                    difficulty_level=lvl,
+                )
+                combined_prompts.extend(single_set)
+
+            # Wrap them into a single TaskPromptForUrl object
+            domain_prompts.append(TaskPromptForUrl(
+                page_url=page_url,
+                task_prompts=combined_prompts
+            ))
+
         return domain_prompts
 
     def generate_task_prompts_for_url(
@@ -77,57 +94,97 @@ class TaskPromptGenerator:
         task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
     ) -> TaskPromptForUrl:
         """
-        Generates prompts for a SINGLE specific URL.
+        Generate tasks for a single URL at a given difficulty. The standard approach:
+        returns a single TaskPromptForUrl object with multiple (num_prompts_per_url) prompts.
 
-        Args:
-            specific_url (str): The URL for which to generate prompts.
-            current_html (Optional[str]): HTML for the current URL. If not provided, it will be extracted.
-            task_difficulty_level (TaskDifficultyLevel): The difficulty level for tasks. Defaults to TaskDifficultyLevel.EASY.
-
-        Returns:
-            A dict with:
-                - "page_url": The URL
-                - "task_prompts": List of generated/refined tasks
+        :param specific_url: The URL for which to generate tasks
+        :param current_html: The HTML source (optional)
+        :param task_difficulty_level: The difficulty level
         """
-        page_analysis = self._get_page_analysis(specific_url)
         if not current_html:
             current_html = extract_html(specific_url)
 
-        raw_content = self._call_llm_for_raw_tasks(
-            html_source=current_html,
-            summary_page_url=page_analysis.web_summary,
-            task_difficulty_level=task_difficulty_level,
+        prompts = self._generate_prompts_for_url_and_level(
+            specific_url=specific_url,
+            current_html=current_html,
+            difficulty_level=task_difficulty_level,
         )
-        raw_content_dict = json.loads(raw_content.replace("\n", "\\n"))
-        tasks_list = raw_content_dict["tasks"]
-        return TaskPromptForUrl(page_url=specific_url, task_prompts=tasks_list)
+        return TaskPromptForUrl(
+            page_url=specific_url,
+            task_prompts=prompts
+        )
 
-    def _call_llm_for_raw_tasks(
+    def _generate_prompts_for_url_and_level(
         self,
-        html_source: str,
-        summary_page_url: Dict,
-        task_difficulty_level: TaskDifficultyLevel,
-    ) -> str:
-        messages = [
-            {"role": "system", "content": SYSTEM_MSG},
-            {
-                "role": "user",
-                "content": (
-                    f"This is html content for the website: {html_source}.\n\n"
-                    f"This is the summary of the analysis: {summary_page_url}\n\n"
-                    f"Generate {self.num_prompts_per_url} {task_difficulty_level.value}-level tasks that can be performed by a user on this webpage."
-                ),
-            },
-        ]
+        specific_url: str,
+        current_html: str,
+        difficulty_level: TaskDifficultyLevel,
+    ) -> List[str]:
+        """
+        Actually calls the LLM to produce a set of tasks for a given URL and difficulty level.
+        Returns a list of prompt strings.
+        """
+        if not current_html:
+            current_html = ""
+
+        # Summaries or metadata from SinglePageAnalysis
+        page_analysis = self._get_page_analysis(specific_url)
+        page_summary = page_analysis.web_summary or {}
+
+        # We can create a domain summary: e.g. domain type, domain features
+        domain_summary = f"Domain Type: {self.web_analysis.domain_type or 'Unknown'}, Features: {self.web_analysis.features}"
+
+        # Construct the system/user messages for the LLM
+        # We'll ask for strictly JSON array output to parse easily
+        system_prompt = SYSTEM_MSG
+        user_prompt = f"""
+Here is the overall domain information:
+{domain_summary}
+
+Here is the page summary:
+{json.dumps(page_summary, ensure_ascii=False)}
+
+Here is the HTML content for this specific page (truncated if large):
+{current_html[:2000]}  # only first 2000 characters as snippet to avoid super-long prompts
+
+Now, you need to {TASK_INSTRUCTION[difficulty_level]}
+Generate {self.num_prompts_per_url} tasks as an array of strings in JSON. 
+No additional keys. Only output an array of tasks in JSON. 
+These tasks should be anchored in this page's context, 
+but you may incorporate cross-page or multi-step flows if relevant.
+        """.strip()
+
+        # We request the LLM to return a JSON array of strings: ["task1", "task2", ...]
         response = self.llm_service.make_request(
-            message_payload=messages,
-            chat_completion_kwargs={"temperature": 0.5, "top_k": 40, "response_format": {"type": "json_object", "schema": self._load_task_schema(task_difficulty_level)}},
+            message_payload=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            chat_completion_kwargs={
+                "temperature": 0.7,
+                "top_k": 40, 
+                "max_tokens": 512,
+                # We specify a response format that demands an array of strings in JSON
+                "response_format": {
+                    "type": "json_array",
+                    "items": {"type": "string"}
+                },
+            }
         )
 
         if not response:
-            raise ValueError("The LLM response is empty or invalid.")
+            return []
 
-        return response
+        # Try to parse the response as JSON. The "response_format" param helps ensure correctness,
+        # but we still do a try/except in case the LLM returns invalid output.
+        try:
+            parsed = json.loads(response)
+            if not isinstance(parsed, list):
+                return []
+            # Filter out any non-string items
+            return [item for item in parsed if isinstance(item, str)]
+        except Exception:
+            return []
 
     def _get_page_analysis(self, target_url: str) -> SinglePageAnalysis:
         """
@@ -137,12 +194,5 @@ class TaskPromptGenerator:
         for page in self.web_analysis.analyzed_urls:
             if page.page_url == target_url:
                 return page
-        raise ValueError(f"URL '{target_url}' not found in domain analysis.")
-
-    @staticmethod
-    def _load_task_schema(task_difficulty_level: TaskDifficultyLevel) -> Dict:
-        """Loads the task schema based on the difficulty level."""
-        schema_file_name = SCHEMA_FILE_NAMES[task_difficulty_level]
-        task_schema_path = PROJECT_BASE_DIR / f"config/schemas/task_prompt_generator/{schema_file_name}"
-        with task_schema_path.open("r", encoding="utf-8") as f:
-            return json.load(f)
+        # If not found, create a dummy one
+        return SinglePageAnalysis(page_url=target_url, html_source="", web_summary={})
