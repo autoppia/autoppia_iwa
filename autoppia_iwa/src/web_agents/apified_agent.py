@@ -26,12 +26,10 @@ class ApifiedWebAgent(BaseAgent):
                     response_json = await response.json()
 
                     # Extract data
-                    task_data = response_json.get("task", {})
                     actions_data = response_json.get("actions", [])
                     web_agent_id = response_json.get("web_agent_id", "unknown")
 
                     # Rebuild
-                    rebuilt_task = Task.from_dict(task_data)
                     rebuilt_actions = []
                     for action_data in actions_data:
                         action_type = action_data.get("type")
@@ -44,10 +42,9 @@ class ApifiedWebAgent(BaseAgent):
                             action = BaseAction.model_validate(action_data)
                             rebuilt_actions.append(action)
 
-                    print(f"Rebuilt Task: {rebuilt_task}")
                     print(f"Rebuilt Actions: {rebuilt_actions}")
 
-                    return TaskSolution(task=rebuilt_task, actions=rebuilt_actions, web_agent_id=web_agent_id)
+                    return TaskSolution(task=task, actions=rebuilt_actions, web_agent_id=web_agent_id)
             except Exception as e:
                 print(f"Error during HTTP request: {e}")
                 return TaskSolution(task=task, actions=[], web_agent_id="unknown")
