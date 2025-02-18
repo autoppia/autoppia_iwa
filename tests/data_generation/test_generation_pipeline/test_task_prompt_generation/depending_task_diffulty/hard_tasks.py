@@ -153,7 +153,7 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
             for task in tasks_data["tasks"]
         ]
 
-        evaluator_config = EvaluatorConfig(current_url=self.start_url, save_results_in_db=True)
+        evaluator_config = EvaluatorConfig(save_results_in_db=True)
         evaluator = ConcurrentEvaluator(evaluator_config)
         return asyncio.run(evaluator.evaluate_all_tasks(evaluator_input))
 

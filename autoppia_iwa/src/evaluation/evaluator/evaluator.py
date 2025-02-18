@@ -26,7 +26,6 @@ class EvaluationResult(BaseEvaluationResult):
 
 
 class EvaluatorConfig(BaseModel):
-    current_url: str
     save_results_in_db: bool = False
     task_delay_in_seconds: float = Field(default=0.2, gt=0)
     chunk_size: int = Field(default=3, gt=0)

@@ -94,7 +94,7 @@ class ConcurrentTaskEvaluationTest(unittest.TestCase):
             )
             for task in tasks_data["tasks"]
         ]
-        evaluator_config = EvaluatorConfig(current_url=self.start_url, save_results_in_db=self.save_results_in_db)
+        evaluator_config = EvaluatorConfig(save_results_in_db=self.save_results_in_db)
 
         evaluator = ConcurrentEvaluator(evaluator_config)
         evaluated_tasks = asyncio.run(evaluator.evaluate_all_tasks(evaluator_input))

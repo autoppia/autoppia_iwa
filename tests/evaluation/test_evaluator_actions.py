@@ -69,7 +69,7 @@ class TestActionExecution(unittest.TestCase):
     def evaluate(self, actions):
         # Prepare evaluation input
         evaluator_input = TaskSolution(task=self.task, actions=actions, web_agent_id=generate_random_web_agent_id())
-        evaluator_config = EvaluatorConfig(current_url=self.task.url, save_results_in_db=False)
+        evaluator_config = EvaluatorConfig(save_results_in_db=False)
 
         evaluator = ConcurrentEvaluator(evaluator_config)
         evaluation_result = asyncio.run(evaluator.evaluate_single_task(evaluator_input))
