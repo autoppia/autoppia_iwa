@@ -6,6 +6,7 @@ from typing import List, Optional
 from playwright.async_api import Page, async_playwright
 
 from ..backend_demo_web.backend_demo_web_service import BackendDemoWebService
+from ..backend_demo_web.classes import BackendEvent
 from ..data_generation.domain.classes import BrowserSpecification
 from .actions.base import BaseAction
 from .classes import ActionExecutionResult, BrowserSnapshot
@@ -45,7 +46,7 @@ class PlaywrightBrowserExecutor:
             loop.close()
         return result
 
-    async def execute_actions_standalone(self, actions: List[BaseAction], web_agent_id: str) -> List[ActionExecutionResult]:
+    async def execute_actions_standalone(self, actions: List[BaseAction], web_agent_id: str, is_web_real: bool = False) -> List[ActionExecutionResult]:
         """
         Executes a list of actions asynchronously.
 
@@ -60,12 +61,12 @@ class PlaywrightBrowserExecutor:
         execution_results = []
 
         for iteration, action in enumerate(actions, start=1):
-            execution_result = await self.execute_single_action(action, web_agent_id, iteration)
+            execution_result = await self.execute_single_action(action, web_agent_id, iteration, is_web_real=is_web_real)
             execution_results.append(execution_result)
 
         return execution_results
 
-    async def execute_single_action(self, action: BaseAction, web_agent_id: str, iteration: int) -> ActionExecutionResult:
+    async def execute_single_action(self, action: BaseAction, web_agent_id: str, iteration: int, is_web_real: bool) -> ActionExecutionResult:
         """
         Executes a single action and records results, including browser snapshots.
 
@@ -101,7 +102,7 @@ class PlaywrightBrowserExecutor:
             execution_time = (datetime.now() - start_time).total_seconds()
 
             # Capture backend events and updated browser state
-            backend_events = self.backend_demo_web_service.get_backend_events(web_agent_id)
+            backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             await self.page.wait_for_load_state("domcontentloaded")
             snapshot_after = await capture_snapshot()
 
@@ -127,8 +128,7 @@ class PlaywrightBrowserExecutor:
             )
 
         except Exception as e:
-            # Handle errors during action execution
-            backend_events = self.backend_demo_web_service.get_backend_events(web_agent_id)
+            backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             snapshot_error = await capture_snapshot()
 
             # Create error snapshot
@@ -169,3 +169,8 @@ class PlaywrightBrowserExecutor:
             context.set_default_timeout(5000)
             self.page = await context.new_page()
             await self.page.set_viewport_size({"width": self.browser_config.viewport_width, "height": self.browser_config.viewport_height})
+
+    async def _get_backend_events(self, web_agent_id: str, is_web_real: bool) -> List[BackendEvent]:
+        if not is_web_real:
+            return self.backend_demo_web_service.get_backend_events(web_agent_id)
+        return []

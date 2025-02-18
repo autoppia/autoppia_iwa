@@ -38,7 +38,7 @@ class ConcurrentEvaluator(IEvaluator):
         self.config = config
 
     async def evaluate_single_task(self, task_solution: TaskSolution) -> EvaluationResult:
-        return await self._evaluate_single_task(task_solution.task, task_solution.actions, task_solution.web_agent_id)
+        return await self._evaluate_single_task(task_solution)
 
     async def evaluate_all_tasks(self, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         return await self._group_and_evaluate_tasks(task_solutions)
@@ -67,7 +67,7 @@ class ConcurrentEvaluator(IEvaluator):
             representative = group[0]
             try:
                 # Evaluate the representative actions
-                rep_result = await self._evaluate_single_task(representative.task, representative.actions, representative.web_agent_id)
+                rep_result = await self._evaluate_single_task(representative)
                 # Clone results for each web_agent in the group
                 results: List[EvaluationResult] = []
                 for task_solution in group:
@@ -89,7 +89,12 @@ class ConcurrentEvaluator(IEvaluator):
             print("Error generating hash for actions.")
             return ""
 
-    async def _evaluate_single_task(self, task: Task, actions: List[BaseAction], web_agent_id: str, delay: float = None) -> EvaluationResult:
+    async def _evaluate_single_task(self, task_solution: TaskSolution, delay: float = None) -> EvaluationResult:
+        task = task_solution.task
+        actions = task_solution.actions
+        web_agent_id = task_solution.web_agent_id
+        is_web_real = task_solution.is_web_real
+
         if not actions:
             return EvaluationResult(web_agent_id=web_agent_id, final_score=0, test_results=[], feedback=None, execution_history=[])
 
@@ -97,9 +102,10 @@ class ConcurrentEvaluator(IEvaluator):
             await asyncio.sleep(delay)
 
         backend_service = BackendDemoWebService(task.url)
-        backend_service.reset_backend_events_db(web_agent_id)
+        if not is_web_real:
+            backend_service.reset_backend_events_db(web_agent_id)
 
-        execution_history = await self._evaluate_in_browser(task, web_agent_id, actions, backend_service)
+        execution_history = await self._evaluate_in_browser(task, web_agent_id, actions, backend_service, is_web_real)
         test_results = self._run_tests(task, execution_history)
         feedback = self._generate_feedback(task, execution_history, test_results)
 
@@ -118,7 +124,7 @@ class ConcurrentEvaluator(IEvaluator):
 
         return result
 
-    async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], backend_service: BackendDemoWebService) -> List[ActionExecutionResult]:
+    async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], backend_service: BackendDemoWebService, is_web_real: bool) -> List[ActionExecutionResult]:
         async with async_playwright() as playwright:
             browser, context = None, None
             try:
@@ -127,15 +133,16 @@ class ConcurrentEvaluator(IEvaluator):
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
                 print(f"Started evaluation for task URL: {task.url}, Miner ID: {web_agent_id}")
-
-                monitor_task = asyncio.create_task(self._monitor_browser(task.url, page, web_agent_id))
+                if not is_web_real:
+                    monitor_task = asyncio.create_task(self._monitor_browser(task.url, page, web_agent_id))
                 browser_executor = PlaywrightBrowserExecutor(BrowserSpecification(), backend_service, page)
 
                 try:
-                    results = await browser_executor.execute_actions_standalone(actions, web_agent_id)
+                    results = await browser_executor.execute_actions_standalone(actions, web_agent_id, is_web_real=is_web_real)
                 finally:
-                    monitor_task.cancel()
-                    await asyncio.gather(monitor_task, return_exceptions=True)
+                    if not is_web_real:
+                        monitor_task.cancel()
+                        await asyncio.gather(monitor_task, return_exceptions=True)
 
                 print(f"Completed evaluation for task URL: {task.url}, Miner ID: {web_agent_id}")
                 return results
