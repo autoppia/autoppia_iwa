@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from autoppia_iwa.config.config import AGENT_HOST, AGENT_NAME, AGENT_PORT, PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.task_tests_generator import TaskTestGenerator
-from autoppia_iwa.src.data_generation.domain.classes import Task, WebProject
+from autoppia_iwa.src.data_generation.domain.classes import Task, WebProject, WebProjectData
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
@@ -64,6 +64,7 @@ async def generate_tests(url: str, task_description: str, enable_crawl: bool) ->
             name=urlparse(url).netloc,
             events_to_check=[],
             is_real_web=IS_WEB_REAL,
+            data=WebProjectData(authorization={'email': 'employee@employee.com', 'password': 'employee'}),
         )
         task_test_generator = TaskTestGenerator(web_project=web_project, web_analysis=web_analysis)
         tests = await task_test_generator.generate_task_tests(task_description, url)

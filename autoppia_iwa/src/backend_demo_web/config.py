@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
-from autoppia_iwa.src.data_generation.domain.classes import WebProject
+from autoppia_iwa.src.data_generation.domain.classes import WebProject, WebProjectData
 from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED as events_allowed_web_1
 
 
@@ -24,6 +24,7 @@ demo_web_projects = [
         frontend_url=get_frontend_url(index=0),
         backend_url=get_backend_url(index=0),
         events_to_check=events_allowed_web_1,
+        data=WebProjectData(authorization={'email': 'employee@employee.com', 'password': 'employee'}),
     )
     # ),
     # DemoWebProject(

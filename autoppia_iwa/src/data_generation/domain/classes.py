@@ -8,12 +8,22 @@ from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
+class WebProjectData(BaseModel):
+    authorization: Dict[str, str] = Field(
+        ...,
+        description=("Authorization info required for login, e.g., {'email': 'test@gmail.com', 'password': 'test1234'}"),
+    )
+    extra_info: Optional[Dict[str, str]] = Field(default=None, description="Optional additional information about the web project")
+
+
 class WebProject(BaseModel):
     backend_url: str = Field(..., description="URL of the backend server")
     frontend_url: str = Field(..., description="URL of the frontend application")
     name: str = Field(..., min_length=1, description="Name of the web project")
     events_to_check: List[str] = Field(default_factory=list, description="List of events to monitor")
-    is_real_web: bool = False
+    is_real_web: bool = Field(default=False, description="Flag to indicate if this is a real web application")
+
+    data: WebProjectData = Field(..., description="Structured additional information about the web project")
 
 
 class TaskDifficultyLevel(Enum):

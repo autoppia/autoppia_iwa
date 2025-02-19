@@ -7,7 +7,7 @@ from typing import List
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, WebProject
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, WebProject, WebProjectData
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
@@ -95,6 +95,7 @@ class TaskGenerationByEasyDifficultyTest(unittest.TestCase):
                 frontend_url=self.start_url,
                 name="jobs",
                 events_to_check=EVENTS_ALLOWED,
+                data=WebProjectData(authorization={'email': 'employee@employee.com', 'password': 'employee'}),
             )
             task_input = TaskGenerationConfig(web_project=web_project)
             task_generator = TaskGenerationPipeline(task_input, llm_service=self.llm_service)

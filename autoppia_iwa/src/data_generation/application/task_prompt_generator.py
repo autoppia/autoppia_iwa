@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
-from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel, TaskPromptForUrl
+from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel, TaskPromptForUrl, WebProjectData
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.infrastructure.llm_service import ILLMService
 from autoppia_iwa.src.shared.utils import extract_html
@@ -53,6 +53,7 @@ class TaskPromptGenerator:
 
     def generate_prompts_for_domain(
         self,
+        web_project_data: WebProjectData,
         task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
     ) -> List[TaskPromptForUrl]:
         """
@@ -66,13 +67,14 @@ class TaskPromptGenerator:
         """
         domain_prompts = []
         for page_analysis in self.web_analysis.analyzed_urls:
-            prompts_for_url = asyncio.run(self.generate_task_prompts_for_url(page_analysis.page_url, page_analysis.html_source, task_difficulty_level))
+            prompts_for_url = asyncio.run(self.generate_task_prompts_for_url(page_analysis.page_url, web_project_data, page_analysis.html_source, task_difficulty_level))
             domain_prompts.append(prompts_for_url)
         return domain_prompts
 
     async def generate_task_prompts_for_url(
         self,
         specific_url: str,
+        web_project_data: WebProjectData,
         current_html: Optional[str] = None,
         task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
     ) -> TaskPromptForUrl:
@@ -83,6 +85,7 @@ class TaskPromptGenerator:
             specific_url (str): The URL for which to generate prompts.
             current_html (Optional[str]): HTML for the current URL. If not provided, it will be extracted.
             task_difficulty_level (TaskDifficultyLevel): The difficulty level for tasks. Defaults to TaskDifficultyLevel.EASY.
+            web_project_data ([WebProjectData): Additional data for task generation.
 
         Returns:
             A dict with:
@@ -97,6 +100,7 @@ class TaskPromptGenerator:
             html_source=current_html,
             summary_page_url=page_analysis.web_summary,
             task_difficulty_level=task_difficulty_level,
+            web_project_data=web_project_data,
         )
         raw_content_dict = json.loads(raw_content.replace("\n", "\\n"))
         tasks_list = raw_content_dict["tasks"]
@@ -107,15 +111,17 @@ class TaskPromptGenerator:
         html_source: str,
         summary_page_url: Dict,
         task_difficulty_level: TaskDifficultyLevel,
+        web_project_data: WebProjectData,
     ) -> str:
         messages = [
             {"role": "system", "content": SYSTEM_MSG},
             {
                 "role": "user",
                 "content": (
+                    f"Generate {self.num_prompts_per_url} {task_difficulty_level.value}-level tasks that can be performed by a user on this webpage."
+                    f"Here is the extra data for the tasks generation: {web_project_data}. Ignore this data if not needed."
                     f"This is html content for the website: {html_source}.\n\n"
                     f"This is the summary of the analysis: {summary_page_url}\n\n"
-                    f"Generate {self.num_prompts_per_url} {task_difficulty_level.value}-level tasks that can be performed by a user on this webpage."
                 ),
             },
         ]
