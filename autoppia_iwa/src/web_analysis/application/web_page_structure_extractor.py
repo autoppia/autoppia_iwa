@@ -1,11 +1,7 @@
-import time
 from dataclasses import fields
 from typing import List, Optional, Union
-
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
-
-from autoppia_iwa.config.config import CHROME_PATH, PROFILE, PROFILE_DIR
 from autoppia_iwa.src.web_analysis.domain.classes import Element
 
 

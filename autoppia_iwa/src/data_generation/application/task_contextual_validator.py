@@ -56,7 +56,7 @@ class TaskContextualValidator:
         We'll pass a short message containing domain summary and the task prompt.
         Return True if the LLM says 'valid', else False.
         """
-        domain_summary = f"Domain Type: {self.domain_analysis.domain_type or 'Unknown'}\\nFeatures: {self.domain_analysis.features}"
+        domain_summary = f"Domain Type: {self.domain_analysis.category or 'Unknown'}\\nFeatures: {self.domain_analysis.features}"
         # We'll keep it short to save tokens:
         messages = [
             {

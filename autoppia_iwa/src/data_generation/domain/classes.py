@@ -1,10 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, field_validator
-from ...web_analysis.domain.analysis_classes import DomainAnalysis
-from ..domain.tests_classes import BaseTaskTest
-from autoppia_iwa.src.backend_demo_web.classes import WebProject
+from typing import Any, Dict, List, Optional, Literal
+
+from pydantic import BaseModel, Field
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 
 
 class TaskDifficultyLevel(Enum):
@@ -46,14 +46,14 @@ class Task(BaseModel):
     """
     Represents a task with a prompt, URL, browser specifications, tests, milestones, and web analysis.
     """
-
+    type: Literal["global", "local"] = "local"
     prompt: str = Field(..., description="Prompt for the task")
     url: str = Field(..., description="URL where the task is to be performed")
-    specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser specifications for the task")
+    specifications: BrowserSpecification = Field(default_factory=BrowserSpecification,
+                                                 description="Browser specifications for the task")
     tests: List[BaseTaskTest] = Field(default_factory=list, description="List of tests associated with the task")
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
-    web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
-    category:str = None
+    category: Optional[str] = None
 
     # DONT MODIFY BASE MODEL_DUMP METHOD!
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:

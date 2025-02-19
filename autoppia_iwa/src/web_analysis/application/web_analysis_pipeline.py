@@ -34,7 +34,7 @@ class WebAnalysisPipeline:
         self.page_structure_extractor = WebPageStructureExtractor()
         self.llm_analyzer = WebLLMAnalyzer(llm_service=self.llm_service)
 
-        self.analyzed_urls: List[SinglePageAnalysis] = []
+        self.page_analyses: List[SinglePageAnalysis] = []
 
     def analyze(
         self,
@@ -163,7 +163,7 @@ class WebAnalysisPipeline:
                     web_summary=page_summary_analysis,
                     html_source=html_source,
                 )
-                self.analyzed_urls.append(single_page_analysis)
+                self.page_analyses.append(single_page_analysis)
 
         except Exception as e:
             print(f"Failed to analyze URL {url}. Reason: {e}")
@@ -173,7 +173,7 @@ class WebAnalysisPipeline:
         Finalize the analysis by updating metadata and storing results.
         """
         self.analysis_result.status = "done"
-        self.analysis_result.page_analyses = self.analyzed_urls
+        self.analysis_result.page_analyses = self.page_analyses
         self.analysis_result.ended_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.analysis_result.total_time = time.time() - self.start_time
 

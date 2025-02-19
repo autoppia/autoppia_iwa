@@ -34,4 +34,5 @@ class DomainAnalysis(BaseModel):
     total_time: float
     start_url: str
     category:str = ""
+    features:List[str] = Field(default_factory=list, description="List of features")
     urls:List[str] = Field(default_factory=list, description="List of urls")

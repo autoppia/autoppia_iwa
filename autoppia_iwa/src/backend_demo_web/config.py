@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from autoppia_iwa.src.data_generation.domain.classes import WebProject
+from autoppia_iwa.src.backend_demo_web.classes import WebProject
 
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 

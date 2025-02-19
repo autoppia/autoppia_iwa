@@ -89,6 +89,11 @@ class WebLLMAnalyzer:
             try:
                 response: str = self.llm_service.make_request(llm_message, {"chat_format": "chatml"}, json_schema)
                 json_result = self._parse_json_response(response)
+                # Convert relevant_fields if needed
+                if "relevant_fields" in json_result and isinstance(json_result["relevant_fields"], dict):
+                    rf = json_result["relevant_fields"]
+                    # Convert to list of dicts with "type" and "attributes"
+                    json_result["relevant_fields"] = [{"type": k, "attributes": v} for k, v in rf.items()]
                 analysis = LLMWebAnalysis(**json_result)
                 break
             except Exception as e:
