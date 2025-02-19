@@ -7,25 +7,6 @@ from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 
 
-class TaskDifficultyLevel(Enum):
-    """
-    Enum representing the difficulty level of a task.
-    """
-
-    EASY = "easy"
-    MEDIUM = "medium"
-    HARD = "hard"
-
-
-class TaskPromptForUrl(BaseModel):
-    """
-    Represents a task prompt associated with a specific URL.
-    """
-
-    page_url: str = Field(..., description="URL of the page where the task is to be performed")
-    task_prompts: List[str] = Field(..., description="List of task prompts for the given URL")
-
-
 class BrowserSpecification(BaseModel):
     """
     A class to represent the browser details with sensible default values.

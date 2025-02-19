@@ -59,7 +59,7 @@ class TaskTestGenerator:
         self.web_analysis = web_analysis
         self.llm_service = llm_service
 
-    def generate_task_tests(self, task_description: str, page_url: str, page_html: Optional[str] = None) -> List[BaseTaskTest]:
+    async def generate_task_tests(self, task_description: str, page_url: str, page_html: Optional[str] = None) -> List[BaseTaskTest]:
         # 1) Retrieve allowed events from WebProject
         allowed_events = self.web_project.events
 
@@ -69,7 +69,7 @@ class TaskTestGenerator:
 
         # 3) Get page analysis and effective HTML
         page_analysis = self._get_page_analysis(page_url)
-        effective_html = page_html or extract_html(page_url) or page_analysis.html_source
+        effective_html = page_html or await extract_html(page_url) or page_analysis.html_source
 
         print(f"Effective HTML for page {page_url} (first 500 chars):\n{effective_html[:500]}...\n")
 

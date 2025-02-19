@@ -1,0 +1,17 @@
+You are filtering out tasks that are not purely usage-based or that mention development, coding, or unrelated concepts.
+
+Tasks:
+{tasks}
+
+Return a JSON array, each item = 
+{
+  "prompt": "<original prompt text>",
+  "decision": "keep" or "remove",
+  "reason": "brief reason"
+}
+
+Rules:
+1) If it involves code changes, software development steps, or is obviously not an end-user usage scenario, remove.
+2) Otherwise, keep.
+
+No additional commentary, only JSON.

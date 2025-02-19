@@ -307,14 +307,6 @@
         "documentation": {}
     },
     {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
         "label": "Dict",
         "importPath": "typing",
         "description": "typing",
@@ -925,14 +917,6 @@
     },
     {
         "label": "TasksGenerationOutput",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "Task",
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
         "isExtraImport": true,
@@ -2305,14 +2289,6 @@
         "documentation": {}
     },
     {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
         "label": "SinglePageAnalysis",
         "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
@@ -2955,7 +2931,7 @@
         "documentation": {}
     },
     {
-        "label": "ILLMService",
+        "label": "OpenAIService",
         "importPath": "autoppia_iwa.src.llms.infrastructure.llm_service",
         "description": "autoppia_iwa.src.llms.infrastructure.llm_service",
         "isExtraImport": true,
@@ -2963,11 +2939,11 @@
         "documentation": {}
     },
     {
-        "label": "OpenAIService",
-        "importPath": "autoppia_iwa.src.llms.infrastructure.llm_service",
-        "description": "autoppia_iwa.src.llms.infrastructure.llm_service",
+        "label": "PromptImporter",
+        "importPath": "autoppia_iwa.src.shared.prompt_importer",
+        "description": "autoppia_iwa.src.shared.prompt_importer",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.infrastructure.llm_service",
+        "detail": "autoppia_iwa.src.shared.prompt_importer",
         "documentation": {}
     },
     {
@@ -2993,14 +2969,6 @@
         "description": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "documentation": {}
-    },
-    {
-        "label": "TaskContextualValidator",
-        "importPath": "autoppia_iwa.src.data_generation.application.task_contextual_validator",
-        "description": "autoppia_iwa.src.data_generation.application.task_contextual_validator",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.task_contextual_validator",
         "documentation": {}
     },
     {
@@ -3431,6 +3399,14 @@
         "description": "transformers",
         "isExtraImport": true,
         "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
         "documentation": {}
     },
     {
@@ -7012,6 +6988,15 @@
         "documentation": {}
     },
     {
+        "label": "TEST_GENERATION_SYSTEM_PROMPT",
+        "kind": 5,
+        "importPath": "autoppia_iwa.config.prompts.test_generation.test_generation_prompt",
+        "description": "autoppia_iwa.config.prompts.test_generation.test_generation_prompt",
+        "peekOfCode": "TEST_GENERATION_SYSTEM_PROMPT = \"\"\"\nYou are responsible for generating automated test strategies \nto verify if a user's task is successfully completed.\nReturn a JSON array of test objects, no extra commentary.\n\"\"\"",
+        "detail": "autoppia_iwa.config.prompts.test_generation.test_generation_prompt",
+        "documentation": {}
+    },
+    {
         "label": "LLM_PROVIDER",
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
@@ -7462,20 +7447,11 @@
         "documentation": {}
     },
     {
-        "label": "TaskContextualValidator",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.data_generation.application.task_contextual_validator",
-        "description": "autoppia_iwa.src.data_generation.application.task_contextual_validator",
-        "peekOfCode": "class TaskContextualValidator:\n    def __init__(self, domain_analysis: DomainAnalysis, llm_service: ILLMService):\n        self.domain_analysis = domain_analysis\n        self.llm_service = llm_service\n    def validate_tasks(self, tasks: List[Task]) -> List[Task]:\n        \"\"\"Performs both heuristic and LLM-based validation. Returns only the valid tasks.\"\"\"\n        filtered_tasks = []\n        for task in tasks:\n            if self._heuristic_check(task):\n                # If heuristic check passes, we do optional LLM check",
-        "detail": "autoppia_iwa.src.data_generation.application.task_contextual_validator",
-        "documentation": {}
-    },
-    {
         "label": "TaskPromptGenerator",
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
         "description": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "peekOfCode": "class TaskPromptGenerator:\n    \"\"\"\n    Generates usage-based tasks from an end-user perspective, then uses LLM-based filtering\n    to remove tasks that mention development/code changes or have insufficient success criteria.\n    \"\"\"\n    def __init__(\n        self,\n        web_project: WebProject,\n        llm_service: ILLMService = Provide[DIContainer.llm_service],\n        global_tasks_count: int = 2,",
+        "peekOfCode": "class TaskPromptGenerator:\n    \"\"\"\n    Generates usage-based tasks (global + local) and applies three LLM-based filters:\n      1) Feasibility & Context Filter\n      2) Success Criteria Filter\n      3) Concept Filter\n    Returns a final list of valid tasks.\n    \"\"\"\n    def __init__(\n        self,",
         "detail": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
         "documentation": {}
     },
@@ -7484,26 +7460,8 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
         "description": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
-        "peekOfCode": "class TaskGenerationPipeline:\n    \"\"\"\n    Coordinates the entire process of:\n      1) Running web analysis (via WebAnalysisPipeline),\n      2) Building/Updating a WebProject with domain analysis & pages,\n      3) Generating tasks (both global & local) via TaskPromptGenerator,\n      4) Validating tasks,\n      5) Generating tests for each task,\n      6) Optionally storing tasks in DB.\n    Returns a TasksGenerationOutput object with the final tasks and timing info.",
+        "peekOfCode": "class TaskGenerationPipeline:\n    \"\"\"\n    Coordinates the entire process of:\n      1) Running web analysis (via WebAnalysisPipeline),\n      2) Building/Updating a WebProject with domain analysis & pages,\n      3) Generating tasks (both global & local) via TaskPromptGenerator,\n      4) Generating tests for each task,\n      5) Optionally storing tasks in DB.\n    Returns a TasksGenerationOutput object with the final tasks and timing info.\n    \"\"\"",
         "detail": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "TaskDifficultyLevel",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "peekOfCode": "class TaskDifficultyLevel(Enum):\n    \"\"\"\n    Enum representing the difficulty level of a task.\n    \"\"\"\n    EASY = \"easy\"\n    MEDIUM = \"medium\"\n    HARD = \"hard\"\nclass TaskPromptForUrl(BaseModel):\n    \"\"\"\n    Represents a task prompt associated with a specific URL.",
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "TaskPromptForUrl",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "peekOfCode": "class TaskPromptForUrl(BaseModel):\n    \"\"\"\n    Represents a task prompt associated with a specific URL.\n    \"\"\"\n    page_url: str = Field(..., description=\"URL of the page where the task is to be performed\")\n    task_prompts: List[str] = Field(..., description=\"List of task prompts for the given URL\")\nclass BrowserSpecification(BaseModel):\n    \"\"\"\n    A class to represent the browser details with sensible default values.\n    \"\"\"",
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
         "documentation": {}
     },
     {
@@ -8119,12 +8077,30 @@
         "documentation": {}
     },
     {
+        "label": "UIParserService",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.llms.infrastructure.ui_parser_service",
+        "description": "autoppia_iwa.src.llms.infrastructure.ui_parser_service",
+        "peekOfCode": "class UIParserService:\n    def __init__(self):\n        pass\n        # device = 0 if torch.cuda.is_available() else -1\n        # self.ui_parser = pipeline(\"image-to-text\", model=\"microsoft/OmniParser-v2.0\", device=device)\n    def summarize_image(self, file):\n        try:\n            image = Image.open(file.stream).convert(\"RGB\")\n        except Exception:\n            return None, \"Invalid image file\"",
+        "detail": "autoppia_iwa.src.llms.infrastructure.ui_parser_service",
+        "documentation": {}
+    },
+    {
         "label": "BaseMongoRepository",
         "kind": 6,
         "importPath": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
         "description": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
         "peekOfCode": "class BaseMongoRepository:\n    \"\"\"\n    A generic repository for performing CRUD operations on a MongoDB collection.\n    \"\"\"\n    def __init__(self, mongo_client: MongoClient, db_name: str, collection_name: str):\n        \"\"\"\n        Initialize the BaseMongoRepository.\n        Args:\n            mongo_client (MongoClient): The MongoDB client.\n            db_name (str): The name of the database.",
         "detail": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
+        "documentation": {}
+    },
+    {
+        "label": "PromptImporter",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.shared.prompt_importer",
+        "description": "autoppia_iwa.src.shared.prompt_importer",
+        "peekOfCode": "class PromptImporter:\n    \"\"\"\n    Loads a prompt from a specified file path.\n    \"\"\"\n    def __init__(self, prompt_file_path: str):\n        self.prompt_file_path = prompt_file_path\n        self._prompt_content = self._load_prompt()\n    def _load_prompt(self) -> str:\n        if not os.path.exists(self.prompt_file_path):\n            raise FileNotFoundError(f\"Prompt file not found: {self.prompt_file_path}\")",
+        "detail": "autoppia_iwa.src.shared.prompt_importer",
         "documentation": {}
     },
     {
