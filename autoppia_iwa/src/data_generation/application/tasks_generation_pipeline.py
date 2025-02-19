@@ -1,9 +1,7 @@
 import traceback
 from datetime import datetime
 from typing import Optional, Tuple
-
 from dependency_injector.wiring import Provide
-
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, TasksGenerationOutput
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.infrastructure.llm_service import ILLMService
@@ -11,7 +9,6 @@ from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository impo
 from autoppia_iwa.src.shared.utils import extract_html
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
-
 from .task_prompt_generator import TaskPromptGenerator
 from .task_tests_generator import TaskTestGenerator
 
@@ -46,7 +43,6 @@ class TaskGenerationPipeline:
         try:
             # WEB ANALYSIS
             web_analysis = await self._run_web_analysis()
-            print(web_analysis)
             if not web_analysis:
                 raise ValueError("Failed to run web analysis!")
 
@@ -54,7 +50,7 @@ class TaskGenerationPipeline:
             task_prompt_generator, task_test_generator = self._initialize_generators(web_analysis)
 
             # TASK PROMPT
-            print("analyzed urls", web_analysis.analyzed_urls)
+            print("Analyzed urls", web_analysis.analyzed_urls)
             for page_analysis in web_analysis.analyzed_urls:
                 current_html = await self._get_page_html(page_analysis)
 
