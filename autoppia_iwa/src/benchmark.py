@@ -153,7 +153,7 @@ async def main():
     # 2. Process Each Demo Web Project.
     # ---------------------------
     for demo_project in demo_web_projects:
-        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=False)
+        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=True)
         for task in tasks:
             print(task)
         for agent in agents:

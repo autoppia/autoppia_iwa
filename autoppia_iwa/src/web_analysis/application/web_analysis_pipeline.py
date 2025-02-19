@@ -46,12 +46,12 @@ class WebAnalysisPipeline:
         Executes a full analysis for a domain, processing all URLs.
 
         Args:
-        save_results_in_db (bool): Whether to save the results in the database. Default is False.
-        get_analysis_from_cache (bool): Whether to check for cached results before analyzing. Default is True.
-        enable_crawl (bool): Whether to crawl the domain for URLs. Default is True.
+            save_results_in_db (bool): Whether to save the results in the database. Default is True.
+            get_analysis_from_cache (bool): Whether to check for cached results before analyzing. Default is True.
+            enable_crawl (bool): Whether to crawl the domain for URLs. Default is True.
 
         Returns:
-            Optional[Dict]: The analysis result, or None if unsuccessful.
+            DomainAnalysis: The analysis result.
         """
         cached_result = self._get_analysis_from_cache() if get_analysis_from_cache else None
         if cached_result:
@@ -78,11 +78,14 @@ class WebAnalysisPipeline:
         Check if analysis results already exist in the database.
 
         Returns:
-            Optional[DomainAnalysis]: Cached analysis result, or None if not found.
+            Optional[DomainAnalysis]: Cached analysis result, or None if not found or invalid.
         """
         try:
             cached_result = self.analysis_repository.find_one({"start_url": self.start_url})
             if cached_result:
+                if not cached_result.get("analyzed_urls"):
+                    print(f"Cached analysis for '{self.start_url}' has empty analyzed_urls. Ignoring cache.")
+                    return None
                 print(f"Analysis for '{self.start_url}' already exists in Cache")
                 return DomainAnalysis(**cached_result)
             print(f"No cached data found for url {self.start_url}")
@@ -116,7 +119,7 @@ class WebAnalysisPipeline:
         try:
             if not enable_crawl:
                 return [self.start_url]
-            all_urls = self.web_crawler.crawl_urls(start_url=self.start_url, max_depth=1)
+            all_urls = self.web_crawler.crawl_urls()
             return list(set(all_urls))
         except Exception as e:
             print(f"Error crawling URLs for {self.start_url}: {e}")
@@ -140,7 +143,9 @@ class WebAnalysisPipeline:
                 try:
                     elements_analysis_result.append(
                         element.analyze(
-                            max_tokens=MAX_TOKENS_ELEMENT_ANALYZER, analyze_element_function=self.llm_analyzer.analyze_element, analyze_parent_function=self.llm_analyzer.analyze_element_parent
+                            max_tokens=MAX_TOKENS_ELEMENT_ANALYZER,
+                            analyze_element_function=self.llm_analyzer.analyze_element,
+                            analyze_parent_function=self.llm_analyzer.analyze_element_parent,
                         )
                     )
                 except Exception as e:
@@ -175,10 +180,17 @@ class WebAnalysisPipeline:
 
     def _save_results_in_db(self):
         """
-        Save the analysis result in the database.
+        Save the analysis result in the database. If a document already exists for the start_url,
+        perform an update to replace the corrupted analysis with the new one.
         """
         try:
-            self.analysis_repository.save(self.analysis_result.model_dump())
-            print("Analysis results saved successfully.")
+            existing = self.analysis_repository.find_one({"start_url": self.start_url})
+            data = self.analysis_result.model_dump()
+            if existing:
+                result = self.analysis_repository.update({"start_url": self.start_url}, data)
+                print("Analysis results updated successfully." if result else "No documents updated.")
+            else:
+                self.analysis_repository.save(data)
+                print("Analysis results saved successfully.")
         except Exception as e:
             print(f"Failed to save analysis results. Reason: {e}")
