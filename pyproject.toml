@@ -1,7 +1,7 @@
 [tool.isort]
 profile = "black"
 line_length = 200
-known_third_party = ["PIL", "aiohttp", "bs4", "dependency_injector", "dotenv", "flask", "flask_cors", "matplotlib", "networkx", "numpy", "openai", "playwright", "pydantic", "pymongo", "pytest", "requests", "setuptools", "tiktoken", "transformers", "typing_extensions"]
+known_third_party = ["PIL", "aiohttp", "bs4", "dependency_injector", "dotenv", "flask", "flask_cors", "matplotlib", "networkx", "numpy", "openai", "playwright", "pydantic", "pymongo", "requests", "setuptools", "tiktoken", "transformers", "typing_extensions"]
 
 [tool.black]
 line-length = 200
