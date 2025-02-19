@@ -53,6 +53,7 @@ class TaskGenerationPipeline:
             task_prompt_generator, task_test_generator = self._initialize_generators(web_analysis)
 
             # TASK PROMPT
+            print("analyzed urls", web_analysis.analyzed_urls)
             for page_analysis in web_analysis.analyzed_urls:
                 current_html = await self._get_page_html(page_analysis)
 
