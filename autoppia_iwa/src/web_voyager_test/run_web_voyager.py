@@ -147,8 +147,9 @@ async def load_and_process_tasks() -> None:
             with open(DATA_DIR / "WebVoyagerImpossibleTasks.json", "r") as f:
                 impossible_tasks = set(json.load(f))
             tasks = [TaskData(**task) for task in tasks if task["id"] not in impossible_tasks]
-            random.shuffle(tasks)
             tasks_to_generate = tasks[:1]  # TODO: Limit for demo purposes
+            # tasks_to_generate=random.sample(tasks, 3)
+            logging.info(f"Loaded {len(tasks)} tasks and generating tests for {len(tasks_to_generate)} tasks")
             tests_generated_tasks: List[Task] = []
             for task in tasks_to_generate:
                 task_tests, task_web_analysis = await generate_web_analysis_and_tests(task.web, task.ques, ENABLE_CRAWL)
@@ -160,6 +161,13 @@ async def load_and_process_tasks() -> None:
         else:
             with TASK_OUTPUT_FILE.open(encoding='utf-8') as f:
                 tasks_data = {"tasks": [json.loads(line) for line in f]}
+            logging.info(f"Loaded {len(tasks_data['tasks'])} tasks and generating actions and evaluation results.")
+
+            # Select three random tasks if more than three are loaded
+            if len(tasks_data["tasks"]) > 3:
+                logging.warning("More than three tasks loaded. Randomly selecting 3 tasks.")
+                tasks_data["tasks"] = random.sample(tasks_data["tasks"], 3)
+
             await add_actions_to_tasks(tasks_data, ACTION_OUTPUT_FILE)
             await evaluate_tasks(tasks_data, EVALUATION_OUTPUT_FILE)
     except Exception as e:

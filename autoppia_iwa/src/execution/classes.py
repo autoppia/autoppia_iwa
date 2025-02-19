@@ -47,4 +47,5 @@ class ActionExecutionResult(BaseModel):
     def model_dump(self, *args, **kwargs):
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["browser_snapshot"] = self.browser_snapshot.model_dump()
+        base_dump["action"] = self.action.model_dump()
         return base_dump

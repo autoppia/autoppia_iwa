@@ -18,8 +18,9 @@ class IWebAgent(ABC):
 
     The goal is to provide a common structure that all web agents will follow, facilitating integration and interoperability among them.
     """
-    id:str
-    name:str
+
+    id: str
+    name: str
 
     @abstractmethod
     async def solve_task(self, task: Task) -> TaskSolution:

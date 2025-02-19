@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Literal
 from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, field_validator
 
-from ....config.config import PROJECT_BASE_DIR
+from ....config.config import OPENAI_API_KEY, OPENAI_MAX_TOKENS, OPENAI_MODEL, OPENAI_TEMPERATURE, PROJECT_BASE_DIR
 from ...di_container import DIContainer
 from ...execution.classes import BrowserSnapshot
 from ...llms.infrastructure.llm_service import OpenAIService
@@ -50,18 +50,6 @@ class BaseTaskTest(BaseModel, ITest):
     def _execute_test(self, test_context: BrowserSnapshot) -> bool:
         raise NotImplementedError("Subclasses must implement this method.")
 
-    @staticmethod
-    def nested_tests_model_dump(tests: List["BaseTaskTest"]) -> List[Dict[str, Any]]:
-        data = []
-
-        for test in tests:
-            try:
-                test_data = test.model_dump()
-                data.append(test_data)
-            except Exception as e:
-                print(f"Error serializing test '{test.description}': {e}")
-        return data
-
     @classmethod
     def assign_tests(cls, test_configs: List[Dict]) -> List["BaseTaskTest"]:
         """
@@ -79,12 +67,19 @@ class BaseTaskTest(BaseModel, ITest):
             test_type = config.get("test_type")
 
             # Instantiate the appropriate class based on test_type and configuration
-            if test_type == "frontend" and "keywords" in config:
-                assigned_tests.append(FindInHtmlTest(**config))
-            elif test_type == "backend" and "page_view_url" in config:
-                assigned_tests.append(CheckPageViewEventTest(**config))
-            elif test_type == "backend" and "event_name" in config:
-                assigned_tests.append(CheckEventEmittedTest(**config))
+            if test_type == "frontend":
+                if "keywords" in config:
+                    assigned_tests.append(FindInHtmlTest(**config))
+                elif "name" in config:
+                    if config["name"] == "OpinionBaseOnHTML":
+                        assigned_tests.append(OpinionBaseOnHTML(**config))
+                    elif config["name"] == "OpinionBaseOnScreenshot":
+                        assigned_tests.append(OpinionBaseOnScreenshot(**config))
+            elif test_type == "backend":
+                if "page_view_url" in config:
+                    assigned_tests.append(CheckPageViewEventTest(**config))
+                elif "event_name" in config:
+                    assigned_tests.append(CheckEventEmittedTest(**config))
             else:
                 raise ValueError(f"Unsupported test configuration: {config}")
 
@@ -169,6 +164,7 @@ class OpinionBaseOnHTML(BaseTaskTest):
     description: str = Field(default="Generate an opinion based on HTML changes")
     test_type: Literal["frontend"] = "frontend"
     llm_service: Any = Field(default=Provide[DIContainer.llm_service], exclude=True)
+    name: str = "OpinionBaseOnHTML"
 
     class Config:
         arbitrary_types_allowed = True
@@ -209,7 +205,8 @@ class OpinionBaseOnScreenshot(BaseTaskTest):
     task: str = Field(..., description="Task description that is intended to be completed")
     description: str = Field(default="Generate an opinion based on screenshot differences")
     test_type: Literal["frontend"] = "frontend"
-    llm_service: OpenAIService = Field(default_factory=OpenAIService, exclude=True)
+    llm_service: OpenAIService = Field(default_factory=lambda: OpenAIService(api_key=OPENAI_API_KEY, model=OPENAI_MODEL, max_tokens=OPENAI_MAX_TOKENS, temperature=OPENAI_TEMPERATURE), exclude=True)
+    name: str = "OpinionBaseOnScreenshot"
 
     class Config:
         arbitrary_types_allowed = True

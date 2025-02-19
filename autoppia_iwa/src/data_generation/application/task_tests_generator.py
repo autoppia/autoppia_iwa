@@ -199,7 +199,10 @@ class TaskTestGenerator:
                 user_message_parts.append(f"Allowed keywords for CheckHTMLTest: {keywords}")
             user_message_parts.append(f"Page Analysis Summary: {summary_dict}")
         if relevant_fields:
-            user_message_parts.append(f"Relevant words for the CheckPageViewTest: {relevant_fields}")
+            if self.web_project.is_real_web:
+                user_message_parts.append("As this is the a real web page, don't generate page_view test.")
+            else:
+                user_message_parts.append(f"Relevant words for the CheckPageViewTest: {relevant_fields}")
         user_message_parts.append("Generate tests following the specified format.")
         user_message = "\n\n".join(user_message_parts)
 
