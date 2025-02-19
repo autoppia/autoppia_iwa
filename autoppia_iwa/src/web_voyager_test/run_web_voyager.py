@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import random
-import shutil
 from pathlib import Path
 from typing import Dict, List
 from urllib.parse import urlparse
