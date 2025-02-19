@@ -46,6 +46,7 @@ class TaskGenerationPipeline:
         try:
             # WEB ANALYSIS
             web_analysis = await self._run_web_analysis()
+            print(web_analysis)
             if not web_analysis:
                 raise ValueError("Failed to run web analysis!")
 
