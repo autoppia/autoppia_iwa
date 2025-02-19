@@ -28,9 +28,10 @@ class EvaluationResult(BaseEvaluationResult):
 class EvaluatorConfig(BaseModel):
     save_results_in_db: bool = False
     task_delay_in_seconds: float = Field(default=0.2, gt=0)
-    chunk_size: int = Field(default=3, gt=0)
+    chunk_size: int = Field(default=5, gt=0)
     browser_timeout: float = Field(default=5000, gt=0)  # TODO: Reduced to 5 second but need to increase in future
     event_monitor_interval: float = Field(default=0.1, gt=0, le=0.5)
+    enable_grouping_tasks: bool = Field(default=True)  # Nuevo flag
 
 
 class ConcurrentEvaluator(IEvaluator):
@@ -45,9 +46,13 @@ class ConcurrentEvaluator(IEvaluator):
 
     async def _group_and_evaluate_tasks(self, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         grouped_tasks = defaultdict(list)
-        for task_solution in task_solutions:
-            grouped_tasks[self._hash_actions(task_solution.actions)].append(task_solution)
-
+        if self.config.enable_grouping_tasks:
+            for task_solution in task_solutions:
+                grouped_tasks[self._hash_actions(task_solution.actions)].append(task_solution)
+        else:
+            for i, task_solution in enumerate(task_solutions):
+                unique_hash = self._hash_actions(task_solution.actions) + f"_{i}"
+                grouped_tasks[unique_hash].append(task_solution)
         semaphore = asyncio.Semaphore(self.config.chunk_size)
         group_tasks = [self._evaluate_group_with_semaphore(group, semaphore) for group in grouped_tasks.values()]
 
