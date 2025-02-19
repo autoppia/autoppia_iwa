@@ -203,6 +203,14 @@
         "documentation": {}
     },
     {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -1580,14 +1588,6 @@
         "documentation": {}
     },
     {
-        "label": "initialize_test_demo_web_projects",
-        "importPath": "autoppia_iwa.src.backend_demo_web.config",
-        "description": "autoppia_iwa.src.backend_demo_web.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.backend_demo_web.config",
-        "documentation": {}
-    },
-    {
         "label": "demo_web_projects",
         "importPath": "autoppia_iwa.src.backend_demo_web.config",
         "description": "autoppia_iwa.src.backend_demo_web.config",
@@ -1604,11 +1604,75 @@
         "documentation": {}
     },
     {
-        "label": "TASK_EXAMPLES",
-        "importPath": "autoppia_iwa.src.data_generation.domain.task_examples",
-        "description": "autoppia_iwa.src.data_generation.domain.task_examples",
+        "label": "initialize_test_demo_web_projects",
+        "importPath": "autoppia_iwa.src.backend_demo_web.config",
+        "description": "autoppia_iwa.src.backend_demo_web.config",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.task_examples",
+        "detail": "autoppia_iwa.src.backend_demo_web.config",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
         "documentation": {}
     },
     {
@@ -1748,11 +1812,21 @@
         "documentation": {}
     },
     {
-        "label": "BrowserUseAgent",
-        "importPath": "autoppia_iwa.src.web_agents.browser_use.agent",
-        "description": "autoppia_iwa.src.web_agents.browser_use.agent",
+        "label": "json",
+        "kind": 6,
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.browser_use.agent",
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
         "documentation": {}
     },
     {
@@ -2215,6 +2289,14 @@
         "documentation": {}
     },
     {
+        "label": "LLMWebAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
         "label": "DomainAnalysis",
         "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
@@ -2592,15 +2674,6 @@
         "documentation": {}
     },
     {
-        "label": "json",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
-        "documentation": {}
-    },
-    {
         "label": "BaseTaskTest",
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
@@ -2865,6 +2938,15 @@
         "documentation": {}
     },
     {
+        "label": "copy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "copy",
+        "description": "copy",
+        "detail": "copy",
+        "documentation": {}
+    },
+    {
         "label": "ILLMService",
         "importPath": "autoppia_iwa.src.llms.infrastructure.llm_service",
         "description": "autoppia_iwa.src.llms.infrastructure.llm_service",
@@ -2886,15 +2968,6 @@
         "description": "autoppia_iwa.src.llms.infrastructure.llm_service",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.llms.infrastructure.llm_service",
-        "documentation": {}
-    },
-    {
-        "label": "re",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "re",
-        "description": "re",
-        "detail": "re",
         "documentation": {}
     },
     {
@@ -3124,6 +3197,14 @@
         "documentation": {}
     },
     {
+        "label": "async_playwright",
+        "importPath": "playwright.async_api",
+        "description": "playwright.async_api",
+        "isExtraImport": true,
+        "detail": "playwright.async_api",
+        "documentation": {}
+    },
+    {
         "label": "BackendDemoWebService",
         "importPath": "autoppia_iwa.src.backend_demo_web.backend_demo_web_service",
         "description": "autoppia_iwa.src.backend_demo_web.backend_demo_web_service",
@@ -3263,6 +3344,112 @@
         "documentation": {}
     },
     {
+        "label": "io",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "io",
+        "description": "io",
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "BytesIO",
+        "importPath": "io",
+        "description": "io",
+        "isExtraImport": true,
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "Flask",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "request",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "jsonify",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "Flask",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "request",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "torch",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch",
+        "description": "torch",
+        "detail": "torch",
+        "documentation": {}
+    },
+    {
+        "label": "pipeline",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "AutoModelForCausalLM",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "AutoTokenizer",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
         "label": "MongoClient",
         "importPath": "pymongo",
         "description": "pymongo",
@@ -3334,30 +3521,6 @@
         "description": "bs4",
         "isExtraImport": true,
         "detail": "bs4",
-        "documentation": {}
-    },
-    {
-        "label": "sync_playwright",
-        "importPath": "playwright.sync_api",
-        "description": "playwright.sync_api",
-        "isExtraImport": true,
-        "detail": "playwright.sync_api",
-        "documentation": {}
-    },
-    {
-        "label": "sync_playwright",
-        "importPath": "playwright.sync_api",
-        "description": "playwright.sync_api",
-        "isExtraImport": true,
-        "detail": "playwright.sync_api",
-        "documentation": {}
-    },
-    {
-        "label": "sync_playwright",
-        "importPath": "playwright.sync_api",
-        "description": "playwright.sync_api",
-        "isExtraImport": true,
-        "detail": "playwright.sync_api",
         "documentation": {}
     },
     {
@@ -3443,12 +3606,19 @@
         "documentation": {}
     },
     {
-        "label": "copy",
-        "kind": 6,
+        "label": "sync_playwright",
+        "importPath": "playwright.sync_api",
+        "description": "playwright.sync_api",
         "isExtraImport": true,
-        "importPath": "copy",
-        "description": "copy",
-        "detail": "copy",
+        "detail": "playwright.sync_api",
+        "documentation": {}
+    },
+    {
+        "label": "sync_playwright",
+        "importPath": "playwright.sync_api",
+        "description": "playwright.sync_api",
+        "isExtraImport": true,
+        "detail": "playwright.sync_api",
         "documentation": {}
     },
     {
@@ -3574,43 +3744,11 @@
         "documentation": {}
     },
     {
-        "label": "Flask",
-        "importPath": "flask",
-        "description": "flask",
-        "isExtraImport": true,
-        "detail": "flask",
-        "documentation": {}
-    },
-    {
-        "label": "request",
-        "importPath": "flask",
-        "description": "flask",
-        "isExtraImport": true,
-        "detail": "flask",
-        "documentation": {}
-    },
-    {
         "label": "CORS",
         "importPath": "flask_cors",
         "description": "flask_cors",
         "isExtraImport": true,
         "detail": "flask_cors",
-        "documentation": {}
-    },
-    {
-        "label": "AutoModelForCausalLM",
-        "importPath": "transformers",
-        "description": "transformers",
-        "isExtraImport": true,
-        "detail": "transformers",
-        "documentation": {}
-    },
-    {
-        "label": "AutoTokenizer",
-        "importPath": "transformers",
-        "description": "transformers",
-        "isExtraImport": true,
-        "detail": "transformers",
         "documentation": {}
     },
     {
@@ -6785,54 +6923,6 @@
         "documentation": {}
     },
     {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
         "label": "test_container",
         "importPath": "tests",
         "description": "tests",
@@ -6870,14 +6960,6 @@
         "description": "tests",
         "isExtraImport": true,
         "detail": "tests",
-        "documentation": {}
-    },
-    {
-        "label": "BytesIO",
-        "importPath": "io",
-        "description": "io",
-        "isExtraImport": true,
-        "detail": "io",
         "documentation": {}
     },
     {
@@ -6887,14 +6969,6 @@
         "importPath": "numpy",
         "description": "numpy",
         "detail": "numpy",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
         "documentation": {}
     },
     {
@@ -7194,7 +7268,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "AGENTS:List[BaseAgent] = [RandomClickerWebAgent()]\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.\n    if demo_project.name not in results[agent.id][\"projects\"]:\n        results[agent.id][\"projects\"][demo_project.name] = []",
+        "peekOfCode": "AGENTS:List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name=\"Autoppia-agent\", host=\"localhost\", port=8080)]\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.\n    if demo_project.name not in results[agent.id][\"projects\"]:\n        results[agent.id][\"projects\"][demo_project.name] = []",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -7203,7 +7277,7 @@
         "kind": 2,
         "importPath": "autoppia_iwa.entrypoints.evaluation",
         "description": "autoppia_iwa.entrypoints.evaluation",
-        "peekOfCode": "def generate_tasks(num_tasks: int = 3) -> List:\n    \"\"\"\n    Generate a specified number of tasks using the TaskGenerationPipeline.\n    If TASK_EXAMPLES is non-empty, we can default to it or ignore it in favor\n    of newly generated tasks, depending on your needs.\n    \"\"\"\n    # We'll pick the first test demo project for task generation, or you can pick any.\n    test_projects = initialize_test_demo_web_projects()\n    web_project = test_projects[0]\n    # Configure how many tasks to generate.",
+        "peekOfCode": "def generate_tasks(num_tasks: int = 3):\n    test_projects = initialize_test_demo_web_projects()\n    web_project = test_projects[0]\n    config = TaskGenerationConfig(\n        save_task_in_db=False,\n        save_web_analysis_in_db=True,\n        enable_crawl=True,\n        generate_milestones=False,\n        global_tasks_to_generate=num_tasks,\n        local_tasks_to_generate_per_url=1,",
         "detail": "autoppia_iwa.entrypoints.evaluation",
         "documentation": {}
     },
@@ -7239,62 +7313,17 @@
         "kind": 2,
         "importPath": "autoppia_iwa.entrypoints.evaluation",
         "description": "autoppia_iwa.entrypoints.evaluation",
-        "peekOfCode": "def judge_tasks_feasibility(tasks, results, agents):\n    \"\"\"\n    Provide a summary of tasks + agent results to LLM,\n    then ask if tasks/tests seem feasible or not.\n    \"\"\"\n    # 1. Prepare the judge_input string\n    judge_input = \"Here is a summary of generated tasks and agent evaluation results:\\n\\n\"\n    for idx, task in enumerate(tasks, start=1):\n        judge_input += f\"Task {idx}:\\n\"\n        judge_input += f\"  Prompt: {task.prompt}\\n\"",
+        "peekOfCode": "def judge_tasks_feasibility(tasks, results, agents):\n    judge_input = \"Summary of generated tasks and results:\\n\\n\"\n    for idx, task in enumerate(tasks, start=1):\n        judge_input += f\"Task {idx}:\\n\"\n        judge_input += f\"  Prompt: {task.prompt}\\n\"\n        judge_input += f\"  URL: {task.url}\\n\"\n        if task.tests:\n            judge_input += \"  Tests:\\n\"\n            for test in task.tests:\n                judge_input += f\"    - {test.model_dump()}\\n\"",
         "detail": "autoppia_iwa.entrypoints.evaluation",
         "documentation": {}
     },
     {
         "label": "app",
         "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.tasks",
-        "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "app = AppBootstrap()\n# 1) Create a WebProject (we let web analysis fill in domain_analysis & pages).\n#    Here we pick the first available demo web project.\nmy_web_project: List[WebProject] = initialize_test_demo_web_projects()[0]\n# 2) Create a TaskGenerationConfig specifying how many tasks we want.\nmy_config = TaskGenerationConfig(\n    save_task_in_db=False,\n    save_web_analysis_in_db=True,\n    enable_crawl=True,\n    generate_milestones=False,",
-        "detail": "autoppia_iwa.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "my_config",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.tasks",
-        "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "my_config = TaskGenerationConfig(\n    save_task_in_db=False,\n    save_web_analysis_in_db=True,\n    enable_crawl=True,\n    generate_milestones=False,\n    # Global and local task counts:\n    global_tasks_to_generate=3,\n    local_tasks_to_generate_per_url=2,\n)\n# 3) Instantiate the pipeline with the project and configuration.",
-        "detail": "autoppia_iwa.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "pipeline",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.tasks",
-        "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "pipeline = TaskGenerationPipeline(web_project=my_web_project, config=my_config)\n# 4) Run the pipeline to generate tasks.\noutput: TasksGenerationOutput = pipeline.generate()\nprint(f\"Tasks: {output.tasks}\")\n# 5) Log and manually inspect the generated tasks and corresponding tests.\nprint(\"----- Generated Tasks and Tests -----\")\nfor idx, task in enumerate(output.tasks, 1):\n    print(f\"\\nTask {idx}:\")\n    print(f\"  URL: {task.url}\")\n    print(f\"  Prompt: {task.prompt}\")",
-        "detail": "autoppia_iwa.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "judge_input",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.tasks",
-        "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "judge_input = \"Here is a summary of the generated tasks and tests:\\n\\n\"\nfor idx, task in enumerate(output.tasks, 1):\n    judge_input += f\"Task {idx}:\\n\"\n    judge_input += f\"  Prompt: {task.prompt}\\n\"\n    judge_input += f\"  URL: {task.url}\\n\"\n    if task.tests:\n        judge_input += \"  Tests:\\n\"\n        for test in task.tests:\n            judge_input += f\"    - {test.model_dump()}\\n\"\n    else:",
-        "detail": "autoppia_iwa.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "llm_service",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.tasks",
-        "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "llm_service = app.container.llm_service()\njudge_response = llm_service.make_request(\n    message_payload=[{\"role\": \"user\", \"content\": judge_input}],\n    chat_completion_kwargs={\n        \"temperature\": 0.5,\n        \"top_k\": 40,\n        \"model\": \"03-mini\",  # Force using the 03-mini model for judgment,\n    },\n)\nprint(\"\\n----- O3 Judge's Opinion -----\")",
-        "detail": "autoppia_iwa.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "judge_response",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.tasks",
-        "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "judge_response = llm_service.make_request(\n    message_payload=[{\"role\": \"user\", \"content\": judge_input}],\n    chat_completion_kwargs={\n        \"temperature\": 0.5,\n        \"top_k\": 40,\n        \"model\": \"03-mini\",  # Force using the 03-mini model for judgment,\n    },\n)\nprint(\"\\n----- O3 Judge's Opinion -----\")\nprint(judge_response)",
-        "detail": "autoppia_iwa.entrypoints.tasks",
+        "importPath": "autoppia_iwa.entrypoints.evaluation",
+        "description": "autoppia_iwa.entrypoints.evaluation",
+        "peekOfCode": "app = AppBootstrap()\ndef generate_tasks(num_tasks: int = 3):\n    test_projects = initialize_test_demo_web_projects()\n    web_project = test_projects[0]\n    config = TaskGenerationConfig(\n        save_task_in_db=False,\n        save_web_analysis_in_db=True,\n        enable_crawl=True,\n        generate_milestones=False,\n        global_tasks_to_generate=num_tasks,",
+        "detail": "autoppia_iwa.entrypoints.evaluation",
         "documentation": {}
     },
     {
@@ -7392,7 +7421,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_components",
         "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_components",
-        "peekOfCode": "class CandidateTestGenerator:\n    def __init__(self, llm_service, system_message: str, allowed_events: List[str]):\n        self.llm_service = llm_service\n        self.system_message = system_message\n        self.allowed_events = allowed_events\n    def generate_candidates(\n        self, \n        task_description: str, \n        html_source: str, \n        summary_page_url: dict, ",
+        "peekOfCode": "class CandidateTestGenerator:\n    def __init__(self, llm_service, system_message: str, allowed_events: List[str]):\n        self.llm_service = llm_service\n        self.system_message = system_message\n        self.allowed_events = allowed_events\n    def generate_candidates(\n        self, \n        task_description: str, \n        html_source: str, \n        web_summary: LLMWebAnalysis, ",
         "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_components",
         "documentation": {}
     },
@@ -7446,7 +7475,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
         "description": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
-        "peekOfCode": "class TaskPromptGenerator:\n    \"\"\"\n    Generates both 'global' (multi-page) and 'local' tasks \n    for a given WebProject, which must contain domain_analysis & pages.\n    \"\"\"\n    def __init__(\n        self,\n        web_project: WebProject,\n        llm_service: ILLMService = Provide[DIContainer.llm_service],\n        global_tasks_count: int = 2,",
+        "peekOfCode": "class TaskPromptGenerator:\n    \"\"\"\n    Generates usage-based tasks from an end-user perspective, then uses LLM-based filtering\n    to remove tasks that mention development/code changes or have insufficient success criteria.\n    \"\"\"\n    def __init__(\n        self,\n        web_project: WebProject,\n        llm_service: ILLMService = Provide[DIContainer.llm_service],\n        global_tasks_count: int = 2,",
         "detail": "autoppia_iwa.src.data_generation.application.task_prompt_generator",
         "documentation": {}
     },
@@ -8054,6 +8083,42 @@
         "documentation": {}
     },
     {
+        "label": "summarize_ui",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "description": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "peekOfCode": "def summarize_ui():\n    if 'file' not in request.files:\n        return jsonify({\"error\": \"No file provided\"}), 400\n    file = request.files['file']\n    try:\n        image = Image.open(file.stream).convert(\"RGB\")\n    except Exception as e:\n        return jsonify({\"error\": \"Invalid image file\"}), 400\n    result = ui_parser(image)\n    return jsonify({\"summary\": result})",
+        "detail": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "description": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "peekOfCode": "app = Flask(__name__)\n# Use GPU if available, otherwise CPU\ndevice = 0 if torch.cuda.is_available() else -1\n# Initialize the pipeline once at startup\nui_parser = pipeline(\"image-to-text\", model=\"microsoft/OmniParser-v2.0\", device=device)\n@app.route('/summarize', methods=['POST'])\ndef summarize_ui():\n    if 'file' not in request.files:\n        return jsonify({\"error\": \"No file provided\"}), 400\n    file = request.files['file']",
+        "detail": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "documentation": {}
+    },
+    {
+        "label": "device",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "description": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "peekOfCode": "device = 0 if torch.cuda.is_available() else -1\n# Initialize the pipeline once at startup\nui_parser = pipeline(\"image-to-text\", model=\"microsoft/OmniParser-v2.0\", device=device)\n@app.route('/summarize', methods=['POST'])\ndef summarize_ui():\n    if 'file' not in request.files:\n        return jsonify({\"error\": \"No file provided\"}), 400\n    file = request.files['file']\n    try:\n        image = Image.open(file.stream).convert(\"RGB\")",
+        "detail": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "documentation": {}
+    },
+    {
+        "label": "ui_parser",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "description": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "peekOfCode": "ui_parser = pipeline(\"image-to-text\", model=\"microsoft/OmniParser-v2.0\", device=device)\n@app.route('/summarize', methods=['POST'])\ndef summarize_ui():\n    if 'file' not in request.files:\n        return jsonify({\"error\": \"No file provided\"}), 400\n    file = request.files['file']\n    try:\n        image = Image.open(file.stream).convert(\"RGB\")\n    except Exception as e:\n        return jsonify({\"error\": \"Invalid image file\"}), 400",
+        "detail": "autoppia_iwa.src.llms.infrastructure.omni_parser_service",
+        "documentation": {}
+    },
+    {
         "label": "BaseMongoRepository",
         "kind": 6,
         "importPath": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
@@ -8063,11 +8128,11 @@
         "documentation": {}
     },
     {
-        "label": "extract_html",
+        "label": "sync_extract_html",
         "kind": 2,
         "importPath": "autoppia_iwa.src.shared.utils",
         "description": "autoppia_iwa.src.shared.utils",
-        "peekOfCode": "def extract_html(page_url):\n    launch_options = {\"headless\": True, \"args\": [\"--start-maximized\"]}\n    # If CHROME_PATH exists, use it as the executable path for the browser\n    chrome_path = CHROME_PATH\n    if chrome_path and Path(chrome_path).exists():\n        launch_options[\"executable_path\"] = chrome_path\n    # Use persistent context if PROFILE_DIR is provided\n    use_persistent = PROFILE_DIR and Path(PROFILE_DIR).exists()\n    with sync_playwright() as p:\n        browser_type = p.chromium",
+        "peekOfCode": "def sync_extract_html(page_url):\n    launch_options = {\"headless\": True, \"args\": [\"--start-maximized\"]}\n    chrome_path = CHROME_PATH\n    if chrome_path and Path(chrome_path).exists():\n        launch_options[\"executable_path\"] = chrome_path\n    use_persistent = PROFILE_DIR and Path(PROFILE_DIR).exists()\n    from playwright.sync_api import sync_playwright\n    with sync_playwright() as p:\n        browser_type = p.chromium\n        if use_persistent:",
         "detail": "autoppia_iwa.src.shared.utils",
         "documentation": {}
     },
@@ -8076,7 +8141,7 @@
         "kind": 2,
         "importPath": "autoppia_iwa.src.shared.utils",
         "description": "autoppia_iwa.src.shared.utils",
-        "peekOfCode": "def clean_html(html_content: str) -> str:\n    soup = BeautifulSoup(html_content, \"html.parser\")\n    # Remove unwanted tags\n    for tag in soup([\"script\", \"style\", \"noscript\", \"meta\", \"link\"]):\n        tag.decompose()\n    # Remove comments\n    for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):\n        comment.extract()\n    # Remove hidden elements (e.g., elements with \"display: none\" in style or having the \"hidden\" attribute)\n    for tag in soup.find_all():",
+        "peekOfCode": "def clean_html(html_content: str) -> str:\n    soup = BeautifulSoup(html_content, \"html.parser\")\n    for tag in soup([\"script\", \"style\", \"noscript\", \"meta\", \"link\"]):\n        tag.decompose()\n    for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):\n        comment.extract()\n    for tag in soup.find_all():\n        if tag.has_attr(\"style\") and \"display: none\" in tag[\"style\"]:\n            tag.decompose()\n            continue",
         "detail": "autoppia_iwa.src.shared.utils",
         "documentation": {}
     },

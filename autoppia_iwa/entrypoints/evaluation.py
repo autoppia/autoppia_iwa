@@ -4,22 +4,16 @@ import asyncio
 import statistics
 from typing import List
 
-# Plotting
 import matplotlib.pyplot as plt
 
-# IWA Imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.backend_demo_web.config import (
-    initialize_test_demo_web_projects,
-    demo_web_projects,
-)
+from autoppia_iwa.src.backend_demo_web.config import demo_web_projects, initialize_test_demo_web_projects
 from autoppia_iwa.src.data_generation.domain.classes import (
     TaskGenerationConfig,
     TasksGenerationOutput,
 )
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import (
-    TaskGenerationPipeline,
-)
+from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
+
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import (
     ConcurrentEvaluator,
@@ -28,31 +22,17 @@ from autoppia_iwa.src.evaluation.evaluator.evaluator import (
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-
-# Assuming BrowserUseAgent exists in the path below:
-# If not, please clarify the correct import path for BrowserUseAgent.
-from autoppia_iwa.src.web_agents.browser_use.agent import BrowserUseAgent
-
-# Optional: If you want to use some predefined examples or override with newly generated tasks.
-from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 
-##############################################################################
-# 1) Generate N Tasks
-##############################################################################
+# Bootstrap the application and its DI container.
+app = AppBootstrap()
 
-def generate_tasks(num_tasks: int = 3) -> List:
-    """
-    Generate a specified number of tasks using the TaskGenerationPipeline.
-    If TASK_EXAMPLES is non-empty, we can default to it or ignore it in favor
-    of newly generated tasks, depending on your needs.
-    """
-    # We'll pick the first test demo project for task generation, or you can pick any.
+
+def generate_tasks(num_tasks: int = 3):
     test_projects = initialize_test_demo_web_projects()
     web_project = test_projects[0]
-
-    # Configure how many tasks to generate.
-    my_config = TaskGenerationConfig(
+    config = TaskGenerationConfig(
         save_task_in_db=False,
         save_web_analysis_in_db=True,
         enable_crawl=True,
@@ -60,33 +40,29 @@ def generate_tasks(num_tasks: int = 3) -> List:
         global_tasks_to_generate=num_tasks,
         local_tasks_to_generate_per_url=1,
     )
-    pipeline = TaskGenerationPipeline(web_project=web_project, config=my_config)
+    pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
     output: TasksGenerationOutput = pipeline.generate()
-
     return output.tasks
 
-
-##############################################################################
-# 2) Evaluate Tasks with Multiple Agents
-##############################################################################
 
 async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
     if project.name not in results[agent.id]["projects"]:
         results[agent.id]["projects"][project.name] = []
 
     for task in tasks:
-        # Agent attempts to solve the task
         task_solution: TaskSolution = await agent.solve_task(task)
-        actions = task_solution.actions
-
-        # Evaluate with concurrent evaluator
-        evaluator_input = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(current_url=task.url, save_results_in_db=False)
+        evaluator_input = TaskSolution(
+            task=task,
+            actions=task_solution.actions,
+            web_agent_id=agent.id
+        )
+        evaluator_config = EvaluatorConfig(
+            current_url=task.url,
+            save_results_in_db=False
+        )
         evaluator = ConcurrentEvaluator(evaluator_config)
-
         evaluation_result: EvaluationResult = await evaluator.evaluate_single_task(evaluator_input)
         score = evaluation_result.final_score
-
         results[agent.id]["global_scores"].append(score)
         results[agent.id]["projects"][project.name].append(score)
 
@@ -124,8 +100,8 @@ def print_performance_statistics(results, agents):
         for project_name, scores in agent_stats["projects"].items():
             project_stats = compute_statistics(scores)
             print(f"    Project: {project_name}")
-            for key, value in project_stats.items():
-                print(f"      {key}: {value}")
+            for key, val in project_stats.items():
+                print(f"      {key}: {val}")
 
 
 def plot_agent_results(results, agents):
@@ -143,27 +119,20 @@ def plot_agent_results(results, agents):
     plt.ylim(0, 10)
     plt.ylabel('Score')
     plt.title('Agent Performance')
-
     for bar, score in zip(bars, agent_avg_scores):
         yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2, yval, f'{score:.1f}', ha='center', va='bottom')
-
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            yval,
+            f'{score:.1f}',
+            ha='center',
+            va='bottom'
+        )
     plt.savefig("output.png")
-    # plt.show()  # If you want to display directly.
 
-
-##############################################################################
-# 3) Final LLM-Based Assessment of Feasibility
-##############################################################################
 
 def judge_tasks_feasibility(tasks, results, agents):
-    """
-    Provide a summary of tasks + agent results to LLM,
-    then ask if tasks/tests seem feasible or not.
-    """
-    # 1. Prepare the judge_input string
-    judge_input = "Here is a summary of generated tasks and agent evaluation results:\n\n"
-
+    judge_input = "Summary of generated tasks and results:\n\n"
     for idx, task in enumerate(tasks, start=1):
         judge_input += f"Task {idx}:\n"
         judge_input += f"  Prompt: {task.prompt}\n"
@@ -176,18 +145,15 @@ def judge_tasks_feasibility(tasks, results, agents):
             judge_input += "  No tests.\n"
         judge_input += "\n"
 
-    # Append agent performance
     judge_input += "Agent Performance:\n"
     for agent in agents:
         agent_scores = results[agent.id]["global_scores"]
         judge_input += f"  {agent.name} => Scores: {agent_scores}\n"
-    judge_input += "\n"
     judge_input += (
-        "Please evaluate if these tasks were feasible, whether the tests seem valid, and "
+        "\nPlease evaluate if these tasks were feasible, whether the tests seem valid, and "
         "offer suggestions for improving task/test generation."
     )
 
-    # 2. Send to LLM
     app = AppBootstrap()
     llm_service = app.container.llm_service()
 
@@ -199,38 +165,25 @@ def judge_tasks_feasibility(tasks, results, agents):
             "model": "03-mini",
         },
     )
-    print("\n----- Final LLM Feasibility Assessment -----")
+    print("\n----- LLM Feasibility Assessment -----")
     print(judge_response)
 
 
-##############################################################################
-# 4) Main Script
-##############################################################################
-
 async def main():
-    # 1. Generate tasks (or you can skip if you want to use fixed TASK_EXAMPLES)
-    tasks = generate_tasks(num_tasks=3)  # Adjust this as needed
+    tasks = generate_tasks(num_tasks=3)
 
-    # 2. Agents and results storage
-    agents: List[BaseAgent] = [RandomClickerWebAgent(), BrowserUseAgent()]
-    results = {}
-    for agent in agents:
-        results[agent.id] = {"global_scores": [], "projects": {}}
+    agents: List[BaseAgent] = [
+        RandomClickerWebAgent(),
+        ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)
+    ]
+    results = {agent.id: {"global_scores": [], "projects": {}} for agent in agents}
 
-    # 3. Evaluate tasks against each demo web project
-    #    If you want to evaluate them only on one project, do so,
-    #    otherwise loop over all in demo_web_projects
     for demo_project in demo_web_projects:
         for agent in agents:
             await evaluate_project_for_agent(agent, demo_project, tasks, results)
 
-    # 4. Print stats
     print_performance_statistics(results, agents)
-
-    # 5. Plot results
     plot_agent_results(results, agents)
-
-    # 6. LLM-based final assessment of feasibility
     judge_tasks_feasibility(tasks, results, agents)
 
 

@@ -73,6 +73,22 @@ class LocalLLMService(BaseLLMService):
         # As local is synchronous, we can return the result directly.
         return response.get("output", {"error": "No output from local model"})
 
+    async def async_make_request(
+        self,
+        message_payload: List[Dict[str, str]],
+        llm_kwargs: Optional[Dict[str, Any]] = None,
+        chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+    ) -> Any:
+        payload = {"input": {"text": message_payload}}
+        if llm_kwargs:
+            payload["input"]["llm_kwargs"] = llm_kwargs
+        if chat_completion_kwargs:
+            payload["input"]["chat_completion_kwargs"] = chat_completion_kwargs
+
+        response = self._make_http_request(self.endpoint_url, payload)
+        # As local is synchronous, we can return the result directly.
+        return response.get("output", {"error": "No output from local model"})
+
 
 class OpenAIService(BaseLLMService, OpenAILLMModelMixin):
     """

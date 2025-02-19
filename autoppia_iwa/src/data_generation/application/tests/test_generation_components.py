@@ -1,10 +1,11 @@
 import json
 from typing import List, Dict, Optional
 from pydantic import BaseModel, ValidationError
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import LLMWebAnalysis
+import copy
+
 
 # --- Candidate Test Generator ---
-
-
 class CandidateTestGenerator:
     def __init__(self, llm_service, system_message: str, allowed_events: List[str]):
         self.llm_service = llm_service
@@ -15,17 +16,17 @@ class CandidateTestGenerator:
         self, 
         task_description: str, 
         html_source: str, 
-        summary_page_url: dict, 
+        web_summary: LLMWebAnalysis, 
         relevant_fields: Optional[List] = None
     ) -> List[Dict]:
         user_message_parts = [
             f"Task Description: {task_description}",
             f"HTML Content: {html_source}",
         ]
-        if summary_page_url:
+        if web_summary:
             # Copy summary and extract keywords for CheckHTMLTest
-            summary_dict = summary_page_url.copy()
-            keywords = summary_dict.pop("key_words", None)
+            summary_dict = copy.deepcopy(web_summary)
+            keywords = web_summary.key_words
             if keywords:
                 user_message_parts.append(f"Allowed keywords for CheckHTMLTest: {keywords}")
             user_message_parts.append(f"Page Analysis Summary: {summary_dict}")
@@ -46,7 +47,13 @@ class CandidateTestGenerator:
             },
         )
         try:
-            candidates = json.loads(response).get("tests", [])
+            parsed_response = json.loads(response)
+            if isinstance(parsed_response, list):
+                candidates = parsed_response
+            elif isinstance(parsed_response, dict):
+                candidates = parsed_response.get("tests", [])
+            else:
+                candidates = []
         except Exception as e:
             print(f"Error parsing LLM response: {e}")
             candidates = []

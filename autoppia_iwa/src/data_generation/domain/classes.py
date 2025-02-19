@@ -54,6 +54,9 @@ class Task(BaseModel):
     tests: List[BaseTaskTest] = Field(default_factory=list, description="List of tests associated with the task")
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     category: Optional[str] = None
+    success_criteria: Optional[str] = Field(
+        None, description="A concise definition of what determines successful completion."
+    )
 
     # DONT MODIFY BASE MODEL_DUMP METHOD!
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
