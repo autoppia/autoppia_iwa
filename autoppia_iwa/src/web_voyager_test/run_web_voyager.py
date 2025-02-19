@@ -185,7 +185,7 @@ async def main() -> None:
 if __name__ == "__main__":
     setup_logging()
     app_bootstrap = AppBootstrap()
-    AGENT = ApifiedWebAgent(name=AGENT_NAME, host=AGENT_HOST, port=AGENT_PORT)
+    AGENT = ApifiedWebAgent(name=AGENT_NAME, host=AGENT_HOST, port=AGENT_PORT, timeout=120)
 
     try:
         asyncio.run(main())
