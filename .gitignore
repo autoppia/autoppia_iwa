@@ -13,3 +13,4 @@ data/web_analysis_files/*
 *.gif
 *.egg-info
 build/
+~
