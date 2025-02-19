@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from ...web_analysis.domain.analysis_classes import DomainAnalysis
-from ..domain.tests_classes import BaseTaskTest
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class WebProject(BaseModel):

@@ -5,14 +5,14 @@ from urllib.parse import urlparse
 
 from dependency_injector.wiring import Provide
 
-from ...di_container import DIContainer
-from ...llms.domain.interfaces import ILLMService
-from ...shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
-from ..domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
-from ..domain.classes import WebCrawlerConfig
-from .web_crawler import WebCrawler
-from .web_llm_utils import WebLLMAnalyzer
-from .web_page_structure_extractor import WebPageStructureExtractor
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.llms.domain.interfaces import ILLMService
+from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
+from autoppia_iwa.src.web_analysis.application.web_crawler import WebCrawler
+from autoppia_iwa.src.web_analysis.application.web_llm_utils import WebLLMAnalyzer
+from autoppia_iwa.src.web_analysis.application.web_page_structure_extractor import WebPageStructureExtractor
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
+from autoppia_iwa.src.web_analysis.domain.classes import WebCrawlerConfig
 
 MAX_TOKENS_ELEMENT_ANALYZER = 10000
 

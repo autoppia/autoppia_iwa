@@ -5,12 +5,11 @@ from typing import Dict, List, Optional
 from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
+from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel, TaskPromptForUrl
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.infrastructure.llm_service import ILLMService
 from autoppia_iwa.src.shared.utils import extract_html
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
-
-from ..domain.classes import TaskDifficultyLevel, TaskPromptForUrl
 
 # Constants
 SCHEMA_FILE_NAMES = {

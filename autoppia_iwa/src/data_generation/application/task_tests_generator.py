@@ -4,13 +4,12 @@ from typing import Dict, List, Optional
 from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
-
-from ...data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, OpinionBaseOnHTML
-from ...di_container import DIContainer
-from ...shared.utils import extract_html
-from ...web_analysis.application.web_llm_utils import ILLMService
-from ...web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis, SinglePageAnalysis
-from ..domain.classes import WebProject
+from autoppia_iwa.src.data_generation.domain.classes import WebProject
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, OpinionBaseOnHTML
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.shared.utils import extract_html
+from autoppia_iwa.src.web_analysis.application.web_llm_utils import ILLMService
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis, SinglePageAnalysis
 
 BASE_SYSTEM_MSG = """
 1. IMPORTANT RULES:

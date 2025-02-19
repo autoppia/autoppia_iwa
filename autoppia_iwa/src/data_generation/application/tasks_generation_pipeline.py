@@ -4,6 +4,8 @@ from typing import Optional, Tuple
 
 from dependency_injector.wiring import Provide
 
+from autoppia_iwa.src.data_generation.application.task_prompt_generator import TaskPromptGenerator
+from autoppia_iwa.src.data_generation.application.task_tests_generator import TaskTestGenerator
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, TasksGenerationOutput
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.infrastructure.llm_service import ILLMService
@@ -11,9 +13,6 @@ from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository impo
 from autoppia_iwa.src.shared.utils import extract_html
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
-
-from .task_prompt_generator import TaskPromptGenerator
-from .task_tests_generator import TaskTestGenerator
 
 
 class TaskGenerationPipeline:

@@ -1,9 +1,8 @@
 from typing import List
 
 from autoppia_iwa.src.data_generation.domain.classes import BaseTaskTest
+from autoppia_iwa.src.evaluation.classes import TestEvaluated
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
-
-from ..classes import TestEvaluated
 
 
 class TestRunner:

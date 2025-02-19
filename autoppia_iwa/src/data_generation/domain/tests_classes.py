@@ -6,10 +6,11 @@ from typing import Any, Dict, List, Literal
 from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, field_validator
 
-from ....config.config import OPENAI_API_KEY, OPENAI_MAX_TOKENS, OPENAI_MODEL, OPENAI_TEMPERATURE, PROJECT_BASE_DIR
-from ...di_container import DIContainer
-from ...execution.classes import BrowserSnapshot
-from ...llms.infrastructure.llm_service import OpenAIService
+from autoppia_iwa.config.config import OPENAI_API_KEY, OPENAI_MAX_TOKENS, OPENAI_MODEL, OPENAI_TEMPERATURE, PROJECT_BASE_DIR
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.execution.classes import BrowserSnapshot
+from autoppia_iwa.src.llms.domain.interfaces import ILLMService
+from autoppia_iwa.src.llms.infrastructure.llm_service import OpenAIService
 
 
 class ITest(ABC):
@@ -168,6 +169,10 @@ class OpinionBaseOnHTML(BaseTaskTest):
 
     class Config:
         arbitrary_types_allowed = True
+
+    def __init__(self, llm_service: ILLMService = Provide[DIContainer.llm_service], **data):
+        super().__init__(**data)
+        self.llm_service = llm_service
 
     def _execute_test(self, test_context: BrowserSnapshot) -> bool:
         from autoppia_iwa.src.shared.utils import clean_html
