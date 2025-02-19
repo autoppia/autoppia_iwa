@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 
 import aiohttp
 
@@ -39,6 +40,7 @@ class ApifiedWebAgent(IWebAgent):
                 return TaskSolution(task=task, actions=rebuilt_actions, web_agent_id=web_agent_id)
             except Exception as e:
                 print(f"Error during HTTP request: {e}")
+                print(traceback.format_exc())
                 return TaskSolution(task=task, actions=[], web_agent_id="unknown")
 
     def solve_task_sync(self, task: Task) -> TaskSolution:
