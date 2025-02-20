@@ -32,7 +32,7 @@ model = AutoModelForCausalLM.from_pretrained(
 model.eval()
 
 
-def generate_data(message_payload, max_new_tokens=256, generation_kwargs=None):
+def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None):
     """
     Generates a response using Qwen's chat template if the input is a list of messages,
     otherwise uses a default system + user prompt for a simple string.
@@ -99,7 +99,7 @@ def handler():
        {
          "input": {
            "text": "Your prompt here",
-           "ctx": 256,
+           "ctx": 10000,
            "generation_kwargs": {...}
          }
        }
@@ -111,7 +111,7 @@ def handler():
              {"role": "system", "content": "System content"},
              {"role": "user",   "content": "User content"}
            ],
-           "ctx": 256,
+           "ctx": 10000,
            "generation_kwargs": {...}
          }
        }
@@ -124,7 +124,7 @@ def handler():
         if not message_payload:
             raise ValueError("Input 'text' is missing or empty")
 
-        max_new_tokens = int(input_data.get("ctx", 256))
+        max_new_tokens = int(input_data.get("ctx", 10000))
         generation_kwargs = input_data.get("generation_kwargs", {})
 
         output = generate_data(
@@ -148,4 +148,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # IMPORTANT: If you're using a production environment, you typically set debug=False.
-    app.run(host="0.0.0.0", port=args.port, debug=True)
+    app.run(host="0.0.0.0", port=args.port, debug=True, use_reloader=False)
