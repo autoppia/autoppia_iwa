@@ -1,11 +1,11 @@
 import asyncio
 import json
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
-from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel, TaskPromptForUrl, WebProjectData
+from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel, TaskPromptForUrl
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.infrastructure.llm_service import ILLMService
 from autoppia_iwa.src.shared.utils import extract_html
@@ -53,7 +53,7 @@ class TaskPromptGenerator:
 
     def generate_prompts_for_domain(
         self,
-        web_project_data: WebProjectData,
+        web_project_data: Optional[Dict[str, Any]],
         task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
     ) -> List[TaskPromptForUrl]:
         """
@@ -74,7 +74,7 @@ class TaskPromptGenerator:
     async def generate_task_prompts_for_url(
         self,
         specific_url: str,
-        web_project_data: WebProjectData,
+        web_project_data: Optional[Dict[str, Any]],
         current_html: Optional[str] = None,
         task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
     ) -> TaskPromptForUrl:
@@ -85,7 +85,7 @@ class TaskPromptGenerator:
             specific_url (str): The URL for which to generate prompts.
             current_html (Optional[str]): HTML for the current URL. If not provided, it will be extracted.
             task_difficulty_level (TaskDifficultyLevel): The difficulty level for tasks. Defaults to TaskDifficultyLevel.EASY.
-            web_project_data ([WebProjectData): Additional data for task generation.
+            web_project_data ([Optional[Dict[str, Any]]): Additional data for task generation.
 
         Returns:
             A dict with:
@@ -111,7 +111,7 @@ class TaskPromptGenerator:
         html_source: str,
         summary_page_url: Dict,
         task_difficulty_level: TaskDifficultyLevel,
-        web_project_data: WebProjectData,
+        web_project_data: Optional[Dict[str, Any]],
     ) -> str:
         messages = [
             {"role": "system", "content": SYSTEM_MSG},
