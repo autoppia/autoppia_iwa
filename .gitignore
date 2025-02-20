@@ -13,3 +13,6 @@ data/web_analysis_files/*
 *.gif
 *.egg-info
 build/
+
+# You can comment to connit the evaluation image as wwll
+output.png
