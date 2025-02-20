@@ -5,6 +5,7 @@ import logging
 from flask import Flask, request
 from flask_cors import CORS
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -12,64 +13,72 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# -----------------------------------------------------------------------------
-# The following model determines the intelligence of everything
-# -----------------------------------------------------------------------------
-MODEL_NAME = "Qwen/Qwen2-7B-Instruct"
+# ---------------------------------------------------------------------------
+# The model name as per Qwen docs (Adjust if you prefer Qwen2-7B-Instruct,
+# Qwen2.5-3B-Instruct, etc.)
+# ---------------------------------------------------------------------------
+MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 
 logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
 print(f"Loading model {MODEL_NAME}")
+
+# Load model + tokenizer as recommended for Qwen
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
-# If you have a GPU available, uncomment the next line:
-model.to("cuda")
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_NAME,
+    torch_dtype="auto",   # lets HF set an optimal dtype (usually FP16 or BF16 if supported)
+    device_map="auto"     # automatically place the model on GPU(s)
+)
 model.eval()
 
 
-def flatten_openai_messages(messages):
+def generate_data(message_payload, max_new_tokens=256, generation_kwargs=None):
     """
-    Converts a list of OpenAI-style messages into a single string.
-
-    Example:
-    [
-      {"role": "system", "content": "You are a helpful assistant."},
-      {"role": "user", "content": "Hello, how are you?"}
-    ]
-
-    becomes something like:
-    "SYSTEM: You are a helpful assistant.\n\nUSER: Hello, how are you?"
+    Generates a response using Qwen's chat template if the input is a list of messages,
+    otherwise uses a default system + user prompt for a simple string.
     """
-    flattened = []
-    for msg in messages:
-        role = msg.get("role", "").upper()
-        content = msg.get("content", "")
-        flattened.append(f"{role}: {content}")
-    return "\n\n".join(flattened)
-
-
-def generate_data(
-    message_payload: str,
-    max_new_tokens: int = 256,
-    generation_kwargs: dict = None,
-) -> str:
     if generation_kwargs is None:
         generation_kwargs = {}
 
     try:
-        # Prepare the input tensor
-        inputs = tokenizer(message_payload, return_tensors="pt")
-        # Move them to GPU
-        inputs = {k: v.to("cuda") for k, v in inputs.items()}
+        # 1) Build messages array
+        if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
+            # Already chat-style messages
+            messages = message_payload
+        else:
+            # Fallback if user passed a single string, wrap with a default system & user
+            messages = [
+                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
+                {"role": "user", "content": str(message_payload)}
+            ]
 
-        # Generate text
-        output_tokens = model.generate(
-            **inputs, max_new_tokens=max_new_tokens, **generation_kwargs
+        # 2) Convert to a single text prompt with Qwen's chat template
+        text_prompt = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True  # adds the "Assistant:" part
         )
 
-        # Decode the output
-        output_text = tokenizer.decode(output_tokens[0], skip_special_tokens=True)
+        # 3) Tokenize
+        model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
 
-        return output_text
+        # 4) Generate
+        generated_ids = model.generate(
+            **model_inputs,
+            max_new_tokens=max_new_tokens,
+            **generation_kwargs
+        )
+        # Qwen docs: subtract the prompt tokens so we only decode new tokens
+        # (optional, but helps avoid reprinting the entire prompt)
+        # But if you want the full text, you can skip this slicing step.
+        generated_ids = [
+            output_ids[len(input_ids):]
+            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+        ]
+
+        # 5) Decode
+        response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        return response_text
 
     except Exception as e:
         logger.error(f"Error generating data: {e}")
@@ -84,7 +93,7 @@ def handler():
     """
     Handle incoming POST requests to generate data using the model.
 
-    Possible JSON formats:
+    JSON formats:
 
     1) Simple string payload:
        {
@@ -100,7 +109,7 @@ def handler():
          "input": {
            "text": [
              {"role": "system", "content": "System content"},
-             {"role": "user", "content": "User content"}
+             {"role": "user",   "content": "User content"}
            ],
            "ctx": 256,
            "generation_kwargs": {...}
@@ -114,10 +123,6 @@ def handler():
         message_payload = input_data.get("text", "")
         if not message_payload:
             raise ValueError("Input 'text' is missing or empty")
-
-        # Detect if message_payload is a list of OpenAI-style messages
-        if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
-            message_payload = flatten_openai_messages(message_payload)
 
         max_new_tokens = int(input_data.get("ctx", 256))
         generation_kwargs = input_data.get("generation_kwargs", {})
@@ -138,8 +143,9 @@ def handler():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run Hugging Face LLM service.")
+    parser = argparse.ArgumentParser(description="Run Hugging Face Qwen LLM service.")
     parser.add_argument("--port", type=int, default=6000, help="Port to run the service on")
     args = parser.parse_args()
 
+    # IMPORTANT: If you're using a production environment, you typically set debug=False.
     app.run(host="0.0.0.0", port=args.port, debug=True)
