@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 # The model name as per Qwen docs (Adjust if you prefer Qwen2-7B-Instruct,
 # Qwen2.5-3B-Instruct, etc.)
 # ---------------------------------------------------------------------------
-MODEL_NAME = "Qwen/Qwen2.5-32B-Instruct"
+MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
 logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
 print(f"Loading model {MODEL_NAME}")

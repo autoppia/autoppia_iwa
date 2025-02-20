@@ -26,7 +26,22 @@ for i in {1..100}; do
     REQ_START=$(date +%s.%N)
     curl -s -X POST "http://127.0.0.1:6000/generate" \
         -H "Content-Type: application/json" \
-        -d '{"input": {"text": "Hello, how are you? Explain me who are you, what model are you and what benefits you have. Answer directly and short","ctx": 256,"llm_kwargs": {},"chat_completion_kwargs": {}}}' > /dev/null
+        -d '{
+          "input": {
+            "text": [
+              {
+                "role": "system",
+                "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
+              },
+              {
+                "role": "user",
+                "content": "Give me a short introduction to large language model."
+              }
+            ],
+            "ctx": 256,
+            "generation_kwargs": {}
+          }
+        }' > /dev/null
     REQ_END=$(date +%s.%N)
     REQ_TIME=$(echo "$REQ_END - $REQ_START" | bc)
     printf "Request %d - %.2fs\n" "$i" "$REQ_TIME"
