@@ -223,7 +223,11 @@ class TestTaskPromptGenerator(unittest.TestCase):
         relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
         generator = TaskPromptGenerator(web_analysis=analysis, llm_service=self.llm_service, num_prompts_per_url=1)
         tasks = asyncio.run(
-            generator.generate_task_prompts_for_url(specific_url=start_url, web_project_data=relevant_data, task_difficulty_level=TaskDifficultyLevel.MEDIUM,),
+            generator.generate_task_prompts_for_url(
+                specific_url=start_url,
+                web_project_data=relevant_data,
+                task_difficulty_level=TaskDifficultyLevel.MEDIUM,
+            ),
         )
 
         # Assertions

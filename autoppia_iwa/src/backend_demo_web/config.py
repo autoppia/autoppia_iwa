@@ -15,7 +15,7 @@ def get_backend_url(index: int, symetric=True):
     if symetric:
         return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}"
     else:
-        return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + (index + 1)) + '/'}"
+        return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}"
 
 
 demo_web_projects = [
