@@ -61,7 +61,6 @@ class WebAnalysisPipeline:
         urls_to_analyze = self._get_urls_to_analyze(enable_crawl)
         for url in urls_to_analyze:
             try:
-                print(url)
                 await self._analyze_url(url)
             except Exception as e:
                 print(f"Error analyzing {url}: {e}")
