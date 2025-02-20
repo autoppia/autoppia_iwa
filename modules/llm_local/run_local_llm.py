@@ -1,6 +1,7 @@
 import argparse
 import gc
 import logging
+import json  # <-- We add this import to handle JSON serialization of the schema
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -40,8 +41,15 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
     if generation_kwargs is None:
         generation_kwargs = {}
 
+    # ----------------------------------------
+    # 1) Extract custom keys if present
+    # ----------------------------------------
+    # Remove them from generation_kwargs so HF doesn't complain about unused model kwargs.
+    chat_format = generation_kwargs.pop("chat_format", None)
+    response_format = generation_kwargs.pop("response_format", None)
+
     try:
-        # 1) Build messages array
+        # 2) Build messages array
         if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
             # Already chat-style messages
             messages = message_payload
@@ -52,19 +60,46 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 {"role": "user", "content": str(message_payload)}
             ]
 
-        # 2) Convert to a single text prompt with Qwen's chat template
-        text_prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True  # adds the "Assistant:" part
-        )
+        # -------------------------------------------------------------------
+        # 2a) If a response_format was provided, instruct the model to output
+        #     valid JSON according to that schema.
+        # -------------------------------------------------------------------
+        if response_format and response_format.get("type") == "json_object":
+            # We'll prepend an extra system message telling Qwen to produce JSON
+            schema_text = json.dumps(response_format.get("schema", {}), indent=2)
+            messages.insert(
+                0,
+                {
+                    "role": "system",
+                    "content": (
+                        "You must respond in **valid JSON** that meets the following schema.\n\n"
+                        "Do not include extra keys. Output **only** the JSON object.\n\n"
+                        f"{schema_text}"
+                    ),
+                },
+            )
 
-        # 3) Tokenize
+        # 3) Convert to a single text prompt with Qwen's chat template
+        #    Use the chat_format if provided.
+        if chat_format:
+            text_prompt = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                chat_format=chat_format
+            )
+        else:
+            text_prompt = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True
+            )
+
+        # 4) Tokenize
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
 
-        # 4) Generate
+        # 5) Generate
         # Merge the user-specified `max_new_tokens` with the rest of generation_kwargs.
-        # (Although you already pass max_new_tokens in the function signature, it’s good to keep it explicit here.)
         generated_ids = model.generate(
             **model_inputs,
             max_new_tokens=max_new_tokens,
@@ -77,7 +112,7 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
             for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
 
-        # 5) Decode
+        # 6) Decode
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
         return response_text
 
@@ -145,8 +180,6 @@ def handler():
         chat_completion_kwargs = input_data.get("chat_completion_kwargs", {})
 
         # Merge them so they actually get used
-        # If there is a key collision, chat_completion_kwargs overrides llm_kwargs,
-        # which both override base_generation_kwargs.
         merged_generation_kwargs = {
             **base_generation_kwargs,
             **llm_kwargs,
