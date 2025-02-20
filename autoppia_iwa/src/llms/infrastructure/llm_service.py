@@ -63,8 +63,9 @@ class LocalLLMService(BaseLLMService):
         llm_kwargs: Optional[Dict[str, Any]] = None,
         chat_completion_kwargs: Optional[Dict[str, Any]] = None,
     ) -> Any:
-        print("LLM REQUEST DONE\n\n")
+        print("LLM REQUEST SENT\n\n")
         print(f"MESSAGE PAYLOAD: {message_payload}")
+        print("LLM REQUEST SENT\n\n")
         print(f"LLM_KWARGS: {llm_kwargs}")
         print(f"CHAT_COMPLETION_KWARGS: {chat_completion_kwargs}")
         payload = {"input": {"text": message_payload}}
@@ -74,7 +75,9 @@ class LocalLLMService(BaseLLMService):
             payload["input"]["chat_completion_kwargs"] = chat_completion_kwargs
 
         response = self._make_http_request(self.endpoint_url, payload)
+        print("LLM REQUEST Response\n\n")
         print(f"LLM Response: {response}")
+        print("LLM REQUEST Response\n\n")
         # As local is synchronous, we can return the result directly.
         return response.get("output", {"error": "No output from local model"})
 
