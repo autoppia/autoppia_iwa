@@ -64,6 +64,8 @@ class Task(BaseModel):
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
     is_web_real: bool = False
+    html:Any = None
+    screenshot:Any = None
 
     # DONT MODIFY BASE MODEL_DUMP METHOD!
 
