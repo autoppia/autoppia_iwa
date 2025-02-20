@@ -27,17 +27,26 @@ Rules for generating tasks:
 2. Do not include visual tasks (e.g., reading content, reviewing images).
 3. Avoid dummy actions like navigating to the homepage or refreshing the page.
 4. Group related or follow-up actions into a single prompt when appropriate.
+5. Guidelines for usage of relevant data when provided:
+    - If the extra data contains product details (e.g., name, model, color), incorporate them into relevant tasks.
+    - If the extra data contains login information (e.g., emails, passwords), mention them in the prompt.
+    - If the extra data is not relevant, ignore it and focus on the HTML content and summary.
+6. Ensure all tasks are clear, actionable, and concise, and match the specified difficulty level."""
 
-Ensure all tasks are clear, actionable, and concise."""
+# User Message Template
+USER_MSG_TEMPLATE = """Generate {num_prompts} {difficulty_level}-level tasks that a user can perform on the webpage. Use the following information to create the tasks:
 
-USER_MSG = """Imagine you are a user interacting with a website. Your task is to identify all possible manual actions that can be performed on the 
-webpage using a mouse and/or keyboard. Use the provided website data to generate actionable instructions.
+1. **HTML Content**: {html_source}
+2. **Summary of Analysis**: {summary_page_url}
+3. **Extra Data (if relevant)**: {web_project_data}
 
-Rules for generating tasks:
-1. Include tasks such as clicking buttons, filling out forms, or interacting with dropdowns.
-2. Do not include tasks related to reading content, reviewing images, or dummy actions (e.g., "navigate to homepage").
-3. Combine related or follow-up actions into a single task when appropriate.
-4. Ensure each task is actionable and described clearly."""
+Guidelines for task generation:
+- Ensure tasks are specific and actionable.
+- Match the difficulty level: {difficulty_level}.
+- If the extra data contains product details (e.g., name, model, color), incorporate them into relevant tasks.
+- If the extra data is not relevant, ignore it and focus on the HTML content and summary.
+- Avoid dummy actions like navigating to the homepage or refreshing the page.
+- Combine related or follow-up actions into a single task when appropriate."""
 
 
 class TaskPromptGenerator:
@@ -113,18 +122,17 @@ class TaskPromptGenerator:
         task_difficulty_level: TaskDifficultyLevel,
         web_project_data: Optional[Dict[str, Any]],
     ) -> str:
-        messages = [
-            {"role": "system", "content": SYSTEM_MSG},
-            {
-                "role": "user",
-                "content": (
-                    f"Generate {self.num_prompts_per_url} {task_difficulty_level.value}-level tasks that can be performed by a user on this webpage."
-                    f"Here is the extra data for the tasks generation: {web_project_data}. Ignore this data if not needed."
-                    f"This is html content for the website: {html_source}.\n\n"
-                    f"This is the summary of the analysis: {summary_page_url}\n\n"
-                ),
-            },
-        ]
+        # Format the user message with dynamic inputs
+        user_message = USER_MSG_TEMPLATE.format(
+            num_prompts=self.num_prompts_per_url,
+            difficulty_level=task_difficulty_level.value,
+            html_source=html_source,
+            summary_page_url=summary_page_url,
+            web_project_data=web_project_data,
+        )
+
+        messages = [{"role": "system", "content": SYSTEM_MSG}, {"role": "user", "content": user_message}]
+
         response = self.llm_service.make_request(
             message_payload=messages,
             chat_completion_kwargs={"temperature": 0.5, "top_k": 40, "response_format": {"type": "json_object", "schema": self._load_task_schema(task_difficulty_level)}},
