@@ -29,7 +29,7 @@ class EvaluatorConfig(BaseModel):
     save_results_in_db: bool = False
     task_delay_in_seconds: float = Field(default=0.2, gt=0)
     chunk_size: int = Field(default=5, gt=0)
-    browser_timeout: float = Field(default=10000, gt=0)  # TODO: Reduced to 5 second but need to increase in future
+    browser_timeout: float = Field(default=10000, gt=0)
     event_monitor_interval: float = Field(default=0.1, gt=0, le=0.5)
     enable_grouping_tasks: bool = Field(default=True)  # Nuevo flag
 
