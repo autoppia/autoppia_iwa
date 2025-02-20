@@ -1,4 +1,4 @@
-from ..apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 
 class MyCustomApifiedWebAgent(ApifiedWebAgent):

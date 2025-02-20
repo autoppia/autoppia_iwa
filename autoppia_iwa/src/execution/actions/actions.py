@@ -8,10 +8,10 @@ from typing import Optional, Union
 
 from playwright.async_api import Page
 from pydantic import Field
-from typing_extensions import Literal,Annotated
+from typing_extensions import Annotated, Literal
 
 # Use your new combined base classes
-from .base import BaseAction, BaseActionWithSelector
+from autoppia_iwa.src.execution.actions.base import BaseAction, BaseActionWithSelector
 
 action_logger = logging.getLogger(__name__)
 

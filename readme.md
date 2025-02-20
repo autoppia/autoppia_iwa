@@ -108,7 +108,7 @@ This implementation demonstrates IWA's versatility as both a standalone benchmar
    ```
 3. Run setup script:
    ```bash
-   bash setup.commands.sh
+   bash setup.sh
    ```
 
 <br>

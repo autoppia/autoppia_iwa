@@ -52,10 +52,11 @@ def clean_html(html_content: str) -> str:
         comment.extract()
 
     # Remove hidden elements
-    for tag in soup.find_all():
-        if tag.has_attr("style") and "display: none" in tag["style"]:
-            tag.decompose()
-            continue
+    for tag in soup.find_all(True):  # Finds all tags
+        if tag.has_attr("style") and tag["style"]:
+            if "display: none" in tag["style"].lower() or "visibility: hidden" in tag["style"].lower():
+                tag.extract()
+                continue
         if tag.has_attr("hidden"):
             tag.decompose()
             continue

@@ -1,12 +1,13 @@
 import asyncio
+import traceback
 
 import aiohttp
 
-from ...src.shared.utils import generate_random_web_agent_id
-from ..data_generation.domain.classes import Task
-from ..execution.actions.actions import BaseAction
-from .base import IWebAgent
-from .classes import TaskSolution
+from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.execution.actions.actions import BaseAction
+from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
+from autoppia_iwa.src.web_agents.base import IWebAgent
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 class ApifiedWebAgent(IWebAgent):
@@ -39,6 +40,7 @@ class ApifiedWebAgent(IWebAgent):
                 return TaskSolution(task=task, actions=rebuilt_actions, web_agent_id=web_agent_id)
             except Exception as e:
                 print(f"Error during HTTP request: {e}")
+                print(traceback.format_exc())
                 return TaskSolution(task=task, actions=[], web_agent_id="unknown")
 
     def solve_task_sync(self, task: Task) -> TaskSolution:

@@ -5,11 +5,11 @@ from typing import List, Optional
 
 from playwright.async_api import Page, async_playwright
 
-from ..backend_demo_web.backend_demo_web_service import BackendDemoWebService
-from ..backend_demo_web.classes import BackendEvent
-from ..data_generation.domain.classes import BrowserSpecification
-from .actions.base import BaseAction
-from .classes import ActionExecutionResult, BrowserSnapshot
+from autoppia_iwa.src.backend_demo_web.backend_demo_web_service import BackendDemoWebService
+from autoppia_iwa.src.backend_demo_web.classes import BackendEvent
+from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
+from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
 
 
 class PlaywrightBrowserExecutor:

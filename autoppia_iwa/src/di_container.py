@@ -1,7 +1,7 @@
 from dependency_injector import containers, providers
 from pymongo import MongoClient
 
-from ..config.config import (
+from autoppia_iwa.config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
     LLM_ENPOINT,
@@ -15,8 +15,8 @@ from ..config.config import (
     OPENAI_TEMPERATURE,
     TASKS_COLLECTION,
 )
-from .llms.infrastructure.llm_service import LocalLLMService, OpenAIService
-from .shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
+from autoppia_iwa.src.llms.infrastructure.llm_service import LocalLLMService, OpenAIService
+from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 
 
 class DIContainer(containers.DeclarativeContainer):

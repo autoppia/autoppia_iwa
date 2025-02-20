@@ -119,8 +119,8 @@ class BaseAction(BaseModel):
         """Each subclass must implement its own `execute` logic."""
         raise NotImplementedError("Execute method must be implemented by subclasses.")
 
-    @staticmethod
-    def create_action(action_data: Dict) -> Optional["BaseAction"]:
+    @classmethod
+    def create_action(cls, action_data: Dict) -> Optional["BaseAction"]:
         """
         Create an action instance from action_data.
 

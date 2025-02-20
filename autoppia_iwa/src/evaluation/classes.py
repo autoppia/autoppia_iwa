@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from ..execution.classes import ActionExecutionResult
+from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 
 class TestEvaluated(BaseModel):

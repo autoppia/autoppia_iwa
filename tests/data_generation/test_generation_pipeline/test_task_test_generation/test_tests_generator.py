@@ -52,7 +52,15 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         )
 
         # Initialize Web Project
-        web_project = WebProject(backend_url=url, frontend_url=url, name="example" if is_real_web else "Local Web App", events_to_check=EVENTS_ALLOWED, is_real_web=is_real_web)
+        relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
+        web_project = WebProject(
+            backend_url=url,
+            frontend_url=url,
+            name="example" if is_real_web else "Local Web App",
+            events_to_check=EVENTS_ALLOWED,
+            is_real_web=is_real_web,
+            relevant_data=relevant_data,
+        )
 
         # Generate task-based tests
         task_test_generator = TaskTestGenerator(web_project=web_project, web_analysis=web_analysis, llm_service=self.llm_service)

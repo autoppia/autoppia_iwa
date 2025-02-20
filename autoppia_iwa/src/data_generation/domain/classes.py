@@ -1,12 +1,12 @@
+import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from ...web_analysis.domain.analysis_classes import DomainAnalysis
-from ..domain.tests_classes import BaseTaskTest
-import uuid
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class WebProject(BaseModel):
@@ -14,7 +14,9 @@ class WebProject(BaseModel):
     frontend_url: str = Field(..., description="URL of the frontend application")
     name: str = Field(..., min_length=1, description="Name of the web project")
     events_to_check: List[str] = Field(default_factory=list, description="List of events to monitor")
-    is_real_web: bool = False
+    is_real_web: bool = Field(default=False, description="Flag to indicate if this is a real web application")
+
+    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
 
 
 class TaskDifficultyLevel(Enum):
@@ -56,6 +58,7 @@ class Task(BaseModel):
     """
     Represents a task with a unique id, prompt, URL, browser specs, tests, milestones, and web analysis.
     """
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task")
     prompt: str = Field(..., description="Prompt for the task")
     url: str = Field(..., description="URL where the task is to be performed")
@@ -64,7 +67,6 @@ class Task(BaseModel):
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
     is_web_real: bool = False
-
 
     # DONT MODIFY BASE MODEL_DUMP METHOD!
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
