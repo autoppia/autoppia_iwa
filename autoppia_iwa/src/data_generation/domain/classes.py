@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from ...web_analysis.domain.analysis_classes import DomainAnalysis
 from ..domain.tests_classes import BaseTaskTest
+import uuid
 
 
 class WebProject(BaseModel):
@@ -53,9 +54,9 @@ class BrowserSpecification(BaseModel):
 
 class Task(BaseModel):
     """
-    Represents a task with a prompt, URL, browser specifications, tests, milestones, and web analysis.
+    Represents a task with a unique id, prompt, URL, browser specs, tests, milestones, and web analysis.
     """
-
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task")
     prompt: str = Field(..., description="Prompt for the task")
     url: str = Field(..., description="URL where the task is to be performed")
     specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser specifications for the task")
@@ -63,6 +64,7 @@ class Task(BaseModel):
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
     is_web_real: bool = False
+
 
     # DONT MODIFY BASE MODEL_DUMP METHOD!
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
