@@ -65,8 +65,8 @@ class Task(BaseModel):
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
     is_web_real: bool = False
 
-
     # DONT MODIFY BASE MODEL_DUMP METHOD!
+
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         """
         Serializes the Task model to a dictionary, including nested models.
