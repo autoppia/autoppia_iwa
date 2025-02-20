@@ -81,7 +81,7 @@ class WebAnalysisPipeline:
         """
         try:
             cached_result = self.analysis_repository.find_one({"start_url": self.start_url})
-            print(cached_result)
+            # print(cached_result)
             if cached_result:
                 if not cached_result.get("analyzed_urls"):
                     print(f"Cached analysis for '{self.start_url}' has empty analyzed_urls. Ignoring cache.")

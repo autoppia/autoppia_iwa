@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # -----------------------------------------------------------------------------
-# REPLACE THE MODEL NAME WITH A Qwen/Qwen2.5-3B-Instruct
+# REPLACE THE MODEL NAME WITH A Qwen/Qwen2.5-3B-Instruct, or any other.
 # -----------------------------------------------------------------------------
 MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 
@@ -23,6 +23,27 @@ model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 # If you have a GPU available, uncomment the next line:
 model.to("cuda")
 model.eval()
+
+
+def flatten_openai_messages(messages):
+    """
+    Converts a list of OpenAI-style messages into a single string.
+
+    Example:
+    [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": "Hello, how are you?"}
+    ]
+
+    becomes something like:
+    "SYSTEM: You are a helpful assistant.\n\nUSER: Hello, how are you?"
+    """
+    flattened = []
+    for msg in messages:
+        role = msg.get("role", "").upper()
+        content = msg.get("content", "")
+        flattened.append(f"{role}: {content}")
+    return "\n\n".join(flattened)
 
 
 def generate_data(
@@ -40,7 +61,9 @@ def generate_data(
         inputs = {k: v.to("cuda") for k, v in inputs.items()}
 
         # Generate text
-        output_tokens = model.generate(**inputs, max_new_tokens=max_new_tokens, **generation_kwargs)
+        output_tokens = model.generate(
+            **inputs, max_new_tokens=max_new_tokens, **generation_kwargs
+        )
 
         # Decode the output
         output_text = tokenizer.decode(output_tokens[0], skip_special_tokens=True)
@@ -60,23 +83,43 @@ def handler():
     """
     Handle incoming POST requests to generate data using the model.
 
-    Expects JSON of the form:
-    {
-       "input": {
+    Possible JSON formats:
+
+    1) Simple string payload:
+       {
+         "input": {
            "text": "Your prompt here",
            "ctx": 256,
            "generation_kwargs": {...}
+         }
        }
-    }
+
+    2) OpenAI-style chat payload:
+       {
+         "input": {
+           "text": [
+             {"role": "system", "content": "System content"},
+             {"role": "user", "content": "User content"}
+           ],
+           "ctx": 256,
+           "generation_kwargs": {...}
+         }
+       }
     """
     try:
-        inputs = request.json
-        message_payload = inputs.get("input", {}).get("text", "")
+        inputs = request.json or {}
+        input_data = inputs.get("input", {})
+
+        message_payload = input_data.get("text", "")
         if not message_payload:
             raise ValueError("Input 'text' is missing or empty")
 
-        max_new_tokens = int(inputs.get("input", {}).get("ctx", 256))
-        generation_kwargs = inputs.get("input", {}).get("generation_kwargs", {})
+        # Detect if message_payload is a list of OpenAI-style messages
+        if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
+            message_payload = flatten_openai_messages(message_payload)
+
+        max_new_tokens = int(input_data.get("ctx", 256))
+        generation_kwargs = input_data.get("generation_kwargs", {})
 
         output = generate_data(
             message_payload=message_payload,
