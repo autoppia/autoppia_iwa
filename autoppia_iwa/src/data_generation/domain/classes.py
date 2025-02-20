@@ -14,7 +14,7 @@ class WebProjectData(BaseModel):
         ...,
         description=("Authorization info required for login, e.g., {'email': 'test@gmail.com', 'password': 'test1234'}"),
     )
-    extra_info: Optional[Dict[str, str]] = Field(default=None, description="Optional additional information about the web project")
+    extra_info: Optional[Dict[str, Any]] = Field(default=None, description="Optional additional information about the web project")
 
 
 class WebProject(BaseModel):
