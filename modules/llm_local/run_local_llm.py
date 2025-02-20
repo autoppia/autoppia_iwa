@@ -63,14 +63,15 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
 
         # 4) Generate
+        # Merge the user-specified `max_new_tokens` with the rest of generation_kwargs.
+        # (Although you already pass max_new_tokens in the function signature, it’s good to keep it explicit here.)
         generated_ids = model.generate(
             **model_inputs,
             max_new_tokens=max_new_tokens,
             **generation_kwargs
         )
+
         # Qwen docs: subtract the prompt tokens so we only decode new tokens
-        # (optional, but helps avoid reprinting the entire prompt)
-        # But if you want the full text, you can skip this slicing step.
         generated_ids = [
             output_ids[len(input_ids):]
             for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
@@ -100,7 +101,9 @@ def handler():
          "input": {
            "text": "Your prompt here",
            "ctx": 10000,
-           "generation_kwargs": {...}
+           "generation_kwargs": {...},
+           "llm_kwargs": {...},
+           "chat_completion_kwargs": {...}
          }
        }
 
@@ -112,9 +115,16 @@ def handler():
              {"role": "user",   "content": "User content"}
            ],
            "ctx": 10000,
-           "generation_kwargs": {...}
+           "generation_kwargs": {...},
+           "llm_kwargs": {...},
+           "chat_completion_kwargs": {...}
          }
        }
+
+    Note:
+    - We do NOT verify schemas here. That is done elsewhere.
+    - We'll merge llm_kwargs and chat_completion_kwargs into generation_kwargs
+      so they affect the final model.generate call.
     """
     try:
         inputs = request.json or {}
@@ -124,13 +134,29 @@ def handler():
         if not message_payload:
             raise ValueError("Input 'text' is missing or empty")
 
+        # We'll treat ctx as the maximum new tokens for generation
         max_new_tokens = int(input_data.get("ctx", 10000))
-        generation_kwargs = input_data.get("generation_kwargs", {})
+
+        # The original "generation_kwargs"
+        base_generation_kwargs = input_data.get("generation_kwargs", {})
+
+        # Additional user-provided kwargs from your client
+        llm_kwargs = input_data.get("llm_kwargs", {})
+        chat_completion_kwargs = input_data.get("chat_completion_kwargs", {})
+
+        # Merge them so they actually get used
+        # If there is a key collision, chat_completion_kwargs overrides llm_kwargs,
+        # which both override base_generation_kwargs.
+        merged_generation_kwargs = {
+            **base_generation_kwargs,
+            **llm_kwargs,
+            **chat_completion_kwargs
+        }
 
         output = generate_data(
             message_payload=message_payload,
             max_new_tokens=max_new_tokens,
-            generation_kwargs=generation_kwargs,
+            generation_kwargs=merged_generation_kwargs,
         )
         return {"output": output}
 
