@@ -27,7 +27,8 @@ def log_action(action_name: str):
                 return await func(self, page, backend_service, web_agent_id)
             except Exception as e:
                 error_details = traceback.format_exc()
-                action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
+                # action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
+                action_logger.error(f"{action_name} failed: {e}")
                 raise
 
         return wrapper
