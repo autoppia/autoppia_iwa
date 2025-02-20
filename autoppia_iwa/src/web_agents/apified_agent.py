@@ -34,7 +34,7 @@ class ApifiedWebAgent(IWebAgent):
 
                 # Rebuild
                 rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
-                print(f"Rebuilt Actions: {rebuilt_actions}")
+                # print(f"Rebuilt Actions: {rebuilt_actions}")
 
                 return TaskSolution(task=task, actions=rebuilt_actions, web_agent_id=web_agent_id)
             except Exception as e:
