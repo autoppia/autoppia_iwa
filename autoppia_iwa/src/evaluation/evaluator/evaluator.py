@@ -149,7 +149,7 @@ class ConcurrentEvaluator(IEvaluator):
                         monitor_task.cancel()
                         await asyncio.gather(monitor_task, return_exceptions=True)
 
-                print(f"Completed evaluation for task URL: {task.url}, Miner ID: {web_agent_id}")
+                # print(f"Completed evaluation for task URL: {task.url}, Miner ID: {web_agent_id}")
                 return results
 
             except Exception as e:
@@ -176,7 +176,8 @@ class ConcurrentEvaluator(IEvaluator):
             while not page.is_closed():
                 await asyncio.sleep(self.config.event_monitor_interval)
         except asyncio.CancelledError:
-            print("Monitoring stopped.")
+            pass
+            # print("Monitoring stopped.")
 
     @staticmethod
     def _run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> List:
