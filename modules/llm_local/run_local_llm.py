@@ -18,6 +18,7 @@ logger.setLevel(logging.INFO)
 MODEL_NAME = "Qwen/Qwen2-7B-Instruct"
 
 logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
+print(f"Loading model {MODEL_NAME}")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 # If you have a GPU available, uncomment the next line:
