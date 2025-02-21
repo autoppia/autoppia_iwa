@@ -99,7 +99,6 @@ class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
                 frontend_url=self.start_url,
                 name="jobs",
                 events_to_check=EVENTS_ALLOWED,
-                relevant_data={"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
             )
             task_input = TaskGenerationConfig(web_project=web_project)
             task_generator = TaskGenerationPipeline(task_input, llm_service=self.llm_service)

@@ -2,7 +2,9 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field, field_validator
+
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
@@ -13,7 +15,6 @@ class WebProject(BaseModel):
     name: str = Field(..., min_length=1, description="Name of the web project")
     events_to_check: List[str] = Field(default_factory=list, description="List of events to monitor")
     is_real_web: bool = Field(default=False, description="Flag to indicate if this is a real web application")
-    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
 
 
 class TaskDifficultyLevel(Enum):
@@ -59,15 +60,20 @@ class Task(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task")
     prompt: str = Field(..., description="Prompt for the task")
     url: str = Field(..., description="URL where the task is to be performed")
-    html:str = ""
-    screenshot:Any = None
-    specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser specifications for the task")
+    html: str = Field(default_factory=str, description="HTML content associated with the task")
+    screenshot: Optional[Any] = None
+    specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser specifications required for the task")
     tests: List[BaseTaskTest] = Field(default_factory=list, description="List of tests associated with the task")
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
+    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Dictionary of relevant data for this task")
     is_web_real: bool = False
 
-    # DONT MODIFY BASE MODEL_DUMP METHOD!
+    @property
+    def prompt_with_relevant_data(self) -> str:
+        if self.relevant_data:
+            return f"{self.prompt} Using the relevant data: {self.relevant_data}"
+        return self.prompt
 
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         """
@@ -89,21 +95,18 @@ class Task(BaseModel):
         Returns:
             Task: The Task object created from the dictionary.
         """
-        # Extract and construct tests
-        test_data = data.get("tests", [])
-        tests = BaseTaskTest.assign_tests(test_data)
-
-        # Handle milestones recursively if provided
-        milestones = data.get("milestones", [])
-
-        # Create and return Task instance
         return cls(
-            prompt=data.get("prompt"),
-            url=data.get("url"),
+            id=data.get("id", str(uuid.uuid4())),  # Ensures unique ID if missing
+            prompt=data["prompt"],  # Required field
+            url=data["url"],  # Required field
+            html=data.get("html", ""),
+            screenshot=data.get("screenshot"),
             specifications=BrowserSpecification.model_validate(data.get("specifications", {})),
-            tests=tests,
-            milestones=milestones,
-            web_analysis=DomainAnalysis.model_validate(data.get("web_analysis", {})) if data.get("web_analysis") else None,
+            tests=[BaseTaskTest.model_validate(test) for test in data.get("tests", [])],
+            milestones=[cls.from_dict(m) for m in data.get("milestones", [])] if data.get("milestones") else None,
+            web_analysis=DomainAnalysis.model_validate(data["web_analysis"]) if "web_analysis" in data else None,
+            relevant_data=data.get("relevant_data", {}),
+            is_web_real=data.get("is_web_real", False),
         )
 
 

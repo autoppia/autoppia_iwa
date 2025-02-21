@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from dependency_injector.wiring import Provide
 
@@ -27,24 +27,17 @@ Rules for generating tasks:
 2. Do not include visual tasks (e.g., reading content, reviewing images).
 3. Avoid dummy actions like navigating to the homepage or refreshing the page.
 4. Group related or follow-up actions into a single prompt when appropriate.
-5. Guidelines for usage of relevant data when provided:
-    - If the extra data contains product details (e.g., name, model, color), incorporate them into relevant tasks.
-    - If the extra data contains login information (e.g., emails, passwords), mention them in the prompt.
-    - If the extra data is not relevant, ignore it and focus on the HTML content and summary.
-6. Ensure all tasks are clear, actionable, and concise, and match the specified difficulty level."""
+5. Ensure all tasks are clear, actionable, and concise, and match the specified difficulty level."""
 
 # User Message Template
 USER_MSG_TEMPLATE = """Generate {num_prompts} {difficulty_level}-level tasks that a user can perform on the webpage. Use the following information to create the tasks:
 
 1. **HTML Content**: {html_source}
 2. **Summary of Analysis**: {summary_page_url}
-3. **Extra Data (if relevant)**: {web_project_data}
 
 Guidelines for task generation:
 - Ensure tasks are specific and actionable.
 - Match the difficulty level: {difficulty_level}.
-- If the extra data contains product details (e.g., name, model, color), incorporate them into relevant tasks.
-- If the extra data is not relevant, ignore it and focus on the HTML content and summary.
 - Avoid dummy actions like navigating to the homepage or refreshing the page.
 - Combine related or follow-up actions into a single task when appropriate."""
 
@@ -62,7 +55,6 @@ class TaskPromptGenerator:
 
     def generate_prompts_for_domain(
         self,
-        web_project_data: Optional[Dict[str, Any]],
         task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
     ) -> List[TaskPromptForUrl]:
         """
@@ -76,14 +68,13 @@ class TaskPromptGenerator:
         """
         domain_prompts = []
         for page_analysis in self.web_analysis.analyzed_urls:
-            prompts_for_url = asyncio.run(self.generate_task_prompts_for_url(page_analysis.page_url, web_project_data, page_analysis.html_source, task_difficulty_level))
+            prompts_for_url = asyncio.run(self.generate_task_prompts_for_url(page_analysis.page_url, page_analysis.html_source, task_difficulty_level))
             domain_prompts.append(prompts_for_url)
         return domain_prompts
 
     async def generate_task_prompts_for_url(
         self,
         specific_url: str,
-        web_project_data: Optional[Dict[str, Any]],
         current_html: Optional[str] = None,
         task_difficulty_level: TaskDifficultyLevel = TaskDifficultyLevel.EASY,
     ) -> TaskPromptForUrl:
@@ -94,7 +85,6 @@ class TaskPromptGenerator:
             specific_url (str): The URL for which to generate prompts.
             current_html (Optional[str]): HTML for the current URL. If not provided, it will be extracted.
             task_difficulty_level (TaskDifficultyLevel): The difficulty level for tasks. Defaults to TaskDifficultyLevel.EASY.
-            web_project_data ([Optional[Dict[str, Any]]): Additional data for task generation.
 
         Returns:
             A dict with:
@@ -109,7 +99,6 @@ class TaskPromptGenerator:
             html_source=current_html,
             summary_page_url=page_analysis.web_summary,
             task_difficulty_level=task_difficulty_level,
-            web_project_data=web_project_data,
         )
         raw_content_dict = json.loads(raw_content.replace("\n", "\\n"))
         tasks_list = raw_content_dict["tasks"]
@@ -120,7 +109,6 @@ class TaskPromptGenerator:
         html_source: str,
         summary_page_url: Dict,
         task_difficulty_level: TaskDifficultyLevel,
-        web_project_data: Optional[Dict[str, Any]],
     ) -> str:
         # Format the user message with dynamic inputs
         user_message = USER_MSG_TEMPLATE.format(
@@ -128,7 +116,6 @@ class TaskPromptGenerator:
             difficulty_level=task_difficulty_level.value,
             html_source=html_source,
             summary_page_url=summary_page_url,
-            web_project_data=web_project_data,
         )
 
         messages = [{"role": "system", "content": SYSTEM_MSG}, {"role": "user", "content": user_message}]

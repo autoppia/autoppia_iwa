@@ -1,7 +1,21 @@
+[project]
+name = "autoppia_iwa"
+version = "0.0.1"
+description = "A short description of the autoppia_iwa package"
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+include = ["*"]
+exclude = ["tests*", "docs*", "data*"]  # Exclude non-package directories
+
 [tool.isort]
 profile = "black"
 line_length = 200
-known_third_party = ["PIL", "aiohttp", "bs4", "dependency_injector", "dotenv", "flask", "flask_cors", "matplotlib", "networkx", "numpy", "openai", "playwright", "pydantic", "pymongo", "requests", "setuptools", "tiktoken", "transformers", "typing_extensions"]
+known_third_party = ["PIL", "aiohttp", "bs4", "dependency_injector", "distutils", "dotenv", "flask", "flask_cors", "matplotlib", "networkx", "numpy", "openai", "playwright", "pydantic", "pymongo", "requests", "tiktoken", "transformers", "typing_extensions"]
 
 [tool.black]
 line-length = 200

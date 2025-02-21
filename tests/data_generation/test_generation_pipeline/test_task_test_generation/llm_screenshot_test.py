@@ -34,12 +34,14 @@ class TestOpinionBaseOnScreenshot(unittest.TestCase):
             screenshot_after=white_block_base64,
         )
 
-    def create_base64_encoded_block(self, color: tuple):
+    @staticmethod
+    def create_base64_encoded_block(color: tuple):
         block = np.full((10, 10, 3), color, dtype=np.uint8)
         img = Image.fromarray(block)
         buffer = BytesIO()
         img.save(buffer, format="PNG")
-        return base64.b64encode(buffer.getvalue()).decode()
+        buffer.seek(0)
+        return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     def test_screenshot(self):
         result = self.test_instance.execute_test(self.mock_snapshot)

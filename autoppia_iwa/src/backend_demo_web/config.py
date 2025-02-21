@@ -24,7 +24,6 @@ demo_web_projects = [
         frontend_url=get_frontend_url(index=0),
         backend_url=get_backend_url(index=0),
         events_to_check=events_allowed_web_1,
-        relevant_data={"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
     )
     # ),
     # DemoWebProject(
