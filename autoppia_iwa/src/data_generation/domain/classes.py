@@ -69,7 +69,11 @@ class Task(BaseModel):
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Dictionary of relevant data for this task")
     is_web_real: bool = False
 
-    # DONT MODIFY BASE MODEL_DUMP METHOD!
+    @property
+    def prompt_with_relevant_data(self) -> str:
+        if self.relevant_data:
+            return f"{self.prompt} Using the relevant data: {self.relevant_data}"
+        return self.prompt
 
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         """
@@ -79,12 +83,6 @@ class Task(BaseModel):
         base_dump["tests"] = [test.model_dump() for test in self.tests]
         base_dump.pop("web_analysis", None)
         return base_dump
-
-    @property
-    def prompt_with_relevant_data(self) -> str:
-        if self.relevant_data:
-            return f"{self.prompt} Using the relevant data: {self.relevant_data}"
-        return self.prompt
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Task":
@@ -97,21 +95,18 @@ class Task(BaseModel):
         Returns:
             Task: The Task object created from the dictionary.
         """
-        # Extract and construct tests
-        test_data = data.get("tests", [])
-        tests = BaseTaskTest.assign_tests(test_data)
-
-        # Handle milestones recursively if provided
-        milestones = data.get("milestones", [])
-
-        # Create and return Task instance
         return cls(
-            prompt=data.get("prompt"),
-            url=data.get("url"),
+            id=data.get("id", str(uuid.uuid4())),  # Ensures unique ID if missing
+            prompt=data["prompt"],  # Required field
+            url=data["url"],  # Required field
+            html=data.get("html", ""),
+            screenshot=data.get("screenshot"),
             specifications=BrowserSpecification.model_validate(data.get("specifications", {})),
-            tests=tests,
-            milestones=milestones,
-            web_analysis=DomainAnalysis.model_validate(data.get("web_analysis", {})) if data.get("web_analysis") else None,
+            tests=[BaseTaskTest.model_validate(test) for test in data.get("tests", [])],
+            milestones=[cls.from_dict(m) for m in data.get("milestones", [])] if data.get("milestones") else None,
+            web_analysis=DomainAnalysis.model_validate(data["web_analysis"]) if "web_analysis" in data else None,
+            relevant_data=data.get("relevant_data", {}),
+            is_web_real=data.get("is_web_real", False),
         )
 
 
