@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from autoppia_iwa.config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
-    LLM_ENPOINT,
+    LLM_ENDPOINT,
     LLM_PROVIDER,
     LLM_THRESHOLD,
     MONGODB_NAME,
@@ -64,7 +64,7 @@ class DIContainer(containers.DeclarativeContainer):
     def _get_llm_service():
         if LLM_PROVIDER == "local":
             return LocalLLMService(
-                endpoint_url=LLM_ENPOINT,
+                endpoint_url=LLM_ENDPOINT,
                 threshold=LLM_THRESHOLD,
             )
 
