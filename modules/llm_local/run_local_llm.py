@@ -124,6 +124,7 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
             # Check if the original response_text is already valid JSON
             originally_valid = False
             try:
+                print(f"ORIGINAL JSON CREATED: {response_text}")
                 json.loads(response_text)
                 originally_valid = True
                 counters["json_correctly_formatted"] += 1
@@ -134,6 +135,7 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
             if not originally_valid:
                 try:
                     repaired_text = repair_json(response_text, ensure_ascii=False)
+                    print(f"REPAIRED TEXT: {repaired_text}")
                     # Verify the repaired text is valid JSON
                     repaired_obj = json.loads(repaired_text)
                     # Re-encode into a standard JSON string
