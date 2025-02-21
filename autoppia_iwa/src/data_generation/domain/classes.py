@@ -61,7 +61,7 @@ class Task(BaseModel):
     prompt: str = Field(..., description="Prompt for the task")
     url: str = Field(..., description="URL where the task is to be performed")
     html: str = Field(default_factory=str, description="HTML content associated with the task")
-    screenshot: Any = Field(default_factory=None, description="Screenshot of the task (if available)")
+    screenshot: Optional[Any] = Field(default_factory=None, description="Screenshot of the task (if available)")
     specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser specifications required for the task")
     tests: List[BaseTaskTest] = Field(default_factory=list, description="List of tests associated with the task")
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
@@ -80,7 +80,8 @@ class Task(BaseModel):
         base_dump.pop("web_analysis", None)
         return base_dump
 
-    def prompt_with_relevant_data(self):
+    @property
+    def prompt_with_relevant_data(self) -> str:
         if self.relvant_data:
             return f"{self.prompt} Using the relevant data: {self.relevant_data}"
         return self.prompt
