@@ -14,9 +14,12 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "serverless", "local
 LLM_THRESHOLD = 100
 LLM_ENDPOINT = os.getenv("LLM_ENDPOINT", "http://127.0.0.1:6000/generate")
 
+if LLM_PROVIDER not in ["local", "openai"]:
+    raise ValueError("LLM_PROVIDER must be one of 'local' or 'openai'")
+
 # OpenAI Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4-32k-0613")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_MAX_TOKENS = int(os.getenv("OPENAI_MAX_TOKENS", 2000))
 OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", 0.7))
 
