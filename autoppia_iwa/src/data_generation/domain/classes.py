@@ -2,9 +2,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
-
 from pydantic import BaseModel, Field, field_validator
-
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
@@ -15,7 +13,6 @@ class WebProject(BaseModel):
     name: str = Field(..., min_length=1, description="Name of the web project")
     events_to_check: List[str] = Field(default_factory=list, description="List of events to monitor")
     is_real_web: bool = Field(default=False, description="Flag to indicate if this is a real web application")
-
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
 
 

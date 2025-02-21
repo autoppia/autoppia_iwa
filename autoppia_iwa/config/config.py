@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+from distutils.util import strtobool
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -61,6 +61,6 @@ DEMO_WEBS_STARTING_PORT = int(os.getenv("DEMO_WEBS_STARTING_PORT", '8000'))
 # Agent Configurations
 # ============================
 AGENT_NAME = os.getenv("AGENT_NAME")
-USE_APIFIED_AGENT = os.getenv("USE_APIFIED_AGENT", "false")
+USE_APIFIED_AGENT = bool(strtobool(os.getenv("USE_APIFIED_AGENT", "false")))
 AGENT_HOST = os.getenv("AGENT_HOST", 'localhost')
 AGENT_PORT = int(os.getenv("AGENT_PORT", '8080'))
