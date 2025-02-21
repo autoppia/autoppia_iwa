@@ -100,7 +100,8 @@ class TaskPromptGenerator:
             summary_page_url=page_analysis.web_summary,
             task_difficulty_level=task_difficulty_level,
         )
-        raw_content_dict = json.loads(raw_content.replace("\n", "\\n"))
+        # raw_content_dict = json.loads(raw_content.replace("\n", "\\n"))
+        # TODO - SEEMS WE MISSING AN OUTPUT HERE
         tasks_list = raw_content_dict["tasks"]
         return TaskPromptForUrl(page_url=specific_url, task_prompts=tasks_list)
 
