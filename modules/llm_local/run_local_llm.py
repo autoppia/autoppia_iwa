@@ -1,13 +1,12 @@
 import argparse
 import gc
-import logging
 import json
-from json_repair import repair_json
+import logging
 
 from flask import Flask, request
 from flask_cors import CORS
+from json_repair import repair_json
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -25,21 +24,17 @@ print(f"Loading model {MODEL_NAME}")
 
 # Load model + tokenizer
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    torch_dtype="auto",
-    device_map="auto"
-)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype="auto", device_map="auto")
 model.eval()
 
 # ---------------------------------------------------------------------------
 # Global counters
 # ---------------------------------------------------------------------------
 counters = {
-    "total_requests": 0,               # How many requests have been answered
-    "json_requests": 0,                # How many requests asked for JSON output
-    "json_correctly_formatted": 0,     # How many times JSON was already valid
-    "json_repair_succeeded": 0         # How many times the JSON was successfully repaired
+    "total_requests": 0,  # How many requests have been answered
+    "json_requests": 0,  # How many requests asked for JSON output
+    "json_correctly_formatted": 0,  # How many times JSON was already valid
+    "json_repair_succeeded": 0,  # How many times the JSON was successfully repaired
 }
 
 
@@ -60,10 +55,7 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
         if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
             messages = message_payload
         else:
-            messages = [
-                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
-                {"role": "user", "content": str(message_payload)}
-            ]
+            messages = [{"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."}, {"role": "user", "content": str(message_payload)}]
 
         # If a response_format was provided, instruct model to produce valid JSON
         if response_format and response_format.get("type") == "json_object":
@@ -72,44 +64,24 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 0,
                 {
                     "role": "system",
-                    "content": (
-                        "You must respond in **valid JSON** that meets the following schema.\n\n"
-                        "Do not include extra keys. Output **only** the JSON object.\n\n"
-                        f"{schema_text}"
-                    ),
+                    "content": ("You must respond in **valid JSON** that meets the following schema.\n\n" "Do not include extra keys. Output **only** the JSON object.\n\n" f"{schema_text}"),
                 },
             )
 
         # Convert to a single text prompt with Qwen's chat template
         if chat_format:
-            text_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
-                chat_format=chat_format
-            )
+            text_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, chat_format=chat_format)
         else:
-            text_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True
-            )
+            text_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
         # Tokenize
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
 
         # Generate
-        generated_ids = model.generate(
-            **model_inputs,
-            max_new_tokens=max_new_tokens,
-            **generation_kwargs
-        )
+        generated_ids = model.generate(**model_inputs, max_new_tokens=max_new_tokens, **generation_kwargs)
 
         # Qwen docs: subtract the prompt tokens so we only decode new tokens
-        generated_ids = [
-            output_ids[len(input_ids):]
-            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
+        generated_ids = [output_ids[len(input_ids) :] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
 
         # Decode
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
@@ -175,11 +147,7 @@ def handler():
         llm_kwargs = input_data.get("llm_kwargs", {})
         chat_completion_kwargs = input_data.get("chat_completion_kwargs", {})
 
-        merged_generation_kwargs = {
-            **base_generation_kwargs,
-            **llm_kwargs,
-            **chat_completion_kwargs
-        }
+        merged_generation_kwargs = {**base_generation_kwargs, **llm_kwargs, **chat_completion_kwargs}
 
         output = generate_data(
             message_payload=message_payload,
