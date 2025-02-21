@@ -209,7 +209,7 @@ class TaskTestGenerator:
         response = self.llm_service.make_request(
             message_payload=[{"role": "system", "content": system_message}, {"role": "user", "content": user_message}],
             chat_completion_kwargs={
-                "temperature": 0.6,
+                "temperature": 0.1,
                 "top_k": 50,
                 "response_format": {"type": "json_object", "schema": validation_schema},
             },
