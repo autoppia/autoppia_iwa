@@ -2,7 +2,6 @@
 import asyncio
 import json
 import logging
-import traceback
 from functools import wraps
 from typing import Optional, Union
 
@@ -26,7 +25,7 @@ def log_action(action_name: str):
             try:
                 return await func(self, page, backend_service, web_agent_id)
             except Exception as e:
-                error_details = traceback.format_exc()
+                # error_details = traceback.format_exc()
                 # action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
                 action_logger.error(f"{action_name} failed: {e}")
                 raise

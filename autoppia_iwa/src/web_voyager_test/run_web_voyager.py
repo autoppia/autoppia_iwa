@@ -50,7 +50,6 @@ async def generate_tests(url: str, task_description: str, enable_crawl: bool) ->
             name=urlparse(url).netloc,
             events_to_check=[],
             is_real_web=IS_WEB_REAL,
-            relevant_data={"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
         )
         task_test_generator = TaskTestGenerator(web_project=web_project, web_analysis=web_analysis)
         tests = await task_test_generator.generate_task_tests(task_description, url)

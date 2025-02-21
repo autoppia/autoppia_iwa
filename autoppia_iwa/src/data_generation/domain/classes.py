@@ -2,7 +2,9 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field, field_validator
+
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
@@ -13,7 +15,6 @@ class WebProject(BaseModel):
     name: str = Field(..., min_length=1, description="Name of the web project")
     events_to_check: List[str] = Field(default_factory=list, description="List of events to monitor")
     is_real_web: bool = Field(default=False, description="Flag to indicate if this is a real web application")
-    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
 
 
 class TaskDifficultyLevel(Enum):
@@ -59,12 +60,13 @@ class Task(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task")
     prompt: str = Field(..., description="Prompt for the task")
     url: str = Field(..., description="URL where the task is to be performed")
-    html:str = ""
-    screenshot:Any = None
-    specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser specifications for the task")
+    html: str = Field(default_factory=str, description="HTML content associated with the task")
+    screenshot: Any = Field(default_factory=None, description="Screenshot of the task (if available)")
+    specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser specifications required for the task")
     tests: List[BaseTaskTest] = Field(default_factory=list, description="List of tests associated with the task")
     milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
     web_analysis: Optional[DomainAnalysis] = Field(None, description="Domain analysis for the task")
+    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Dictionary of relevant data for this task")
     is_web_real: bool = False
 
     # DONT MODIFY BASE MODEL_DUMP METHOD!
@@ -77,6 +79,11 @@ class Task(BaseModel):
         base_dump["tests"] = [test.model_dump() for test in self.tests]
         base_dump.pop("web_analysis", None)
         return base_dump
+
+    def prompt_with_relevant_data(self):
+        if self.relvant_data:
+            return f"{self.prompt} Using the relevant data: {self.relevant_data}"
+        return self.prompt
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Task":

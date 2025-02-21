@@ -1,12 +1,11 @@
 import argparse
 import gc
-import logging
 import json  # <-- We add this import to handle JSON serialization of the schema
+import logging
 
 from flask import Flask, request
 from flask_cors import CORS
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -26,9 +25,7 @@ print(f"Loading model {MODEL_NAME}")
 # Load model + tokenizer as recommended for Qwen
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    torch_dtype="auto",   # lets HF set an optimal dtype (usually FP16 or BF16 if supported)
-    device_map="auto"     # automatically place the model on GPU(s)
+    MODEL_NAME, torch_dtype="auto", device_map="auto"  # lets HF set an optimal dtype (usually FP16 or BF16 if supported)  # automatically place the model on GPU(s)
 )
 model.eval()
 
@@ -55,10 +52,7 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
             messages = message_payload
         else:
             # Fallback if user passed a single string, wrap with a default system & user
-            messages = [
-                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
-                {"role": "user", "content": str(message_payload)}
-            ]
+            messages = [{"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."}, {"role": "user", "content": str(message_payload)}]
 
         # -------------------------------------------------------------------
         # 2a) If a response_format was provided, instruct the model to output
@@ -71,46 +65,26 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 0,
                 {
                     "role": "system",
-                    "content": (
-                        "You must respond in **valid JSON** that meets the following schema.\n\n"
-                        "Do not include extra keys. Output **only** the JSON object.\n\n"
-                        f"{schema_text}"
-                    ),
+                    "content": ("You must respond in **valid JSON** that meets the following schema.\n\n" "Do not include extra keys. Output **only** the JSON object.\n\n" f"{schema_text}"),
                 },
             )
 
         # 3) Convert to a single text prompt with Qwen's chat template
         #    Use the chat_format if provided.
         if chat_format:
-            text_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
-                chat_format=chat_format
-            )
+            text_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, chat_format=chat_format)
         else:
-            text_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True
-            )
+            text_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
         # 4) Tokenize
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
 
         # 5) Generate
         # Merge the user-specified `max_new_tokens` with the rest of generation_kwargs.
-        generated_ids = model.generate(
-            **model_inputs,
-            max_new_tokens=max_new_tokens,
-            **generation_kwargs
-        )
+        generated_ids = model.generate(**model_inputs, max_new_tokens=max_new_tokens, **generation_kwargs)
 
         # Qwen docs: subtract the prompt tokens so we only decode new tokens
-        generated_ids = [
-            output_ids[len(input_ids):]
-            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
+        generated_ids = [output_ids[len(input_ids) :] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
 
         # 6) Decode
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
@@ -180,11 +154,7 @@ def handler():
         chat_completion_kwargs = input_data.get("chat_completion_kwargs", {})
 
         # Merge them so they actually get used
-        merged_generation_kwargs = {
-            **base_generation_kwargs,
-            **llm_kwargs,
-            **chat_completion_kwargs
-        }
+        merged_generation_kwargs = {**base_generation_kwargs, **llm_kwargs, **chat_completion_kwargs}
 
         output = generate_data(
             message_payload=message_payload,

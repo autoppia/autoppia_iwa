@@ -59,7 +59,6 @@ class TaskGenerationPipeline:
                     task_difficulty_level=task_difficulty_level,
                     specific_url=page_analysis.page_url,
                     current_html=current_html,
-                    web_project_data=self.task_config.web_project.relevant_data,
                 )
 
                 for task_prompts in prompts_for_url.task_prompts:
