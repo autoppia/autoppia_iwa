@@ -4,7 +4,7 @@ import logging
 import time
 import unittest
 from pathlib import Path
-from typing import Union, List
+from typing import List
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel
@@ -74,34 +74,17 @@ class BaseEvaluationTest(unittest.TestCase):
                 "scroll_x": 0,
                 "scroll_y": 0,
                 "browser_x": 0,
-                "browser_y": 0
+                "browser_y": 0,
             },
             "tests": [
-                {
-                    "description": "Check if the backend emitted the specified event",
-                    "test_type": "backend",
-                    "event_name": "page_view"
-                },
-                {
-                    "description": "Find in the current HTML some of the words in the list",
-                    "test_type": "frontend",
-                    "keywords": ["login"]
-                },
-                {
-                    "description": "Check if the backend emitted the specified event",
-                    "test_type": "backend",
-                    "event_name": "login"
-                }
+                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view"},
+                {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["login"]},
+                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "login"},
             ],
             "actions": [
-                {
-                    "type": "NavigateAction",
-                    "url": "http://localhost:8000/",
-                    "go_back": False,
-                    "go_forward": False
-                }
+                {"type": "NavigateAction", "url": "http://localhost:8000/", "go_back": False, "go_forward": False}
                 # ... remaining actions ...
-            ]
+            ],
         }
 
         return TaskSolution(
@@ -122,6 +105,7 @@ class BaseEvaluationTest(unittest.TestCase):
 
             if len(tasks) > num_tasks:
                 import random
+
                 tasks = random.sample(tasks, num_tasks)
 
             return [
@@ -140,20 +124,13 @@ class BaseEvaluationTest(unittest.TestCase):
             # Generate base tasks if no file is provided
             return [self._create_base_task_solution() for _ in range(num_tasks)]
 
-    async def evaluate_tasks(self, 
-                             num_tasks: int, 
-                             enable_grouping_tasks: bool = True, 
-                             input_file: str = None,
-                             output_file: str = None) -> float:
+    async def evaluate_tasks(self, num_tasks: int, enable_grouping_tasks: bool = True, input_file: str = None, output_file: str = None) -> float:
         """Evaluate tasks with optional file loading and saving."""
         start_time = time.time()
 
         evaluator_input = self._get_task_solutions(num_tasks, input_file)
 
-        evaluator_config = EvaluatorConfig(
-            save_results_in_db=self.save_results_in_db,
-            enable_grouping_tasks=enable_grouping_tasks
-        )
+        evaluator_config = EvaluatorConfig(save_results_in_db=self.save_results_in_db, enable_grouping_tasks=enable_grouping_tasks)
 
         evaluator = ConcurrentEvaluator(evaluator_config)
         evaluated_tasks = await evaluator.evaluate_all_tasks(evaluator_input)
@@ -171,20 +148,24 @@ class BaseEvaluationTest(unittest.TestCase):
 class GroupedEvaluationTest(BaseEvaluationTest):
     def test_evaluation_with_grouping(self):
         """Test task evaluation with grouping enabled"""
-        elapsed_time = asyncio.run(self.evaluate_tasks(
-            num_tasks=self.num_of_tasks_to_evaluate,
-            enable_grouping_tasks=True,
-        ))
+        elapsed_time = asyncio.run(
+            self.evaluate_tasks(
+                num_tasks=self.num_of_tasks_to_evaluate,
+                enable_grouping_tasks=True,
+            )
+        )
         logging.info(f"Grouped evaluation completed in {elapsed_time:.2f} seconds")
 
 
 class NonGroupedEvaluationTest(BaseEvaluationTest):
     def test_evaluation_without_grouping(self):
         """Test task evaluation with grouping disabled"""
-        elapsed_time = asyncio.run(self.evaluate_tasks(
-            num_tasks=self.num_of_tasks_to_evaluate,
-            enable_grouping_tasks=False,
-        ))
+        elapsed_time = asyncio.run(
+            self.evaluate_tasks(
+                num_tasks=self.num_of_tasks_to_evaluate,
+                enable_grouping_tasks=False,
+            )
+        )
         logging.info(f"Non-grouped evaluation completed in {elapsed_time:.2f} seconds")
 
 

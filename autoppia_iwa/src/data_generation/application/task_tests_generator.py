@@ -4,13 +4,12 @@ from typing import Dict, List, Optional
 from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
-
-from ...data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, OpinionBaseOnHTML
-from ...di_container import DIContainer
-from ...shared.utils import extract_html
-from ...web_analysis.application.web_llm_utils import ILLMService
-from ...web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis, SinglePageAnalysis
-from ..domain.classes import WebProject
+from autoppia_iwa.src.data_generation.domain.classes import WebProject
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, OpinionBaseOnHTML
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.shared.utils import extract_html
+from autoppia_iwa.src.web_analysis.application.web_llm_utils import ILLMService
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis, SinglePageAnalysis
 
 BASE_SYSTEM_MSG = """
 1. IMPORTANT RULES:
@@ -20,6 +19,7 @@ BASE_SYSTEM_MSG = """
     - If there is any navigation performed then there must be a CheckPageViewTest.
     - In most cases, all three test types—CheckEventTest, CheckPageViewTest, and CheckHTMLTest—are necessary.
     - However, certain scenarios may require only one or two of them instead of all three.
+    - If the relevant extra data is provided, then use that in tests generation is relevant enough. 
 
     1.1. OUTPUT FORMAT:
         - Always return the tests as a valid JSON array, without additional text or delimiters. The format must strictly follow this structure:
@@ -203,6 +203,9 @@ class TaskTestGenerator:
                 user_message_parts.append("As this is the a real web page, don't generate page_view test.")
             else:
                 user_message_parts.append(f"Relevant words for the CheckPageViewTest: {relevant_fields}")
+
+        if self.web_project.relevant_data:
+            user_message_parts.append(f"Here the relevant extra data: {self.web_project.relevant_data}")
         user_message_parts.append("Generate tests following the specified format.")
         user_message = "\n\n".join(user_message_parts)
 

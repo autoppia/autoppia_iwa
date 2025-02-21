@@ -5,8 +5,8 @@ from typing import List, Optional, Union
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
-from ....config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
-from ..domain.classes import Element
+from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
+from autoppia_iwa.src.web_analysis.domain.classes import Element
 
 
 class WebPageStructureExtractor:

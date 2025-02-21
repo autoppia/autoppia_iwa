@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from ..backend_demo_web.classes import BackendEvent
-from .actions.base import BaseAction
+from autoppia_iwa.src.backend_demo_web.classes import BackendEvent
+from autoppia_iwa.src.execution.actions.base import BaseAction
 
 
 class BrowserSnapshot(BaseModel):

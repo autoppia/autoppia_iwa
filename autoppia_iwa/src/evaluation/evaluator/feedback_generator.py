@@ -1,8 +1,8 @@
 from collections import defaultdict
 from typing import List
 
-from ...execution.classes import ActionExecutionResult
-from ..classes import Feedback, TestEvaluated
+from autoppia_iwa.src.evaluation.classes import Feedback, TestEvaluated
+from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 
 class FeedbackGenerator:

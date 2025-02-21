@@ -1,4 +1,4 @@
-from .di_container import DIContainer
+from autoppia_iwa.src.di_container import DIContainer
 
 
 class AppBootstrap:

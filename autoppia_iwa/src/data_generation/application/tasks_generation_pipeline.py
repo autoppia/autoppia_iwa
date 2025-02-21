@@ -1,7 +1,11 @@
 import traceback
 from datetime import datetime
 from typing import Optional, Tuple
+
 from dependency_injector.wiring import Provide
+
+from autoppia_iwa.src.data_generation.application.task_prompt_generator import TaskPromptGenerator
+from autoppia_iwa.src.data_generation.application.task_tests_generator import TaskTestGenerator
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, TasksGenerationOutput
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.infrastructure.llm_service import ILLMService
@@ -9,8 +13,6 @@ from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository impo
 from autoppia_iwa.src.shared.utils import extract_html
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
-from .task_prompt_generator import TaskPromptGenerator
-from .task_tests_generator import TaskTestGenerator
 
 
 class TaskGenerationPipeline:
@@ -57,6 +59,7 @@ class TaskGenerationPipeline:
                     task_difficulty_level=task_difficulty_level,
                     specific_url=page_analysis.page_url,
                     current_html=current_html,
+                    web_project_data=self.task_config.web_project.relevant_data,
                 )
 
                 for task_prompts in prompts_for_url.task_prompts:

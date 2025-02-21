@@ -20,6 +20,10 @@ from tests import test_container
 
 
 class TaskGenerationByEasyDifficultyTest(unittest.TestCase):
+    logger = logging.getLogger("TaskGenerationByEasyDifficultyTest")
+    logger.setLevel(logging.INFO)
+    logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.INFO)
+
     @classmethod
     def setUpClass(cls):
         """
@@ -52,9 +56,9 @@ class TaskGenerationByEasyDifficultyTest(unittest.TestCase):
         try:
             with open(file_path, "w", encoding="utf-8") as file:
                 json.dump(tasks, file, ensure_ascii=False, indent=4)
-            logging.info(f"Tasks successfully saved to {file_path}")
+            self.logger.info(f"Tasks successfully saved to {file_path}")
         except Exception as e:
-            logging.error(f"Failed to save tasks to {file_path}: {e}")
+            self.logger.error(f"Failed to save tasks to {file_path}: {e}")
             raise
 
     def _load_tasks(self, folder_name: str) -> dict:
@@ -63,16 +67,16 @@ class TaskGenerationByEasyDifficultyTest(unittest.TestCase):
         """
         file_path = self._get_file_path(folder_name)
         if not file_path.exists():
-            logging.info(f"File not found: {file_path}. Tasks will be generated.")
+            self.logger.info(f"File not found: {file_path}. Tasks will be generated.")
             return {}
 
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 tasks = json.load(file)
-            logging.info(f"Loaded {len(tasks)} tasks for difficulty '{self.difficulty_level}' from {file_path}")
+            self.logger.info(f"Loaded {len(tasks)} tasks for difficulty '{self.difficulty_level}' from {file_path}")
             return tasks
         except Exception as e:
-            logging.error(f"Failed to load tasks from {file_path}: {e}")
+            self.logger.error(f"Failed to load tasks from {file_path}: {e}")
             return {}
 
     def _generate_tasks(self, include_actions: bool = False, include_evaluation: bool = False) -> dict:
@@ -95,6 +99,7 @@ class TaskGenerationByEasyDifficultyTest(unittest.TestCase):
                 frontend_url=self.start_url,
                 name="jobs",
                 events_to_check=EVENTS_ALLOWED,
+                relevant_data={"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
             )
             task_input = TaskGenerationConfig(web_project=web_project)
             task_generator = TaskGenerationPipeline(task_input, llm_service=self.llm_service)
@@ -130,7 +135,7 @@ class TaskGenerationByEasyDifficultyTest(unittest.TestCase):
                     task_solution = self.web_agent.solve_task_sync(task=current_task)
                     task["actions"] = [action.model_dump() for action in task_solution.actions]
             except Exception as e:
-                logging.warning(f"Failed to generate actions for task {task['id']}: {e}")
+                self.logger.warning(f"Failed to generate actions for task {task['id']}: {e}")
 
     def _evaluate_tasks(self, tasks_data: dict) -> List[EvaluationResult]:
         """
@@ -140,22 +145,36 @@ class TaskGenerationByEasyDifficultyTest(unittest.TestCase):
             tasks_data (dict): Tasks data dictionary.
         """
 
-        evaluator_input = [
-            TaskSolution(
+        evaluator_input = []
+
+        for task in tasks_data["tasks"]:
+            actions = []
+            if task.get("actions", ""):
+                for action in task["actions"]:
+                    try:
+                        created_action = BaseAction.create_action(action)
+                        if created_action:
+                            actions.append(created_action)
+                        else:
+                            self.logger.warning(f"Action could not be created: {action}")
+                    except Exception as e:
+                        self.logger.error(f"Error creating action: {action}. Exception: {e}")
+
+            task_solution = TaskSolution(
                 task=Task(
                     prompt=task["prompt"],
                     url=task["url"],
                     tests=BaseTaskTest.assign_tests(task["tests"]),
                 ),
-                actions=[BaseAction.create_action(action) for action in task.get("actions", [])],
+                actions=actions,
                 web_agent_id=task.get("web_agent_id", generate_random_web_agent_id()),
             )
-            for task in tasks_data["tasks"]
-        ]
+            evaluator_input.append(task_solution)
 
         evaluator_config = EvaluatorConfig(save_results_in_db=True)
         evaluator = ConcurrentEvaluator(evaluator_config)
-        return asyncio.run(evaluator.evaluate_all_tasks(evaluator_input))
+        evaluation_result = asyncio.run(evaluator.evaluate_all_tasks(evaluator_input))
+        return [result.model_dump() for result in evaluation_result]
 
     @staticmethod
     def _determine_output_folder(include_actions: bool, include_evaluation: bool) -> str:

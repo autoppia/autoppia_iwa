@@ -6,7 +6,7 @@ import aiohttp
 import requests
 from requests.exceptions import RequestException
 
-from .classes import BackendEvent
+from autoppia_iwa.src.backend_demo_web.classes import BackendEvent
 
 
 class BackendDemoWebService:

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from ..web_agents.classes import TaskSolution
-from .classes import EvaluationResult
+from autoppia_iwa.src.evaluation.classes import EvaluationResult
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 class IEvaluator(ABC):

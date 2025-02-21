@@ -9,7 +9,7 @@ project dependencies.
 To ensure the proper functioning of the project, three essential components need to be running simultaneously:
 
 1. **run_local_llm.py**: Local model server (used if you don't want to use the Runpod serverless model). Check the
-   [Model Deployment Guide](llm_local/llm_local_setup.md): Step-by-step instructions for deploying the local model.
+   [Model Deployment Guide](modules/llm_local/setup.md): Step-by-step instructions for deploying the local model.
 
 2. **webApp/app.py** OR **app.py**: Main project's endpoints that handle the core functionality of the project.
 
@@ -88,7 +88,7 @@ If the version is earlier than 3.10, you'll need to install the correct version.
 
 ```bash
 sudo apt update
-sudo apt install -y python3.10 python3.10-venv python3-pip
+sudo apt install -y python3.11 python3.11-venv python3-pip
 ```
 
 ---
@@ -107,7 +107,7 @@ sudo apt install -y python3.10 python3.10-venv python3-pip
    > the version when running commands:
 
    ```bash
-   python3.10 -m venv venv
+   python3.11 -m venv venv
    ```
 
 2. Activate the virtual environment:
@@ -132,7 +132,7 @@ sudo apt install -y python3.10 python3.10-venv python3-pip
 2. Create a new Conda environment:
 
    ```bash
-   conda create -n autoppia python=3.10 -y
+   conda create -n autoppia python=3.11 -y
    ```
 
 3. Activate the environment:
