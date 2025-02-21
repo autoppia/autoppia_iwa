@@ -201,11 +201,10 @@ class TestTaskPromptGenerator(unittest.TestCase):
         test_data["analyzed_urls"][0]["web_summary"] = LLMWebAnalysis(**test_data["analyzed_urls"][0]["web_summary"])
         return test_data
 
-    def test_generate_prompts(self):
+    def test_generate_prompts_for_domain(self):
         """Test the generation of prompts for a domain."""
-        relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
         generator = TaskPromptGenerator(web_analysis=self.web_analysis, llm_service=self.llm_service, num_prompts_per_url=1)
-        tasks = generator.generate_prompts_for_domain(web_project_data=relevant_data, task_difficulty_level=TaskDifficultyLevel.MEDIUM)
+        tasks = generator.generate_prompts_for_domain(task_difficulty_level=TaskDifficultyLevel.MEDIUM)
 
         # Assertions
         self.assertIsNotNone(tasks, "Tasks should not be None.")
@@ -220,14 +219,9 @@ class TestTaskPromptGenerator(unittest.TestCase):
         analyzer = WebAnalysisPipeline(start_url="http://localhost:8000/", llm_service=self.llm_service, analysis_repository=self.analysis_repository)
         analysis = asyncio.run(analyzer.analyze())
 
-        relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
         generator = TaskPromptGenerator(web_analysis=analysis, llm_service=self.llm_service, num_prompts_per_url=1)
         tasks = asyncio.run(
-            generator.generate_task_prompts_for_url(
-                specific_url=start_url,
-                web_project_data=relevant_data,
-                task_difficulty_level=TaskDifficultyLevel.MEDIUM,
-            ),
+            generator.generate_task_prompts_for_url(specific_url=start_url, task_difficulty_level=TaskDifficultyLevel.MEDIUM),
         )
 
         # Assertions
