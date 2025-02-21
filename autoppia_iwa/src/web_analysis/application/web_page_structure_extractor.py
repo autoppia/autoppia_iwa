@@ -1,15 +1,17 @@
 from dataclasses import fields
+from pathlib import Path
 from typing import List, Optional, Union
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
+
+from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
 from autoppia_iwa.src.web_analysis.domain.classes import Element
 
 
 class WebPageStructureExtractor:
     """
     A web page structure extractor that extracts structured data from web pages.
-
-    This class provides methods to extract structured data from web pages, including HTML elements, text content, and attributes.
     """
 
     ALLOWED_HTML_TAGS = [
@@ -45,24 +47,18 @@ class WebPageStructureExtractor:
     def __init__(self):
         pass
 
-    def get_elements(
+    async def get_elements(
         self,
         source: Union[str, BeautifulSoup],
         allowed_tags: Optional[List[str]] = None,
     ) -> tuple[List[Element], str]:
         """
-        Extract structured data from a web page.
-
-        Args:
-            source (Union[str, BeautifulSoup]): The URL or BeautifulSoup object to extract structured data from.
-            allowed_tags (list, optional): The allowed HTML tags to extract. Defaults to None.
-
-        Returns:
-            tuple: A tuple containing the extracted elements and the HTML source.
+        Extract structured data from a web page or BeautifulSoup object asynchronously.
         """
         allowed_tags = allowed_tags if allowed_tags else WebPageStructureExtractor.ALLOWED_HTML_TAGS
 
         if isinstance(source, str):
+            # Ensure the URL is well-formed
             if not source.startswith("http://") and not source.startswith("https://"):
                 source = "http://" + source
 
@@ -75,6 +71,32 @@ class WebPageStructureExtractor:
                 html_source = page.content()
                 browser.close()
             soup = BeautifulSoup(html_source, "html.parser")
+            if not Path(CHROMEDRIVER_PATH).exists():
+                raise RuntimeError("ChromeDriver path is not valid or not set")
+
+            async with async_playwright() as p:
+                launch_options = {"headless": True}
+                if CHROME_PATH and Path(CHROME_PATH).exists():
+                    launch_options["executable_path"] = str(CHROME_PATH)
+
+                if PROFILE_DIR and Path(PROFILE_DIR).exists():
+                    launch_options["user_data_dir"] = str(PROFILE_DIR)
+                    context = await p.chromium.launch_persistent_context(**launch_options)
+                else:
+                    browser = await p.chromium.launch(**launch_options)
+                    context = await browser.new_context()
+
+                page = await context.new_page()
+                await page.goto(source)
+                # Replace time.sleep(2) with async wait
+                await page.wait_for_timeout(2000)
+
+                html_source = await page.content()
+                soup = BeautifulSoup(html_source, "html.parser")
+                if context:
+                    await context.close()
+                if not (PROFILE_DIR and Path(PROFILE_DIR).exists()):
+                    await browser.close()
         else:
             soup = source
 
@@ -85,39 +107,29 @@ class WebPageStructureExtractor:
         if cleaned_soup_body is None:
             cleaned_soup_body = cleaned_soup
 
-        for soup_element in cleaned_soup_body.find_all(allowed_tags, recursive=False):  # type: ignore
-            element, element_id_counter = self.__convert_soup_element_to_element(
-                soup_element, allowed_tags, None, "/", element_id_counter
-            )
+        for soup_element in cleaned_soup_body.find_all(allowed_tags, recursive=False):
+            element, element_id_counter = self.__convert_soup_element_to_element(soup_element, allowed_tags, None, "/", element_id_counter)
             if element:
                 elements.append(element)
+
         return elements, cleaned_soup.prettify()
 
     def __clean_soup(self, soup: BeautifulSoup) -> BeautifulSoup:
         """
         Clean the HTML soup by removing unnecessary tags and attributes.
-
-        Args:
-            soup (BeautifulSoup): The HTML soup to clean.
-
-        Returns:
-            BeautifulSoup: The cleaned HTML soup.
         """
         TAGS_TO_EXCLUDE = ["style", "script", "svg"]
         ATTRIBUTES_TO_EXCLUDE = ["class", "name", "style"]
         DATA_ATTRIBUTES_PREFIX = "data-"
 
-        # Remove unwanted tags
         for data in soup(TAGS_TO_EXCLUDE):
             data.decompose()
 
-        # Remove unwanted attributes
         for tag in soup():
             for attribute in ATTRIBUTES_TO_EXCLUDE:
                 if attribute in tag.attrs:
                     del tag[attribute]
 
-        # Remove data- attributes
         for tag in soup():
             for attr in list(tag.attrs):
                 if attr.startswith(DATA_ATTRIBUTES_PREFIX):
@@ -134,17 +146,7 @@ class WebPageStructureExtractor:
         current_id: int,
     ) -> tuple[Optional[Element], int]:
         """
-        Extract the hierarchy of an HTML element.
-
-        Args:
-            soup_element (Soup Element): The HTML element to extract the hierarchy from.
-            allowed_tags (list): The allowed HTML tags to extract.
-            parent_id (int): The ID of the parent element.
-            base_path (str): The path of the parent element.
-            current_id (int): The current ID counter.
-
-        Returns:
-            tuple: The extracted Element and the updated current ID counter.
+        Recursively extract the hierarchy of an HTML element.
         """
         if soup_element.name not in allowed_tags:
             return None, current_id
@@ -174,11 +176,10 @@ class WebPageStructureExtractor:
             info["input_type"] = soup_element.get("type")
         if soup_element.name in ["input", "textarea", "select"]:
             info["value"] = soup_element.get("value")
-        try:
-            if "display:none" in str(soup_element.get("style")):
-                info["invisible"] = True
-        except Exception:
-            pass
+
+        style_content = soup_element.get("style")
+        if style_content and "display:none" in style_content.replace(" ", "").lower():
+            info["invisible"] = True
 
         valid_keys = {f.name for f in fields(Element)}
         filtered_info = {k: v for k, v in info.items() if k in valid_keys}

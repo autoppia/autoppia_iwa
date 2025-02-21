@@ -1,9 +1,9 @@
 import random
 
-from ...data_generation.domain.classes import Task
-from ...execution.actions.actions import ClickAction, NavigateAction
-from ..base import BaseAgent
-from ..classes import TaskSolution
+from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.execution.actions.actions import ClickAction, NavigateAction
+from autoppia_iwa.src.web_agents.base import BaseAgent
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 class RandomClickerWebAgent(BaseAgent):
@@ -11,8 +11,8 @@ class RandomClickerWebAgent(BaseAgent):
     Web Agent that executes random actions within the screen dimensions.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name="Random clicker"):
+        super().__init__(name=name)
 
     async def solve_task(self, task: Task) -> TaskSolution:
         """

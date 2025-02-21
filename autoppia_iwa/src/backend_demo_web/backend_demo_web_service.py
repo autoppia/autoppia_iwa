@@ -105,7 +105,7 @@ class BackendDemoWebService:
             try:
                 async with session.post(endpoint, json=payload, headers=headers, timeout=10) as response:
                     response.raise_for_status()
-                    print(f"[INFO] PageView event sent successfully. Status: {response.status}")
+                    # print(f"[INFO] PageView event sent successfully. Status: {response.status}")
             except aiohttp.ClientError as e:
                 print(f"[ERROR] Failed to send PageView event: {e}")
             except Exception as e:

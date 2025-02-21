@@ -14,10 +14,4 @@ class TestDIContainer(containers.DeclarativeContainer):
 
     @staticmethod
     def _assign_agent() -> ApifiedWebAgent:
-        if AGENT_NAME == "browser_use":
-            return ApifiedWebAgent(name="browser_use_agent", host=AGENT_HOST, port=AGENT_PORT)
-        if AGENT_NAME == "autoppia_agent":
-            return ApifiedWebAgent(name="autoppia_agent", host=AGENT_HOST, port=AGENT_PORT)
-        if AGENT_NAME == "random_agent":
-            return ApifiedWebAgent(name="random_agent", host=AGENT_HOST, port=AGENT_PORT)
-        raise ValueError(f"Unknown agent {AGENT_NAME}")
+        return ApifiedWebAgent(name=AGENT_NAME, host=AGENT_HOST, port=AGENT_PORT)

@@ -2,8 +2,8 @@ import random
 import string
 from abc import ABC, abstractmethod
 
-from ..data_generation.domain.classes import Task
-from ..web_agents.classes import TaskSolution
+from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 class IWebAgent(ABC):
@@ -18,6 +18,9 @@ class IWebAgent(ABC):
 
     The goal is to provide a common structure that all web agents will follow, facilitating integration and interoperability among them.
     """
+
+    id: str
+    name: str
 
     @abstractmethod
     async def solve_task(self, task: Task) -> TaskSolution:

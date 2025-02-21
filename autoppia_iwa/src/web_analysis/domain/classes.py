@@ -2,6 +2,8 @@ import json
 from dataclasses import dataclass, field, fields
 from typing import Dict, List, Optional
 
+from pydantic import BaseModel
+
 from autoppia_iwa.src.llms.domain.openai.utils import OpenAIUtilsMixin
 
 
@@ -64,7 +66,6 @@ class Element:
 
 
 # ---------WEB CRAWL--------
-@dataclass
-class WebCrawlerConfig:
+class WebCrawlerConfig(BaseModel):
     start_url: str
     max_depth: int = 2

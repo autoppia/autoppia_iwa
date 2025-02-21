@@ -7,12 +7,11 @@ from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.backend_demo_web.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-
 from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
 
 AGENTS:List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
@@ -64,7 +63,7 @@ def compute_statistics(scores: List[float]) -> dict:
     return stats
 
 
-def generate_tasks_for_project(demo_project):
+async def generate_tasks_for_project(demo_project, generate_new_tasks=True):
     """
     Generate tasks for the given demo project.
 
@@ -72,11 +71,13 @@ def generate_tasks_for_project(demo_project):
     through the TaskGenerationPipeline.
     """
     task_input = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False)
-    if TASK_EXAMPLES:
+    if not generate_new_tasks and TASK_EXAMPLES:
         tasks = TASK_EXAMPLES
     else:
-        task_output = TaskGenerationPipeline(task_input).generate()
+        print("Generating Tasks...")
+        task_output = await TaskGenerationPipeline(task_input).generate()
         tasks = task_output.tasks
+        print(f"Tasks generated successfully in {task_output.total_phase_time}")
     return tasks
 
 
@@ -139,7 +140,7 @@ async def main():
     # ---------------------------
     # 1. Initialize Agents and Results Storage.
     # ---------------------------
-    agents: List[BaseAgent] = AGENTS 
+    agents: List[BaseAgent] = AGENTS
     results = {}
     for agent in agents:
         results[agent.id] = {"global_scores": [], "projects": {}}
@@ -148,7 +149,9 @@ async def main():
     # 2. Process Each Demo Web Project.
     # ---------------------------
     for demo_project in demo_web_projects:
-        tasks = generate_tasks_for_project(demo_project)
+        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=True)
+        for task in tasks:
+            print(task)
         for agent in agents:
             await evaluate_project_for_agent(agent, demo_project, tasks, results)
 

@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -23,12 +24,18 @@ class TestWebAnalysisPipelineWithNoCrawling(unittest.TestCase):
         pipeline = WebAnalysisPipeline(start_url=self.url, llm_service=self.llm_service, analysis_repository=self.analysis_repository)
 
         # Run the analysis
-        result = pipeline.analyze(enable_crawl=self.enable_crawl, get_analysis_from_cache=self.get_analysis_from_cache, save_results_in_db=self.save_results_in_db)
+        result = asyncio.run(
+            pipeline.analyze(
+                enable_crawl=self.enable_crawl,
+                get_analysis_from_cache=self.get_analysis_from_cache,
+                save_results_in_db=self.save_results_in_db,
+            )
+        )
 
         # Basic checks
         self.assertIsNotNone(result)
-        self.assertEqual(result.get("domain"), "localhost:8000")
-        self.assertGreater(len(result.get("page_analyses")), 0)  # At least one URL must be parsed
+        self.assertEqual(result.domain, "localhost:8000")
+        self.assertGreater(len(result.analyzed_urls), 0)  # At least one URL must be parsed
 
         # Print the results
         print("Analysis results:")

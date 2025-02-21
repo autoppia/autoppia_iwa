@@ -2,16 +2,15 @@ import time
 from datetime import datetime
 from typing import List, Optional
 from urllib.parse import urlparse
-
 from dependency_injector.wiring import Provide
-
-from ...di_container import DIContainer
-from ...llms.domain.interfaces import ILLMService
-from ...shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
-from ..domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
-from .web_crawler import WebCrawler
-from .web_llm_utils import WebLLMAnalyzer
-from .web_page_structure_extractor import WebPageStructureExtractor
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.llms.domain.interfaces import ILLMService
+from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
+from autoppia_iwa.src.web_analysis.application.web_crawler import WebCrawler
+from autoppia_iwa.src.web_analysis.application.web_llm_utils import WebLLMAnalyzer
+from autoppia_iwa.src.web_analysis.application.web_page_structure_extractor import WebPageStructureExtractor
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
+from autoppia_iwa.src.web_analysis.domain.classes import WebCrawlerConfig
 from autoppia_iwa.config.config import LLM_CONTEXT_WINDOW
 
 
@@ -30,13 +29,14 @@ class WebAnalysisPipeline:
         self.llm_service = llm_service
         self.analysis_repository = analysis_repository
 
-        self.web_crawler = WebCrawler(start_url=start_url)
+        crawler_config = WebCrawlerConfig(start_url=start_url)
+        self.web_crawler = WebCrawler(crawler_config)
         self.page_structure_extractor = WebPageStructureExtractor()
         self.llm_analyzer = WebLLMAnalyzer(llm_service=self.llm_service)
 
         self.page_analyses: List[SinglePageAnalysis] = []
 
-    def analyze(
+    async def analyze(
         self,
         save_results_in_db: bool = True,
         get_analysis_from_cache: bool = True,
@@ -46,12 +46,12 @@ class WebAnalysisPipeline:
         Executes a full analysis for a domain, processing all URLs.
 
         Args:
-        save_results_in_db (bool): Whether to save the results in the database. Default is False.
-        get_analysis_from_cache (bool): Whether to check for cached results before analyzing. Default is True.
-        enable_crawl (bool): Whether to crawl the domain for URLs. Default is True.
+            save_results_in_db (bool): Whether to save the results in the database. Default is True.
+            get_analysis_from_cache (bool): Whether to check for cached results before analyzing. Default is True.
+            enable_crawl (bool): Whether to crawl the domain for URLs. Default is True.
 
         Returns:
-            Optional[Dict]: The analysis result, or None if unsuccessful.
+            DomainAnalysis: The analysis result.
         """
         cached_result = self._get_analysis_from_cache() if get_analysis_from_cache else None
         if cached_result:
@@ -62,7 +62,7 @@ class WebAnalysisPipeline:
 
         for url in urls_to_analyze:
             try:
-                self._analyze_url(url)
+                await self._analyze_url(url)
             except Exception as e:
                 print(f"Error analyzing {url}: {e}")
         self._finalize_analysis()
@@ -82,12 +82,16 @@ class WebAnalysisPipeline:
         Check if analysis results already exist in the database.
 
         Returns:
-            Optional[DomainAnalysis]: Cached analysis result, or None if not found.
+            Optional[DomainAnalysis]: Cached analysis result, or None if not found or invalid.
         """
         try:
             cached_result = self.analysis_repository.find_one({"start_url": self.start_url})
+            # print(cached_result)
             if cached_result:
-                print(f"Cache hit: Analysis for '{self.start_url}' already exists.")
+                if not cached_result.get("analyzed_urls"):
+                    print(f"Cached analysis for '{self.start_url}' has empty analyzed_urls. Ignoring cache.")
+                    return None
+                print(f"Analysis for '{self.start_url}' already exists in Cache")
                 return DomainAnalysis(**cached_result)
             print(f"No cached data found for url {self.start_url}")
             return None
@@ -120,13 +124,13 @@ class WebAnalysisPipeline:
         try:
             if not enable_crawl:
                 return [self.start_url]
-            all_urls = self.web_crawler.crawl_urls(start_url=self.start_url, max_depth=1)
+            all_urls = self.web_crawler.crawl_urls()
             return list(set(all_urls))
         except Exception as e:
             print(f"Error crawling URLs for {self.start_url}: {e}")
             return []
 
-    def _analyze_url(self, url: str):
+    async def _analyze_url(self, url: str):
         """
         Analyze a URL with error handling to ensure the pipeline continues.
 
@@ -135,7 +139,7 @@ class WebAnalysisPipeline:
         """
         try:
             # Extract HTML structure
-            elements, html_source = self.page_structure_extractor.get_elements(url)
+            elements, html_source = await self.page_structure_extractor.get_elements(url)
 
             # Analyze each element using the LLM
             elements_analysis_result = []
@@ -144,7 +148,9 @@ class WebAnalysisPipeline:
                 try:
                     elements_analysis_result.append(
                         element.analyze(
-                            max_tokens=MAX_TOKENS_ELEMENT_ANALYZER, analyze_element_function=self.llm_analyzer.analyze_element, analyze_parent_function=self.llm_analyzer.analyze_element_parent
+                            max_tokens=MAX_TOKENS_ELEMENT_ANALYZER,
+                            analyze_element_function=self.llm_analyzer.analyze_element,
+                            analyze_parent_function=self.llm_analyzer.analyze_element_parent,
                         )
                     )
                 except Exception as e:
@@ -179,10 +185,17 @@ class WebAnalysisPipeline:
 
     def _save_results_in_db(self):
         """
-        Save the analysis result in the database.
+        Save the analysis result in the database. If a document already exists for the start_url,
+        perform an update to replace the corrupted analysis with the new one.
         """
         try:
-            self.analysis_repository.save(self.analysis_result.model_dump())
-            print("Analysis results saved successfully.")
+            existing = self.analysis_repository.find_one({"start_url": self.start_url})
+            data = self.analysis_result.model_dump()
+            if existing:
+                result = self.analysis_repository.update({"start_url": self.start_url}, data)
+                print("Analysis results updated successfully." if result else "No documents updated.")
+            else:
+                self.analysis_repository.save(data)
+                print("Analysis results saved successfully.")
         except Exception as e:
             print(f"Failed to save analysis results. Reason: {e}")
