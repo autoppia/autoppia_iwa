@@ -12,14 +12,16 @@ from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.web_agents.base import BaseAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+
+# from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 app = AppBootstrap()
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker")]
+# AGENTS: List[IWebAgent] = [RandomClickerWebAgent(name="Random-clicker")]
 
-# ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)
+AGENTS: List[IWebAgent] = [ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -41,7 +43,7 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
 
         # Prepare evaluator input and configuration.
         evaluator_input = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(current_url=task.url, save_results_in_db=False)
+        evaluator_config = EvaluatorConfig(save_results_in_db=False)
         evaluator = ConcurrentEvaluator(evaluator_config)
 
         # Evaluate the task solution.
@@ -145,7 +147,7 @@ async def main():
     # ---------------------------
     # 1. Initialize Agents and Results Storage.
     # ---------------------------
-    agents: List[BaseAgent] = AGENTS
+    agents: List[IWebAgent] = AGENTS
     results = {}
     for agent in agents:
         results[agent.id] = {"global_scores": [], "projects": {}}
@@ -154,7 +156,7 @@ async def main():
     # 2. Process Each Demo Web Project.
     # ---------------------------
     for demo_project in demo_web_projects:
-        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=True)
+        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=False)
         for task in tasks:
             print(task)
         for agent in agents:
