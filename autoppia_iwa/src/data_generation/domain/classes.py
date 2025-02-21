@@ -82,7 +82,7 @@ class Task(BaseModel):
 
     @property
     def prompt_with_relevant_data(self) -> str:
-        if self.relvant_data:
+        if self.relevant_data:
             return f"{self.prompt} Using the relevant data: {self.relevant_data}"
         return self.prompt
 
