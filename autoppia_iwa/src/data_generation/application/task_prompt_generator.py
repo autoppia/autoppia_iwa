@@ -122,7 +122,7 @@ class TaskPromptGenerator:
 
         response = self.llm_service.make_request(
             message_payload=messages,
-            chat_completion_kwargs={"temperature": 0.5, "top_k": 40, "response_format": {"type": "json_object", "schema": self._load_task_schema(task_difficulty_level)}},
+            chat_completion_kwargs={"temperature": 0.1, "top_k": 40, "response_format": {"type": "json_object", "schema": self._load_task_schema(task_difficulty_level)}},
         )
 
         if not response:
