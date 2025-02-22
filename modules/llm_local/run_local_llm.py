@@ -81,19 +81,19 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
             )
 
         # Convert to a single text prompt with Qwen's chat template
-        if chat_format:
-            text_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
-                chat_format=chat_format
-            )
-        else:
-            text_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True
-            )
+        # if chat_format:
+        text_prompt = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            chat_format=chat_format
+        )
+        # else:
+        #     text_prompt = tokenizer.apply_chat_template(
+        #         messages,
+        #         tokenize=False,
+        #         add_generation_prompt=True
+        #     )
 
         # -------------------------------------------------------------------
         # Print the exact text entering the LLM
