@@ -214,7 +214,7 @@ class TaskTestGenerator:
                 "response_format": {"type": "json_object", "schema": validation_schema},
             },
         )
-        return json.loads(response).get("tests", []) if response else []
+        return json.loads(response) if response else []
 
     def _classify_and_validate_tests(self, raw_tests: List[Dict], allowed_events: List[str]) -> List[BaseTaskTest]:
         """
