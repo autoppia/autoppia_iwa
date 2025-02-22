@@ -82,6 +82,7 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
 
         # Convert to a single text prompt with Qwen's chat template
         # if chat_format:
+        print("APLYYING CHAT TEMPLATE!!!")
         text_prompt = tokenizer.apply_chat_template(
             messages,
             tokenize=False,
