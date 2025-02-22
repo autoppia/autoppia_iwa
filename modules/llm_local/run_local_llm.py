@@ -95,6 +95,13 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 add_generation_prompt=True
             )
 
+        # -------------------------------------------------------------------
+        # Print the exact text entering the LLM
+        # -------------------------------------------------------------------
+        print("\n=== TEXT ENTERING THE LLM ===")
+        print(text_prompt)
+        print("=============================\n")
+
         # Tokenize
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
 
@@ -115,6 +122,13 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
         # -------------------------------------------------------------------
+        # Print the exact raw text output from the LLM
+        # -------------------------------------------------------------------
+        print("\n=== RAW LLM OUTPUT (Before JSON Repair) ===")
+        print(response_text)
+        print("==========================================\n")
+
+        # -------------------------------------------------------------------
         # Handle JSON checks/repair if needed
         # -------------------------------------------------------------------
         if response_format and response_format.get("type") == "json_object":
@@ -124,7 +138,6 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
             # Check if the original response_text is already valid JSON
             originally_valid = False
             try:
-                print(f"ORIGINAL JSON CREATED: {response_text}")
                 json.loads(response_text)
                 originally_valid = True
                 counters["json_correctly_formatted"] += 1
@@ -135,14 +148,23 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
             if not originally_valid:
                 try:
                     repaired_text = repair_json(response_text, ensure_ascii=False)
-                    print(f"REPAIRED TEXT: {repaired_text}")
                     # Verify the repaired text is valid JSON
                     repaired_obj = json.loads(repaired_text)
                     # Re-encode into a standard JSON string
                     response_text = json.dumps(repaired_obj, ensure_ascii=False)
                     counters["json_repair_succeeded"] += 1
+
+                    print("\n=== REPAIRED JSON OUTPUT ===")
+                    print(response_text)
+                    print("===========================\n")
+
                 except Exception as rep_ex:
                     logger.warning(f"JSON repair failed: {rep_ex}")
+
+        # Print the final text being returned by the function
+        print("\n=== FINAL LLM OUTPUT (Returned) ===")
+        print(response_text)
+        print("===================================\n")
 
         return response_text
 
