@@ -15,11 +15,10 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 app = AppBootstrap()
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker")]
-
-# ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
