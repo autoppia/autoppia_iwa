@@ -18,7 +18,7 @@ from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 app = AppBootstrap()
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="84.247.180.39", port=8080)]
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
