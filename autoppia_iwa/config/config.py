@@ -12,7 +12,7 @@ load_dotenv()
 # ============================
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "serverless", "local", or "openai"
 LLM_THRESHOLD = 100
-LLM_ENPOINT = os.getenv("LLM_ENPOINT", "http://127.0.0.1:6000/generate")
+LOCAL_MODEL_ENDPOINT = os.getenv("LOCAL_MODEL_ENDPOINT", "http://127.0.0.1:6000/generate")
 
 # OpenAI Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
