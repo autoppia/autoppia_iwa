@@ -7,7 +7,7 @@ from typing import List
 import matplotlib.pyplot as plt
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.backend_demo_web.config import demo_web_projects, initialize_test_demo_web_projects
+from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
 from autoppia_iwa.src.data_generation.domain.classes import (
     TaskGenerationConfig,
     TasksGenerationOutput,

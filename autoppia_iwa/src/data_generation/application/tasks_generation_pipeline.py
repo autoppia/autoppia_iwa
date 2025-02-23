@@ -1,33 +1,24 @@
+# file: task_generation_pipeline.py
+
 import traceback
 from datetime import datetime
 from typing import List
 from dependency_injector.wiring import Provide
-
+from loguru import logger
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.data_generation.domain.classes import (
     Task,
     TaskGenerationConfig,
     TasksGenerationOutput,
 )
-from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.data_generation.application.task_prompt_generator import TaskPromptGenerator
-from autoppia_iwa.src.data_generation.application.tests.task_tests_generator import TaskTestGenerator
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
-from autoppia_iwa.src.backend_demo_web.classes import WebProject
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
+from autoppia_iwa.src.llms.domain.interfaces import ILLMService
+from autoppia_iwa.src.data_generation.application.local_task_generation import LocalTaskGenerationPipeline
+from autoppia_iwa.src.di_container import DIContainer
 
 
 class TaskGenerationPipeline:
-    """
-    Coordinates the entire process of:
-      1) Running web analysis (via WebAnalysisPipeline),
-      2) Building/Updating a WebProject with domain analysis & pages,
-      3) Generating tasks (both global & local) via TaskPromptGenerator,
-      4) Generating tests for each task,
-      5) Optionally storing tasks in DB.
-
-    Returns a TasksGenerationOutput object with the final tasks and timing info.
-    """
-
     def __init__(
         self,
         web_project: WebProject,
@@ -39,48 +30,45 @@ class TaskGenerationPipeline:
         self.task_config: TaskGenerationConfig = config
         self.synthetic_task_repository = synthetic_task_repository
         self.llm_service: ILLMService = llm_service
+        self.local_pipeline = LocalTaskGenerationPipeline(self.llm_service)
+
+    async def generate_tasks_from_url(self, url: str) -> List[Task]:
+        logger.info("Processing page: {}", url)
+        local_tasks = await self.local_pipeline.generate_local_tasks(url)
+        logger.debug("Generated {} local tasks for page: {}", len(local_tasks), url)
+        return local_tasks
 
     async def generate(self) -> TasksGenerationOutput:
         start_time = datetime.now()
         output = TasksGenerationOutput(tasks=[], total_phase_time=0.0)
+        logger.info("Starting task generation pipeline")
 
         try:
-            domain_analysis = self.web_project.web_analysis
+            domain_analysis: DomainAnalysis = self.web_project.web_analysis
             if not domain_analysis:
-                raise ValueError("Failed to run web analysis!")
+                raise ValueError("No domain analysis found in WebProject")
+            logger.info("Domain analysis found, processing {} page analyses", len(domain_analysis.page_analyses))
 
-            # Generate tasks (including internal verifications/filters)
-            task_prompt_generator = TaskPromptGenerator(
-                web_project=self.web_project,
-                llm_service=self.llm_service,
-                global_tasks_count=self.task_config.global_tasks_to_generate,
-                local_tasks_count_per_url=self.task_config.local_tasks_to_generate_per_url
-            )
-            generated_tasks: List[Task] = await task_prompt_generator.generate()
+            all_tasks: List[Task] = []
 
-            # Generate tests for each valid task
-            test_generator = TaskTestGenerator(
-                web_project=self.web_project,
-                web_analysis=domain_analysis,
-                llm_service=self.llm_service
-            )
-            for t in generated_tasks:
-                page_url = t.url if t.url != "N/A" else domain_analysis.start_url
-                t.tests = await test_generator.generate_task_tests(
-                    task_description=t.prompt,
-                    page_url=page_url,
-                    page_html=None
-                )
+            # Generate local tasks for each page using the helper method
+            for page_info in domain_analysis.page_analyses:
+                url = page_info.page_url
+                local_tasks = await self.generate_tasks_from_url(url, self.local_pipeline)
+                all_tasks.extend(local_tasks)
 
-            # Store tasks if requested
-            for t in generated_tasks:
+            # Additional global tasks can be added here if needed
+
+            for t in all_tasks:
                 if self.task_config.save_task_in_db:
                     self.synthetic_task_repository.save(t.model_dump())
+                    logger.info("Task saved to DB: {}", t)
                 output.tasks.append(t)
 
             output.total_phase_time = (datetime.now() - start_time).total_seconds()
+            logger.info("Task generation completed in {} seconds", output.total_phase_time)
 
         except Exception as e:
-            print(f"Tasks generation failed: {e}\n{traceback.format_exc()}")
+            logger.error("Task generation failed: {} \n{}", e, traceback.format_exc())
 
         return output

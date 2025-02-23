@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
-from autoppia_iwa.src.data_generation.domain.classes import WebProject
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, OpinionBaseOnHTML
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.shared.utils import extract_html
@@ -255,7 +255,7 @@ class TaskTestGenerator:
         """
         Retrieves or matches the single page analysis for 'target_url' from self.web_analysis.
         """
-        for page in self.web_analysis.analyzed_urls:
+        for page in self.web_analysis.page_analyses:
             if page.page_url == target_url:
                 return page
         raise ValueError(f"Page analysis not found for URL: {target_url}")

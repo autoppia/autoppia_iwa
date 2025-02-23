@@ -88,8 +88,8 @@ class WebAnalysisPipeline:
             cached_result = self.analysis_repository.find_one({"start_url": self.start_url})
             # print(cached_result)
             if cached_result:
-                if not cached_result.get("analyzed_urls"):
-                    print(f"Cached analysis for '{self.start_url}' has empty analyzed_urls. Ignoring cache.")
+                if not cached_result.get("page_analyses"):
+                    print(f"Cached analysis for '{self.start_url}' has empty page_analyses. Ignoring cache.")
                     return None
                 print(f"Analysis for '{self.start_url}' already exists in Cache")
                 return DomainAnalysis(**cached_result)

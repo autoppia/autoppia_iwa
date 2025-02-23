@@ -7,7 +7,7 @@ from typing import List, Optional
 from playwright.async_api import async_playwright
 from pydantic import BaseModel, Field
 
-from autoppia_iwa.src.backend_demo_web.backend_demo_web_service import BackendDemoWebService
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult
 from autoppia_iwa.src.evaluation.classes import Feedback

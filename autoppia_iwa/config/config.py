@@ -18,7 +18,7 @@ LLM_CONTEXT_WINDOW = int(os.getenv("LLM_CONTEXT_WINDOW", 10000))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4-32k-0613")
 OPENAI_MAX_TOKENS = int(os.getenv("LLM_CONTEXT_WINDOW", 2000))
-OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", 0.7))
+OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", 0.8))
 
 # Validate critical environment variables
 if LLM_PROVIDER == "openai" and not OPENAI_API_KEY:

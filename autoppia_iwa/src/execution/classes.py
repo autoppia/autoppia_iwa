@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from autoppia_iwa.src.backend_demo_web.classes import BackendEvent
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.execution.actions.base import BaseAction
 
 

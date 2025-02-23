@@ -1,12 +1,10 @@
 import datetime
 from typing import List
 from urllib.parse import urlparse
-
 import aiohttp
 import requests
 from requests.exceptions import RequestException
-
-from autoppia_iwa.src.backend_demo_web.classes import BackendEvent
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 
 
 class BackendDemoWebService:

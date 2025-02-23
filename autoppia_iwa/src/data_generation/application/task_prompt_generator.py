@@ -15,7 +15,7 @@ from autoppia_iwa.src.web_analysis.domain.analysis_classes import (
     SinglePageAnalysis,
 )
 from autoppia_iwa.src.data_generation.domain.classes import Task, BrowserSpecification
-from autoppia_iwa.src.backend_demo_web.classes import WebProject
+from autoppia_iwa.src.demo_webs.classes import WebProject
 
 
 class TaskPromptGenerator:

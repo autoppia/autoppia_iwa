@@ -5,11 +5,11 @@ import random
 from pathlib import Path
 from typing import Dict, List
 from urllib.parse import urlparse
-
 from autoppia_iwa.config.config import AGENT_HOST, AGENT_NAME, AGENT_PORT, PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.task_tests_generator import TaskTestGenerator
-from autoppia_iwa.src.data_generation.domain.classes import Task, WebProject
+from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig

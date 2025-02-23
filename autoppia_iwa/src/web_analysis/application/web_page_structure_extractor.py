@@ -2,7 +2,6 @@ from dataclasses import fields
 from pathlib import Path
 from typing import List, Optional, Union
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
@@ -62,15 +61,6 @@ class WebPageStructureExtractor:
             if not source.startswith("http://") and not source.startswith("https://"):
                 source = "http://" + source
 
-            # Use Playwright to fetch the page content
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True)
-                page = browser.new_page()
-                page.goto(source)
-                page.wait_for_load_state("networkidle")
-                html_source = page.content()
-                browser.close()
-            soup = BeautifulSoup(html_source, "html.parser")
             if not Path(CHROMEDRIVER_PATH).exists():
                 raise RuntimeError("ChromeDriver path is not valid or not set")
 
@@ -82,21 +72,21 @@ class WebPageStructureExtractor:
                 if PROFILE_DIR and Path(PROFILE_DIR).exists():
                     launch_options["user_data_dir"] = str(PROFILE_DIR)
                     context = await p.chromium.launch_persistent_context(**launch_options)
+                    page = await context.new_page()
+                    await page.goto(source)
+                    await page.wait_for_load_state("networkidle")
+                    html_source = await page.content()
+                    await context.close()
                 else:
                     browser = await p.chromium.launch(**launch_options)
                     context = await browser.new_context()
-
-                page = await context.new_page()
-                await page.goto(source)
-                # Replace time.sleep(2) with async wait
-                await page.wait_for_timeout(2000)
-
-                html_source = await page.content()
-                soup = BeautifulSoup(html_source, "html.parser")
-                if context:
-                    await context.close()
-                if not (PROFILE_DIR and Path(PROFILE_DIR).exists()):
+                    page = await context.new_page()
+                    await page.goto(source)
+                    await page.wait_for_load_state("networkidle")
+                    html_source = await page.content()
                     await browser.close()
+
+            soup = BeautifulSoup(html_source, "html.parser")
         else:
             soup = source
 
@@ -108,7 +98,9 @@ class WebPageStructureExtractor:
             cleaned_soup_body = cleaned_soup
 
         for soup_element in cleaned_soup_body.find_all(allowed_tags, recursive=False):
-            element, element_id_counter = self.__convert_soup_element_to_element(soup_element, allowed_tags, None, "/", element_id_counter)
+            element, element_id_counter = self.__convert_soup_element_to_element(
+                soup_element, allowed_tags, None, "/", element_id_counter
+            )
             if element:
                 elements.append(element)
 

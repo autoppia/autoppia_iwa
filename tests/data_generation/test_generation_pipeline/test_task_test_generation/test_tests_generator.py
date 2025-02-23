@@ -3,7 +3,7 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tests.task_tests_generator import TaskTestGenerator
-from autoppia_iwa.src.data_generation.domain.classes import WebProject
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
 

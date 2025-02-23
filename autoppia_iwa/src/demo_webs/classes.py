@@ -13,6 +13,7 @@ class WebProject(BaseModel):
     events: List[str] = Field(default_factory=list, description="List of events to monitor")
     web_analysis:Optional[DomainAnalysis] = None
     urls:List[str] = []
+    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
 
 
 class BackendEvent(BaseModel):
