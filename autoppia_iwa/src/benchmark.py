@@ -18,7 +18,7 @@ from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 app = AppBootstrap()
-AGENTS: List[BaseAgent] = [ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080)]
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"),ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080)]
 
 # ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080) RandomClickerWebAgent(name="Random-clicker"),A
 
