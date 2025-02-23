@@ -140,9 +140,13 @@ class TaskTestGenerator:
             validation_schema=tests_schema,
             relevant_fields=relevant_fields,
         )
-
+        # TODO: FIX FOR OPENAI COME WITH TESTS FOR LOCAL NO TESTS
+        if "tests" not in raw_tests:
+            raw_tests = raw_tests
+        else:
+            raw_tests = raw_tests["tests"]
         # 5) Classify and validate the tests, returning them as a list
-        return self._classify_and_validate_tests(raw_tests["tests"], allowed_events)
+        return self._classify_and_validate_tests(raw_tests, allowed_events)
 
     @staticmethod
     def _build_system_message(allowed_events: List[str]) -> str:
