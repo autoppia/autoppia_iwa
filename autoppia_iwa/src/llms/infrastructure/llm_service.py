@@ -123,6 +123,7 @@ class OpenAIService(BaseLLMService, OpenAILLMModelMixin):
         message_payload: List[Dict[str, str]],
         llm_kwargs: Optional[Dict[str, Any]] = None,
         chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+        json_format:bool = False
     ) -> str:
         """
         Implementation of make_request from BaseLLMService.

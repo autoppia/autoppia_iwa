@@ -2,18 +2,18 @@ import unittest
 from datetime import datetime
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.domain.tests_classes import OpinionBaseOnHTML
+from autoppia_iwa.src.data_generation.domain.tests_classes import JudgeBaseOnHTML
 from autoppia_iwa.src.execution.actions.actions import ClickAction
 from autoppia_iwa.src.execution.actions.base import Selector
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 
 
-class TestOpinionBaseOnHTML(unittest.TestCase):
+class TestJudgeBaseOnHTML(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        """Initialize OpinionBaseOnHTML with the real LLM service."""
+        """Initialize JudgeBaseOnHTML with the real LLM service."""
         cls.llm_service = AppBootstrap().container.llm_service()
-        cls.test_instance = OpinionBaseOnHTML(llm_service=cls.llm_service)
+        cls.test_instance = JudgeBaseOnHTML(llm_service=cls.llm_service)
 
     def test_html_change_detected(self):
         """Test when LLM determines the task is completed based on HTML changes."""

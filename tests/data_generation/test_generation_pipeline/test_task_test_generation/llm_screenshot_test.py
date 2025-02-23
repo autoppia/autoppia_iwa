@@ -7,17 +7,17 @@ import numpy as np
 from PIL import Image
 
 from autoppia_iwa.config.config import OPENAI_API_KEY, OPENAI_MODEL
-from autoppia_iwa.src.data_generation.domain.tests_classes import OpinionBaseOnScreenshot
+from autoppia_iwa.src.data_generation.domain.tests_classes import JudgeBaseOnScreenshot
 from autoppia_iwa.src.execution.actions.actions import ClickAction
 from autoppia_iwa.src.execution.actions.base import Selector
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.infrastructure.llm_service import OpenAIService
 
 
-class TestOpinionBaseOnScreenshot(unittest.TestCase):
+class TestJudgeBaseOnScreenshot(unittest.TestCase):
     def setUp(self):
         self.llm_service = OpenAIService(api_key=OPENAI_API_KEY, model=OPENAI_MODEL)
-        self.test_instance = OpinionBaseOnScreenshot(task="Verify button click effect", llm_service=self.llm_service)
+        self.test_instance = JudgeBaseOnScreenshot(task="Verify button click effect", llm_service=self.llm_service)
         # Create black and white blocks
         black_block_base64 = self.create_base64_encoded_block((0, 0, 0))
         white_block_base64 = self.create_base64_encoded_block((255, 255, 255))

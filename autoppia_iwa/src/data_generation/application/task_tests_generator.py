@@ -5,7 +5,7 @@ from dependency_injector.wiring import Provide
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, OpinionBaseOnHTML
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, JudgeBaseOnHTML
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.shared.utils import extract_html
 from autoppia_iwa.src.web_analysis.application.web_llm_utils import ILLMService
@@ -248,7 +248,7 @@ class TaskTestGenerator:
                 continue
             elif test.test_type == "frontend":
                 real_website_tests.append(test)
-                real_website_tests.append(OpinionBaseOnHTML())
+                real_website_tests.append(JudgeBaseOnHTML())
         return real_website_tests
 
     def _get_page_analysis(self, target_url: str) -> SinglePageAnalysis:

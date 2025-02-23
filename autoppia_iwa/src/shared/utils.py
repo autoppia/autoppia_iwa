@@ -10,11 +10,12 @@ from bs4 import BeautifulSoup, Comment
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.src.llms.infrastructure.ui_parser_service import UIParserService
-
+import re
 
 ################################################################################
 # Generate Random Web Agent ID
 ################################################################################
+
 
 def generate_random_web_agent_id(length: int = 16) -> str:
     """
@@ -201,3 +202,15 @@ def detect_interactive_elements(cleaned_html: str) -> Dict[str, Any]:
             summary["links"].append(link_text)
 
     return summary
+
+
+def extract_json_in_markdown(text: str) -> str:
+    """
+    Extract the first fenced code block (```json ... ``` or just ``` ... ```).
+    If none is found, return text.strip() as a fallback.
+    """
+    pattern = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL)
+    match = pattern.search(text)
+    if match:
+        return match.group(1).strip()
+    return text.strip()

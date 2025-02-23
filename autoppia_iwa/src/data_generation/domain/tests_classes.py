@@ -72,10 +72,10 @@ class BaseTaskTest(BaseModel, ITest):
                 if "keywords" in config:
                     assigned_tests.append(FindInHtmlTest(**config))
                 elif "name" in config:
-                    if config["name"] == "OpinionBaseOnHTML":
-                        assigned_tests.append(OpinionBaseOnHTML(**config))
-                    elif config["name"] == "OpinionBaseOnScreenshot":
-                        assigned_tests.append(OpinionBaseOnScreenshot(**config))
+                    if config["name"] == "JudgeBaseOnHTML":
+                        assigned_tests.append(JudgeBaseOnHTML(**config))
+                    elif config["name"] == "JudgeBaseOnScreenshot":
+                        assigned_tests.append(JudgeBaseOnScreenshot(**config))
             elif test_type == "backend":
                 if "page_view_url" in config:
                     assigned_tests.append(CheckPageViewEventTest(**config))
@@ -157,7 +157,7 @@ class CheckPageViewEventTest(BaseTaskTest):
         return self.page_view_url in [event.data.get("url", "") for event in events if event.data]
 
 
-class OpinionBaseOnHTML(BaseTaskTest):
+class JudgeBaseOnHTML(BaseTaskTest):
     """
     Test class to generate an opinion based on changes in HTML before and after an action.
     """
@@ -165,7 +165,7 @@ class OpinionBaseOnHTML(BaseTaskTest):
     description: str = Field(default="Generate an opinion based on HTML changes")
     test_type: Literal["frontend"] = "frontend"
     llm_service: Any = Field(default=Provide[DIContainer.llm_service], exclude=True)
-    name: str = "OpinionBaseOnHTML"
+    name: str = "JudgeBaseOnHTML"
 
     class Config:
         arbitrary_types_allowed = True
@@ -201,7 +201,7 @@ class OpinionBaseOnHTML(BaseTaskTest):
         return parsed_result["task_completed"]
 
 
-class OpinionBaseOnScreenshot(BaseTaskTest):
+class JudgeBaseOnScreenshot(BaseTaskTest):
     """
     Test class to generate an opinion based on screenshots before and after an action.
     Uses an LLM service to evaluate whether the task was completed successfully.
@@ -211,7 +211,7 @@ class OpinionBaseOnScreenshot(BaseTaskTest):
     description: str = Field(default="Generate an opinion based on screenshot differences")
     test_type: Literal["frontend"] = "frontend"
     llm_service: OpenAIService = Field(default_factory=lambda: OpenAIService(api_key=OPENAI_API_KEY, model=OPENAI_MODEL, max_tokens=OPENAI_MAX_TOKENS, temperature=OPENAI_TEMPERATURE), exclude=True)
-    name: str = "OpinionBaseOnScreenshot"
+    name: str = "JudgeBaseOnScreenshot"
 
     class Config:
         arbitrary_types_allowed = True

@@ -34,7 +34,7 @@ class TaskGenerationPipeline:
 
     async def generate_tasks_from_url(self, url: str) -> List[Task]:
         logger.info("Processing page: {}", url)
-        local_tasks = await self.local_pipeline.generate_local_tasks(url)
+        local_tasks = await self.local_pipeline.generate(url)
         logger.debug("Generated {} local tasks for page: {}", len(local_tasks), url)
         return local_tasks
 

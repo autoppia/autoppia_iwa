@@ -59,7 +59,7 @@ class TaskPromptGenerator:
         global_data = self._generate_global_tasks(use_cases, self.web_project.web_analysis)
 
         # 3) Generate single-page tasks
-        local_data = await self._generate_local_tasks_for_all_pages(self.web_project.web_analysis.page_analyses)
+        local_data = await self._generate_for_all_pages(self.web_project.web_analysis.page_analyses)
 
         # 4) Merge
         combined_data = (
@@ -149,15 +149,15 @@ class TaskPromptGenerator:
     # ---------------------------------------------------------------------
     # Step 3: Generate Local (Single-page) Tasks
     # ---------------------------------------------------------------------
-    async def _generate_local_tasks_for_all_pages(self, pages: List[SinglePageAnalysis]) -> List[Dict[str, str]]:
-        tasks = [self._generate_local_tasks_for_page(p) for p in pages]
+    async def _generate_for_all_pages(self, pages: List[SinglePageAnalysis]) -> List[Dict[str, str]]:
+        tasks = [self._generate_for_page(p) for p in pages]
         results = await asyncio.gather(*tasks)
         local_data = []
         for res in results:
             local_data.extend(res)
         return local_data
 
-    async def _generate_local_tasks_for_page(self, page_info: SinglePageAnalysis) -> List[Dict[str, str]]:
+    async def _generate_for_page(self, page_info: SinglePageAnalysis) -> List[Dict[str, str]]:
         extracted_html = await extract_html(page_info.page_url) or page_info.html_source
         cleaned_html = clean_html(extracted_html)
         page_summary = self._build_page_summary_text(page_info)

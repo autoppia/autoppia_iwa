@@ -1,6 +1,6 @@
 import unittest
 
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, OpinionBaseOnHTML, OpinionBaseOnScreenshot
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 
 
 class TestAssignTests(unittest.TestCase):
@@ -11,8 +11,8 @@ class TestAssignTests(unittest.TestCase):
         """
         test_configs = [
             {"test_type": "frontend", "keywords": ["example"]},
-            {"test_type": "frontend", "name": "OpinionBaseOnHTML"},
-            {"test_type": "frontend", "name": "OpinionBaseOnScreenshot", "task": "example task"},
+            {"test_type": "frontend", "name": "JudgeBaseOnHTML"},
+            {"test_type": "frontend", "name": "JudgeBaseOnScreenshot", "task": "example task"},
             {"test_type": "backend", "page_view_url": "https://example.com"},
             {"test_type": "backend", "event_name": "test_event"},
         ]
@@ -24,8 +24,8 @@ class TestAssignTests(unittest.TestCase):
 
         # Assert each test is the correct class type
         self.assertIsInstance(assigned_tests[0], FindInHtmlTest, "Test 1 is not FindInHtmlTest")
-        self.assertIsInstance(assigned_tests[1], OpinionBaseOnHTML, "Test 2 is not OpinionBaseOnHTML")
-        self.assertIsInstance(assigned_tests[2], OpinionBaseOnScreenshot, "Test 3 is not OpinionBaseOnScreenshot")
+        self.assertIsInstance(assigned_tests[1], JudgeBaseOnHTML, "Test 2 is not JudgeBaseOnHTML")
+        self.assertIsInstance(assigned_tests[2], JudgeBaseOnScreenshot, "Test 3 is not JudgeBaseOnScreenshot")
         self.assertIsInstance(assigned_tests[3], CheckPageViewEventTest, "Test 4 is not CheckPageViewEventTest")
         self.assertIsInstance(assigned_tests[4], CheckEventEmittedTest, "Test 5 is not CheckEventEmittedTest")
 

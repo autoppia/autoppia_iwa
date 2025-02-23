@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, OpinionBaseOnHTML
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, JudgeBaseOnHTML
 from autoppia_iwa.src.execution.actions.actions import ClickAction
 from autoppia_iwa.src.execution.actions.base import Selector
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
@@ -25,7 +25,7 @@ class TestHtmlModelDump(unittest.TestCase):
             timestamp=datetime.fromisoformat("2025-02-10T12:00:00Z"),
             current_url="https://example.com",
         )
-        cls.test_instance = OpinionBaseOnHTML(llm_service=cls.llm_service)
+        cls.test_instance = JudgeBaseOnHTML(llm_service=cls.llm_service)
 
     def test_html_model_dump(self):
         """
@@ -42,7 +42,7 @@ class TestHtmlModelDump(unittest.TestCase):
             # Attempt to rebuild the test from the dumped model
             rebuilt_tests = BaseTaskTest.assign_tests([result])
             self.assertEqual(len(rebuilt_tests), 1, "assign_tests() did not rebuild a single test instance")
-            self.assertIsInstance(rebuilt_tests[0], OpinionBaseOnHTML, "Rebuilt instance is not of type OpinionBaseOnHTML")
+            self.assertIsInstance(rebuilt_tests[0], JudgeBaseOnHTML, "Rebuilt instance is not of type JudgeBaseOnHTML")
 
         except Exception as e:
             self.fail(f"model_dump() raised an unexpected exception: {e}")

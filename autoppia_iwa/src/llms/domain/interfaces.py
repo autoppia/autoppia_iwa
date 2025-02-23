@@ -58,3 +58,23 @@ class ILLMService(ABC):
         Returns:
             str: The response from the serverless model, or an error message if the request fails.
         """
+    @abstractmethod
+    def async_make_request(
+        self,
+        message_payload: List[Dict[str, str]],
+        llm_kwargs=None,
+        chat_completion_kwargs=None,
+        json_format:bool = False, 
+        schema:str = None
+    ) -> str:
+        """
+        Make a request using LLM Local or serverless.
+
+        Args:
+            message_payload (List[Dict[str, str]]): Input message for the model.
+            llm_kwargs (dict): Additional model parameters.
+            chat_completion_kwargs (dict): Additional chat-specific parameters.
+
+        Returns:
+            str: The response from the serverless model, or an error message if the request fails.
+        """

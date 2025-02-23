@@ -8,7 +8,7 @@ import logging
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 # You might need to import LocalTaskGenerationPipeline if it is in a different module
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, TasksGenerationOutput
+from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import initialize_test_demo_web_projects
 
@@ -48,7 +48,7 @@ async def main():
         # --- Generate tests for the tasks ---
         llm_service = DIContainer.llm_service()
         test_pipeline = TestGenerationPipeline(llm_service=llm_service)
-        tasks = await test_pipeline.generate_tests_for_tasks(tasks)
+        tasks = await test_pipeline.add_tests_to_tasks(tasks)
 
         # Display results: show tasks along with their tests
         print("=== Generated Tasks and Tests ===")
