@@ -18,9 +18,9 @@ from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 app = AppBootstrap()
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker")]
+AGENTS: List[BaseAgent] = [ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080)]
 
-# ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080)
+# ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080) RandomClickerWebAgent(name="Random-clicker"),A
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -37,6 +37,7 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
     # Loop over each task in the project.
     for task in tasks:
         # Agent solves the task.
+        task.relevant_data = demo_project.relevant_data
         task_solution: TaskSolution = await agent.solve_task(task)
         actions: List[BaseAction] = task_solution.actions
 
@@ -155,7 +156,7 @@ async def main():
     # 2. Process Each Demo Web Project.
     # ---------------------------
     for demo_project in demo_web_projects:
-        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=True)
+        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=False)
         for task in tasks:
             print(task)
         for agent in agents:
