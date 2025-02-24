@@ -7,7 +7,7 @@ from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.data_generation.domain.classes import WebProject
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, OpinionBaseOnHTML
 from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.shared.utils import extract_html
+from autoppia_iwa.src.shared.utils import clean_html, extract_html
 from autoppia_iwa.src.web_analysis.application.web_llm_utils import ILLMService
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis, SinglePageAnalysis
 
@@ -127,7 +127,7 @@ class TaskTestGenerator:
 
         # 3) Fetch page analysis (or fallback to local HTML if provided)
         page_analysis = self._get_page_analysis(page_url)
-        effective_html = page_html or await extract_html(page_url) or page_analysis.html_source
+        effective_html = page_html or clean_html(await extract_html(page_url)) or page_analysis.html_source
 
         relevant_fields = [field for element_analysis in (page_analysis.elements_analysis_result or []) for field in (element_analysis.get("analysis", {}) or {}).get("relevant_fields", []) or []]
 
