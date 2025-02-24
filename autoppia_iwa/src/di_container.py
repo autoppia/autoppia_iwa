@@ -4,9 +4,9 @@ from pymongo import MongoClient
 from autoppia_iwa.config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
-    LOCAL_MODEL_ENDPOINT,
     LLM_PROVIDER,
     LLM_THRESHOLD,
+    LOCAL_MODEL_ENDPOINT,
     MONGODB_NAME,
     MONGODB_URL,
     OPENAI_API_KEY,

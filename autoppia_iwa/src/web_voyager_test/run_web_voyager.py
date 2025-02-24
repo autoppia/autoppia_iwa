@@ -56,8 +56,8 @@ async def generate_tests(url: str, task_description: str, enable_crawl: bool) ->
 
         logging.info(f"Generated {len(tests)} tests for URL: {url}")
         return tests
-    except Exception as e:
-        logging.error(f"Failed to generate tests for URL '{url}': {e}", exc_info=True)
+    except Exception as gte:
+        logging.error(f"Failed to generate tests for URL '{url}': {gte}", exc_info=True)
         raise
 
 
@@ -79,8 +79,8 @@ async def add_actions_to_tasks(tasks: List[Dict], output_file: Path) -> List[Dic
             else:
                 updated_tasks.append(task)
 
-        except Exception as e:
-            logging.warning(f"Failed to generate actions for task {task['prompt']}: {e}", exc_info=True)
+        except Exception as ade:
+            logging.warning(f"Failed to generate actions for task {task['prompt']}: {ade}", exc_info=True)
     return updated_tasks
 
 
@@ -149,8 +149,8 @@ async def load_and_process_tasks() -> None:
 
         evaluation_ready_tasks = await add_actions_to_tasks(tasks_to_process, ACTION_OUTPUT_FILE) if tasks_to_process else actioned_tasks
         await evaluate_tasks(evaluation_ready_tasks, EVALUATION_OUTPUT_FILE)
-    except Exception as e:
-        logging.error(f"Error processing tasks: {e}", exc_info=True)
+    except Exception as me:
+        logging.error(f"Error processing tasks: {me}", exc_info=True)
 
 
 if __name__ == "__main__":
