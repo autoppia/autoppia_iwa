@@ -12,6 +12,7 @@ load_dotenv()
 # ============================
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "serverless", "local", or "openai"
 LLM_THRESHOLD = 100
+LOCAL_MODEL_ENDPOINT = os.getenv("LOCAL_MODEL_ENDPOINT", "http://127.0.0.1:6000/generate")
 LLM_ENDPOINT = os.getenv("LLM_ENDPOINT", "http://127.0.0.1:6000/generate")
 
 if LLM_PROVIDER not in ["local", "openai"]:

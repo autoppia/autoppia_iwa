@@ -140,7 +140,11 @@ class TaskTestGenerator:
             validation_schema=tests_schema,
             relevant_fields=relevant_fields,
         )
-
+        # TODO: FIX FOR OPENAI COME WITH TESTS FOR LOCAL NO TESTS
+        if "tests" not in raw_tests:
+            raw_tests = raw_tests
+        else:
+            raw_tests = raw_tests["tests"]
         # 5) Classify and validate the tests, returning them as a list
         return self._classify_and_validate_tests(raw_tests, allowed_events)
 
@@ -209,12 +213,12 @@ class TaskTestGenerator:
         response = self.llm_service.make_request(
             message_payload=[{"role": "system", "content": system_message}, {"role": "user", "content": user_message}],
             chat_completion_kwargs={
-                "temperature": 0.6,
+                "temperature": 0.1,
                 "top_k": 50,
                 "response_format": {"type": "json_object", "schema": validation_schema},
             },
         )
-        return json.loads(response).get("tests", []) if response else []
+        return json.loads(response) if response else []
 
     def _classify_and_validate_tests(self, raw_tests: List[Dict], allowed_events: List[str]) -> List[BaseTaskTest]:
         """

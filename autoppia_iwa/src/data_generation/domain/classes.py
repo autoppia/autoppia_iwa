@@ -15,6 +15,7 @@ class WebProject(BaseModel):
     name: str = Field(..., min_length=1, description="Name of the web project")
     events_to_check: List[str] = Field(default_factory=list, description="List of events to monitor")
     is_real_web: bool = Field(default=False, description="Flag to indicate if this is a real web application")
+    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Dictionary of relevant data for this task")
 
 
 class TaskDifficultyLevel(Enum):

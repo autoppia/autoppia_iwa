@@ -13,7 +13,7 @@ dependencies, GPU compatibility, and runtime environment.
 - **Python 3.10 or above**: Verify your Python installation meets this requirement.
 - **pip**: Python's package manager.
 
-> **Important:** To use the local model, ensure the `LLM_ENPOINT` variable in the `.env` file is set to
+> **Important:** To use the local model, ensure the `LOCAL_MODEL_ENDPOINT` variable in the `.env` file is set to
 > **'true'**
 
 ---
@@ -67,6 +67,7 @@ You can choose between using a virtual environment (`venv`) or a Conda environme
 Follow these commands directly in your terminal after setting up your environment.
 
 ---
+
 ```bash
 setup.sh
 ```
@@ -79,6 +80,7 @@ path, update the model path in `test.py`.
 ---
 
 ## Start the LLM service using PM2
+
 ```bash
 echo "Starting the LLM service in the background using PM2..."
 pm2 start autoppia_iwa/modules/llm_local/run_local_llm.py --name llm_local --interpreter ./llm_env/bin/python -- --port 6000
@@ -93,4 +95,3 @@ python3 autoppia_iwa/modules/llm_local/test/test.py
 
 If you encounter issues, verify the CUDA version, Python installation, and network connectivity to the local model
 server.
-

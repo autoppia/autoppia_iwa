@@ -100,7 +100,7 @@ class TaskPromptGenerator:
             summary_page_url=page_analysis.web_summary,
             task_difficulty_level=task_difficulty_level,
         )
-        raw_content_dict = json.loads(raw_content.replace("\n", "\\n"))
+        raw_content_dict = json.loads(raw_content)
         tasks_list = raw_content_dict["tasks"]
         return TaskPromptForUrl(page_url=specific_url, task_prompts=tasks_list)
 
@@ -122,7 +122,7 @@ class TaskPromptGenerator:
 
         response = self.llm_service.make_request(
             message_payload=messages,
-            chat_completion_kwargs={"temperature": 0.5, "top_k": 40, "response_format": {"type": "json_object", "schema": self._load_task_schema(task_difficulty_level)}},
+            chat_completion_kwargs={"temperature": 0.1, "top_k": 40, "response_format": {"type": "json_object", "schema": self._load_task_schema(task_difficulty_level)}},
         )
 
         if not response:
