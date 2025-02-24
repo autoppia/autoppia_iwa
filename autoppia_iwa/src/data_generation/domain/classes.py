@@ -99,7 +99,7 @@ class Task(BaseModel):
         default=None,
         description="Clear definition of conditions that indicate successful task completion"
     )
-    logic_function: Optional[str] = Field(
+    logic_function: Optional[dict] = Field(
         default=None,
         description="Boolean expression using T1..Tn notation to evaluate overall task success"
     )

@@ -45,6 +45,11 @@ PROFILE = os.getenv("PROFILE", "Profile 6")
 # ============================
 # Application Configuration
 # ============================
+EVALUATOR_HEADLESS = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "true")))
+
+# ============================
+# Application Configuration
+# ============================
 GENERATE_MILESTONES = os.getenv("GENERATE_MILESTONES", "false").lower() == "true"
 
 # ============================

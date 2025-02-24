@@ -15,10 +15,14 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
+    TestGenerationPipeline)
 
 
 app = AppBootstrap()
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
+# AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
+AGENTS: List[BaseAgent] = [ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -155,6 +159,10 @@ async def main():
 
     for index, demo_project in enumerate(demo_web_projects):
         tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=True)
+        # --- Generate tests for the tasks ---
+        llm_service = DIContainer.llm_service()
+        test_pipeline = TestGenerationPipeline(llm_service=llm_service, web_project=demo_project)
+        tasks = await test_pipeline.add_tests_to_tasks(tasks)
         for agent in agents:
             await evaluate_project_for_agent(agent, demo_project, tasks, results)
 

@@ -2188,6 +2188,110 @@
         "documentation": {}
     },
     {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "TestGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "TestGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
+        "documentation": {}
+    },
+    {
         "label": "traceback",
         "kind": 6,
         "isExtraImport": true,
@@ -2203,94 +2307,6 @@
         "importPath": "logging",
         "description": "logging",
         "detail": "logging",
-        "documentation": {}
-    },
-    {
-        "label": "TestGenerationPipeline",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
         "documentation": {}
     },
     {
@@ -3499,6 +3515,14 @@
     },
     {
         "label": "DEMO_WEBS_STARTING_PORT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "EVALUATOR_HEADLESS",
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
         "isExtraImport": true,
@@ -7966,7 +7990,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "CHROMEDRIVER_PATH = os.getenv(\"CHROMEDRIVER_PATH\", \"/opt/chromedriver/chromedriver-linux64/chromedriver\")\nCHROME_PATH = os.getenv(\"CHROME_PATH\", \"/opt/chrome/chrome-linux64/chrome\")\nPROFILE_DIR = os.getenv(\"PROFILE_DIR\", \"~/.config/google-chrome/Profile 6\")\nPROFILE = os.getenv(\"PROFILE\", \"Profile 6\")\n# ============================\n# Application Configuration\n# ============================\nGENERATE_MILESTONES = os.getenv(\"GENERATE_MILESTONES\", \"false\").lower() == \"true\"\n# ============================\n# Project Base Directory Path",
+        "peekOfCode": "CHROMEDRIVER_PATH = os.getenv(\"CHROMEDRIVER_PATH\", \"/opt/chromedriver/chromedriver-linux64/chromedriver\")\nCHROME_PATH = os.getenv(\"CHROME_PATH\", \"/opt/chrome/chrome-linux64/chrome\")\nPROFILE_DIR = os.getenv(\"PROFILE_DIR\", \"~/.config/google-chrome/Profile 6\")\nPROFILE = os.getenv(\"PROFILE\", \"Profile 6\")\n# ============================\n# Application Configuration\n# ============================\nEVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"true\")))\n# ============================\n# Application Configuration",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -7975,7 +7999,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "CHROME_PATH = os.getenv(\"CHROME_PATH\", \"/opt/chrome/chrome-linux64/chrome\")\nPROFILE_DIR = os.getenv(\"PROFILE_DIR\", \"~/.config/google-chrome/Profile 6\")\nPROFILE = os.getenv(\"PROFILE\", \"Profile 6\")\n# ============================\n# Application Configuration\n# ============================\nGENERATE_MILESTONES = os.getenv(\"GENERATE_MILESTONES\", \"false\").lower() == \"true\"\n# ============================\n# Project Base Directory Path\n# ============================",
+        "peekOfCode": "CHROME_PATH = os.getenv(\"CHROME_PATH\", \"/opt/chrome/chrome-linux64/chrome\")\nPROFILE_DIR = os.getenv(\"PROFILE_DIR\", \"~/.config/google-chrome/Profile 6\")\nPROFILE = os.getenv(\"PROFILE\", \"Profile 6\")\n# ============================\n# Application Configuration\n# ============================\nEVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"true\")))\n# ============================\n# Application Configuration\n# ============================",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -7984,7 +8008,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "PROFILE_DIR = os.getenv(\"PROFILE_DIR\", \"~/.config/google-chrome/Profile 6\")\nPROFILE = os.getenv(\"PROFILE\", \"Profile 6\")\n# ============================\n# Application Configuration\n# ============================\nGENERATE_MILESTONES = os.getenv(\"GENERATE_MILESTONES\", \"false\").lower() == \"true\"\n# ============================\n# Project Base Directory Path\n# ============================\nPROJECT_BASE_DIR = Path(__file__).resolve().parents[1]",
+        "peekOfCode": "PROFILE_DIR = os.getenv(\"PROFILE_DIR\", \"~/.config/google-chrome/Profile 6\")\nPROFILE = os.getenv(\"PROFILE\", \"Profile 6\")\n# ============================\n# Application Configuration\n# ============================\nEVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"true\")))\n# ============================\n# Application Configuration\n# ============================\nGENERATE_MILESTONES = os.getenv(\"GENERATE_MILESTONES\", \"false\").lower() == \"true\"",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -7993,7 +8017,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "PROFILE = os.getenv(\"PROFILE\", \"Profile 6\")\n# ============================\n# Application Configuration\n# ============================\nGENERATE_MILESTONES = os.getenv(\"GENERATE_MILESTONES\", \"false\").lower() == \"true\"\n# ============================\n# Project Base Directory Path\n# ============================\nPROJECT_BASE_DIR = Path(__file__).resolve().parents[1]\n# ============================",
+        "peekOfCode": "PROFILE = os.getenv(\"PROFILE\", \"Profile 6\")\n# ============================\n# Application Configuration\n# ============================\nEVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"true\")))\n# ============================\n# Application Configuration\n# ============================\nGENERATE_MILESTONES = os.getenv(\"GENERATE_MILESTONES\", \"false\").lower() == \"true\"\n# ============================",
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "EVALUATOR_HEADLESS",
+        "kind": 5,
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "peekOfCode": "EVALUATOR_HEADLESS = bool(strtobool(os.getenv(\"EVALUATOR_HEADLESS\", \"true\")))\n# ============================\n# Application Configuration\n# ============================\nGENERATE_MILESTONES = os.getenv(\"GENERATE_MILESTONES\", \"false\").lower() == \"true\"\n# ============================\n# Project Base Directory Path\n# ============================\nPROJECT_BASE_DIR = Path(__file__).resolve().parents[1]\n# ============================",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -8101,7 +8134,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "app = AppBootstrap()\nAGENTS: List[BaseAgent] = [RandomClickerWebAgent(name=\"Random-clicker\"), ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)]\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.\n    if demo_project.name not in results[agent.id][\"projects\"]:",
+        "peekOfCode": "app = AppBootstrap()\n# AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name=\"Random-clicker\"), ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)]\nAGENTS: List[BaseAgent] = [ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)]\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
