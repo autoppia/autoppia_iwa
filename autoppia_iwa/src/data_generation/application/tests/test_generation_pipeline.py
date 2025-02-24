@@ -87,7 +87,6 @@ class TestGenerationPipeline:
                     schema=ProposedTestList.model_json_schema()
                 )
                 logger.debug(f"LLM raw response (test generation): {test_generation_response}")
-                print("test_generation_response", test_generation_response)
 
                 # STEP 2: Parse, validate and normalize the returned JSON into dictionaries
                 normalized_tests = []
@@ -95,12 +94,10 @@ class TestGenerationPipeline:
                     response_obj = json.loads(test_generation_response)
                     test_list = response_obj.get("ProposedTestList", [])
 
-                    print("test_list", test_list)
                     # Parse the raw test list using your schema
                     parsed_tests = ProposedTestList.parse_obj(test_list)
                     tests = parsed_tests.root
 
-                    print("tests", tests)
                     for test_item in tests:
                         try:
                             # Ensure test_item is a dictionary
@@ -119,8 +116,8 @@ class TestGenerationPipeline:
                             test_def = ProposedTestDefinition.parse_obj(test_item)
                             # Normalize (flatten fields and remap test_type)
                             config = normalize_test_config(test_def.dict())
-                            print("config", config)
                             normalized_tests.append(config)
+
                         except ValidationError as e:
                             logger.warning(f"Failed to parse individual test definition: {e}")
                 except json.JSONDecodeError as e:

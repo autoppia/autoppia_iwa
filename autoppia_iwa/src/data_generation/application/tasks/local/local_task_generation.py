@@ -87,7 +87,6 @@ class LocalTaskGenerationPipeline:
                 json_format=True,
                 schema=schema
             )
-            print(f"Response (Phase 1): {resp_text}")
 
             try:
                 data = json.loads(resp_text)
@@ -150,7 +149,6 @@ class LocalTaskGenerationPipeline:
                 json_format=True,
                 schema=schema
             )
-            print(f"Response (Phase 2): {resp_text}")
 
             try:
                 data = json.loads(resp_text)

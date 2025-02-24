@@ -1,5 +1,5 @@
 beautifulsoup4==4.12.3
-markdownify==0.12.1
+markdownify
 matplotlib==3.9.3
 networkx==3.3
 numpy
@@ -18,10 +18,7 @@ flask==3.1.0
 lxml==5.3.1
 pre-commit==4.1.0
 pillow==11.1.0
-<<<<<<< HEAD
 # torch 
 # transformers
 loguru
-=======
 aiohttp==3.11.12
->>>>>>> 20ee85f7d73e9bb6f7160f27c8e873560cb90b9c
