@@ -20,7 +20,7 @@ def setup_logging() -> None:
     logging.basicConfig(format="[%(levelname)s]: %(message)s", level=logging.INFO, handlers=[logging.StreamHandler()])
 
 
-def load_jsonl_file(file_path: Path) -> List[Dict]:
+def load_jsonl_file(file_path: Path, json_only: bool = False) -> List[Dict]:
     """Load tasks from a JSONL file."""
     if not file_path.exists():
         logging.warning(f"File {file_path} not found.")
@@ -28,9 +28,12 @@ def load_jsonl_file(file_path: Path) -> List[Dict]:
 
     tasks = []
     with file_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            try:
-                tasks.append(json.loads(line))
-            except json.JSONDecodeError as e:
-                logging.warning(f"Skipping invalid JSON line in {file_path}: {e}")
-    return tasks
+        if not json_only:
+            for line in f:
+                try:
+                    tasks.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    logging.warning(f"Skipping invalid JSON line in {file_path}: {e}")
+            return tasks
+        else:
+            return json.load(f)

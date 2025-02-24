@@ -43,7 +43,7 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
 
         # Prepare evaluator input and configuration.
         evaluator_input = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(current_url=task.url, save_results_in_db=False)
+        evaluator_config = EvaluatorConfig(save_results_in_db=False)
         evaluator = ConcurrentEvaluator(evaluator_config)
 
         # Evaluate the task solution.

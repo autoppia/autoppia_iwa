@@ -37,12 +37,40 @@ EVALUATION_OUTPUT_FILE = DATA_DIR / "GeneratedTests_with_Evaluation.jsonl"
 AGENT = ApifiedWebAgent(name=AGENT_NAME, host=AGENT_HOST, port=AGENT_PORT, timeout=120)
 
 
-async def generate_tests(url: str, task_description: str, enable_crawl: bool) -> List[BaseTaskTest]:
+def load_valid_web_voyager_tasks(data_dir: Path = DATA_DIR) -> List[TaskData]:
+    """Load valid WebVoyager tasks, excluding impossible ones."""
+    try:
+        web_voyager_tasks_file = data_dir / "WebVoyager_data.jsonl"
+        impossible_tasks_file = data_dir / "WebVoyagerImpossibleTasks.json"
+
+        all_tasks = load_jsonl_file(web_voyager_tasks_file)
+        impossible_task_ids = set(load_jsonl_file(impossible_tasks_file, json_only=True))
+        valid_tasks = [TaskData(**task) for task in all_tasks if task["id"] not in impossible_task_ids]
+
+        if not valid_tasks:
+            raise ValueError("No valid tasks available after filtering.")
+        return valid_tasks
+
+    except Exception as e:
+        logging.error(f"Error loading WebVoyager tasks: {e}", exc_info=True)
+        return []
+
+
+def get_random_tasks(tasks_data: List[TaskData], num_tasks: int = NUM_OF_TASKS_TO_SAMPLE) -> List[TaskData]:
+    """Select a random subset of tasks."""
+    try:
+        return random.sample(tasks_data, min(num_tasks, len(tasks_data)))
+    except ValueError as e:
+        logging.warning(f"Not enough tasks available: {e}")
+        return tasks_data
+
+
+async def generate_tests(url: str, task_description: str) -> List[BaseTaskTest]:
     """Generate task-based tests for a web project."""
     logging.info(f"Starting web analysis for URL: {url}")
     try:
         web_analysis_pipeline = WebAnalysisPipeline(start_url=url)
-        web_analysis = await web_analysis_pipeline.analyze(enable_crawl=enable_crawl, save_results_in_db=True)
+        web_analysis = await web_analysis_pipeline.analyze(enable_crawl=ENABLE_CRAWL, save_results_in_db=True)
 
         web_project = WebProject(
             backend_url=url,
@@ -56,9 +84,9 @@ async def generate_tests(url: str, task_description: str, enable_crawl: bool) ->
 
         logging.info(f"Generated {len(tests)} tests for URL: {url}")
         return tests
-    except Exception as gte:
-        logging.error(f"Failed to generate tests for URL '{url}': {gte}", exc_info=True)
-        raise
+    except Exception as e:
+        logging.error(f"Failed to generate tests for URL '{url}': {e}", exc_info=True)
+        return []
 
 
 async def add_actions_to_tasks(tasks: List[Dict], output_file: Path) -> List[Dict]:
@@ -116,17 +144,14 @@ async def load_and_process_tasks() -> None:
     try:
         if ALLOW_TASKS_FROM_FILE and not TASK_OUTPUT_FILE.exists():
             logging.info("No existing task data found. Generating new tasks...")
-            original_tasks = load_jsonl_file(DATA_DIR / "WebVoyager_data.jsonl")
-            impossible_tasks_ids = load_jsonl_file(DATA_DIR / "WebVoyagerImpossibleTasks.json")
-            tasks = [TaskData(**task) for task in original_tasks if task["id"] not in impossible_tasks_ids]
+            all_tasks = load_valid_web_voyager_tasks()
+            tasks_to_generate_tests = get_random_tasks(all_tasks) if ALLOW_RANDOM_TASKS else all_tasks[:NUM_OF_TASKS_TO_SAMPLE]
 
-            tasks_to_generate = random.sample(tasks, NUM_OF_TASKS_TO_SAMPLE) if ALLOW_RANDOM_TASKS else tasks[:NUM_OF_TASKS_TO_SAMPLE]
-
-            logging.info(f"Generating tests for {len(tasks_to_generate)} tasks")
-
-            for task in tasks_to_generate:
-                task_tests = await generate_tests(task.web, task.ques, ENABLE_CRAWL)
+            logging.info(f"Generating tests for {len(tasks_to_generate_tests)} tasks")
+            for task in tasks_to_generate_tests:
+                task_tests = await generate_tests(task.web, task.ques)
                 task_obj = Task(url=task.web, prompt=task.ques, tests=task_tests, milestones=[], is_web_real=IS_WEB_REAL)
+
                 with TASK_OUTPUT_FILE.open("a", encoding="utf-8") as f:
                     f.write(json.dumps(task_obj.nested_model_dump()) + "\n")
 

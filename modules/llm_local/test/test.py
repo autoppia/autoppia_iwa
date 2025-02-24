@@ -1,5 +1,6 @@
-import requests
 import json
+
+import requests
 
 
 def make_request():
@@ -9,10 +10,10 @@ def make_request():
         "input": {
             "text": [
                 {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
-                {"role": "user", "content": "Give me a short introduction to large language model."}
+                {"role": "user", "content": "Give me a short introduction to large language model."},
             ],
             "ctx": 256,
-            "generation_kwargs": {}
+            "generation_kwargs": {},
         }
     }
     response = requests.post(url, headers=headers, data=json.dumps(data))
