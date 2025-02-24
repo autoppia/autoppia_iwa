@@ -14,6 +14,17 @@ from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_voyager_test.run_web_voyager import generate_tests, load_valid_web_voyager_tasks
 from autoppia_iwa.src.web_voyager_test.utils import TaskData, print_rich_performance_statistics, setup_logging
 
+setup_logging()
+app_bootstrap = AppBootstrap()
+
+NUM_OF_TASKS_TO_EVALUATE: int = 1
+
+# Agents
+AGENTS: List[IWebAgent] = [
+    RandomClickerWebAgent(name="Random-Clicker"),
+    ApifiedWebAgent(name="Browser-Use-Agent", host="localhost", port=8080, timeout=120),
+]
+
 
 async def evaluate_project_for_agent(agent: IWebAgent, tasks: List["TaskData"], results):
     """
@@ -66,8 +77,8 @@ async def main():
     # ---------------------------
     # 3. Print Performance Statistics.
     # ---------------------------
-    # print_performance_statistics(results, agents)
     print_rich_performance_statistics(results, agents)
+
     # ---------------------------
     # 4. Plot the Agent Results.
     # ---------------------------
@@ -75,17 +86,6 @@ async def main():
 
 
 if __name__ == "__main__":
-    setup_logging()
-    app_bootstrap = AppBootstrap()
-
-    NUM_OF_TASKS_TO_EVALUATE: int = 1
-
-    # Agents
-    AGENTS: List[IWebAgent] = [
-        RandomClickerWebAgent(name="Random-Clicker"),
-        ApifiedWebAgent(name="Browser-Use-Agent", host="localhost", port=8080, timeout=120),
-    ]
-
     try:
         asyncio.run(main())
         logging.info("Shutting down...")
