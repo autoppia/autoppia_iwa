@@ -1,7 +1,7 @@
 import argparse
 import gc
-import logging
-import json  # <-- We add this import to handle JSON serialization of the schema
+import json
+from json_repair import repair_json
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -11,61 +11,50 @@ import torch
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
 # ---------------------------------------------------------------------------
-# The model name as per Qwen docs (Adjust if you prefer Qwen2-7B-Instruct,
-# Qwen2.5-3B-Instruct, etc.)
+# The model name as per Qwen docs (Adjust if you prefer Qwen2-7B-Instruct, etc.)
 # ---------------------------------------------------------------------------
 MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
-logger.info(f"Loading the tokenizer and model from '{MODEL_NAME}'...")
-print(f"Loading model {MODEL_NAME}")
-
-# Load model + tokenizer as recommended for Qwen
+# Load tokenizer & model
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
-    torch_dtype="auto",   # lets HF set an optimal dtype (usually FP16 or BF16 if supported)
-    device_map="auto"     # automatically place the model on GPU(s)
+    torch_dtype="auto",
+    device_map="auto"
 )
 model.eval()
 
+# ---------------------------------------------------------------------------
+# Global counters
+# ---------------------------------------------------------------------------
+counters = {
+    "total_requests": 0,
+    "json_requests": 0,
+    "json_correctly_formatted": 0,
+    "json_repair_succeeded": 0
+}
+
 
 def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None):
-    """
-    Generates a response using Qwen's chat template if the input is a list of messages,
-    otherwise uses a default system + user prompt for a simple string.
-    """
     if generation_kwargs is None:
         generation_kwargs = {}
 
-    # ----------------------------------------
-    # 1) Extract custom keys if present
-    # ----------------------------------------
-    # Remove them from generation_kwargs so HF doesn't complain about unused model kwargs.
     chat_format = generation_kwargs.pop("chat_format", None)
     response_format = generation_kwargs.pop("response_format", None)
 
     try:
-        # 2) Build messages array
+        # Prepare messages
         if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
-            # Already chat-style messages
             messages = message_payload
         else:
-            # Fallback if user passed a single string, wrap with a default system & user
             messages = [
                 {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
                 {"role": "user", "content": str(message_payload)}
             ]
 
-        # -------------------------------------------------------------------
-        # 2a) If a response_format was provided, instruct the model to output
-        #     valid JSON according to that schema.
-        # -------------------------------------------------------------------
+        # Insert JSON schema instruction if needed
         if response_format and response_format.get("type") == "json_object":
-            # We'll prepend an extra system message telling Qwen to produce JSON
             schema_text = json.dumps(response_format.get("schema", {}), indent=2)
             messages.insert(
                 0,
@@ -79,88 +68,56 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 },
             )
 
-        # 3) Convert to a single text prompt with Qwen's chat template
-        #    Use the chat_format if provided.
-        if chat_format:
-            text_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
-                chat_format=chat_format
-            )
-        else:
-            text_prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True
-            )
+        text_prompt = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            chat_format=chat_format
+        )
 
-        # 4) Tokenize
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
-
-        # 5) Generate
-        # Merge the user-specified `max_new_tokens` with the rest of generation_kwargs.
         generated_ids = model.generate(
             **model_inputs,
             max_new_tokens=max_new_tokens,
             **generation_kwargs
         )
 
-        # Qwen docs: subtract the prompt tokens so we only decode new tokens
+        # Subtract the prompt tokens so we only decode the newly generated tokens
         generated_ids = [
             output_ids[len(input_ids):]
             for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
 
-        # 6) Decode
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+        # JSON validation & repair if requested
+        if response_format and response_format.get("type") == "json_object":
+            counters["json_requests"] += 1
+
+            try:
+                json.loads(response_text)
+                counters["json_correctly_formatted"] += 1
+            except:
+                try:
+                    repaired_text = repair_json(response_text, ensure_ascii=False)
+                    repaired_obj = json.loads(repaired_text)
+                    response_text = json.dumps(repaired_obj, ensure_ascii=False)
+                    counters["json_repair_succeeded"] += 1
+                except:
+                    pass
+
         return response_text
 
     except Exception as e:
-        logger.error(f"Error generating data: {e}")
         return f"Generation error: {e}"
-
     finally:
         gc.collect()
 
 
 @app.route("/generate", methods=["POST"])
 def handler():
-    """
-    Handle incoming POST requests to generate data using the model.
+    counters["total_requests"] += 1
 
-    JSON formats:
-
-    1) Simple string payload:
-       {
-         "input": {
-           "text": "Your prompt here",
-           "ctx": 10000,
-           "generation_kwargs": {...},
-           "llm_kwargs": {...},
-           "chat_completion_kwargs": {...}
-         }
-       }
-
-    2) OpenAI-style chat payload:
-       {
-         "input": {
-           "text": [
-             {"role": "system", "content": "System content"},
-             {"role": "user",   "content": "User content"}
-           ],
-           "ctx": 10000,
-           "generation_kwargs": {...},
-           "llm_kwargs": {...},
-           "chat_completion_kwargs": {...}
-         }
-       }
-
-    Note:
-    - We do NOT verify schemas here. That is done elsewhere.
-    - We'll merge llm_kwargs and chat_completion_kwargs into generation_kwargs
-      so they affect the final model.generate call.
-    """
     try:
         inputs = request.json or {}
         input_data = inputs.get("input", {})
@@ -169,17 +126,11 @@ def handler():
         if not message_payload:
             raise ValueError("Input 'text' is missing or empty")
 
-        # We'll treat ctx as the maximum new tokens for generation
         max_new_tokens = int(input_data.get("ctx", 10000))
-
-        # The original "generation_kwargs"
         base_generation_kwargs = input_data.get("generation_kwargs", {})
-
-        # Additional user-provided kwargs from your client
         llm_kwargs = input_data.get("llm_kwargs", {})
         chat_completion_kwargs = input_data.get("chat_completion_kwargs", {})
 
-        # Merge them so they actually get used
         merged_generation_kwargs = {
             **base_generation_kwargs,
             **llm_kwargs,
@@ -194,11 +145,17 @@ def handler():
         return {"output": output}
 
     except ValueError as ve:
-        logger.error(f"Invalid input value: {ve}")
         return {"error": str(ve)}, 400
     except Exception as e:
-        logger.error(f"Error handling event: {e}")
         return {"error": str(e)}, 500
+    finally:
+        # Only print the counters
+        print("=== Current Counter Stats ===")
+        print(f"Total requests answered: {counters['total_requests']}")
+        print(f"JSON requests: {counters['json_requests']}")
+        print(f"JSON originally valid: {counters['json_correctly_formatted']}")
+        print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
+        print("=================================")
 
 
 if __name__ == "__main__":
@@ -206,5 +163,4 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=6000, help="Port to run the service on")
     args = parser.parse_args()
 
-    # IMPORTANT: If you're using a production environment, you typically set debug=False.
     app.run(host="0.0.0.0", port=args.port, debug=True, use_reloader=False)

@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Optional
-
 import requests
 from openai import OpenAI
 
@@ -17,6 +16,8 @@ class BaseLLMService(ILLMService):
         message_payload: List[Dict[str, str]],
         llm_kwargs: Optional[Dict[str, Any]] = None,
         chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+        json_format: bool = False,
+        schema: str = None,
     ) -> Any:
         raise NotImplementedError("Subclasses must implement this method.")
 
@@ -45,13 +46,14 @@ class BaseLLMService(ILLMService):
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            print(f"Error in _make_request: {e}")
+            print(f"Error in _make_http_request: {e}")
             return {"error": str(e)}
 
 
 class LocalLLMService(BaseLLMService):
     """
-    No waiting or canceling because tasks complete immediately.
+    Local LLM Service. If json_format is True, the request payload will include
+    a flag ('force_json': True) to enforce JSON formatting in the response.
     """
 
     def __init__(self, endpoint_url: str, threshold: int = 100):
@@ -62,23 +64,21 @@ class LocalLLMService(BaseLLMService):
         message_payload: List[Dict[str, str]],
         llm_kwargs: Optional[Dict[str, Any]] = None,
         chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+        json_format: bool = False,
+        schema: str = None,
     ) -> Any:
-        print("LLM REQUEST SENT\n\n")
-        print(f"MESSAGE PAYLOAD: {message_payload}")
-        print("LLM REQUEST SENT\n\n")
-        print(f"LLM_KWARGS: {llm_kwargs}")
-        print(f"CHAT_COMPLETION_KWARGS: {chat_completion_kwargs}")
+        print("LLM REQUEST SENT")
         payload = {"input": {"text": message_payload}}
         if llm_kwargs:
             payload["input"]["llm_kwargs"] = llm_kwargs
         if chat_completion_kwargs:
             payload["input"]["chat_completion_kwargs"] = chat_completion_kwargs
+        # Add flag to force JSON formatting if required.
+        if json_format:
+            payload["input"]["force_json"] = True
 
         response = self._make_http_request(self.endpoint_url, payload)
-        print("LLM REQUEST Response\n\n")
-        print(f"LLM Response: {response}")
-        print("LLM REQUEST Response\n\n")
-        # As local is synchronous, we can return the result directly.
+        print("LLM REQUEST Response")
         return response.get("output", {"error": "No output from local model"})
 
     async def async_make_request(
@@ -86,21 +86,26 @@ class LocalLLMService(BaseLLMService):
         message_payload: List[Dict[str, str]],
         llm_kwargs: Optional[Dict[str, Any]] = None,
         chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+        json_format: bool = False,
+        schema: str = None,
     ) -> Any:
         payload = {"input": {"text": message_payload}}
         if llm_kwargs:
             payload["input"]["llm_kwargs"] = llm_kwargs
         if chat_completion_kwargs:
             payload["input"]["chat_completion_kwargs"] = chat_completion_kwargs
+        if json_format:
+            payload["input"]["force_json"] = True
 
         response = self._make_http_request(self.endpoint_url, payload)
-        # As local is synchronous, we can return the result directly.
         return response.get("output", {"error": "No output from local model"})
 
 
 class OpenAIService(BaseLLMService, OpenAILLMModelMixin):
     """
     Service for interacting with OpenAI's GPT models.
+    When json_format is True, and no custom response_format is provided via chat_completion_kwargs,
+    a default JSON formatting instruction is added.
     """
 
     def __init__(self, api_key: str, model: str, max_tokens: int = 2000, temperature: float = 0.7):
@@ -123,27 +128,15 @@ class OpenAIService(BaseLLMService, OpenAILLMModelMixin):
         message_payload: List[Dict[str, str]],
         llm_kwargs: Optional[Dict[str, Any]] = None,
         chat_completion_kwargs: Optional[Dict[str, Any]] = None,
-        json_format:bool = False
+        json_format: bool = False,
+        schema: str = None,
     ) -> str:
-        """
-        Implementation of make_request from BaseLLMService.
-
-        Args:
-            message_payload (List[Dict[str, str]]): The input prompt.
-            llm_kwargs (Optional[Dict[str, Any]]): Additional parameters for the LLM.
-            chat_completion_kwargs (Optional[Dict[str, Any]]): Chat-specific parameters.
-
-        Returns:
-            Any: The response content from OpenAI.
-        """
-        # Configure the parameters for the call to OpenAI
         parameters = {
             "model": self._model,
             "messages": message_payload,
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
         }
-
         if chat_completion_kwargs:
             parameters["temperature"] = chat_completion_kwargs.get("temperature", self.temperature)
             response_format = chat_completion_kwargs.get("response_format", {})
@@ -151,11 +144,12 @@ class OpenAIService(BaseLLMService, OpenAILLMModelMixin):
                 response_format_model = BaseOpenAIResponseFormat(**response_format)
                 parameters["response_format"] = response_format_model.model_dump()
 
-        try:
-            # Make the call to OpenAI
-            response = self.client.chat.completions.create(**parameters)
+        # If forcing JSON and no response_format is set, add a default JSON formatting instruction.
+        if json_format and "response_format" not in parameters:
+            parameters["response_format"] = {"force_json": True}
 
-            # Extract the response from the assistant
+        try:
+            response = self.client.chat.completions.create(**parameters)
             return response.choices[0].message.content
         except Exception as e:
             raise RuntimeError(f"Error with OpenAI API: {e}")
@@ -165,26 +159,15 @@ class OpenAIService(BaseLLMService, OpenAILLMModelMixin):
         message_payload: List[Dict[str, str]],
         llm_kwargs: Optional[Dict[str, Any]] = None,
         chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+        json_format: bool = False,
+        schema: str = None,
     ) -> str:
-        """
-        Implementation of make_request from BaseLLMService.
-
-        Args:
-            message_payload (List[Dict[str, str]]): The input prompt.
-            llm_kwargs (Optional[Dict[str, Any]]): Additional parameters for the LLM.
-            chat_completion_kwargs (Optional[Dict[str, Any]]): Chat-specific parameters.
-
-        Returns:
-            Any: The response content from OpenAI.
-        """
-        # Configure the parameters for the call to OpenAI
         parameters = {
             "model": self._model,
             "messages": message_payload,
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
         }
-
         if chat_completion_kwargs:
             parameters["temperature"] = chat_completion_kwargs.get("temperature", self.temperature)
             response_format = chat_completion_kwargs.get("response_format", {})
@@ -192,11 +175,11 @@ class OpenAIService(BaseLLMService, OpenAILLMModelMixin):
                 response_format_model = BaseOpenAIResponseFormat(**response_format)
                 parameters["response_format"] = response_format_model.model_dump()
 
-        try:
-            # Make the call to OpenAI
-            response = self.client.chat.completions.create(**parameters)
+        if json_format and "response_format" not in parameters:
+            parameters["response_format"] = {"force_json": True}
 
-            # Extract the response from the assistant
+        try:
+            response = self.client.chat.completions.create(**parameters)
             return response.choices[0].message.content
         except Exception as e:
             raise RuntimeError(f"Error with OpenAI API: {e}")

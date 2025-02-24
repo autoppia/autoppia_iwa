@@ -35,7 +35,7 @@ class TestNewActionsGeneration(unittest.TestCase):
 
         # Sample task data
         task_data = {
-            "prompt": "Click on the \"Login\" link in the header. Then fill the form with email:test@gmail.com adn password:test1234 and click on login",
+            "prompt": "Click on the \"Login\" link in the header, fill credentials and login.",
             "url": "http://localhost:8000/",
             "tests": [
                 {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view", "app_type": "jobs"},
@@ -45,6 +45,7 @@ class TestNewActionsGeneration(unittest.TestCase):
             ],
             "milestones": None,
             "web_analysis": None,
+            "relevant_data": {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
         }
 
         # Generate test instances from the test data
@@ -57,6 +58,7 @@ class TestNewActionsGeneration(unittest.TestCase):
             tests=tests,
             milestones=task_data["milestones"],
             web_analysis=task_data["web_analysis"],
+            relevant_data=task_data["relevant_data"],
         )
 
     def test_new_actions_generation(self):

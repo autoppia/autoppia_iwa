@@ -194,7 +194,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
         payload = [{"role": "system", "content": system_message}, {"role": "user", "content": user_message}]
         with Path(PROJECT_BASE_DIR / "config/schemas/eval_html_test.json").open(encoding="utf-8") as f:
             json_schema = json.load(f)
-        chat_completion_kwargs = {"response_format": {"type": "json_object", "schema": json_schema}, "temperature": 0.6, "top_k": 50}
+        chat_completion_kwargs = {"response_format": {"type": "json_object", "schema": json_schema}, "temperature": 0.1, "top_k": 50}
 
         result = self.llm_service.make_request(payload, chat_completion_kwargs=chat_completion_kwargs)
         parsed_result = json.loads(result)
@@ -251,7 +251,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
             print(f"Error loading JSON schema: {e}")
             return False
 
-        chat_completion_kwargs = {"response_format": {"type": "json_object", "schema": json_schema}, "temperature": 0.6, "top_k": 50}
+        chat_completion_kwargs = {"response_format": {"type": "json_object", "schema": json_schema}, "temperature": 0.1, "top_k": 50}
 
         result = self.llm_service.make_request(payload, chat_completion_kwargs=chat_completion_kwargs)
         parsed_result = json.loads(result)

@@ -7,12 +7,12 @@ from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 AGENTS:List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
 

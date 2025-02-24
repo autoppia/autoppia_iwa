@@ -5,8 +5,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Literal
 from pydantic import BaseModel, Field
-
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class TaskDifficultyLevel(Enum):
@@ -37,18 +37,32 @@ class Task(BaseModel):
     Represents a task with a unique id, prompt, URL, browser specs, tests, milestones, and web analysis.
     """
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task")
+    type: Literal["global", "local"] = "local"
+    is_web_real: bool = False
     prompt: str = Field(..., description="Prompt for the task")
     url: str = Field(..., description="URL where the task is to be performed")
-    html: str = ""
-    screenshot: Any = None
-    specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser specifications for the task")
-    tests: List[BaseTaskTest] = Field(default_factory=list, description="List of tests associated with the task")
-    milestones: Optional[List["Task"]] = Field(None, description="List of milestone tasks")
-    is_web_real: bool = False
-    type: Literal["global", "local"] = "local"
-    success_criteria: Optional[str] = Field(None, description="A concise definition of what determines successful completion.")
-
-    # Added field for final logic expression referencing tests:
+    html: str = Field(default_factory=str, description="HTML content associated with the task")
+    screenshot: Optional[Any] = None
+    specifications: BrowserSpecification = Field(
+        default_factory=BrowserSpecification,
+        description="Browser specifications for the task"
+    )
+    tests: List[BaseTaskTest] = Field(
+        default_factory=list,
+        description="List of tests associated with the task"
+    )
+    milestones: Optional[List["Task"]] = Field(
+        None,
+        description="List of milestone tasks"
+    )
+    relevant_data: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Dictionary of relevant data for this task"
+    )
+    success_criteria: Optional[str] = Field(
+        None,
+        description="A concise definition of what determines successful completion."
+    )
     logic_function: Optional[str] = Field(
         None,
         description="Boolean formula referencing T1..Tn for final success determination."
@@ -59,6 +73,32 @@ class Task(BaseModel):
         base_dump["tests"] = [test.model_dump() for test in self.tests]
         base_dump.pop("web_analysis", None)
         return base_dump
+
+
+@classmethod
+def from_dict(cls, data: Dict[str, Any]) -> "Task":
+    """
+        Creates a Task instance from a dictionary, including nested test instances.
+
+        Args:
+            data (Dict[str, Any]): Dictionary containing the Task attributes.
+
+        Returns:
+            Task: The Task object created from the dictionary.
+        """
+    return cls(
+        id=data.get("id", str(uuid.uuid4())),  # Ensures unique ID if missing
+        prompt=data["prompt"],  # Required field
+        url=data["url"],  # Required field
+        html=data.get("html", ""),
+        screenshot=data.get("screenshot"),
+        specifications=BrowserSpecification.model_validate(data.get("specifications", {})),
+        tests=[BaseTaskTest.model_validate(test) for test in data.get("tests", [])],
+        milestones=[cls.from_dict(m) for m in data.get("milestones", [])] if data.get("milestones") else None,
+        web_analysis=DomainAnalysis.model_validate(data["web_analysis"]) if "web_analysis" in data else None,
+        relevant_data=data.get("relevant_data", {}),
+        is_web_real=data.get("is_web_real", False),
+    )
 
 
 class TaskGenerationConfig(BaseModel):
