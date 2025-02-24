@@ -104,6 +104,12 @@ class Task(BaseModel):
         description="Boolean expression using T1..Tn notation to evaluate overall task success"
     )
 
+    @property
+    def prompt_with_relevant_data(self) -> str:
+        if self.relevant_data:
+            return f"{self.prompt} /n Relevant data you may need: {self.relevant_data}"
+        return self.prompt
+
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["tests"] = [test.model_dump() for test in self.tests]
