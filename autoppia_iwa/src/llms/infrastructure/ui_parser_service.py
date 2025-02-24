@@ -1,6 +1,6 @@
-import torch
-from transformers import pipeline
-from PIL import Image
+# import torch
+# from transformers import pipeline
+# from PIL import Image
 
 
 class UIParserService:
