@@ -13,10 +13,10 @@ To ensure the proper functioning of the project, three essential components need
 
 2. **webApp/app.py** OR **app.py**: Main project's endpoints that handle the core functionality of the project.
 
-    - **webApp/app.py** _**(Not used now)**_: This file is used for managing socketio for _WebApp_.
+   - **webApp/app.py** _**(Not used now)**_: This file is used for managing socketio for _WebApp_.
 
-    - **app.py**: Serves as the main flask entry point for the application. It initializes the application and handles
-      API requests related to running benchmarks [Project Guide For Local Testing](setup.md) -> current file
+   - **app.py**: Serves as the main flask entry point for the application. It initializes the application and handles
+     API requests related to running benchmarks [Project Guide For Local Testing](setup.md) -> current file
 
 3. **Demo (Django) app**: Runs the demo application for testing purposes (check its own **setup.md**)
 
@@ -27,7 +27,7 @@ To ensure the proper functioning of the project, three essential components need
 The table below outlines the ports used by different applications in the project for easier configuration and reference.
 
 | **Port** | **Application**                | **Description**                                                 |
-|----------|--------------------------------|-----------------------------------------------------------------|
+| -------- | ------------------------------ | --------------------------------------------------------------- |
 | `5000`   | Benchmark Flask App (`app.py`) | Default port for running the Flask development server.          |
 | `8080`   | WebApp (`webApp/app.py`)       | Common port for running frontend (flask socketio) applications. |
 | `8000`   | Django App (`manage.py`)       | Default port for running the Django development server.         |
@@ -42,7 +42,7 @@ The table below outlines the ports used by different applications in the project
 ### **1.2 Model Information and GPU Requirements**
 
 | Model Name             | Variant | Model Link                                                                             | GPU Memory Requirement | Open Source |
-|------------------------|---------|----------------------------------------------------------------------------------------|------------------------|-------------|
+| ---------------------- | ------- | -------------------------------------------------------------------------------------- | ---------------------- | ----------- |
 | **Qwen 2.5 Coder 32B** | Q2_K    | [Qwen2.5-Coder-32B Model](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct-GGUF) | 18 GB                  | Yes         |
 | **Qwen 2.5 Coder 14B** | Q4_K_M  | [Qwen2.5-Coder-14B Model](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF) | 18 GB                  | Yes         |
 | **Hermes LLAMA 3.1**   | Q4_K_M  | [LLAMA Model](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-8B-GGUF)          | 12 GB                  | Yes         |
@@ -176,17 +176,17 @@ sudo apt install -y python3.11 python3.11-venv python3-pip
    ```env
     # Can be "serverless", "local" and "openai"
     LLM_PROVIDER="local"
-    
+
     # Local LLM Configuration
-    #LLM_ENPOINT="http://192.168.0.103:6000/generate"
-    LLM_ENPOINT="http://69.55.141.126:10278/generate"
-    
+    #LOCAL_MODEL_ENDPOINT="http://192.168.0.103:6000/generate"
+    LOCAL_MODEL_ENDPOINT="http://69.55.141.126:10278/generate"
+
     # OpenAI Configuration
     OPENAI_API_KEY=""
     OPENAI_MODEL="gpt-4-32k-0613"
     OPENAI_MAX_TOKENS="2000"
     OPENAI_TEMPERATURE="0.7"
-    
+
     # MongoDB Configuration
     MONGODB_URL="mongodb://localhost:27017"
    ```
@@ -209,8 +209,8 @@ This script tests browser automation with a persistent user profile. Here's what
 
 2. **Authentication Check**:
 
-    - If the user is logged in, it skips to event handling.
-    - If not, it registers a new user or logs in if registration fails.
+   - If the user is logged in, it skips to event handling.
+   - If not, it registers a new user or logs in if registration fails.
 
 3. **Event Processing**: Retrieves events, saves them to the database, and optionally deletes them.
 
@@ -232,9 +232,9 @@ This script tests browser automation with a persistent user profile. Here's what
 
 Run the Flask application:
 
-   ```bash
-   python3 app.py
-   ```
+```bash
+python3 app.py
+```
 
 By default, Flask will run the application at `http://127.0.0.1:5000/`.  
 You can interact with it using a browser, **Postman**, or **cURL**.
@@ -295,8 +295,8 @@ python3 tests/test_tasks_generator/test_generate_tasks.py
 
 1. **Environment Activation**:
 
-    - For `venv`: Activate the environment each time with `source venv/bin/activate`.
-    - For Conda: Activate the environment with `conda activate autoppia`.
+   - For `venv`: Activate the environment each time with `source venv/bin/activate`.
+   - For Conda: Activate the environment with `conda activate autoppia`.
 
 2. **Playwright Browsers**:
    Ensure the browsers are installed correctly by running:

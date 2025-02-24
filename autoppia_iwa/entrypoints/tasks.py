@@ -27,7 +27,7 @@ async def main():
     try:
         # Create a WebProject (with its web analysis populated)
         demo_web_projects: List[WebProject] = await initialize_test_demo_web_projects()
-        my_web_project: WebProject = demo_web_projects[0]
+        web_project: WebProject = demo_web_projects[0]
 
         # Create TaskGenerationConfig if needed by TaskGenerationPipeline
         config = TaskGenerationConfig(
@@ -40,14 +40,14 @@ async def main():
         )
 
         # Instantiate the task generation pipeline.
-        pipeline = TaskGenerationPipeline(web_project=my_web_project, config=config)
+        pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
 
         # Generate tasks from a single URL using the frontend_url of the web project.
-        tasks = await pipeline.generate_tasks_from_url(my_web_project.frontend_url)
+        tasks = await pipeline.generate_tasks_for_url(web_project.frontend_url)
 
         # --- Generate tests for the tasks ---
         llm_service = DIContainer.llm_service()
-        test_pipeline = TestGenerationPipeline(llm_service=llm_service)
+        test_pipeline = TestGenerationPipeline(llm_service=llm_service, web_project=web_project)
         tasks = await test_pipeline.add_tests_to_tasks(tasks)
 
         # Display results: show tasks along with their tests

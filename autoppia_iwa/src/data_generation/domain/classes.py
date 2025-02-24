@@ -34,71 +34,107 @@ class BrowserSpecification(BaseModel):
 
 class Task(BaseModel):
     """
-    Represents a task with a unique id, prompt, URL, browser specs, tests, milestones, and web analysis.
+    Represents a task with associated metadata, specifications, and success criteria.
+
+    This model captures all necessary information for task execution and validation,
+    including browser specifications, test cases, and milestone subtasks.
     """
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task")
-    type: Literal["global", "local"] = "local"
-    is_web_real: bool = False
-    prompt: str = Field(..., description="Prompt for the task")
-    url: str = Field(..., description="URL where the task is to be performed")
-    html: str = Field(default_factory=str, description="HTML content associated with the task")
-    screenshot: Optional[Any] = None
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        description="Unique identifier for the task, auto-generated using UUID4"
+    )
+    type: Literal["global", "local"] = Field(
+        default="local",
+        description="Task scope: 'global' for system-wide tasks, 'local' for specific context tasks"
+    )
+    is_web_real: bool = Field(
+        default=False,
+        description="Indicates if the task operates on a real web environment versus simulation"
+    )
+    url: str = Field(
+        ...,
+        description="Target URL where the task will be executed"
+    )
+    prompt: str = Field(
+        ...,
+        description="Natural language description of the task objectives and requirements"
+    )
+    html: str = Field(
+        default_factory=str,
+        description="Complete HTML content of the target page"
+    )
+    clean_html: str = Field(
+        default_factory=str,
+        description="Optimized HTML content with reduced overhead for processing"
+    )
+    interactive_elements: Optional[str] = Field(
+        default=None,
+        description="Mapping of interactive elements found in the HTML content, including buttons, forms, etc."
+    )
+    screenshot: Optional[str] = Field(
+        default=None,
+        description="Pil Image of the task environment or webpage encoded in base64 and stringify"
+    )
+    screenshot_description: Optional[str] = Field(
+        default=None,
+        description="Textual description of the screenshot content and relevant elements"
+    )
     specifications: BrowserSpecification = Field(
         default_factory=BrowserSpecification,
-        description="Browser specifications for the task"
+        description="Browser configuration and requirements for task execution"
     )
     tests: List[BaseTaskTest] = Field(
         default_factory=list,
-        description="List of tests associated with the task"
+        description="Collection of validation tests that verify task completion"
     )
     milestones: Optional[List["Task"]] = Field(
-        None,
-        description="List of milestone tasks"
+        default=None,
+        description="Ordered list of subtasks that must be completed sequentially"
     )
     relevant_data: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Dictionary of relevant data for this task"
+        description="Additional contextual data required for task execution"
     )
     success_criteria: Optional[str] = Field(
-        None,
-        description="A concise definition of what determines successful completion."
+        default=None,
+        description="Clear definition of conditions that indicate successful task completion"
     )
     logic_function: Optional[str] = Field(
-        None,
-        description="Boolean formula referencing T1..Tn for final success determination."
+        default=None,
+        description="Boolean expression using T1..Tn notation to evaluate overall task success"
     )
 
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["tests"] = [test.model_dump() for test in self.tests]
         base_dump.pop("web_analysis", None)
+
         return base_dump
 
-
-@classmethod
-def from_dict(cls, data: Dict[str, Any]) -> "Task":
-    """
-        Creates a Task instance from a dictionary, including nested test instances.
-
-        Args:
-            data (Dict[str, Any]): Dictionary containing the Task attributes.
-
-        Returns:
-            Task: The Task object created from the dictionary.
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Task":
         """
-    return cls(
-        id=data.get("id", str(uuid.uuid4())),  # Ensures unique ID if missing
-        prompt=data["prompt"],  # Required field
-        url=data["url"],  # Required field
-        html=data.get("html", ""),
-        screenshot=data.get("screenshot"),
-        specifications=BrowserSpecification.model_validate(data.get("specifications", {})),
-        tests=[BaseTaskTest.model_validate(test) for test in data.get("tests", [])],
-        milestones=[cls.from_dict(m) for m in data.get("milestones", [])] if data.get("milestones") else None,
-        web_analysis=DomainAnalysis.model_validate(data["web_analysis"]) if "web_analysis" in data else None,
-        relevant_data=data.get("relevant_data", {}),
-        is_web_real=data.get("is_web_real", False),
-    )
+            Creates a Task instance from a dictionary, including nested test instances.
+
+            Args:
+                data (Dict[str, Any]): Dictionary containing the Task attributes.
+
+            Returns:
+                Task: The Task object created from the dictionary.
+            """
+        return cls(
+            id=data.get("id", str(uuid.uuid4())),  # Ensures unique ID if missing
+            prompt=data["prompt"],  # Required field
+            url=data["url"],  # Required field
+            html=data.get("html", ""),
+            screenshot=data.get("screenshot"),
+            specifications=BrowserSpecification.model_validate(data.get("specifications", {})),
+            tests=[BaseTaskTest.model_validate(test) for test in data.get("tests", [])],
+            milestones=[cls.from_dict(m) for m in data.get("milestones", [])] if data.get("milestones") else None,
+            web_analysis=DomainAnalysis.model_validate(data["web_analysis"]) if "web_analysis" in data else None,
+            relevant_data=data.get("relevant_data", {}),
+            is_web_real=data.get("is_web_real", False),
+        )
 
 
 class TaskGenerationConfig(BaseModel):

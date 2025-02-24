@@ -14,7 +14,7 @@
 # from autoppia_iwa.src.evaluation.classes import EvaluationResult
 # from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 # from autoppia_iwa.src.execution.actions.base import BaseAction
-# from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
+# from autoppia_iwa.src.shared.web_utils import generate_random_web_agent_id
 # from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 # from autoppia_iwa.src.web_agents.classes import TaskSolution
 # from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
@@ -49,7 +49,7 @@
 #             frontend_url=url,
 #             name=urlparse(url).netloc,
 #             events_to_check=[],
-#             is_real_web=IS_WEB_REAL,
+#             is_web_real=IS_WEB_REAL,
 #         )
 #         task_test_generator = TaskTestGenerator(web_project=web_project, web_analysis=web_analysis)
 #         tests = await task_test_generator.generate_task_tests(task_description, url)

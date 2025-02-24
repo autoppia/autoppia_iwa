@@ -28,7 +28,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         cls.example_enable_crawl = False
         cls.example_task_description = "Navigate to the homepage and verify the page title."
 
-    async def _generate_tests_for_web_project(self, url: str, task_description: str, enable_crawl: bool, is_real_web: bool = False) -> list:
+    async def _generate_tests_for_web_project(self, url: str, task_description: str, enable_crawl: bool, is_web_real: bool = False) -> list:
         """
         Helper method to perform web analysis and generate task-based tests.
 
@@ -36,7 +36,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
             url (str): The target web page URL.
             task_description (str): Description of the task to be tested.
             enable_crawl (bool): Whether to enable crawling.
-            is_real_web (bool): Whether the project is a real web test.
+            is_web_real (bool): Whether the project is a real web test.
 
         Returns:
             list: Generated task tests.
@@ -55,9 +55,9 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         web_project = WebProject(
             backend_url=url,
             frontend_url=url,
-            name="example" if is_real_web else "Local Web App",
+            name="example" if is_web_real else "Local Web App",
             events_to_check=EVENTS_ALLOWED,
-            is_real_web=is_real_web,
+            is_web_real=is_web_real,
         )
 
         # Generate task-based tests
@@ -78,7 +78,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
                 url=self.local_page_url,
                 task_description=self.local_task_description,
                 enable_crawl=self.local_enable_crawl,
-                is_real_web=False,
+                is_web_real=False,
             )
         )
         print("Generated Tests (Local Web):", tests)
@@ -92,7 +92,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
                 url=self.example_url,
                 task_description=self.example_task_description,
                 enable_crawl=self.example_enable_crawl,
-                is_real_web=True,
+                is_web_real=True,
             )
         )
         print("Generated Tests (Real Web):", tests)

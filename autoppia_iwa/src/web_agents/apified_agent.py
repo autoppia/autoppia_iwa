@@ -4,9 +4,10 @@ import aiohttp
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction
-from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
+
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 
 
 class ApifiedWebAgent(IWebAgent):

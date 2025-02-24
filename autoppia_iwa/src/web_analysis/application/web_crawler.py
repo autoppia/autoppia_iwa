@@ -2,7 +2,7 @@ from urllib.parse import urljoin, urlparse
 import networkx as nx
 import requests
 from bs4 import BeautifulSoup
-from autoppia_iwa.src.shared.utils import extract_html
+from autoppia_iwa.src.shared.web_utils import async_extract_html
 from autoppia_iwa.src.web_analysis.domain.classes import WebCrawlerConfig
 
 
@@ -71,7 +71,7 @@ class WebCrawler:
         """
         Get links from a URL using the async Playwright API.
         """
-        html = await extract_html(url)
+        html = await async_extract_html(url)
         soup_local = BeautifulSoup(html, "html.parser")
         links = soup_local.find_all("a", href=True)
         urls = [link["href"] for link in links if link["href"].startswith("http")]

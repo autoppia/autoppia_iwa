@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from dependency_injector.wiring import Provide
 
 from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
+from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import LLMWebAnalysis
 from autoppia_iwa.src.web_analysis.domain.classes import Element
 from autoppia_iwa.src.web_analysis.domain.prompt_llm_template import PromptLLMTemplate
@@ -29,14 +29,14 @@ If the input cannot be summarized into a valid JSON object, return an empty JSON
 
 
 class WebLLMAnalyzer:
-    def __init__(self, llm_service: ILLMService = Provide[DIContainer.llm_service]):
+    def __init__(self, llm_service: ILLM = Provide[DIContainer.llm_service]):
         """
         Initialize the web page structure extractor with a start URL.
 
         Args:
-            llm_service (ILLMService): the model to extract data from.
+            llm_service (ILLM): the model to extract data from.
         """
-        self.llm_service: ILLMService = llm_service
+        self.llm_service: ILLM = llm_service
 
     def analyze_element(self, element: Element) -> LLMWebAnalysis:
         template = PromptLLMTemplate.get_instance_from_file(
@@ -87,7 +87,7 @@ class WebLLMAnalyzer:
         tries = 3
         for i in range(tries):
             try:
-                response: str = self.llm_service.make_request(llm_message, {"chat_format": "chatml"}, json_schema)
+                response: str = self.llm_service.predict(llm_message, json_format=True, schema=json_schema)
                 json_result = self._parse_json_response(response)
                 # Convert relevant_fields if needed
                 if "relevant_fields" in json_result and isinstance(json_result["relevant_fields"], dict):

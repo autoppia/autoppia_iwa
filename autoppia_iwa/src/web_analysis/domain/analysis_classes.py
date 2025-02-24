@@ -36,3 +36,9 @@ class DomainAnalysis(BaseModel):
     category:str = ""
     features:List[str] = Field(default_factory=list, description="List of features")
     urls:List[str] = Field(default_factory=list, description="List of urls")
+
+    def get_page_analysis(self, url:str):
+        for page_analysis in self.page_analyses:
+            if page_analysis.page_url == url:
+                return page_analysis
+        return None

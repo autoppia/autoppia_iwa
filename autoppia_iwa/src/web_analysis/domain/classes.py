@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
-from autoppia_iwa.src.llms.domain.openai.utils import OpenAIUtilsMixin
+from autoppia_iwa.src.llms.domain.utils import OpenAIUtilsMixin
 
 
 @dataclass

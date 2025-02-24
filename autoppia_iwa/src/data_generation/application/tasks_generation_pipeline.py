@@ -13,8 +13,8 @@ from autoppia_iwa.src.data_generation.domain.classes import (
 )
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
-from autoppia_iwa.src.data_generation.application.local_task_generation import LocalTaskGenerationPipeline
+from autoppia_iwa.src.llms.domain.interfaces import ILLM
+from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.di_container import DIContainer
 
 
@@ -24,15 +24,15 @@ class TaskGenerationPipeline:
         web_project: WebProject,
         config: TaskGenerationConfig,
         synthetic_task_repository: BaseMongoRepository = Provide[DIContainer.synthetic_task_repository],
-        llm_service: ILLMService = Provide[DIContainer.llm_service]
+        llm_service: ILLM = Provide[DIContainer.llm_service]
     ):
         self.web_project: WebProject = web_project
         self.task_config: TaskGenerationConfig = config
         self.synthetic_task_repository = synthetic_task_repository
-        self.llm_service: ILLMService = llm_service
+        self.llm_service: ILLM = llm_service
         self.local_pipeline = LocalTaskGenerationPipeline(self.llm_service)
 
-    async def generate_tasks_from_url(self, url: str) -> List[Task]:
+    async def generate_tasks_for_url(self, url: str) -> List[Task]:
         logger.info("Processing page: {}", url)
         local_tasks = await self.local_pipeline.generate(url)
         logger.debug("Generated {} local tasks for page: {}", len(local_tasks), url)
@@ -44,7 +44,7 @@ class TaskGenerationPipeline:
         logger.info("Starting task generation pipeline")
 
         try:
-            domain_analysis: DomainAnalysis = self.web_project.web_analysis
+            domain_analysis: DomainAnalysis = self.web_project.domain_analysis
             if not domain_analysis:
                 raise ValueError("No domain analysis found in WebProject")
             logger.info("Domain analysis found, processing {} page analyses", len(domain_analysis.page_analyses))
@@ -54,7 +54,7 @@ class TaskGenerationPipeline:
             # Generate local tasks for each page using the helper method
             for page_info in domain_analysis.page_analyses:
                 url = page_info.page_url
-                local_tasks = await self.generate_tasks_from_url(url, self.local_pipeline)
+                local_tasks = await self.generate_tasks_for_url(url)
                 all_tasks.extend(local_tasks)
 
             # Additional global tasks can be added here if needed

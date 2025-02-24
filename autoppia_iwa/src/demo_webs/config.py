@@ -3,12 +3,12 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED as events_allowed_web_1
+from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED as events_allowed_web_1, RELEVANT_DATA as relevant_data_web_1
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 from typing import Optional
 from dependency_injector.wiring import Provide
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
+from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import (
     BaseMongoRepository)
@@ -31,7 +31,7 @@ demo_web_projects = [
         frontend_url=get_frontend_url(index=0),
         backend_url=get_backend_url(index=0),
         events_to_check=events_allowed_web_1,
-        relevant_data={"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
+        relevant_data=relevant_data_web_1,
     )
     # ),
     # DemoWebProject(
@@ -55,9 +55,10 @@ async def initialize_test_demo_web_projects():
             name="Autoppia",
             backend_url="",
             frontend_url="https://www.autoppia.com",
-            is_real_web=True,
+            is_web_real=True,
             events=[],
-            data_classes={}
+            relevant_data=relevant_data_web_1
+
         )
     ]
     for test_demo_web_project in test_demo_web_projects:
@@ -65,7 +66,7 @@ async def initialize_test_demo_web_projects():
     return test_demo_web_projects
 
 
-async def _run_web_analysis(demo_web_project:WebProject, llm_service: ILLMService = Provide[DIContainer.llm_service],
+async def _run_web_analysis(demo_web_project:WebProject, llm_service: ILLM = Provide[DIContainer.llm_service],
                             web_analysis_repository: BaseMongoRepository = Provide[DIContainer.analysis_repository]) -> Optional[DomainAnalysis]:
     """
     Executes the web analysis pipeline to gather information from the target page.
@@ -83,5 +84,5 @@ async def _run_web_analysis(demo_web_project:WebProject, llm_service: ILLMServic
 
 async def _load_web_analysis(demo_web_project:WebProject):
     web_analysis:DomainAnalysis = await _run_web_analysis(demo_web_project)
-    demo_web_project.web_analysis = web_analysis
+    demo_web_project.domain_analysis = web_analysis
     demo_web_project.urls = web_analysis.urls

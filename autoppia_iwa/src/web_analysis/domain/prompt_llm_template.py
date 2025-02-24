@@ -46,7 +46,7 @@ class PromptLLMTemplate:
         return self.current_prompt
 
     def get_schema(self):
-        return {"response_format": {"type": "json_object", "schema": self.schema}}
+        return self.schema
 
     @staticmethod
     def clean_prompt(prompt):

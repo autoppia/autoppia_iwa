@@ -4,7 +4,7 @@ from typing import List, Optional
 from urllib.parse import urlparse
 from dependency_injector.wiring import Provide
 from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
+from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 from autoppia_iwa.src.web_analysis.application.web_crawler import WebCrawler
 from autoppia_iwa.src.web_analysis.application.web_llm_utils import WebLLMAnalyzer
@@ -22,7 +22,7 @@ class WebAnalysisPipeline:
         self,
         start_url: str,
         analysis_repository: BaseMongoRepository = Provide[DIContainer.analysis_repository],
-        llm_service: ILLMService = Provide[DIContainer.llm_service],
+        llm_service: ILLM = Provide[DIContainer.llm_service],
     ):
         self.start_url = start_url
         self.domain = urlparse(start_url).netloc

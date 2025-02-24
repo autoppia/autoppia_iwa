@@ -1,12 +1,10 @@
 from dependency_injector import containers, providers
 from pymongo import MongoClient
-
 from autoppia_iwa.config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
-    LLM_ENPOINT,
+    LOCAL_MODEL_ENDPOINT,
     LLM_PROVIDER,
-    LLM_THRESHOLD,
     MONGODB_NAME,
     MONGODB_URL,
     OPENAI_API_KEY,
@@ -15,8 +13,8 @@ from autoppia_iwa.config.config import (
     OPENAI_TEMPERATURE,
     TASKS_COLLECTION,
 )
-from autoppia_iwa.src.llms.infrastructure.llm_service import LocalLLMService, OpenAIService
 from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
+from autoppia_iwa.src.llms.infrastructure.llm_service import LLMConfig, LLMFactory
 
 
 class DIContainer(containers.DeclarativeContainer):
@@ -45,7 +43,7 @@ class DIContainer(containers.DeclarativeContainer):
         collection_name=TASKS_COLLECTION,
     )
 
-    # Task Generator (local or serverless)
+    # LLM Service provider using Factory pattern
     llm_service = providers.Singleton(lambda: DIContainer._get_llm_service())
 
     # Milestone Configuration
@@ -53,27 +51,22 @@ class DIContainer(containers.DeclarativeContainer):
 
     @classmethod
     def register_service(cls, service_name: str, service_instance):
-        """
-        Register a new service in the dependency container.
-        """
+        """Register a new service in the dependency container."""
         if hasattr(cls, service_name):
             raise AttributeError(f"Service {service_name} is already registered.")
         setattr(cls, service_name, providers.Singleton(service_instance))
 
     @staticmethod
     def _get_llm_service():
-        if LLM_PROVIDER == "local":
-            return LocalLLMService(
-                endpoint_url=LLM_ENPOINT,
-                threshold=LLM_THRESHOLD,
-            )
+        config = LLMConfig(
+            model=OPENAI_MODEL if LLM_PROVIDER == "openai" else "local",
+            temperature=OPENAI_TEMPERATURE,
+            max_tokens=OPENAI_MAX_TOKENS,
+        )
 
-        elif LLM_PROVIDER == "openai":
-            return OpenAIService(
-                api_key=OPENAI_API_KEY,
-                model=OPENAI_MODEL,
-                max_tokens=OPENAI_MAX_TOKENS,
-                temperature=OPENAI_TEMPERATURE,
-            )
-
-        raise ValueError(f"Unknown LLM_PROVIDER: {LLM_PROVIDER}")
+        return LLMFactory.create_llm(
+            llm_type=LLM_PROVIDER,
+            config=config,
+            api_key=OPENAI_API_KEY,
+            endpoint_url=LOCAL_MODEL_ENDPOINT
+        )

@@ -10,11 +10,15 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 
-AGENTS:List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
+
+app = AppBootstrap()
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -31,6 +35,7 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
     # Loop over each task in the project.
     for task in tasks:
         # Agent solves the task.
+        task.relevant_data = demo_project.relevant_data
         task_solution: TaskSolution = await agent.solve_task(task)
         actions: List[BaseAction] = task_solution.actions
 
@@ -63,21 +68,19 @@ def compute_statistics(scores: List[float]) -> dict:
     return stats
 
 
-async def generate_tasks_for_project(demo_project, generate_new_tasks=True):
+async def generate_tasks_for_project(demo_project:WebProject, generate_new_tasks=True):
     """
     Generate tasks for the given demo project.
 
     If TASKS is provided, it will be used. Otherwise, tasks are generated
     through the TaskGenerationPipeline.
     """
-    task_input = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False)
+    config = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False,number_of_prompts_per_task=3)
     if not generate_new_tasks and TASK_EXAMPLES:
         tasks = TASK_EXAMPLES
     else:
         print("Generating Tasks...")
-        task_output = await TaskGenerationPipeline(task_input).generate()
-        tasks = task_output.tasks
-        print(f"Tasks generated successfully in {task_output.total_phase_time}")
+        tasks = await TaskGenerationPipeline(web_project=demo_project, config=config).generate_tasks_for_url(demo_project.frontend_url)
     return tasks
 
 
@@ -148,7 +151,9 @@ async def main():
     # ---------------------------
     # 2. Process Each Demo Web Project.
     # ---------------------------
-    for demo_project in demo_web_projects:
+    demo_web_projects: List[WebProject] = await initialize_demo_webs_projects()
+
+    for index, demo_project in enumerate(demo_web_projects):
         tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=True)
         for task in tasks:
             print(task)

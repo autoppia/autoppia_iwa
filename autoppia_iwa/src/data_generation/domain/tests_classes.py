@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 from autoppia_iwa.config.config import OPENAI_API_KEY, OPENAI_MAX_TOKENS, OPENAI_MODEL, OPENAI_TEMPERATURE, PROJECT_BASE_DIR
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
+from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.llms.infrastructure.llm_service import OpenAIService
 
 
@@ -85,6 +85,22 @@ class BaseTaskTest(BaseModel, ITest):
                 raise ValueError(f"Unsupported test configuration: {config}")
 
         return assigned_tests
+
+
+class CheckUrlTest(BaseTaskTest):
+    """
+    Test class to find specific keywords in the current HTML content.
+    """
+
+    url:str
+    description: str = Field(
+        default="Check url",
+        description="Description of the test",
+    )
+    test_type: Literal["frontend"] = "frontend"
+
+    def _execute_test(self, test_context: BrowserSnapshot) -> bool:
+        return test_context.current_url == self.url
 
 
 class FindInHtmlTest(BaseTaskTest):
@@ -170,12 +186,12 @@ class JudgeBaseOnHTML(BaseTaskTest):
     class Config:
         arbitrary_types_allowed = True
 
-    def __init__(self, llm_service: ILLMService = Provide[DIContainer.llm_service], **data):
+    def __init__(self, llm_service: ILLM = Provide[DIContainer.llm_service], **data):
         super().__init__(**data)
         self.llm_service = llm_service
 
     def _execute_test(self, test_context: BrowserSnapshot) -> bool:
-        from autoppia_iwa.src.shared.utils import clean_html
+        from autoppia_iwa.src.shared.web_utils import clean_html
 
         html_before = clean_html(test_context.prev_html)
         html_after = clean_html(test_context.current_html)

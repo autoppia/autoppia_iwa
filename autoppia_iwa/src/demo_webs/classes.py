@@ -9,9 +9,9 @@ class WebProject(BaseModel):
     name: str = Field(..., min_length=1, description="Name of the web project")
     backend_url: str = Field(..., description="URL of the backend server")
     frontend_url: str = Field(..., description="URL of the frontend application")
-    is_real_web: bool = False
+    is_web_real: bool = False
+    domain_analysis:Optional[DomainAnalysis] = None
     events: List[str] = Field(default_factory=list, description="List of events to monitor")
-    web_analysis:Optional[DomainAnalysis] = None
     urls:List[str] = []
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
 

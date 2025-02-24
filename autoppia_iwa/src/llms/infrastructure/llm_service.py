@@ -1,185 +1,176 @@
-from typing import Any, Dict, List, Optional
-import requests
-from openai import OpenAI
 
-from autoppia_iwa.src.llms.domain.interfaces import ILLMService
-from autoppia_iwa.src.llms.domain.openai.classes import BaseOpenAIResponseFormat, OpenAILLMModelMixin
+# llms.py
+
+from typing import Dict, List, Optional
+
+import httpx
+from openai import OpenAI, AsyncOpenAI
+
+from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
 
 
-class BaseLLMService(ILLMService):
+# In llms.py
+
+class OpenAIService(ILLM):
     """
-    Base class for LLM Task Generators, providing common HTTP request functionality.
+    Simple OpenAI-based LLM.
+    Uses OpenAI (sync) and AsyncOpenAI (async) clients.
     """
 
-    def make_request(
+    def __init__(self, config: LLMConfig, api_key: str):
+        self.config = config
+        self.sync_client = OpenAI(api_key=api_key)
+        self.async_client = AsyncOpenAI(api_key=api_key)
+
+    def _prepare_json_schema(self, schema: Dict) -> Dict:
+        """
+        Prepares the JSON schema for OpenAI's format requirements.
+        """
+        return {
+            "type": "object",
+            "properties": {
+                "schema": {
+                    "type": "string",
+                    "enum": ["JSON_SCHEMA"]
+                },
+                "response": schema
+            },
+            "required": ["schema", "response"]
+        }
+
+    def predict(
         self,
-        message_payload: List[Dict[str, str]],
-        llm_kwargs: Optional[Dict[str, Any]] = None,
-        chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+        messages: List[Dict[str, str]],
         json_format: bool = False,
-        schema: str = None,
-    ) -> Any:
-        raise NotImplementedError("Subclasses must implement this method.")
-
-    @staticmethod
-    def _make_http_request(url: str, payload: Dict, headers: Optional[Dict] = None, method: str = "post") -> Dict:
-        """
-        Makes an HTTP request.
-
-        Args:
-            url (str): The target URL.
-            payload (Dict): The request payload.
-            headers (Optional[Dict]): HTTP headers.
-            method (str): HTTP method ('post' or 'get').
-
-        Returns:
-            Dict: JSON response from the server or error details.
-        """
+        schema: Optional[Dict] = None
+    ) -> str:
         try:
-            if method.lower() == "post":
-                response = requests.post(url, headers=headers, json=payload)
-            elif method.lower() == "get":
-                response = requests.get(url, headers=headers)
-            else:
-                raise ValueError(f"Unsupported HTTP method: {method}")
+            params = {
+                "model": self.config.model,
+                "messages": messages,
+                "max_tokens": self.config.max_tokens,
+                "temperature": self.config.temperature,
+            }
+            if json_format and schema:
+                params["response_format"] = {
+                    "type": "json_object"
+                }
+                # Add system message for JSON structure
+                messages.insert(0, {
+                    "role": "system",
+                    "content": f"You must respond with JSON that matches this schema: {schema}"
+                })
+                params["messages"] = messages
 
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            print(f"Error in _make_http_request: {e}")
-            return {"error": str(e)}
+            response = self.sync_client.chat.completions.create(**params)
+            return response.choices[0].message.content
+        except Exception as e:
+            raise RuntimeError(f"OpenAI Sync Error: {e}")
+
+    async def async_predict(
+        self,
+        messages: List[Dict[str, str]],
+        json_format: bool = False,
+        schema: Optional[Dict] = None
+    ) -> str:
+        try:
+            params = {
+                "model": self.config.model,
+                "messages": messages,
+                "max_tokens": self.config.max_tokens,
+                "temperature": self.config.temperature,
+            }
+            if json_format and schema:
+                params["response_format"] = {
+                    "type": "json_object"
+                }
+                # Add system message for JSON structure
+                messages.insert(0, {
+                    "role": "system",
+                    "content": f"You must respond with JSON that matches this schema: {schema}"
+                })
+                params["messages"] = messages
+
+            response = await self.async_client.chat.completions.create(**params)
+            return response.choices[0].message.content
+        except Exception as e:
+            raise RuntimeError(f"OpenAI Async Error: {e}")
 
 
-class LocalLLMService(BaseLLMService):
+class LocalLLMService(ILLM):
     """
-    Local LLM Service. If json_format is True, the request payload will include
-    a flag ('force_json': True) to enforce JSON formatting in the response.
+    Simple local (self-hosted) LLM that communicates via HTTP.
+    Uses HTTPX for sync and async calls.
     """
 
-    def __init__(self, endpoint_url: str, threshold: int = 100):
+    def __init__(self, config: LLMConfig, endpoint_url: str):
+        self.config = config
         self.endpoint_url = endpoint_url
 
-    def make_request(
+    def predict(
         self,
-        message_payload: List[Dict[str, str]],
-        llm_kwargs: Optional[Dict[str, Any]] = None,
-        chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+        messages: List[Dict[str, str]],
         json_format: bool = False,
-        schema: str = None,
-    ) -> Any:
-        print("LLM REQUEST SENT")
-        payload = {"input": {"text": message_payload}}
-        if llm_kwargs:
-            payload["input"]["llm_kwargs"] = llm_kwargs
-        if chat_completion_kwargs:
-            payload["input"]["chat_completion_kwargs"] = chat_completion_kwargs
-        # Add flag to force JSON formatting if required.
-        if json_format:
-            payload["input"]["force_json"] = True
-
-        response = self._make_http_request(self.endpoint_url, payload)
-        print("LLM REQUEST Response")
-        return response.get("output", {"error": "No output from local model"})
-
-    async def async_make_request(
-        self,
-        message_payload: List[Dict[str, str]],
-        llm_kwargs: Optional[Dict[str, Any]] = None,
-        chat_completion_kwargs: Optional[Dict[str, Any]] = None,
-        json_format: bool = False,
-        schema: str = None,
-    ) -> Any:
-        payload = {"input": {"text": message_payload}}
-        if llm_kwargs:
-            payload["input"]["llm_kwargs"] = llm_kwargs
-        if chat_completion_kwargs:
-            payload["input"]["chat_completion_kwargs"] = chat_completion_kwargs
-        if json_format:
-            payload["input"]["force_json"] = True
-
-        response = self._make_http_request(self.endpoint_url, payload)
-        return response.get("output", {"error": "No output from local model"})
-
-
-class OpenAIService(BaseLLMService, OpenAILLMModelMixin):
-    """
-    Service for interacting with OpenAI's GPT models.
-    When json_format is True, and no custom response_format is provided via chat_completion_kwargs,
-    a default JSON formatting instruction is added.
-    """
-
-    def __init__(self, api_key: str, model: str, max_tokens: int = 2000, temperature: float = 0.7):
-        """
-        Initialize the OpenAI Service.
-
-        Args:
-            model (str): The GPT model to use, e.g., "gpt-4" or "gpt-3.5-turbo".
-            max_tokens (int): Maximum number of tokens for the response.
-            temperature (float): Sampling temperature for randomness.
-        """
-        self._model = model
-        self.max_tokens = max_tokens
-        self.temperature = temperature
-        self._messages: List[dict] = []
-        self.client = OpenAI(api_key=api_key)
-
-    async def async_make_request(
-        self,
-        message_payload: List[Dict[str, str]],
-        llm_kwargs: Optional[Dict[str, Any]] = None,
-        chat_completion_kwargs: Optional[Dict[str, Any]] = None,
-        json_format: bool = False,
-        schema: str = None,
+        schema: Optional[Dict] = None
     ) -> str:
-        parameters = {
-            "model": self._model,
-            "messages": message_payload,
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature,
-        }
-        if chat_completion_kwargs:
-            parameters["temperature"] = chat_completion_kwargs.get("temperature", self.temperature)
-            response_format = chat_completion_kwargs.get("response_format", {})
-            if response_format:
-                response_format_model = BaseOpenAIResponseFormat(**response_format)
-                parameters["response_format"] = response_format_model.model_dump()
-
-        # If forcing JSON and no response_format is set, add a default JSON formatting instruction.
-        if json_format and "response_format" not in parameters:
-            parameters["response_format"] = {"force_json": True}
-
         try:
-            response = self.client.chat.completions.create(**parameters)
-            return response.choices[0].message.content
-        except Exception as e:
-            raise RuntimeError(f"Error with OpenAI API: {e}")
+            with httpx.Client() as client:
+                payload = {
+                    "messages": messages,
+                    "temperature": self.config.temperature,
+                    "max_tokens": self.config.max_tokens,
+                }
+                if json_format:
+                    payload["json_format"] = True
+                if schema:
+                    payload["schema"] = schema
 
-    def make_request(
+                response = client.post(self.endpoint_url, json=payload)
+                response.raise_for_status()
+                return response.json().get("output", "")
+        except httpx.HTTPError as e:
+            raise RuntimeError(f"Local LLM Sync Error: {e}")
+
+    async def async_predict(
         self,
-        message_payload: List[Dict[str, str]],
-        llm_kwargs: Optional[Dict[str, Any]] = None,
-        chat_completion_kwargs: Optional[Dict[str, Any]] = None,
+        messages: List[Dict[str, str]],
         json_format: bool = False,
-        schema: str = None,
+        schema: Optional[Dict] = None
     ) -> str:
-        parameters = {
-            "model": self._model,
-            "messages": message_payload,
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature,
-        }
-        if chat_completion_kwargs:
-            parameters["temperature"] = chat_completion_kwargs.get("temperature", self.temperature)
-            response_format = chat_completion_kwargs.get("response_format", {})
-            if response_format:
-                response_format_model = BaseOpenAIResponseFormat(**response_format)
-                parameters["response_format"] = response_format_model.model_dump()
+        async with httpx.AsyncClient() as client:
+            try:
+                payload = {
+                    "messages": messages,
+                    "temperature": self.config.temperature,
+                    "max_tokens": self.config.max_tokens,
+                }
+                if json_format:
+                    payload["format"] = "json"
+                if schema:
+                    payload["schema"] = schema
 
-        if json_format and "response_format" not in parameters:
-            parameters["response_format"] = {"force_json": True}
+                response = await client.post(self.endpoint_url, json=payload)
+                response.raise_for_status()
+                return response.json().get("output", "")
+            except httpx.HTTPError as e:
+                raise RuntimeError(f"Local LLM Async Error: {e}")
 
-        try:
-            response = self.client.chat.completions.create(**parameters)
-            return response.choices[0].message.content
-        except Exception as e:
-            raise RuntimeError(f"Error with OpenAI API: {e}")
+
+class LLMFactory:
+    """
+    Simple factory to build the right LLM implementation
+    based on the llm_type.
+    """
+
+    @staticmethod
+    def create_llm(
+        llm_type: str,
+        config: LLMConfig,
+        **kwargs
+    ) -> ILLM:
+        if llm_type.lower() == "openai":
+            return OpenAIService(config, api_key=kwargs.get("api_key"))
+        elif llm_type.lower() == "local":
+            return LocalLLMService(config, endpoint_url=kwargs.get("endpoint_url"))
+        else:
+            raise ValueError(f"Unsupported LLM type: {llm_type}")
