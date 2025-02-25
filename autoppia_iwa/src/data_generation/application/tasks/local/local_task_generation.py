@@ -20,16 +20,20 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 
 class LocalTaskGenerationPipeline:
     def __init__(self, web_project: WebProject, llm_service: "ILLM" = Provide[DIContainer.llm_service]):
-        self.web_project:WebProject = web_project
-        self.llm_service:ILLM = llm_service
+        self.web_project: WebProject = web_project
+        self.llm_service: ILLM = llm_service
 
     async def generate(self, page_url: str) -> List["Task"]:
+        # Fetch the HTML and screenshot
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(page_url)
         interactive_elems = detect_interactive_elements(clean_html)
 
+        # Phase 1: Draft generation
         draft_list = await self._phase1_generate_draft_tasks(
             clean_html, screenshot_desc, interactive_elems
         )
+
+        # Phase 2: Three successive filters
         feasible_list = await self._phase2_filter(
             draft_list, PHASE2_FEASIBILITY_FILTER_PROMPT,
             clean_html, screenshot_desc, interactive_elems
@@ -43,6 +47,7 @@ class LocalTaskGenerationPipeline:
             clean_html, screenshot_desc, interactive_elems
         )
 
+        # Construct final tasks
         final_tasks = [
             self._assemble_task(
                 url=page_url,
@@ -64,13 +69,20 @@ class LocalTaskGenerationPipeline:
         screenshot_text: str,
         interactive_elems: Dict
     ) -> List[dict]:
+        """
+        Phase 1: Generate a draft list of tasks based on the system prompt + user context.
+        """
+        # Combine local prompts
         system_prompt = LOCAL_TASKS_CONTEXT_PROMPT + PHASE1_GENERATION_SYSTEM_PROMPT
+
+        # User message with truncated HTML + screenshot text + interactive elements
         user_msg = (
             f"clean_html:\n{html_text[:1500]}\n\n"
             f"screenshot_description:\n{screenshot_text}\n\n"
             f"interactive_elements:\n{json.dumps(interactive_elems, indent=2)}"
         )
 
+        # JSON schema for the response
         schema = {
             "type": "array",
             "items": {
@@ -84,6 +96,7 @@ class LocalTaskGenerationPipeline:
         }
 
         try:
+            # Request the LLM to generate tasks (in JSON format)
             resp_text = await self.llm_service.async_predict(
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -93,11 +106,23 @@ class LocalTaskGenerationPipeline:
                 schema=schema
             )
 
+            # Parse and handle different possible JSON structures
             try:
                 data = json.loads(resp_text)
-                if isinstance(data, dict) and data.get("type") == "array" and "items" in data:
-                    data = data["items"]
+                if isinstance(data, dict):
+                    # If there's a 'result' key containing the actual list
+                    if 'result' in data and isinstance(data['result'], list):
+                        data = data['result']
+                    # Or if it has the JSON schema structure
+                    elif data.get("type") == "array" and "items" in data:
+                        data = data["items"]
+                    else:
+                        # Fallback: wrap non-list data in a list if it's a dict
+                        data = [data]
+
+                # At this point, data should be a list
                 draft_list = DraftTaskList.model_validate(data)
+
                 validated_tasks = []
                 for item in draft_list.root:
                     validated_tasks.append({
@@ -120,16 +145,31 @@ class LocalTaskGenerationPipeline:
         screenshot_text: str,
         interactive_elems: Dict
     ) -> List[dict]:
+        """
+        Phase 2: Filter out tasks in 3 steps (feasibility, success criteria, concept).
+        Each step uses a system prompt and the current tasks as the user context.
+        The LLM is expected to respond with an array of objects,
+        each specifying "decision" (keep|discard), "prompt", and "success_criteria".
+        """
         if not tasks:
             return []
+
+        # Convert the current list of tasks to JSON
         tasks_json = json.dumps(tasks, indent=2)
+
+        # Combine the system prompt
+        system_prompt = LOCAL_TASKS_CONTEXT_PROMPT + filter_prompt
+
+        # The user message provides the truncated HTML, screenshot text,
+        # interactive elements, and the current tasks to be filtered
         user_msg = (
             f"clean_html:\n{html_text[:1500]}\n\n"
             f"screenshot_description:\n{screenshot_text}\n\n"
             f"interactive_elements:\n{json.dumps(interactive_elems, indent=2)}\n\n"
             f"Current tasks:\n{tasks_json}"
         )
-        system_prompt = LOCAL_TASKS_CONTEXT_PROMPT + filter_prompt
+
+        # Define the expected JSON schema
         schema = {
             "type": "array",
             "items": {
@@ -142,7 +182,9 @@ class LocalTaskGenerationPipeline:
                 "required": ["decision", "prompt"]
             }
         }
+
         try:
+            # Request the LLM to filter the tasks
             resp_text = await self.llm_service.async_predict(
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -157,15 +199,20 @@ class LocalTaskGenerationPipeline:
 
                 # Handle different response formats
                 if isinstance(data, dict):
-                    # If the response is a dict, check if it has a 'result' key containing the list
+                    # If the response is a dict and has a "result" key
                     if 'result' in data and isinstance(data['result'], list):
                         data = data['result']
                     # Or if it has the JSON schema structure
                     elif data.get("type") == "array" and "items" in data:
                         data = data["items"]
+                    else:
+                        # Fallback: wrap non-list data in a list if it's a dict
+                        data = [data]
 
-                # Now data should be a list, validate it
+                # Now data should be a list. Validate it.
                 filter_list = FilterTaskList.model_validate(data)
+
+                # Keep tasks with decision == "keep"
                 kept = []
                 for item in filter_list.root:
                     if item.decision.strip().lower() == "keep":
@@ -174,11 +221,14 @@ class LocalTaskGenerationPipeline:
                             "success_criteria": item.success_criteria or ""
                         })
                 return kept
+
             except ValidationError as ve:
                 print(f"Pydantic validation error (Phase 2): {ve}")
+                # If there's a validation error, return the original tasks unfiltered
                 return tasks
         except Exception as e:
             print(f"Error in filter process: {e}")
+            # Return the original tasks if something else breaks
             return tasks
 
     def _assemble_task(
@@ -190,8 +240,11 @@ class LocalTaskGenerationPipeline:
         screenshot: bytes,
         screenshot_desc: str,
         success_criteria: str,
-        relevant_data:str
+        relevant_data: str
     ) -> "Task":
+        """
+        Assembles a final Task object from the filtered task data.
+        """
         return Task(
             type="local",
             prompt=prompt,
@@ -202,4 +255,5 @@ class LocalTaskGenerationPipeline:
             screenshot=str(transform_image_into_base64(screenshot)),
             success_criteria=success_criteria,
             specifications=BrowserSpecification(),
-            relevant_data=relevant_data)
+            relevant_data=relevant_data
+        )

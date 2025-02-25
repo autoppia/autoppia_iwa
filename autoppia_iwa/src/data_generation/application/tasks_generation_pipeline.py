@@ -75,7 +75,7 @@ class TaskGenerationPipeline:
                 output.tasks.append(t)
 
             test_pipeline = TestGenerationPipeline(llm_service=self.llm_service, web_project=self.web_project)
-            all_tasks = await test_pipeline.add_tests_to_tasks(all_tasks)
+            output.tasks = await test_pipeline.add_tests_to_tasks(output.tasks)
 
             output.total_phase_time = (datetime.now() - start_time).total_seconds()
             logger.info("Task generation completed in {} seconds", output.total_phase_time)
