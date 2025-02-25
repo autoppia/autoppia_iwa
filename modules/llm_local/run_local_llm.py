@@ -133,14 +133,8 @@ def handler():
     counters["total_requests"] += 1
     request_number = counters["total_requests"]  # This is our per-request number
 
-    # Debug: Print raw incoming request data
-    print(f"\n[handler] Request #{request_number}")
-    print("[handler] Raw request data:", request.data)
-
     try:
         data = request.json or {}
-        # Debug: Print parsed JSON body
-        print("[handler] Parsed JSON data:", data)
 
         # Extract the fields
         messages = data.get("messages", [])
