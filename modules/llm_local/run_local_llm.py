@@ -26,7 +26,7 @@ model = AutoModelForCausalLM.from_pretrained(
 model.eval()
 
 # ---------------------------------------------------------------------------
-# Global counters
+# Global counters (optional)
 # ---------------------------------------------------------------------------
 counters = {
     "total_requests": 0,
@@ -36,26 +36,17 @@ counters = {
 }
 
 
-def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None):
-    if generation_kwargs is None:
-        generation_kwargs = {}
-
-    chat_format = generation_kwargs.pop("chat_format", None)
-    response_format = generation_kwargs.pop("response_format", None)
-
+def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
+    """
+    Generate text using Qwen with the given parameters.
+    If json_format=True, attempts to repair and return valid JSON.
+    If schema is provided, instruct the model to strictly follow it.
+    """
     try:
-        # Prepare messages
-        if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
-            messages = message_payload
-        else:
-            messages = [
-                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
-                {"role": "user", "content": str(message_payload)}
-            ]
-
-        # Insert JSON schema instruction if needed
-        if response_format and response_format.get("type") == "json_object":
-            schema_text = json.dumps(response_format.get("schema", {}), indent=2)
+        # If we have a JSON schema, prepend an instruction to produce valid JSON
+        if json_format and schema:
+            # Insert system message at the start
+            schema_text = json.dumps(schema, indent=2)
             messages.insert(
                 0,
                 {
@@ -68,18 +59,22 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 },
             )
 
+        # Convert messages to a single text prompt using Qwen's helper
         text_prompt = tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
-            chat_format=chat_format
+            # We can omit chat_format or set it to "default", depending on preference
+            chat_format=None
         )
 
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
+
+        # Generate
         generated_ids = model.generate(
             **model_inputs,
-            max_new_tokens=max_new_tokens,
-            **generation_kwargs
+            max_new_tokens=max_tokens,
+            temperature=temperature
         )
 
         # Subtract the prompt tokens so we only decode the newly generated tokens
@@ -90,10 +85,9 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
 
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-        # JSON validation & repair if requested
-        if response_format and response_format.get("type") == "json_object":
+        # If JSON format is requested, try to validate or repair
+        if json_format:
             counters["json_requests"] += 1
-
             try:
                 json.loads(response_text)
                 counters["json_correctly_formatted"] += 1
@@ -104,12 +98,14 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                     response_text = json.dumps(repaired_obj, ensure_ascii=False)
                     counters["json_repair_succeeded"] += 1
                 except:
+                    # If repair also fails, we return as-is
                     pass
 
         return response_text
 
     except Exception as e:
         return f"Generation error: {e}"
+
     finally:
         gc.collect()
 
@@ -119,28 +115,22 @@ def handler():
     counters["total_requests"] += 1
 
     try:
-        inputs = request.json or {}
-        input_data = inputs.get("input", {})
+        data = request.json or {}
 
-        message_payload = input_data.get("text", "")
-        if not message_payload:
-            raise ValueError("Input 'text' is missing or empty")
+        # Extract the fields as sent by LocalLLMService
+        messages = data.get("messages", [])
+        temperature = float(data.get("temperature", 0.7))
+        max_tokens = int(data.get("max_tokens", 256))
+        json_format = bool(data.get("json_format", False))
+        schema = data.get("schema", None)
 
-        max_new_tokens = int(input_data.get("ctx", 10000))
-        base_generation_kwargs = input_data.get("generation_kwargs", {})
-        llm_kwargs = input_data.get("llm_kwargs", {})
-        chat_completion_kwargs = input_data.get("chat_completion_kwargs", {})
-
-        merged_generation_kwargs = {
-            **base_generation_kwargs,
-            **llm_kwargs,
-            **chat_completion_kwargs
-        }
-
+        # Generate the response
         output = generate_data(
-            message_payload=message_payload,
-            max_new_tokens=max_new_tokens,
-            generation_kwargs=merged_generation_kwargs,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            json_format=json_format,
+            schema=schema
         )
         return {"output": output}
 
@@ -149,7 +139,7 @@ def handler():
     except Exception as e:
         return {"error": str(e)}, 500
     finally:
-        # Only print the counters
+        # Print counters for debugging
         print("=== Current Counter Stats ===")
         print(f"Total requests answered: {counters['total_requests']}")
         print(f"JSON requests: {counters['json_requests']}")
