@@ -49,13 +49,13 @@ class ConcurrentEvaluator(IEvaluator):
         # Cache for random clicker results by task ID
         self._random_clicker_cache: Dict[str, Tuple[List[int], float]] = {}
 
-    async def evaluate_single_task(self, task_solution: TaskSolution) -> EvaluationResult:
-        return await self._evaluate_single_task(task_solution)
+    async def evaluate_single_task(self, task:Task, task_solution: TaskSolution) -> EvaluationResult:
+        return await self._evaluate_single_task(task, task_solution)
 
-    async def evaluate_all_tasks(self, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
-        return await self._group_and_evaluate_tasks(task_solutions)
+    async def evaluate_all_tasks(self, task:Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
+        return await self._group_and_evaluate_tasks(task, task_solutions)
 
-    async def _group_and_evaluate_tasks(self, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
+    async def _group_and_evaluate_tasks(self, task:Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         start_time = time.time()
         grouped_tasks = defaultdict(list)
         if self.config.enable_grouping_tasks:
@@ -120,8 +120,11 @@ class ConcurrentEvaluator(IEvaluator):
             print("Error generating hash for actions.")
             return ""
 
-    async def _evaluate_single_task(self, task_solution: TaskSolution, delay: float = None) -> EvaluationResult:
-        task = task_solution.task
+    async def _evaluate_single_task(self, task: Task, task_solution: TaskSolution, delay: float = None) -> EvaluationResult:
+        """
+        Evaluates a single task solution against the original task.
+        """
+        # Use original_task instead of task_solution.task
         actions = task_solution.actions
         web_agent_id = task_solution.web_agent_id
         is_web_real = task.is_web_real
