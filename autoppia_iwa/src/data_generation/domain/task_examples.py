@@ -10,19 +10,14 @@ TASK_EXAMPLES = [
         specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
         tests=[
             CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='login'),
-            CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/login')
+            CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/login'),
         ],
-        relevant_data={
-            'Authorization': {
-                'email': 'admin@jobsapp.com',
-                'password': 'admin123'
-            }
-        },
+        relevant_data={'Authorization': {'email': 'admin@jobsapp.com', 'password': 'admin123'}},
         milestones=None,
         web_analysis=None,
         html='',
         screenshot=None,
-        is_web_real=False
+        is_web_real=False,
     ),
     Task(
         id='002c8e40-226b-412f-a987-26599b74ae41',
@@ -31,19 +26,14 @@ TASK_EXAMPLES = [
         specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
         tests=[
             FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['about us', 'mission', 'vision', 'team']),
-            CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/about/')
+            CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/about/'),
         ],
-        relevant_data={
-            'Authorization': {
-                'email': 'admin@jobsapp.com',
-                'password': 'admin123'
-            }
-        },
+        relevant_data={'Authorization': {'email': 'admin@jobsapp.com', 'password': 'admin123'}},
         milestones=None,
         web_analysis=None,
         html='',
         screenshot=None,
-        is_web_real=False
+        is_web_real=False,
     ),
     # Task(
     #     id='a64ad524-5f79-4dbf-ae1c-9bfbb9d25a25',

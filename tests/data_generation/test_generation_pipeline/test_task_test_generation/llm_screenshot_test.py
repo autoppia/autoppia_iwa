@@ -15,13 +15,16 @@ from autoppia_iwa.src.llms.infrastructure.llm_service import OpenAIService
 
 
 class TestOpinionBaseOnScreenshot(unittest.TestCase):
-    def setUp(self):
-        self.llm_service = OpenAIService(api_key=OPENAI_API_KEY, model=OPENAI_MODEL)
-        self.test_instance = OpinionBaseOnScreenshot(task="Verify button click effect", llm_service=self.llm_service)
-        # Create black and white blocks
-        black_block_base64 = self.create_base64_encoded_block((0, 0, 0))
-        white_block_base64 = self.create_base64_encoded_block((255, 255, 255))
+    """Unit tests for OpinionBaseOnScreenshot, validating LLM-based screenshot analysis."""
 
+    @classmethod
+    def setUpClass(cls):
+        """Initialize LLM service and test instance before running tests."""
+        cls.llm_service = OpenAIService(api_key=OPENAI_API_KEY, model=OPENAI_MODEL)
+        cls.test_instance = OpinionBaseOnScreenshot(task="Verify button click effect", llm_service=cls.llm_service)
+
+    def setUp(self):
+        """Set up mock browser snapshot with before-and-after screenshots."""
         self.mock_snapshot = BrowserSnapshot(
             iteration=1,
             action=ClickAction(selector=Selector(type="xpathSelector", value="//button[text()='Click Me']")),
@@ -30,22 +33,31 @@ class TestOpinionBaseOnScreenshot(unittest.TestCase):
             backend_events=[],
             timestamp=datetime.fromisoformat("2025-02-10T12:00:00"),
             current_url="http://example.com",
-            screenshot_before=black_block_base64,
-            screenshot_after=white_block_base64,
+            screenshot_before=self._create_base64_encoded_block((0, 0, 0)),  # Black block
+            screenshot_after=self._create_base64_encoded_block((255, 255, 255)),  # White block
         )
 
     @staticmethod
-    def create_base64_encoded_block(color: tuple):
-        block = np.full((10, 10, 3), color, dtype=np.uint8)
-        img = Image.fromarray(block)
+    def _create_base64_encoded_block(color: tuple) -> str:
+        """Create a base64-encoded image block of a given color."""
+        img = Image.fromarray(np.full((10, 10, 3), color, dtype=np.uint8))
         buffer = BytesIO()
         img.save(buffer, format="PNG")
-        buffer.seek(0)
         return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-    def test_screenshot(self):
+    def test_screenshot_analysis(self):
+        """Test if the LLM correctly analyzes the screenshot changes."""
         result = self.test_instance.execute_test(self.mock_snapshot)
-        print(result)
+        print(f"LLM Screenshot Analysis Result: {result}")
+
+        self.assertIsInstance(result, bool, f"Expected a boolean result, but got {type(result)}")
+        # Adjust the assertion below if you expect a specific outcome
+        self.assertTrue(isinstance(result, bool), "LLM did not return a valid boolean.")
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up resources after all tests."""
+        cls.llm_service = None
 
 
 if __name__ == "__main__":

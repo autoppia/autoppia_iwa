@@ -12,13 +12,13 @@ from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 app = AppBootstrap()
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"),ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080)]
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080)]
 
 # ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=8080) RandomClickerWebAgent(name="Random-clicker"),A
 
@@ -43,7 +43,7 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
 
         # Prepare evaluator input and configuration.
         evaluator_input = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(current_url=task.url, save_results_in_db=False)
+        evaluator_config = EvaluatorConfig(save_results_in_db=False)
         evaluator = ConcurrentEvaluator(evaluator_config)
 
         # Evaluate the task solution.
@@ -77,7 +77,7 @@ async def generate_tasks_for_project(demo_project, generate_new_tasks=True):
     If TASKS is provided, it will be used. Otherwise, tasks are generated
     through the TaskGenerationPipeline.
     """
-    task_input = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False,number_of_prompts_per_task=3)
+    task_input = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False, number_of_prompts_per_task=3)
     if not generate_new_tasks and TASK_EXAMPLES:
         tasks = TASK_EXAMPLES
     else:

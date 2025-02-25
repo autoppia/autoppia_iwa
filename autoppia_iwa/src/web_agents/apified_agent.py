@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional
 
 import aiohttp
 
@@ -14,7 +15,7 @@ class ApifiedWebAgent(IWebAgent):
     Calls a remote /solve_task endpoint and rebuilds a TaskSolution.
     """
 
-    def __init__(self, host: str, port: int, id: str | None = None, name: str | None = None, timeout=60):
+    def __init__(self, host: str, port: int, id: Optional[str] = None, name: Optional[str] = None, timeout: int = 60):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
         self.base_url = f"http://{host}:{port}"
@@ -26,6 +27,7 @@ class ApifiedWebAgent(IWebAgent):
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
                 async with session.post(f"{self.base_url}/solve_task", json=task.nested_model_dump()) as response:
+                    response.raise_for_status()  # Raises an exception for HTTP errors
                     response_json = await response.json()
 
                     # Extract data

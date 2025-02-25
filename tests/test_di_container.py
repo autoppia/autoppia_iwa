@@ -14,4 +14,4 @@ class TestDIContainer(containers.DeclarativeContainer):
 
     @staticmethod
     def _assign_agent() -> ApifiedWebAgent:
-        return ApifiedWebAgent(name=AGENT_NAME, host=AGENT_HOST, port=AGENT_PORT)
+        return ApifiedWebAgent(name=AGENT_NAME, host=AGENT_HOST, port=AGENT_PORT, timeout=120)

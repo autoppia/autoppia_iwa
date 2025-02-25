@@ -1,12 +1,11 @@
 import argparse
 import gc
 import json
-from json_repair import repair_json
 
 from flask import Flask, request
 from flask_cors import CORS
+from json_repair import repair_json
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -18,22 +17,13 @@ MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
 # Load tokenizer & model
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    torch_dtype="auto",
-    device_map="auto"
-)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype="auto", device_map="auto")
 model.eval()
 
 # ---------------------------------------------------------------------------
 # Global counters
 # ---------------------------------------------------------------------------
-counters = {
-    "total_requests": 0,
-    "json_requests": 0,
-    "json_correctly_formatted": 0,
-    "json_repair_succeeded": 0
-}
+counters = {"total_requests": 0, "json_requests": 0, "json_correctly_formatted": 0, "json_repair_succeeded": 0}
 
 
 def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None):
@@ -48,10 +38,7 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
         if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
             messages = message_payload
         else:
-            messages = [
-                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
-                {"role": "user", "content": str(message_payload)}
-            ]
+            messages = [{"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."}, {"role": "user", "content": str(message_payload)}]
 
         # Insert JSON schema instruction if needed
         if response_format and response_format.get("type") == "json_object":
@@ -60,33 +47,17 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 0,
                 {
                     "role": "system",
-                    "content": (
-                        "You must respond in **valid JSON** that meets the following schema.\n\n"
-                        "Do not include extra keys. Output **only** the JSON object.\n\n"
-                        f"{schema_text}"
-                    ),
+                    "content": ("You must respond in **valid JSON** that meets the following schema.\n\n" "Do not include extra keys. Output **only** the JSON object.\n\n" f"{schema_text}"),
                 },
             )
 
-        text_prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            chat_format=chat_format
-        )
+        text_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, chat_format=chat_format)
 
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
-        generated_ids = model.generate(
-            **model_inputs,
-            max_new_tokens=max_new_tokens,
-            **generation_kwargs
-        )
+        generated_ids = model.generate(**model_inputs, max_new_tokens=max_new_tokens, **generation_kwargs)
 
         # Subtract the prompt tokens so we only decode the newly generated tokens
-        generated_ids = [
-            output_ids[len(input_ids):]
-            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
+        generated_ids = [output_ids[len(input_ids) :] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
 
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
@@ -97,13 +68,14 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
             try:
                 json.loads(response_text)
                 counters["json_correctly_formatted"] += 1
-            except:
+            except Exception as e:
+                print(e)
                 try:
                     repaired_text = repair_json(response_text, ensure_ascii=False)
                     repaired_obj = json.loads(repaired_text)
                     response_text = json.dumps(repaired_obj, ensure_ascii=False)
                     counters["json_repair_succeeded"] += 1
-                except:
+                except Exception:
                     pass
 
         return response_text
@@ -131,11 +103,7 @@ def handler():
         llm_kwargs = input_data.get("llm_kwargs", {})
         chat_completion_kwargs = input_data.get("chat_completion_kwargs", {})
 
-        merged_generation_kwargs = {
-            **base_generation_kwargs,
-            **llm_kwargs,
-            **chat_completion_kwargs
-        }
+        merged_generation_kwargs = {**base_generation_kwargs, **llm_kwargs, **chat_completion_kwargs}
 
         output = generate_data(
             message_payload=message_payload,
