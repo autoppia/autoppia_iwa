@@ -190,11 +190,10 @@ class ConcurrentEvaluator(IEvaluator):
 
         # Run tests on agent's actions
         test_results_matrix: List[List[TestResult]] = self._run_tests(task, execution_history)
-
-        print(f"=== Test Result Matrix for AgentID: {web_agent_id} ===")
+        print()
+        print(f"Test Result Matrix for AgentID: {web_agent_id} ===")
         for row in test_results_matrix:
             print([result.success for result in row])
-        print("===========================")
 
         # Get or compute random clicker performance
         random_passed_tests, random_clicker_score = await self._get_random_clicker_performance(task)
@@ -302,10 +301,9 @@ class ConcurrentEvaluator(IEvaluator):
         # Run tests on random clicker actions
         random_test_results = self._run_tests(task, random_execution_history)
 
-        print("=== Random Clicker Test Results Matrix ===")
+        print("Random Clicker Test Results Matrix")
         for row in random_test_results:
             print([result.success for result in row])
-        print("=========================================")
 
         # Calculate which tests the random clicker passed
         random_passed_tests = []

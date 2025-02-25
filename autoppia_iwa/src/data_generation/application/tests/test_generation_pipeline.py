@@ -45,18 +45,18 @@ class TestGenerationPipeline:
         if web_project.is_web_real:
             self.test_class_map = {
                 "CheckUrlTest": CheckUrlTest,
-                "FindInHtmlTest": FindInHtmlTest,
+                # "FindInHtmlTest": FindInHtmlTest,
                 "JudgeBaseOnHTML": JudgeBaseOnHTML,
-                "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
+                # "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
             }
         else:
             self.test_class_map = {
                 "CheckUrlTest": CheckUrlTest,
-                "FindInHtmlTest": FindInHtmlTest,
+                # "FindInHtmlTest": FindInHtmlTest,
                 "CheckEventTest": CheckEventTest,
                 "CheckPageViewEventTest": CheckPageViewEventTest,
                 "JudgeBaseOnHTML": JudgeBaseOnHTML,
-                "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
+                # "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
             }
 
         # Map for extra data needed for specific test classes
