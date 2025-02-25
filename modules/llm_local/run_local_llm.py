@@ -47,14 +47,6 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
 
     Returns (response_text, tokens_in, tokens_out).
     """
-    # Debug: Print out the parameters
-    print("\n[generate_data] Called with:")
-    print(f"  messages: {messages}")
-    print(f"  temperature: {temperature}")
-    print(f"  max_tokens: {max_tokens}")
-    print(f"  json_format: {json_format}")
-    print(f"  schema: {schema}")
-
     try:
         # If we have a JSON schema, prepend an instruction to produce valid JSON
         if json_format and schema:
