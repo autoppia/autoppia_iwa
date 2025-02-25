@@ -21,8 +21,8 @@ from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline
 
 
 app = AppBootstrap()
-# AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
-AGENTS: List[BaseAgent] = [ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
+iterations = 2  # total_tasks = tasks * iterations
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -84,7 +84,11 @@ async def generate_tasks_for_project(demo_project:WebProject, generate_new_tasks
         tasks = TASK_EXAMPLES
     else:
         print("Generating Tasks...")
-        tasks = await TaskGenerationPipeline(web_project=demo_project, config=config).generate_tasks_for_url(demo_project.frontend_url)
+        tasks = []
+        for i in range(iterations):
+            new_tasks = await TaskGenerationPipeline(web_project=demo_project, config=config).generate()
+            tasks.extend(new_tasks.tasks)
+
     return tasks
 
 

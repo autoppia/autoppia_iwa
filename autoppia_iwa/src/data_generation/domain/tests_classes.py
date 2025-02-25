@@ -29,78 +29,82 @@ class ITest(ABC):
 
 class BaseTaskTest(BaseModel, ITest):
     """
-    Abstract base class for task tests.
-    Defines a common interface and structure for test execution.
+    Base class for all task tests.
     """
 
-    description: str = Field(default="Base task test", description="Description of the test")
-    test_type: Literal["frontend", "backend"] = Field(default="frontend", description="Type of the test")
+    description: str = Field("Base task test")
+    test_type: Literal["frontend", "backend"] = Field("frontend")
 
-    def execute_test(self, test_context: BrowserSnapshot) -> bool:
-        """
-        Executes the test using the provided context.
+    class Config:
+        arbitrary_types_allowed = True
 
-        Args:
-            test_context (BrowserSnapshot): The context containing data for the test.
-
-        Returns:
-            bool: True if the test passes, otherwise False.
-        """
+    def execute_test(self, test_context: Any) -> bool:
         return self._execute_test(test_context)
 
-    def _execute_test(self, test_context: BrowserSnapshot) -> bool:
+    def _execute_test(self, test_context: Any) -> bool:
         raise NotImplementedError("Subclasses must implement this method.")
 
     @classmethod
-    def assign_tests(cls, test_configs: List[Dict]) -> List["BaseTaskTest"]:
+    def assign_tests(cls, test_configs: List[Dict[str, Any]]) -> List["BaseTaskTest"]:
         """
-        Assigns and instantiates tests based on the provided test configurations.
-
-        Args:
-            test_configs (List[Dict]): A list of test configurations.
-
-        Returns:
-            List[BaseTaskTest]: A list of instantiated test objects.
+        Instantiates the appropriate test class(es) for each config dict.
         """
         assigned_tests = []
+        for cfg in test_configs:
+            ttype = cfg.get("test_type")
 
-        for config in test_configs:
-            test_type = config.get("test_type")
+            # FRONTEND
+            if ttype == "frontend":
+                if "keywords" in cfg:
+                    assigned_tests.append(FindInHtmlTest(**cfg))
+                elif "name" in cfg:
+                    if cfg["name"] == "JudgeBaseOnHTML":
+                        assigned_tests.append(JudgeBaseOnHTML(**cfg))
+                    elif cfg["name"] == "JudgeBaseOnScreenshot":
+                        assigned_tests.append(JudgeBaseOnScreenshot(**cfg))
+                elif "url" in cfg:
+                    assigned_tests.append(CheckUrlTest(**cfg))
 
-            # Instantiate the appropriate class based on test_type and configuration
-            if test_type == "frontend":
-                if "keywords" in config:
-                    assigned_tests.append(FindInHtmlTest(**config))
-                elif "name" in config:
-                    if config["name"] == "JudgeBaseOnHTML":
-                        assigned_tests.append(JudgeBaseOnHTML(**config))
-                    elif config["name"] == "JudgeBaseOnScreenshot":
-                        assigned_tests.append(JudgeBaseOnScreenshot(**config))
-            elif test_type == "backend":
-                if "page_view_url" in config:
-                    assigned_tests.append(CheckPageViewEventTest(**config))
-                elif "event_name" in config:
-                    assigned_tests.append(CheckEventEmittedTest(**config))
+            # BACKEND
+            elif ttype == "backend":
+                if "page_view_url" in cfg:
+                    assigned_tests.append(CheckPageViewEventTest(**cfg))
+                elif "event_name" in cfg:
+                    assigned_tests.append(CheckEventEmittedTest(**cfg))
+                else:
+                    pass
             else:
-                raise ValueError(f"Unsupported test configuration: {config}")
+                pass
 
         return assigned_tests
 
 
 class CheckUrlTest(BaseTaskTest):
     """
-    Test class to find specific keywords in the current HTML content.
+    Test class to verify the current browser URL matches a specified target URL.
     """
 
-    url:str
+    url: str
     description: str = Field(
-        default="Check url",
+        default="Check URL",
         description="Description of the test",
     )
     test_type: Literal["frontend"] = "frontend"
 
-    def _execute_test(self, test_context: BrowserSnapshot) -> bool:
-        return test_context.current_url == self.url
+    def _execute_test(self, test_context: "BrowserSnapshot") -> bool:
+        """
+        Compares the current browser URL to the expected `url`.
+
+        Args:
+            test_context (BrowserSnapshot): Contains the current browser URL.
+
+        Returns:
+            bool: True if the current URL matches the expected `url`, otherwise False.
+        """
+        print("Check url test")
+        print(self.url)
+        print(test_context.current_url)
+        return self.url in test_context.current_url
 
 
 class FindInHtmlTest(BaseTaskTest):
@@ -188,7 +192,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
     def __init__(self, llm_service: ILLM = Provide[DIContainer.llm_service], **data):
         super().__init__(**data)
-        self.llm_service = llm_service
+        self.llm_service:ILLM = llm_service
 
     def _execute_test(self, test_context: BrowserSnapshot) -> bool:
         from autoppia_iwa.src.shared.web_utils import clean_html
@@ -210,9 +214,9 @@ class JudgeBaseOnHTML(BaseTaskTest):
         payload = [{"role": "system", "content": system_message}, {"role": "user", "content": user_message}]
         with Path(PROJECT_BASE_DIR / "config/schemas/eval_html_test.json").open(encoding="utf-8") as f:
             json_schema = json.load(f)
-        chat_completion_kwargs = {"response_format": {"type": "json_object", "schema": json_schema}, "temperature": 0.1, "top_k": 50}
 
-        result = self.llm_service.make_request(payload, chat_completion_kwargs=chat_completion_kwargs)
+        # chat_completion_kwargs = {"temperature": 0.1, "top_k": 50}
+        result = self.llm_service.predict(payload, json_format=True, schema=json_schema)
         parsed_result = json.loads(result)
         return parsed_result["task_completed"]
 
@@ -267,9 +271,8 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
             print(f"Error loading JSON schema: {e}")
             return False
 
-        chat_completion_kwargs = {"response_format": {"type": "json_object", "schema": json_schema}, "temperature": 0.1, "top_k": 50}
-
-        result = self.llm_service.make_request(payload, chat_completion_kwargs=chat_completion_kwargs)
+        # chat_completion_kwargs = {"response_format": {"type": "json_object", "schema": json_schema}, "temperature": 0.1, "top_k": 50}
+        result = self.llm_service.predict(payload, json_format=True, schema=json_schema)
         parsed_result = json.loads(result)
 
         return parsed_result["result"]

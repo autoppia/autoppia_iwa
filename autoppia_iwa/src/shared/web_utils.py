@@ -78,34 +78,83 @@ def clean_html(html_content: str) -> str:
     """
     Removes scripts, styles, hidden tags, inline event handlers, etc.,
     returning a 'clean' version of the DOM.
+    This version is exception resistant.
     """
-    soup = BeautifulSoup(html_content, "html.parser")
+    try:
+        soup = BeautifulSoup(html_content, "html.parser")
+    except Exception:
+        return ""
+
     # Remove scripts, styles, metas, links, noscript
-    for tag in soup(["script", "style", "noscript", "meta", "link"]):
-        tag.decompose()
-    # Remove HTML comments
-    for comment in soup.find_all(string=lambda t: isinstance(t, Comment)):
-        comment.extract()
-    # Remove hidden elements and inline events
-    for tag in soup.find_all(True):
-        if tag.has_attr("style") and tag["style"]:
-            style_lc = tag["style"].lower()
-            if "display: none" in style_lc or "visibility: hidden" in style_lc:
+    try:
+        for tag in soup(["script", "style", "noscript", "meta", "link"]):
+            try:
                 tag.decompose()
-                continue
-        if tag.has_attr("hidden"):
-            tag.decompose()
-            continue
-        # Remove inline event handlers + style/id/class
-        for attr in list(tag.attrs):
-            if attr.startswith("on") or attr in ["class", "id", "style"]:
-                del tag[attr]
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # Remove HTML comments
+    try:
+        for comment in soup.find_all(string=lambda t: isinstance(t, Comment)):
+            try:
+                comment.extract()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # Remove hidden elements and inline events
+    try:
+        for tag in soup.find_all(True):
+            try:
+                if tag.has_attr("style") and tag["style"]:
+                    try:
+                        style_lc = tag["style"].lower()
+                    except Exception:
+                        style_lc = ""
+                    if "display: none" in style_lc or "visibility: hidden" in style_lc:
+                        try:
+                            tag.decompose()
+                        except Exception:
+                            pass
+                        continue
+                if tag.has_attr("hidden"):
+                    try:
+                        tag.decompose()
+                    except Exception:
+                        pass
+                    continue
+                # Remove inline event handlers and style/id/class attributes
+                for attr in list(tag.attrs):
+                    if attr.startswith("on") or attr in ["class", "id", "style"]:
+                        try:
+                            del tag[attr]
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+    except Exception:
+        pass
+
     # Remove empty tags
-    for tag in soup.find_all():
-        if not tag.text.strip() and not tag.find_all():
-            tag.decompose()
-    clean_soup = soup.body if soup.body else soup
-    return clean_soup.prettify()
+    try:
+        for tag in soup.find_all():
+            try:
+                if not tag.text.strip() and not tag.find_all():
+                    tag.decompose()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # Return the cleaned HTML
+    try:
+        clean_soup = soup.body if soup.body else soup
+        return clean_soup.prettify()
+    except Exception:
+        return ""
 
 
 def detect_interactive_elements(cleaned_html: str) -> Dict[str, Any]:

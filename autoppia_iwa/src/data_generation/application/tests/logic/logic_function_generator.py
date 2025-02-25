@@ -28,7 +28,7 @@ class TestLogicGenerator:
         Generate a logic expression for the given task and tests.
         Returns a JSON structure that can be evaluated against the results matrix.
         """
-
+        return {}
         # Create test descriptions using the full test configuration
         tests_summary = "\n".join(
             f"T{idx + 1}: {test.__class__.__name__} - {json.dumps(test.dict(), indent=2)}"

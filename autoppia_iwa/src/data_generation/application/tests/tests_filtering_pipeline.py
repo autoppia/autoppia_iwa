@@ -2,7 +2,6 @@ import json
 import re
 from typing import List, Dict, Any
 from loguru import logger
-from pydantic import ValidationError
 from dependency_injector.wiring import Provide
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.data_generation.domain.classes import Task
@@ -11,8 +10,6 @@ from autoppia_iwa.src.data_generation.application.tests.prompts import (
     TEST_CONTEXT_PROMPT,
     FILTER_PROMPT
 )
-from autoppia_iwa.src.data_generation.application.tests.schemas import FilterResponse
-from .utils import normalize_test_config
 
 
 class TestGenerationPipeline:
@@ -31,7 +28,7 @@ class TestGenerationPipeline:
         self.llm_service = llm_service
         self.truncate_html_chars = truncate_html_chars
 
-    async def _filter_generated_tests(
+    async def filter_generated_tests(
         self,
         proposed_tests: List[Dict[str, Any]],
         truncated_html: str,
@@ -43,8 +40,7 @@ class TestGenerationPipeline:
           2) Guess-based or domain-mismatch tests
           3) Redundant front-end vs back-end overlaps
           4) Tests that don't align with the task's success criteria
-
-        Returns the "valid_tests" from the final LLM response.
+        Returns the valid tests after filtering.
         """
         if not proposed_tests:
             return []
@@ -58,62 +54,96 @@ class TestGenerationPipeline:
                 seen_signatures.add(signature)
                 filtered_duplicates.append(test_config)
 
+        if not filtered_duplicates:
+            return []
+
         # Build a user prompt for the LLM-based filter
         current_domain = self._extract_domain(task.url)
-        tests_json = json.dumps(filtered_duplicates, indent=2)
+
+        # Number each test for reference
+        numbered_tests = []
+        for i, test in enumerate(filtered_duplicates):
+            numbered_tests.append(f"Test #{i+1}: {json.dumps(test)}")
+        tests_formatted = "\n".join(numbered_tests)
 
         user_prompt = (
-            f"Given these proposed tests for task validation:\n"
-            f"{tests_json}\n\n"
             f"Task Details:\n"
             f"- URL: {task.url}\n"
             f"- Domain: {current_domain}\n"
             f"- Prompt: {task.prompt}\n"
             f"- Success Criteria: {task.success_criteria}\n\n"
             f"HTML Context (truncated):\n{truncated_html[:500]}...\n\n"
-            f"Return JSON with 'filtering_decisions' and 'valid_tests'."
+            f"Here are the proposed tests:\n"
+            f"{tests_formatted}\n\n"
+            f"Please review each test and respond with ONLY the numbers of tests to keep.\n"
+            f"Format your response as: KEEP: 1, 3, 4"
         )
 
-        # 2) Ask LLM for filtering
+        # 2) Ask LLM for filtering - using the imported FILTER_PROMPT instead of inline prompt
         try:
-            filter_response_text = await self.llm_service.async_predict(
+            filter_response = await self.llm_service.async_predict(
                 messages=[
                     {"role": "system", "content": FILTER_PROMPT + TEST_CONTEXT_PROMPT},
                     {"role": "user", "content": user_prompt},
                 ],
-                json_format=True,
-                schema=FilterResponse.model_json_schema()  # {filtering_decisions: [...], valid_tests: [...]}
+                json_format=False  # We're not expecting JSON now
             )
-            logger.debug(f"Filter step raw response: {filter_response_text}")
+            logger.debug(f"Filter step raw response: {filter_response}")
 
-            # Parse the filter response
+            # Parse the filter response to extract the test numbers to keep
             try:
-                filter_result = FilterResponse.parse_raw(filter_response_text)
-                # Optional: log the decisions
-                for decision in filter_result.filtering_decisions:
-                    logger.debug(f"Filtering decision: {decision}")
-
-                # Flatten & normalize each valid test
-                valid_tests = []
-                for vt in filter_result.valid_tests:
-                    t_dict = vt.dict()
-                    t_dict = normalize_test_config(t_dict)
-                    valid_tests.append(t_dict)
-
-                if not valid_tests and filtered_duplicates:
-                    logger.warning("LLM filtering returned no valid tests; using duplicates-filtered set.")
+                # Extract numbers from "KEEP: 1, 2, 5" format
+                keep_pattern = re.compile(r"KEEP:\s*([\d,\s]+)")
+                match = keep_pattern.search(filter_response)
+                if match:
+                    # Get the comma-separated list of numbers
+                    numbers_str = match.group(1)
+                    # Parse numbers, accounting for potential whitespace
+                    keep_indices = [int(n.strip()) - 1 for n in numbers_str.split(',') if n.strip()]
+                    # Create the list of tests to keep
+                    valid_tests = [filtered_duplicates[i] for i in keep_indices if 0 <= i < len(filtered_duplicates)]
+                    logger.info(f"Filtered from {len(filtered_duplicates)} to {len(valid_tests)} tests")
+                    if not valid_tests and filtered_duplicates:
+                        logger.warning("LLM filtering returned no valid tests; using duplicates-filtered set.")
+                        return filtered_duplicates
+                    return valid_tests
+                else:
+                    logger.warning("Could not parse keep indices from LLM response.")
                     return filtered_duplicates
-
-                return valid_tests
-
-            except ValidationError as e:
-                logger.error(f"Error parsing FilterResponse from LLM: {e}")
-                # Fallback to just the duplicates-filtered set
+            except Exception as e:
+                logger.error(f"Error parsing LLM response for test indices: {e}")
                 return filtered_duplicates
-
         except Exception as e:
             logger.error(f"LLM call for test filtering failed: {e}")
             return filtered_duplicates
+
+    @staticmethod
+    def _create_test_signature(test_config: Dict[str, Any]) -> str:
+        """
+        Create a unique signature for a test config to identify duplicates.
+        """
+        test_type = test_config.get("test_type", "unknown")
+
+        if test_type == "FindInHtmlTest":
+            keywords = test_config.get("keywords", [])
+            return f"{test_type}:{','.join(sorted(keywords))}"
+        elif test_type == "CheckUrlTest":
+            url = test_config.get("url", "")
+            return f"{test_type}:{url}"
+        elif test_type == "CheckEventEmittedTest":
+            event_name = test_config.get("event_name", "")
+            return f"{test_type}:{event_name}"
+        elif test_type == "CheckPageViewEventTest":
+            page_view_url = test_config.get("page_view_url", "")
+            return f"{test_type}:{page_view_url}"
+        elif test_type in ["JudgeBaseOnHTML", "JudgeBaseOnScreenshot", "OpinionBaseOnScreenshot"]:
+            description = test_config.get("description", "")
+            # Use first 50 chars of description as part of signature
+            desc_signature = description[:50].lower().replace(" ", "")
+            return f"{test_type}:{desc_signature}"
+
+        # Fallback for unknown test types
+        return f"{test_type}:{hash(json.dumps(test_config, sort_keys=True))}"
 
     @staticmethod
     def _extract_domain(url: str) -> str:

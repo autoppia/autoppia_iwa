@@ -113,6 +113,9 @@ class ConcurrentEvaluator(IEvaluator):
 
         execution_history = await self._evaluate_in_browser(task, web_agent_id, actions, backend_service, is_web_real)
         test_results = self._run_tests(task, execution_history)
+
+        print("Tests results", test_results)
+
         feedback = self._generate_feedback(task, execution_history, test_results)
 
         result = EvaluationResult(
@@ -186,7 +189,9 @@ class ConcurrentEvaluator(IEvaluator):
         for action_result in execution_history:
             snapshot = action_result.browser_snapshot
             test_runner = TestRunner(task.tests, snapshot)
-            all_test_results.extend(test_runner.run_tests())
+            test_results_iter = test_runner.run_tests()
+            print(test_results_iter)
+            all_test_results.extend(test_results_iter)
         return all_test_results
 
     @staticmethod

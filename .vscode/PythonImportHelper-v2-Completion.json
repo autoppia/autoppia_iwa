@@ -283,30 +283,6 @@
         "documentation": {}
     },
     {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
         "label": "Any",
         "importPath": "typing",
         "description": "typing",
@@ -316,6 +292,14 @@
     },
     {
         "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -2359,30 +2343,6 @@
         "documentation": {}
     },
     {
-        "label": "RootModel",
-        "importPath": "pydantic",
-        "description": "pydantic",
-        "isExtraImport": true,
-        "detail": "pydantic",
-        "documentation": {}
-    },
-    {
-        "label": "ValidationError",
-        "importPath": "pydantic",
-        "description": "pydantic",
-        "isExtraImport": true,
-        "detail": "pydantic",
-        "documentation": {}
-    },
-    {
-        "label": "ValidationError",
-        "importPath": "pydantic",
-        "description": "pydantic",
-        "isExtraImport": true,
-        "detail": "pydantic",
-        "documentation": {}
-    },
-    {
         "label": "BaseModel",
         "importPath": "pydantic",
         "description": "pydantic",
@@ -2815,7 +2775,47 @@
         "documentation": {}
     },
     {
-        "label": "BaseTaskTest",
+        "label": "CheckUrlTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "FindInHtmlTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "CheckEventEmittedTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "CheckPageViewEventTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "JudgeBaseOnHTML",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "JudgeBaseOnScreenshot",
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "isExtraImport": true,
@@ -3071,6 +3071,14 @@
         "documentation": {}
     },
     {
+        "label": "FILTER_PROMPT",
+        "importPath": "autoppia_iwa.src.data_generation.application.tests.prompts",
+        "description": "autoppia_iwa.src.data_generation.application.tests.prompts",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tests.prompts",
+        "documentation": {}
+    },
+    {
         "label": "TEST_CONTEXT_PROMPT",
         "importPath": "autoppia_iwa.src.data_generation.application.tests.prompts",
         "description": "autoppia_iwa.src.data_generation.application.tests.prompts",
@@ -3092,30 +3100,6 @@
         "description": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "documentation": {}
-    },
-    {
-        "label": "ProposedTestList",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "description": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "documentation": {}
-    },
-    {
-        "label": "ProposedTestDefinition",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "description": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "documentation": {}
-    },
-    {
-        "label": "FilterResponse",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "description": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.schemas",
         "documentation": {}
     },
     {
@@ -8134,7 +8118,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "app = AppBootstrap()\n# AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name=\"Random-clicker\"), ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)]\nAGENTS: List[BaseAgent] = [ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)]\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.",
+        "peekOfCode": "app = AppBootstrap()\nAGENTS: List[BaseAgent] = [RandomClickerWebAgent(name=\"Random-clicker\"), ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)]\niterations = 2  # total_tasks = tasks * iterations\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
+        "label": "iterations",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "iterations = 2  # total_tasks = tasks * iterations\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.\n    if demo_project.name not in results[agent.id][\"projects\"]:\n        results[agent.id][\"projects\"][demo_project.name] = []",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -8346,29 +8339,11 @@
         "documentation": {}
     },
     {
-        "label": "ProposedTestDefinition",
+        "label": "TestEvaluationResult",
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tests.schemas",
         "description": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "peekOfCode": "class ProposedTestDefinition(BaseModel):\n    \"\"\"\n    Represents a single test definition returned by the LLM.\n    'fields' may contain extra details (e.g., keywords, description, etc.).\n    \"\"\"\n    test_type: str\n    fields: Dict[str, Any] = Field(default_factory=dict)\n    # Optional fields (top-level for clarity)\n    name: Optional[str] = None\n    description: Optional[str] = None",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "documentation": {}
-    },
-    {
-        "label": "ProposedTestList",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "description": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "peekOfCode": "class ProposedTestList(RootModel[List[ProposedTestDefinition]]):\n    \"\"\"\n    A container for an array (root-level) of ProposedTestDefinition objects.\n    Access items via `.root`.\n    \"\"\"\n    pass\nclass FilterResponse(BaseModel):\n    \"\"\"\n    Used if/when you have a separate LLM step that filters or explains decisions.\n    {",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "documentation": {}
-    },
-    {
-        "label": "FilterResponse",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "description": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "peekOfCode": "class FilterResponse(BaseModel):\n    \"\"\"\n    Used if/when you have a separate LLM step that filters or explains decisions.\n    {\n    \"filtering_decisions\": [...],\n    \"valid_tests\": [ {ProposedTestDefinition}, ... ]\n    }\n    \"\"\"\n    filtering_decisions: List[Dict[str, Any]] = Field(default_factory=list)\n    valid_tests: List[ProposedTestDefinition] = Field(default_factory=list)",
+        "peekOfCode": "class TestEvaluationResult(BaseModel):\n    \"\"\"\n    Model for LLM response when evaluating a specific test type for a task\n    \"\"\"\n    applicable: bool = Field(\n        ..., \n        description=\"Whether this test type is applicable for the task\"\n    )\n    reason: str = Field(\n        ..., ",
         "detail": "autoppia_iwa.src.data_generation.application.tests.schemas",
         "documentation": {}
     },
@@ -8377,7 +8352,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
         "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "peekOfCode": "class TestGenerationPipeline:\n    \"\"\"\n    A pipeline that, for each Task:\n      1) Asks the LLM to propose minimal test definitions referencing relevant test classes.\n      2) Filters out guess-based or redundant tests (via `_filter_generated_tests`).\n      3) Proposes a final Boolean expression referencing x(i,j) for overall success (logic).\n    \"\"\"\n    def __init__(\n        self,\n        web_project: WebProject,",
+        "peekOfCode": "class TestGenerationPipeline:\n    \"\"\"\n    A pipeline that:\n      1) Gathers context (HTML, screenshot info, etc.) for each Task.\n      2) Uses LLM to generate appropriate tests based on the task context.\n      3) Filters the generated tests to ensure they're valid and relevant.\n      4) Instantiates the test objects and adds them to the task.\n      5) (Optionally) generates a logic function for the entire set of tests.\n    \"\"\"\n    def __init__(",
         "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
         "documentation": {}
     },
@@ -8494,7 +8469,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "peekOfCode": "class BaseTaskTest(BaseModel, ITest):\n    \"\"\"\n    Abstract base class for task tests.\n    Defines a common interface and structure for test execution.\n    \"\"\"\n    description: str = Field(default=\"Base task test\", description=\"Description of the test\")\n    test_type: Literal[\"frontend\", \"backend\"] = Field(default=\"frontend\", description=\"Type of the test\")\n    def execute_test(self, test_context: BrowserSnapshot) -> bool:\n        \"\"\"\n        Executes the test using the provided context.",
+        "peekOfCode": "class BaseTaskTest(BaseModel, ITest):\n    \"\"\"\n    Base class for all task tests.\n    \"\"\"\n    description: str = Field(\"Base task test\")\n    test_type: Literal[\"frontend\", \"backend\"] = Field(\"frontend\")\n    class Config:\n        arbitrary_types_allowed = True\n    def execute_test(self, test_context: Any) -> bool:\n        return self._execute_test(test_context)",
         "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "documentation": {}
     },
@@ -8503,7 +8478,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "peekOfCode": "class CheckUrlTest(BaseTaskTest):\n    \"\"\"\n    Test class to find specific keywords in the current HTML content.\n    \"\"\"\n    url:str\n    description: str = Field(\n        default=\"Check url\",\n        description=\"Description of the test\",\n    )\n    test_type: Literal[\"frontend\"] = \"frontend\"",
+        "peekOfCode": "class CheckUrlTest(BaseTaskTest):\n    \"\"\"\n    Test class to verify the current browser URL matches a specified target URL.\n    \"\"\"\n    url: str\n    description: str = Field(\n        default=\"Check URL\",\n        description=\"Description of the test\",\n    )\n    test_type: Literal[\"frontend\"] = \"frontend\"",
         "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "documentation": {}
     },
@@ -9097,7 +9072,7 @@
         "kind": 2,
         "importPath": "autoppia_iwa.src.shared.web_utils",
         "description": "autoppia_iwa.src.shared.web_utils",
-        "peekOfCode": "def clean_html(html_content: str) -> str:\n    \"\"\"\n    Removes scripts, styles, hidden tags, inline event handlers, etc.,\n    returning a 'clean' version of the DOM.\n    \"\"\"\n    soup = BeautifulSoup(html_content, \"html.parser\")\n    # Remove scripts, styles, metas, links, noscript\n    for tag in soup([\"script\", \"style\", \"noscript\", \"meta\", \"link\"]):\n        tag.decompose()\n    # Remove HTML comments",
+        "peekOfCode": "def clean_html(html_content: str) -> str:\n    \"\"\"\n    Removes scripts, styles, hidden tags, inline event handlers, etc.,\n    returning a 'clean' version of the DOM.\n    This version is exception resistant.\n    \"\"\"\n    try:\n        soup = BeautifulSoup(html_content, \"html.parser\")\n    except Exception:\n        return \"\"",
         "detail": "autoppia_iwa.src.shared.web_utils",
         "documentation": {}
     },
