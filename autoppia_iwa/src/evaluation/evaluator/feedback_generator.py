@@ -1,112 +1,60 @@
-from collections import defaultdict
 from typing import List
-
 from autoppia_iwa.src.evaluation.classes import Feedback, TestResult
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 
 class FeedbackGenerator:
     @staticmethod
-    def make_immutable(data):
-        """Convert mutable types in extra_data to immutable ones."""
-        if isinstance(data, dict):
-            # Convert list values to tuples, then create a frozenset of key-value pairs
-            return frozenset((key, tuple(value) if isinstance(value, list) else value) for key, value in data.items())
-        return None
-
-    @staticmethod
     def calculate_score(success_count: int, total_count: int, scale: int = 10) -> float:
         """Calculate a score based on the ratio of successes to the total count."""
         return (success_count / total_count) * scale if total_count > 0 else 0
 
     @staticmethod
-    def group_test_results(test_results: List['TestResult']) -> dict:
-        """
-        Group tests by (description, test_type, extra_data).
-
-        Each group represents a unique test. A group is considered passed if any execution is successful.
-        """
-        grouped_tests = defaultdict(list)
-        for test in test_results:
-            key = (test.description, test.test_type, FeedbackGenerator.make_immutable(test.extra_data))
-            grouped_tests[key].append(test.is_success)
-        return grouped_tests
-
-    @staticmethod
-    def calculate_test_score(grouped_tests: dict) -> tuple[int, int, float]:
-        """
-        Calculate the test score based on the grouped tests.
-
-        Returns:
-            passed_tests (int): Number of test groups that passed.
-            failed_tests (int): Number of test groups that failed.
-            test_score (float): Score calculated from the ratio of passed tests.
-        """
-        passed_tests = sum(1 for results in grouped_tests.values() if any(results))
-        total_tests = len(grouped_tests)
-
-        # Only if all groups passed, calculate the score normally.
-        if passed_tests < total_tests:
-            test_score = 0.0
-        else:
-            test_score = FeedbackGenerator.calculate_score(passed_tests, total_tests)
-
-        failed_tests = total_tests - passed_tests
-        return passed_tests, failed_tests, test_score
-
-    @staticmethod
-    def calculate_critical_failures(grouped_tests: dict) -> int:
-        """
-        Calculate the number of critical failures.
-
-        A critical failure is counted when the immutable extra_data contains the key 'event_name'
-        and the corresponding test group did not pass.
-        """
-        critical_failures = 0
-        for key, results in grouped_tests.items():
-            # key structure: (description, test_type, immutable_extra_data)
-            immutable_extra_data = key[2]
-            if immutable_extra_data is not None:
-                if any(k == 'event_name' for k, v in immutable_extra_data) and not any(results):
-                    critical_failures += 1
-        return critical_failures
-
-    @staticmethod
     def calculate_time_penalty(total_execution_time: float, expected_time: float) -> float:
         """
         Calculate the time penalty based on the extra execution time.
-
         For every 5 extra seconds beyond the expected time, 0.5 points are subtracted.
         """
         extra_time = total_execution_time - expected_time
-
         return max(0, (extra_time / 5.0) * 0.5)
+
+    @staticmethod
+    def flatten_test_results_matrix(test_results_matrix: List[List['TestResult']]) -> List['TestResult']:
+        """
+        Flatten a matrix of test results into a single list.
+
+        Args:
+            test_results_matrix: A matrix where each row corresponds to an action
+                                and each column corresponds to a test.
+
+        Returns:
+            A flattened list of test results.
+        """
+        return [test for action_tests in test_results_matrix for test in action_tests]
 
     @staticmethod
     def generate_feedback(
         task_prompt: str,
         execution_history: List['ActionExecutionResult'],
-        test_results: List['TestResult'],
+        test_results_matrix: List[List['TestResult']],
         expected_time: float = 50.0,
     ) -> 'Feedback':
         """
         Generates structured feedback for the task evaluation.
-
         Args:
             task_prompt (str): The description of the evaluated task.
             execution_history (List[ActionExecutionResult]): History of executed actions.
-            test_results (List[TestResult]): Results of the evaluated tests.
+            test_results_matrix (List[List[TestResult]]): Matrix of test results where each row
+                corresponds to an action and each column corresponds to a test.
             expected_time (float): The expected time to complete the task (in seconds).
-
         Returns:
             Feedback: Structured feedback object summarizing the evaluation.
         """
-
         # ---------------------------
         # Action execution metrics
         # ---------------------------
         total_actions = len(execution_history)
-        successful_actions = sum(1 for record in execution_history if record.is_successfully_executed)
+        successful_actions = sum(1 for record in execution_history if record.successfully_executed)
         failed_actions = total_actions - successful_actions
 
         # Adjust expected time based on the number of actions
@@ -116,12 +64,20 @@ class FeedbackGenerator:
         # ---------------------------
         # Test results processing
         # ---------------------------
-        # Group tests by (description, test_type, extra_data)
-        grouped_tests = FeedbackGenerator.group_test_results(test_results)
-        passed_tests, failed_tests, test_score = FeedbackGenerator.calculate_test_score(grouped_tests)
+        # Flatten the test results matrix for processing
+        flattened_test_results = FeedbackGenerator.flatten_test_results_matrix(test_results_matrix)
 
-        # Calculate critical failure penalty: 2 point for each critical failure
-        critical_failures = FeedbackGenerator.calculate_critical_failures(grouped_tests)
+        # Count passed and failed tests directly from the flattened list
+        passed_tests = sum(1 for test in flattened_test_results if test.success)
+        total_tests = len(flattened_test_results)
+        failed_tests = total_tests - passed_tests
+
+        # Calculate test score
+        test_score = FeedbackGenerator.calculate_score(passed_tests, total_tests)
+
+        # Count critical failures
+        critical_failures = sum(1 for test in flattened_test_results 
+                                if test.extra_data and 'event_name' in test.extra_data and not test.success)
         critical_penalty = critical_failures * 2
 
         # ---------------------------
@@ -150,6 +106,6 @@ class FeedbackGenerator:
             total_execution_time=total_execution_time,
             time_penalty=round(time_penalty, 1),
             critical_test_penalty=critical_penalty,
-            test_results=test_results,
+            test_results=flattened_test_results,
             execution_history=execution_history,
         )

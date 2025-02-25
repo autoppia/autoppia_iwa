@@ -7,8 +7,7 @@ from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 class TestResult(BaseModel):
     """Represents the evaluation result of a single test."""
-
-    is_success: bool  # True if the test passed, False otherwise
+    success: bool  # True if the test passed, False otherwise
     extra_data: Optional[dict] = None  # Additional data related to the test
 
 
@@ -36,13 +35,13 @@ class Feedback(BaseModel):
         feedback += f"Critical Test Penalty: {self.critical_test_penalty} points\n"
         feedback += "\nTest Results:\n"
         for test in self.test_results:
-            feedback += f"  - Test '{test.description}' ({test.test_type}): {'PASSED' if test.is_success else 'FAILED'}\n"
+            feedback += f"  - Test '{test.description}' ({test.test_type}): {'PASSED' if test.success else 'FAILED'}\n"
             if test.extra_data:
                 feedback += f"      Extra Data: {test.extra_data}\n"
 
         feedback += "\nExecution History:\n"
         for record in self.execution_history:
-            feedback += f"  - Action: {record.action_event}, Success: {record.is_successfully_executed}, Time: {record.execution_time:.2f}s\n"
+            feedback += f"  - Action: {record.action_event}, Success: {record.successfully_executed}, Time: {record.execution_time:.2f}s\n"
             if record.error:
                 feedback += f"      Error: {record.error}\n"
 
@@ -53,7 +52,7 @@ class EvaluationResult(BaseModel):
     """Encapsulates the output of a task evaluation."""
 
     final_score: float = 0
-    test_results: List[TestResult]  # List of test evaluation results
+    test_results_matrix: List[List[TestResult]]  # List of test evaluation results
     execution_history: List[ActionExecutionResult]  # History of all actions executed
     feedback: Optional[Feedback] = None  # Feedback generated during the evaluation
 

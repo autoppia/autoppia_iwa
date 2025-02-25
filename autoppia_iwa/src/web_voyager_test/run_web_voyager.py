@@ -48,7 +48,7 @@
 #             backend_url=url,
 #             frontend_url=url,
 #             name=urlparse(url).netloc,
-#             events_to_check=[],
+#             events=[],
 #             is_web_real=IS_WEB_REAL,
 #         )
 #         task_test_generator = TaskTestGenerator(web_project=web_project, web_analysis=web_analysis)

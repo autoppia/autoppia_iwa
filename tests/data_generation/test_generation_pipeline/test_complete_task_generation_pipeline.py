@@ -41,7 +41,7 @@ class TestTaskGenerationPipeline(unittest.TestCase):
             backend_url=self.page_url,
             frontend_url=self.page_url,
             name="jobs",
-            events_to_check=EVENTS_ALLOWED,
+            events=EVENTS_ALLOWED,
         )
 
         task_input = TaskGenerationConfig(web_project=web_project, save_web_analysis_in_db=True, save_task_in_db=True)

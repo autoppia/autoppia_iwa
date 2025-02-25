@@ -2,7 +2,6 @@ import json
 from typing import Any, Dict, List
 from loguru import logger
 from dependency_injector.wiring import Provide
-
 # LLM & domain imports
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.di_container import DIContainer
@@ -17,12 +16,11 @@ from autoppia_iwa.src.data_generation.domain.tests_classes import (
 )
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.shared.web_utils import detect_interactive_elements
-
 # Logic generator (optional)
 from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import (
     TestLogicGenerator,
 )
-from .prompts import TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT
+from .prompts import TEST_FILTERING_PROMPT, TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT
 
 
 class TestGenerationPipeline:
@@ -43,14 +41,28 @@ class TestGenerationPipeline:
         self.llm_service = llm_service
         self.truncate_html_chars = truncate_html_chars
         self.logic_generator = TestLogicGenerator()
-        # Map of test type names to classes
-        self.test_class_map = {
-            "CheckUrlTest": CheckUrlTest,
-            "FindInHtmlTest": FindInHtmlTest,
-            "CheckEventEmittedTest": CheckEventEmittedTest,
-            "CheckPageViewEventTest": CheckPageViewEventTest,
-            "JudgeBaseOnHTML": JudgeBaseOnHTML,
-            "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
+
+        # Real webs dont have backend tests
+        if web_project.is_web_real:
+            self.test_class_map = {
+                "CheckUrlTest": CheckUrlTest,
+                "FindInHtmlTest": FindInHtmlTest,
+                "JudgeBaseOnHTML": JudgeBaseOnHTML,
+                "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
+            }
+        else:
+            self.test_class_map = {
+                "CheckUrlTest": CheckUrlTest,
+                "FindInHtmlTest": FindInHtmlTest,
+                "CheckEventEmittedTest": CheckEventEmittedTest,
+                "CheckPageViewEventTest": CheckPageViewEventTest,
+                "JudgeBaseOnHTML": JudgeBaseOnHTML,
+                "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
+            }
+
+        # Map for extra data needed for specific test classes
+        self.test_class_extra_data = {
+            "CheckEventEmittedTest": "For CheckEventEmittedTest pls select event_name from this List of allowed event names: " + json.dumps(web_project.events),
         }
 
     async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:
@@ -90,6 +102,7 @@ class TestGenerationPipeline:
         screenshot_desc = task.screenshot_description or ""
         interactive_elements = detect_interactive_elements(cleaned_html)
         domain_analysis = self.web_project.domain_analysis or {}
+
         # Get serializable domain analysis
         domain_analysis_dict = {}
         if hasattr(domain_analysis, 'dump_excluding_page_analyses'):
@@ -128,6 +141,9 @@ class TestGenerationPipeline:
                         "required": ["type"]
                     }, indent=2)
 
+                # Get extra data for this test class if any
+                extra_data = self.test_class_extra_data.get(test_class_name, "{}")
+
                 # Build the per-class system prompt
                 system_prompt = TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT.format(
                     test_class_name=test_class_name,
@@ -137,7 +153,8 @@ class TestGenerationPipeline:
                     truncated_html=cleaned_html,
                     screenshot_desc=screenshot_desc,
                     interactive_elements=json.dumps(interactive_elements, indent=2),
-                    domain_analysis=domain_analysis_dict
+                    domain_analysis=domain_analysis_dict,
+                    extra_data=extra_data  # Include the extra data in the prompt
                 )
 
                 # Call the LLM
@@ -189,48 +206,124 @@ class TestGenerationPipeline:
                             if test.get("type") != test_class_name:
                                 test["type"] = test_class_name
                                 logger.warning(f"Fixed incorrect type in {test_class_name} response")
-
                             # Add test_type if needed (for backward compatibility)
                             if "test_type" not in test:
                                 test["test_type"] = test_class_name
-
                     logger.info(
                         f"LLM returned {len(response_data)} tests for {test_class_name} on task {task.id}"
                     )
                     all_tests.extend(response_data)
-
             except Exception as e:
                 logger.error(
                     f"Error generating tests for {test_class_name} in task {task.id}: {str(e)}"
                 )
                 logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
-
         return all_tests
 
     async def _filter_tests(self, task: Task, raw_tests: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Filter tests to ensure they're valid and relevant.
-        This implementation ensures at most one test per test class.
+        Filter tests to ensure they're valid, relevant, and not semantically redundant.
+        Uses LLM to make simple keep/discard decisions for each test.
         """
-        filtered_tests = []
-        seen_test_types = set()
+        if not raw_tests:
+            return []
 
+        # Step 1: Basic validation to ensure tests have valid types
+        valid_type_tests = []
         for test_def in raw_tests:
             # Use either "type" or "test_type" field to determine the test type
             test_type = test_def.get("type") or test_def.get("test_type")
-
             # Skip tests with invalid test types
             if test_type not in self.test_class_map:
                 logger.warning(f"Skipping test with invalid type: {test_type}")
                 continue
+            valid_type_tests.append(test_def)
 
-            if test_type and test_type not in seen_test_types:
-                seen_test_types.add(test_type)
-                filtered_tests.append(test_def)
+        if len(valid_type_tests) <= 1:
+            return valid_type_tests  # No need to filter if we have 0 or 1 test
+
+        # Step 2: Use LLM to decide which tests to keep
+        try:
+            # Create a prompt for the LLM
+            task_prompt = task.prompt
+            success_criteria = task.success_criteria or "N/A"
+
+            # Prepare test data with indices for reference
+            indexed_tests = []
+            for i, test in enumerate(valid_type_tests):
+                indexed_tests.append({
+                    "index": i,
+                    "test": test
+                })
+
+            # Convert to JSON for the prompt
+            tests_json = json.dumps(indexed_tests, indent=2)
+
+            # Get any extra data needed for filtering
+            extra_data_dict = {}
+            for test_def in valid_type_tests:
+                test_type = test_def.get("type") or test_def.get("test_type")
+                if test_type in self.test_class_extra_data and test_type not in extra_data_dict:
+                    extra_data_dict[test_type] = self.test_class_extra_data[test_type]
+
+            extra_data = json.dumps(extra_data_dict, indent=2)
+
+            # Use simplified prompt for test filtering
+            system_prompt = TEST_FILTERING_PROMPT.format(
+                task_prompt=task_prompt,
+                success_criteria=success_criteria,
+                tests_json=tests_json,
+                extra_data=extra_data 
+            )
+
+            # Call the LLM
+            response = await self.llm_service.async_predict(
+                messages=[
+                    {"role": "system", "content": system_prompt}
+                ],
+                json_format=True
+            )
+
+            # Parse the response
+            decisions = None
+            if isinstance(response, str):
+                try:
+                    decisions = json.loads(response)
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse LLM response as JSON: {response}")
+                    return valid_type_tests  # Fall back to keeping all valid tests
             else:
-                logger.info(f"Filtering out duplicate test type: {test_type}")
+                decisions = response
 
-        return filtered_tests
+            # Extract test decisions
+            if isinstance(decisions, list):
+                filtered_tests = []
+                for decision in decisions:
+                    if isinstance(decision, dict):
+                        index = decision.get("index")
+                        keep = decision.get("keep")
+                        reason = decision.get("reason", "No reason provided")
+                        if index is not None and isinstance(index, int) and index < len(valid_type_tests):
+                            if keep:
+                                filtered_tests.append(valid_type_tests[index])
+                                logger.info(f"Keeping test {index} ({valid_type_tests[index].get('type')}): {reason}")
+                            else:
+                                logger.info(f"Discarding test {index} ({valid_type_tests[index].get('type')}): {reason}")
+
+                # Make sure we keep at least one test
+                if not filtered_tests and valid_type_tests:
+                    logger.warning("No tests kept after filtering, keeping the first valid test")
+                    filtered_tests.append(valid_type_tests[0])
+
+                logger.info(f"Filtered {len(valid_type_tests)} raw tests down to {len(filtered_tests)} for task {task.id}")
+                return filtered_tests
+            else:
+                logger.warning(f"LLM response is not a list: {decisions}")
+                return valid_type_tests  # Fall back to keeping all valid tests
+        except Exception as e:
+            logger.error(f"Error during filtering of tests: {str(e)}")
+            logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
+            return valid_type_tests  # Fall back to keeping all valid tests
 
     async def _instantiate_tests(self, task: Task, valid_tests: List[Dict[str, Any]]) -> None:
         """
@@ -243,7 +336,6 @@ class TestGenerationPipeline:
 
                 # Extract test type (using either "type" or "test_type" field)
                 test_type = test_def_copy.pop("type", None) or test_def_copy.pop("test_type", None)
-
                 if not test_type:
                     logger.warning(f"Test definition missing type: {test_def}")
                     continue
@@ -265,7 +357,6 @@ class TestGenerationPipeline:
                 test_instance = test_class(**test_def_copy)
                 task.tests.append(test_instance)
                 logger.info(f"Added {test_type} to task {task.id}")
-
             except Exception as e:
                 logger.error(f"Failed to instantiate test {test_def}: {str(e)}")
                 logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")

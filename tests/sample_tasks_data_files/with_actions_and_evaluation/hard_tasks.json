@@ -4,7 +4,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -16,7 +16,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -28,7 +28,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -40,7 +40,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -52,7 +52,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -64,7 +64,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -76,7 +76,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -100,7 +100,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.520454,
                 "browser_snapshot": {
@@ -123,7 +123,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler navbar-toggler-right\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -146,7 +146,7 @@
             },
             {
                 "action_event": "scroll",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.124414,
                 "browser_snapshot": {
@@ -169,7 +169,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".nav-link dropdown-toggle\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -192,7 +192,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"a[href='/register']\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -215,7 +215,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.073722,
                 "browser_snapshot": {
@@ -238,7 +238,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.433709,
                 "browser_snapshot": {
@@ -277,7 +277,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -285,7 +285,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -297,7 +297,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/login"
                 }
@@ -305,7 +305,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -313,7 +313,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -325,7 +325,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/login"
                 }
@@ -333,7 +333,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -341,7 +341,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -353,7 +353,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/login"
                 }
@@ -361,7 +361,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -369,7 +369,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -381,7 +381,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/login"
                 }
@@ -389,7 +389,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -397,7 +397,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -409,7 +409,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/login"
                 }
@@ -417,7 +417,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -425,7 +425,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -437,7 +437,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/login"
                 }
@@ -445,7 +445,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -453,7 +453,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -465,7 +465,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/login"
                 }
@@ -473,7 +473,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -481,7 +481,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -493,7 +493,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/login"
                 }
@@ -513,7 +513,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 5.013598,
                 "browser_snapshot": {
@@ -536,7 +536,7 @@
             },
             {
                 "action_event": "hover",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.hover: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-nav ml-auto\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -559,7 +559,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.090918,
                 "browser_snapshot": {
@@ -592,7 +592,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.107695,
                 "browser_snapshot": {
@@ -635,7 +635,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -678,7 +678,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -721,7 +721,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"#job-main-form\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -764,7 +764,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.076125,
                 "browser_snapshot": {
@@ -823,7 +823,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -831,7 +831,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -847,7 +847,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -855,7 +855,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -863,7 +863,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -879,7 +879,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -887,7 +887,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -895,7 +895,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -911,7 +911,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -919,7 +919,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -927,7 +927,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -943,7 +943,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -951,7 +951,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -959,7 +959,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -975,7 +975,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -983,7 +983,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -991,7 +991,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -1007,7 +1007,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -1027,7 +1027,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.125918,
                 "browser_snapshot": {
@@ -1050,7 +1050,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler\")\n  -     - locator resolved to <button type=\"button\" aria-expanded=\"false\" data-toggle=\"collapse\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" class=\"navbar-toggler navbar-toggler-right\">…</button>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1073,7 +1073,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.077381,
                 "browser_snapshot": {
@@ -1096,7 +1096,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.475129,
                 "browser_snapshot": {
@@ -1129,7 +1129,7 @@
             },
             {
                 "action_event": "hover",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.064148,
                 "browser_snapshot": {
@@ -1162,7 +1162,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=Employee\")\n  -     - locator resolved to 2 elements. Proceeding with the first one: <a class=\"dropdown-item\" href=\"/employee/register\">Employee</a>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1201,7 +1201,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1213,7 +1213,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1225,7 +1225,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1237,7 +1237,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1249,7 +1249,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1261,7 +1261,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1273,7 +1273,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1285,7 +1285,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1297,7 +1297,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1309,7 +1309,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1321,7 +1321,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1333,7 +1333,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "About Testify",
@@ -1357,7 +1357,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.2496,
                 "browser_snapshot": {
@@ -1380,7 +1380,7 @@
             },
             {
                 "action_event": "scroll",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.072587,
                 "browser_snapshot": {
@@ -1403,7 +1403,7 @@
             },
             {
                 "action_event": "wait",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "float() argument must be a string or a real number, not 'NoneType'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1426,7 +1426,7 @@
             },
             {
                 "action_event": "scroll",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.030246,
                 "browser_snapshot": {
@@ -1449,7 +1449,7 @@
             },
             {
                 "action_event": "wait",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "float() argument must be a string or a real number, not 'NoneType'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1472,7 +1472,7 @@
             },
             {
                 "action_event": "scroll",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.027496,
                 "browser_snapshot": {
@@ -1495,7 +1495,7 @@
             },
             {
                 "action_event": "wait",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "float() argument must be a string or a real number, not 'NoneType'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1518,7 +1518,7 @@
             },
             {
                 "action_event": "scroll",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.037962,
                 "browser_snapshot": {
@@ -1541,7 +1541,7 @@
             },
             {
                 "action_event": "wait",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "float() argument must be a string or a real number, not 'NoneType'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1564,7 +1564,7 @@
             },
             {
                 "action_event": "hover",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.038812,
                 "browser_snapshot": {
@@ -1587,7 +1587,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=Twitter\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1610,7 +1610,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"a[href='https://twitter.com']\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1639,7 +1639,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1655,7 +1655,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1671,7 +1671,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1687,7 +1687,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1703,7 +1703,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1719,7 +1719,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1735,7 +1735,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1751,7 +1751,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1767,7 +1767,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1783,7 +1783,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1799,7 +1799,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1815,7 +1815,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1831,7 +1831,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1847,7 +1847,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -1875,7 +1875,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.768606,
                 "browser_snapshot": {
@@ -1898,7 +1898,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler\")\n  -     - locator resolved to <button type=\"button\" aria-expanded=\"false\" data-toggle=\"collapse\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" class=\"navbar-toggler navbar-toggler-right\">…</button>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -1921,7 +1921,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.098897,
                 "browser_snapshot": {
@@ -1954,7 +1954,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.074905,
                 "browser_snapshot": {
@@ -1987,7 +1987,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -2020,7 +2020,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -2053,7 +2053,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.040218,
                 "browser_snapshot": {
@@ -2086,7 +2086,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -2119,7 +2119,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -2152,7 +2152,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=job-main-form\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -2185,7 +2185,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.016497,
                 "browser_snapshot": {
@@ -2218,7 +2218,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.088333,
                 "browser_snapshot": {
@@ -2261,7 +2261,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.189298,
                 "browser_snapshot": {
@@ -2314,7 +2314,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=Submit\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -2373,7 +2373,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2389,7 +2389,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2405,7 +2405,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2421,7 +2421,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2437,7 +2437,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2453,7 +2453,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2469,7 +2469,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2485,7 +2485,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2501,7 +2501,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2517,7 +2517,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -2545,7 +2545,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.784264,
                 "browser_snapshot": {
@@ -2568,7 +2568,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.165746,
                 "browser_snapshot": {
@@ -2601,7 +2601,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.136479,
                 "browser_snapshot": {
@@ -2644,7 +2644,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler\")\n  -     - locator resolved to <button type=\"button\" aria-expanded=\"false\" data-toggle=\"collapse\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" class=\"navbar-toggler navbar-toggler-right\">…</button>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -2687,7 +2687,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.08834,
                 "browser_snapshot": {
@@ -2740,7 +2740,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.1093,
                 "browser_snapshot": {
@@ -2803,7 +2803,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.066753,
                 "browser_snapshot": {
@@ -2866,7 +2866,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.46991,
                 "browser_snapshot": {
@@ -2949,7 +2949,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.219285,
                 "browser_snapshot": {
@@ -3042,7 +3042,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".dropdown-item\")\n  -     - locator resolved to 2 elements. Proceeding with the first one: <a class=\"dropdown-item\" href=\"/employee/register\">Employee</a>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -3161,7 +3161,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3169,7 +3169,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -3181,7 +3181,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/jobs/1"
                 }
@@ -3189,7 +3189,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3197,7 +3197,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -3209,7 +3209,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/jobs/1"
                 }
@@ -3217,7 +3217,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3225,7 +3225,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -3237,7 +3237,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/jobs/1"
                 }
@@ -3245,7 +3245,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3253,7 +3253,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -3265,7 +3265,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/jobs/1"
                 }
@@ -3273,7 +3273,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3281,7 +3281,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -3293,7 +3293,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/jobs/1"
                 }
@@ -3301,7 +3301,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3309,7 +3309,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -3321,7 +3321,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/jobs/1"
                 }
@@ -3329,7 +3329,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3337,7 +3337,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -3349,7 +3349,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/jobs/1"
                 }
@@ -3357,7 +3357,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3365,7 +3365,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -3377,7 +3377,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/jobs/1"
                 }
@@ -3397,7 +3397,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.775174,
                 "browser_snapshot": {
@@ -3420,7 +3420,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.081943,
                 "browser_snapshot": {
@@ -3443,7 +3443,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -3466,7 +3466,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -3489,7 +3489,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.11796,
                 "browser_snapshot": {
@@ -3522,7 +3522,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.145311,
                 "browser_snapshot": {
@@ -3565,7 +3565,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.053224,
                 "browser_snapshot": {
@@ -3608,7 +3608,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"//button[contains(text(), 'Apply for this job')]\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -3657,7 +3657,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -3665,7 +3665,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "About Jobs",
@@ -3676,7 +3676,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -3684,7 +3684,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "About Jobs",
@@ -3707,7 +3707,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.913939,
                 "browser_snapshot": {
@@ -3730,7 +3730,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.173812,
                 "browser_snapshot": {
@@ -3769,7 +3769,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3777,7 +3777,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you for applying",
@@ -3789,7 +3789,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3797,7 +3797,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you for applying",
@@ -3809,7 +3809,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3817,7 +3817,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you for applying",
@@ -3829,7 +3829,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3837,7 +3837,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you for applying",
@@ -3849,7 +3849,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3857,7 +3857,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you for applying",
@@ -3869,7 +3869,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3877,7 +3877,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you for applying",
@@ -3889,7 +3889,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3897,7 +3897,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you for applying",
@@ -3909,7 +3909,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -3917,7 +3917,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you for applying",
@@ -3941,7 +3941,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.927013,
                 "browser_snapshot": {
@@ -3964,7 +3964,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.161726,
                 "browser_snapshot": {
@@ -3987,7 +3987,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -4010,7 +4010,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -4033,7 +4033,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.142323,
                 "browser_snapshot": {
@@ -4066,7 +4066,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.246722,
                 "browser_snapshot": {
@@ -4109,7 +4109,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=Software Engineer\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -4152,7 +4152,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.133787,
                 "browser_snapshot": {
@@ -4211,7 +4211,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -4223,7 +4223,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -4231,7 +4231,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -4243,7 +4243,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -4251,7 +4251,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -4263,7 +4263,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -4271,7 +4271,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -4283,7 +4283,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -4291,7 +4291,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Employee",
@@ -4303,7 +4303,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -4323,7 +4323,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.033626,
                 "browser_snapshot": {
@@ -4346,7 +4346,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.231563,
                 "browser_snapshot": {
@@ -4379,7 +4379,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.10581,
                 "browser_snapshot": {
@@ -4412,7 +4412,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.051064,
                 "browser_snapshot": {
@@ -4445,7 +4445,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"//a[contains(text(), 'Employee')]\")\n  -     - locator resolved to <a class=\"dropdown-item\" href=\"/employee/register\">Employee</a>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not stable\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not stable\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -4504,7 +4504,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -4512,7 +4512,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -4524,7 +4524,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -4532,7 +4532,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -4544,7 +4544,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -4552,7 +4552,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -4564,7 +4564,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -4572,7 +4572,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -4584,7 +4584,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -4592,7 +4592,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -4604,7 +4604,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -4612,7 +4612,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -4624,7 +4624,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -4632,7 +4632,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -4656,7 +4656,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.171554,
                 "browser_snapshot": {
@@ -4679,7 +4679,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler\")\n  -     - locator resolved to <button type=\"button\" aria-expanded=\"false\" data-toggle=\"collapse\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" class=\"navbar-toggler navbar-toggler-right\">…</button>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -4702,7 +4702,7 @@
             },
             {
                 "action_event": "hover",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.061132,
                 "browser_snapshot": {
@@ -4725,7 +4725,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.094731,
                 "browser_snapshot": {
@@ -4748,7 +4748,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"a[href='/register']\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -4771,7 +4771,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.03077,
                 "browser_snapshot": {
@@ -4794,7 +4794,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=Employee\")\n  -     - locator resolved to 2 elements. Proceeding with the first one: <a class=\"dropdown-item\" href=\"/employee/register\">Employee</a>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not stable\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not stable\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -4823,7 +4823,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/jobs"
                 }
@@ -4831,7 +4831,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Product Manager",
@@ -4842,7 +4842,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/jobs"
                 }
@@ -4850,7 +4850,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Product Manager",
@@ -4861,7 +4861,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/jobs"
                 }
@@ -4869,7 +4869,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Product Manager",
@@ -4880,7 +4880,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/jobs"
                 }
@@ -4888,7 +4888,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Product Manager",
@@ -4899,7 +4899,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/jobs"
                 }
@@ -4907,7 +4907,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Product Manager",
@@ -4930,7 +4930,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.173921,
                 "browser_snapshot": {
@@ -4953,7 +4953,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.179484,
                 "browser_snapshot": {
@@ -4986,7 +4986,7 @@
             },
             {
                 "action_event": "scroll",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Locator.scroll_into_view_if_needed: Error: strict mode violation: locator(\".job-listing\") resolved to 5 elements:\n    1) <div class=\"job-listing  \">…</div> aka locator(\"div\").filter(has_text=\"Software Engineer Tech Innovators Remote Posted 2 days, 1 hour\").nth(2)\n    2) <div class=\"job-listing  \">…</div> aka locator(\"div\").filter(has_text=\"Data Scientist DataTech On-\").nth(2)\n    3) <div class=\"job-listing  \">…</div> aka locator(\"div\").filter(has_text=\"Product Manager Productive Inc. Hybrid Posted 2 days, 1 hour\").nth(2)\n    4) <div class=\"job-listing  \">…</div> aka locator(\"div\").filter(has_text=\"UX Designer Creative Minds Remote Posted 2 days, 1 hour\").nth(2)\n    5) <div class=\"job-listing  \">…</div> aka locator(\"div\").filter(has_text=\"Software Tester Testify On-\").nth(2)\n\nCall log:\n  - waiting for locator(\".job-listing\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5019,7 +5019,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.105867,
                 "browser_snapshot": {
@@ -5062,7 +5062,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.081942,
                 "browser_snapshot": {
@@ -5111,7 +5111,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -5119,7 +5119,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -5131,7 +5131,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/dashboard"
                 }
@@ -5139,7 +5139,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "login"
                 }
@@ -5147,7 +5147,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Logout",
@@ -5159,7 +5159,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/dashboard"
                 }
@@ -5179,7 +5179,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.568554,
                 "browser_snapshot": {
@@ -5202,7 +5202,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.19736,
                 "browser_snapshot": {
@@ -5241,7 +5241,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -5249,7 +5249,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -5261,7 +5261,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -5269,7 +5269,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -5277,7 +5277,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -5289,7 +5289,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -5297,7 +5297,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -5305,7 +5305,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -5317,7 +5317,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -5325,7 +5325,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -5333,7 +5333,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -5345,7 +5345,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -5353,7 +5353,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -5361,7 +5361,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -5373,7 +5373,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -5393,7 +5393,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 2.267361,
                 "browser_snapshot": {
@@ -5416,7 +5416,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.121336,
                 "browser_snapshot": {
@@ -5449,7 +5449,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.083582,
                 "browser_snapshot": {
@@ -5482,7 +5482,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.052001,
                 "browser_snapshot": {
@@ -5515,7 +5515,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=Employee\")\n  -     - locator resolved to 2 elements. Proceeding with the first one: <a class=\"dropdown-item\" href=\"/employee/register\">Employee</a>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not stable\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not stable\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5585,7 +5585,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 5.244931,
                 "browser_snapshot": {
@@ -5608,7 +5608,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.222213,
                 "browser_snapshot": {
@@ -5641,7 +5641,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"#navbarDropdown\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5674,7 +5674,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".dropdown-item\")\n  -     - locator resolved to 2 elements. Proceeding with the first one: <a class=\"dropdown-item\" href=\"/employee/register\">Employee</a>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5707,7 +5707,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5740,7 +5740,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5773,7 +5773,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5806,7 +5806,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5839,7 +5839,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"#registerButton\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5872,7 +5872,7 @@
             },
             {
                 "action_event": "scroll",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.040773,
                 "browser_snapshot": {
@@ -5905,7 +5905,7 @@
             },
             {
                 "action_event": "hover",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.042411,
                 "browser_snapshot": {
@@ -5938,7 +5938,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=gender\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -5971,7 +5971,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6004,7 +6004,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=gender\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6037,7 +6037,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6070,7 +6070,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.067651,
                 "browser_snapshot": {
@@ -6113,7 +6113,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"//input[@id='password']\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6156,7 +6156,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6199,7 +6199,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.040522,
                 "browser_snapshot": {
@@ -6248,7 +6248,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -6256,7 +6256,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -6264,7 +6264,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -6272,7 +6272,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -6280,7 +6280,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -6288,7 +6288,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -6296,7 +6296,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -6304,7 +6304,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -6312,7 +6312,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -6320,7 +6320,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -6328,7 +6328,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -6336,7 +6336,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -6356,7 +6356,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.739539,
                 "browser_snapshot": {
@@ -6379,7 +6379,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.152226,
                 "browser_snapshot": {
@@ -6412,7 +6412,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.197628,
                 "browser_snapshot": {
@@ -6455,7 +6455,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.19764,
                 "browser_snapshot": {
@@ -6508,7 +6508,7 @@
             },
             {
                 "action_event": "scroll",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Locator.scroll_into_view_if_needed: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".job-form-section\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6561,7 +6561,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=Contact Us\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6620,7 +6620,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -6628,7 +6628,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -6640,7 +6640,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -6648,7 +6648,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -6660,7 +6660,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -6668,7 +6668,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -6680,7 +6680,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -6688,7 +6688,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -6700,7 +6700,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -6708,7 +6708,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -6720,7 +6720,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -6728,7 +6728,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -6752,7 +6752,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.89369,
                 "browser_snapshot": {
@@ -6775,7 +6775,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6798,7 +6798,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6821,7 +6821,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.184469,
                 "browser_snapshot": {
@@ -6854,7 +6854,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.176125,
                 "browser_snapshot": {
@@ -6897,7 +6897,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"//a[contains(text(), 'Apply for this job')]\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -6946,7 +6946,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -6954,7 +6954,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "About Jobs",
@@ -6965,7 +6965,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -6973,7 +6973,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "About Jobs",
@@ -6996,7 +6996,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.771876,
                 "browser_snapshot": {
@@ -7019,7 +7019,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.128354,
                 "browser_snapshot": {
@@ -7058,7 +7058,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7066,7 +7066,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Register",
@@ -7079,7 +7079,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7087,7 +7087,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Register",
@@ -7100,7 +7100,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7108,7 +7108,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Register",
@@ -7121,7 +7121,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7129,7 +7129,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Register",
@@ -7142,7 +7142,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7150,7 +7150,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Register",
@@ -7175,7 +7175,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.236931,
                 "browser_snapshot": {
@@ -7198,7 +7198,7 @@
             },
             {
                 "action_event": "hover",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.hover: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-nav ml-auto\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -7221,7 +7221,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.051792,
                 "browser_snapshot": {
@@ -7244,7 +7244,7 @@
             },
             {
                 "action_event": "hover",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.057706,
                 "browser_snapshot": {
@@ -7267,7 +7267,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.320808,
                 "browser_snapshot": {
@@ -7306,7 +7306,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "search"
                 }
@@ -7314,7 +7314,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Software Engineer",
@@ -7327,7 +7327,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/search"
                 }
@@ -7335,7 +7335,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "search"
                 }
@@ -7343,7 +7343,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Software Engineer",
@@ -7356,7 +7356,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/search"
                 }
@@ -7364,7 +7364,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "search"
                 }
@@ -7372,7 +7372,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Software Engineer",
@@ -7385,7 +7385,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/search"
                 }
@@ -7393,7 +7393,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "search"
                 }
@@ -7401,7 +7401,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Software Engineer",
@@ -7414,7 +7414,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/search"
                 }
@@ -7434,7 +7434,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.887958,
                 "browser_snapshot": {
@@ -7457,7 +7457,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -7480,7 +7480,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -7503,7 +7503,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.138953,
                 "browser_snapshot": {
@@ -7532,7 +7532,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -7540,7 +7540,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7552,7 +7552,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -7560,7 +7560,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7572,7 +7572,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -7580,7 +7580,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7592,7 +7592,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "job_application"
                 }
@@ -7600,7 +7600,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7624,7 +7624,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.895054,
                 "browser_snapshot": {
@@ -7647,7 +7647,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.088526,
                 "browser_snapshot": {
@@ -7670,7 +7670,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -7693,7 +7693,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"#job-main-form__button\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -7722,7 +7722,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7730,7 +7730,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7742,7 +7742,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7750,7 +7750,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7758,7 +7758,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7770,7 +7770,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7778,7 +7778,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7786,7 +7786,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7798,7 +7798,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7806,7 +7806,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7814,7 +7814,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7826,7 +7826,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7834,7 +7834,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7842,7 +7842,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7854,7 +7854,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7862,7 +7862,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7870,7 +7870,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7882,7 +7882,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7890,7 +7890,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7898,7 +7898,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7910,7 +7910,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7918,7 +7918,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7926,7 +7926,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7938,7 +7938,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7946,7 +7946,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7954,7 +7954,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7966,7 +7966,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -7974,7 +7974,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -7982,7 +7982,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -7994,7 +7994,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -8002,7 +8002,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -8010,7 +8010,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Thank you",
@@ -8022,7 +8022,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employee/register"
                 }
@@ -8042,7 +8042,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.06135,
                 "browser_snapshot": {
@@ -8065,7 +8065,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler navbar-toggler-right\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8088,7 +8088,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.145074,
                 "browser_snapshot": {
@@ -8111,7 +8111,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"#navbar-toggler\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8134,7 +8134,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.028713,
                 "browser_snapshot": {
@@ -8157,7 +8157,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"text=Employee\")\n  -     - locator resolved to 2 elements. Proceeding with the first one: <a class=\"dropdown-item\" href=\"/employee/register\">Employee</a>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not stable\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not stable\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8180,7 +8180,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.037995,
                 "browser_snapshot": {
@@ -8203,7 +8203,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8226,7 +8226,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8249,7 +8249,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.215727,
                 "browser_snapshot": {
@@ -8282,7 +8282,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.2968,
                 "browser_snapshot": {
@@ -8331,7 +8331,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employer/register"
                 }
@@ -8339,7 +8339,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -8347,7 +8347,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Register as Employer",
@@ -8359,7 +8359,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employer/register"
                 }
@@ -8367,7 +8367,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -8375,7 +8375,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Register as Employer",
@@ -8387,7 +8387,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employer/register"
                 }
@@ -8395,7 +8395,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -8403,7 +8403,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Register as Employer",
@@ -8415,7 +8415,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employer/register"
                 }
@@ -8423,7 +8423,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -8431,7 +8431,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Register as Employer",
@@ -8443,7 +8443,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/employer/register"
                 }
@@ -8451,7 +8451,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -8459,7 +8459,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Register as Employer",
@@ -8471,7 +8471,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/employer/register"
                 }
@@ -8479,7 +8479,7 @@
             {
                 "description": "Verify if the backend emitted the specified event",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "event_name": "registration"
                 }
@@ -8487,7 +8487,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "keywords": [
                         "Register as Employer",
@@ -8511,7 +8511,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.121529,
                 "browser_snapshot": {
@@ -8534,7 +8534,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler\")\n  -     - locator resolved to <button type=\"button\" aria-expanded=\"false\" data-toggle=\"collapse\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" class=\"navbar-toggler navbar-toggler-right\">…</button>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8557,7 +8557,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.048893,
                 "browser_snapshot": {
@@ -8580,7 +8580,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.45249,
                 "browser_snapshot": {
@@ -8613,7 +8613,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.067302,
                 "browser_snapshot": {
@@ -8646,7 +8646,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.438493,
                 "browser_snapshot": {
@@ -8695,7 +8695,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -8720,7 +8720,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -8745,7 +8745,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -8770,7 +8770,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -8795,7 +8795,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "Home",
@@ -8832,7 +8832,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.811514,
                 "browser_snapshot": {
@@ -8855,7 +8855,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".btn navbar-btn btn-outline-light mb-5 mb-lg-0\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8878,7 +8878,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8901,7 +8901,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -8924,7 +8924,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.099936,
                 "browser_snapshot": {
@@ -8974,7 +8974,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 1.092313,
                 "browser_snapshot": {
@@ -8997,7 +8997,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"a[href='/employee/register']\")\n  -     - locator resolved to <a class=\"dropdown-item\" href=\"/employee/register\">Employee</a>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9020,7 +9020,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9043,7 +9043,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9066,7 +9066,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9089,7 +9089,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9112,7 +9112,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"[value='Register']\")\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9135,7 +9135,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.034677,
                 "browser_snapshot": {
@@ -9158,7 +9158,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9181,7 +9181,7 @@
             },
             {
                 "action_event": "type",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Frame.fill() missing 1 required positional argument: 'value'",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9204,7 +9204,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.098773,
                 "browser_snapshot": {
@@ -9237,7 +9237,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.147187,
                 "browser_snapshot": {
@@ -9280,7 +9280,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.116295,
                 "browser_snapshot": {
@@ -9333,7 +9333,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler\")\n  -     - locator resolved to <button type=\"button\" aria-expanded=\"false\" data-toggle=\"collapse\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" class=\"navbar-toggler navbar-toggler-right\">…</button>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -9386,7 +9386,7 @@
             },
             {
                 "action_event": "hover",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.038706,
                 "browser_snapshot": {
@@ -9439,7 +9439,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.050302,
                 "browser_snapshot": {
@@ -9492,7 +9492,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.446681,
                 "browser_snapshot": {
@@ -9561,7 +9561,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9569,7 +9569,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9577,7 +9577,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9589,7 +9589,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9597,7 +9597,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9605,7 +9605,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9617,7 +9617,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9625,7 +9625,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9633,7 +9633,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9645,7 +9645,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9653,7 +9653,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9661,7 +9661,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9673,7 +9673,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9681,7 +9681,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9689,7 +9689,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9701,7 +9701,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9709,7 +9709,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9717,7 +9717,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9729,7 +9729,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9737,7 +9737,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9745,7 +9745,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9757,7 +9757,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9765,7 +9765,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9773,7 +9773,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9785,7 +9785,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "page_view_url": "/about/"
                 }
@@ -9793,7 +9793,7 @@
             {
                 "description": "Check if the backend logged a page view event for the specified URL",
                 "test_type": "backend",
-                "is_success": false,
+                "success": false,
                 "extra_data": {
                     "page_view_url": "/contact/"
                 }
@@ -9801,7 +9801,7 @@
             {
                 "description": "Find keywords in the current HTML content",
                 "test_type": "frontend",
-                "is_success": true,
+                "success": true,
                 "extra_data": {
                     "keywords": [
                         "customer service center",
@@ -9825,7 +9825,7 @@
         "execution_history": [
             {
                 "action_event": "navigate",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.833002,
                 "browser_snapshot": {
@@ -9848,7 +9848,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.371488,
                 "browser_snapshot": {
@@ -9881,7 +9881,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.168432,
                 "browser_snapshot": {
@@ -9924,7 +9924,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.167122,
                 "browser_snapshot": {
@@ -9977,7 +9977,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": false,
+                "successfully_executed": false,
                 "error": "Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\".navbar-toggler\")\n  -     - locator resolved to <button type=\"button\" aria-expanded=\"false\" data-toggle=\"collapse\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" class=\"navbar-toggler navbar-toggler-right\">…</button>\n  -   - attempting click action\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -     - waiting 20ms\n  -     2 × waiting for element to be visible, enabled and stable\n  -       - element is not visible\n  -     - retrying click action\n  -       - waiting 100ms\n  -     19 × waiting for element to be visible, enabled and stable\n  -        - element is not visible\n  -      - retrying click action\n  -        - waiting 500ms\n",
                 "execution_time": 0.0,
                 "browser_snapshot": {
@@ -10030,7 +10030,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.093635,
                 "browser_snapshot": {
@@ -10093,7 +10093,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.148591,
                 "browser_snapshot": {
@@ -10166,7 +10166,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.164334,
                 "browser_snapshot": {
@@ -10249,7 +10249,7 @@
             },
             {
                 "action_event": "click",
-                "is_successfully_executed": true,
+                "successfully_executed": true,
                 "error": null,
                 "execution_time": 0.130961,
                 "browser_snapshot": {

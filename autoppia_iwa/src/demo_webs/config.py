@@ -30,7 +30,7 @@ demo_web_projects = [
         name="jobs",
         frontend_url=get_frontend_url(index=0),
         backend_url=get_backend_url(index=0),
-        events_to_check=events_allowed_web_1,
+        events=events_allowed_web_1,
         relevant_data=relevant_data_web_1,
     )
     # ),
@@ -38,7 +38,7 @@ demo_web_projects = [
     #     name="angular",
     #     frontend_url=get_frontend_url(index=1),
     #     backend_url=get_backend_url(index=1, symetric=False),
-    #     events_to_check=events_allowed_web_2,
+    #     events=events_allowed_web_2,
     # ),
 ]
 

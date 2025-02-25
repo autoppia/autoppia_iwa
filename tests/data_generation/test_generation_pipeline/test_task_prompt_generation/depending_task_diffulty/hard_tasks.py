@@ -98,7 +98,7 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
                 backend_url=self.start_url,
                 frontend_url=self.start_url,
                 name="jobs",
-                events_to_check=EVENTS_ALLOWED,
+                events=EVENTS_ALLOWED,
             )
             task_input = TaskGenerationConfig(web_project=web_project)
             task_generator = TaskGenerationPipeline(task_input, llm_service=self.llm_service)

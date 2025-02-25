@@ -39,7 +39,7 @@ class ActionExecutionResult(BaseModel):
 
     action: BaseAction = Field(..., description="The action that was executed")
     action_event: str = Field(..., description="Type of the action event (e.g., 'click', 'navigate', 'type')")
-    is_successfully_executed: bool = Field(..., description="Indicates whether the action was executed successfully")
+    successfully_executed: bool = Field(..., description="Indicates whether the action was executed successfully")
     error: Optional[str] = Field(None, description="Details of the error if the action failed")
     execution_time: Optional[float] = Field(None, description="Time taken to execute the action, in seconds")
     browser_snapshot: BrowserSnapshot = Field(..., description="Snapshot of the browser state after execution")

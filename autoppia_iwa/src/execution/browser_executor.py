@@ -121,7 +121,7 @@ class PlaywrightBrowserExecutor:
 
             return ActionExecutionResult(
                 action_event=action.__class__.__name__,
-                is_successfully_executed=True,
+                successfully_executed=True,
                 execution_time=execution_time,
                 browser_snapshot=browser_snapshot,
                 action=action,
@@ -147,7 +147,7 @@ class PlaywrightBrowserExecutor:
             return ActionExecutionResult(
                 action_event=action.__class__.__name__,
                 action=action,
-                is_successfully_executed=False,
+                successfully_executed=False,
                 error=str(e),
                 execution_time=0,
                 browser_snapshot=browser_snapshot,

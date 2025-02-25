@@ -56,7 +56,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
             backend_url=url,
             frontend_url=url,
             name="example" if is_web_real else "Local Web App",
-            events_to_check=EVENTS_ALLOWED,
+            events=EVENTS_ALLOWED,
             is_web_real=is_web_real,
         )
 

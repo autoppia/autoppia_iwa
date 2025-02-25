@@ -30,6 +30,9 @@ We have a specific test class named: {test_class_name}
 Below is the Pydantic (or equivalent) JSON schema describing the fields for {test_class_name}:
 {schema_json}
 
+Extra Class-Specific Data:
+{extra_data}
+
 Given the following context:
 - Task Prompt: {task_prompt}
 - Success Criteria: {success_criteria}
@@ -41,6 +44,8 @@ Given the following context:
 {interactive_elements}
 - Domain/Project analysis (if available):
 {domain_analysis}
+
+
 
 ### Instructions
 1. Determine if the test class **{test_class_name}** is relevant for verifying the success criteria. 
@@ -67,31 +72,45 @@ Example if not relevant:
 []
 """
 
-FILTER_PROMPT = """ 
-You are an expert at validating and filtering test cases for web automation. 
-Be thorough but conservative in filtering - only remove tests if there's a clear reason.
+TEST_FILTERING_PROMPT = """
+You are a test analyzer for web automation testing. Review the tests below and decide which ones to keep.
 
-For each test, evaluate:
+TASK CONTEXT:
+- Task Prompt: {task_prompt}
+- Success Criteria: {success_criteria}
 
-Accuracy: For frontend tests, do the keywords actually appear in the HTML? If not , the test is invalid.
-Domain Relevance: For backend tests, do URLs / events match the current domain?
-Redundancy: Is this test redundant given other tests? (e.g., backend tests may supersede frontend tests)
-Success Criteria Alignment: Does this test genuinely validate the task's success criteria?
-Return a JSON object containing:
+TESTS TO REVIEW:
+{tests_json}
 
-"valid_tests": an array of valid tests after filtering
-"filtering_decisions": an array of decisions(kept or removed) with a short explanation
-Example format:
+GUIDELINES:
+1. Backend tests (CheckEventEmittedTest, CheckPageViewEventTest) are preferred over frontend tests or checkUrl tests as they are more reliable. Only in case they try to validate the same thing.
+2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful for complex criteria
+3. Avoid keeping tests that check for the same thing in different ways
+4. Prioritize tests that directly verify the success criteria
+5. Aim to keep 1-3 high-quality tests in total
+6. Delete tests that make up parameters like making up event_names in CheckEventEmittedTest, or making up keywords in FindInHtmlTest.
 
-json
-{
-    "valid_tests": [],
-    "filtering_decisions": [
-        {
-            "test": {"type": "frontend", "keywords": ["example"]},
-            "kept": false,
-            "reason": "Keywords not found in HTML"
-        }
-    ]
-}
+RESPOND WITH A JSON ARRAY of decisions, one for each test, like this:
+[
+  {{
+    "index": 0,
+    "keep": true,
+    "reason": "High quality backend test that verifies core success criteria"
+  }},
+  {{
+    "index": 1,
+    "keep": false,
+    "reason": "Redundant with test #0 which is more reliable"
+  }}
+]
+
+For EACH test in the input, include a decision object with:
+- "index": The original index of the test
+- "keep": true/false decision
+- "reason": Brief explanation of your decision
+
+Return ONLY the JSON array, no additional text.
+
+Extra Class-Specific Data:
+{extra_data}
 """
