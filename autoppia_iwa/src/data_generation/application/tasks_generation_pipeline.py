@@ -30,7 +30,7 @@ class TaskGenerationPipeline:
         self.task_config: TaskGenerationConfig = config
         self.synthetic_task_repository = synthetic_task_repository
         self.llm_service: ILLM = llm_service
-        self.local_pipeline = LocalTaskGenerationPipeline(self.llm_service)
+        self.local_pipeline = LocalTaskGenerationPipeline(web_project=web_project)
 
     async def generate_tasks_for_url(self, url: str) -> List[Task]:
         logger.info("Processing page: {}", url)
@@ -42,25 +42,29 @@ class TaskGenerationPipeline:
         start_time = datetime.now()
         output = TasksGenerationOutput(tasks=[], total_phase_time=0.0)
         logger.info("Starting task generation pipeline")
-
         try:
             domain_analysis: DomainAnalysis = self.web_project.domain_analysis
             if not domain_analysis:
                 raise ValueError("No domain analysis found in WebProject")
-            logger.info("Domain analysis found, processing {} page analyses", len(domain_analysis.page_analyses))
 
+            logger.info("Domain analysis found, processing {} page analyses", len(domain_analysis.page_analyses))
             all_tasks: List[Task] = []
 
-            # Generate local tasks for each page using the helper method
-            for index, page_info in enumerate(domain_analysis.page_analyses):
-                if index >= self.task_config.num_or_urls:
-                    break
+            # Randomly select page analyses instead of sequential processing
+            import random
+            available_pages = domain_analysis.page_analyses.copy()
+            random.shuffle(available_pages)
+
+            # Take only the number specified in the configuration
+            selected_pages = available_pages[:self.task_config.num_or_urls]
+
+            # Generate local tasks for each randomly selected page
+            for page_info in selected_pages:
                 url = page_info.page_url
                 local_tasks = await self.generate_tasks_for_url(url)
                 all_tasks.extend(local_tasks)
 
             # Additional global tasks can be added here if needed
-
             for t in all_tasks:
                 if self.task_config.save_task_in_db:
                     self.synthetic_task_repository.save(t.model_dump())
@@ -69,8 +73,6 @@ class TaskGenerationPipeline:
 
             output.total_phase_time = (datetime.now() - start_time).total_seconds()
             logger.info("Task generation completed in {} seconds", output.total_phase_time)
-
         except Exception as e:
             logger.error("Task generation failed: {} \n{}", e, traceback.format_exc())
-
         return output
