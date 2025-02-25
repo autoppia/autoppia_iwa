@@ -8,6 +8,9 @@ from flask_cors import CORS
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
+# 1) Import Lock from the threading module
+from threading import Lock
+
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -35,6 +38,9 @@ counters = {
     "json_repair_succeeded": 0
 }
 
+# 2) Create a global lock
+lock = Lock()
+
 
 def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
     """
@@ -45,7 +51,6 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
     try:
         # If we have a JSON schema, prepend an instruction to produce valid JSON
         if json_format and schema:
-            # Insert system message at the start
             schema_text = json.dumps(schema, indent=2)
             messages.insert(
                 0,
@@ -112,50 +117,52 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
 
 @app.route("/generate", methods=["POST"])
 def handler():
-    counters["total_requests"] += 1
+    # 3) Lock around all the logic so only one request is handled at a time
+    with lock:
+        counters["total_requests"] += 1
 
-    try:
-        data = request.json or {}
+        try:
+            data = request.json or {}
 
-        # Extract the fields as sent by LocalLLMService
-        messages = data.get("messages", [])
-        temperature = float(data.get("temperature", 0.1))
-        max_tokens = int(data.get("max_tokens", 256))
-        json_format = bool(data.get("json_format", False))
-        schema = data.get("schema", None)
+            # Extract the fields as sent by LocalLLMService
+            messages = data.get("messages", [])
+            temperature = float(data.get("temperature", 0.1))
+            max_tokens = int(data.get("max_tokens", 256))
+            json_format = bool(data.get("json_format", False))
+            schema = data.get("schema", None)
 
-        print(f"Messages :{messages} \n \n")
-        print(f"temperature :{temperature} \n \n")
-        print("hardcoding temperature to 0.1")
-        temperature = 0.1
-        max_tokens = 10000
-        print(f"max_tokens :{max_tokens} \n \n")
-        print(f"json_format :{json_format} \n \n")
-        print(f"schema :{schema} \n \n")
+            print(f"Messages :{messages} \n \n")
+            print(f"temperature :{temperature} \n \n")
+            print("hardcoding temperature to 0.1")
+            temperature = 0.1
+            max_tokens = 10000
+            print(f"max_tokens :{max_tokens} \n \n")
+            print(f"json_format :{json_format} \n \n")
+            print(f"schema :{schema} \n \n")
 
-        # Generate the response
-        output = generate_data(
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            json_format=json_format,
-            schema=schema
-        )
-        print(f"Final anwser {output}")
-        return {"output": output}
+            # Generate the response
+            output = generate_data(
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                json_format=json_format,
+                schema=schema
+            )
+            print(f"Final anwser {output}")
+            return {"output": output}
 
-    except ValueError as ve:
-        return {"error": str(ve)}, 400
-    except Exception as e:
-        return {"error": str(e)}, 500
-    finally:
-        # Print counters for debugging
-        print("=== Current Counter Stats ===")
-        print(f"Total requests answered: {counters['total_requests']}")
-        print(f"JSON requests: {counters['json_requests']}")
-        print(f"JSON originally valid: {counters['json_correctly_formatted']}")
-        print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
-        print("=================================")
+        except ValueError as ve:
+            return {"error": str(ve)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
+        finally:
+            # Print counters for debugging
+            print("=== Current Counter Stats ===")
+            print(f"Total requests answered: {counters['total_requests']}")
+            print(f"JSON requests: {counters['json_requests']}")
+            print(f"JSON originally valid: {counters['json_correctly_formatted']}")
+            print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
+            print("=================================")
 
 
 if __name__ == "__main__":
@@ -163,4 +170,5 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=6000, help="Port to run the service on")
     args = parser.parse_args()
 
-    app.run(host="0.0.0.0", port=args.port, debug=True, use_reloader=False)
+    # Set "threaded=False" to avoid multiple threads in the built-in server
+    app.run(host="0.0.0.0", port=args.port, debug=True, use_reloader=False, threaded=False)
