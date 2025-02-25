@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import time
 import traceback
 from collections import defaultdict
 from typing import List, Optional, Dict, Tuple
@@ -55,6 +56,7 @@ class ConcurrentEvaluator(IEvaluator):
         return await self._group_and_evaluate_tasks(task_solutions)
 
     async def _group_and_evaluate_tasks(self, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
+        start_time = time.time()
         grouped_tasks = defaultdict(list)
         if self.config.enable_grouping_tasks:
             for task_solution in task_solutions:
@@ -76,6 +78,7 @@ class ConcurrentEvaluator(IEvaluator):
                 final_results.extend(result)
 
         print(f"All tasks processed. Total tasks evaluated: {len(final_results)} / {len(task_solutions)}")
+        print(f"Evaluation took {time.time() - start_time}s")
         return final_results
 
     async def _evaluate_group_with_semaphore(self, group: List[TaskSolution], semaphore: asyncio.Semaphore) -> List[EvaluationResult]:
@@ -154,12 +157,7 @@ class ConcurrentEvaluator(IEvaluator):
         # Run tests on agent's actions
         test_results_matrix: List[List[TestResult]] = self._run_tests(task, execution_history)
 
-        print("=== Agent Test Results Matrix ===")
-        for row in test_results_matrix:
-            print(row)
-        print("===========================")
-
-        print("=== Agent Test Results Matrix (Success Only) ===")
+        print(f"=== Test Result Matrix for AgentID: {task_solution.web_agent_id} ===")
         for row in test_results_matrix:
             print([result.success for result in row])
         print("===========================")
@@ -245,11 +243,9 @@ class ConcurrentEvaluator(IEvaluator):
         """
         # Check if we have cached results for this task
         if self.config.cache_random_clicker_results and task.id in self._random_clicker_cache:
-            print(f"Using cached random clicker results for task {task.id}")
             return self._random_clicker_cache[task.id]
 
         # Generate random clicker actions
-        print(f"Generating random clicker actions for task {task.id}")
         random_clicker = RandomClickerWebAgent(name="Random-clicker")
         task_solution = await random_clicker.solve_task(task=task)
         random_actions = task_solution.actions
@@ -262,7 +258,6 @@ class ConcurrentEvaluator(IEvaluator):
         random_web_agent_id = f"random-clicker-{task.id}"
 
         # Execute random clicker actions
-        print(f"Evaluating random clicker performance on task {task.id}")
         backend_service = BackendDemoWebService(task.url)
         if not task.is_web_real:
             backend_service.reset_backend_events_db(random_web_agent_id)
@@ -302,7 +297,6 @@ class ConcurrentEvaluator(IEvaluator):
         if self.config.cache_random_clicker_results:
             self._random_clicker_cache[task.id] = (random_passed_tests, random_score)
 
-        print(f"Random clicker passed {len(random_passed_tests)} tests with score {random_score:.2f}")
         return random_passed_tests, random_score
 
     async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], 

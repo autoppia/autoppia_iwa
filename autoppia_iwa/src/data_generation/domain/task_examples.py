@@ -1,5 +1,5 @@
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
-from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckPageViewEventTest, FindInHtmlTest
 from autoppia_iwa.src.web_agents.classes import Task
 
 TASK_EXAMPLES = [
@@ -9,7 +9,7 @@ TASK_EXAMPLES = [
         url='http://localhost:8000/',
         specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
         tests=[
-            CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='login'),
+            CheckEventTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='login'),
             CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/login')
         ],
         relevant_data={
@@ -51,7 +51,7 @@ TASK_EXAMPLES = [
     #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
-    #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='search'),
+    #         CheckEventTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='search'),
     #         FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['job search', 'position', 'location', 'featured jobs', 'trending jobs']),
     #         CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/search')
     #     ],
@@ -73,7 +73,7 @@ TASK_EXAMPLES = [
     #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
-    #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='message_sent'),
+    #         CheckEventTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='message_sent'),
     #         FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['contact us', 'send us a message', 'your name', 'your email', 'your message', 'submit']),
     #         CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/contact/')
     #     ],
@@ -95,7 +95,7 @@ TASK_EXAMPLES = [
     #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
-    #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
+    #         CheckEventTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
     #         FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['thank you', 'registration successful', 'welcome aboard']),
     #         CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/employer/register')
     #     ],
@@ -117,7 +117,7 @@ TASK_EXAMPLES = [
     #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
-    #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
+    #         CheckEventTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='registration'),
     #         FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['account', 'new user', 'customer service']),
     #         CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/employee/register')
     #     ],
@@ -139,7 +139,7 @@ TASK_EXAMPLES = [
     #     url='http://localhost:8000/',
     #     specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),
     #     tests=[
-    #         CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='search'),
+    #         CheckEventTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='search'),
     #         FindInHtmlTest(description='Find keywords in the current HTML content', test_type='frontend', keywords=['job search', 'profession', 'location', 'find jobs'])
     #     ],
     #     relevant_data={

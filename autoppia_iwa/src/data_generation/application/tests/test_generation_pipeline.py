@@ -9,7 +9,7 @@ from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import (
     CheckUrlTest, 
     FindInHtmlTest, 
-    CheckEventEmittedTest, 
+    CheckEventTest, 
     CheckPageViewEventTest,
     JudgeBaseOnHTML,
     JudgeBaseOnScreenshot
@@ -54,7 +54,7 @@ class TestGenerationPipeline:
             self.test_class_map = {
                 "CheckUrlTest": CheckUrlTest,
                 "FindInHtmlTest": FindInHtmlTest,
-                "CheckEventEmittedTest": CheckEventEmittedTest,
+                "CheckEventTest": CheckEventTest,
                 "CheckPageViewEventTest": CheckPageViewEventTest,
                 "JudgeBaseOnHTML": JudgeBaseOnHTML,
                 "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
@@ -62,7 +62,7 @@ class TestGenerationPipeline:
 
         # Map for extra data needed for specific test classes
         self.test_class_extra_data = {
-            "CheckEventEmittedTest": "For CheckEventEmittedTest pls select event_name from this List of allowed event names: " + json.dumps(web_project.events),
+            "CheckEventTest": "For CheckEventTest pls select event_name from this List of allowed event names: " + json.dumps(web_project.events),
         }
 
     async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:

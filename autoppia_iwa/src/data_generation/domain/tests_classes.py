@@ -90,9 +90,6 @@ class CheckUrlTest(BaseTaskTest):
         """
         Compares the current snapshot URL to the expected `url`.
         """
-        print("CheckUrlTest")
-        print(self.url)
-        print(snapshot.current_url)
         return self.url in snapshot.current_url
 
 
@@ -124,11 +121,11 @@ class FindInHtmlTest(BaseTaskTest):
         return any(keyword in content for keyword in self.keywords)
 
 
-class CheckEventEmittedTest(BaseTaskTest):
+class CheckEventTest(BaseTaskTest):
     """
     Test class to verify if a specific backend event was emitted.
     """
-    type: str = "CheckEventEmittedTest"
+    type: str = "CheckEventTest"
     event_name: str = Field(..., description="Name of the expected backend event")
 
     def _execute_test(

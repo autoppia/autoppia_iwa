@@ -2751,7 +2751,7 @@
         "documentation": {}
     },
     {
-        "label": "CheckEventEmittedTest",
+        "label": "CheckEventTest",
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "isExtraImport": true,
@@ -2791,7 +2791,7 @@
         "documentation": {}
     },
     {
-        "label": "CheckEventEmittedTest",
+        "label": "CheckEventTest",
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "isExtraImport": true,
@@ -2895,7 +2895,7 @@
         "documentation": {}
     },
     {
-        "label": "CheckEventEmittedTest",
+        "label": "CheckEventTest",
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "isExtraImport": true,
@@ -3814,6 +3814,15 @@
         "documentation": {}
     },
     {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
         "label": "defaultdict",
         "importPath": "collections",
         "description": "collections",
@@ -4046,15 +4055,6 @@
         "description": "openai",
         "isExtraImport": true,
         "detail": "openai",
-        "documentation": {}
-    },
-    {
-        "label": "time",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "time",
-        "description": "time",
-        "detail": "time",
         "documentation": {}
     },
     {
@@ -8198,7 +8198,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.data_generation.application.tests.prompts",
         "description": "autoppia_iwa.src.data_generation.application.tests.prompts",
-        "peekOfCode": "TEST_FILTERING_PROMPT = \"\"\"\nYou are a test analyzer for web automation testing. Review the tests below and decide which ones to keep.\nTASK CONTEXT:\n- Task Prompt: {task_prompt}\n- Success Criteria: {success_criteria}\nTESTS TO REVIEW:\n{tests_json}\nGUIDELINES:\n1. Backend tests (CheckEventEmittedTest, CheckPageViewEventTest) are preferred over frontend tests or checkUrl tests as they are more reliable. Only in case they try to validate the same thing.\n2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful for complex criteria",
+        "peekOfCode": "TEST_FILTERING_PROMPT = \"\"\"\nYou are a test analyzer for web automation testing. Review the tests below and decide which ones to keep.\nTASK CONTEXT:\n- Task Prompt: {task_prompt}\n- Success Criteria: {success_criteria}\nTESTS TO REVIEW:\n{tests_json}\nGUIDELINES:\n1. Backend tests (CheckEventTest, CheckPageViewEventTest) are preferred over frontend tests or checkUrl tests as they are more reliable. Only in case they try to validate the same thing.\n2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful for complex criteria",
         "detail": "autoppia_iwa.src.data_generation.application.tests.prompts",
         "documentation": {}
     },
@@ -8306,7 +8306,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.data_generation.domain.task_examples",
         "description": "autoppia_iwa.src.data_generation.domain.task_examples",
-        "peekOfCode": "TASK_EXAMPLES = [\n    Task(\n        id='5bd668de-8c2e-4c53-9a72-6037cbdfb9a0',\n        prompt=\"Fill in the email and password fields in the login form and click the 'Log in' button to attempt logging into the website.\",\n        url='http://localhost:8000/',\n        specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),\n        tests=[\n            CheckEventEmittedTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='login'),\n            CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/login')\n        ],",
+        "peekOfCode": "TASK_EXAMPLES = [\n    Task(\n        id='5bd668de-8c2e-4c53-9a72-6037cbdfb9a0',\n        prompt=\"Fill in the email and password fields in the login form and click the 'Log in' button to attempt logging into the website.\",\n        url='http://localhost:8000/',\n        specifications=BrowserSpecification(viewport_width=1920, viewport_height=1080, screen_width=1920, screen_height=1080, device_pixel_ratio=1.0, scroll_x=0, scroll_y=0, browser_x=0, browser_y=0),\n        tests=[\n            CheckEventTest(description='Verify if the backend emitted the specified event', test_type='backend', event_name='login'),\n            CheckPageViewEventTest(description='Check if the backend logged a page view event for the specified URL', test_type='backend', page_view_url='/login')\n        ],",
         "detail": "autoppia_iwa.src.data_generation.domain.task_examples",
         "documentation": {}
     },
@@ -8347,11 +8347,11 @@
         "documentation": {}
     },
     {
-        "label": "CheckEventEmittedTest",
+        "label": "CheckEventTest",
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "peekOfCode": "class CheckEventEmittedTest(BaseTaskTest):\n    \"\"\"\n    Test class to verify if a specific backend event was emitted.\n    \"\"\"\n    type: str = \"CheckEventEmittedTest\"\n    event_name: str = Field(..., description=\"Name of the expected backend event\")\n    def _execute_test(\n        self,\n        current_iteration: int,\n        prompt:str,",
+        "peekOfCode": "class CheckEventTest(BaseTaskTest):\n    \"\"\"\n    Test class to verify if a specific backend event was emitted.\n    \"\"\"\n    type: str = \"CheckEventTest\"\n    event_name: str = Field(..., description=\"Name of the expected backend event\")\n    def _execute_test(\n        self,\n        current_iteration: int,\n        prompt:str,",
         "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "documentation": {}
     },

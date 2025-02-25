@@ -1,6 +1,6 @@
 import unittest
 
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventEmittedTest, CheckPageViewEventTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest, CheckEventTest, CheckPageViewEventTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 
 
 class TestAssignTests(unittest.TestCase):
@@ -27,7 +27,7 @@ class TestAssignTests(unittest.TestCase):
         self.assertIsInstance(assigned_tests[1], JudgeBaseOnHTML, "Test 2 is not JudgeBaseOnHTML")
         self.assertIsInstance(assigned_tests[2], JudgeBaseOnScreenshot, "Test 3 is not JudgeBaseOnScreenshot")
         self.assertIsInstance(assigned_tests[3], CheckPageViewEventTest, "Test 4 is not CheckPageViewEventTest")
-        self.assertIsInstance(assigned_tests[4], CheckEventEmittedTest, "Test 5 is not CheckEventEmittedTest")
+        self.assertIsInstance(assigned_tests[4], CheckEventTest, "Test 5 is not CheckEventTest")
 
     def test_assign_tests_invalid_config(self):
         """

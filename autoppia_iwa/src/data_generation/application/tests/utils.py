@@ -17,7 +17,7 @@ def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:
     # Remap test_type based on a predefined mapping
     test_type_mapping = {
         "FindInHtmlTest": "frontend",
-        "CheckEventEmittedTest": "backend",
+        "CheckEventTest": "backend",
         "CheckPageViewEventTest": "backend",
         "JudgeBaseOnHTML": "frontend",
         "OpinionBaseOnScreenshot": "frontend",
