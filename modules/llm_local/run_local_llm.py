@@ -142,7 +142,7 @@ def handler():
 
         # Optionally override
         temperature = 0.1
-        max_tokens = 10000
+        max_tokens = 1000
 
         # Debug: Print the final parameters used
         print("[handler] Final parameters:")
