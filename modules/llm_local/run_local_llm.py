@@ -126,6 +126,8 @@ def handler():
 
         print(f"Messages :{messages} \n \n")
         print(f"temperature :{temperature} \n \n")
+        print("hardcoding temperature to 0.1")
+        temperature = 0.1
         print(f"max_tokens :{max_tokens} \n \n")
 
         # Generate the response
