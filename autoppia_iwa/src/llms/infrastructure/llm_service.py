@@ -114,7 +114,7 @@ class LocalLLMService(ILLM):
         schema: Optional[Dict] = None
     ) -> str:
         try:
-            with httpx.Client(timeout=30.0) as client:
+            with httpx.Client(timeout=60.0) as client:
                 payload = {
                     "messages": messages,
                     "temperature": self.config.temperature,
@@ -137,7 +137,7 @@ class LocalLLMService(ILLM):
         json_format: bool = False,
         schema: Optional[Dict] = None
     ) -> str:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             try:
                 payload = {
                     "messages": messages,
