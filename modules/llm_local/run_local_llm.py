@@ -119,10 +119,14 @@ def handler():
 
         # Extract the fields as sent by LocalLLMService
         messages = data.get("messages", [])
-        temperature = float(data.get("temperature", 0.7))
+        temperature = float(data.get("temperature", 0.1))
         max_tokens = int(data.get("max_tokens", 256))
         json_format = bool(data.get("json_format", False))
         schema = data.get("schema", None)
+
+        print(f"Messages :{messages} \n \n")
+        print(f"temperature :{temperature} \n \n")
+        print(f"max_tokens :{max_tokens} \n \n")
 
         # Generate the response
         output = generate_data(
