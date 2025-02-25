@@ -2,14 +2,12 @@ import argparse
 import gc
 import json
 from json_repair import repair_json
+import sys
 
 from flask import Flask, request
 from flask_cors import CORS
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
-
-# 1) Import Lock from the threading module
-from threading import Lock
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -38,16 +36,23 @@ counters = {
     "json_repair_succeeded": 0
 }
 
-# 2) Create a global lock
-lock = Lock()
-
 
 def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
     """
     Generate text using Qwen with the given parameters.
     If json_format=True, attempts to repair and return valid JSON.
     If schema is provided, instruct the model to strictly follow it.
+
+    Debugging statements added to show parameters and partial process.
     """
+    # Debug: Print out the parameters
+    print("\n[generate_data] Called with:")
+    print(f"  messages: {messages}")
+    print(f"  temperature: {temperature}")
+    print(f"  max_tokens: {max_tokens}")
+    print(f"  json_format: {json_format}")
+    print(f"  schema: {schema}")
+
     try:
         # If we have a JSON schema, prepend an instruction to produce valid JSON
         if json_format and schema:
@@ -64,12 +69,11 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
                 },
             )
 
-        # Convert messages to a single text prompt using Qwen's helper
+        # Convert messages to a single text prompt
         text_prompt = tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
-            # We can omit chat_format or set it to "default", depending on preference
             chat_format=None
         )
 
@@ -103,12 +107,13 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
                     response_text = json.dumps(repaired_obj, ensure_ascii=False)
                     counters["json_repair_succeeded"] += 1
                 except:
-                    # If repair also fails, we return as-is
                     pass
 
         return response_text
 
     except Exception as e:
+        # Debug: Print out the exception
+        print("[generate_data] Exception occurred:", e, file=sys.stderr)
         return f"Generation error: {e}"
 
     finally:
@@ -117,52 +122,64 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
 
 @app.route("/generate", methods=["POST"])
 def handler():
-    # 3) Lock around all the logic so only one request is handled at a time
-    with lock:
-        counters["total_requests"] += 1
+    # Increase total request count
+    counters["total_requests"] += 1
 
-        try:
-            data = request.json or {}
+    # Debug: Print raw incoming request data
+    print("\n[handler] Raw request data:", request.data)
 
-            # Extract the fields as sent by LocalLLMService
-            messages = data.get("messages", [])
-            temperature = float(data.get("temperature", 0.1))
-            max_tokens = int(data.get("max_tokens", 256))
-            json_format = bool(data.get("json_format", False))
-            schema = data.get("schema", None)
+    try:
+        data = request.json or {}
+        # Debug: Print parsed JSON body
+        print("[handler] Parsed JSON data:", data)
 
-            print(f"Messages :{messages} \n \n")
-            print(f"temperature :{temperature} \n \n")
-            print("hardcoding temperature to 0.1")
-            temperature = 0.1
-            max_tokens = 10000
-            print(f"max_tokens :{max_tokens} \n \n")
-            print(f"json_format :{json_format} \n \n")
-            print(f"schema :{schema} \n \n")
+        # Extract the fields
+        messages = data.get("messages", [])
+        temperature = float(data.get("temperature", 0.1))
+        max_tokens = int(data.get("max_tokens", 256))
+        json_format = bool(data.get("json_format", False))
+        schema = data.get("schema", None)
 
-            # Generate the response
-            output = generate_data(
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                json_format=json_format,
-                schema=schema
-            )
-            print(f"Final anwser {output}")
-            return {"output": output}
+        # Optionally override
+        temperature = 0.1
+        max_tokens = 10000
 
-        except ValueError as ve:
-            return {"error": str(ve)}, 400
-        except Exception as e:
-            return {"error": str(e)}, 500
-        finally:
-            # Print counters for debugging
-            print("=== Current Counter Stats ===")
-            print(f"Total requests answered: {counters['total_requests']}")
-            print(f"JSON requests: {counters['json_requests']}")
-            print(f"JSON originally valid: {counters['json_correctly_formatted']}")
-            print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
-            print("=================================")
+        # Debug: Print the final parameters used
+        print("[handler] Final parameters:")
+        print(f"  messages: {messages}")
+        print(f"  temperature: {temperature}")
+        print(f"  max_tokens: {max_tokens}")
+        print(f"  json_format: {json_format}")
+        print(f"  schema: {schema}")
+
+        # Generate the response
+        output = generate_data(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            json_format=json_format,
+            schema=schema
+        )
+
+        # Debug: Print final answer
+        print(f"[handler] Final Answer:\n{output}")
+
+        return {"output": output}
+
+    except ValueError as ve:
+        print("[handler] ValueError occurred:", ve, file=sys.stderr)
+        return {"error": str(ve)}, 400
+    except Exception as e:
+        print("[handler] Exception occurred:", e, file=sys.stderr)
+        return {"error": str(e)}, 500
+    finally:
+        # Print counters for debugging
+        print("\n=== Current Counter Stats ===")
+        print(f"Total requests answered: {counters['total_requests']}")
+        print(f"JSON requests: {counters['json_requests']}")
+        print(f"JSON originally valid: {counters['json_correctly_formatted']}")
+        print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
+        print("=================================")
 
 
 if __name__ == "__main__":
@@ -170,5 +187,4 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=6000, help="Port to run the service on")
     args = parser.parse_args()
 
-    # Set "threaded=False" to avoid multiple threads in the built-in server
-    app.run(host="0.0.0.0", port=args.port, debug=True, use_reloader=False, threaded=False)
+    app.run(host="0.0.0.0", port=args.port, debug=True, use_reloader=False)
