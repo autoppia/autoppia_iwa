@@ -5,11 +5,9 @@ from pydantic import BaseModel
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 
-class TestEvaluated(BaseModel):
+class TestResult(BaseModel):
     """Represents the evaluation result of a single test."""
 
-    description: str  # Description of the test
-    test_type: str  # Type of the test (e.g., "frontend", "backend")
     is_success: bool  # True if the test passed, False otherwise
     extra_data: Optional[dict] = None  # Additional data related to the test
 
@@ -24,7 +22,7 @@ class Feedback(BaseModel):
     total_execution_time: float  # Total time taken for execution
     time_penalty: float  # Penalty points for exceeding expected time
     critical_test_penalty: int  # Penalty points for failing critical tests
-    test_results: List[TestEvaluated]  # Detailed test results
+    test_results: List[TestResult]  # Detailed test results
     execution_history: List[ActionExecutionResult]  # Detailed execution logs
 
     def to_text(self) -> str:
@@ -55,7 +53,7 @@ class EvaluationResult(BaseModel):
     """Encapsulates the output of a task evaluation."""
 
     final_score: float = 0
-    test_results: List[TestEvaluated]  # List of test evaluation results
+    test_results: List[TestResult]  # List of test evaluation results
     execution_history: List[ActionExecutionResult]  # History of all actions executed
     feedback: Optional[Feedback] = None  # Feedback generated during the evaluation
 

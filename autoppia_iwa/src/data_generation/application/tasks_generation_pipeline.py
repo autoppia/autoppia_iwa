@@ -52,7 +52,9 @@ class TaskGenerationPipeline:
             all_tasks: List[Task] = []
 
             # Generate local tasks for each page using the helper method
-            for page_info in domain_analysis.page_analyses:
+            for index, page_info in enumerate(domain_analysis.page_analyses):
+                if index >= self.task_config.num_or_urls:
+                    break
                 url = page_info.page_url
                 local_tasks = await self.generate_tasks_for_url(url)
                 all_tasks.extend(local_tasks)

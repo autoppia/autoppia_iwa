@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import List
 
-from autoppia_iwa.src.evaluation.classes import Feedback, TestEvaluated
+from autoppia_iwa.src.evaluation.classes import Feedback, TestResult
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 
@@ -20,7 +20,7 @@ class FeedbackGenerator:
         return (success_count / total_count) * scale if total_count > 0 else 0
 
     @staticmethod
-    def group_test_results(test_results: List['TestEvaluated']) -> dict:
+    def group_test_results(test_results: List['TestResult']) -> dict:
         """
         Group tests by (description, test_type, extra_data).
 
@@ -86,7 +86,7 @@ class FeedbackGenerator:
     def generate_feedback(
         task_prompt: str,
         execution_history: List['ActionExecutionResult'],
-        test_results: List['TestEvaluated'],
+        test_results: List['TestResult'],
         expected_time: float = 50.0,
     ) -> 'Feedback':
         """
@@ -95,7 +95,7 @@ class FeedbackGenerator:
         Args:
             task_prompt (str): The description of the evaluated task.
             execution_history (List[ActionExecutionResult]): History of executed actions.
-            test_results (List[TestEvaluated]): Results of the evaluated tests.
+            test_results (List[TestResult]): Results of the evaluated tests.
             expected_time (float): The expected time to complete the task (in seconds).
 
         Returns:

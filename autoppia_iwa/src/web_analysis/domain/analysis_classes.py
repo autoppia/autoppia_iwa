@@ -37,6 +37,11 @@ class DomainAnalysis(BaseModel):
     features:List[str] = Field(default_factory=list, description="List of features")
     urls:List[str] = Field(default_factory=list, description="List of urls")
 
+    def dump_excluding_page_analyses(self):
+        dump = self.model_dump()
+        dump["page_analyses"] = None
+        return dump
+
     def get_page_analysis(self, url:str):
         for page_analysis in self.page_analyses:
             if page_analysis.page_url == url:

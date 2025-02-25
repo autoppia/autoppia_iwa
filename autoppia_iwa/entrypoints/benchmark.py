@@ -22,7 +22,7 @@ from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline
 
 app = AppBootstrap()
 AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
-iterations = 2  # total_tasks = tasks * iterations
+iterations = 1  # total_tasks = tasks * iterations
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -79,7 +79,11 @@ async def generate_tasks_for_project(demo_project:WebProject, generate_new_tasks
     If TASKS is provided, it will be used. Otherwise, tasks are generated
     through the TaskGenerationPipeline.
     """
-    config = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False,number_of_prompts_per_task=3)
+    config = TaskGenerationConfig(web_project=demo_project, 
+                                  save_web_analysis_in_db=True, 
+                                  save_task_in_db=False,
+                                  number_of_prompts_per_task=3,
+                                  num_or_urls=1)
     if not generate_new_tasks and TASK_EXAMPLES:
         tasks = TASK_EXAMPLES
     else:

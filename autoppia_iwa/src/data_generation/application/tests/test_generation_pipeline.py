@@ -18,28 +18,20 @@ from autoppia_iwa.src.data_generation.domain.tests_classes import (
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.shared.web_utils import detect_interactive_elements
 
-# Import prompts
-from autoppia_iwa.src.data_generation.application.tests.prompts import (
-    TEST_CONTEXT_PROMPT,
-    TEST_GENERATION_SYSTEM_PROMPT,
-    FILTER_PROMPT
-)
-
 # Logic generator (optional)
 from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import (
     TestLogicGenerator,
 )
+from .prompts import TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT
 
 
 class TestGenerationPipeline:
-    """
-    A pipeline that:
-      1) Gathers context (HTML, screenshot info, etc.) for each Task.
-      2) Uses LLM to generate appropriate tests based on the task context.
-      3) Filters the generated tests to ensure they're valid and relevant.
-      4) Instantiates the test objects and adds them to the task.
-      5) (Optionally) generates a logic function for the entire set of tests.
-    """
+    """ A pipeline that: 
+    1) Gathers context (HTML, screenshot info, etc.) for each Task. 
+    2) Uses LLM to generate appropriate tests for each test class (one LLM request per class). 
+    3) Filters the generated tests (optional). 
+    4) Instantiates the test objects and adds them to the task. 
+    5) (Optionally) generates a logic function for the entire set of tests. """
 
     def __init__(
         self,
@@ -51,7 +43,6 @@ class TestGenerationPipeline:
         self.llm_service = llm_service
         self.truncate_html_chars = truncate_html_chars
         self.logic_generator = TestLogicGenerator()
-
         # Map of test type names to classes
         self.test_class_map = {
             "CheckUrlTest": CheckUrlTest,
@@ -59,8 +50,7 @@ class TestGenerationPipeline:
             "CheckEventEmittedTest": CheckEventEmittedTest,
             "CheckPageViewEventTest": CheckPageViewEventTest,
             "JudgeBaseOnHTML": JudgeBaseOnHTML,
-            "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
-            "OpinionBaseOnScreenshot": JudgeBaseOnScreenshot  # Map to the same class
+            "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
         }
 
     async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:
@@ -69,113 +59,178 @@ class TestGenerationPipeline:
         """
         for task in tasks:
             try:
-                # STEP 1: Generate raw tests using LLM
+                # STEP 1: Generate raw tests using LLM (one call per test class)
                 raw_tests = await self._generate_tests(task)
-
                 if not raw_tests:
                     logger.warning(f"No tests generated for task {task.id}")
                     continue
-
-                # STEP 2: Filter tests to ensure they're valid
+                # STEP 2: Optionally filter tests
                 valid_tests = await self._filter_tests(task, raw_tests)
-
                 # STEP 3: Instantiate and add the test objects to the task
                 await self._instantiate_tests(task, valid_tests)
-
-                # STEP 4: Optionally, generate a logic function that references these tests
+                # STEP 4: Optionally generate a logic function that references these tests
                 if task.tests:
                     task.logic_function = await self.logic_generator.generate_logic(
                         task=task,
                         tests=task.tests
                     )
                     logger.info(f"Generated logic function for task {task.id}")
-
             except Exception as e:
-                logger.error(f"Failed to generate tests for task={task.id}: {e}")
-
+                logger.error(f"Failed to generate tests for task={task.id}: {str(e)}")
+                logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
         return tasks
 
     async def _generate_tests(self, task: Task) -> List[Dict[str, Any]]:
         """
-        Generate test definitions using the LLM
+        Generate test definitions by checking each test class individually
         """
-        try:
-            # Gather contextual data
-            html = task.html
-            cleaned_html = task.clean_html[:self.truncate_html_chars] if task.clean_html else ""
-            screenshot_desc = task.screenshot_description or ""
-            interactive_elements = detect_interactive_elements(cleaned_html)
-            domain_analysis = self.web_project.domain_analysis
-            page_analysis = domain_analysis.get_page_analysis(url=task.url)
+        all_tests = []
+        # Gather contextual data needed for the prompt
+        cleaned_html = task.clean_html[:self.truncate_html_chars] if task.clean_html else ""
+        screenshot_desc = task.screenshot_description or ""
+        interactive_elements = detect_interactive_elements(cleaned_html)
+        domain_analysis = self.web_project.domain_analysis or {}
+        # Get serializable domain analysis
+        domain_analysis_dict = {}
+        if hasattr(domain_analysis, 'dump_excluding_page_analyses'):
+            domain_analysis_dict = domain_analysis.dump_excluding_page_analyses()
 
-            # Prepare generation prompt
-            generation_user_content = (
-                f"Task Prompt: {task.prompt}\n\n"
-                f"Success Criteria: {task.success_criteria or 'N/A'}\n\n"
-                f"Cleaned HTML:\n{cleaned_html}\n\n"
-                f"Screenshot summary:\n{screenshot_desc}\n\n"
-                f"Interactive elements:\n{json.dumps(interactive_elements, indent=2)}\n\n"
-                f"Project context:\n{TEST_CONTEXT_PROMPT}\n\n"
-                "Return an array of test definitions. Each must have 'test_type' and optional fields."
-            )
-
-            # Call the LLM
-            response = await self.llm_service.async_predict(
-                messages=[
-                    {"role": "system", "content": TEST_GENERATION_SYSTEM_PROMPT},
-                    {"role": "user", "content": generation_user_content},
-                ],
-                json_format=True
-            )
-
-            # Parse response
+        for test_class_name, test_class in self.test_class_map.items():
             try:
-                raw_tests = json.loads(response) if isinstance(response, str) else response
-                if not isinstance(raw_tests, list):
-                    logger.warning(f"LLM response is not a list: {raw_tests}")
-                    return []
+                # Handle schema safely
+                schema_json = "{}"
+                try:
+                    if hasattr(test_class, 'model_json_schema'):
+                        schema_json = json.dumps(test_class.model_json_schema(), indent=2)
+                    elif hasattr(test_class, 'schema'):
+                        schema_json = json.dumps(test_class.schema(), indent=2)
+                    else:
+                        # Create a basic schema for non-pydantic classes
+                        schema_json = json.dumps({
+                            "title": test_class_name,
+                            "type": "object",
+                            "properties": {
+                                "type": {"type": "string", "enum": [test_class_name]},
+                                "description": {"type": "string"}
+                            },
+                            "required": ["type"]
+                        }, indent=2)
+                except Exception as e:
+                    logger.warning(f"Could not get schema for {test_class_name}: {e}")
+                    # Create a basic schema
+                    schema_json = json.dumps({
+                        "title": test_class_name,
+                        "type": "object",
+                        "properties": {
+                            "type": {"type": "string", "enum": [test_class_name]},
+                            "description": {"type": "string"}
+                        },
+                        "required": ["type"]
+                    }, indent=2)
 
-                logger.info(f"Generated {len(raw_tests)} raw tests for task {task.id}")
-                return raw_tests
+                # Build the per-class system prompt
+                system_prompt = TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT.format(
+                    test_class_name=test_class_name,
+                    schema_json=schema_json,
+                    task_prompt=task.prompt,
+                    success_criteria=task.success_criteria or "N/A",
+                    truncated_html=cleaned_html,
+                    screenshot_desc=screenshot_desc,
+                    interactive_elements=json.dumps(interactive_elements, indent=2),
+                    domain_analysis=domain_analysis_dict
+                )
 
-            except json.JSONDecodeError:
-                logger.error(f"Failed to parse LLM response as JSON: {response}")
-                return []
+                # Call the LLM
+                response = await self.llm_service.async_predict(
+                    messages=[
+                        {"role": "system", "content": system_prompt}
+                    ],
+                    json_format=True
+                )
 
-        except Exception as e:
-            logger.error(f"Error generating tests for task {task.id}: {e}")
-            return []
+                # Parse the response - Fix for JSON parsing error
+                response_data = None
+                if isinstance(response, str):
+                    try:
+                        # Clean the response string before parsing
+                        cleaned_response = response.strip()
+                        # Check if the response starts and ends with brackets
+                        if not (cleaned_response.startswith('[') and cleaned_response.endswith(']')):
+                            # Try to find valid JSON array within the response
+                            start_idx = cleaned_response.find('[')
+                            end_idx = cleaned_response.rfind(']')
+                            if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
+                                cleaned_response = cleaned_response[start_idx:end_idx + 1]
+                        response_data = json.loads(cleaned_response)
+                    except json.JSONDecodeError:
+                        logger.error(f"Failed to parse LLM response as JSON: {response}")
+                        continue
+                else:
+                    # If the LLM returned Python dict/list, use as-is
+                    response_data = response
+
+                if not isinstance(response_data, list):
+                    logger.warning(
+                        f"Expected a JSON array for test class {test_class_name}, got: {type(response_data)}"
+                    )
+                    continue
+
+                if len(response_data) == 0:
+                    # LLM says "not relevant" or no tests
+                    logger.info(
+                        f"LLM returned no tests for {test_class_name} on task {task.id}"
+                    )
+                else:
+                    # We have some test definitions for this class
+                    # Ensure all tests have the correct type
+                    for test in response_data:
+                        if isinstance(test, dict):
+                            # Ensure the type is set correctly
+                            if test.get("type") != test_class_name:
+                                test["type"] = test_class_name
+                                logger.warning(f"Fixed incorrect type in {test_class_name} response")
+
+                            # Add test_type if needed (for backward compatibility)
+                            if "test_type" not in test:
+                                test["test_type"] = test_class_name
+
+                    logger.info(
+                        f"LLM returned {len(response_data)} tests for {test_class_name} on task {task.id}"
+                    )
+                    all_tests.extend(response_data)
+
+            except Exception as e:
+                logger.error(
+                    f"Error generating tests for {test_class_name} in task {task.id}: {str(e)}"
+                )
+                logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
+
+        return all_tests
 
     async def _filter_tests(self, task: Task, raw_tests: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Filter tests to ensure they're valid and relevant using the TestGenerationPipeline.
+        Filter tests to ensure they're valid and relevant.
+        This implementation ensures at most one test per test class.
         """
-        return raw_tests
-        try:
-            # Create an instance of TestGenerationPipeline if not already available
-            if not hasattr(self, '_test_pipeline'):
-                self._test_pipeline = TestGenerationPipeline(
-                    llm_service=self.llm_service,
-                    truncate_html_chars=1500  # Use the same value or make configurable
-                )
+        filtered_tests = []
+        seen_test_types = set()
 
-            # Get the truncated HTML
-            truncated_html = task.clean_html[:1500] if task.clean_html else ""
+        for test_def in raw_tests:
+            # Use either "type" or "test_type" field to determine the test type
+            test_type = test_def.get("type") or test_def.get("test_type")
 
-            # Use the pipeline's filter_generated_tests method
-            valid_tests = await self._test_pipeline.filter_generated_tests(
-                proposed_tests=raw_tests,
-                truncated_html=truncated_html,
-                task=task
-            )
+            # Skip tests with invalid test types
+            if test_type not in self.test_class_map:
+                logger.warning(f"Skipping test with invalid type: {test_type}")
+                continue
 
-            # Log filtering results
-            logger.info(f"Filtered {len(raw_tests) - len(valid_tests)} tests for task {task.id}")
+            if test_type and test_type not in seen_test_types:
+                seen_test_types.add(test_type)
+                filtered_tests.append(test_def)
+            else:
+                logger.info(f"Filtering out duplicate test type: {test_type}")
 
-            return valid_tests
-        except Exception as e:
-            logger.error(f"Error filtering tests for task {task.id}: {e}")
-            return raw_tests  # Fall back to raw tests if filtering fails
+        return filtered_tests
 
     async def _instantiate_tests(self, task: Task, valid_tests: List[Dict[str, Any]]) -> None:
         """
@@ -183,10 +238,14 @@ class TestGenerationPipeline:
         """
         for test_def in valid_tests:
             try:
-                # Extract test type
-                test_type = test_def.pop("test_type", None)
+                # Create a copy of the test definition to avoid modifying the original
+                test_def_copy = test_def.copy()
+
+                # Extract test type (using either "type" or "test_type" field)
+                test_type = test_def_copy.pop("type", None) or test_def_copy.pop("test_type", None)
+
                 if not test_type:
-                    logger.warning(f"Test definition missing test_type: {test_def}")
+                    logger.warning(f"Test definition missing type: {test_def}")
                     continue
 
                 # Get corresponding test class
@@ -195,23 +254,18 @@ class TestGenerationPipeline:
                     logger.warning(f"Unknown test type: {test_type}")
                     continue
 
-                # Handle special cases for test parameters
-                if test_class in [JudgeBaseOnHTML, JudgeBaseOnScreenshot]:
-                    # Ensure 'name' parameter is present
-                    if "name" not in test_def:
-                        test_def["name"] = test_type
+                # Add back the type field required by the model
+                test_def_copy["type"] = test_type
 
-                # Add test_type for BaseTaskTest if needed
-                if hasattr(test_class, 'test_type') and 'test_type' not in test_def:
-                    if test_class in [CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot]:
-                        test_def['test_type'] = 'frontend'
-                    elif test_class in [CheckEventEmittedTest, CheckPageViewEventTest]:
-                        test_def['test_type'] = 'backend'
+                # Remove any fields that might cause issues with instantiation
+                if "test_type" in test_def_copy:
+                    test_def_copy.pop("test_type")
 
                 # Instantiate the test object
-                test_instance = test_class(**test_def)
+                test_instance = test_class(**test_def_copy)
                 task.tests.append(test_instance)
                 logger.info(f"Added {test_type} to task {task.id}")
 
             except Exception as e:
-                logger.error(f"Failed to instantiate test {test_def}: {e}")
+                logger.error(f"Failed to instantiate test {test_def}: {str(e)}")
+                logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")

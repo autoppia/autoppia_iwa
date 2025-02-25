@@ -81,7 +81,6 @@ Return JSON:
 ]
 """
 
-
 PHASE2_SUCCESS_CRITERIA_FILTER_PROMPT = """
 We Are in Phase 2: Success Criteria Filtering. 
 Remove tasks with vague or missing success criteria.

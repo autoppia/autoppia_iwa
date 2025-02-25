@@ -151,6 +151,7 @@ class TaskGenerationConfig(BaseModel):
     number_of_prompts_per_task: int = 1
     global_tasks_to_generate: int = 2
     local_tasks_to_generate_per_url: int = 2
+    num_or_urls:int = None
 
 
 class TasksGenerationOutput(BaseModel):
