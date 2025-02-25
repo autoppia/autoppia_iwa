@@ -16,6 +16,8 @@ from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository impo
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
+    TestGenerationPipeline)
 
 
 class TaskGenerationPipeline:
@@ -71,6 +73,9 @@ class TaskGenerationPipeline:
                     self.synthetic_task_repository.save(t.model_dump())
                     logger.info("Task saved to DB: {}", t)
                 output.tasks.append(t)
+
+            test_pipeline = TestGenerationPipeline(llm_service=self.llm_service, web_project=self.web_project)
+            all_tasks = await test_pipeline.add_tests_to_tasks(all_tasks)
 
             output.total_phase_time = (datetime.now() - start_time).total_seconds()
             logger.info("Task generation completed in {} seconds", output.total_phase_time)
