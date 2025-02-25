@@ -140,10 +140,6 @@ def handler():
         json_format = bool(data.get("json_format", False))
         schema = data.get("schema", None)
 
-        # Optionally override
-        temperature = 0.1
-        max_tokens = 1000
-
         # Debug: Print the final parameters used
         print("[handler] Final parameters:")
         print(f"  messages: {messages}")
