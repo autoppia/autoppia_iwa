@@ -132,6 +132,7 @@ def handler():
             json_format=json_format,
             schema=schema
         )
+        print(f"Final anwser {output}")
         return {"output": output}
 
     except ValueError as ve:
