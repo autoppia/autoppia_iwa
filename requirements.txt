@@ -21,4 +21,4 @@ pillow==11.1.0
 # torch 
 # transformers
 loguru
-aiohttp==3.11.12
+aiohttp

@@ -42,6 +42,7 @@ class TaskGenerationPipeline:
         start_time = datetime.now()
         output = TasksGenerationOutput(tasks=[], total_phase_time=0.0)
         logger.info("Starting task generation pipeline")
+
         try:
             domain_analysis: DomainAnalysis = self.web_project.domain_analysis
             if not domain_analysis:
