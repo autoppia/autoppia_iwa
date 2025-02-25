@@ -28,11 +28,9 @@ model.eval()
 def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
     """
     Generate text using Qwen with the given parameters.
-    If json_format=True, attempts to repair and return valid JSON.
-    If schema is provided, instruct the model to strictly follow it.
 
     Returns:
-      (response_text, num_generated_tokens)
+      (response_text, input_token_count, num_generated_tokens)
     """
     try:
         # If we have a JSON schema, prepend an instruction to produce valid JSON
@@ -57,8 +55,8 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
             add_generation_prompt=True,
             chat_format=None
         )
-
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
+        input_token_count = model_inputs.input_ids.shape[-1]
 
         # Generate
         generated_ids = model.generate(
@@ -67,16 +65,13 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
             temperature=temperature
         )
 
-        # Identify newly generated portion only
+        # Separate out newly generated part
         generated_ids = [
             output_ids[len(input_ids):]
             for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
 
-        # Decode
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
-        # Number of tokens in the newly generated part
         num_generated_tokens = len(generated_ids[0])
 
         # If JSON format is requested, try to validate or repair
@@ -91,31 +86,28 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
                 except:
                     pass
 
-        return response_text, num_generated_tokens
+        return response_text, input_token_count, num_generated_tokens
 
     except Exception as e:
-        return f"Generation error: {e}", 0
-
+        return f"Generation error: {e}", 0, 0
     finally:
         gc.collect()
 
 
 @app.route("/generate", methods=["POST"])
 def handler():
-    # Measure time to track performance
     start_time = time.time()
 
     try:
         data = request.json or {}
-
-        messages = data.get("messages", [])
         temperature = float(data.get("temperature", 0.1))
         max_tokens = int(data.get("max_tokens", 256))
         json_format = bool(data.get("json_format", False))
         schema = data.get("schema", None)
+        messages = data.get("messages", [])
 
         # Generate response
-        output, num_generated_tokens = generate_data(
+        output, input_token_count, num_generated_tokens = generate_data(
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
@@ -125,16 +117,12 @@ def handler():
 
         end_time = time.time()
         elapsed = end_time - start_time
-        tokens_per_second = (
-            num_generated_tokens / elapsed if elapsed > 0 else 0
-        )
+        tokens_per_second = num_generated_tokens / elapsed if elapsed > 0 else 0
 
-        # Print the minimal performance info
-        # Message length is sum of lengths of message["content"]
-        total_message_length = sum(len(m.get("content", "")) for m in messages)
-
+        # Print minimal performance info
         print(f"\n--- Request Info ---")
-        print(f"Message length: {total_message_length}")
+        print(f"Input tokens: {input_token_count}")
+        print(f"Generated tokens: {num_generated_tokens}")
         print(f"Temperature: {temperature}")
         print(f"Max tokens: {max_tokens}")
         print(f"json_format: {json_format}")
