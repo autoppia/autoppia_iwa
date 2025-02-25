@@ -7,9 +7,9 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from tests import test_container
 
 
-class TestNewActionsGeneration(unittest.TestCase):
+class TestActionGeneration(unittest.TestCase):
     """
-    Unit tests for generating new actions based on task configurations.
+    Unit tests for validating action generation based on task configurations.
     """
 
     @classmethod
@@ -17,25 +17,21 @@ class TestNewActionsGeneration(unittest.TestCase):
         """
         Set up shared resources for all tests in the class.
         """
-        # Initialize the application bootstrap and LLM service
         cls.app_bootstrap = AppBootstrap()
         cls.llm_service = cls.app_bootstrap.container.llm_service()
         cls.web_agent: ApifiedWebAgent = test_container.web_agent()
-        # Create the task configuration
-        cls.task = cls._create_task()
+        cls.task = cls._initialize_task()
 
     @staticmethod
-    def _create_task():
+    def _initialize_task():
         """
-        Create a Task configuration from predefined task data.
+        Initializes and returns a Task instance with predefined task data.
 
         Returns:
-            Task: A Task instance with configured prompt, domain, URL, and tests.
+            Task: A configured Task instance.
         """
-
-        # Sample task data
         task_data = {
-            "prompt": "Click on the \"Login\" link in the header, fill credentials and login.",
+            "prompt": "Click on the 'Login' link in the header, fill credentials, and login.",
             "url": "http://localhost:8000/",
             "tests": [
                 {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view", "app_type": "jobs"},
@@ -45,13 +41,11 @@ class TestNewActionsGeneration(unittest.TestCase):
             ],
             "milestones": None,
             "web_analysis": None,
-            "relevant_data": {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
+            "relevant_data": {"authorization": {"email": "employee@employee.com", "password": "employee"}},
         }
 
-        # Generate test instances from the test data
         tests = BaseTaskTest.assign_tests(task_data["tests"])
 
-        # Create and return a Task instance with the generated tests
         return Task(
             prompt=task_data["prompt"],
             url=task_data["url"],
@@ -61,13 +55,14 @@ class TestNewActionsGeneration(unittest.TestCase):
             relevant_data=task_data["relevant_data"],
         )
 
-    def test_new_actions_generation(self):
-        """Test that actions are generated correctly from a goal and URL."""
-        # Generate actions using the configured task
+    def test_action_generation(self):
+        """
+        Test that actions are correctly generated from a goal and URL.
+        """
         task_solution = self.web_agent.solve_task_sync(task=self.task)
 
-        # Assertions
-        self.assertTrue(task_solution, "No task solution were generated.")
+        # Validate generated actions
+        self.assertTrue(task_solution, "No task solution was generated.")
         self.assertTrue(task_solution.actions, "No actions were generated. The action list is empty.")
 
         # Debugging output (optional)

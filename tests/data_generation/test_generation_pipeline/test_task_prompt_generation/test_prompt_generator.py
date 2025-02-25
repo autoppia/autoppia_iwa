@@ -14,15 +14,16 @@ class TestTaskPromptGenerator(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up shared test dependencies for all tests."""
-        cls.app_boostrap = AppBootstrap()
+        cls.app_bootstrap = AppBootstrap()
         cls.domain = "localhost:8000"
         cls.test_data = cls._get_mock_web_analysis()
         cls.web_analysis = DomainAnalysis(**cls.test_data)
-        cls.llm_service = cls.app_boostrap.container.llm_service()
-        cls.analysis_repository = cls.app_boostrap.container.analysis_repository()
+        cls.llm_service = cls.app_bootstrap.container.llm_service()
+        cls.analysis_repository = cls.app_bootstrap.container.analysis_repository()
 
     @staticmethod
-    def _get_mock_web_analysis():
+    def _get_mock_web_analysis() -> dict:
+        """Generate mock web analysis data for testing."""
         test_data = {
             "domain": "localhost:8000",
             "status": "done",

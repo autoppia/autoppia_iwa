@@ -45,14 +45,9 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
     def _save_tasks(self, tasks: dict, folder_name: str):
         """
         Save tasks to a JSON file in the specified folder.
-
-        Args:
-            tasks (dict): The task results to save.
-            folder_name (str): Name of the folder where the file will be saved.
         """
         file_path = self._get_file_path(folder_name)
         file_path.parent.mkdir(parents=True, exist_ok=True)
-
         try:
             with open(file_path, "w", encoding="utf-8") as file:
                 json.dump(tasks, file, ensure_ascii=False, indent=4)
@@ -69,7 +64,6 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
         if not file_path.exists():
             self.logger.info(f"File not found: {file_path}. Tasks will be generated.")
             return {}
-
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 tasks = json.load(file)
@@ -82,13 +76,6 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
     def _generate_tasks(self, include_actions: bool = False, include_evaluation: bool = False) -> dict:
         """
         Generate tasks and optionally include actions and evaluations.
-
-        Args:
-            include_actions (bool): Whether to generate actions for tasks.
-            include_evaluation (bool): Whether to evaluate tasks with generated actions.
-
-        Returns:
-            dict: The generated tasks and additional data if requested.
         """
         tasks_data = self._load_tasks("with_actions") or self._load_tasks("tasks_only")
         save_results = False
@@ -122,9 +109,6 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
     def _add_actions_to_tasks(self, tasks_data: dict):
         """
         Add actions to tasks if not already present.
-
-        Args:
-            tasks_data (dict): Tasks data dictionary.
         """
         for task in tasks_data["tasks"]:
             try:
@@ -139,9 +123,6 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
     def _evaluate_tasks(self, tasks_data: dict) -> List[EvaluationResult]:
         """
         Evaluate tasks and update the tasks data with the evaluation results.
-
-        Args:
-            tasks_data (dict): Tasks data dictionary.
         """
 
         evaluator_input = []
@@ -186,10 +167,6 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
     def _test_task_generation(self, include_actions: bool, include_evaluation: bool):
         """
         Generic test function for task generation with different options.
-
-        Args:
-            include_actions (bool): Whether to include actions in the test.
-            include_evaluation (bool): Whether to include evaluations in the test.
         """
         result = self._generate_tasks(include_actions, include_evaluation)
         if not include_evaluation:
@@ -201,13 +178,13 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
 
     # Hard Level Tests
     def test_hard_tasks_generation_only(self):
-        self._test_task_generation(include_actions=False, include_evaluation=False)
+        self._test_task_generation(False, False)
 
     def test_hard_tasks_generation_with_actions(self):
-        self._test_task_generation(include_actions=True, include_evaluation=False)
+        self._test_task_generation(True, False)
 
     def test_hard_tasks_generation_with_actions_and_evaluation(self):
-        self._test_task_generation(include_actions=True, include_evaluation=True)
+        self._test_task_generation(True, True)
 
 
 if __name__ == "__main__":

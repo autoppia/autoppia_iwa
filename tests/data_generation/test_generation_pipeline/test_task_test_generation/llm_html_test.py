@@ -12,46 +12,50 @@ class TestOpinionBaseOnHTML(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Initialize OpinionBaseOnHTML with the real LLM service."""
-        cls.llm_service = AppBootstrap().container.llm_service()
+        cls.app = AppBootstrap()
+        cls.llm_service = cls.app.container.llm_service()
         cls.test_instance = OpinionBaseOnHTML(llm_service=cls.llm_service)
 
-    def test_html_change_detected(self):
-        """Test when LLM determines the task is completed based on HTML changes."""
-        test_snapshot = BrowserSnapshot(
+    def _run_test(self, prev_html, current_html, expected_type=bool):
+        """Helper function to run tests and validate LLM response type."""
+        snapshot = BrowserSnapshot(
             iteration=1,
             action=ClickAction(selector=Selector(type="xpathSelector", value="//button[text()='Click Me']")),
+            prev_html=prev_html,
+            current_html=current_html,
+            screenshot_before="",
+            screenshot_after="",
+            backend_events=[],
+            timestamp=datetime.fromisoformat("2025-02-10T12:00:00Z"),
+            current_url="https://example.com",
+        )
+
+        result = self.test_instance.execute_test(snapshot)
+        print(f"LLM Output: {result}")
+        self.assertIsInstance(result, expected_type, f"LLM output should be {expected_type}, but got {type(result)}")
+        return result
+
+    def test_html_change_detected(self):
+        """Test if LLM correctly detects meaningful HTML changes."""
+        result = self._run_test(
             prev_html="<div><button>Click Me</button></div>",
             current_html="<div><button>Click Me</button><p>Success</p></div>",
-            screenshot_before="",
-            screenshot_after="",
-            backend_events=[],
-            timestamp=datetime.fromisoformat("2025-02-10T12:00:00Z"),
-            current_url="https://example.com",
         )
-
-        # Execute the test with real LLM service
-        result = self.test_instance.execute_test(test_snapshot)
-        print("LLM Output:", result)  # See actual response from LLM
-        self.assertIsInstance(result, bool, "LLM should return True or False")
+        self.assertTrue(isinstance(result, bool), "Expected a boolean response from LLM.")
 
     def test_no_html_change_detected(self):
-        """Test when LLM determines the task is NOT completed due to no significant change."""
-        test_snapshot = BrowserSnapshot(
-            iteration=1,
-            action=ClickAction(selector=Selector(type="xpathSelector", value="//button[text()='Click Me']")),
+        """Test if LLM correctly identifies when no meaningful HTML change occurs."""
+        result = self._run_test(
             prev_html="<div><button>Click Me</button></div>",
             current_html="<div><button>Click Me</button></div>",  # No change
-            screenshot_before="",
-            screenshot_after="",
-            backend_events=[],
-            timestamp=datetime.fromisoformat("2025-02-10T12:00:00Z"),
-            current_url="https://example.com",
         )
+        self.assertTrue(isinstance(result, bool), "Expected a boolean response from LLM.")
 
-        # Execute the test with real LLM service
-        result = self.test_instance.execute_test(test_snapshot)
-        print("LLM Output:", result)  # See actual response from LLM
-        self.assertIsInstance(result, bool, "LLM should return True or False")
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up resources after all tests."""
+        cls.app = None
+        cls.llm_service = None
 
 
 if __name__ == "__main__":
