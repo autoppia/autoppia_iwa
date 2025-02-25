@@ -110,6 +110,11 @@ class Task(BaseModel):
             return f"{self.prompt} /n Relevant data you may need: {self.relevant_data}"
         return self.prompt
 
+    def summary(self):
+        dump = self.model_dump()
+        dump["screenshot"] = None
+        return dump
+
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["tests"] = [test.model_dump() for test in self.tests]

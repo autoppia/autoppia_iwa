@@ -16,7 +16,6 @@ from autoppia_iwa.src.data_generation.domain.tests_classes import (
 )
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.shared.web_utils import detect_interactive_elements
-# Logic generator (optional)
 from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import (
     TestLogicGenerator,
 )
