@@ -1,8 +1,10 @@
 import argparse
 import gc
 import json
-from json_repair import repair_json
 import sys
+import time  # Added for timing
+
+from json_repair import repair_json
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -43,7 +45,7 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
     If json_format=True, attempts to repair and return valid JSON.
     If schema is provided, instruct the model to strictly follow it.
 
-    Debugging statements added to show parameters and partial process.
+    Returns (response_text, tokens_in, tokens_out).
     """
     # Debug: Print out the parameters
     print("\n[generate_data] Called with:")
@@ -78,6 +80,8 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
         )
 
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
+        # Count how many tokens go into the model
+        tokens_in = model_inputs.input_ids.shape[1]
 
         # Generate
         generated_ids = model.generate(
@@ -86,11 +90,14 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
             temperature=temperature
         )
 
-        # Subtract the prompt tokens so we only decode the newly generated tokens
+        # Subtract the prompt tokens so we only decode newly generated tokens
         generated_ids = [
             output_ids[len(input_ids):]
             for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
+
+        # Count how many tokens were generated
+        tokens_out = len(generated_ids[0])
 
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
@@ -109,12 +116,12 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
                 except:
                     pass
 
-        return response_text
+        return response_text, tokens_in, tokens_out
 
     except Exception as e:
         # Debug: Print out the exception
         print("[generate_data] Exception occurred:", e, file=sys.stderr)
-        return f"Generation error: {e}"
+        return f"Generation error: {e}", 0, 0
 
     finally:
         gc.collect()
@@ -124,9 +131,11 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
 def handler():
     # Increase total request count
     counters["total_requests"] += 1
+    request_number = counters["total_requests"]  # This is our per-request number
 
     # Debug: Print raw incoming request data
-    print("\n[handler] Raw request data:", request.data)
+    print(f"\n[handler] Request #{request_number}")
+    print("[handler] Raw request data:", request.data)
 
     try:
         data = request.json or {}
@@ -140,22 +149,33 @@ def handler():
         json_format = bool(data.get("json_format", False))
         schema = data.get("schema", None)
 
-        # Debug: Print the final parameters used
-        print("[handler] Final parameters:")
-        print(f"  messages: {messages}")
-        print(f"  temperature: {temperature}")
-        print(f"  max_tokens: {max_tokens}")
-        print(f"  json_format: {json_format}")
-        print(f"  schema: {schema}")
+        # Time the generation process
+        start_time = time.time()
 
         # Generate the response
-        output = generate_data(
+        output, tokens_in, tokens_out = generate_data(
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
             json_format=json_format,
             schema=schema
         )
+
+        end_time = time.time()
+        time_per_request = end_time - start_time
+        # Avoid division by zero
+        tokens_per_second = tokens_out / time_per_request if time_per_request > 0 else 0
+
+        # Print final parameters & stats
+        print("[handler] Final parameters & stats:")
+        print(f"  Request number:       {request_number}")
+        print(f"  temperature:          {temperature}")
+        print(f"  max_tokens:           {max_tokens}")
+        print(f"  json_format:          {json_format}")
+        print(f"  total token input:    {tokens_in}")
+        print(f"  total token output:   {tokens_out}")
+        print(f"  tokens per second:    {tokens_per_second:.2f}")
+        print(f"  time per petition:    {time_per_request:.2f} s")
 
         # Debug: Print final answer
         print(f"[handler] Final Answer:\n{output}")
