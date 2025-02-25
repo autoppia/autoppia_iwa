@@ -49,14 +49,36 @@ class ConcurrentEvaluator(IEvaluator):
         # Cache for random clicker results by task ID
         self._random_clicker_cache: Dict[str, Tuple[List[int], float]] = {}
 
-    async def evaluate_single_task(self, task:Task, task_solution: TaskSolution) -> EvaluationResult:
-        return await self._evaluate_single_task(task, task_solution)
+    async def evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution) -> EvaluationResult:
+        """
+        Evaluate a single task solution given both the task and task solution.
 
-    async def evaluate_all_tasks(self, task:Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
-        return await self._group_and_evaluate_tasks(task, task_solutions)
+        Args:
+            task: The Task object containing task details
+            task_solution: The TaskSolution object with actions and web_agent_id
 
-    async def _group_and_evaluate_tasks(self, task:Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
+        Returns:
+            EvaluationResult: The evaluation result
+        """
+        return await self._evaluate_single_task_solution(task, task_solution)
+
+    async def evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
+        """
+        Evaluate multiple task solutions for a single task.
+
+        Args:
+            task: The Task object containing task details
+            task_solutions: List of TaskSolution objects with actions and web_agent_id
+
+        Returns:
+            List[EvaluationResult]: List of evaluation results
+        """
+        return await self._group_and_evaluate_task_solutions(task, task_solutions)
+
+    async def _group_and_evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         start_time = time.time()
+
+        # Group task solutions by action hash
         grouped_tasks = defaultdict(list)
         if self.config.enable_grouping_tasks:
             for task_solution in task_solutions:
@@ -66,10 +88,12 @@ class ConcurrentEvaluator(IEvaluator):
                 unique_hash = self._hash_actions(task_solution.actions) + f"_{i}"
                 grouped_tasks[unique_hash].append(task_solution)
 
+        # Use semaphore to limit concurrent evaluations
         semaphore = asyncio.Semaphore(self.config.chunk_size)
-        group_tasks = [self._evaluate_group_with_semaphore(group, semaphore) for group in grouped_tasks.values()]
-        raw_results = await asyncio.gather(*group_tasks, return_exceptions=True)
+        group_tasks = [self._evaluate_group_with_semaphore(task, group, semaphore) for group in grouped_tasks.values()]
 
+        # Gather all results
+        raw_results = await asyncio.gather(*group_tasks, return_exceptions=True)
         final_results = []
         for result in raw_results:
             if isinstance(result, Exception):
@@ -77,16 +101,16 @@ class ConcurrentEvaluator(IEvaluator):
             else:
                 final_results.extend(result)
 
-        print(f"All tasks processed. Total tasks evaluated: {len(final_results)} / {len(task_solutions)}")
+        print(f"All tasks processed. Total task solutions evaluated: {len(final_results)} / {len(task_solutions)}")
         print(f"Evaluation took {time.time() - start_time}s")
         return final_results
 
-    async def _evaluate_group_with_semaphore(self, group: List[TaskSolution], semaphore: asyncio.Semaphore) -> List[EvaluationResult]:
+    async def _evaluate_group_with_semaphore(self, task: Task, group: List[TaskSolution], semaphore: asyncio.Semaphore) -> List[EvaluationResult]:
         async with semaphore:
             representative = group[0]
             try:
                 # Evaluate the representative actions
-                rep_result = await self._evaluate_single_task(representative)
+                rep_result = await self._evaluate_single_task_solution(task, representative)
 
                 # Clone results for each web_agent in the group
                 results: List[EvaluationResult] = []
@@ -120,11 +144,18 @@ class ConcurrentEvaluator(IEvaluator):
             print("Error generating hash for actions.")
             return ""
 
-    async def _evaluate_single_task(self, task: Task, task_solution: TaskSolution, delay: float = None) -> EvaluationResult:
+    async def _evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution, delay: float = None) -> EvaluationResult:
         """
-        Evaluates a single task solution against the original task.
+        Evaluate a single task solution.
+
+        Args:
+            task: The Task object containing task details
+            task_solution: The TaskSolution object with actions and web_agent_id
+            delay: Optional delay between actions
+
+        Returns:
+            EvaluationResult: The evaluation result
         """
-        # Use original_task instead of task_solution.task
         actions = task_solution.actions
         web_agent_id = task_solution.web_agent_id
         is_web_real = task.is_web_real
@@ -160,7 +191,7 @@ class ConcurrentEvaluator(IEvaluator):
         # Run tests on agent's actions
         test_results_matrix: List[List[TestResult]] = self._run_tests(task, execution_history)
 
-        print(f"=== Test Result Matrix for AgentID: {task_solution.web_agent_id} ===")
+        print(f"=== Test Result Matrix for AgentID: {web_agent_id} ===")
         for row in test_results_matrix:
             print([result.success for result in row])
         print("===========================")
@@ -184,7 +215,6 @@ class ConcurrentEvaluator(IEvaluator):
                     if test_results_matrix[action_index][test_index].success:
                         test_passed = True
                         break
-
                 if test_passed:
                     tests_passed_count += 1
 
@@ -304,6 +334,19 @@ class ConcurrentEvaluator(IEvaluator):
 
     async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], 
                                    backend_service: BackendDemoWebService, is_web_real: bool) -> List[ActionExecutionResult]:
+        """
+        Execute actions in a browser and get the results.
+
+        Args:
+            task: The task being evaluated
+            web_agent_id: ID of the web agent
+            actions: List of actions to execute
+            backend_service: Service for interacting with backend
+            is_web_real: Whether the web is real or simulated
+
+        Returns:
+            List[ActionExecutionResult]: Results of executing each action
+        """
         async with async_playwright() as playwright:
             browser, context = None, None
             try:
@@ -311,16 +354,19 @@ class ConcurrentEvaluator(IEvaluator):
                 context = await browser.new_context(extra_http_headers={"X-WebAgent-Id": web_agent_id})
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
+
                 print(f"Started evaluation for task URL: {task.url}, Miner ID: {web_agent_id}")
 
+                monitor_task = None
                 if not is_web_real:
                     monitor_task = asyncio.create_task(self._monitor_browser(task.url, page, web_agent_id))
 
                 browser_executor = PlaywrightBrowserExecutor(BrowserSpecification(), backend_service, page)
+
                 try:
                     results = await browser_executor.execute_actions_standalone(actions, web_agent_id, is_web_real=is_web_real)
                 finally:
-                    if not is_web_real:
+                    if not is_web_real and monitor_task:
                         monitor_task.cancel()
                         await asyncio.gather(monitor_task, return_exceptions=True)
 
@@ -336,6 +382,14 @@ class ConcurrentEvaluator(IEvaluator):
                     await browser.close()
 
     async def _monitor_browser(self, task_url, page, web_agent_id):
+        """
+        Monitor browser events and send them to the backend.
+
+        Args:
+            task_url: URL of the task
+            page: Playwright page object
+            web_agent_id: ID of the web agent
+        """
         def on_frame_navigated(frame):
             try:
                 if frame.url:
@@ -344,6 +398,7 @@ class ConcurrentEvaluator(IEvaluator):
                 print(f"Error handling frame navigation: {e}")
 
         page.on("framenavigated", on_frame_navigated)
+
         try:
             while not page.is_closed():
                 await asyncio.sleep(self.config.event_monitor_interval)
@@ -354,17 +409,21 @@ class ConcurrentEvaluator(IEvaluator):
     def _run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
         """
         Run all tests after each action, building a test results matrix.
+
         Args:
             task: The task being evaluated
             execution_history: History of executed actions
+
         Returns:
             List[List[TestResult]]: A matrix where each row contains test results after each action
         """
         test_results_matrix = []
         browser_snapshots = []
+
         for i, action_result in enumerate(execution_history):
             snapshot = action_result.browser_snapshot
             browser_snapshots.append(snapshot)
+
             test_runner = TestRunner(task.tests)
             # Run tests for the current snapshot, giving it access to all snapshots up to this point
             test_results = test_runner.run_tests(
@@ -373,13 +432,26 @@ class ConcurrentEvaluator(IEvaluator):
                 browser_snapshots=browser_snapshots,
                 current_action_index=i
             )
+
             # Add the results for this snapshot to the matrix
             test_results_matrix.append(test_results)
+
         return test_results_matrix
 
     @staticmethod
     def _generate_feedback(task: Task, execution_history: List[ActionExecutionResult], 
                            test_results_matrix: List[List[TestResult]]) -> Feedback:
+        """
+        Generate feedback based on test results.
+
+        Args:
+            task: The task being evaluated
+            execution_history: History of executed actions
+            test_results_matrix: Matrix of test results
+
+        Returns:
+            Feedback: Generated feedback
+        """
         return FeedbackGenerator.generate_feedback(
             task_prompt=task.prompt, 
             execution_history=execution_history, 

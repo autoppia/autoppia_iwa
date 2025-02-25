@@ -1,3 +1,4 @@
+from dependency_injector.wiring import Provide
 import json
 from typing import List, Dict
 from pydantic import ValidationError
@@ -12,12 +13,15 @@ from autoppia_iwa.src.data_generation.application.tasks.local.prompts import (
     PHASE2_SUCCESS_CRITERIA_FILTER_PROMPT,
     PHASE2_CONCEPT_FILTER_PROMPT
 )
+from autoppia_iwa.src.di_container import DIContainer
 from .schemas import DraftTaskList, FilterTaskList
+from autoppia_iwa.src.demo_webs.classes import WebProject
 
 
 class LocalTaskGenerationPipeline:
-    def __init__(self, llm_service: "ILLM"):
-        self.llm_service = llm_service
+    def __init__(self, web_project: WebProject, llm_service: "ILLM" = Provide[DIContainer.llm_service]):
+        self.web_project:WebProject = web_project
+        self.llm_service:ILLM = llm_service
 
     async def generate(self, page_url: str) -> List["Task"]:
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(page_url)
@@ -47,7 +51,8 @@ class LocalTaskGenerationPipeline:
                 clean_html=clean_html,
                 screenshot=screenshot,
                 screenshot_desc=screenshot_desc,
-                success_criteria=item.get("success_criteria", "")
+                success_criteria=item.get("success_criteria", ""),
+                relevant_data=self.web_project.relevant_data
             )
             for item in concept_list
         ]
@@ -178,7 +183,8 @@ class LocalTaskGenerationPipeline:
         clean_html: str,
         screenshot: bytes,
         screenshot_desc: str,
-        success_criteria: str
+        success_criteria: str,
+        relevant_data:str
     ) -> "Task":
         return Task(
             type="local",
@@ -189,5 +195,5 @@ class LocalTaskGenerationPipeline:
             screenshot_desc=screenshot_desc,
             screenshot=str(transform_image_into_base64(screenshot)),
             success_criteria=success_criteria,
-            specifications=BrowserSpecification()
-        )
+            specifications=BrowserSpecification(),
+            relevant_data=relevant_data)

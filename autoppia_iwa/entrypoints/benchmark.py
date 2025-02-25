@@ -10,7 +10,6 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.data_generation.domain.task_examples import TASK_EXAMPLES
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -38,18 +37,16 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
 
     # Loop over each task in the project.
     for task in tasks:
-        # Agent solves the task.
-        task.relevant_data = demo_project.relevant_data
         task_solution: TaskSolution = await agent.solve_task(task)
         actions: List[BaseAction] = task_solution.actions
-        print("actions", actions)
+
         # Prepare evaluator input and configuration.
-        evaluator_input = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
+        task_solution = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
         evaluator_config = EvaluatorConfig(current_url=task.url, save_results_in_db=False)
         evaluator = ConcurrentEvaluator(evaluator_config)
 
         # Evaluate the task solution.
-        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task(evaluator_input)
+        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task_solution(task=task, task_solution=task_solution)
         score = evaluation_result.final_score
 
         # Record the score in both global and project-specific results.
@@ -84,14 +81,12 @@ async def generate_tasks_for_project(demo_project:WebProject, generate_new_tasks
                                   save_task_in_db=False,
                                   number_of_prompts_per_task=3,
                                   num_or_urls=1)
-    if not generate_new_tasks and TASK_EXAMPLES:
-        tasks = TASK_EXAMPLES
-    else:
-        print("Generating Tasks...")
-        tasks = []
-        for i in range(iterations):
-            new_tasks = await TaskGenerationPipeline(web_project=demo_project, config=config).generate()
-            tasks.extend(new_tasks.tasks)
+
+    print("Generating Tasks...")
+    tasks = []
+    for i in range(iterations):
+        new_tasks = await TaskGenerationPipeline(web_project=demo_project, config=config).generate()
+        tasks.extend(new_tasks.tasks)
 
     return tasks
 
