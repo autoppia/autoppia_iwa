@@ -89,7 +89,7 @@ class Task(BaseModel):
     )
     milestones: Optional[List["Task"]] = Field(
         default=None,
-        description="Ordered list of subtasks that must be completed sequentially"
+        description="Ordered list of Subtasks that must be completed sequentially"
     )
     relevant_data: Dict[str, Any] = Field(
         default_factory=dict,
