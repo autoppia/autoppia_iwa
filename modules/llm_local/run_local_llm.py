@@ -128,7 +128,10 @@ def handler():
         print(f"temperature :{temperature} \n \n")
         print("hardcoding temperature to 0.1")
         temperature = 0.1
+        max_tokens = 10000
         print(f"max_tokens :{max_tokens} \n \n")
+        print(f"json_format :{json_format} \n \n")
+        print(f"schema :{schema} \n \n")
 
         # Generate the response
         output = generate_data(
