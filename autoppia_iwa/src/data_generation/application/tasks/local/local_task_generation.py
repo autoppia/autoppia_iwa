@@ -50,7 +50,7 @@ class LocalTaskGenerationPipeline:
         # Construct final tasks
         final_tasks = [
             self._assemble_task(
-                url=page_url,
+                url=self.web_project.frontend_url,
                 prompt=item.get("prompt", ""),
                 html=html,
                 clean_html=clean_html,
