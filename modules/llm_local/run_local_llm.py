@@ -1,6 +1,9 @@
 import argparse
 import gc
 import json
+import sys
+import time  # Added for timing
+
 from json_repair import repair_json
 
 from flask import Flask, request
@@ -26,7 +29,7 @@ model = AutoModelForCausalLM.from_pretrained(
 model.eval()
 
 # ---------------------------------------------------------------------------
-# Global counters
+# Global counters (optional)
 # ---------------------------------------------------------------------------
 counters = {
     "total_requests": 0,
@@ -36,26 +39,18 @@ counters = {
 }
 
 
-def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None):
-    if generation_kwargs is None:
-        generation_kwargs = {}
+def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
+    """
+    Generate text using Qwen with the given parameters.
+    If json_format=True, attempts to repair and return valid JSON.
+    If schema is provided, instruct the model to strictly follow it.
 
-    chat_format = generation_kwargs.pop("chat_format", None)
-    response_format = generation_kwargs.pop("response_format", None)
-
+    Returns (response_text, tokens_in, tokens_out).
+    """
     try:
-        # Prepare messages
-        if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):
-            messages = message_payload
-        else:
-            messages = [
-                {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
-                {"role": "user", "content": str(message_payload)}
-            ]
-
-        # Insert JSON schema instruction if needed
-        if response_format and response_format.get("type") == "json_object":
-            schema_text = json.dumps(response_format.get("schema", {}), indent=2)
+        # If we have a JSON schema, prepend an instruction to produce valid JSON
+        if json_format and schema:
+            schema_text = json.dumps(schema, indent=2)
             messages.insert(
                 0,
                 {
@@ -68,32 +63,39 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 },
             )
 
+        # Convert messages to a single text prompt
         text_prompt = tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
-            chat_format=chat_format
+            chat_format=None
         )
 
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
+        # Count how many tokens go into the model
+        tokens_in = model_inputs.input_ids.shape[1]
+
+        # Generate
         generated_ids = model.generate(
             **model_inputs,
-            max_new_tokens=max_new_tokens,
-            **generation_kwargs
+            max_new_tokens=max_tokens,
+            temperature=temperature
         )
 
-        # Subtract the prompt tokens so we only decode the newly generated tokens
+        # Subtract the prompt tokens so we only decode newly generated tokens
         generated_ids = [
             output_ids[len(input_ids):]
             for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
         ]
 
+        # Count how many tokens were generated
+        tokens_out = len(generated_ids[0])
+
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-        # JSON validation & repair if requested
-        if response_format and response_format.get("type") == "json_object":
+        # If JSON format is requested, try to validate or repair
+        if json_format:
             counters["json_requests"] += 1
-
             try:
                 json.loads(response_text)
                 counters["json_correctly_formatted"] += 1
@@ -106,51 +108,75 @@ def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None)
                 except:
                     pass
 
-        return response_text
+        return response_text, tokens_in, tokens_out
 
     except Exception as e:
-        return f"Generation error: {e}"
+        # Debug: Print out the exception
+        print("[generate_data] Exception occurred:", e, file=sys.stderr)
+        return f"Generation error: {e}", 0, 0
+
     finally:
         gc.collect()
 
 
 @app.route("/generate", methods=["POST"])
 def handler():
+    # Increase total request count
     counters["total_requests"] += 1
+    request_number = counters["total_requests"]  # This is our per-request number
 
     try:
-        inputs = request.json or {}
-        input_data = inputs.get("input", {})
+        data = request.json or {}
 
-        message_payload = input_data.get("text", "")
-        if not message_payload:
-            raise ValueError("Input 'text' is missing or empty")
+        # Extract the fields
+        messages = data.get("messages", [])
+        temperature = float(data.get("temperature", 0.1))
+        max_tokens = int(data.get("max_tokens", 256))
+        json_format = bool(data.get("json_format", False))
+        schema = data.get("schema", None)
 
-        max_new_tokens = int(input_data.get("ctx", 10000))
-        base_generation_kwargs = input_data.get("generation_kwargs", {})
-        llm_kwargs = input_data.get("llm_kwargs", {})
-        chat_completion_kwargs = input_data.get("chat_completion_kwargs", {})
+        # Time the generation process
+        start_time = time.time()
 
-        merged_generation_kwargs = {
-            **base_generation_kwargs,
-            **llm_kwargs,
-            **chat_completion_kwargs
-        }
-
-        output = generate_data(
-            message_payload=message_payload,
-            max_new_tokens=max_new_tokens,
-            generation_kwargs=merged_generation_kwargs,
+        # Generate the response
+        output, tokens_in, tokens_out = generate_data(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            json_format=json_format,
+            schema=schema
         )
+
+        end_time = time.time()
+        time_per_request = end_time - start_time
+        # Avoid division by zero
+        tokens_per_second = tokens_out / time_per_request if time_per_request > 0 else 0
+
+        # Print final parameters & stats
+        print("[handler] Final parameters & stats:")
+        print(f"  Request number:       {request_number}")
+        print(f"  temperature:          {temperature}")
+        print(f"  max_tokens:           {max_tokens}")
+        print(f"  json_format:          {json_format}")
+        print(f"  total token input:    {tokens_in}")
+        print(f"  total token output:   {tokens_out}")
+        print(f"  tokens per second:    {tokens_per_second:.2f}")
+        print(f"  time per petition:    {time_per_request:.2f} s")
+
+        # Debug: Print final answer
+        print(f"[handler] Final Answer:\n{output}")
+
         return {"output": output}
 
     except ValueError as ve:
+        print("[handler] ValueError occurred:", ve, file=sys.stderr)
         return {"error": str(ve)}, 400
     except Exception as e:
+        print("[handler] Exception occurred:", e, file=sys.stderr)
         return {"error": str(e)}, 500
     finally:
-        # Only print the counters
-        print("=== Current Counter Stats ===")
+        # Print counters for debugging
+        print("\n=== Current Counter Stats ===")
         print(f"Total requests answered: {counters['total_requests']}")
         print(f"JSON requests: {counters['json_requests']}")
         print(f"JSON originally valid: {counters['json_correctly_formatted']}")

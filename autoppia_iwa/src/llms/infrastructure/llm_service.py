@@ -7,6 +7,8 @@ import httpx
 from openai import OpenAI, AsyncOpenAI
 
 from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
+import time
+import httpx
 
 
 # In llms.py
@@ -113,8 +115,9 @@ class LocalLLMService(ILLM):
         json_format: bool = False,
         schema: Optional[Dict] = None
     ) -> str:
+        start_time = time.time()
         try:
-            with httpx.Client() as client:
+            with httpx.Client(timeout=120.0) as client:
                 payload = {
                     "messages": messages,
                     "temperature": self.config.temperature,
@@ -127,9 +130,13 @@ class LocalLLMService(ILLM):
 
                 response = client.post(self.endpoint_url, json=payload)
                 response.raise_for_status()
-                return response.json().get("output", "")
+                output = response.json().get("output", "")
+                return output
         except httpx.HTTPError as e:
             raise RuntimeError(f"Local LLM Sync Error: {e}")
+        finally:
+            elapsed_time = time.time() - start_time
+            print(f"Sync request took {elapsed_time:.2f} seconds.")
 
     async def async_predict(
         self,
@@ -137,7 +144,8 @@ class LocalLLMService(ILLM):
         json_format: bool = False,
         schema: Optional[Dict] = None
     ) -> str:
-        async with httpx.AsyncClient() as client:
+        start_time = time.time()
+        async with httpx.AsyncClient(timeout=120.0) as client:
             try:
                 payload = {
                     "messages": messages,
@@ -145,15 +153,19 @@ class LocalLLMService(ILLM):
                     "max_tokens": self.config.max_tokens,
                 }
                 if json_format:
-                    payload["format"] = "json"
+                    payload["json_format"] = "json"
                 if schema:
                     payload["schema"] = schema
 
                 response = await client.post(self.endpoint_url, json=payload)
                 response.raise_for_status()
-                return response.json().get("output", "")
+                output = response.json().get("output", "")
+                return output
             except httpx.HTTPError as e:
                 raise RuntimeError(f"Local LLM Async Error: {e}")
+            finally:
+                elapsed_time = time.time() - start_time
+                print(f"Async request took {elapsed_time:.2f} seconds.")
 
 
 class LLMFactory:

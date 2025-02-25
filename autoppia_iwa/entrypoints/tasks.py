@@ -10,7 +10,7 @@ from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline impo
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.demo_webs.config import initialize_test_demo_web_projects
+from autoppia_iwa.src.demo_webs.config import initialize_test_demo_web_projects, initialize_demo_webs_projects
 
 # Import the TestGenerationPipeline from the new location
 from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
@@ -26,7 +26,7 @@ app = AppBootstrap()
 async def main():
     try:
         # Create a WebProject (with its web analysis populated)
-        demo_web_projects: List[WebProject] = await initialize_test_demo_web_projects()
+        demo_web_projects: List[WebProject] = await initialize_demo_webs_projects()
         web_project: WebProject = demo_web_projects[0]
 
         # Create TaskGenerationConfig if needed by TaskGenerationPipeline

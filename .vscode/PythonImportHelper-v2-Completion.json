@@ -2148,6 +2148,14 @@
         "documentation": {}
     },
     {
+        "label": "initialize_demo_webs_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.config",
+        "description": "autoppia_iwa.src.demo_webs.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.config",
+        "documentation": {}
+    },
+    {
         "label": "DIContainer",
         "importPath": "autoppia_iwa.src.di_container",
         "description": "autoppia_iwa.src.di_container",
@@ -4041,6 +4049,15 @@
         "documentation": {}
     },
     {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
         "label": "MongoClient",
         "importPath": "pymongo",
         "description": "pymongo",
@@ -4216,15 +4233,6 @@
         "description": "autoppia_iwa.src.execution.actions.actions",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.execution.actions.actions",
-        "documentation": {}
-    },
-    {
-        "label": "time",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "time",
-        "description": "time",
-        "detail": "time",
         "documentation": {}
     },
     {
@@ -8046,7 +8054,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.tasks",
         "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "logger = logging.getLogger(__name__)\napp = AppBootstrap()\nasync def main():\n    try:\n        # Create a WebProject (with its web analysis populated)\n        demo_web_projects: List[WebProject] = await initialize_test_demo_web_projects()\n        web_project: WebProject = demo_web_projects[0]\n        # Create TaskGenerationConfig if needed by TaskGenerationPipeline\n        config = TaskGenerationConfig(\n            save_task_in_db=False,",
+        "peekOfCode": "logger = logging.getLogger(__name__)\napp = AppBootstrap()\nasync def main():\n    try:\n        # Create a WebProject (with its web analysis populated)\n        demo_web_projects: List[WebProject] = await initialize_demo_webs_projects()\n        web_project: WebProject = demo_web_projects[0]\n        # Create TaskGenerationConfig if needed by TaskGenerationPipeline\n        config = TaskGenerationConfig(\n            save_task_in_db=False,",
         "detail": "autoppia_iwa.entrypoints.tasks",
         "documentation": {}
     },
@@ -8055,7 +8063,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.tasks",
         "description": "autoppia_iwa.entrypoints.tasks",
-        "peekOfCode": "app = AppBootstrap()\nasync def main():\n    try:\n        # Create a WebProject (with its web analysis populated)\n        demo_web_projects: List[WebProject] = await initialize_test_demo_web_projects()\n        web_project: WebProject = demo_web_projects[0]\n        # Create TaskGenerationConfig if needed by TaskGenerationPipeline\n        config = TaskGenerationConfig(\n            save_task_in_db=False,\n            save_web_analysis_in_db=False,",
+        "peekOfCode": "app = AppBootstrap()\nasync def main():\n    try:\n        # Create a WebProject (with its web analysis populated)\n        demo_web_projects: List[WebProject] = await initialize_demo_webs_projects()\n        web_project: WebProject = demo_web_projects[0]\n        # Create TaskGenerationConfig if needed by TaskGenerationPipeline\n        config = TaskGenerationConfig(\n            save_task_in_db=False,\n            save_web_analysis_in_db=False,",
         "detail": "autoppia_iwa.entrypoints.tasks",
         "documentation": {}
     },
@@ -9153,7 +9161,7 @@
         "kind": 2,
         "importPath": "modules.llm_local.test.test_one_request",
         "description": "modules.llm_local.test.test_one_request",
-        "peekOfCode": "def make_request():\n    url = \"http://127.0.0.1:6000/generate\"\n    headers = {\"Content-Type\": \"application/json\"}\n    data = {\n        \"input\": {\n            \"text\": [\n                {\"role\": \"system\", \"content\": \"You are Qwen, created by Alibaba Cloud. You are a helpful assistant.\"},\n                {\"role\": \"user\", \"content\": \"Give me a short introduction to large language model.\"}\n            ],\n            \"ctx\": 256,",
+        "peekOfCode": "def make_request():\n    url = \"http://127.0.0.1:6000/generate\"\n    headers = {\"Content-Type\": \"application/json\"}\n    # Instead of putting everything under \"input\": {...},\n    # we send messages/temperature/max_tokens at the top level.\n    data = {\n        \"messages\": [\n            {\n                \"role\": \"system\",\n                \"content\": \"You are Qwen, created by Alibaba Cloud. You are a helpful assistant.\"",
         "detail": "modules.llm_local.test.test_one_request",
         "documentation": {}
     },
@@ -9180,7 +9188,7 @@
         "kind": 2,
         "importPath": "modules.llm_local.run_local_llm",
         "description": "modules.llm_local.run_local_llm",
-        "peekOfCode": "def generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None):\n    if generation_kwargs is None:\n        generation_kwargs = {}\n    chat_format = generation_kwargs.pop(\"chat_format\", None)\n    response_format = generation_kwargs.pop(\"response_format\", None)\n    try:\n        # Prepare messages\n        if isinstance(message_payload, list) and all(isinstance(msg, dict) for msg in message_payload):\n            messages = message_payload\n        else:",
+        "peekOfCode": "def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):\n    \"\"\"\n    Generate text using Qwen with the given parameters.\n    If json_format=True, attempts to repair and return valid JSON.\n    If schema is provided, instruct the model to strictly follow it.\n    Returns (response_text, tokens_in, tokens_out).\n    \"\"\"\n    try:\n        # If we have a JSON schema, prepend an instruction to produce valid JSON\n        if json_format and schema:",
         "detail": "modules.llm_local.run_local_llm",
         "documentation": {}
     },
@@ -9189,7 +9197,7 @@
         "kind": 2,
         "importPath": "modules.llm_local.run_local_llm",
         "description": "modules.llm_local.run_local_llm",
-        "peekOfCode": "def handler():\n    counters[\"total_requests\"] += 1\n    try:\n        inputs = request.json or {}\n        input_data = inputs.get(\"input\", {})\n        message_payload = input_data.get(\"text\", \"\")\n        if not message_payload:\n            raise ValueError(\"Input 'text' is missing or empty\")\n        max_new_tokens = int(input_data.get(\"ctx\", 10000))\n        base_generation_kwargs = input_data.get(\"generation_kwargs\", {})",
+        "peekOfCode": "def handler():\n    # Increase total request count\n    counters[\"total_requests\"] += 1\n    request_number = counters[\"total_requests\"]  # This is our per-request number\n    try:\n        data = request.json or {}\n        # Extract the fields\n        messages = data.get(\"messages\", [])\n        temperature = float(data.get(\"temperature\", 0.1))\n        max_tokens = int(data.get(\"max_tokens\", 256))",
         "detail": "modules.llm_local.run_local_llm",
         "documentation": {}
     },
@@ -9216,7 +9224,7 @@
         "kind": 5,
         "importPath": "modules.llm_local.run_local_llm",
         "description": "modules.llm_local.run_local_llm",
-        "peekOfCode": "tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)\nmodel = AutoModelForCausalLM.from_pretrained(\n    MODEL_NAME,\n    torch_dtype=\"auto\",\n    device_map=\"auto\"\n)\nmodel.eval()\n# ---------------------------------------------------------------------------\n# Global counters\n# ---------------------------------------------------------------------------",
+        "peekOfCode": "tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)\nmodel = AutoModelForCausalLM.from_pretrained(\n    MODEL_NAME,\n    torch_dtype=\"auto\",\n    device_map=\"auto\"\n)\nmodel.eval()\n# ---------------------------------------------------------------------------\n# Global counters (optional)\n# ---------------------------------------------------------------------------",
         "detail": "modules.llm_local.run_local_llm",
         "documentation": {}
     },
@@ -9225,7 +9233,7 @@
         "kind": 5,
         "importPath": "modules.llm_local.run_local_llm",
         "description": "modules.llm_local.run_local_llm",
-        "peekOfCode": "model = AutoModelForCausalLM.from_pretrained(\n    MODEL_NAME,\n    torch_dtype=\"auto\",\n    device_map=\"auto\"\n)\nmodel.eval()\n# ---------------------------------------------------------------------------\n# Global counters\n# ---------------------------------------------------------------------------\ncounters = {",
+        "peekOfCode": "model = AutoModelForCausalLM.from_pretrained(\n    MODEL_NAME,\n    torch_dtype=\"auto\",\n    device_map=\"auto\"\n)\nmodel.eval()\n# ---------------------------------------------------------------------------\n# Global counters (optional)\n# ---------------------------------------------------------------------------\ncounters = {",
         "detail": "modules.llm_local.run_local_llm",
         "documentation": {}
     },
@@ -9234,7 +9242,7 @@
         "kind": 5,
         "importPath": "modules.llm_local.run_local_llm",
         "description": "modules.llm_local.run_local_llm",
-        "peekOfCode": "counters = {\n    \"total_requests\": 0,\n    \"json_requests\": 0,\n    \"json_correctly_formatted\": 0,\n    \"json_repair_succeeded\": 0\n}\ndef generate_data(message_payload, max_new_tokens=10000, generation_kwargs=None):\n    if generation_kwargs is None:\n        generation_kwargs = {}\n    chat_format = generation_kwargs.pop(\"chat_format\", None)",
+        "peekOfCode": "counters = {\n    \"total_requests\": 0,\n    \"json_requests\": 0,\n    \"json_correctly_formatted\": 0,\n    \"json_repair_succeeded\": 0\n}\ndef generate_data(messages, temperature, max_tokens, json_format=False, schema=None):\n    \"\"\"\n    Generate text using Qwen with the given parameters.\n    If json_format=True, attempts to repair and return valid JSON.",
         "detail": "modules.llm_local.run_local_llm",
         "documentation": {}
     },
