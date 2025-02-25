@@ -15,7 +15,7 @@ class ApifiedWebAgent(IWebAgent):
     Calls a remote /solve_task endpoint and rebuilds a TaskSolution.
     """
 
-    def __init__(self, host: str, port: int, id: str | None = None, name: str | None = None, timeout=60):
+    def __init__(self, host: str, port: int, id: str | None = None, name: str | None = None, timeout=100):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
         self.base_url = f"http://{host}:{port}"

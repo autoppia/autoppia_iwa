@@ -191,7 +191,7 @@ class ConcurrentEvaluator(IEvaluator):
         # Run tests on agent's actions
         test_results_matrix: List[List[TestResult]] = self._run_tests(task, execution_history)
         print()
-        print(f"Test Result Matrix for AgentID: {web_agent_id} ===")
+        print(f"Test Result Matrix for AgentID: {web_agent_id}")
         for row in test_results_matrix:
             print([result.success for result in row])
 
