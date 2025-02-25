@@ -1,176 +1,156 @@
+import argparse
+import gc
+import json
+from json_repair import repair_json
 
-# llms.py
+from flask import Flask, request
+from flask_cors import CORS
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
-from typing import Dict, List, Optional
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-import httpx
-from openai import OpenAI, AsyncOpenAI
+# ---------------------------------------------------------------------------
+# The model name as per Qwen docs (Adjust if you prefer Qwen2-7B-Instruct, etc.)
+# ---------------------------------------------------------------------------
+MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
-from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
+# Load tokenizer & model
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_NAME,
+    torch_dtype="auto",
+    device_map="auto"
+)
+model.eval()
+
+# ---------------------------------------------------------------------------
+# Global counters (optional)
+# ---------------------------------------------------------------------------
+counters = {
+    "total_requests": 0,
+    "json_requests": 0,
+    "json_correctly_formatted": 0,
+    "json_repair_succeeded": 0
+}
 
 
-# In llms.py
-
-class OpenAIService(ILLM):
+def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
     """
-    Simple OpenAI-based LLM.
-    Uses OpenAI (sync) and AsyncOpenAI (async) clients.
+    Generate text using Qwen with the given parameters.
+    If json_format=True, attempts to repair and return valid JSON.
+    If schema is provided, instruct the model to strictly follow it.
     """
-
-    def __init__(self, config: LLMConfig, api_key: str):
-        self.config = config
-        self.sync_client = OpenAI(api_key=api_key)
-        self.async_client = AsyncOpenAI(api_key=api_key)
-
-    def _prepare_json_schema(self, schema: Dict) -> Dict:
-        """
-        Prepares the JSON schema for OpenAI's format requirements.
-        """
-        return {
-            "type": "object",
-            "properties": {
-                "schema": {
-                    "type": "string",
-                    "enum": ["JSON_SCHEMA"]
+    try:
+        # If we have a JSON schema, prepend an instruction to produce valid JSON
+        if json_format and schema:
+            # Insert system message at the start
+            schema_text = json.dumps(schema, indent=2)
+            messages.insert(
+                0,
+                {
+                    "role": "system",
+                    "content": (
+                        "You must respond in **valid JSON** that meets the following schema.\n\n"
+                        "Do not include extra keys. Output **only** the JSON object.\n\n"
+                        f"{schema_text}"
+                    ),
                 },
-                "response": schema
-            },
-            "required": ["schema", "response"]
-        }
+            )
 
-    def predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
-        try:
-            params = {
-                "model": self.config.model,
-                "messages": messages,
-                "max_tokens": self.config.max_tokens,
-                "temperature": self.config.temperature,
-            }
-            if json_format and schema:
-                params["response_format"] = {
-                    "type": "json_object"
-                }
-                # Add system message for JSON structure
-                messages.insert(0, {
-                    "role": "system",
-                    "content": f"You must respond with JSON that matches this schema: {schema}"
-                })
-                params["messages"] = messages
+        # Convert messages to a single text prompt using Qwen's helper
+        text_prompt = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            # We can omit chat_format or set it to "default", depending on preference
+            chat_format=None
+        )
 
-            response = self.sync_client.chat.completions.create(**params)
-            return response.choices[0].message.content
-        except Exception as e:
-            raise RuntimeError(f"OpenAI Sync Error: {e}")
+        model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
 
-    async def async_predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
-        try:
-            params = {
-                "model": self.config.model,
-                "messages": messages,
-                "max_tokens": self.config.max_tokens,
-                "temperature": self.config.temperature,
-            }
-            if json_format and schema:
-                params["response_format"] = {
-                    "type": "json_object"
-                }
-                # Add system message for JSON structure
-                messages.insert(0, {
-                    "role": "system",
-                    "content": f"You must respond with JSON that matches this schema: {schema}"
-                })
-                params["messages"] = messages
+        # Generate
+        generated_ids = model.generate(
+            **model_inputs,
+            max_new_tokens=max_tokens,
+            temperature=temperature
+        )
 
-            response = await self.async_client.chat.completions.create(**params)
-            return response.choices[0].message.content
-        except Exception as e:
-            raise RuntimeError(f"OpenAI Async Error: {e}")
+        # Subtract the prompt tokens so we only decode the newly generated tokens
+        generated_ids = [
+            output_ids[len(input_ids):]
+            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+        ]
 
+        response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-class LocalLLMService(ILLM):
-    """
-    Simple local (self-hosted) LLM that communicates via HTTP.
-    Uses HTTPX for sync and async calls.
-    """
-
-    def __init__(self, config: LLMConfig, endpoint_url: str):
-        self.config = config
-        self.endpoint_url = endpoint_url
-
-    def predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
-        try:
-            with httpx.Client() as client:
-                payload = {
-                    "messages": messages,
-                    "temperature": self.config.temperature,
-                    "max_tokens": self.config.max_tokens,
-                }
-                if json_format:
-                    payload["json_format"] = True
-                if schema:
-                    payload["schema"] = schema
-
-                response = client.post(self.endpoint_url, json=payload)
-                response.raise_for_status()
-                return response.json().get("output", "")
-        except httpx.HTTPError as e:
-            raise RuntimeError(f"Local LLM Sync Error: {e}")
-
-    async def async_predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
-        async with httpx.AsyncClient() as client:
+        # If JSON format is requested, try to validate or repair
+        if json_format:
+            counters["json_requests"] += 1
             try:
-                payload = {
-                    "messages": messages,
-                    "temperature": self.config.temperature,
-                    "max_tokens": self.config.max_tokens,
-                }
-                if json_format:
-                    payload["format"] = "json"
-                if schema:
-                    payload["schema"] = schema
+                json.loads(response_text)
+                counters["json_correctly_formatted"] += 1
+            except:
+                try:
+                    repaired_text = repair_json(response_text, ensure_ascii=False)
+                    repaired_obj = json.loads(repaired_text)
+                    response_text = json.dumps(repaired_obj, ensure_ascii=False)
+                    counters["json_repair_succeeded"] += 1
+                except:
+                    # If repair also fails, we return as-is
+                    pass
 
-                response = await client.post(self.endpoint_url, json=payload)
-                response.raise_for_status()
-                return response.json().get("output", "")
-            except httpx.HTTPError as e:
-                raise RuntimeError(f"Local LLM Async Error: {e}")
+        return response_text
+
+    except Exception as e:
+        return f"Generation error: {e}"
+
+    finally:
+        gc.collect()
 
 
-class LLMFactory:
-    """
-    Simple factory to build the right LLM implementation
-    based on the llm_type.
-    """
+@app.route("/generate", methods=["POST"])
+def handler():
+    counters["total_requests"] += 1
 
-    @staticmethod
-    def create_llm(
-        llm_type: str,
-        config: LLMConfig,
-        **kwargs
-    ) -> ILLM:
-        if llm_type.lower() == "openai":
-            return OpenAIService(config, api_key=kwargs.get("api_key"))
-        elif llm_type.lower() == "local":
-            return LocalLLMService(config, endpoint_url=kwargs.get("endpoint_url"))
-        else:
-            raise ValueError(f"Unsupported LLM type: {llm_type}")
+    try:
+        data = request.json or {}
+
+        # Extract the fields as sent by LocalLLMService
+        messages = data.get("messages", [])
+        temperature = float(data.get("temperature", 0.7))
+        max_tokens = int(data.get("max_tokens", 256))
+        json_format = bool(data.get("json_format", False))
+        schema = data.get("schema", None)
+
+        # Generate the response
+        output = generate_data(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            json_format=json_format,
+            schema=schema
+        )
+        return {"output": output}
+
+    except ValueError as ve:
+        return {"error": str(ve)}, 400
+    except Exception as e:
+        return {"error": str(e)}, 500
+    finally:
+        # Print counters for debugging
+        print("=== Current Counter Stats ===")
+        print(f"Total requests answered: {counters['total_requests']}")
+        print(f"JSON requests: {counters['json_requests']}")
+        print(f"JSON originally valid: {counters['json_correctly_formatted']}")
+        print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
+        print("=================================")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run Hugging Face Qwen LLM service.")
+    parser.add_argument("--port", type=int, default=6000, help="Port to run the service on")
+    args = parser.parse_args()
+
+    app.run(host="0.0.0.0", port=args.port, debug=True, use_reloader=False)
