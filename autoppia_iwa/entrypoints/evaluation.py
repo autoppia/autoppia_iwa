@@ -29,8 +29,8 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 app = AppBootstrap()
 
 
-def generate_tasks(num_tasks: int = 3):
-    test_projects = initialize_test_demo_web_projects()
+async def generate_tasks(num_tasks: int = 3):
+    test_projects = await initialize_test_demo_web_projects()
     web_project = test_projects[0]
     config = TaskGenerationConfig(
         save_task_in_db=False,
@@ -41,7 +41,7 @@ def generate_tasks(num_tasks: int = 3):
         local_tasks_to_generate_per_url=1,
     )
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
-    output: TasksGenerationOutput = pipeline.generate()
+    output: TasksGenerationOutput = await pipeline.generate()
     return output.tasks
 
 
