@@ -9267,7 +9267,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.web_agents.random.agent",
         "description": "autoppia_iwa.src.web_agents.random.agent",
-        "peekOfCode": "class RandomClickerWebAgent(BaseAgent):\n    \"\"\"\n    Web Agent that executes random actions within the screen dimensions.\n    \"\"\"\n    def __init__(self, name=\"Random clicker\"):\n        super().__init__(name=name)\n    async def solve_task(self, task: Task) -> TaskSolution:\n        \"\"\"\n        Generates a list of random click actions within the screen dimensions.\n        :param task: The task for which actions are being generated.",
+        "peekOfCode": "class RandomClickerWebAgent(BaseAgent):\n    \"\"\"\n    Web Agent that executes random actions within the screen dimensions.\n    \"\"\"\n    def __init__(self, name=\"Random clicker\", is_random:bool = True):\n        super().__init__(name=name)\n        self.is_random = is_random\n    async def solve_task(self, task: Task) -> TaskSolution:\n        \"\"\"\n        Generates a list of random click actions within the screen dimensions.",
         "detail": "autoppia_iwa.src.web_agents.random.agent",
         "documentation": {}
     },
