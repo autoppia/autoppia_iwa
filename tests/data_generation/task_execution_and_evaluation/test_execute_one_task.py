@@ -3,9 +3,9 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.shared.utils import assign_tests
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from tests import test_container
@@ -52,7 +52,7 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
         }
 
         # Create tests from test data
-        tests = BaseTaskTest.assign_tests(task_data["tests"])
+        tests = assign_tests(task_data["tests"])
 
         # Create and return a Task instance
         return Task(
@@ -60,7 +60,6 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
             url=task_data["url"],
             tests=tests,
             milestones=task_data["milestones"],
-            web_analysis=task_data["web_analysis"],
         )
 
     def test_actions_generation_and_evaluation(self):
@@ -80,9 +79,9 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
             print(f"{idx}: {action}")
 
         # Evaluate the actions
-        task_solution = TaskSolution(task=self.task, actions=task_solution.actions, web_agent_id=self.web_agent_id)
+        task_solution = TaskSolution(actions=task_solution.actions, web_agent_id=self.web_agent_id)
         evaluator = ConcurrentEvaluator(EvaluatorConfig())
-        evaluated_task = asyncio.run(evaluator.evaluate_single_task(task_solution))
+        evaluated_task = asyncio.run(evaluator.evaluate_single_task_solution(self.task, task_solution))
 
         # Assert the evaluation result
         self.assertTrue(evaluated_task, "Task evaluation failed.")

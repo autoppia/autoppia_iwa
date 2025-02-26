@@ -36,11 +36,11 @@ class ApifiedWebAgent(IWebAgent):
                 rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
                 # print(f"Rebuilt Actions: {rebuilt_actions}")
 
-                return TaskSolution(task=task, actions=rebuilt_actions, web_agent_id=web_agent_id)
+                return TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id)
             except Exception as e:
                 print(f"Error during HTTP request: {e}")
                 # print(traceback.format_exc())
-                return TaskSolution(task=task, actions=[], web_agent_id="unknown")
+                return TaskSolution(task_id=task.id, actions=[], web_agent_id="unknown")
 
     def solve_task_sync(self, task: Task) -> TaskSolution:
         return asyncio.run(self.solve_task(task))

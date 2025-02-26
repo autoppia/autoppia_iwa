@@ -8,7 +8,7 @@ from playwright.async_api import async_playwright
 from autoppia_iwa.src.llms.infrastructure.ui_parser_service import UIParserService
 
 
-async def get_html_and_screenshot(page_url: str) -> Tuple[str, str]:
+async def get_html_and_screenshot(page_url: str) -> Tuple[str, str, Image, str]:
     """
     Navigates to page_url using Playwright in headless mode, extracts & cleans HTML,
     captures a screenshot, and uses UIParserService to generate a textual summary
