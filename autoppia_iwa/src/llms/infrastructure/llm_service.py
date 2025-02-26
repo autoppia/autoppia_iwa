@@ -165,7 +165,6 @@ class LocalLLMService(ILLM):
                 raise RuntimeError(f"Local LLM Async Error: {e}")
             finally:
                 elapsed_time = time.time() - start_time
-                print(f"Async request took {elapsed_time:.2f} seconds.")
 
 
 class LLMFactory:
