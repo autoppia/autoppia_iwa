@@ -1,11 +1,11 @@
 import base64
 import io
 from PIL import Image
+import sys
 import os
-from autoppia_iwa.src.data_generation.domain.classes import Task
 
 
-def print_task_screenshot_in_terminal(task:Task, width=80):
+def print_task_screenshot_in_terminal(task, width=80):
     """
     Prints a Task's screenshot image in the terminal as ASCII art.
 
@@ -27,16 +27,8 @@ def print_task_screenshot_in_terminal(task:Task, width=80):
         # Create a PIL Image from bytes
         image = Image.open(io.BytesIO(img_bytes))
 
-        # Determine if we can use a more advanced terminal display method
-        if "TERM" in os.environ and os.environ["TERM"] in ["xterm-256color", "screen-256color"]:
-            # More advanced terminals - use proper image display if available
-            if has_terminal_image_support():
-                return display_with_terminal_image(image)
-            else:
-                return print_as_ascii_art(image, width)
-        else:
-            # Basic terminal - use ASCII art
-            return print_as_ascii_art(image, width)
+        # Just use ASCII art for reliability
+        return print_as_ascii_art(image, width)
 
     except Exception as e:
         print(f"Error displaying screenshot: {e}")
@@ -86,26 +78,33 @@ def display_with_terminal_image(image):
 
 def print_as_ascii_art(image, width=80):
     """Convert and print image as ASCII art"""
-    # Resize the image to fit terminal width
-    height = int(image.height * width / image.width / 2)  # Adjust for character aspect ratio
-    image = image.resize((width, height))
+    try:
+        # Ensure width is positive
+        width = max(10, min(width, 200))
 
-    # Convert to grayscale for ASCII art
-    image = image.convert("L")
+        # Resize the image to fit terminal width
+        height = max(1, int(image.height * width / image.width / 2))  # Adjust for character aspect ratio
+        image = image.resize((width, height))
 
-    # Define ASCII characters from dark to light
-    chars = " .:-=+*#%@"
+        # Convert to grayscale for ASCII art
+        image = image.convert("L")
 
-    # Generate and print ASCII art
-    print("\nScreenshot (ASCII representation):")
-    for y in range(height):
-        line = ""
-        for x in range(width):
-            # Get pixel brightness (0-255)
-            brightness = image.getpixel((x, y))
-            # Map brightness to ASCII character
-            char_index = int(brightness / 255 * (len(chars) - 1))
-            line += chars[char_index]
-        print(line)
+        # Define ASCII characters from dark to light
+        chars = " .:-=+*#%@"
 
-    return True
+        # Generate and print ASCII art
+        print("\nScreenshot (ASCII representation):")
+        for y in range(height):
+            line = ""
+            for x in range(width):
+                # Get pixel brightness (0-255)
+                brightness = image.getpixel((x, y))
+                # Map brightness to ASCII character
+                char_index = min(int(brightness / 255 * (len(chars) - 1)), len(chars) - 1)
+                line += chars[char_index]
+            print(line)
+
+        return True
+    except Exception as e:
+        print(f"Error converting to ASCII: {e}")
+        return False
