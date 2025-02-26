@@ -2,6 +2,9 @@ import asyncio
 import statistics
 from typing import List
 import matplotlib.pyplot as plt
+import os
+from datetime import datetime
+
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
@@ -18,10 +21,25 @@ from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
     TestGenerationPipeline)
 
+# Importar el visualizador simple
+from autoppia_iwa.src.shared.visualizator import SimpleSubnetVisualizer, visualize_evaluation
+
+# Inicializar el visualizador
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_dir = os.path.join("logs", f"benchmark_{timestamp}")
+visualizer = SimpleSubnetVisualizer(log_directory=log_dir)
 
 app = AppBootstrap()
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker")]  # , ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
 iterations = 1  # total_tasks = tasks * iterations
+
+
+# Aplicar decorador al método de evaluación original
+@visualize_evaluation(visualizer)
+async def evaluate_task_solution(task, task_solution):
+    evaluator_config = EvaluatorConfig(save_results_in_db=False)
+    evaluator = ConcurrentEvaluator(evaluator_config)
+    return await evaluator.evaluate_single_task_solution(task=task, task_solution=task_solution)
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -40,13 +58,11 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
         task_solution: TaskSolution = await agent.solve_task(task)
         actions: List[BaseAction] = task_solution.actions
 
-        # Prepare evaluator input and configuration.
+        # Prepare evaluator input
         task_solution = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(current_url=task.url, save_results_in_db=False)
-        evaluator = ConcurrentEvaluator(evaluator_config)
 
-        # Evaluate the task solution.
-        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task_solution(task=task, task_solution=task_solution)
+        # Usar el método decorado para evaluar la tarea
+        evaluation_result: EvaluationResult = await evaluate_task_solution(task=task, task_solution=task_solution)
         score = evaluation_result.final_score
 
         # Record the score in both global and project-specific results.
@@ -82,7 +98,7 @@ async def generate_tasks_for_project(demo_project:WebProject, generate_new_tasks
                                   number_of_prompts_per_task=3,
                                   num_or_urls=1)
 
-    print("Generating Tasks...")
+    print("Generando tareas para: ", demo_project.name)
     tasks = []
     for i in range(iterations):
         new_tasks = await TaskGenerationPipeline(web_project=demo_project, config=config).generate()
@@ -91,26 +107,40 @@ async def generate_tasks_for_project(demo_project:WebProject, generate_new_tasks
     return tasks
 
 
+async def add_tests_to_tasks(tasks, test_pipeline):
+    """Añade tests a las tareas generadas"""
+    print(f"Generando tests para {len(tasks)} tareas...")
+    return await test_pipeline.add_tests_to_tasks(tasks)
+
+
 def print_performance_statistics(results, agents):
     """
     Print performance statistics for each agent.
 
     This function iterates over the agents and prints global and per-project statistics.
     """
-    print("Agent Performance Metrics:")
+    print("\n" + "=" * 50)
+    print("ESTADÍSTICAS DE RENDIMIENTO DE AGENTES")
+    print("=" * 50)
+
     for agent in agents:
         agent_stats = results[agent.id]
         global_stats = compute_statistics(agent_stats["global_scores"])
-        print(f"\nAgent: {agent.id}")
-        print("  Global Stats:")
-        for key, value in global_stats.items():
-            print(f"    {key}: {value}")
-        print("  Per Project Stats:")
+        print(f"\nAgente: {agent.id}")
+        print("  Estadísticas Globales:")
+        print(f"    Tareas completadas: {global_stats['count']}")
+        print(f"    Puntuación media: {global_stats['mean']:.2f}")
+        print(f"    Puntuación máxima: {global_stats['max']:.2f}")
+
+        print("  Estadísticas por Proyecto:")
         for project_name, scores in agent_stats["projects"].items():
             project_stats = compute_statistics(scores)
-            print(f"    Project: {project_name}")
-            for key, value in project_stats.items():
-                print(f"      {key}: {value}")
+            print(f"    Proyecto: {project_name}")
+            print(f"      Tareas completadas: {project_stats['count']}")
+            print(f"      Puntuación media: {project_stats['mean']:.2f}")
+            print(f"      Puntuación máxima: {project_stats['max']:.2f}")
+
+    print("\n" + "=" * 50)
 
 
 def plot_agent_results(results, agents):
@@ -133,51 +163,76 @@ def plot_agent_results(results, agents):
     # Plotting the bar chart.
     plt.figure(figsize=(8, 6))
     bars = plt.bar(agent_names, agent_avg_scores, color='skyblue')
-    plt.ylim(0, 10)
-    plt.ylabel('Score')
-    plt.title('Agent Performance')
+    plt.ylim(0, 1.0)  # Ajustar a escala 0-1
+    plt.ylabel('Puntuación')
+    plt.title('Rendimiento de Agentes')
 
     # Add score labels above each bar.
     for bar, score in zip(bars, agent_avg_scores):
         yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2, yval, f'{score:.1f}', ha='center', va='bottom')
+        plt.text(bar.get_x() + bar.get_width() / 2, yval, f'{score:.2f}', ha='center', va='bottom')
 
-    # plt.show()
-    plt.savefig("output.png")
+    plt.savefig(os.path.join(log_dir, "rendimiento_agentes.png"))
+    print(f"Gráfico guardado en: {os.path.join(log_dir, 'rendimiento_agentes.png')}")
 
 
 async def main():
-    # ---------------------------
-    # 1. Initialize Agents and Results Storage.
-    # ---------------------------
-    agents: List[BaseAgent] = AGENTS
-    results = {}
-    for agent in agents:
-        results[agent.id] = {"global_scores": [], "projects": {}}
+    print("\n" + "=" * 50)
+    print("BENCHMARK DE WEB AGENTS - SUBNET 36")
+    print("=" * 50)
 
-    # ---------------------------
-    # 2. Process Each Demo Web Project.
-    # ---------------------------
-    demo_web_projects: List[WebProject] = await initialize_demo_webs_projects()
-
-    for index, demo_project in enumerate(demo_web_projects):
-        tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=True)
-        # --- Generate tests for the tasks ---
-        llm_service = DIContainer.llm_service()
-        test_pipeline = TestGenerationPipeline(llm_service=llm_service, web_project=demo_project)
-        tasks = await test_pipeline.add_tests_to_tasks(tasks)
+    try:
+        # ---------------------------
+        # 1. Initialize Agents and Results Storage.
+        # ---------------------------
+        agents: List[BaseAgent] = AGENTS
+        results = {}
         for agent in agents:
-            await evaluate_project_for_agent(agent, demo_project, tasks, results)
+            results[agent.id] = {"global_scores": [], "projects": {}}
+            print(f"Agente registrado: {agent.id}")
 
-    # ---------------------------
-    # 3. Print Performance Statistics.
-    # ---------------------------
-    print_performance_statistics(results, agents)
+        # ---------------------------
+        # 2. Process Each Demo Web Project.
+        # ---------------------------
+        print("\nInicializando proyectos web demo...")
+        demo_web_projects: List[WebProject] = await initialize_demo_webs_projects()
+        print(f"Proyectos disponibles: {', '.join([p.name for p in demo_web_projects])}")
 
-    # ---------------------------
-    # 4. Plot the Agent Results.
-    # ---------------------------
-    plot_agent_results(results, agents)
+        for index, demo_project in enumerate(demo_web_projects):
+            print(f"\nProcesando proyecto {index+1}/{len(demo_web_projects)}: {demo_project.name}")
+
+            # Generar tareas para el proyecto actual
+            tasks = await generate_tasks_for_project(demo_project, generate_new_tasks=True)
+            print(f"Tareas generadas: {len(tasks)}")
+
+            # Generar tests para las tareas
+            llm_service = DIContainer.llm_service()
+            test_pipeline = TestGenerationPipeline(llm_service=llm_service, web_project=demo_project)
+            tasks = await add_tests_to_tasks(tasks, test_pipeline)
+
+            # Contar cuántos tests se generaron en total
+            total_tests = sum(len(task.tests) if hasattr(task, "tests") else 0 for task in tasks)
+            print(f"Tests generados: {total_tests} (promedio de {total_tests/len(tasks):.1f} por tarea)")
+
+            # Evaluar cada agente en las tareas generadas
+            for agent in agents:
+                print(f"\nEvaluando agente: {agent.id}")
+                await evaluate_project_for_agent(agent, demo_project, tasks, results)
+
+        # ---------------------------
+        # 3. Print Performance Statistics.
+        # ---------------------------
+        print_performance_statistics(results, agents)
+
+        # ---------------------------
+        # 4. Plot the Agent Results.
+        # ---------------------------
+        plot_agent_results(results, agents)
+
+    except Exception as e:
+        import traceback
+        print(f"Error durante la ejecución: {e}")
+        print(traceback.format_exc())
 
 
 if __name__ == "__main__":
