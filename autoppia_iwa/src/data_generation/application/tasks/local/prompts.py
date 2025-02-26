@@ -1,4 +1,3 @@
-
 LOCAL_TASKS_CONTEXT_PROMPT = """
 Context: 
 You are responsible for generating, refining, and validating single-page user tasks for a website through a structured, multi-phase process. This process is inspired by advanced autonomous evaluation frameworks like Infinite Web Arena (IWA) and consists of the following phases:

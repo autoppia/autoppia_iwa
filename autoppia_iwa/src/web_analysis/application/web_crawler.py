@@ -1,7 +1,9 @@
 from urllib.parse import urljoin, urlparse
+
 import networkx as nx
 import requests
 from bs4 import BeautifulSoup
+
 from autoppia_iwa.src.shared.web_utils import async_extract_html
 from autoppia_iwa.src.web_analysis.domain.classes import WebCrawlerConfig
 

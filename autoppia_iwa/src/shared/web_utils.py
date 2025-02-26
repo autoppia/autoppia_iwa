@@ -1,8 +1,10 @@
 from io import BytesIO
-from typing import Dict, Any, Tuple
-from PIL import Image
+from typing import Any, Dict, Tuple
+
 from bs4 import BeautifulSoup, Comment
+from PIL import Image
 from playwright.async_api import async_playwright
+
 from autoppia_iwa.src.llms.infrastructure.ui_parser_service import UIParserService
 
 
@@ -44,6 +46,7 @@ def sync_extract_html(page_url: str) -> str:
     Adjust if your environment doesn't support sync Playwright.
     """
     from playwright.sync_api import sync_playwright
+
     launch_options = {"headless": True, "args": ["--start-maximized"]}
     with sync_playwright() as p:
         browser_type = p.chromium

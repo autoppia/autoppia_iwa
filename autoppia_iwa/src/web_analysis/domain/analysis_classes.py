@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
+
 from pydantic import BaseModel, Field
 
 
@@ -33,16 +34,16 @@ class DomainAnalysis(BaseModel):
     ended_time: str
     total_time: float
     start_url: str
-    category:str = ""
-    features:List[str] = Field(default_factory=list, description="List of features")
-    urls:List[str] = Field(default_factory=list, description="List of urls")
+    category: str = ""
+    features: List[str] = Field(default_factory=list, description="List of features")
+    urls: List[str] = Field(default_factory=list, description="List of urls")
 
     def dump_excluding_page_analyses(self):
         dump = self.model_dump()
         dump["page_analyses"] = None
         return dump
 
-    def get_page_analysis(self, url:str):
+    def get_page_analysis(self, url: str):
         for page_analysis in self.page_analyses:
             if page_analysis.page_url == url:
                 return page_analysis

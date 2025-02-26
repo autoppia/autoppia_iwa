@@ -3,13 +3,16 @@ import hashlib
 import time
 import traceback
 from collections import defaultdict
-from typing import List, Optional, Dict, Tuple
+from typing import Dict, List, Optional, Tuple
+
 from playwright.async_api import async_playwright
 from pydantic import BaseModel, Field
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
+
+from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
-from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult, TestResult
-from autoppia_iwa.src.evaluation.classes import Feedback
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
+from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult
+from autoppia_iwa.src.evaluation.classes import Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
@@ -17,7 +20,6 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 
@@ -125,15 +127,9 @@ class ConcurrentEvaluator(IEvaluator):
                 print(traceback.format_exc())
                 return [
                     EvaluationResult(
-                        web_agent_id=ts.web_agent_id,
-                        final_score=0,
-                        raw_score=0,
-                        random_clicker_score=0,
-                        test_results_matrix=[],
-                        feedback=None,
-                        execution_history=[],
-                        random_passed_tests=[]
-                    ) for ts in group
+                        web_agent_id=ts.web_agent_id, final_score=0, raw_score=0, random_clicker_score=0, test_results_matrix=[], feedback=None, execution_history=[], random_passed_tests=[]
+                    )
+                    for ts in group
                 ]
 
     @staticmethod
@@ -164,16 +160,7 @@ class ConcurrentEvaluator(IEvaluator):
 
         if not actions:
             print(f"No actions provided for task {task.id}. Returning default result.")
-            return EvaluationResult(
-                web_agent_id=web_agent_id,
-                final_score=0,
-                raw_score=0,
-                random_clicker_score=0,
-                test_results_matrix=[],
-                feedback=None,
-                execution_history=[],
-                random_passed_tests=[]
-            )
+            return EvaluationResult(web_agent_id=web_agent_id, final_score=0, raw_score=0, random_clicker_score=0, test_results_matrix=[], feedback=None, execution_history=[], random_passed_tests=[])
 
         if delay:
             await asyncio.sleep(delay)
@@ -184,9 +171,7 @@ class ConcurrentEvaluator(IEvaluator):
             backend_service.reset_backend_events_db(web_agent_id)
 
         # Execute agent actions in browser
-        execution_history: List[ActionExecutionResult] = await self._evaluate_in_browser(
-            task, web_agent_id, actions, backend_service, is_web_real
-        )
+        execution_history: List[ActionExecutionResult] = await self._evaluate_in_browser(task, web_agent_id, actions, backend_service, is_web_real)
 
         # Run tests on agent's actions
         test_results_matrix: List[List[TestResult]] = self._run_tests(task, execution_history)
@@ -255,7 +240,7 @@ class ConcurrentEvaluator(IEvaluator):
             test_results_matrix=test_results_matrix,
             feedback=feedback,
             execution_history=execution_history,
-            random_passed_tests=random_passed_tests
+            random_passed_tests=random_passed_tests,
         )
 
         if self.config.save_results_in_db:
@@ -294,9 +279,7 @@ class ConcurrentEvaluator(IEvaluator):
         if not task.is_web_real:
             backend_service.reset_backend_events_db(random_web_agent_id)
 
-        random_execution_history = await self._evaluate_in_browser(
-            task, random_web_agent_id, random_actions, backend_service, task.is_web_real
-        )
+        random_execution_history = await self._evaluate_in_browser(task, random_web_agent_id, random_actions, backend_service, task.is_web_real)
 
         # Run tests on random clicker actions
         random_test_results = self._run_tests(task, random_execution_history)
@@ -330,8 +313,7 @@ class ConcurrentEvaluator(IEvaluator):
 
         return random_passed_tests, random_score
 
-    async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], 
-                                   backend_service: BackendDemoWebService, is_web_real: bool) -> List[ActionExecutionResult]:
+    async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], backend_service: BackendDemoWebService, is_web_real: bool) -> List[ActionExecutionResult]:
         """
         Execute actions in a browser and get the results.
 
@@ -388,6 +370,7 @@ class ConcurrentEvaluator(IEvaluator):
             page: Playwright page object
             web_agent_id: ID of the web agent
         """
+
         def on_frame_navigated(frame):
             try:
                 if frame.url:
@@ -424,12 +407,7 @@ class ConcurrentEvaluator(IEvaluator):
 
             test_runner = TestRunner(task.tests)
             # Run tests for the current snapshot, giving it access to all snapshots up to this point
-            test_results = test_runner.run_tests(
-                prompt=task.prompt, 
-                snapshot=snapshot, 
-                browser_snapshots=browser_snapshots,
-                current_action_index=i
-            )
+            test_results = test_runner.run_tests(prompt=task.prompt, snapshot=snapshot, browser_snapshots=browser_snapshots, current_action_index=i)
 
             # Add the results for this snapshot to the matrix
             test_results_matrix.append(test_results)
@@ -437,8 +415,7 @@ class ConcurrentEvaluator(IEvaluator):
         return test_results_matrix
 
     @staticmethod
-    def _generate_feedback(task: Task, execution_history: List[ActionExecutionResult], 
-                           test_results_matrix: List[List[TestResult]]) -> Feedback:
+    def _generate_feedback(task: Task, execution_history: List[ActionExecutionResult], test_results_matrix: List[List[TestResult]]) -> Feedback:
         """
         Generate feedback based on test results.
 
@@ -450,8 +427,4 @@ class ConcurrentEvaluator(IEvaluator):
         Returns:
             Feedback: Generated feedback
         """
-        return FeedbackGenerator.generate_feedback(
-            task_prompt=task.prompt, 
-            execution_history=execution_history, 
-            test_results_matrix=test_results_matrix
-        )
+        return FeedbackGenerator.generate_feedback(task_prompt=task.prompt, execution_history=execution_history, test_results_matrix=test_results_matrix)

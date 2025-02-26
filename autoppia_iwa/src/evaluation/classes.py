@@ -7,6 +7,7 @@ from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 class TestResult(BaseModel):
     """Represents the evaluation result of a single test."""
+
     success: bool  # True if the test passed, False otherwise
     extra_data: Optional[dict] = None  # Additional data related to the test
 

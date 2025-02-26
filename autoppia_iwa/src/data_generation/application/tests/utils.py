@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:
@@ -21,7 +21,7 @@ def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:
         "CheckPageViewEventTest": "backend",
         "JudgeBaseOnHTML": "frontend",
         "OpinionBaseOnScreenshot": "frontend",
-        "CheckUrlTest": "frontend", 
+        "CheckUrlTest": "frontend",
     }
 
     if raw_test_type in test_type_mapping:

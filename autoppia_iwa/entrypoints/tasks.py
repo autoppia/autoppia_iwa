@@ -1,19 +1,20 @@
 # file: tasks.py
 
 import asyncio
+import logging
 import traceback
 from typing import List
-import logging
 
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-# You might need to import LocalTaskGenerationPipeline if it is in a different module
-from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.demo_webs.config import initialize_test_demo_web_projects, initialize_demo_webs_projects
+from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 
 # Import the TestGenerationPipeline from the new location
 from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
+from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
+
+# You might need to import LocalTaskGenerationPipeline if it is in a different module
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 
 # --- ADDED: to get a real LLM service instead of None ---
 from autoppia_iwa.src.di_container import DIContainer
@@ -31,12 +32,7 @@ async def main():
 
         # Create TaskGenerationConfig if needed by TaskGenerationPipeline
         config = TaskGenerationConfig(
-            save_task_in_db=False,
-            save_web_analysis_in_db=False,
-            enable_crawl=False,
-            generate_milestones=False,
-            global_tasks_to_generate=0,
-            local_tasks_to_generate_per_url=2
+            save_task_in_db=False, save_web_analysis_in_db=False, enable_crawl=False, generate_milestones=False, global_tasks_to_generate=0, local_tasks_to_generate_per_url=2
         )
 
         # Instantiate the task generation pipeline.
@@ -67,6 +63,7 @@ async def main():
 
     except Exception as e:
         print(f"Error in main: {e}\n{traceback.format_exc()}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

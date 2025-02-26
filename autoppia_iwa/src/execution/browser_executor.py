@@ -5,9 +5,9 @@ from typing import List, Optional
 
 from playwright.async_api import Page, async_playwright
 
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
 

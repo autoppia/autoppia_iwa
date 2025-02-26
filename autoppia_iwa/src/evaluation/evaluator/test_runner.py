@@ -1,5 +1,6 @@
 # Corrected TestRunner class
 from typing import List
+
 from autoppia_iwa.src.data_generation.domain.classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.classes import TestResult
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
@@ -24,17 +25,11 @@ class TestRunner:
         """
         snapshot_results = []  # Store results for this snapshot
         for test in self.tests:
-            success = test.execute_test(
-                current_iteration=current_action_index,
-                prompt=prompt, 
-                snapshot=snapshot, 
-                browser_snapshots=browser_snapshots
-            )
+            success = test.execute_test(current_iteration=current_action_index, prompt=prompt, snapshot=snapshot, browser_snapshots=browser_snapshots)
             # Create TestResult instance with extra_data
             test_result = TestResult(
                 success=success,
-                extra_data={key: value for key, value in test.model_dump().items() 
-                            if key not in {"description", "test_type"}},
+                extra_data={key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}},
             )
             snapshot_results.append(test_result)
         return snapshot_results

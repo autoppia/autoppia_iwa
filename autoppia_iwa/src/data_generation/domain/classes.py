@@ -3,8 +3,10 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Literal
+from typing import Any, Dict, List, Literal, Optional
+
 from pydantic import BaseModel, Field
+
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
@@ -39,70 +41,23 @@ class Task(BaseModel):
     This model captures all necessary information for task execution and validation,
     including browser specifications, test cases, and milestone subtasks.
     """
-    id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
-        description="Unique identifier for the task, auto-generated using UUID4"
-    )
-    type: Literal["global", "local"] = Field(
-        default="local",
-        description="Task scope: 'global' for system-wide tasks, 'local' for specific context tasks"
-    )
-    is_web_real: bool = Field(
-        default=False,
-        description="Indicates if the task operates on a real web environment versus simulation"
-    )
-    url: str = Field(
-        ...,
-        description="Target URL where the task will be executed"
-    )
-    prompt: str = Field(
-        ...,
-        description="Natural language description of the task objectives and requirements"
-    )
-    html: str = Field(
-        default_factory=str,
-        description="Complete HTML content of the target page"
-    )
-    clean_html: str = Field(
-        default_factory=str,
-        description="Optimized HTML content with reduced overhead for processing"
-    )
-    interactive_elements: Optional[str] = Field(
-        default=None,
-        description="Mapping of interactive elements found in the HTML content, including buttons, forms, etc."
-    )
-    screenshot: Optional[str] = Field(
-        default=None,
-        description="Pil Image of the task environment or webpage encoded in base64 and stringify"
-    )
-    screenshot_description: Optional[str] = Field(
-        default=None,
-        description="Textual description of the screenshot content and relevant elements"
-    )
-    specifications: BrowserSpecification = Field(
-        default_factory=BrowserSpecification,
-        description="Browser configuration and requirements for task execution"
-    )
-    tests: List[BaseTaskTest] = Field(
-        default_factory=list,
-        description="Collection of validation tests that verify task completion"
-    )
-    milestones: Optional[List["Task"]] = Field(
-        default=None,
-        description="Ordered list of Subtasks that must be completed sequentially"
-    )
-    relevant_data: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Additional contextual data required for task execution"
-    )
-    success_criteria: Optional[str] = Field(
-        default=None,
-        description="Clear definition of conditions that indicate successful task completion"
-    )
-    logic_function: Optional[dict] = Field(
-        default=None,
-        description="Boolean expression using T1..Tn notation to evaluate overall task success"
-    )
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task, auto-generated using UUID4")
+    type: Literal["global", "local"] = Field(default="local", description="Task scope: 'global' for system-wide tasks, 'local' for specific context tasks")
+    is_web_real: bool = Field(default=False, description="Indicates if the task operates on a real web environment versus simulation")
+    url: str = Field(..., description="Target URL where the task will be executed")
+    prompt: str = Field(..., description="Natural language description of the task objectives and requirements")
+    html: str = Field(default_factory=str, description="Complete HTML content of the target page")
+    clean_html: str = Field(default_factory=str, description="Optimized HTML content with reduced overhead for processing")
+    interactive_elements: Optional[str] = Field(default=None, description="Mapping of interactive elements found in the HTML content, including buttons, forms, etc.")
+    screenshot: Optional[str] = Field(default=None, description="Pil Image of the task environment or webpage encoded in base64 and stringify")
+    screenshot_description: Optional[str] = Field(default=None, description="Textual description of the screenshot content and relevant elements")
+    specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser configuration and requirements for task execution")
+    tests: List[BaseTaskTest] = Field(default_factory=list, description="Collection of validation tests that verify task completion")
+    milestones: Optional[List["Task"]] = Field(default=None, description="Ordered list of Subtasks that must be completed sequentially")
+    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
+    success_criteria: Optional[str] = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
+    logic_function: Optional[dict] = Field(default=None, description="Boolean expression using T1..Tn notation to evaluate overall task success")
 
     @property
     def prompt_with_relevant_data(self) -> str:
@@ -125,14 +80,14 @@ class Task(BaseModel):
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Task":
         """
-            Creates a Task instance from a dictionary, including nested test instances.
+        Creates a Task instance from a dictionary, including nested test instances.
 
-            Args:
-                data (Dict[str, Any]): Dictionary containing the Task attributes.
+        Args:
+            data (Dict[str, Any]): Dictionary containing the Task attributes.
 
-            Returns:
-                Task: The Task object created from the dictionary.
-            """
+        Returns:
+            Task: The Task object created from the dictionary.
+        """
         return cls(
             id=data.get("id", str(uuid.uuid4())),  # Ensures unique ID if missing
             prompt=data["prompt"],  # Required field
@@ -156,7 +111,7 @@ class TaskGenerationConfig(BaseModel):
     number_of_prompts_per_task: int = 1
     global_tasks_to_generate: int = 2
     local_tasks_to_generate_per_url: int = 2
-    num_or_urls:int = None
+    num_or_urls: int = None
 
 
 class TasksGenerationOutput(BaseModel):

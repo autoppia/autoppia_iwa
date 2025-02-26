@@ -1,17 +1,15 @@
-
 # llms.py
 
+import time
 from typing import Dict, List, Optional
 
 import httpx
-from openai import OpenAI, AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 
 from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
-import time
-import httpx
-
 
 # In llms.py
+
 
 class OpenAIService(ILLM):
     """
@@ -28,24 +26,9 @@ class OpenAIService(ILLM):
         """
         Prepares the JSON schema for OpenAI's format requirements.
         """
-        return {
-            "type": "object",
-            "properties": {
-                "schema": {
-                    "type": "string",
-                    "enum": ["JSON_SCHEMA"]
-                },
-                "response": schema
-            },
-            "required": ["schema", "response"]
-        }
+        return {"type": "object", "properties": {"schema": {"type": "string", "enum": ["JSON_SCHEMA"]}, "response": schema}, "required": ["schema", "response"]}
 
-    def predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
+    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         try:
             params = {
                 "model": self.config.model,
@@ -54,14 +37,9 @@ class OpenAIService(ILLM):
                 "temperature": self.config.temperature,
             }
             if json_format and schema:
-                params["response_format"] = {
-                    "type": "json_object"
-                }
+                params["response_format"] = {"type": "json_object"}
                 # Add system message for JSON structure
-                messages.insert(0, {
-                    "role": "system",
-                    "content": f"You must respond with JSON that matches this schema: {schema}"
-                })
+                messages.insert(0, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
                 params["messages"] = messages
 
             response = self.sync_client.chat.completions.create(**params)
@@ -69,12 +47,7 @@ class OpenAIService(ILLM):
         except Exception as e:
             raise RuntimeError(f"OpenAI Sync Error: {e}")
 
-    async def async_predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
+    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         try:
             params = {
                 "model": self.config.model,
@@ -83,14 +56,9 @@ class OpenAIService(ILLM):
                 "temperature": self.config.temperature,
             }
             if json_format and schema:
-                params["response_format"] = {
-                    "type": "json_object"
-                }
+                params["response_format"] = {"type": "json_object"}
                 # Add system message for JSON structure
-                messages.insert(0, {
-                    "role": "system",
-                    "content": f"You must respond with JSON that matches this schema: {schema}"
-                })
+                messages.insert(0, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
                 params["messages"] = messages
 
             response = await self.async_client.chat.completions.create(**params)
@@ -109,12 +77,7 @@ class LocalLLMService(ILLM):
         self.config = config
         self.endpoint_url = endpoint_url
 
-    def predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
+    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         start_time = time.time()
         try:
             with httpx.Client(timeout=120.0) as client:
@@ -138,12 +101,7 @@ class LocalLLMService(ILLM):
             elapsed_time = time.time() - start_time
             print(f"Sync request took {elapsed_time:.2f} seconds.")
 
-    async def async_predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
+    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
@@ -175,11 +133,7 @@ class LLMFactory:
     """
 
     @staticmethod
-    def create_llm(
-        llm_type: str,
-        config: LLMConfig,
-        **kwargs
-    ) -> ILLM:
+    def create_llm(llm_type: str, config: LLMConfig, **kwargs) -> ILLM:
         if llm_type.lower() == "openai":
             return OpenAIService(config, api_key=kwargs.get("api_key"))
         elif llm_type.lower() == "local":
