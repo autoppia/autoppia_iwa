@@ -3,7 +3,8 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, WebProject
+from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
 
 

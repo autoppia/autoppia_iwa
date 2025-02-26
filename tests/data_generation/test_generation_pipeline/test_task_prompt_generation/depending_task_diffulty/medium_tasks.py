@@ -7,12 +7,13 @@ from typing import List
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig, WebProject
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskDifficultyLevel, TaskGenerationConfig
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.shared.web_utils import generate_random_web_agent_id
+from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
@@ -100,9 +101,9 @@ class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
                 name="jobs",
                 events=EVENTS_ALLOWED,
             )
-            task_input = TaskGenerationConfig(web_project=web_project)
-            task_generator = TaskGenerationPipeline(task_input, llm_service=self.llm_service)
-            tasks_data = asyncio.run(task_generator.generate(self.difficulty_level)).to_dict()
+            task_input = TaskGenerationConfig()
+            task_generator = TaskGenerationPipeline(config=task_input,web_project=web_project, llm_service=self.llm_service)
+            tasks_data = asyncio.run(task_generator.generate()).to_dict()
             save_results = True
 
         if include_actions:
@@ -160,11 +161,6 @@ class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
                         self.logger.error(f"Error creating action: {action}. Exception: {e}")
 
             task_solution = TaskSolution(
-                task=Task(
-                    prompt=task["prompt"],
-                    url=task["url"],
-                    tests=BaseTaskTest.assign_tests(task["tests"]),
-                ),
                 actions=actions,
                 web_agent_id=task.get("web_agent_id", generate_random_web_agent_id()),
             )
@@ -172,7 +168,7 @@ class TaskGenerationByMediumDifficultyTest(unittest.TestCase):
 
         evaluator_config = EvaluatorConfig(save_results_in_db=True)
         evaluator = ConcurrentEvaluator(evaluator_config)
-        evaluation_result = asyncio.run(evaluator.evaluate_all_tasks(evaluator_input))
+        evaluation_result = asyncio.run(evaluator.evaluate_task_solutions(evaluator_input))
         return [result.model_dump() for result in evaluation_result]
 
     @staticmethod

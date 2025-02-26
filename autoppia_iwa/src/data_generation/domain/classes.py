@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
-from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class TaskDifficultyLevel(Enum):
@@ -62,7 +61,7 @@ class Task(BaseModel):
     @property
     def prompt_with_relevant_data(self) -> str:
         if self.relevant_data:
-            return f"{self.prompt} /n Relevant data you may need: {self.relevant_data}"
+            return f"{self.prompt} \n Relevant data you may need: {self.relevant_data}"
         return self.prompt
 
     def summary(self):
@@ -97,7 +96,6 @@ class Task(BaseModel):
             specifications=BrowserSpecification.model_validate(data.get("specifications", {})),
             tests=[BaseTaskTest.model_validate(test) for test in data.get("tests", [])],
             milestones=[cls.from_dict(m) for m in data.get("milestones", [])] if data.get("milestones") else None,
-            web_analysis=DomainAnalysis.model_validate(data["web_analysis"]) if "web_analysis" in data else None,
             relevant_data=data.get("relevant_data", {}),
             is_web_real=data.get("is_web_real", False),
         )

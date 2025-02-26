@@ -2,7 +2,7 @@ import asyncio
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.task_prompt_generator import TaskPromptGenerator
+from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel, TaskPromptForUrl
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis
@@ -204,8 +204,8 @@ class TestTaskPromptGenerator(unittest.TestCase):
     def test_generate_prompts(self):
         """Test the generation of prompts for a domain."""
         relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
-        generator = TaskPromptGenerator(web_analysis=self.web_analysis, llm_service=self.llm_service, num_prompts_per_url=1)
-        tasks = generator.generate_prompts_for_domain(web_project_data=relevant_data, task_difficulty_level=TaskDifficultyLevel.MEDIUM)
+        generator = LocalTaskGenerationPipeline(web_analysis=self.web_analysis, llm_service=self.llm_service, num_prompts_per_url=1)
+        tasks = generator.generate(web_project_data=relevant_data, task_difficulty_level=TaskDifficultyLevel.MEDIUM)
 
         # Assertions
         self.assertIsNotNone(tasks, "Tasks should not be None.")
@@ -221,9 +221,9 @@ class TestTaskPromptGenerator(unittest.TestCase):
         analysis = asyncio.run(analyzer.analyze())
 
         relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
-        generator = TaskPromptGenerator(web_analysis=analysis, llm_service=self.llm_service, num_prompts_per_url=1)
+        generator = LocalTaskGenerationPipeline(web_analysis=analysis, llm_service=self.llm_service, num_prompts_per_url=1)
         tasks = asyncio.run(
-            generator.generate_task_prompts_for_url(
+            generator.generate(
                 specific_url=start_url,
                 web_project_data=relevant_data,
                 task_difficulty_level=TaskDifficultyLevel.MEDIUM,

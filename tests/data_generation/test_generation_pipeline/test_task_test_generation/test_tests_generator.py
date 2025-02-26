@@ -2,7 +2,7 @@ import asyncio
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tests.task_tests_generator import TaskTestGenerator
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
@@ -61,7 +61,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
         )
 
         # Generate task-based tests
-        task_test_generator = TaskTestGenerator(web_project=web_project, web_analysis=web_analysis, llm_service=self.llm_service)
+        task_test_generator = TestGenerationPipeline(web_project=web_project, web_analysis=web_analysis, llm_service=self.llm_service)
         tests = await task_test_generator.generate_task_tests(task_description, url)
 
         self.assertIsInstance(tests, list, "Generated tests should be a list.")
