@@ -114,7 +114,7 @@ class Task(BaseModel):
 
     def model_dump(self, *args, **kargs):
         dump = super().model_dump(*args, **kargs)
-        dump["screenshot"] = "<Image>"
+        dump["screenshot"] = "None"
         return dump
 
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:

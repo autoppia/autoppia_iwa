@@ -46,7 +46,7 @@ class TestGenerationPipeline:
             self.test_class_map = {
                 "CheckUrlTest": CheckUrlTest,
                 # "FindInHtmlTest": FindInHtmlTest,
-                "JudgeBaseOnHTML": JudgeBaseOnHTML,
+                # "JudgeBaseOnHTML": JudgeBaseOnHTML,
                 # "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
             }
         else:
@@ -55,7 +55,7 @@ class TestGenerationPipeline:
                 # "FindInHtmlTest": FindInHtmlTest,
                 "CheckEventTest": CheckEventTest,
                 "CheckPageViewEventTest": CheckPageViewEventTest,
-                "JudgeBaseOnHTML": JudgeBaseOnHTML,
+                # "JudgeBaseOnHTML": JudgeBaseOnHTML,
                 # "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
             }
 
