@@ -112,7 +112,9 @@ class LocalTaskGenerationPipeline:
                 data = json.loads(resp_text)
                 if isinstance(data, dict):
                     # If there's a 'result' key containing the actual list
-                    if 'result' in data and isinstance(data['result'], list):
+                    if 'tasks' in data and isinstance(data['tasks'], list):
+                        data = data['tasks']
+                    elif 'result' in data and isinstance(data['result'], list):
                         data = data['result']
                     # Or if it has the JSON schema structure
                     elif data.get("type") == "array" and "items" in data:
