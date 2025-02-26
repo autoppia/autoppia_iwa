@@ -49,7 +49,7 @@ class Task(BaseModel):
         default=False,
         description="Indicates if the task operates on a real web environment versus simulation"
     )
-    web_project_id: str = Field(..., description="Web project ID")
+    web_project_id: Optional[str] = Field(default=None, description="Web project ID")
     url: str = Field(
         ...,
         description="Target URL where the task will be executed"
