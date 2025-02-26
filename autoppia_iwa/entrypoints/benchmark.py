@@ -32,6 +32,7 @@ visualizer = SimpleSubnetVisualizer(log_directory=log_dir)
 app = AppBootstrap()
 AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker")]  # , ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
 iterations = 1  # total_tasks = tasks * iterations
+NUM_OF_URLS = 1
 
 
 # Aplicar decorador al método de evaluación original
@@ -96,7 +97,7 @@ async def generate_tasks_for_project(demo_project:WebProject, generate_new_tasks
                                   save_web_analysis_in_db=True, 
                                   save_task_in_db=False,
                                   number_of_prompts_per_task=3,
-                                  num_or_urls=1)
+                                  num_or_urls=NUM_OF_URLS)
 
     print("Generando tareas para: ", demo_project.name)
     tasks = []

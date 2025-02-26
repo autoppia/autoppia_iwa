@@ -57,7 +57,7 @@ async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
             web_agent_id=agent.id
         )
         evaluator_config = EvaluatorConfig(
-            current_url=task.url,
+            starting_url=task.url,
             save_results_in_db=False
         )
         evaluator = ConcurrentEvaluator(evaluator_config)

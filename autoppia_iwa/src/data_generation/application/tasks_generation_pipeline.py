@@ -6,11 +6,7 @@ from typing import List
 from dependency_injector.wiring import Provide
 from loguru import logger
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.data_generation.domain.classes import (
-    Task,
-    TaskGenerationConfig,
-    TasksGenerationOutput,
-)
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig, TasksGenerationOutput
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 from autoppia_iwa.src.llms.domain.interfaces import ILLM

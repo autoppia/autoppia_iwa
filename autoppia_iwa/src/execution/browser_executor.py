@@ -2,29 +2,27 @@ import asyncio
 import base64
 from datetime import datetime
 from typing import List, Optional
-
 from playwright.async_api import Page, async_playwright
-
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 
 
 class PlaywrightBrowserExecutor:
-    def __init__(self, browser_config: BrowserSpecification, demo_webs_service: BackendDemoWebService, page: Optional[Page] = None):
+    def __init__(self, browser_config: BrowserSpecification, page: Optional[Page] = None, backend_demo_webs_service: BackendDemoWebService = None):
         """
         Initializes the PlaywrightBrowserExecutor with a backend service and an optional Playwright page.
 
         Args:
-            demo_webs_service: Service for interacting with the backend.
+            backend_demo_webs_service: Service for interacting with the backend.
             page: Optional Playwright page object.
         """
         self.browser_config = browser_config
         self.page: Optional[Page] = page
-        self.demo_webs_service = demo_webs_service
         self.action_execution_results: List[ActionExecutionResult] = []
+        self.backend_demo_webs_service:BackendDemoWebService = backend_demo_webs_service
 
     def execute_actions(self, actions: List[BaseAction], web_agent_id: str) -> List[ActionExecutionResult]:
         """
@@ -98,7 +96,7 @@ class PlaywrightBrowserExecutor:
             start_time = datetime.now()
 
             # Execute the action
-            await action.execute(self.page, self.demo_webs_service, web_agent_id)
+            await action.execute(self.page, self.backend_demo_webs_service, web_agent_id)
             execution_time = (datetime.now() - start_time).total_seconds()
 
             # Capture backend events and updated browser state
@@ -172,5 +170,5 @@ class PlaywrightBrowserExecutor:
 
     async def _get_backend_events(self, web_agent_id: str, is_web_real: bool) -> List[BackendEvent]:
         if not is_web_real:
-            return self.demo_webs_service.get_backend_events(web_agent_id)
+            return await self.backend_demo_webs_service.get_backend_events(web_agent_id)
         return []

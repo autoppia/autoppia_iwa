@@ -50,6 +50,7 @@ class LocalTaskGenerationPipeline:
         # Construct final tasks
         final_tasks = [
             self._assemble_task(
+                web_project_id=self.web_project.id,
                 url=self.web_project.frontend_url,
                 prompt=item.get("prompt", ""),
                 html=html,
@@ -233,6 +234,7 @@ class LocalTaskGenerationPipeline:
 
     def _assemble_task(
         self,
+        web_project_id:int, 
         url: str,
         prompt: str,
         html: str,
@@ -247,6 +249,7 @@ class LocalTaskGenerationPipeline:
         """
         return Task(
             type="local",
+            web_project_id=web_project_id,
             prompt=prompt,
             url=url,
             html=str(html),

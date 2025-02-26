@@ -27,7 +27,8 @@ def get_backend_url(index: int, symetric=True):
 
 demo_web_projects = [
     WebProject(
-        name="jobs",
+        id="jobs",
+        name="Jobs Demo Website",
         frontend_url=get_frontend_url(index=0),
         backend_url=get_backend_url(index=0),
         events=events_allowed_web_1,

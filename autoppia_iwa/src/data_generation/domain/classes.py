@@ -6,7 +6,6 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Literal
 from pydantic import BaseModel, Field
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
-from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class TaskDifficultyLevel(Enum):
@@ -35,7 +34,6 @@ class BrowserSpecification(BaseModel):
 class Task(BaseModel):
     """
     Represents a task with associated metadata, specifications, and success criteria.
-
     This model captures all necessary information for task execution and validation,
     including browser specifications, test cases, and milestone subtasks.
     """
@@ -51,6 +49,7 @@ class Task(BaseModel):
         default=False,
         description="Indicates if the task operates on a real web environment versus simulation"
     )
+    web_project_id: Optional[str] = Field(default=None, description="Web project ID")
     url: str = Field(
         ...,
         description="Target URL where the task will be executed"
@@ -110,42 +109,80 @@ class Task(BaseModel):
             return f"{self.prompt} /n Relevant data you may need: {self.relevant_data}"
         return self.prompt
 
-    def summary(self):
-        dump = self.model_dump()
-        dump["screenshot"] = None
+    # def __str__(self):
+    #     pass
+
+    def model_dump(self, *args, **kargs):
+        dump = super().model_dump(*args, **kargs)
+        dump["screenshot"] = "<Image>"
         return dump
 
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["tests"] = [test.model_dump() for test in self.tests]
         base_dump.pop("web_analysis", None)
-
         return base_dump
 
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Task":
+    def serialize(self) -> dict:
         """
-            Creates a Task instance from a dictionary, including nested test instances.
+        Serialize a Task object to a dictionary format suitable for JSON storage.
+        Handles all nested elements including tests and milestones.
 
-            Args:
-                data (Dict[str, Any]): Dictionary containing the Task attributes.
+        Returns:
+            dict: A serialized representation of the Task
+        """
+        # Start with basic model dump
+        serialized = self.model_dump(exclude={"web_analysis"})
 
-            Returns:
-                Task: The Task object created from the dictionary.
-            """
-        return cls(
-            id=data.get("id", str(uuid.uuid4())),  # Ensures unique ID if missing
-            prompt=data["prompt"],  # Required field
-            url=data["url"],  # Required field
-            html=data.get("html", ""),
-            screenshot=data.get("screenshot"),
-            specifications=BrowserSpecification.model_validate(data.get("specifications", {})),
-            tests=[BaseTaskTest.model_validate(test) for test in data.get("tests", [])],
-            milestones=[cls.from_dict(m) for m in data.get("milestones", [])] if data.get("milestones") else None,
-            web_analysis=DomainAnalysis.model_validate(data["web_analysis"]) if "web_analysis" in data else None,
-            relevant_data=data.get("relevant_data", {}),
-            is_web_real=data.get("is_web_real", False),
-        )
+        # Specially handle tests
+        serialized["tests"] = [test.serialize() for test in self.tests]
+
+        # Recursively serialize milestones if they exist
+        if self.milestones:
+            serialized["milestones"] = [milestone.serialize() for milestone in self.milestones]
+
+        # Handle screenshot data (potentially large)
+        if serialized.get("screenshot") and isinstance(serialized["screenshot"], bytes):
+            serialized["screenshot"] = serialized["screenshot"].decode("utf-8")
+
+        return serialized
+
+    @classmethod
+    def deserialize(cls, data: dict) -> "Task":
+        """
+        Deserialize a dictionary into a Task object.
+        Handles all nested elements including tests and milestones.
+
+        Args:
+            data (dict): Serialized task data
+
+        Returns:
+            Task: A reconstructed Task object
+        """
+        # Create a copy to avoid modifying the input data
+        task_data = data.copy()
+
+        # Handle tests - convert to appropriate test objects
+        if "tests" in task_data:
+            task_data["tests"] = [BaseTaskTest.deserialize(test) for test in task_data["tests"]]
+
+        # Handle milestones recursively
+        if task_data.get("milestones"):
+            task_data["milestones"] = [cls.deserialize(milestone) for milestone in task_data["milestones"]]
+
+        # Handle BrowserSpecification
+        if "specifications" in task_data:
+            task_data["specifications"] = BrowserSpecification.model_validate(task_data["specifications"])
+
+        # Handle potential naming incompatibilities
+        if "test_cases" in task_data and "tests" not in task_data:
+            task_data["tests"] = task_data.pop("test_cases")
+
+        if "description" in task_data and not task_data.get("prompt"):
+            task_data["prompt"] = task_data.pop("description")
+
+        # Create the Task object
+        return cls(**task_data)
 
 
 class TaskGenerationConfig(BaseModel):
