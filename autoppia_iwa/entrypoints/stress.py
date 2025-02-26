@@ -26,6 +26,8 @@ from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline
 USE_CACHED_TASKS = True  # Set to True to use cached tasks from JSON file
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 OUTPUT_DIR = "results"  # Directory to store test results
+M = 100  # Set this to your desired number of copies
+NUMBER_OF_TASKS = 1
 
 # Initialize the app
 app = AppBootstrap()
@@ -240,47 +242,6 @@ async def generate_agent_solution(agent: BaseAgent, task: Task, timing_metrics: 
     print(f"  Solution generated in {solution_time:.2f} seconds")
 
     return task_solution
-
-
-async def evaluate_solution(web_project: WebProject, task: Task, solution: TaskSolution, 
-                            timing_metrics: TimingMetrics):
-    """
-    Evaluate a single solution for a task and record metrics.
-
-    Args:
-        web_project: The web project
-        task: The task being evaluated
-        solution: The solution to evaluate
-        timing_metrics: Metrics tracker for timing information
-
-    Returns:
-        EvaluationResult object
-    """
-    print(f"Evaluating solution for task {task.id} with agent {solution.web_agent_id}...")
-    start_time = time.time()
-
-    # Prepare evaluator configuration
-    evaluator_config = EvaluatorConfig(
-        save_results_in_db=False,
-        enable_grouping_tasks=False
-    )
-
-    evaluator = ConcurrentEvaluator(web_project=web_project, config=evaluator_config)
-
-    # Evaluate the solution
-    evaluation_results: List[EvaluationResult] = await evaluator.evaluate_task_solutions(
-        task=task, 
-        task_solutions=[solution]
-    )
-
-    # Record timing information
-    evaluation_time = time.time() - start_time
-    timing_metrics.record_evaluation_time(solution.web_agent_id, task.id, evaluation_time)
-
-    print(f"  Evaluation completed in {evaluation_time:.2f} seconds, " 
-          f"Score: {evaluation_results[0].final_score:.2f}")
-
-    return evaluation_results[0]
 
 
 def compute_statistics(values: List[float]) -> dict:
@@ -589,6 +550,8 @@ async def main():
         print("Error: No tasks available.")
         return
 
+    tasks = tasks[0:NUMBER_OF_TASKS]
+
     # Add tests to the tasks if they don't already have them
     if not all(hasattr(task, 'tests') and task.tests for task in tasks):
         print("Adding tests to tasks...")
@@ -607,7 +570,7 @@ async def main():
         return
 
     # Number of solution copies to evaluate in batch
-    M = 5  # Set this to your desired number of copies
+
     print(f"Evaluating {len(tasks)} tasks with {len(AGENTS)} agents, {M} copies per solution...")
 
     # First generate all solutions for all agents across all tasks (ONCE per combination)
@@ -667,7 +630,8 @@ async def main():
             # Prepare evaluator configuration
             evaluator_config = EvaluatorConfig(
                 save_results_in_db=False,
-                enable_grouping_tasks=False
+                enable_grouping_tasks=False,
+                chunk_size=20
             )
             evaluator = ConcurrentEvaluator(web_project=demo_project, config=evaluator_config)
 

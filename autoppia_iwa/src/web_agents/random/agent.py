@@ -20,7 +20,8 @@ class RandomClickerWebAgent(BaseAgent):
         :param task: The task for which actions are being generated.
         :return: A TaskSolution containing the generated actions.
         """
-        actions = [NavigateAction(url=task.url)]
+        # actions = [NavigateAction(url=task.url)]
+        actions = []
         for _ in range(1):  # Generate 10 random click actions
             x = random.randint(0, task.specifications.screen_width - 1)  # Random x coordinate
             y = random.randint(0, task.specifications.screen_height - 1)  # Random y coordinate
