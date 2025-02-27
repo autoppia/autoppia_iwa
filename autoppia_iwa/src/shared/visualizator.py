@@ -156,6 +156,7 @@ class SubnetVisualizer:
     def show_full_evaluation(self, agent_id, task, actions, test_results_matrix, evaluation_result=None, feedback=None):
         """
         Muestra una evaluación completa con todos los detalles: tarea, acciones, tests y resultados.
+        Las acciones se muestran antes que los tests y ambas secciones están recuadradas.
 
         Args:
             agent_id: ID del agente evaluado
@@ -180,10 +181,32 @@ class SubnetVisualizer:
         )
         self.console.print(task_panel)
 
-        # 2. Tabla de tests configurados con sus resultados
+        # 2. Tabla de acciones ejecutadas (AHORA PRIMERO)
+        if actions:
+            actions_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            actions_table.add_column("#", style="dim", width=4)
+            actions_table.add_column("Tipo", style="cyan", width=18)
+            actions_table.add_column("Detalles", style="green")
+
+            for idx, action in enumerate(actions):
+                action_type = type(action).__name__ if hasattr(action, "__class__") else "Unknown"
+                details = self._format_action_details(action)
+                actions_table.add_row(str(idx + 1), action_type, details)
+
+            actions_panel = Panel(
+                actions_table,
+                title="[bold green]ACCIONES EJECUTADAS[/bold green]",
+                border_style="green",
+                padding=(1, 1)
+            )
+            self.console.print("\n")
+            self.console.print(actions_panel)
+        else:
+            self.console.print("\n[yellow]No se ejecutaron acciones[/yellow]")
+
+        # 3. Tabla de tests configurados con sus resultados (AHORA DESPUÉS)
         if hasattr(task, "tests") and task.tests and test_results_matrix and len(test_results_matrix) > 0:
-            tests_table = Table(title="[bold magenta]TESTS Y RESULTADOS[/bold magenta]", 
-                                show_header=True, header_style="bold magenta", box=box.SIMPLE)
+            tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
             tests_table.add_column("Test #", style="dim", width=6)
             tests_table.add_column("Tipo", style="cyan", width=22)
             tests_table.add_column("Descripción", style="yellow")
@@ -213,33 +236,20 @@ class SubnetVisualizer:
                         Text(result_text, style=result_style)
                     )
 
+            tests_panel = Panel(
+                tests_table,
+                title="[bold magenta]TESTS Y RESULTADOS[/bold magenta]",
+                border_style="magenta",
+                padding=(1, 1)
+            )
             self.console.print("\n")
-            self.console.print(tests_table)
+            self.console.print(tests_panel)
         else:
             self.console.print("\n[yellow]No hay tests configurados o resultados disponibles[/yellow]")
 
-        # 3. Tabla de acciones ejecutadas
-        if actions:
-            actions_table = Table(title="[bold green]ACCIONES EJECUTADAS[/bold green]", 
-                                  show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
-            actions_table.add_column("#", style="dim", width=4)
-            actions_table.add_column("Tipo", style="cyan", width=18)
-            actions_table.add_column("Detalles", style="green")
-
-            for idx, action in enumerate(actions):
-                action_type = type(action).__name__ if hasattr(action, "__class__") else "Unknown"
-                details = self._format_action_details(action)
-                actions_table.add_row(str(idx + 1), action_type, details)
-
-            self.console.print("\n")
-            self.console.print(actions_table)
-        else:
-            self.console.print("\n[yellow]No se ejecutaron acciones[/yellow]")
-
         # 4. Mostrar puntuaciones
         if evaluation_result:
-            scores_table = Table(title="[bold blue]PUNTUACIONES[/bold blue]", 
-                                 show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            scores_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
             scores_table.add_column("Tipo", style="yellow", justify="right", width=25)
             scores_table.add_column("Valor", style="cyan", width=10)
 
@@ -253,18 +263,26 @@ class SubnetVisualizer:
             scores_table.add_row("Adjusted Score:", Text(f"{final_score:.4f}", 
                                                          style="bold green" if final_score > 0.5 else "bold red"))
 
+            scores_panel = Panel(
+                scores_table,
+                title="[bold blue]PUNTUACIONES[/bold blue]",
+                border_style="blue",
+                padding=(1, 1)
+            )
             self.console.print("\n")
-            self.console.print(scores_table)
+            self.console.print(scores_panel)
 
         # 5. Información de feedback si está disponible
         if feedback:
-            feedback_panel = Panel(
-                f"""
+            feedback_content = f"""
     [bold]Tests superados:[/bold] {feedback.passed_tests}/{feedback.passed_tests + feedback.failed_tests}
     [bold]Tiempo total:[/bold] {feedback.total_execution_time:.2f}s
     [bold]Acciones correctas:[/bold] {feedback.executed_actions}
     [bold]Acciones fallidas:[/bold] {feedback.failed_actions}
-                """,
+            """
+
+            feedback_panel = Panel(
+                feedback_content,
                 title="[bold green]FEEDBACK ADICIONAL[/bold green]",
                 border_style="green",
                 padding=(1, 1)
