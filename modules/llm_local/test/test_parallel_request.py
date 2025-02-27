@@ -1,6 +1,7 @@
 import requests
 import json
 import time
+import argparse
 
 
 def make_parallel_request(N=5):
@@ -18,14 +19,16 @@ def make_parallel_request(N=5):
             "messages": [
                 {
                     "role": "system",
-                    "content": f"You are Qwen, created by Alibaba Cloud. You are a helpful assistant. (Sub-request {i+1})"
+                    "content": (
+                        f"You are Qwen, created by Alibaba Cloud. "
+                        f"You are a helpful assistant. (Sub-request {i+1})"
+                    )
                 },
                 {
                     "role": "user",
                     "content": "Give me a short introduction to large language model."
                 }
             ],
-            # Example: we set json_format=False here.  You can set True and provide "schema" if you like
             "json_format": False,
             "schema": None
         })
@@ -51,8 +54,17 @@ def make_parallel_request(N=5):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Test parallel requests to /generate_parallel.")
+    parser.add_argument(
+        "--number_request",
+        type=int,
+        default=5,
+        help="Number of sub-requests to batch in one call"
+    )
+    args = parser.parse_args()
+
     # Number of sub-requests to batch in one call
-    N = 5
+    N = args.number_request
 
     elapsed, result = make_parallel_request(N)
     print(f"Parallel request with {N} sub-requests took {elapsed:.2f}s\n")
