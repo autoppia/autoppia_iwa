@@ -28,7 +28,7 @@ if LLM_PROVIDER == "openai" and not OPENAI_API_KEY:
 # ==================================
 # Database and File Configuration
 # ==================================
-MONGODB_URL = "mongodb://localhost:27017"
+MONGODB_URL = os.getenv("MONGODB_URL")
 MONGODB_NAME = "workflow"
 ANALYSIS_COLLECTION = "web_analysis"
 TASKS_COLLECTION = "tasks"
