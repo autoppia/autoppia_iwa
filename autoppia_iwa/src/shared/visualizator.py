@@ -10,6 +10,9 @@ from rich.text import Text
 from rich.padding import Padding
 from rich.layout import Layout
 from rich.align import Align
+from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import (
+    CheckUrlTest,)
 
 
 class SubnetVisualizer:
@@ -148,6 +151,128 @@ class SubnetVisualizer:
             self.console.print(scores_table)
 
         # Separador
+        self.console.print("\n" + "=" * 80)
+
+    def show_full_evaluation(self, agent_id, task, actions, test_results_matrix, evaluation_result=None, feedback=None):
+        """
+        Muestra una evaluación completa con todos los detalles: tarea, acciones, tests y resultados.
+
+        Args:
+            agent_id: ID del agente evaluado
+            task: La tarea evaluada
+            actions: Lista de acciones ejecutadas
+            test_results_matrix: Matriz de resultados de tests
+            evaluation_result: Resultado de la evaluación
+            feedback: Feedback opcional adicional
+        """
+        self.console.print("\n" + "=" * 80)
+        self.console.print(f"\n[bold white on blue]EVALUACIÓN COMPLETA - AGENTE: {agent_id}[/bold white on blue]\n")
+
+        # 1. Mostrar detalles de la tarea
+        task_id = task.id if hasattr(task, "id") else "Unknown"
+        prompt = task.prompt if hasattr(task, "prompt") else "No prompt available"
+
+        task_panel = Panel(
+            prompt,
+            title=f"[bold cyan]TAREA: {task_id}[/bold cyan]",
+            border_style="cyan",
+            padding=(1, 2)
+        )
+        self.console.print(task_panel)
+
+        # 2. Tabla de tests configurados con sus resultados
+        if hasattr(task, "tests") and task.tests and test_results_matrix and len(test_results_matrix) > 0:
+            tests_table = Table(title="[bold magenta]TESTS Y RESULTADOS[/bold magenta]", 
+                                show_header=True, header_style="bold magenta", box=box.SIMPLE)
+            tests_table.add_column("Test #", style="dim", width=6)
+            tests_table.add_column("Tipo", style="cyan", width=22)
+            tests_table.add_column("Descripción", style="yellow")
+            tests_table.add_column("Resultado", style="bold", width=10)
+
+            for idx, test in enumerate(task.tests):
+                if idx < len(test_results_matrix[0]):  # Asegurarse de que hay resultados para este test
+                    # Verificar si el test pasó en alguna acción
+                    test_passed = False
+                    for action_idx in range(len(test_results_matrix)):
+                        if test_results_matrix[action_idx][idx].success:
+                            test_passed = True
+                            break
+
+                    # Obtener descripción detallada del test
+                    test_type = type(test).__name__
+                    description = self._get_detailed_test_description(test)
+
+                    # Formatear el resultado
+                    result_text = "✅ PASS" if test_passed else "❌ FAIL"
+                    result_style = "green" if test_passed else "red"
+
+                    tests_table.add_row(
+                        str(idx + 1),
+                        test_type,
+                        description,
+                        Text(result_text, style=result_style)
+                    )
+
+            self.console.print("\n")
+            self.console.print(tests_table)
+        else:
+            self.console.print("\n[yellow]No hay tests configurados o resultados disponibles[/yellow]")
+
+        # 3. Tabla de acciones ejecutadas
+        if actions:
+            actions_table = Table(title="[bold green]ACCIONES EJECUTADAS[/bold green]", 
+                                  show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            actions_table.add_column("#", style="dim", width=4)
+            actions_table.add_column("Tipo", style="cyan", width=18)
+            actions_table.add_column("Detalles", style="green")
+
+            for idx, action in enumerate(actions):
+                action_type = type(action).__name__ if hasattr(action, "__class__") else "Unknown"
+                details = self._format_action_details(action)
+                actions_table.add_row(str(idx + 1), action_type, details)
+
+            self.console.print("\n")
+            self.console.print(actions_table)
+        else:
+            self.console.print("\n[yellow]No se ejecutaron acciones[/yellow]")
+
+        # 4. Mostrar puntuaciones
+        if evaluation_result:
+            scores_table = Table(title="[bold blue]PUNTUACIONES[/bold blue]", 
+                                 show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            scores_table.add_column("Tipo", style="yellow", justify="right", width=25)
+            scores_table.add_column("Valor", style="cyan", width=10)
+
+            # Extraer las puntuaciones disponibles
+            raw_score = evaluation_result.raw_score if hasattr(evaluation_result, "raw_score") else 0.0
+            random_score = evaluation_result.random_clicker_score if hasattr(evaluation_result, "random_clicker_score") else 0.0
+            final_score = evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
+
+            scores_table.add_row("Raw Score:", f"{raw_score:.4f}")
+            scores_table.add_row("Random Clicker Score:", f"{random_score:.4f}")
+            scores_table.add_row("Adjusted Score:", Text(f"{final_score:.4f}", 
+                                                         style="bold green" if final_score > 0.5 else "bold red"))
+
+            self.console.print("\n")
+            self.console.print(scores_table)
+
+        # 5. Información de feedback si está disponible
+        if feedback:
+            feedback_panel = Panel(
+                f"""
+    [bold]Tests superados:[/bold] {feedback.passed_tests}/{feedback.passed_tests + feedback.failed_tests}
+    [bold]Tiempo total:[/bold] {feedback.total_execution_time:.2f}s
+    [bold]Acciones correctas:[/bold] {feedback.executed_actions}
+    [bold]Acciones fallidas:[/bold] {feedback.failed_actions}
+                """,
+                title="[bold green]FEEDBACK ADICIONAL[/bold green]",
+                border_style="green",
+                padding=(1, 1)
+            )
+            self.console.print("\n")
+            self.console.print(feedback_panel)
+
+        # Separador final
         self.console.print("\n" + "=" * 80)
 
     def _format_action_details(self, action):
@@ -352,3 +477,76 @@ def visualize_summary(visualizer):
             return None
         return wrapper
     return decorator
+
+
+def test_visualization():
+    # Clases simplificadas para el ejemplo
+    class Task:
+        def __init__(self, id, prompt, tests):
+            self.id = id
+            self.prompt = prompt
+            self.tests = tests
+
+    class CheckUrlTest:
+        def __init__(self, type, url, description):
+            self.type = type
+            self.url = url
+            self.description = description
+
+    class ClickAction:
+        def __init__(self, type, x, y, selector=None):
+            self.type = type
+            self.x = x
+            self.y = y
+            self.selector = selector
+
+        def __str__(self):
+            return f"ClickAction(x={self.x}, y={self.y})"
+
+        def model_dump(self):
+            return {"type": self.type, "x": self.x, "y": self.y, "selector": self.selector}
+
+    class TestResult:
+        def __init__(self, success, message):
+            self.success = success
+            self.message = message
+
+    class EvaluationResult:
+        def __init__(self):
+            self.raw_score = 0.0
+            self.random_clicker_score = 0.0
+            self.final_score = 0.0
+
+    # Crear un visualizador
+    visualizer = SubnetVisualizer()
+
+    # Usar los datos de ejemplo
+    task = Task(
+        id='41b0f865-d1f1-47bb-8ab7-9572dea9ca4a', 
+        prompt="Navigate to the 'About Us' page.",
+        tests=[CheckUrlTest(type='CheckUrlTest', url='/about/', description='Check URL')]
+    )
+
+    agent_id = "browser-agent-1"
+
+    actions = [ClickAction(type='ClickAction', x=1711, y=978)]
+
+    # Crear una matriz de resultados de prueba simulada
+    test_result = TestResult(success=False, message="URL no coincide con /about/")
+    test_results_matrix = [[test_result]]
+
+    # Crear un objeto evaluation_result simulado
+    evaluation_result = EvaluationResult()
+
+    # Llamar a la función de visualización
+    visualizer.show_full_evaluation(
+        agent_id=agent_id,
+        task=task,
+        actions=actions,
+        test_results_matrix=test_results_matrix,
+        evaluation_result=evaluation_result
+    )
+
+
+# Ejecutar la función de prueba
+test_visualization()
