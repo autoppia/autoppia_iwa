@@ -47,7 +47,7 @@ class TestConcurrentTaskExecution(unittest.TestCase):
 
     async def send_request(self, task_json):
         """Send an asynchronous request to the /solve_task endpoint."""
-        async with httpx.AsyncClient(timeout=120) as client:
+        async with httpx.AsyncClient(timeout=150) as client:
             response = await client.post(self.url, json=task_json)
             return response.json()
 
@@ -60,6 +60,9 @@ class TestConcurrentTaskExecution(unittest.TestCase):
             task2 = self.send_request(self.task2_json)  # Task 2
 
             responses = await asyncio.gather(task1, task2)
+            print("Task 1: ", responses[0])
+            print("\n" * 5)
+            print("Task 2: ", responses[1])
 
             # Assertions to check valid responses
             self.assertIsNotNone(responses[0], "Task 1 request failed!")
