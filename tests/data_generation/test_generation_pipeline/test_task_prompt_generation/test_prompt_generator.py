@@ -3,8 +3,9 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel, TaskPromptForUrl
-from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
+from autoppia_iwa.src.data_generation.domain.classes import TaskPromptForUrl
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis
 
 
@@ -201,34 +202,15 @@ class TestTaskPromptGenerator(unittest.TestCase):
         test_data["page_analyses"][0]["web_summary"] = LLMWebAnalysis(**test_data["page_analyses"][0]["web_summary"])
         return test_data
 
-    def test_generate_prompts(self):
-        """Test the generation of prompts for a domain."""
-        relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
-        generator = LocalTaskGenerationPipeline(web_analysis=self.web_analysis, llm_service=self.llm_service, num_prompts_per_url=1)
-        tasks = generator.generate(web_project_data=relevant_data, task_difficulty_level=TaskDifficultyLevel.MEDIUM)
-
-        # Assertions
-        self.assertIsNotNone(tasks, "Tasks should not be None.")
-        self.assertIsInstance(tasks, list, "Tasks should be a list.")
-        self.assertTrue(all(isinstance(task, TaskPromptForUrl) for task in tasks), "All tasks should be instances of TaskPromptForUrl.")
-
-        print(f"Generated Tasks: {tasks}")
-
     def test_generate_prompts_for_url(self):
         """Test the generation of prompts for a url."""
         start_url = "http://localhost:8000/login"
-        analyzer = WebAnalysisPipeline(start_url="http://localhost:8000/", llm_service=self.llm_service, analysis_repository=self.analysis_repository)
-        analysis = asyncio.run(analyzer.analyze())
 
         relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
-        generator = LocalTaskGenerationPipeline(web_analysis=analysis, llm_service=self.llm_service, num_prompts_per_url=1)
-        tasks = asyncio.run(
-            generator.generate(
-                specific_url=start_url,
-                web_project_data=relevant_data,
-                task_difficulty_level=TaskDifficultyLevel.MEDIUM,
-            ),
-        )
+        web_project = asyncio.run(initialize_demo_webs_projects())
+        web_project[0].relevant_data=relevant_data
+        generator = LocalTaskGenerationPipeline(web_project[0], llm_service=self.llm_service)
+        tasks = asyncio.run(generator.generate(start_url))
 
         # Assertions
         self.assertIsNotNone(tasks, "Tasks should not be None.")

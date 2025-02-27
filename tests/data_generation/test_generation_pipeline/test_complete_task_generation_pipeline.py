@@ -4,8 +4,7 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
-from autoppia_iwa.src.demo_webs.classes import WebProject
-from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 
 
 class TestTaskGenerationPipeline(unittest.TestCase):
@@ -38,17 +37,12 @@ class TestTaskGenerationPipeline(unittest.TestCase):
         - Ensuring the output contains tasks.
         """
         # Create task generation input
-        web_project = WebProject(
-            backend_url=self.page_url,
-            frontend_url=self.page_url,
-            name="jobs",
-            events=EVENTS_ALLOWED,
-        )
+        web_project = asyncio.run(initialize_demo_webs_projects())
 
-        task_input = TaskGenerationConfig(web_project=web_project, save_web_analysis_in_db=True, save_task_in_db=True)
+        task_input = TaskGenerationConfig(save_web_analysis_in_db=True, save_task_in_db=True)
 
         # Run the task generation pipeline
-        task_generator = TaskGenerationPipeline(config=task_input, llm_service=self.llm_service, synthetic_task_repository=self.task_repo, web_analysis_repository=self.analysis_repo)
+        task_generator = TaskGenerationPipeline(web_project=web_project, config=task_input, llm_service=self.llm_service, synthetic_task_repository=self.task_repo)
         task_output = asyncio.run(task_generator.generate())
         # Validate the output
         self.assertIsNotNone(task_output, "Task generation pipeline returned None.")

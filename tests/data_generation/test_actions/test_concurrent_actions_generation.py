@@ -1,6 +1,8 @@
-import unittest
 import asyncio
+import unittest
+
 import httpx
+
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.shared.utils import assign_tests
 
@@ -51,6 +53,7 @@ class TestConcurrentTaskExecution(unittest.TestCase):
 
     def test_concurrent_separate_tasks(self):
         """Test execution of two separate tasks concurrently."""
+
         async def run_test():
             task1 = self.send_request(self.task1_json)  # Task 1
             await asyncio.sleep(0.1)  # Small delay (100ms)

@@ -6,7 +6,7 @@ from loguru import logger
 
 from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import TestLogicGenerator
 from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckPageViewEventTest, CheckUrlTest, JudgeBaseOnHTML
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckPageViewEventTest, CheckUrlTest
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
 
