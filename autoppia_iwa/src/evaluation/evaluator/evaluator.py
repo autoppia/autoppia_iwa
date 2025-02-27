@@ -742,7 +742,7 @@ class ConcurrentEvaluator(IEvaluator):
         logger.info(f"\n{'-' * 60}")
         logger.info("TIMING BREAKDOWN (across all agents)")
         logger.info(f"Total Evaluation Time: {all_total_time:.2f}s")
-        logger.info(f"Browser Setup: {all_browser_setup:.2f}s ({all_browser_setup / all_total_time* 100:.1f}%)")
+        logger.info(f"Browser Setup: {all_browser_setup:.2f}s ({all_browser_setup / all_total_time * 100:.1f}%)")
         logger.info(f"Action Execution: {all_action_time:.2f}s ({all_action_time / all_total_time * 100:.1f}%)")
         logger.info(f"Test Execution: {all_test_time:.2f}s ({all_test_time / all_total_time * 100:.1f}%)")
         logger.info(f"Random Evaluation: {all_random_time:.2f}s ({all_random_time / all_total_time * 100:.1f}%)")

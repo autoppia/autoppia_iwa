@@ -4,7 +4,6 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskPromptForUrl
-from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis
 
@@ -208,7 +207,7 @@ class TestTaskPromptGenerator(unittest.TestCase):
 
         relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
         web_project = asyncio.run(initialize_demo_webs_projects())
-        web_project[0].relevant_data=relevant_data
+        web_project[0].relevant_data = relevant_data
         generator = LocalTaskGenerationPipeline(web_project[0], llm_service=self.llm_service)
         tasks = asyncio.run(generator.generate(start_url))
 
