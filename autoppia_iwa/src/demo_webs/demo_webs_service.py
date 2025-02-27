@@ -127,8 +127,8 @@ class BackendDemoWebService:
             error_message = f"Failed to reset backend events for web_agent '{web_agent_id}': {e}"
             logger.error(error_message)
             raise RuntimeError(error_message) from e
-
-        return False  # Added explicit return for clarity
+        except Exception:
+            return False
 
     async def send_page_view_event(self, url: str, web_agent_id: str) -> bool:
         """
