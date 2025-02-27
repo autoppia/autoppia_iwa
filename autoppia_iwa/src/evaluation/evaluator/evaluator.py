@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult
 from autoppia_iwa.src.evaluation.classes import Feedback, TestResult
@@ -92,7 +93,7 @@ class EvaluatorConfig(BaseModel):
 
 
 class ConcurrentEvaluator(IEvaluator):
-    def __init__(self, web_project, config: EvaluatorConfig):
+    def __init__(self, web_project: WebProject, config: EvaluatorConfig):
         self.config = config
         self._random_clicker_cache: Dict[str, Tuple[List[int], float]] = {}
         self.total_evaluation_time = 0.0
