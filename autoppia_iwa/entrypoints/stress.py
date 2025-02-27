@@ -162,9 +162,6 @@ async def load_tasks_from_json(project: WebProject):
         tasks = [Task.deserialize(task_data) for task_data in cache_data.get("tasks", [])]
 
         # Set web_project on each task
-        for task in tasks:
-            if hasattr(task, "web_project"):
-                task.web_project = project
 
         print(f"Loaded {len(tasks)} tasks for project '{project.name}' from {filename}")
         return tasks
