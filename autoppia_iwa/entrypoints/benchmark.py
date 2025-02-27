@@ -42,9 +42,9 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
         actions: List[BaseAction] = task_solution.actions
 
         # Prepare evaluator input and configuration.
-        task_solution = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(starting_url=task.url, save_results_in_db=False)
-        evaluator = ConcurrentEvaluator(evaluator_config)
+        task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
+        evaluator_config = EvaluatorConfig(save_results_in_db=False)
+        evaluator = ConcurrentEvaluator(demo_project, evaluator_config)
 
         # Evaluate the task solution.
         evaluation_result: EvaluationResult = await evaluator.evaluate_single_task_solution(task=task, task_solution=task_solution)
@@ -77,7 +77,7 @@ async def generate_tasks_for_project(demo_project: WebProject, generate_new_task
     If TASKS is provided, it will be used. Otherwise, tasks are generated
     through the TaskGenerationPipeline.
     """
-    config = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False, number_of_prompts_per_task=3, num_or_urls=NUM_OF_URLS)
+    config = TaskGenerationConfig(save_web_analysis_in_db=True, save_task_in_db=False, number_of_prompts_per_task=3, num_or_urls=NUM_OF_URLS)
 
     print("Generating Tasks...")
     tasks = []
