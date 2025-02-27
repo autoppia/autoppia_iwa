@@ -42,7 +42,7 @@ LOG_DIR = os.path.join("logs", f"benchmark_{timestamp}")
 TASKS_CACHE_DIR = "data/tasks_cache"
 
 # Configuración de caching
-USE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles
+USE_CACHED_TASKS = True  # Usar tareas cacheadas si están disponibles
 
 # Configuración del benchmark
 ITERATIONS = 1  # Número de iteraciones por tarea
@@ -53,8 +53,8 @@ visualizer = SubnetVisualizer(log_directory=LOG_DIR)
 
 # Agentes a evaluar
 AGENTS: List[BaseAgent] = [
-    # RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)
+    RandomClickerWebAgent(name="Random-clicker"),
+    # ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)
 ]
 
 # ============================================================
