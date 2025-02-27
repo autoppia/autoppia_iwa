@@ -745,7 +745,7 @@ class ConcurrentEvaluator(IEvaluator):
             avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
 
             logger.info(f"\n{'-' * 60}")
-            logger.info(f"Agent Hash: {agent_type} ({len(stats)} agents)")
+            logger.info(f"Web Agent ID: {agent_type} ({len(stats)} agents)")
             logger.info(f"Average Score: {avg_group_score:.4f}, Average Time: {avg_group_time:.2f}s")
 
             # Action timing statistics
