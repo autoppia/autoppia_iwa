@@ -3,9 +3,11 @@ import random
 import re
 import string
 from io import BytesIO
-from typing import List, Dict
+from typing import Dict, List
 
 from PIL import Image
+
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 
 
 def generate_random_web_agent_id(length: int = 16) -> str:
@@ -44,6 +46,7 @@ def transform_image_into_base64(image: Image.Image) -> str:
     img_base64 = base64.b64encode(img_bytes).decode("utf-8")
     return img_base64
 
+
 def assign_tests(test_configs: List[Dict]) -> List["BaseTaskTest"]:
     """
     Assigns and instantiates tests based on the provided test configurations.
@@ -54,7 +57,7 @@ def assign_tests(test_configs: List[Dict]) -> List["BaseTaskTest"]:
     Returns:
         List[BaseTaskTest]: A list of instantiated test objects.
     """
-    from autoppia_iwa.src.data_generation.domain.tests_classes import JudgeBaseOnHTML, FindInHtmlTest, JudgeBaseOnScreenshot, CheckPageViewEventTest, CheckEventTest
+    from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckPageViewEventTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 
     assigned_tests = []
 
@@ -79,4 +82,3 @@ def assign_tests(test_configs: List[Dict]) -> List["BaseTaskTest"]:
             raise ValueError(f"Unsupported test configuration: {config}")
 
     return assigned_tests
-

@@ -98,7 +98,7 @@ class LocalLLMService(ILLM):
         except httpx.HTTPError as e:
             raise RuntimeError(f"Local LLM Sync Error: {e}")
         finally:
-            elapsed_time = time.time() - start_time
+            time.time() - start_time
             # print(f"Sync request took {elapsed_time:.2f} seconds.")
 
     async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
@@ -122,7 +122,7 @@ class LocalLLMService(ILLM):
             except httpx.HTTPError as e:
                 raise RuntimeError(f"Local LLM Async Error: {e}")
             finally:
-                elapsed_time = time.time() - start_time
+                time.time() - start_time
 
 
 class LLMFactory:

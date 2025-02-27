@@ -3,17 +3,18 @@
 import traceback
 from datetime import datetime
 from typing import List
+
 from dependency_injector.wiring import Provide
 from loguru import logger
-from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig, TasksGenerationOutput
-from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
-from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
-from autoppia_iwa.src.llms.domain.interfaces import ILLM
+
 from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig, TasksGenerationOutput
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
-    TestGenerationPipeline)
+from autoppia_iwa.src.llms.domain.interfaces import ILLM
+from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
+from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class TaskGenerationPipeline:
@@ -22,7 +23,7 @@ class TaskGenerationPipeline:
         web_project: WebProject,
         config: TaskGenerationConfig,
         synthetic_task_repository: BaseMongoRepository = Provide[DIContainer.synthetic_task_repository],
-        llm_service: ILLM = Provide[DIContainer.llm_service]
+        llm_service: ILLM = Provide[DIContainer.llm_service],
     ):
         self.web_project: WebProject = web_project
         self.task_config: TaskGenerationConfig = config
@@ -51,11 +52,12 @@ class TaskGenerationPipeline:
 
             # Randomly select page analyses instead of sequential processing
             import random
+
             available_pages = domain_analysis.page_analyses.copy()
             random.shuffle(available_pages)
 
             # Take only the number specified in the configuration
-            selected_pages = available_pages[:self.task_config.num_or_urls]
+            selected_pages = available_pages[: self.task_config.num_or_urls]
 
             # Generate local tasks for each randomly selected page
             for page_info in selected_pages:

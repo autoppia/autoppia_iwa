@@ -16,6 +16,7 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+
 # TODO: Fix the stress test as the test is not working
 class BaseEvaluationTest(unittest.TestCase):
     @classmethod

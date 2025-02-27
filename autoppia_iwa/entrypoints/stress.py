@@ -1,26 +1,27 @@
 import asyncio
-import statistics
-import time
 import json
 import os
-from typing import List
+import statistics
+import time
 from datetime import datetime
+from typing import List
+
 import matplotlib.pyplot as plt
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, Task
-from autoppia_iwa.src.evaluation.classes import EvaluationResult
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.web_agents.base import BaseAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+
 from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
-    TestGenerationPipeline)
+from autoppia_iwa.src.evaluation.classes import EvaluationResult
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
+from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.base import BaseAgent
+from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # Configuration for the stress test
 USE_CACHED_TASKS = True  # Set to True to use cached tasks from JSON file
@@ -33,10 +34,7 @@ NUMBER_OF_TASKS = 10
 app = AppBootstrap()
 
 # Define agents for the stress test
-AGENTS: List[BaseAgent] = [
-    RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="browser-use", host="localhost", port=9000)
-]
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="browser-use", host="localhost", port=9000)]
 
 
 class TimingMetrics:
@@ -46,7 +44,7 @@ class TimingMetrics:
         self.start_time = None
         self.end_time = None
         # Structure: {agent_id: {task_id: time}} for both solution and evaluation times
-        self.solution_times = {}  
+        self.solution_times = {}
         self.evaluation_times = {}
 
     def start(self):
@@ -118,12 +116,7 @@ async def save_tasks_to_json(tasks, project: WebProject):
     filename = get_cache_filename(project)
     try:
         # Create a structure that includes both project info and tasks
-        cache_data = {
-            "project_id": project.id,
-            "project_name": project.name,
-            "timestamp": datetime.now().isoformat(),
-            "tasks": [task.serialize() for task in tasks]
-        }
+        cache_data = {"project_id": project.id, "project_name": project.name, "timestamp": datetime.now().isoformat(), "tasks": [task.serialize() for task in tasks]}
 
         with open(filename, 'w') as f:
             json.dump(cache_data, f, indent=2)
@@ -195,13 +188,7 @@ async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int 
             print(f"No valid cached tasks found for project '{demo_project.name}', generating new tasks...")
 
     # Generate new tasks
-    config = TaskGenerationConfig(
-        web_project=demo_project, 
-        save_web_analysis_in_db=True, 
-        save_task_in_db=False,
-        number_of_prompts_per_task=3,
-        num_or_urls=num_of_urls
-    )
+    config = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False, number_of_prompts_per_task=3, num_or_urls=num_of_urls)
 
     print(f"Generating tasks for {demo_project.name}...")
     pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
@@ -255,14 +242,7 @@ def compute_statistics(values: List[float]) -> dict:
         Dictionary with statistics
     """
     if not values:
-        return {
-            "count": 0, 
-            "mean": None, 
-            "median": None, 
-            "min": None, 
-            "max": None, 
-            "stdev": None
-        }
+        return {"count": 0, "mean": None, "median": None, "min": None, "max": None, "stdev": None}
 
     return {
         "count": len(values),
@@ -291,11 +271,7 @@ def save_results_to_json(results, agents, timing_metrics):
     filename = os.path.join(OUTPUT_DIR, f"stress_test_results_{timestamp}.json")
 
     # Prepare data structure for JSON
-    output_data = {
-        "timestamp": datetime.now().isoformat(),
-        "total_execution_time": timing_metrics.get_total_time(),
-        "agents": {}
-    }
+    output_data = {"timestamp": datetime.now().isoformat(), "total_execution_time": timing_metrics.get_total_time(), "agents": {}}
 
     # Add data for each agent
     for agent in agents:
@@ -309,7 +285,7 @@ def save_results_to_json(results, agents, timing_metrics):
                 agent_tasks[task_id] = {
                     "score": result["score"],
                     "solution_time": timing_metrics.solution_times.get(agent.id, {}).get(task_id, 0),
-                    "evaluation_time": timing_metrics.evaluation_times.get(agent.id, {}).get(task_id, 0)
+                    "evaluation_time": timing_metrics.evaluation_times.get(agent.id, {}).get(task_id, 0),
                 }
 
         # Compute statistics
@@ -321,7 +297,7 @@ def save_results_to_json(results, agents, timing_metrics):
             "score_statistics": score_stats,
             "avg_solution_time": timing_metrics.get_avg_solution_time(agent.id),
             "avg_evaluation_time": timing_metrics.get_avg_evaluation_time(agent.id),
-            "tasks": agent_tasks
+            "tasks": agent_tasks,
         }
 
     # Save to file
@@ -419,8 +395,7 @@ def plot_results(results, agents, timing_metrics):
     ax1.set_title('Agent Performance: Average Scores')
     for bar, score in zip(bars1, avg_scores):
         height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2., height + 0.1,
-                 f'{score:.2f}', ha='center', va='bottom')
+        ax1.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{score:.2f}', ha='center', va='bottom')
 
     # Plot 2: Solution Generation Times
     bars2 = ax2.bar(agent_names, solution_times, color=['coral', 'khaki'])
@@ -428,8 +403,7 @@ def plot_results(results, agents, timing_metrics):
     ax2.set_title('Agent Performance: Solution Generation Times')
     for bar, time_val in zip(bars2, solution_times):
         height = bar.get_height()
-        ax2.text(bar.get_x() + bar.get_width() / 2., height + 0.1,
-                 f'{time_val:.2f}s', ha='center', va='bottom')
+        ax2.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{time_val:.2f}s', ha='center', va='bottom')
 
     # Plot 3: Evaluation Times
     bars3 = ax3.bar(agent_names, evaluation_times, color=['lightblue', 'lightgreen'])
@@ -437,8 +411,7 @@ def plot_results(results, agents, timing_metrics):
     ax3.set_title('Agent Performance: Evaluation Times')
     for bar, time_val in zip(bars3, evaluation_times):
         height = bar.get_height()
-        ax3.text(bar.get_x() + bar.get_width() / 2., height + 0.1,
-                 f'{time_val:.2f}s', ha='center', va='bottom')
+        ax3.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{time_val:.2f}s', ha='center', va='bottom')
 
     plt.tight_layout()
 
@@ -491,14 +464,11 @@ def plot_task_comparison(results, agents, tasks):
                 agent_scores.append(0)
 
         # Plot bars with offset for this agent
-        bars = ax.bar([pos + (i * bar_width) for pos in x], 
-                      agent_scores, 
-                      width=bar_width, 
-                      label=agent.name)
+        bars = ax.bar([pos + (i * bar_width) for pos in x], agent_scores, width=bar_width, label=agent.name)
         legend_handles.append(bars[0])
 
     # Set x-axis labels to task IDs or shortened task descriptions
-    task_labels = [f"Task {i+1}" for i in range(len(selected_tasks))]
+    task_labels = [f"Task {i + 1}" for i in range(len(selected_tasks))]
     ax.set_xticks([pos + bar_width / 2 for pos in x])
     ax.set_xticklabels(task_labels, rotation=45, ha='right')
 
@@ -616,11 +586,7 @@ async def main():
             solution_copies = []
             for i in range(M):
                 # Create a copy with the same actions
-                copy_solution = TaskSolution(
-                    task=task,
-                    actions=original_solution.actions.copy() if original_solution.actions else [],
-                    web_agent_id=agent.id
-                )
+                copy_solution = TaskSolution(task=task, actions=original_solution.actions.copy() if original_solution.actions else [], web_agent_id=agent.id)
                 solution_copies.append(copy_solution)
 
             # Evaluate all M copies together
@@ -628,18 +594,11 @@ async def main():
             start_eval_time = time.time()
 
             # Prepare evaluator configuration
-            evaluator_config = EvaluatorConfig(
-                save_results_in_db=False,
-                enable_grouping_tasks=False,
-                chunk_size=20
-            )
+            evaluator_config = EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20)
             evaluator = ConcurrentEvaluator(web_project=demo_project, config=evaluator_config)
 
             # Evaluate all solution copies together in ONE batch
-            evaluation_results: List[EvaluationResult] = await evaluator.evaluate_task_solutions(
-                task=task, 
-                task_solutions=solution_copies
-            )
+            evaluation_results: List[EvaluationResult] = await evaluator.evaluate_task_solutions(task=task, task_solutions=solution_copies)
 
             # Record timing information
             evaluation_time = time.time() - start_eval_time
@@ -651,23 +610,19 @@ async def main():
             print(f"  Average score: {avg_score:.2f}")
 
             # Store the result
-            results[agent.id][task.id] = {
-                "score": avg_score,
-                "num_solutions_evaluated": M,
-                "total_evaluation_time": evaluation_time,
-                "per_solution_time": evaluation_time / M
-            }
+            results[agent.id][task.id] = {"score": avg_score, "num_solutions_evaluated": M, "total_evaluation_time": evaluation_time, "per_solution_time": evaluation_time / M}
 
     # Record the end time
     timing_metrics.end()
 
     # Print statistics and create plots
     print_performance_statistics(results, AGENTS, timing_metrics)
-    chart_path = plot_results(results, AGENTS, timing_metrics)
-    task_chart_path = plot_task_comparison(results, AGENTS, tasks)
-    json_path = save_results_to_json(results, AGENTS, timing_metrics)
+    plot_results(results, AGENTS, timing_metrics)
+    plot_task_comparison(results, AGENTS, tasks)
+    save_results_to_json(results, AGENTS, timing_metrics)
 
     print(f"\nEvaluation complete! Results saved to {OUTPUT_DIR} directory.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

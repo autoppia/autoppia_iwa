@@ -102,7 +102,7 @@ class TaskGenerationByHardDifficultyTest(unittest.TestCase):
                 events=EVENTS_ALLOWED,
             )
             task_input = TaskGenerationConfig()
-            task_generator = TaskGenerationPipeline(config=task_input,web_project=web_project, llm_service=self.llm_service)
+            task_generator = TaskGenerationPipeline(config=task_input, web_project=web_project, llm_service=self.llm_service)
             tasks_data = asyncio.run(task_generator.generate()).to_dict()
             save_results = True
 
