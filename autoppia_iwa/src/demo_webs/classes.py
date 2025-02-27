@@ -7,6 +7,7 @@ from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class WebProject(BaseModel):
+    id: str = Field(..., description="Unique identifier of the web project")
     name: str = Field(..., min_length=1, description="Name of the web project")
     backend_url: str = Field(..., description="URL of the backend server")
     frontend_url: str = Field(..., description="URL of the frontend application")

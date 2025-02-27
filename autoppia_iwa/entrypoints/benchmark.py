@@ -1,27 +1,28 @@
 import asyncio
 import statistics
 from typing import List
-
 import matplotlib.pyplot as plt
-
-from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
-from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
+    TestGenerationPipeline)
+
 
 app = AppBootstrap()
 AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)]
 iterations = 1  # total_tasks = tasks * iterations
+NUM_OF_URLS = 1
 
 
 async def evaluate_project_for_agent(agent, demo_project, tasks, results):
@@ -42,7 +43,7 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
 
         # Prepare evaluator input and configuration.
         task_solution = TaskSolution(task=task, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(save_results_in_db=False)
+        evaluator_config = EvaluatorConfig(starting_url=task.url, save_results_in_db=False)
         evaluator = ConcurrentEvaluator(evaluator_config)
 
         # Evaluate the task solution.
@@ -69,14 +70,18 @@ def compute_statistics(scores: List[float]) -> dict:
     return stats
 
 
-async def generate_tasks_for_project(demo_project: WebProject, generate_new_tasks=True):
+async def generate_tasks_for_project(demo_project:WebProject, generate_new_tasks=True):
     """
     Generate tasks for the given demo project.
 
     If TASKS is provided, it will be used. Otherwise, tasks are generated
     through the TaskGenerationPipeline.
     """
-    config = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False, number_of_prompts_per_task=3, num_or_urls=1)
+    config = TaskGenerationConfig(web_project=demo_project, 
+                                  save_web_analysis_in_db=True, 
+                                  save_task_in_db=False,
+                                  number_of_prompts_per_task=3,
+                                  num_or_urls=NUM_OF_URLS)
 
     print("Generating Tasks...")
     tasks = []
