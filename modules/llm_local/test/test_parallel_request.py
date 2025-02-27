@@ -26,7 +26,48 @@ def make_parallel_request(N=5):
                 },
                 {
                     "role": "user",
-                    "content": "Give me a short introduction to large language model."
+                    "content": """"
+                                    You are a test analyzer for web automation testing. Review the tests below and decide which ones to keep.
+
+                                    TASK CONTEXT:
+                                    - Task Prompt: example task prompt
+                                    - Success Criteria: example success critera
+                                    TESTS TO REVIEW:
+                                    example test
+
+                                    GUIDELINES:
+                                    1. Backend tests (CheckEventTest, CheckPageViewEventTest) are preferred over frontend tests or checkUrl tests as they are more reliable. Only in case they try to validate the same thing.
+                                    2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful for complex criteria
+                                    3. Avoid keeping tests that check for the same thing in different ways
+                                    4. Prioritize tests that directly verify the success criteria
+                                    5. Aim to keep 1-3 high-quality tests in total
+                                    6. Delete tests that make up parameters like making up event_names in CheckEventTest, or making up keywords in FindInHtmlTest.
+                                    7. Judge Tests like JudgeBaseOnHTML or JudgeBaseOnScreenshot should be use if all the other tests do not validate completely the task or there are no more tests. This are fallback tests.
+
+                                    RESPOND WITH A JSON ARRAY of decisions, one for each test, like this:
+                                    [
+                                    {{
+                                        "index": 0,
+                                        "keep": true,
+                                        "reason": "High quality backend test that verifies core success criteria"
+                                    }},
+                                    {{
+                                        "index": 1,
+                                        "keep": false,
+                                        "reason": "Redundant with test #0 which is more reliable"
+                                    }}
+                                    ]
+
+                                    For EACH test in the input, include a decision object with:
+                                    - "index": The original index of the test
+                                    - "keep": true/false decision
+                                    - "reason": Brief explanation of your decision
+
+                                    Return ONLY the JSON array, no additional text.
+
+                                    Extra Class-Specific Data:
+                                    example extra data
+                                    """
                 }
             ],
             "json_format": False,
