@@ -26,8 +26,8 @@ from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline
 USE_CACHED_TASKS = True  # Set to True to use cached tasks from JSON file
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 OUTPUT_DIR = "results"  # Directory to store test results
-M = 1  # Set this to your desired number of copies
-NUMBER_OF_TASKS = 10
+M = 20  # Set this to your desired number of copies
+NUMBER_OF_TASKS = 1
 
 # Initialize the app
 app = AppBootstrap()
