@@ -42,12 +42,7 @@ class SubnetVisualizer:
 
         self.console.print("\n" + "=" * 80)
 
-        task_panel = Panel(
-            prompt,
-            title=f"[bold cyan]TASK: {task_id}[/bold cyan]",
-            border_style="cyan",
-            padding=(1, 2)
-        )
+        task_panel = Panel(prompt, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
         self.console.print(task_panel)
 
         # Table of configured tests
@@ -86,12 +81,7 @@ class SubnetVisualizer:
         task_id = task.id if hasattr(task, "id") else "Unknown"
         prompt = task.prompt if hasattr(task, "prompt") else "No prompt available"
 
-        task_panel = Panel(
-            prompt,
-            title=f"[bold cyan]TASK: {task_id}[/bold cyan]",
-            border_style="cyan",
-            padding=(1, 2)
-        )
+        task_panel = Panel(prompt, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
         self.console.print(task_panel)
 
         # 2. Table of executed actions (shown first now)
@@ -106,12 +96,7 @@ class SubnetVisualizer:
                 details = self._format_action_details(action)
                 actions_table.add_row(str(idx + 1), action_type, details)
 
-            actions_panel = Panel(
-                actions_table,
-                title="[bold green]ACTIONS EXECUTED[/bold green]",
-                border_style="green",
-                padding=(1, 1)
-            )
+            actions_panel = Panel(actions_table, title="[bold green]ACTIONS EXECUTED[/bold green]", border_style="green", padding=(1, 1))
             self.console.print("\n")
             self.console.print(actions_panel)
         else:
@@ -142,19 +127,9 @@ class SubnetVisualizer:
                     result_text = "✅ PASS" if test_passed else "❌ FAIL"
                     result_style = "green" if test_passed else "red"
 
-                    tests_table.add_row(
-                        str(idx + 1),
-                        test_type,
-                        description,
-                        Text(result_text, style=result_style)
-                    )
+                    tests_table.add_row(str(idx + 1), test_type, description, Text(result_text, style=result_style))
 
-            tests_panel = Panel(
-                tests_table,
-                title="[bold magenta]TESTS AND RESULTS[/bold magenta]",
-                border_style="magenta",
-                padding=(1, 1)
-            )
+            tests_panel = Panel(tests_table, title="[bold magenta]TESTS AND RESULTS[/bold magenta]", border_style="magenta", padding=(1, 1))
             self.console.print("\n")
             self.console.print(tests_panel)
         else:
@@ -173,20 +148,9 @@ class SubnetVisualizer:
 
             scores_table.add_row("Raw Score:", f"{raw_score:.4f}")
             scores_table.add_row("Random Clicker Score:", f"{random_score:.4f}")
-            scores_table.add_row(
-                "Adjusted Score:",
-                Text(
-                    f"{final_score:.4f}",
-                    style="bold green" if final_score > 0.5 else "bold red"
-                )
-            )
+            scores_table.add_row("Adjusted Score:", Text(f"{final_score:.4f}", style="bold green" if final_score > 0.5 else "bold red"))
 
-            scores_panel = Panel(
-                scores_table,
-                title="[bold blue]SCORES[/bold blue]",
-                border_style="blue",
-                padding=(1, 1)
-            )
+            scores_panel = Panel(scores_table, title="[bold blue]SCORES[/bold blue]", border_style="blue", padding=(1, 1))
             self.console.print("\n")
             self.console.print(scores_panel)
 
@@ -197,12 +161,7 @@ class SubnetVisualizer:
     [bold]Total time:[/bold] {feedback.total_execution_time:.2f}s
             """
 
-            feedback_panel = Panel(
-                feedback_content,
-                title="[bold green]ADDITIONAL FEEDBACK[/bold green]",
-                border_style="green",
-                padding=(1, 1)
-            )
+            feedback_panel = Panel(feedback_content, title="[bold green]ADDITIONAL FEEDBACK[/bold green]", border_style="green", padding=(1, 1))
             self.console.print("\n")
             self.console.print(feedback_panel)
 
@@ -329,12 +288,7 @@ class SubnetVisualizer:
             avg_score = sum(scores) / len(scores) if scores else 0
             max_score = max(scores) if scores else 0
 
-            summary_table.add_row(
-                agent.id,
-                str(len(scores)),
-                f"{avg_score:.4f}",
-                f"{max_score:.4f}"
-            )
+            summary_table.add_row(agent.id, str(len(scores)), f"{avg_score:.4f}", f"{max_score:.4f}")
 
         self.console.print(summary_table)
 
@@ -358,12 +312,7 @@ class SubnetVisualizer:
                 avg_score = sum(scores) / len(scores)
                 max_score = max(scores)
 
-                project_table.add_row(
-                    project_name,
-                    str(len(scores)),
-                    f"{avg_score:.4f}",
-                    f"{max_score:.4f}"
-                )
+                project_table.add_row(project_name, str(len(scores)), f"{avg_score:.4f}", f"{max_score:.4f}")
 
             self.console.print(project_table)
 
@@ -372,8 +321,10 @@ class SubnetVisualizer:
 
 # Decorators to integrate with the benchmark
 
+
 def visualize_task(visualizer):
     """Decorator to visualize a task and its tests."""
+
     def decorator(func):
         async def wrapper(*args, **kwargs):
             result = await func(*args, **kwargs)
@@ -383,12 +334,15 @@ def visualize_task(visualizer):
             else:
                 visualizer.show_task_with_tests(result)
             return result
+
         return wrapper
+
     return decorator
 
 
 def visualize_evaluation(visualizer):
     """Decorator to visualize an agent's evaluation."""
+
     def decorator(func):
         async def wrapper(web_project, task, task_solution, *args, **kwargs):
             result = await func(web_project, task, task_solution, *args, **kwargs)
@@ -399,21 +353,26 @@ def visualize_evaluation(visualizer):
                 actions=task_solution.actions,
                 test_results_matrix=result.test_results_matrix if hasattr(result, "test_results_matrix") else [],
                 evaluation_result=result,
-                feedback=result.feedback if hasattr(result, "feedback") else None
+                feedback=result.feedback if hasattr(result, "feedback") else None,
             )
             return result
+
         return wrapper
+
     return decorator
 
 
 def visualize_summary(visualizer):
     """Decorator to visualize the final summary."""
+
     def decorator(func):
         def wrapper(results, agents, *args, **kwargs):
             func(results, agents, *args, **kwargs)
             visualizer.print_summary(results, agents)
             return None
+
         return wrapper
+
     return decorator
 
 
@@ -459,11 +418,7 @@ def test_visualization():
     visualizer = SubnetVisualizer()
 
     # Example data
-    task = Task(
-        id='41b0f865-d1f1-47bb-8ab7-9572dea9ca4a',
-        prompt="Navigate to the 'About Us' page.",
-        tests=[CheckUrlTest(type='CheckUrlTest', url='/about/', description='Check URL')]
-    )
+    task = Task(id='41b0f865-d1f1-47bb-8ab7-9572dea9ca4a', prompt="Navigate to the 'About Us' page.", tests=[CheckUrlTest(type='CheckUrlTest', url='/about/', description='Check URL')])
 
     agent_id = "browser-agent-1"
 
@@ -477,14 +432,8 @@ def test_visualization():
     evaluation_result = EvaluationResult()
 
     # Call the visualization function
-    visualizer.show_full_evaluation(
-        agent_id=agent_id,
-        task=task,
-        actions=actions,
-        test_results_matrix=test_results_matrix,
-        evaluation_result=evaluation_result
-    )
+    visualizer.show_full_evaluation(agent_id=agent_id, task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
 
 
 # Run the test function if needed:
-test_visualization()
+# test_visualization()
