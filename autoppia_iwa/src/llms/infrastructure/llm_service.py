@@ -1,7 +1,6 @@
 # llm_service.py
 
 from typing import Dict, List, Optional, Any
-
 import time
 import httpx
 from openai import OpenAI, AsyncOpenAI
@@ -101,9 +100,20 @@ class LocalLLMService(ILLM):
     Uses HTTPX for sync and async calls.
     """
 
-    def __init__(self, config: LLMConfig, endpoint_url: str):
+    def __init__(
+        self,
+        config: LLMConfig,
+        endpoint_url: str,
+        parallel_endpoint_url: Optional[str] = None
+    ):
+        """
+        :param config: LLMConfig object with model details, max_tokens, temperature, etc.
+        :param endpoint_url: The HTTP endpoint for single-request generation (e.g. /generate).
+        :param parallel_endpoint_url: (Optional) The HTTP endpoint for batch generation (e.g. /generate_parallel).
+        """
         self.config = config
-        self.endpoint_url = endpoint_url  # Typically something like "http://localhost:6000/generate"
+        self.endpoint_url = endpoint_url
+        self.parallel_endpoint_url = parallel_endpoint_url
 
     def predict(
         self,
@@ -179,15 +189,15 @@ class LocalLLMService(ILLM):
             "json_format": bool,
             "schema": {...}
           }
-        (All these keys optional except "messages".)
+        (All keys optional except "messages".)
 
-        Returns a list of generated outputs (strings), one per sub-request.
+        Returns:
+          A list of generated outputs (strings), one per sub-request.
         """
-        start_time = time.time()
-        # Construct the parallel endpoint (assuming endpoint_url is something like ".../generate")
-        # If your endpoint_url already points to "/generate_parallel", you can just use that.
-        parallel_endpoint = self.endpoint_url.replace("/generate", "/generate_parallel")
+        if not self.parallel_endpoint_url:
+            raise RuntimeError("No parallel endpoint URL provided for batch requests.")
 
+        start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
                 payload = {
@@ -196,7 +206,7 @@ class LocalLLMService(ILLM):
                     "max_tokens": self.config.max_tokens
                 }
 
-                response = await client.post(parallel_endpoint, json=payload)
+                response = await client.post(self.parallel_endpoint_url, json=payload)
                 response.raise_for_status()
                 data = response.json()
 
@@ -225,6 +235,10 @@ class LLMFactory:
         if llm_type.lower() == "openai":
             return OpenAIService(config, api_key=kwargs.get("api_key"))
         elif llm_type.lower() == "local":
-            return LocalLLMService(config, endpoint_url=kwargs.get("endpoint_url"))
+            return LocalLLMService(
+                config,
+                endpoint_url=kwargs.get("endpoint_url"),
+                parallel_endpoint_url=kwargs.get("parallel_endpoint_url")
+            )
         else:
             raise ValueError(f"Unsupported LLM type: {llm_type}")
