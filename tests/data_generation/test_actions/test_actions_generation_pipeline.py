@@ -9,6 +9,7 @@ from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline impo
 from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_task
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
@@ -130,8 +131,9 @@ class TestNewActionsGeneration(unittest.TestCase):
         cls.app_bootstrap = AppBootstrap()
         cls.llm_service = cls.app_bootstrap.container.llm_service()
         cls.web_agent: ApifiedWebAgent = test_container.web_agent()
+        web_project = asyncio.run(initialize_demo_webs_projects())
         # Create the task configuration
-        cls.tasks = asyncio.run(generate_tasks_for_project())
+        cls.tasks = asyncio.run(generate_tasks_for_project(web_project))
 
     def test_new_actions_generation(self):
         """Test that actions are generated correctly from a goal and URL."""
