@@ -71,7 +71,7 @@ class LocalTaskGenerationPipeline:
         With retry mechanism for handling invalid JSON responses.
         """
         # Combine local prompts
-        number_of_prompts = 20
+        number_of_prompts = 15
         system_prompt = PHASE1_GENERATION_SYSTEM_PROMPT.replace("{number_of_prompts}", f"{number_of_prompts}")
 
         # User message with truncated HTML + screenshot text + interactive elements
@@ -105,8 +105,7 @@ class LocalTaskGenerationPipeline:
                 # Request the LLM to generate tasks (in JSON format)
                 resp_text = await self.llm_service.async_predict(
                     messages=messages,
-                    json_format=True,
-                    schema=schema
+                    json_format=True
                 )
 
                 # Try to parse the response

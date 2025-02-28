@@ -793,3 +793,28 @@ Evaluating solutions for Agent: browser-use
 2025-02-28 13:55:27,442 - stress_test - INFO - 
 Evaluation complete! Results have been saved to results.
 2025-02-28 13:55:27,442 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 14:06:35,996 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 14:06:36,305 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 14:06:38,159 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:06:38,168 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 14:06:38,168 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 14:06:38,521 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:06:38,534 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 14:06:38,534 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-02-28 14:06:39,103 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:06:39,156 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 14:06:39,156 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-02-28 14:06:39,156 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/35
+2025-02-28 14:06:39,158 - stress_test - ERROR - No tasks available.
+2025-02-28 14:06:56,227 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 14:06:56,533 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 14:06:58,250 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:09:34,918 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 14:09:35,250 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 14:09:37,217 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:10:15,084 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 14:10:15,392 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 14:10:17,164 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:10:21,609 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 14:10:21,610 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 14:10:22,021 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
