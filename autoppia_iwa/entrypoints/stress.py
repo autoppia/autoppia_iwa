@@ -27,8 +27,8 @@ from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 USE_CACHED_TASKS = True  # Set to True to use cached tasks from JSON file
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 OUTPUT_DIR = "results"  # Directory to store test results
-M = 1  # Set this to your desired number of copies
-NUMBER_OF_TASKS = 10
+M = 20  # Set this to your desired number of copies
+NUMBER_OF_TASKS = 1
 
 # Initialize the app
 app = AppBootstrap()
@@ -155,9 +155,6 @@ async def load_tasks_from_json(project: WebProject):
         tasks = [Task.deserialize(task_data) for task_data in cache_data.get("tasks", [])]
 
         # Set web_project on each task
-        for task in tasks:
-            if hasattr(task, "web_project"):
-                task.web_project = project
 
         print(f"Loaded {len(tasks)} tasks for project '{project.name}' from {filename}")
         return tasks

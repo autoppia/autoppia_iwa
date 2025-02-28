@@ -187,7 +187,41 @@
         "documentation": {}
     },
     {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
         "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -675,6 +709,38 @@
         "documentation": {}
     },
     {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Dict",
         "importPath": "typing",
         "description": "typing",
@@ -931,6 +997,151 @@
         "documentation": {}
     },
     {
+        "label": "datetime",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "datetime",
+        "description": "datetime",
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "date",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timedelta",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
         "label": "matplotlib.pyplot",
         "kind": 6,
         "isExtraImport": true,
@@ -1005,6 +1216,14 @@
     },
     {
         "label": "TaskGenerationConfig",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "Task",
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
         "isExtraImport": true,
@@ -2412,150 +2631,35 @@
         "documentation": {}
     },
     {
-        "label": "time",
-        "kind": 6,
+        "label": "SubnetVisualizer",
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
         "isExtraImport": true,
-        "importPath": "time",
-        "description": "time",
-        "detail": "time",
+        "detail": "autoppia_iwa.src.shared.visualizator",
         "documentation": {}
     },
     {
-        "label": "json",
-        "kind": 6,
+        "label": "visualize_task",
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
         "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
+        "detail": "autoppia_iwa.src.shared.visualizator",
         "documentation": {}
     },
     {
-        "label": "datetime",
-        "kind": 6,
+        "label": "visualize_evaluation",
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
         "isExtraImport": true,
-        "importPath": "datetime",
-        "description": "datetime",
-        "detail": "datetime",
+        "detail": "autoppia_iwa.src.shared.visualizator",
         "documentation": {}
     },
     {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
+        "label": "visualize_summary",
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
         "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "date",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "timedelta",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
+        "detail": "autoppia_iwa.src.shared.visualizator",
         "documentation": {}
     },
     {
@@ -4305,6 +4409,70 @@
         "importPath": "string",
         "description": "string",
         "detail": "string",
+        "documentation": {}
+    },
+    {
+        "label": "Console",
+        "importPath": "rich.console",
+        "description": "rich.console",
+        "isExtraImport": true,
+        "detail": "rich.console",
+        "documentation": {}
+    },
+    {
+        "label": "Table",
+        "importPath": "rich.table",
+        "description": "rich.table",
+        "isExtraImport": true,
+        "detail": "rich.table",
+        "documentation": {}
+    },
+    {
+        "label": "Panel",
+        "importPath": "rich.panel",
+        "description": "rich.panel",
+        "isExtraImport": true,
+        "detail": "rich.panel",
+        "documentation": {}
+    },
+    {
+        "label": "box",
+        "importPath": "rich",
+        "description": "rich",
+        "isExtraImport": true,
+        "detail": "rich",
+        "documentation": {}
+    },
+    {
+        "label": "Text",
+        "importPath": "rich.text",
+        "description": "rich.text",
+        "isExtraImport": true,
+        "detail": "rich.text",
+        "documentation": {}
+    },
+    {
+        "label": "Padding",
+        "importPath": "rich.padding",
+        "description": "rich.padding",
+        "isExtraImport": true,
+        "detail": "rich.padding",
+        "documentation": {}
+    },
+    {
+        "label": "Layout",
+        "importPath": "rich.layout",
+        "description": "rich.layout",
+        "isExtraImport": true,
+        "detail": "rich.layout",
+        "documentation": {}
+    },
+    {
+        "label": "Align",
+        "importPath": "rich.align",
+        "description": "rich.align",
+        "isExtraImport": true,
+        "detail": "rich.align",
         "documentation": {}
     },
     {
@@ -7935,7 +8103,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "OPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = \"mongodb://localhost:27017\"",
+        "peekOfCode": "OPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4-32k-0613\")\nOPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = os.getenv(\"MONGODB_URL\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -7944,7 +8112,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "OPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = \"mongodb://localhost:27017\"\nMONGODB_NAME = \"workflow\"",
+        "peekOfCode": "OPENAI_MAX_TOKENS = int(os.getenv(\"LLM_CONTEXT_WINDOW\", 2000))\nOPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = os.getenv(\"MONGODB_URL\")\nMONGODB_NAME = \"workflow\"",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -7953,7 +8121,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "OPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = \"mongodb://localhost:27017\"\nMONGODB_NAME = \"workflow\"\nANALYSIS_COLLECTION = \"web_analysis\"",
+        "peekOfCode": "OPENAI_TEMPERATURE = float(os.getenv(\"OPENAI_TEMPERATURE\", 0.8))\n# Validate critical environment variables\nif LLM_PROVIDER == \"openai\" and not OPENAI_API_KEY:\n    raise ValueError(\"OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.\")\n# ==================================\n# Database and File Configuration\n# ==================================\nMONGODB_URL = os.getenv(\"MONGODB_URL\")\nMONGODB_NAME = \"workflow\"\nANALYSIS_COLLECTION = \"web_analysis\"",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -7962,7 +8130,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "MONGODB_URL = \"mongodb://localhost:27017\"\nMONGODB_NAME = \"workflow\"\nANALYSIS_COLLECTION = \"web_analysis\"\nTASKS_COLLECTION = \"tasks\"\nDOCUMENTS_DIR = \"data/web_analysis_files\"\n# ============================\n# Browser and Chrome Paths\n# ============================\nCHROMEDRIVER_PATH = os.getenv(\"CHROMEDRIVER_PATH\", \"/opt/chromedriver/chromedriver-linux64/chromedriver\")\nCHROME_PATH = os.getenv(\"CHROME_PATH\", \"/opt/chrome/chrome-linux64/chrome\")",
+        "peekOfCode": "MONGODB_URL = os.getenv(\"MONGODB_URL\")\nMONGODB_NAME = \"workflow\"\nANALYSIS_COLLECTION = \"web_analysis\"\nTASKS_COLLECTION = \"tasks\"\nDOCUMENTS_DIR = \"data/web_analysis_files\"\n# ============================\n# Browser and Chrome Paths\n# ============================\nCHROMEDRIVER_PATH = os.getenv(\"CHROMEDRIVER_PATH\", \"/opt/chromedriver/chromedriver-linux64/chromedriver\")\nCHROME_PATH = os.getenv(\"CHROME_PATH\", \"/opt/chrome/chrome-linux64/chrome\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -8120,11 +8288,20 @@
         "documentation": {}
     },
     {
+        "label": "get_cache_filename",
+        "kind": 2,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "def get_cache_filename(project: WebProject) -> str:\n    \"\"\"\n    Genera un nombre de archivo de caché específico para un proyecto.\n    Args:\n        project (WebProject): El proyecto web\n    Returns:\n        str: Ruta al archivo de caché para este proyecto específico\n    \"\"\"\n    # Crear directorio de caché si no existe\n    os.makedirs(TASKS_CACHE_DIR, exist_ok=True)",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
         "label": "compute_statistics",
         "kind": 2,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "def compute_statistics(scores: List[float]) -> dict:\n    if scores:\n        stats = {\n            \"count\": len(scores),\n            \"mean\": statistics.mean(scores),\n            \"median\": statistics.median(scores),\n            \"min\": min(scores),\n            \"max\": max(scores),\n            \"stdev\": statistics.stdev(scores) if len(scores) > 1 else 0.0,\n        }",
+        "peekOfCode": "def compute_statistics(scores: List[float]) -> dict:\n    \"\"\"\n    Calcula estadísticas básicas para una lista de puntuaciones\n    Args:\n        scores: Lista de puntuaciones\n    Returns:\n        Diccionario con estadísticas calculadas\n    \"\"\"\n    if scores:\n        stats = {",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -8133,7 +8310,7 @@
         "kind": 2,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "def print_performance_statistics(results, agents):\n    \"\"\"\n    Print performance statistics for each agent.\n    This function iterates over the agents and prints global and per-project statistics.\n    \"\"\"\n    print(\"Agent Performance Metrics:\")\n    for agent in agents:\n        agent_stats = results[agent.id]\n        global_stats = compute_statistics(agent_stats[\"global_scores\"])\n        print(f\"\\nAgent: {agent.id}\")",
+        "peekOfCode": "def print_performance_statistics(results, agents):\n    \"\"\"\n    Imprime estadísticas de rendimiento para cada agente.\n    Args:\n        results: Diccionario con resultados\n        agents: Lista de agentes evaluados\n    \"\"\"\n    print(\"\\n\" + \"=\" * 50)\n    print(\"ESTADÍSTICAS DE RENDIMIENTO DE AGENTES\")\n    print(\"=\" * 50)",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -8142,7 +8319,70 @@
         "kind": 2,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "def plot_agent_results(results, agents):\n    \"\"\"\n    Plot a bar chart of agents' average global scores.\n    Each bar represents an agent (using its id) with its average score displayed\n    above the bar. If an agent has no score, a 0 is displayed.\n    \"\"\"\n    agent_names = []\n    agent_avg_scores = []\n    # Calculate average global score for each agent.\n    for agent in agents:",
+        "peekOfCode": "def plot_agent_results(results, agents):\n    \"\"\"\n    Crea un gráfico de barras con las puntuaciones promedio de los agentes.\n    Args:\n        results: Diccionario con resultados\n        agents: Lista de agentes evaluados\n    \"\"\"\n    # Asegurar que existe el directorio de resultados\n    os.makedirs(LOG_DIR, exist_ok=True)\n    agent_names = []",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
+        "label": "save_benchmark_results",
+        "kind": 2,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "def save_benchmark_results(results, agents, demo_web_projects):\n    \"\"\"\n    Guarda los resultados del benchmark en un archivo JSON para análisis posterior.\n    Args:\n        results: Diccionario con resultados\n        agents: Lista de agentes evaluados\n        demo_web_projects: Lista de proyectos evaluados\n    \"\"\"\n    os.makedirs(OUTPUT_DIR, exist_ok=True)\n    output_data = {",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
+        "label": "timestamp",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\nOUTPUT_DIR = \"results\"\nLOG_DIR = os.path.join(\"logs\", f\"benchmark_{timestamp}\")\nTASKS_CACHE_DIR = \"data/tasks_cache\"\n# Configuración de caching\nUSE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles\n# Configuración del benchmark\nITERATIONS = 1  # Número de iteraciones por tarea\n# Inicializar componentes principales\napp = AppBootstrap()",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
+        "label": "OUTPUT_DIR",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "OUTPUT_DIR = \"results\"\nLOG_DIR = os.path.join(\"logs\", f\"benchmark_{timestamp}\")\nTASKS_CACHE_DIR = \"data/tasks_cache\"\n# Configuración de caching\nUSE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles\n# Configuración del benchmark\nITERATIONS = 1  # Número de iteraciones por tarea\n# Inicializar componentes principales\napp = AppBootstrap()\nvisualizer = SubnetVisualizer(log_directory=LOG_DIR)",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
+        "label": "LOG_DIR",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "LOG_DIR = os.path.join(\"logs\", f\"benchmark_{timestamp}\")\nTASKS_CACHE_DIR = \"data/tasks_cache\"\n# Configuración de caching\nUSE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles\n# Configuración del benchmark\nITERATIONS = 1  # Número de iteraciones por tarea\n# Inicializar componentes principales\napp = AppBootstrap()\nvisualizer = SubnetVisualizer(log_directory=LOG_DIR)\n# Agentes a evaluar",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
+        "label": "TASKS_CACHE_DIR",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "TASKS_CACHE_DIR = \"data/tasks_cache\"\n# Configuración de caching\nUSE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles\n# Configuración del benchmark\nITERATIONS = 1  # Número de iteraciones por tarea\n# Inicializar componentes principales\napp = AppBootstrap()\nvisualizer = SubnetVisualizer(log_directory=LOG_DIR)\n# Agentes a evaluar\nAGENTS: List[BaseAgent] = [",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
+        "label": "USE_CACHED_TASKS",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "USE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles\n# Configuración del benchmark\nITERATIONS = 1  # Número de iteraciones por tarea\n# Inicializar componentes principales\napp = AppBootstrap()\nvisualizer = SubnetVisualizer(log_directory=LOG_DIR)\n# Agentes a evaluar\nAGENTS: List[BaseAgent] = [\n    # RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)",
+        "detail": "autoppia_iwa.entrypoints.benchmark",
+        "documentation": {}
+    },
+    {
+        "label": "ITERATIONS",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark",
+        "description": "autoppia_iwa.entrypoints.benchmark",
+        "peekOfCode": "ITERATIONS = 1  # Número de iteraciones por tarea\n# Inicializar componentes principales\napp = AppBootstrap()\nvisualizer = SubnetVisualizer(log_directory=LOG_DIR)\n# Agentes a evaluar\nAGENTS: List[BaseAgent] = [\n    # RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)\n]\n# ============================================================",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -8151,25 +8391,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "app = AppBootstrap()\nAGENTS: List[BaseAgent] = [RandomClickerWebAgent(name=\"Random-clicker\"), ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)]\niterations = 1  # total_tasks = tasks * iterations\nNUM_OF_URLS = 1\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"",
+        "peekOfCode": "app = AppBootstrap()\nvisualizer = SubnetVisualizer(log_directory=LOG_DIR)\n# Agentes a evaluar\nAGENTS: List[BaseAgent] = [\n    # RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)\n]\n# ============================================================\n# FUNCIONES DE MANEJO DE TAREAS CACHEADAS\n# ============================================================",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
     {
-        "label": "iterations",
+        "label": "visualizer",
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "iterations = 1  # total_tasks = tasks * iterations\nNUM_OF_URLS = 1\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.\n    if demo_project.name not in results[agent.id][\"projects\"]:",
-        "detail": "autoppia_iwa.entrypoints.benchmark",
-        "documentation": {}
-    },
-    {
-        "label": "NUM_OF_URLS",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.benchmark",
-        "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "NUM_OF_URLS = 1\nasync def evaluate_project_for_agent(agent, demo_project, tasks, results):\n    \"\"\"\n    Evaluate all tasks for a given demo project and agent.\n    For each task, the agent will attempt to solve it and the evaluation score\n    will be stored both in the agent's global scores and in the project-specific scores.\n    \"\"\"\n    # Initialize project entry in results if not already present.\n    if demo_project.name not in results[agent.id][\"projects\"]:\n        results[agent.id][\"projects\"][demo_project.name] = []",
+        "peekOfCode": "visualizer = SubnetVisualizer(log_directory=LOG_DIR)\n# Agentes a evaluar\nAGENTS: List[BaseAgent] = [\n    # RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Text-External-Agent\", host=\"localhost\", port=9000)\n]\n# ============================================================\n# FUNCIONES DE MANEJO DE TAREAS CACHEADAS\n# ============================================================\ndef get_cache_filename(project: WebProject) -> str:",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -8286,7 +8517,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.stress",
         "description": "autoppia_iwa.entrypoints.stress",
-        "peekOfCode": "USE_CACHED_TASKS = True  # Set to True to use cached tasks from JSON file\nTASKS_CACHE_DIR = \"data/tasks_cache\"  # Directory to store task cache files\nOUTPUT_DIR = \"results\"  # Directory to store test results\nM = 1  # Set this to your desired number of copies\nNUMBER_OF_TASKS = 10\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),",
+        "peekOfCode": "USE_CACHED_TASKS = True  # Set to True to use cached tasks from JSON file\nTASKS_CACHE_DIR = \"data/tasks_cache\"  # Directory to store task cache files\nOUTPUT_DIR = \"results\"  # Directory to store test results\nM = 20  # Set this to your desired number of copies\nNUMBER_OF_TASKS = 1\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),",
         "detail": "autoppia_iwa.entrypoints.stress",
         "documentation": {}
     },
@@ -8295,7 +8526,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.stress",
         "description": "autoppia_iwa.entrypoints.stress",
-        "peekOfCode": "TASKS_CACHE_DIR = \"data/tasks_cache\"  # Directory to store task cache files\nOUTPUT_DIR = \"results\"  # Directory to store test results\nM = 1  # Set this to your desired number of copies\nNUMBER_OF_TASKS = 10\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"browser-use\", host=\"localhost\", port=9000)",
+        "peekOfCode": "TASKS_CACHE_DIR = \"data/tasks_cache\"  # Directory to store task cache files\nOUTPUT_DIR = \"results\"  # Directory to store test results\nM = 20  # Set this to your desired number of copies\nNUMBER_OF_TASKS = 1\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"browser-use\", host=\"localhost\", port=9000)",
         "detail": "autoppia_iwa.entrypoints.stress",
         "documentation": {}
     },
@@ -8304,7 +8535,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.stress",
         "description": "autoppia_iwa.entrypoints.stress",
-        "peekOfCode": "OUTPUT_DIR = \"results\"  # Directory to store test results\nM = 1  # Set this to your desired number of copies\nNUMBER_OF_TASKS = 10\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"browser-use\", host=\"localhost\", port=9000)\n]",
+        "peekOfCode": "OUTPUT_DIR = \"results\"  # Directory to store test results\nM = 20  # Set this to your desired number of copies\nNUMBER_OF_TASKS = 1\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"browser-use\", host=\"localhost\", port=9000)\n]",
         "detail": "autoppia_iwa.entrypoints.stress",
         "documentation": {}
     },
@@ -8313,7 +8544,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.stress",
         "description": "autoppia_iwa.entrypoints.stress",
-        "peekOfCode": "M = 1  # Set this to your desired number of copies\nNUMBER_OF_TASKS = 10\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"browser-use\", host=\"localhost\", port=9000)\n]\nclass TimingMetrics:",
+        "peekOfCode": "M = 20  # Set this to your desired number of copies\nNUMBER_OF_TASKS = 1\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"browser-use\", host=\"localhost\", port=9000)\n]\nclass TimingMetrics:",
         "detail": "autoppia_iwa.entrypoints.stress",
         "documentation": {}
     },
@@ -8322,7 +8553,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.stress",
         "description": "autoppia_iwa.entrypoints.stress",
-        "peekOfCode": "NUMBER_OF_TASKS = 10\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"browser-use\", host=\"localhost\", port=9000)\n]\nclass TimingMetrics:\n    \"\"\"Track timing metrics for tasks and agents\"\"\"",
+        "peekOfCode": "NUMBER_OF_TASKS = 1\n# Initialize the app\napp = AppBootstrap()\n# Define agents for the stress test\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"browser-use\", host=\"localhost\", port=9000)\n]\nclass TimingMetrics:\n    \"\"\"Track timing metrics for tasks and agents\"\"\"",
         "detail": "autoppia_iwa.entrypoints.stress",
         "documentation": {}
     },
@@ -8745,7 +8976,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.evaluation.evaluator.evaluator",
         "description": "autoppia_iwa.src.evaluation.evaluator.evaluator",
-        "peekOfCode": "class EvaluatorConfig(BaseModel):\n    save_results_in_db: bool = False\n    task_delay_in_seconds: float = Field(default=0.1, gt=0)\n    chunk_size: int = Field(default=5, gt=0)\n    browser_timeout: float = Field(default=10000, gt=0)\n    event_monitor_interval: float = Field(default=0.1, gt=0, le=0.5)\n    enable_grouping_tasks: bool = Field(default=True)\n    exclude_random_passed_tests: bool = Field(default=True)\n    cache_random_clicker_results: bool = Field(default=True)\n    normalize_scores: bool = Field(default=True)",
+        "peekOfCode": "class EvaluatorConfig(BaseModel):\n    save_results_in_db: bool = False\n    task_delay_in_seconds: float = Field(default=0.1, gt=0)\n    chunk_size: int = Field(default=20, gt=0)\n    browser_timeout: float = Field(default=10000, gt=0)\n    event_monitor_interval: float = Field(default=0.1, gt=0, le=0.5)\n    enable_grouping_tasks: bool = Field(default=True)\n    exclude_random_passed_tests: bool = Field(default=True)\n    cache_random_clicker_results: bool = Field(default=True)\n    normalize_scores: bool = Field(default=True)",
         "detail": "autoppia_iwa.src.evaluation.evaluator.evaluator",
         "documentation": {}
     },
@@ -9224,6 +9455,42 @@
         "description": "autoppia_iwa.src.shared.utils",
         "peekOfCode": "def transform_image_into_base64(image: Image.Image) -> str:\n    \"\"\"\n    Converts a PIL Image into a base64 encoded string.\n    Args:\n        image (Image.Image): The image to be converted.\n    Returns:\n        str: The base64 encoded string of the image.\n    \"\"\"\n    buffered = BytesIO()\n    image.save(buffered, format=\"PNG\")",
         "detail": "autoppia_iwa.src.shared.utils",
+        "documentation": {}
+    },
+    {
+        "label": "SubnetVisualizer",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
+        "peekOfCode": "class SubnetVisualizer:\n    \"\"\"\n    Visualizador mejorado para Subnet 36 que muestra:\n    1. Tarea con su prompt\n    2. Tests asociados con información detallada\n    3. Acciones del agente\n    4. Resultados de tests (✅/❌)\n    5. Puntuaciones\n    \"\"\"\n    def __init__(self, log_directory: Optional[str] = None):",
+        "detail": "autoppia_iwa.src.shared.visualizator",
+        "documentation": {}
+    },
+    {
+        "label": "visualize_task",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
+        "peekOfCode": "def visualize_task(visualizer):\n    \"\"\"Decorator para visualizar una tarea y sus tests\"\"\"\n    def decorator(func):\n        async def wrapper(*args, **kwargs):\n            result = await func(*args, **kwargs)\n            if isinstance(result, list):\n                for task in result:\n                    visualizer.show_task_with_tests(task)\n            else:\n                visualizer.show_task_with_tests(result)",
+        "detail": "autoppia_iwa.src.shared.visualizator",
+        "documentation": {}
+    },
+    {
+        "label": "visualize_evaluation",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
+        "peekOfCode": "def visualize_evaluation(visualizer):\n    \"\"\"Decorator para visualizar la evaluación de un agente\"\"\"\n    def decorator(func):\n        async def wrapper(web_project, task, task_solution, *args, **kwargs):\n            result = await func(web_project, task, task_solution, *args, **kwargs)\n            visualizer.show_agent_evaluation(\n                agent_id=task_solution.web_agent_id,\n                task=task,\n                actions=task_solution.actions,\n                test_results_matrix=result.test_results_matrix if hasattr(result, \"test_results_matrix\") else [],",
+        "detail": "autoppia_iwa.src.shared.visualizator",
+        "documentation": {}
+    },
+    {
+        "label": "visualize_summary",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
+        "peekOfCode": "def visualize_summary(visualizer):\n    \"\"\"Decorator para visualizar el resumen final\"\"\"\n    def decorator(func):\n        def wrapper(results, agents, *args, **kwargs):\n            func(results, agents, *args, **kwargs)\n            visualizer.print_summary(results, agents)\n            return None\n        return wrapper\n    return decorator",
+        "detail": "autoppia_iwa.src.shared.visualizator",
         "documentation": {}
     },
     {
