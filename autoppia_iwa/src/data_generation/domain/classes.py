@@ -89,8 +89,7 @@ class Task(BaseModel):
     def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
         base_dump = self.model_dump(*args, **kwargs)
         # If you want to ensure tests are fully serialized
-        if "tests" in base_dump:
-            base_dump["tests"] = [test.model_dump() for test in self.tests]
+        base_dump["tests"] = [test.model_dump() for test in self.tests]
         return base_dump
 
     def serialize(self) -> dict:
