@@ -2,6 +2,7 @@ import json
 from typing import Dict, List
 
 from dependency_injector.wiring import Provide
+from PIL import Image
 from pydantic import ValidationError
 
 from autoppia_iwa.src.data_generation.application.tasks.local.prompts import (
@@ -176,7 +177,8 @@ class LocalTaskGenerationPipeline:
             # Return the original tasks if something else breaks
             return tasks
 
-    def _assemble_task(self, web_project_id: int, url: str, prompt: str, html: str, clean_html: str, screenshot: bytes, screenshot_desc: str, success_criteria: str, relevant_data: str) -> "Task":
+    @staticmethod
+    def _assemble_task(web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: Image.Image, screenshot_desc: str, success_criteria: str, relevant_data: dict) -> "Task":
         """
         Assembles a final Task object from the filtered task data.
         """
@@ -187,7 +189,7 @@ class LocalTaskGenerationPipeline:
             url=url,
             html=str(html),
             clean_html=str(clean_html),
-            screenshot_desc=screenshot_desc,
+            screenshot_description=screenshot_desc,
             screenshot=str(transform_image_into_base64(screenshot)),
             success_criteria=success_criteria,
             specifications=BrowserSpecification(),
