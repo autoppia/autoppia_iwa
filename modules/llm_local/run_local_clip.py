@@ -8,12 +8,13 @@ def main():
     # 1. Parse command-line arguments
     parser = argparse.ArgumentParser(description="Use CLIP to classify screenshot content.")
     parser.add_argument("--filename", required=True, help="Path to the screenshot image file.")
+    parser.add_argument("--model_name", default="openai/clip-vit-large-patch14",
+                        help="Name of the CLIP-like model on the Hugging Face Hub.")
     args = parser.parse_args()
 
-    # 2. Load the pre-trained CLIP model and processor
-    model_name = "openai/clip-vit-base-patch32"
-    model = CLIPModel.from_pretrained(model_name)
-    processor = CLIPProcessor.from_pretrained(model_name)
+    # 2. Load the specified CLIP model and processor
+    model = CLIPModel.from_pretrained(args.model_name)
+    processor = CLIPProcessor.from_pretrained(args.model_name)
 
     # 3. Load your screenshot
     image = Image.open(args.filename).convert("RGB")
