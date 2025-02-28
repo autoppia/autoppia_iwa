@@ -30,6 +30,7 @@ class BaseTaskTest(BaseModel, ITest):
     """
 
     class Config:
+        extra = "allow"
         arbitrary_types_allowed = True
 
     def execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
