@@ -2,33 +2,28 @@ import json
 from typing import Any, Dict, List
 from loguru import logger
 from dependency_injector.wiring import Provide
+
 # LLM & domain imports
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.data_generation.domain.tests_classes import (
-    CheckUrlTest, 
-    FindInHtmlTest, 
-    CheckEventTest, 
-    CheckPageViewEventTest,
-    JudgeBaseOnHTML,
-    JudgeBaseOnScreenshot
-)
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckUrlTest, FindInHtmlTest, CheckEventTest, CheckPageViewEventTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.shared.web_utils import detect_interactive_elements
 from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import (
     TestLogicGenerator,
 )
 from .prompts import TEST_FILTERING_PROMPT, TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT
+from autoppia_web_agents_subnet.utils.logging import ColoredLogger
 
 
 class TestGenerationPipeline:
-    """ A pipeline that: 
-    1) Gathers context (HTML, screenshot info, etc.) for each Task. 
-    2) Uses LLM to generate appropriate tests for each test class (one LLM request per class). 
-    3) Filters the generated tests (optional). 
-    4) Instantiates the test objects and adds them to the task. 
-    5) (Optionally) generates a logic function for the entire set of tests. """
+    """A pipeline that:
+    1) Gathers context (HTML, screenshot info, etc.) for each Task.
+    2) Uses LLM to generate appropriate tests for each test class (one LLM request per class).
+    3) Filters the generated tests (optional).
+    4) Instantiates the test objects and adds them to the task.
+    5) (Optionally) generates a logic function for the entire set of tests."""
 
     def __init__(
         self,
@@ -81,10 +76,7 @@ class TestGenerationPipeline:
                 await self._instantiate_tests(task, valid_tests)
                 # STEP 4: Optionally generate a logic function that references these tests
                 if task.tests:
-                    task.logic_function = await self.logic_generator.generate_logic(
-                        task=task,
-                        tests=task.tests
-                    )
+                    task.logic_function = await self.logic_generator.generate_logic(task=task, tests=task.tests)
                     logger.info(f"Generated logic function for task {task.id}")
             except Exception as e:
                 logger.error(f"Failed to generate tests for task={task.id}: {str(e)}")
@@ -97,7 +89,7 @@ class TestGenerationPipeline:
         """
         all_tests = []
         # Gather contextual data needed for the prompt
-        cleaned_html = task.clean_html[:self.truncate_html_chars] if task.clean_html else ""
+        cleaned_html = task.clean_html[: self.truncate_html_chars] if task.clean_html else ""
         screenshot_desc = task.screenshot_description or ""
         interactive_elements = detect_interactive_elements(cleaned_html)
         domain_analysis = self.web_project.domain_analysis or {}
@@ -118,27 +110,22 @@ class TestGenerationPipeline:
                         schema_json = json.dumps(test_class.schema(), indent=2)
                     else:
                         # Create a basic schema for non-pydantic classes
-                        schema_json = json.dumps({
-                            "title": test_class_name,
-                            "type": "object",
-                            "properties": {
-                                "type": {"type": "string", "enum": [test_class_name]},
-                                "description": {"type": "string"}
+                        schema_json = json.dumps(
+                            {
+                                "title": test_class_name,
+                                "type": "object",
+                                "properties": {"type": {"type": "string", "enum": [test_class_name]}, "description": {"type": "string"}},
+                                "required": ["type"],
                             },
-                            "required": ["type"]
-                        }, indent=2)
+                            indent=2,
+                        )
                 except Exception as e:
                     logger.warning(f"Could not get schema for {test_class_name}: {e}")
                     # Create a basic schema
-                    schema_json = json.dumps({
-                        "title": test_class_name,
-                        "type": "object",
-                        "properties": {
-                            "type": {"type": "string", "enum": [test_class_name]},
-                            "description": {"type": "string"}
-                        },
-                        "required": ["type"]
-                    }, indent=2)
+                    schema_json = json.dumps(
+                        {"title": test_class_name, "type": "object", "properties": {"type": {"type": "string", "enum": [test_class_name]}, "description": {"type": "string"}}, "required": ["type"]},
+                        indent=2,
+                    )
 
                 # Get extra data for this test class if any
                 extra_data = self.test_class_extra_data.get(test_class_name, "{}")
@@ -153,17 +140,15 @@ class TestGenerationPipeline:
                     screenshot_desc=screenshot_desc,
                     interactive_elements=json.dumps(interactive_elements, indent=2),
                     domain_analysis=domain_analysis_dict,
-                    extra_data=extra_data  # Include the extra data in the prompt
+                    extra_data=extra_data,  # Include the extra data in the prompt
                 )
 
                 # Call the LLM
-                response = await self.llm_service.async_predict(
-                    messages=[
-                        {"role": "system", "content": system_prompt}
-                    ],
-                    json_format=True
+                response = await self.llm_service.async_predict(messages=[{"role": "system", "content": system_prompt}], json_format=True)
+                ColoredLogger.info(
+                    f"REPSONSE LLM: PORMOPT:{system_prompt}; REPONSE: {response}s",
+                    ColoredLogger.RED,
                 )
-
                 # Parse the response - Fix for JSON parsing error
                 response_data = None
                 if isinstance(response, str):
@@ -176,7 +161,7 @@ class TestGenerationPipeline:
                             start_idx = cleaned_response.find('[')
                             end_idx = cleaned_response.rfind(']')
                             if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
-                                cleaned_response = cleaned_response[start_idx:end_idx + 1]
+                                cleaned_response = cleaned_response[start_idx : end_idx + 1]
                         response_data = json.loads(cleaned_response)
                     except json.JSONDecodeError:
                         logger.error(f"Failed to parse LLM response as JSON: {response}")
@@ -186,16 +171,12 @@ class TestGenerationPipeline:
                     response_data = response
 
                 if not isinstance(response_data, list):
-                    logger.warning(
-                        f"Expected a JSON array for test class {test_class_name}, got: {type(response_data)}"
-                    )
+                    logger.warning(f"Expected a JSON array for test class {test_class_name}, got: {type(response_data)}")
                     continue
 
                 if len(response_data) == 0:
                     # LLM says "not relevant" or no tests
-                    logger.info(
-                        f"LLM returned no tests for {test_class_name} on task {task.id}"
-                    )
+                    logger.info(f"LLM returned no tests for {test_class_name} on task {task.id}")
                 else:
                     # We have some test definitions for this class
                     # Ensure all tests have the correct type
@@ -208,14 +189,10 @@ class TestGenerationPipeline:
                             # Add test_type if needed (for backward compatibility)
                             if "test_type" not in test:
                                 test["test_type"] = test_class_name
-                    logger.info(
-                        f"LLM returned {len(response_data)} tests for {test_class_name} on task {task.id}"
-                    )
+                    logger.info(f"LLM returned {len(response_data)} tests for {test_class_name} on task {task.id}")
                     all_tests.extend(response_data)
             except Exception as e:
-                logger.error(
-                    f"Error generating tests for {test_class_name} in task {task.id}: {str(e)}"
-                )
+                logger.error(f"Error generating tests for {test_class_name} in task {task.id}: {str(e)}")
                 logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
         return all_tests
 
@@ -250,10 +227,7 @@ class TestGenerationPipeline:
             # Prepare test data with indices for reference
             indexed_tests = []
             for i, test in enumerate(valid_type_tests):
-                indexed_tests.append({
-                    "index": i,
-                    "test": test
-                })
+                indexed_tests.append({"index": i, "test": test})
 
             # Convert to JSON for the prompt
             tests_json = json.dumps(indexed_tests, indent=2)
@@ -268,20 +242,10 @@ class TestGenerationPipeline:
             extra_data = json.dumps(extra_data_dict, indent=2)
 
             # Use simplified prompt for test filtering
-            system_prompt = TEST_FILTERING_PROMPT.format(
-                task_prompt=task_prompt,
-                success_criteria=success_criteria,
-                tests_json=tests_json,
-                extra_data=extra_data 
-            )
+            system_prompt = TEST_FILTERING_PROMPT.format(task_prompt=task_prompt, success_criteria=success_criteria, tests_json=tests_json, extra_data=extra_data)
 
             # Call the LLM
-            response = await self.llm_service.async_predict(
-                messages=[
-                    {"role": "system", "content": system_prompt}
-                ],
-                json_format=True
-            )
+            response = await self.llm_service.async_predict(messages=[{"role": "system", "content": system_prompt}], json_format=True)
 
             # Parse the response
             decisions = None
