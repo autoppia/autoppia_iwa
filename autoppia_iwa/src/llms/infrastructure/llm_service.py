@@ -123,7 +123,7 @@ class LocalLLMService(ILLM):
     ) -> str:
         start_time = time.time()
         try:
-            with httpx.Client(timeout=120.0) as client:
+            with httpx.Client(timeout=180.0) as client:
                 payload = {
                     "messages": messages,
                     "temperature": self.config.temperature,

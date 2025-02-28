@@ -82,19 +82,6 @@ class LocalTaskGenerationPipeline:
             f"interactive_elements:\n{json.dumps(interactive_elems, indent=2)}"
         )
 
-        # JSON schema for the response
-        schema = {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "prompt": {"type": "string"},
-                    "success_criteria": {"type": "string"}
-                },
-                "required": ["prompt"]
-            }
-        }
-
         # Implement retry logic
         for attempt in range(self.max_retries):
             try:
@@ -109,7 +96,6 @@ class LocalTaskGenerationPipeline:
                 )
 
                 # Try to parse the response
-
                 validated_tasks = await self._parse_llm_response(resp_text)
                 if validated_tasks:
                     logger.info(f"Successfully generated tasks for {current_url} on attempt {attempt + 1}")
@@ -134,8 +120,36 @@ class LocalTaskGenerationPipeline:
     async def _parse_llm_response(self, resp_text: str) -> List[dict]:
         """Helper method to parse and validate the LLM response."""
         try:
-            # First, ensure we have valid JSON
-            data = json.loads(resp_text)
+            # Clean up response text if it's wrapped in Markdown code blocks
+            # This handles cases like: '```json\n[...]\n```'
+            cleaned_text = resp_text
+            if resp_text.strip().startswith("'```") or resp_text.strip().startswith("```"):
+                # Extract content between markdown code blocks
+                import re
+                code_block_pattern = r'```(?:json)?\n([\s\S]*?)\n```'
+                matches = re.search(code_block_pattern, resp_text)
+                if matches:
+                    cleaned_text = matches.group(1)
+                else:
+                    # If regex doesn't match but we know it starts with backticks,
+                    # try a simpler approach
+                    lines = resp_text.strip().split('\n')
+                    if lines[0].startswith("'```") or lines[0].startswith("```"):
+                        # Remove first and last lines if they contain backticks
+                        cleaned_text = '\n'.join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
+
+            # Now try to parse the cleaned JSON
+            data = json.loads(cleaned_text)
+
+            # Handle the case where data is directly a list of tasks
+            if isinstance(data, list) and all(isinstance(item, dict) and "prompt" in item for item in data):
+                validated_tasks = []
+                for item in data:
+                    validated_tasks.append({
+                        "prompt": item.get("prompt", ""),
+                        "success_criteria": item.get("success_criteria", "")
+                    })
+                return validated_tasks
 
             # Handle different possible JSON structures
             if isinstance(data, dict):
@@ -160,22 +174,47 @@ class LocalTaskGenerationPipeline:
                 return []
 
             # Validate the data using Pydantic
-            draft_list = DraftTaskList.model_validate(data)
-            validated_tasks = []
-
-            for item in draft_list.root:
-                validated_tasks.append({
-                    "prompt": item.prompt,
-                    "success_criteria": item.success_criteria or ""
-                })
-
-            return validated_tasks
-
+            try:
+                draft_list = DraftTaskList.model_validate(data)
+                validated_tasks = []
+                for item in draft_list.root:
+                    validated_tasks.append({
+                        "prompt": item.prompt,
+                        "success_criteria": item.success_criteria or ""
+                    })
+                return validated_tasks
+            except ValidationError as ve:
+                logger.warning(f"Pydantic validation error: {ve}, trying basic validation")
+                # Basic validation if Pydantic fails
+                validated_tasks = []
+                for item in data:
+                    if isinstance(item, dict) and "prompt" in item:
+                        validated_tasks.append({
+                            "prompt": item.get("prompt", ""),
+                            "success_criteria": item.get("success_criteria", "")
+                        })
+                return validated_tasks
         except json.JSONDecodeError as je:
             logger.error(f"JSON decode error: {je}")
-            return []
-        except ValidationError as ve:
-            logger.error(f"Pydantic validation error: {ve}")
+            # Attempt another cleanup approach if initial parsing fails
+            try:
+                # Try to extract just the JSON part using a more aggressive approach
+                import re
+                json_pattern = r'\[\s*\{.*?\}\s*\]'
+                matches = re.search(json_pattern, resp_text, re.DOTALL)
+                if matches:
+                    extracted_json = matches.group(0)
+                    data = json.loads(extracted_json)
+                    validated_tasks = []
+                    for item in data:
+                        if isinstance(item, dict) and "prompt" in item:
+                            validated_tasks.append({
+                                "prompt": item.get("prompt", ""),
+                                "success_criteria": item.get("success_criteria", "")
+                            })
+                    return validated_tasks
+            except Exception:
+                pass
             return []
         except Exception as e:
             logger.error(f"Unexpected error parsing LLM response: {str(e)}")

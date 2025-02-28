@@ -818,3 +818,68 @@ Evaluation complete! Results have been saved to results.
 2025-02-28 14:10:21,609 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
 2025-02-28 14:10:21,610 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
 2025-02-28 14:10:22,021 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 17:07:21,807 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:07:22,753 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:07:22,754 - stress_test - ERROR - No tasks available.
+2025-02-28 17:10:01,079 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:10:01,919 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:10:01,919 - stress_test - ERROR - No tasks available.
+2025-02-28 17:10:12,485 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:10:13,286 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:10:13,287 - stress_test - ERROR - No tasks available.
+2025-02-28 17:14:15,615 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:14:30,568 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:36,095 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:41,792 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:45,930 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:50,475 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:59,906 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:15:00,295 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:15:09,584 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:15:09,594 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:15:09,594 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 17:15:16,779 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:15:16,785 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:15:16,785 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-02-28 17:15:29,553 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:15:29,555 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:15:29,555 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-02-28 17:15:29,556 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/employer/register
+2025-02-28 17:15:29,557 - stress_test - ERROR - No tasks available.
+2025-02-28 17:15:46,073 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:15:46,467 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:16:13,798 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:16:17,536 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:16:17,537 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 17:17:13,190 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:19:58,166 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:19:58,582 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:20:14,919 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:20:14,933 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:20:14,934 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 17:23:07,074 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:23:07,466 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:24:08,635 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:24:11,952 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs on attempt 1
+2025-02-28 17:24:13,913 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:24:13,918 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 17:25:17,238 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:25:17,628 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:25:30,093 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:30,103 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/31 on attempt 1
+2025-02-28 17:25:33,169 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:35,263 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:37,784 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:39,937 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:42,090 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:44,551 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:46,953 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:51,313 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:53,157 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:54,952 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:57,768 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:59,918 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:26:01,763 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:26:03,300 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:26:05,927 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:26:05,937 - stress_test - INFO - Evaluating 15 tasks with 2 agents, 1 solution copies each...
