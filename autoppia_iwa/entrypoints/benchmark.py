@@ -4,7 +4,7 @@ import os
 import statistics
 import time
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 
@@ -18,260 +18,247 @@ from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-
-# Importar el visualizador
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_summary, visualize_task
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent, IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # ============================================================
-# CONFIGURACIÓN GLOBAL
+# GLOBAL CONFIGURATION
 # ============================================================
 
-# Configuración de directorios
+# Directory configuration
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 OUTPUT_DIR = "results"
 LOG_DIR = os.path.join("logs", f"benchmark_{timestamp}")
 TASKS_CACHE_DIR = "data/tasks_cache"
 
-# Configuración de caching
-USE_CACHED_TASKS = True  # Usar tareas cacheadas si están disponibles
+# Caching configuration
+USE_CACHED_TASKS = True  # Use cached tasks if available
 
-# Configuración del benchmark
-ITERATIONS = 1  # Número de iteraciones por tarea
+# Benchmark configuration
+ITERATIONS = 1  # Number of iterations per task
 
-# Inicializar componentes principales
+# Initialize main components
 app = AppBootstrap()
 visualizer = SubnetVisualizer(log_directory=LOG_DIR)
 
-# Agentes a evaluar
+# Agents to evaluate
 AGENTS: List[IWebAgent] = [
     # RandomClickerWebAgent(name="Random-clicker"),
     ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)
 ]
 
 # ============================================================
-# FUNCIONES DE MANEJO DE TAREAS CACHEADAS
+# TASK CACHING FUNCTIONS
 # ============================================================
 
 
 def get_cache_filename(project: WebProject) -> str:
     """
-    Genera un nombre de archivo de caché específico para un proyecto.
+    Generates a cache filename specific to a project.
 
     Args:
-        project (WebProject): El proyecto web
+        project (WebProject): The web project.
 
     Returns:
-        str: Ruta al archivo de caché para este proyecto específico
+        str: Path to the cache file for this specific project.
     """
-    # Crear directorio de caché si no existe
     os.makedirs(TASKS_CACHE_DIR, exist_ok=True)
-
-    # Usar el nombre o ID del proyecto para crear un nombre de archivo único
     safe_name = project.name.replace(" ", "_").lower()
     return os.path.join(TASKS_CACHE_DIR, f"{safe_name}_tasks.json")
 
 
 async def load_tasks_from_json(project: WebProject) -> Optional[List[Task]]:
     """
-    Carga tareas desde un archivo JSON específico del proyecto.
+    Loads tasks from a project-specific JSON file.
 
     Args:
-        project (WebProject): Proyecto a asociar con las tareas cargadas
+        project (WebProject): The project associated with the tasks.
 
     Returns:
-        List[Task]: Lista de objetos Task deserializados o None si no se encuentra/no es válido
+        List[Task]: List of deserialized Task objects or None if not found/invalid.
     """
     filename = get_cache_filename(project)
     if not os.path.exists(filename):
-        print(f"Archivo de caché {filename} no encontrado para el proyecto '{project.name}'")
+        print(f"Cache file {filename} not found for project '{project.name}'")
         return None
 
     try:
         with open(filename, 'r') as f:
             cache_data = json.load(f)
 
-        # Verificar que esta caché pertenezca al proyecto solicitado
         if cache_data.get("project_id") != project.id and cache_data.get("project_name") != project.name:
-            print(f"Archivo de caché existe pero para un proyecto diferente. Esperado '{project.name}', encontrado '{cache_data.get('project_name')}'")
+            print(f"Cache file exists but for a different project. Expected '{project.name}', found '{cache_data.get('project_name')}'")
             return None
 
-        # Deserializar las tareas
         tasks = [Task.deserialize(task_data) for task_data in cache_data.get("tasks", [])]
-
-        print(f"Cargadas {len(tasks)} tareas para el proyecto '{project.name}' desde {filename}")
+        print(f"Loaded {len(tasks)} tasks for project '{project.name}' from {filename}")
         return tasks
     except Exception as e:
-        print(f"Error al cargar tareas desde {filename}: {str(e)}")
+        print(f"Error loading tasks from {filename}: {str(e)}")
         return None
 
 
 async def save_tasks_to_json(project: WebProject, tasks: List[Task]) -> bool:
     """
-    Guarda las tareas en un archivo JSON específico del proyecto.
+    Saves tasks to a project-specific JSON file.
 
     Args:
-        project (WebProject): El proyecto asociado con las tareas
-        tasks (List[Task]): Lista de tareas a guardar
+        project (WebProject): The project associated with the tasks.
+        tasks (List[Task]): List of tasks to save.
 
     Returns:
-        bool: True si se guardó correctamente, False en caso contrario
+        bool: True if saved successfully, False otherwise.
     """
     filename = get_cache_filename(project)
 
     try:
-        cache_data = {"project_id": project.id, "project_name": project.name, "created_at": datetime.now().isoformat(), "tasks": [task.serialize() for task in tasks]}
+        cache_data = {
+            "project_id": project.id,
+            "project_name": project.name,
+            "created_at": datetime.now().isoformat(),
+            "tasks": [task.serialize() for task in tasks],
+        }
 
         with open(filename, 'w') as f:
             json.dump(cache_data, f, indent=2)
 
-        print(f"Guardadas {len(tasks)} tareas para el proyecto '{project.name}' en {filename}")
+        print(f"Saved {len(tasks)} tasks for project '{project.name}' to {filename}")
         return True
     except Exception as e:
-        print(f"Error al guardar tareas en {filename}: {str(e)}")
+        print(f"Error saving tasks to {filename}: {str(e)}")
         return False
 
 
 # ============================================================
-# FUNCIONES DE GENERACIÓN DE TAREAS Y TESTS
+# TASK AND TEST GENERATION FUNCTIONS
 # ============================================================
 
 
 async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int = 7) -> List[Task]:
     """
-    Genera tareas para el proyecto demo dado.
-    Si USE_CACHED_TASKS es True, intenta cargar primero desde la caché específica del proyecto.
+    Generates tasks for the given demo project.
+    If USE_CACHED_TASKS is True, attempts to load from the project-specific cache first.
 
     Args:
-        demo_project: El proyecto web para el que generar tareas
-        num_of_urls: Número de URLs a incluir en la generación de tareas
+        demo_project: The web project for which to generate tasks.
+        num_of_urls: Number of URLs to include in task generation.
 
     Returns:
-        Lista de objetos Task
+        List of Task objects.
     """
-    # Intentar cargar desde caché si está configurado
     if USE_CACHED_TASKS:
         cached_tasks = await load_tasks_from_json(demo_project)
         if cached_tasks and len(cached_tasks) > 0:
-            print(f"Usando {len(cached_tasks)} tareas cacheadas para el proyecto '{demo_project.name}'")
+            print(f"Using {len(cached_tasks)} cached tasks for project '{demo_project.name}'")
             return cached_tasks
         else:
-            print(f"No se encontraron tareas cacheadas válidas para el proyecto '{demo_project.name}', generando nuevas tareas...")
+            print(f"No valid cached tasks found for project '{demo_project.name}', generating new tasks...")
 
-    # Generar nuevas tareas
-    config = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False, number_of_prompts_per_task=3, num_or_urls=num_of_urls)
+    config = TaskGenerationConfig(
+        web_project=demo_project,
+        save_web_analysis_in_db=True,
+        save_task_in_db=False,
+        number_of_prompts_per_task=3,
+        num_of_urls=num_of_urls,
+    )
 
-    print(f"Generando tareas para {demo_project.name}...")
+    print(f"Generating tasks for {demo_project.name}...")
     pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
-
-    # Generar tareas
     task_results = await pipeline.generate()
 
-    # Generar tests para las tareas
     test_pipeline = TestGenerationPipeline(llm_service=DIContainer.llm_service(), web_project=demo_project)
     tasks_with_tests = await add_tests_to_tasks(task_results.tasks, test_pipeline)
 
-    # Guardar en caché para uso futuro
     if USE_CACHED_TASKS:
         await save_tasks_to_json(demo_project, tasks_with_tests)
 
     return tasks_with_tests
 
 
-# Aplicar visualización a la generación de tests
 @visualize_task(visualizer)
-async def add_tests_to_tasks(tasks, test_pipeline):
+async def add_tests_to_tasks(tasks: List[Task], test_pipeline: TestGenerationPipeline) -> List[Task]:
     """
-    Añade tests a las tareas generadas y las visualiza
+    Adds tests to the generated tasks and visualizes them.
 
     Args:
-        tasks: Lista de tareas a las que añadir tests
-        test_pipeline: Pipeline para la generación de tests
+        tasks: List of tasks to add tests to.
+        test_pipeline: Pipeline for test generation.
 
     Returns:
-        Lista de tareas con tests añadidos
+        List of tasks with added tests.
     """
-    print(f"Generando tests para {len(tasks)} tareas...")
+    print(f"Generating tests for {len(tasks)} tasks...")
     return await test_pipeline.add_tests_to_tasks(tasks)
 
 
 # ============================================================
-# FUNCIONES DE EVALUACIÓN
+# EVALUATION FUNCTIONS
 # ============================================================
 
 
 @visualize_evaluation(visualizer)
-async def evaluate_task_solution(web_project, task, task_solution):
+async def evaluate_task_solution(web_project: WebProject, task: Task, task_solution: TaskSolution) -> EvaluationResult:
     """
-    Evalúa una tarea individual con visualización
+    Evaluates a single task solution with visualization.
 
     Args:
-        web_project: Proyecto web asociado
-        task: Tarea a evaluar
-        task_solution: Solución de la tarea propuesta por el agente
+        web_project: The associated web project.
+        task: The task to evaluate.
+        task_solution: The task solution proposed by the agent.
 
     Returns:
-        Resultado de la evaluación
+        Evaluation result.
     """
     evaluator_config = EvaluatorConfig(save_results_in_db=False)
     evaluator = ConcurrentEvaluator(web_project=web_project, config=evaluator_config)
     return await evaluator.evaluate_single_task_solution(task=task, task_solution=task_solution)
 
 
-async def evaluate_project_for_agent(agent, demo_project, tasks, results):
+async def evaluate_project_for_agent(agent: IWebAgent, demo_project: WebProject, tasks: List[Task], results: Dict):
     """
-    Evalúa todas las tareas de un proyecto para un agente.
+    Evaluates all tasks of a project for a given agent.
 
     Args:
-        agent: Agente a evaluar
-        demo_project: Proyecto web a evaluar
-        tasks: Lista de tareas
-        results: Diccionario donde almacenar los resultados
+        agent: The agent to evaluate.
+        demo_project: The web project to evaluate.
+        tasks: List of tasks.
+        results: Dictionary to store the results.
     """
-    # Inicializar entrada de proyecto en resultados si no existe
     if demo_project.name not in results[agent.id]["projects"]:
         results[agent.id]["projects"][demo_project.name] = []
 
-    # Evaluar cada tarea
     for task in tasks:
         start_time = time.time()
-
-        # El agente genera la solución
         task_solution: TaskSolution = await agent.solve_task(task)
         actions: List[BaseAction] = task_solution.actions
 
-        # Preparar evaluación
         task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
-
-        # Usar método decorado para evaluar
         evaluation_result: EvaluationResult = await evaluate_task_solution(web_project=demo_project, task=task, task_solution=task_solution)
 
-        # Registrar puntuación
         score = evaluation_result.final_score
         results[agent.id]["global_scores"].append(score)
         results[agent.id]["projects"][demo_project.name].append(score)
 
-        # Mostrar tiempo de evaluación
         elapsed_time = time.time() - start_time
-        print(f"Tarea {task.id} evaluada en {elapsed_time:.2f} segundos. Puntuación: {score:.4f}")
+        print(f"Task {task.id} evaluated in {elapsed_time:.2f} seconds. Score: {score:.4f}")
 
 
 # ============================================================
-# FUNCIONES DE ANÁLISIS Y PRESENTACIÓN DE RESULTADOS
+# RESULT ANALYSIS AND VISUALIZATION FUNCTIONS
 # ============================================================
 
 
-def compute_statistics(scores: List[float]) -> dict:
+def compute_statistics(scores: List[float]) -> Dict:
     """
-    Calcula estadísticas básicas para una lista de puntuaciones
+    Computes basic statistics for a list of scores.
 
     Args:
-        scores: Lista de puntuaciones
+        scores: List of scores.
 
     Returns:
-        Diccionario con estadísticas calculadas
+        Dictionary with computed statistics.
     """
     if scores:
         stats = {
@@ -288,192 +275,176 @@ def compute_statistics(scores: List[float]) -> dict:
 
 
 @visualize_summary(visualizer)
-def print_performance_statistics(results, agents):
+def print_performance_statistics(results: Dict, agents: List[IWebAgent]):
     """
-    Imprime estadísticas de rendimiento para cada agente.
+    Prints performance statistics for each agent.
 
     Args:
-        results: Diccionario con resultados
-        agents: Lista de agentes evaluados
+        results: Dictionary containing results.
+        agents: List of evaluated agents.
     """
     print("\n" + "=" * 50)
-    print("ESTADÍSTICAS DE RENDIMIENTO DE AGENTES")
+    print("AGENT PERFORMANCE STATISTICS")
     print("=" * 50)
 
     for agent in agents:
         agent_stats = results[agent.id]
         global_stats = compute_statistics(agent_stats["global_scores"])
-        print(f"\nAgente: {agent.id}")
-        print("  Estadísticas Globales:")
-        print(f"    Tareas completadas: {global_stats['count']}")
-        print(f"    Puntuación media: {global_stats['mean']:.2f}")
-        print(f"    Puntuación máxima: {global_stats['max']:.2f}")
+        print(f"\nAgent: {agent.id}")
+        print("  Global Statistics:")
+        print(f"    Tasks completed: {global_stats['count']}")
+        print(f"    Average score: {global_stats['mean']:.2f}")
+        print(f"    Maximum score: {global_stats['max']:.2f}")
 
-        print("  Estadísticas por Proyecto:")
+        print("  Project Statistics:")
         for project_name, scores in agent_stats["projects"].items():
             project_stats = compute_statistics(scores)
-            print(f"    Proyecto: {project_name}")
-            print(f"      Tareas completadas: {project_stats['count']}")
-            print(f"      Puntuación media: {project_stats['mean']:.2f}")
-            print(f"      Puntuación máxima: {project_stats['max']:.2f}")
+            print(f"    Project: {project_name}")
+            print(f"      Tasks completed: {project_stats['count']}")
+            print(f"      Average score: {project_stats['mean']:.2f}")
+            print(f"      Maximum score: {project_stats['max']:.2f}")
 
 
-def plot_agent_results(results, agents):
+def plot_agent_results(results: Dict, agents: List[IWebAgent]):
     """
-    Crea un gráfico de barras con las puntuaciones promedio de los agentes.
+    Creates a bar chart with the average scores of the agents.
 
     Args:
-        results: Diccionario con resultados
-        agents: Lista de agentes evaluados
+        results: Dictionary containing results.
+        agents: List of evaluated agents.
     """
-    # Asegurar que existe el directorio de resultados
     os.makedirs(LOG_DIR, exist_ok=True)
 
     agent_names = []
     agent_avg_scores = []
 
-    # Calcular puntuación promedio para cada agente
     for agent in agents:
         scores = results[agent.id]["global_scores"]
         avg_score = sum(scores) / len(scores) if scores else 0
         agent_names.append(agent.id)
         agent_avg_scores.append(avg_score)
 
-    # Crear gráfico de barras
     plt.figure(figsize=(10, 6))
     bars = plt.bar(agent_names, agent_avg_scores, color='skyblue')
     plt.ylim(0, 1.0)
-    plt.ylabel('Puntuación')
-    plt.title('Rendimiento de Agentes')
+    plt.ylabel('Score')
+    plt.title('Agent Performance')
 
-    # Añadir etiquetas sobre cada barra
     for bar, score in zip(bars, agent_avg_scores):
         yval = bar.get_height()
         plt.text(bar.get_x() + bar.get_width() / 2, yval, f'{score:.2f}', ha='center', va='bottom')
 
-    # Guardar el gráfico
-    plt.savefig(os.path.join(LOG_DIR, "rendimiento_agentes.png"))
-    print(f"Gráfico guardado en: {os.path.join(LOG_DIR, 'rendimiento_agentes.png')}")
+    plt.savefig(os.path.join(LOG_DIR, "agent_performance.png"))
+    print(f"Chart saved to: {os.path.join(LOG_DIR, 'agent_performance.png')}")
 
 
-def save_benchmark_results(results, agents, demo_web_projects):
+def save_benchmark_results(results: Dict, agents: List[IWebAgent], demo_web_projects: List[WebProject]):
     """
-    Guarda los resultados del benchmark en un archivo JSON para análisis posterior.
+    Saves benchmark results to a JSON file for further analysis.
 
     Args:
-        results: Diccionario con resultados
-        agents: Lista de agentes evaluados
-        demo_web_projects: Lista de proyectos evaluados
+        results: Dictionary containing results.
+        agents: List of evaluated agents.
+        demo_web_projects: List of evaluated projects.
     """
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    output_data = {"timestamp": datetime.now().isoformat(), "results": {}, "projects": [p.name for p in demo_web_projects], "agents": [a.id for a in agents]}
+    output_data = {
+        "timestamp": datetime.now().isoformat(),
+        "results": {},
+        "projects": [p.name for p in demo_web_projects],
+        "agents": [a.id for a in agents],
+    }
 
-    # Convertir resultados a formato serializable
     for agent_id, agent_results in results.items():
-        output_data["results"][agent_id] = {"global_scores": agent_results["global_scores"], "projects": agent_results["projects"], "statistics": compute_statistics(agent_results["global_scores"])}
+        output_data["results"][agent_id] = {
+            "global_scores": agent_results["global_scores"],
+            "projects": agent_results["projects"],
+            "statistics": compute_statistics(agent_results["global_scores"]),
+        }
 
-    # Guardar resultados
     filename = os.path.join(OUTPUT_DIR, f"benchmark_results_{timestamp}.json")
     with open(filename, 'w') as f:
         json.dump(output_data, f, indent=2)
 
-    print(f"Resultados del benchmark guardados en: {filename}")
+    print(f"Benchmark results saved to: {filename}")
 
 
 # ============================================================
-# FUNCIÓN PRINCIPAL DEL BENCHMARK
+# MAIN BENCHMARK FUNCTION
 # ============================================================
 
 
 async def main():
     print("\n" + "=" * 50)
-    print("BENCHMARK DE WEB AGENTS - SUBNET 36")
+    print("WEB AGENT BENCHMARK - SUBNET 36")
     print("=" * 50)
 
     try:
-        # Crear directorios necesarios
         os.makedirs(LOG_DIR, exist_ok=True)
 
-        # ---------------------------
-        # 1. Inicializar Agentes y Almacenamiento de Resultados
-        # ---------------------------
+        # Initialize agents and results storage
         agents: List[BaseAgent] = AGENTS
         results = {}
         for agent in agents:
             results[agent.id] = {"global_scores": [], "projects": {}}
-            print(f"Agente registrado: {agent.id}")
+            print(f"Registered agent: {agent.id}")
 
-        # ---------------------------
-        # 2. Inicializar Proyectos Web Demo
-        # ---------------------------
-        print("\nInicializando proyectos web demo...")
+        # Initialize demo web projects
+        print("\nInitializing demo web projects...")
         demo_web_projects: List[WebProject] = await initialize_demo_webs_projects()
-        print(f"Proyectos disponibles: {', '.join([p.name for p in demo_web_projects])}")
+        print(f"Available projects: {', '.join([p.name for p in demo_web_projects])}")
 
-        # ---------------------------
-        # 3. Procesar Cada Proyecto Web Demo
-        # ---------------------------
+        # Process each demo web project
         for index, demo_project in enumerate(demo_web_projects):
             print(f"\n{'=' * 40}")
-            print(f"Procesando proyecto {index + 1}/{len(demo_web_projects)}: {demo_project.name}")
+            print(f"Processing project {index + 1}/{len(demo_web_projects)}: {demo_project.name}")
             print(f"{'=' * 40}")
 
-            # Generar o cargar tareas para el proyecto actual
             start_time = time.time()
             tasks = await generate_tasks_for_project(demo_project)
             elapsed_time = time.time() - start_time
 
-            print(f"Tareas obtenidas: {len(tasks)} en {elapsed_time:.2f} segundos")
+            print(f"Tasks obtained: {len(tasks)} in {elapsed_time:.2f} seconds")
 
-            # Contar cuántos tests se generaron en total
             total_tests = sum(len(task.tests) if hasattr(task, "tests") else 0 for task in tasks)
-            print(f"Tests generados: {total_tests} (promedio: {total_tests / len(tasks):.1f} por tarea)")
+            print(f"Tests generated: {total_tests} (average: {total_tests / len(tasks):.1f} per task)")
 
-            # ---------------------------
-            # 4. Evaluar Cada Agente en el Proyecto Actual
-            # ---------------------------
+            # Evaluate each agent on the current project
             for agent in agents:
                 print(f"\n{'-' * 30}")
-                print(f"Evaluando agente: {agent.id}")
+                print(f"Evaluating agent: {agent.id}")
                 print(f"{'-' * 30}")
 
                 start_time = time.time()
                 await evaluate_project_for_agent(agent, demo_project, tasks, results)
                 elapsed_time = time.time() - start_time
 
-                # Calcular estadísticas del proyecto para este agente
                 project_scores = results[agent.id]["projects"].get(demo_project.name, [])
                 avg_score = sum(project_scores) / len(project_scores) if project_scores else 0
 
-                print(f"Evaluación completada en {elapsed_time:.2f} segundos")
-                print(f"Puntuación media: {avg_score:.4f}")
+                print(f"Evaluation completed in {elapsed_time:.2f} seconds")
+                print(f"Average score: {avg_score:.4f}")
 
-        # ---------------------------
-        # 3. Print Performance Statistics.
-        # ---------------------------
+        # Print performance statistics
         print_performance_statistics(results, agents)
 
-        # ---------------------------
-        # 4. Plot the Agent Results.
-        # ---------------------------
+        # Plot agent results
         plot_agent_results(results, agents)
 
-        # ---------------------------
-        # 7. Guardar Resultados
-        # ---------------------------
+        # Save benchmark results
         save_benchmark_results(results, agents, demo_web_projects)
 
         print("\n" + "=" * 50)
-        print("EVALUACIÓN FINALIZADA")
-        print(f"Resultados y logs disponibles en: {LOG_DIR}")
-        print(f"Gráficos disponibles en: {OUTPUT_DIR}")
+        print("EVALUATION COMPLETED")
+        print(f"Results and logs available in: {LOG_DIR}")
+        print(f"Charts available in: {OUTPUT_DIR}")
         print("=" * 50)
 
     except Exception as e:
         import traceback
 
-        print(f"\n[ERROR] Durante la ejecución: {e}")
+        print(f"\n[ERROR] During execution: {e}")
         print(traceback.format_exc())
 
 
