@@ -2,7 +2,7 @@
 
 import uuid
 from enum import Enum
-from typing import Any, Dict, List, Optional, Literal, Union
+from typing import Any, Dict, List, Optional, Literal, Union, Annotated
 
 from pydantic import BaseModel, Field
 
@@ -41,7 +41,7 @@ class BrowserSpecification(BaseModel):
 
 
 # The union of test classes for polimorphic deserialization
-TestUnion = Union[CheckUrlTest, FindInHtmlTest, CheckEventTest, CheckPageViewEventTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot]
+TestUnion = Annotated[Union[CheckUrlTest, FindInHtmlTest, CheckEventTest, CheckPageViewEventTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot], Field(discriminator="type")]
 
 
 class Task(BaseModel):
@@ -137,7 +137,7 @@ class TaskGenerationConfig(BaseModel):
     save_web_analysis_in_db: bool = True
     enable_crawl: bool = True
     generate_milestones: bool = False
-    num_or_urls:int = None
-    random_urls:bool = True
-    prompts_per_url:int = 20
-    num_or_urls:int = None
+    num_or_urls: int = None
+    random_urls: bool = True
+    prompts_per_url: int = 20
+    num_or_urls: int = None

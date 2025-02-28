@@ -87,7 +87,8 @@ class FindInHtmlTest(BaseTaskTest):
     Test class to find a specific substring in the current HTML content.
     This version performs direct substring matching rather than semantic similarity.
     """
-    type: str = "FindInHtmlTest"
+
+    type: Literal["FindInHtmlTest"] = "FindInHtmlTest"
     substring: str = Field(..., description="substring to look for in the HTML")
     description: str = Field(
         default="Find substring in HTML using direct matching",
@@ -113,13 +114,7 @@ class FindInHtmlTest(BaseTaskTest):
         text = re.sub(r'\s+', ' ', text).strip()
         return text
 
-    def _execute_test(
-        self,
-        current_iteration: int,
-        prompt: str,
-        snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
-    ) -> bool:
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         """
         Checks if the specified substring is present in the current snapshot's HTML.
         Returns True if the substring is found, False otherwise.
