@@ -22,7 +22,7 @@ def main():
     # 4. Define text labels for your use case
     labels = [
         "The user is correctly logged in into the website",
-        "The user is not logged in"
+        "The user is NOT correctly logged in into the website"
     ]
 
     # 5. Process inputs for CLIP
