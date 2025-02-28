@@ -69,6 +69,10 @@ class Task(BaseModel):
     success_criteria: Optional[str] = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
     logic_function: Optional[dict] = Field(default=None, description="Boolean expression using T1..Tn notation to evaluate overall task success")
 
+    class Config:
+        extra = "allow"
+        arbitrary_types_allowed = True
+
     @property
     def prompt_with_relevant_data(self) -> str:
         if self.relevant_data:
