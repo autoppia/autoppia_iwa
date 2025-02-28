@@ -12,6 +12,9 @@ You are a specialized test engineer tasked with generating validation tests for 
 - Visual State Description: {screenshot_desc}
 - Available Interactive Elements: {interactive_elements}
 
+## Available Backend Events
+{events}
+
 ## Test Classes
 {test_classes_info}
 
@@ -21,6 +24,7 @@ You are a specialized test engineer tasked with generating validation tests for 
 3. Each test should objectively and deterministically evaluate the completion of the task
 4. Avoid creating tests that validate the same thing; prioritize CheckEventTest in case of duplication
 5. Do not create a lot of FindInHTML tests. If you want to use this test use it wisely and in moderation.
+6. Do not use any event_name not in the 'Available Backend Events' list
 
 #Instruction on output format
 1. YOU MUST OUTPUT ONLY THE JSON ARRAY WITH NO ADDITIONAL TEXT OR FORMATTING.

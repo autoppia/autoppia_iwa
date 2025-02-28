@@ -152,6 +152,7 @@ class TestGenerationPipeline:
             truncated_html=cleaned_html,
             screenshot_desc=screenshot_desc,
             interactive_elements=json.dumps(interactive_elements, indent=2),
+            events=self.web_project.events,
             # domain_analysis=json.dumps(domain_analysis_dict, indent=2),
             test_classes_info="\n\n".join([
                 f"### {test_class_name}\n{schema}\n{self.test_class_extra_data.get(test_class_name, '')}" 

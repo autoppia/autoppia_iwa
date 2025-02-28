@@ -497,8 +497,8 @@ class ConcurrentEvaluator(IEvaluator):
                             if i < len(actions) - 1 and self.config.task_delay_in_seconds > 0:
                                 await asyncio.sleep(self.config.task_delay_in_seconds)
 
-                        except Exception as e:
-                            logger.error(f"Action {i+1}/{len(actions)}: {action.type} failed with error: {e}")
+                        except Exception:
+                            # logger.error(f"Action {i+1}/{len(actions)}: {action.type} failed with error: {e}")
 
                             # Add a placeholder for timing
                             action_end = time.time()
