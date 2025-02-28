@@ -15,18 +15,20 @@ You are a specialized test engineer tasked with generating validation tests for 
 ## Test Classes
 {test_classes_info}
 
-## Instructions
+## Instructions on deciding which tests to use and its arguments
 1. For each test class, evaluate whether it is appropriate for verifying the success criteria for this task.
-2. Create ONE test object for each appropriate test class that:
-3. YOU MUST OUTPUT ONLY THE JSON ARRAY WITH NO ADDITIONAL TEXT OR FORMATTING.
+2. You can just use 1 test of each type. 
+3. Each test should objectively and deterministically evaluate the completion of the task
+4. Avoid creating tests that validate the same thing; prioritize CheckEventTest in case of duplication
+5. Do not create a lot of FindInHTML tests. If you want to use this test use it wisely and in moderation.
+
+#Instruction on output format
+1. YOU MUST OUTPUT ONLY THE JSON ARRAY WITH NO ADDITIONAL TEXT OR FORMATTING.
    - Strictly adheres to the provided schema
    - Contains ONLY fields defined in the schema (no additional keys)
    - Sets the `type` field to exactly the test class name
    - Provides meaningful values for all required fields that will effectively validate task completion
-3. YOUR RESPONSE MUST BE A VALID JSON ARRAY ONLY. Do not include code blocks, markdown formatting, explanations, or any text outside the JSON array
-4. Each test should objectively and deterministically evaluate the completion of the task
-5. Avoid creating tests that validate the same thing; prioritize CheckEventTest in case of duplication
-6. Use actual values from the provided HTML/context when creating tests (e.g., don't make up substrings for FindInHtmlTest)
+2. YOUR RESPONSE MUST BE A VALID JSON ARRAY ONLY. Do not include code blocks, markdown formatting, explanations, or any text outside the JSON array
 
 ## Response Format Examples
 
