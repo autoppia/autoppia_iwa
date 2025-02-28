@@ -1,0 +1,89 @@
+2025-02-28 12:02:59,602 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:03:00,036 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:03:10,319 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:03:10,334 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/36 on attempt 1
+2025-02-28 12:03:12,914 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:03:12,920 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:03:12,920 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:03:12,920 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:03:12,921 - stress_test - INFO -   Generating new solution for Task ab9baf72-e739-42cd-bc49-754641e66323...
+2025-02-28 12:03:12,921 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:03:12,921 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:03:12,921 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:03:12,922 - stress_test - INFO -   Generating new solution for Task ab9baf72-e739-42cd-bc49-754641e66323...
+2025-02-28 12:03:35,139 - stress_test - INFO -     Solution generated in 22.22 seconds with 5 actions
+2025-02-28 12:03:35,141 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:03:35,141 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 12:03:35,141 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 12:03:35,141 - stress_test - INFO -   Evaluating solution for Task ab9baf72-e739-42cd-bc49-754641e66323...
+2025-02-28 12:03:35,165 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '6lJweeCxKY0Af8RS' despite error.
+2025-02-28 12:03:35,995 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ab9baf72-e739-42cd-bc49-754641e66323' despite error.
+2025-02-28 12:03:36,638 - stress_test - INFO -     Batch evaluation in 1.49 seconds; Avg score = 0.00
+2025-02-28 12:03:36,638 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 12:03:36,638 - stress_test - INFO -   Evaluating solution for Task ab9baf72-e739-42cd-bc49-754641e66323...
+2025-02-28 12:03:36,669 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'VsWdGUuMAxkujsDF' despite error.
+2025-02-28 12:03:40,110 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ab9baf72-e739-42cd-bc49-754641e66323' despite error.
+2025-02-28 12:03:40,743 - stress_test - INFO -     Batch evaluation in 4.10 seconds; Avg score = 1.00
+2025-02-28 12:03:41,470 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 12:03:41,470 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache.
+2025-02-28 12:15:58,134 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:15:58,556 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:16:10,730 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:16:10,744 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/ on attempt 1
+2025-02-28 12:16:13,089 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:16:13,094 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:16:13,094 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:16:13,094 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:16:13,095 - stress_test - INFO -   Generating new solution for Task 04c231bd-a429-4593-b127-f5e0ac03f098...
+2025-02-28 12:16:13,095 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:16:13,095 - autoppia_iwa.src.shared.entrypoints.solutions - ERROR - Error saving solution to cache: 'TaskSolution' object has no attribute 'task'
+2025-02-28 12:16:13,095 - stress_test - WARNING -     Failed to cache solution
+2025-02-28 12:16:13,095 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:16:13,096 - stress_test - INFO -   Generating new solution for Task 04c231bd-a429-4593-b127-f5e0ac03f098...
+2025-02-28 12:16:36,535 - stress_test - INFO -     Solution generated in 23.44 seconds with 4 actions
+2025-02-28 12:16:36,536 - autoppia_iwa.src.shared.entrypoints.solutions - ERROR - Error saving solution to cache: 'TaskSolution' object has no attribute 'task'
+2025-02-28 12:16:36,536 - stress_test - WARNING -     Failed to cache solution
+2025-02-28 12:16:36,536 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 12:16:36,536 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 12:16:36,536 - stress_test - INFO -   Evaluating solution for Task 04c231bd-a429-4593-b127-f5e0ac03f098...
+2025-02-28 12:16:36,565 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'huMLbzwNO27kbKb1' despite error.
+2025-02-28 12:16:37,203 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-04c231bd-a429-4593-b127-f5e0ac03f098' despite error.
+2025-02-28 12:16:37,822 - stress_test - INFO -     Batch evaluation in 1.28 seconds; Avg score = 0.00
+2025-02-28 12:16:37,822 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 12:16:37,822 - stress_test - INFO -   Evaluating solution for Task 04c231bd-a429-4593-b127-f5e0ac03f098...
+2025-02-28 12:16:37,842 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'h7piiFyFU8O9360w' despite error.
+2025-02-28 12:16:40,864 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-04c231bd-a429-4593-b127-f5e0ac03f098' despite error.
+2025-02-28 12:16:41,448 - stress_test - INFO -     Batch evaluation in 3.62 seconds; Avg score = 0.00
+2025-02-28 12:16:42,139 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 12:16:42,140 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 12:18:48,766 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:18:49,190 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:18:58,624 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:18:58,640 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employee/register on attempt 1
+2025-02-28 12:19:00,770 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:19:00,795 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:19:00,795 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:19:00,795 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:19:00,795 - stress_test - INFO -   Generating new solution for Task 27029531-aa2a-4c36-8818-0bd47962ef6e...
+2025-02-28 12:19:00,795 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:19:00,796 - autoppia_iwa.src.shared.entrypoints.solutions - ERROR - Error saving solution to cache: 'TaskSolution' object has no attribute 'task'
+2025-02-28 12:19:00,796 - stress_test - WARNING -     Failed to cache solution
+2025-02-28 12:19:00,796 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:19:00,796 - stress_test - INFO -   Generating new solution for Task 27029531-aa2a-4c36-8818-0bd47962ef6e...

@@ -41,8 +41,8 @@ async def generate_tasks(num_tasks: int = 3):
         local_tasks_to_generate_per_url=1,
     )
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
-    output: TasksGenerationOutput = await pipeline.generate()
-    return output.tasks
+    tasks = await pipeline.generate()
+    return tasks
 
 
 async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):

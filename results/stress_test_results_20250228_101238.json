@@ -1,0 +1,136 @@
+{
+  "timestamp": "2025-02-28T10:12:38.309105",
+  "total_execution_time": 419.87993931770325,
+  "agents": {
+    "8tQp3BvAkEFu7AXH": {
+      "name": "Random-clicker",
+      "score_statistics": {
+        "count": 10,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0
+      },
+      "avg_solution_time": 5.273818969726562e-05,
+      "avg_evaluation_time": 1.2769708156585693,
+      "tasks": {
+        "9dd2478f-32a2-459b-8aaf-a26966307b6c": {
+          "score": 0.0,
+          "solution_time": 0.00014901161193847656,
+          "evaluation_time": 1.5466833114624023
+        },
+        "6d85e012-e9f6-41f8-b72d-56a75db436ca": {
+          "score": 0.0,
+          "solution_time": 5.078315734863281e-05,
+          "evaluation_time": 1.3121910095214844
+        },
+        "d411cba6-9e36-4ce5-855a-9c7d0e522b01": {
+          "score": 0.0,
+          "solution_time": 4.3392181396484375e-05,
+          "evaluation_time": 1.3406198024749756
+        },
+        "744a44c2-ddb6-418f-8134-fc7c000ba777": {
+          "score": 0.0,
+          "solution_time": 4.267692565917969e-05,
+          "evaluation_time": 1.2766566276550293
+        },
+        "5df78cbf-fcb4-4554-8941-de634b837c2a": {
+          "score": 0.0,
+          "solution_time": 3.9577484130859375e-05,
+          "evaluation_time": 1.2250633239746094
+        },
+        "f611fee2-bdfc-4929-b17c-104d8baefe07": {
+          "score": 0.0,
+          "solution_time": 5.14984130859375e-05,
+          "evaluation_time": 1.1675467491149902
+        },
+        "73375499-c71b-45b5-801a-987141136c45": {
+          "score": 0.0,
+          "solution_time": 3.814697265625e-05,
+          "evaluation_time": 1.1670682430267334
+        },
+        "ffc4e6a7-edf5-4fd3-9677-a37fbfaf85ea": {
+          "score": 0.0,
+          "solution_time": 3.814697265625e-05,
+          "evaluation_time": 1.1836838722229004
+        },
+        "9f9b2ad6-7682-4d9d-bbc2-4916f00a563d": {
+          "score": 0.0,
+          "solution_time": 3.719329833984375e-05,
+          "evaluation_time": 1.2063276767730713
+        },
+        "e2773873-eed1-4fc2-9670-737e5ff9b363": {
+          "score": 0.0,
+          "solution_time": 3.695487976074219e-05,
+          "evaluation_time": 1.343867540359497
+        }
+      }
+    },
+    "c7qXn0CTP4r94fli": {
+      "name": "browser-use",
+      "score_statistics": {
+        "count": 10,
+        "mean": 0.4666666666666667,
+        "median": 0.3333333333333333,
+        "min": 0.0,
+        "max": 1.0,
+        "stdev": 0.5018484351393874
+      },
+      "avg_solution_time": 24.54669177532196,
+      "avg_evaluation_time": 5.966773414611817,
+      "tasks": {
+        "9dd2478f-32a2-459b-8aaf-a26966307b6c": {
+          "score": 0.0,
+          "solution_time": 6.991273403167725,
+          "evaluation_time": 0.008852958679199219
+        },
+        "6d85e012-e9f6-41f8-b72d-56a75db436ca": {
+          "score": 0.6666666666666666,
+          "solution_time": 36.987175941467285,
+          "evaluation_time": 3.707645893096924
+        },
+        "d411cba6-9e36-4ce5-855a-9c7d0e522b01": {
+          "score": 1.0,
+          "solution_time": 11.140917301177979,
+          "evaluation_time": 2.288912057876587
+        },
+        "744a44c2-ddb6-418f-8134-fc7c000ba777": {
+          "score": 0.0,
+          "solution_time": 8.497846364974976,
+          "evaluation_time": 0.01056051254272461
+        },
+        "5df78cbf-fcb4-4554-8941-de634b837c2a": {
+          "score": 0.0,
+          "solution_time": 31.640938758850098,
+          "evaluation_time": 4.751507520675659
+        },
+        "f611fee2-bdfc-4929-b17c-104d8baefe07": {
+          "score": 1.0,
+          "solution_time": 77.68739938735962,
+          "evaluation_time": 21.179359436035156
+        },
+        "73375499-c71b-45b5-801a-987141136c45": {
+          "score": 0.0,
+          "solution_time": 6.684083938598633,
+          "evaluation_time": 0.011016368865966797
+        },
+        "ffc4e6a7-edf5-4fd3-9677-a37fbfaf85ea": {
+          "score": 1.0,
+          "solution_time": 12.553199052810669,
+          "evaluation_time": 2.3615357875823975
+        },
+        "9f9b2ad6-7682-4d9d-bbc2-4916f00a563d": {
+          "score": 1.0,
+          "solution_time": 47.01947021484375,
+          "evaluation_time": 25.338298320770264
+        },
+        "e2773873-eed1-4fc2-9670-737e5ff9b363": {
+          "score": 0.0,
+          "solution_time": 6.264613389968872,
+          "evaluation_time": 0.010045289993286133
+        }
+      }
+    }
+  }
+}

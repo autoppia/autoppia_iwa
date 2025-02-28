@@ -3,10 +3,9 @@ import statistics
 import json
 import os
 import time
-from typing import List, Dict, Optional
+from typing import List, Optional
 from datetime import datetime
 import matplotlib.pyplot as plt
-
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, Task
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
@@ -14,7 +13,6 @@ from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator,
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -30,6 +28,7 @@ from autoppia_iwa.src.shared.visualizator import (
     visualize_evaluation,
     visualize_summary
 )
+from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # ============================================================
 # CONFIGURACIÓN GLOBAL
@@ -46,6 +45,7 @@ USE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles
 
 # Configuración del benchmark
 ITERATIONS = 1  # Número de iteraciones por tarea
+NUM_OF_TASKS = 1
 
 # Inicializar componentes principales
 app = AppBootstrap()
@@ -53,8 +53,8 @@ visualizer = SubnetVisualizer(log_directory=LOG_DIR)
 
 # Agentes a evaluar
 AGENTS: List[BaseAgent] = [
-    # RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)
+    RandomClickerWebAgent(name="Random-clicker"),
+    # ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)
 ]
 
 # ============================================================
@@ -183,11 +183,11 @@ async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int 
     pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
 
     # Generar tareas
-    task_results = await pipeline.generate()
+    tasks = await pipeline.generate()
 
     # Generar tests para las tareas
     test_pipeline = TestGenerationPipeline(llm_service=DIContainer.llm_service(), web_project=demo_project)
-    tasks_with_tests = await add_tests_to_tasks(task_results.tasks, test_pipeline)
+    tasks_with_tests = await add_tests_to_tasks(tasks, test_pipeline)
 
     # Guardar en caché para uso futuro
     if USE_CACHED_TASKS:
@@ -448,6 +448,7 @@ async def main():
             # Generar o cargar tareas para el proyecto actual
             start_time = time.time()
             tasks = await generate_tasks_for_project(demo_project)
+            tasks = tasks[0:NUM_OF_TASKS]
             elapsed_time = time.time() - start_time
 
             print(f"Tareas obtenidas: {len(tasks)} en {elapsed_time:.2f} segundos")

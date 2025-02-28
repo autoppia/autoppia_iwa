@@ -1,75 +1,46 @@
 # file: prompts.py
 
-TEST_CONTEXT_PROMPT = """
-Context on what we are doing:
-The Infinite Web Arena (IWA) is an autonomous web agent evaluation framework that overcomes traditional benchmarking limitations by leveraging generative AI and synthetic data to create a scalable testing environment. It enables continuous assessment of web agents in novel scenarios without human intervention.
+TEST_GENERATION_PROMPT = """
+You are a specialized test engineer tasked with generating validation tests for our web agent benchmark framework. These tests will execute after each agent action, examining browser snapshots to determine if the agent has successfully completed the required task.
 
-Key Features of IWA:
+## Task Information
+- Task Description: {task_prompt}
+- Success Requirements: {success_criteria}
 
-- **Autonomous Task Generation:** Utilizes large language models (LLMs) to generate tasks and validation criteria, eliminating the need for human task designers.
-- **Comprehensive Testing Methodology:** Manages both frontend and backend environments to evaluate web agent behavior across multiple layers.
+## Context
+- Current Page HTML (truncated): {truncated_html}
+- Visual State Description: {screenshot_desc}
+- Available Interactive Elements: {interactive_elements}
+- Domain/Project Context: {domain_analysis}
 
-  - **Frontend Tests:** Include DOM analysis, network activity monitoring, visual verification, and browser event tracking.
-  - **Backend Tests:** Encompass event tracking, state validation, process flow confirmation, and custom event utilization.
-
-### Example Use Case:
-
-1. **Task Generation:** Assigns the task *"Purchase a red dress for under $10,"* with tests verifying a `Purchase()` event where the item is *"red dress"* and the price is less than $10.
-2. **Agent Execution:** The agent navigates the site, searches for the product, applies filters, and completes the purchase.
-3. **Validation:** Confirms the correct item selection, adherence to price constraints, and successful purchase completion.
-
-By developing skills in controlled settings, agents trained with IWA can effectively navigate complex DOM structures, handle dynamic content, and adapt to diverse website architectures, making them proficient in real-world web environments.
-"""
-
-TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT = """
-You are a test-generation expert responsible for generating test definitions for our web agents benchmark. 
-Our goal is to confirm whether the agent truly completed the user task by checking relevant conditions.
-
-We have a specific test class named: {test_class_name}
-
-Below is the Pydantic (or equivalent) JSON schema describing the fields for {test_class_name}:
-{schema_json}
-
-Extra Class-Specific Data:
-{extra_data}
-
-Given the following context:
-- Task Prompt: {task_prompt}
-- Success Criteria: {success_criteria}
-- Truncated HTML (if available):
-{truncated_html}
-- Screenshot description (if available):
-{screenshot_desc}
-- Interactive elements (if available):
-{interactive_elements}
-- Domain/Project analysis (if available):
-{domain_analysis}
+## Test Classes
+{test_classes_info}
 
 
+## Instructions
+1. For each test class, evaluate whether it is appropriate for verifying the success criteria for this task. If not do not include that test class.
+2. For each relevant test class, create ONE test object that:
+   - Strictly adheres to the provided schema
+   - Contains ONLY fields defined in the schema (no additional keys)
+   - Sets the `type` field to exactly the test class name
+   - Provides meaningful values for all required fields that will effectively validate task completion
+3. Your response must ONLY contain valid JSON array of tests (no explanations, markdown, or comments)
+4. The test should successfully evaluates the completion of the task in an objective and deterministic way. 
+5. Avoid including tests that validate the same thing. Prioritize keeping CheckEvents tests in case you have to delete 1 to avoid duplication. 
+6. Try not to make up things and when creating the test attrs like substring for the FindInHTMl test.
 
-### Instructions
-1. Determine if the test class **{test_class_name}** is relevant for verifying the success criteria. 
-   - If **not** relevant, return: `[]` (an empty JSON array).
-
-2. If **{test_class_name}** is relevant, return a strictly valid JSON array with exactly ONE object that adheres to the schema above. 
-   - **Do not** include any extra keys that are not in the schema.
-   - **Do not** rename or omit the fields that the schema requires.
-   - The `type` field **must** be exactly "{test_class_name}".
-   - You can fill out the fields with the minimal necessary info to make the test meaningful.
-
-3. Return ONLY valid JSON and nothing else. NO explanations, NO markdown code blocks, NO comments.
-
-Example of valid response format:
+## Response Format
+Return an array of test objects, one for each relevant test class:
 [
   {{
-    "type": "{test_class_name}",
-    "parameter1": "value1",
-    "parameter2": "value2"
+    "type": "TestClassName1",
+    ...other required and optional fields...
+  }},
+  {{
+    "type": "TestClassName2",
+    ...other required and optional fields...
   }}
 ]
-
-Example if not relevant:
-[]
 """
 
 TEST_FILTERING_PROMPT = """

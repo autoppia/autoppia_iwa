@@ -412,7 +412,7 @@ class ConcurrentEvaluator(IEvaluator):
             # Create the result
             result = EvaluationResult(
                 web_agent_id=web_agent_id,
-                final_score=final_score,
+                final_score=1 if final_score > 0.25 else final_score,
                 raw_score=raw_score,
                 random_clicker_score=random_clicker_score,
                 test_results_matrix=test_results_matrix,

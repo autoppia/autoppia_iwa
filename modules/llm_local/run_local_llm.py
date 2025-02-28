@@ -4,8 +4,6 @@ import json
 import sys
 import time  # Added for timing
 
-from json_repair import repair_json
-
 from flask import Flask, request
 from flask_cors import CORS
 from transformers import AutoModelForCausalLM, AutoTokenizer

@@ -1,16 +1,15 @@
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List
-
 from pydantic import BaseModel, Field, field_validator
 from dependency_injector.wiring import Provide
-
-# Updated import for Task
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
+from bs4 import BeautifulSoup
+import re
+from typing import List
 
 
 class ITest(ABC):
@@ -146,23 +145,36 @@ class CheckUrlTest(BaseTaskTest):
 
 class FindInHtmlTest(BaseTaskTest):
     """
-    Test class to find specific keywords in the current HTML content.
+    Test class to find a specific substring in the current HTML content.
+    This version performs direct substring matching rather than semantic similarity.
     """
     type: str = "FindInHtmlTest"
-    keywords: List[str] = Field(..., description="List of keywords to search for in the HTML")
+    substring: str = Field(..., description="substring to look for in the HTML")
     description: str = Field(
-        default="Find keywords in HTML",
+        default="Find substring in HTML using direct matching",
         description="Description of the test",
     )
 
-    @field_validator('keywords')
+    @field_validator('substring')
     @classmethod
-    def validate_keywords(cls, keywords: List[str]) -> List[str]:
-        if not all(keyword.strip() for keyword in keywords):
-            raise ValueError("Keywords cannot be empty or consist of only whitespace")
-        return [keyword.strip().lower() for keyword in keywords]
+    def validate_substring(cls, substring: str) -> str:
+        if not substring.strip():
+            raise ValueError("Substring cannot be empty or consist of only whitespace")
+        return substring.strip()
 
-    def _execute_test(
+    def extract_text_from_html(self, html: str) -> str:
+        """Extract readable text content from HTML."""
+        soup = BeautifulSoup(html, 'html.parser')
+        # Remove script and style elements
+        for script in soup(["script", "style"]):
+            script.extract()
+        # Get text
+        text = soup.get_text(separator=' ', strip=True)
+        # Remove extra whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text
+
+    def execute_test(
         self,
         current_iteration: int,
         prompt: str,
@@ -170,10 +182,26 @@ class FindInHtmlTest(BaseTaskTest):
         browser_snapshots: List[BrowserSnapshot]
     ) -> bool:
         """
-        Checks if any of the specified keywords is present in the current snapshot's HTML.
+        Checks if the specified substring is present in the current snapshot's HTML.
+        Returns True if the substring is found, False otherwise.
         """
-        content = snapshot.current_html.lower()
-        return any(keyword in content for keyword in self.keywords)
+        case_sensitive = False
+        # Extract text from HTML
+        content = self.extract_text_from_html(snapshot.current_html)
+        # If case-insensitive matching is requested, convert content to lowercase
+        if not case_sensitive:
+            content = content.lower()
+
+        # Apply case conversion if needed
+        search_substring = self.substring if case_sensitive else self.substring.lower()
+        print(f"Checking for substring: {self.substring}")
+
+        if search_substring in content:
+            print(f"Found substring: {self.substring}")
+            return True
+        else:
+            print(f"Substring not found: {self.substring}")
+            return False
 
 
 class CheckEventTest(BaseTaskTest):

@@ -25,45 +25,91 @@ Overall, your role is to create high-quality, executable tasks that:
 """
 
 
-# -----------------------------------------------------------------------------
-# [MODIFIED] Enhanced Phase 1 prompt with instructions for more variety:
-# -----------------------------------------------------------------------------
 PHASE1_GENERATION_SYSTEM_PROMPT = """
-We are on Phase 1: Task Prompts Generation
-You are a local tasks generator for a website page. Local mean you generate tasks that can be complete within this website. 
-You will be provided with:
- - Url of the website
- - A 'clean_html' snippet.
- - A 'screenshot_description' (done by a ML model that parses the UI into text for you to 'see')
- - A list of 'interactive_elements' (forms, links, buttons, toggles, inputs) so you can filter better whats important on the DOM.
+You are a Task Example Generator that creates realistic examples of tasks a Web Agent could perform on websites.
+Start by identifying the type of task and the core use case that a user may want to do in this website. 
+Identify variations of that core use case. 
+If needed fill remaining task with simpler tasks like clicking, navigating, or using more structural items and elements. 
 
-**Requirements**:
-1. Generate 6 user tasks for this page. 
-2. Each task must be a real user scenario (no developer or code editing steps). Should be something a user may ask a 'Web Agent' to do on behalf of him.
-3. Enforce variety:
-   - If there is at least one form, create a task that fills and submits the form.
-   - If there's a search bar, create a task that performs a search.
-   - If toggles/accordions exist, create a task to toggle or expand them.
-   - Asking to find a way to go to 'X' other url. 
-   - Completing the core use-cases that website is for. For example, if we are in a ecommerce product page, adding to cart is the obvious use case. 
+DIFFICULTY LEVEL: HARD (Create specially hard and not obvious tasks)
 
-4. Each task must be testable:
-   - "prompt": brief user instruction
-   - "success_criteria": how we know the user succeeded
-5. Return valid JSON array:
+**Input Provided**:
+- Website URL
+- Clean HTML snippet 
+- Screenshot description (text-based UI representation)
+- List of interactive elements (forms, links, buttons, toggles, inputs)
+
+**Task Requirements**:
+1. Generate {number_of_prompts} distinct user tasks for this webpage.
+2. Create authentic user scenarios only (no developer/coding tasks).
+3. Ensure task variety based on available page elements:
+   - For forms: Include form completion and submission tasks
+   - For search bars: Include search query tasks
+   - For toggles/accordions: Include expansion/collapse tasks
+   - For navigation: Include tasks to locate specific links/pages
+   - For core website functions: Prioritize primary use cases (e.g., "add to cart" for e-commerce)
+4. Tasks must be feasible for a Web Agent to execute:
+   - Limited to actions possible through UI interaction (clicking, typing, selecting)
+   - No tasks requiring human judgment, visual interpretation, or content creation
+   - Avoid tasks that depend on specific dynamic content that might change
+5. Tasks must have clear, verifiable outcomes:
+   - Success should be objectively determinable (e.g., "cart updated", "form submitted")
+   - Focus on state changes, URL changes, or UI element appearance that can be programmatically detected
+   - Provide specific success criteria that could be used in automated testing
+
+**Specific Elements to Look For**:
+- Login/signup forms: Create tasks for account creation or authentication
+- Product listings: Tasks for filtering, sorting, or comparing items
+- Shopping carts: Tasks for adding/removing items or proceeding to checkout
+- Date pickers: Tasks for scheduling appointments or reservations
+- Dropdowns/select menus: Tasks involving selecting options from a list
+- Image galleries: Tasks for viewing product images or navigating slideshows
+- Video players: Tasks for playing or configuring media content
+- Ratings/reviews: Tasks for finding or sorting by customer feedback
+- Address/location fields: Tasks for store locators or delivery options
+- Payment forms: Tasks for completing purchase workflows
+- Configuration tools: Tasks for product customization or personalization
+- Social sharing buttons: Tasks for sharing content to platforms
+- Newsletter signups: Tasks for subscription processes
+- Chat/support widgets: Tasks for initiating customer service interactions
+- Filter panels: Tasks for narrowing down search results or listings
+
+**Examples of Good Tasks**:
+- "Add a Samsung TV to my shopping cart and proceed to checkout"
+- "Fill out the contact form with my details and submit it"
+- "Navigate to the careers section and locate the job application page"
+- "Search for 'wireless headphones' and sort results by price: low to high"
+- "Sign up for the newsletter with my email address"
+- "Book a table for 4 people this Saturday at 7pm"
+- "Filter the product catalog to show only items with 4+ star ratings"
+- "Change the currency display from USD to EUR"
+- "Add my home address to my account profile"
+- "Upload a profile picture to my account"
+- "Select size Medium and black color for the T-shirt"
+- "Find the nearest store location to zip code 10001"
+- "Apply the promotional code 'SUMMER2025' at checkout"
+- "Toggle the description tab to view product specifications"
+- "Play the product demonstration video"
+
+**Examples of Bad Tasks**:
+- "Find the best product on this website" (not verifiable, requires judgment)
+- "Analyze the page's JavaScript code" (not a typical user action)
+- "Tell me what you think about this website's design" (requires opinion)
+- "Find all broken links on the page" (developer task, not user task)
+- "Recommend similar websites to this one" (outside scope of web agent)
+
+**Response Format**:
+Return a valid JSON array of task objects:
 [
   {
-    "prompt": "...",
-    "success_criteria": "..."
+    "prompt": "Add a Samsung TV to my shopping cart",
+    "success_criteria": "Product added to cart and cart icon/counter updated with the correct item"
   },
-  ...
+  {
+    "prompt": "Submit the contact form with my information",
+    "success_criteria": "Form successfully submitted and confirmation message displayed or redirect to thank-you page"
+  }
 ]
-6. Do not include task like testing the functionality itself or developers stuff. this is for Users who want to automate or who want help when using the website.
-7. Do not create tasks about 'knowledge' or finding info as we dont have a way to know in later phases if that task was completed. This include subjective tasks or opinions. 
-This can be part of a more general task bun never the whole purpose. So, in summary, avoid fact checking, subjective, opinionated tast. 
-
-Be sure each prompt references actual, existing elements from the snippet or 'interactive_elements'. 
-Be sure the task is relevant to the contect the website is is. Do not ask ecommerce related task in wikipedia. 
 """
 
 PHASE2_FEASIBILITY_FILTER_PROMPT = """
