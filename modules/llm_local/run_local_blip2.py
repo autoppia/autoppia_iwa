@@ -11,8 +11,8 @@ def main():
     args = parser.parse_args()
 
     # 2. Load the BLIP-2 model and processor
-    processor = Blip2Processor.from_pretrained("Salesforce/blip2-opt-2.7b")
-    model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-opt-2.7b")
+    processor = Blip2Processor.from_pretrained("Salesforce/blip-image-captioning-base")
+    model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
     # 3. Load your screenshot
     image = Image.open(args.filename).convert("RGB")
