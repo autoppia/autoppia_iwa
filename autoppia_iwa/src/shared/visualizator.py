@@ -1,15 +1,12 @@
 import os
-import json
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
+from typing import Optional
+
 from rich import box
-from rich.text import Text
-from rich.padding import Padding
-from rich.layout import Layout
 from rich.align import Align
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 
 class SubnetVisualizer:
@@ -36,12 +33,7 @@ class SubnetVisualizer:
 
         self.console.print("\n" + "=" * 80)
 
-        task_panel = Panel(
-            prompt,
-            title=f"[bold cyan]TAREA: {task_id}[/bold cyan]",
-            border_style="cyan",
-            padding=(1, 2)
-        )
+        task_panel = Panel(prompt, title=f"[bold cyan]TAREA: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
         self.console.print(task_panel)
 
         # Tabla de tests configurados
@@ -68,12 +60,7 @@ class SubnetVisualizer:
         task_id = task.id if hasattr(task, "id") else "Unknown"
         prompt = task.prompt if hasattr(task, "prompt") else "No prompt available"
 
-        task_panel = Panel(
-            prompt,
-            title=f"[bold cyan]TAREA: {task_id}[/bold cyan]",
-            border_style="cyan",
-            padding=(1, 1)
-        )
+        task_panel = Panel(prompt, title=f"[bold cyan]TAREA: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 1))
         self.console.print(task_panel)
 
         # Tabla de acciones
@@ -120,12 +107,7 @@ class SubnetVisualizer:
                 result_text = "✅ PASS" if test_passed else "❌ FAIL"
                 result_style = "green" if test_passed else "red"
 
-                results_table.add_row(
-                    str(test_idx + 1),
-                    test_type,
-                    description,
-                    Text(result_text, style=result_style)
-                )
+                results_table.add_row(str(test_idx + 1), test_type, description, Text(result_text, style=result_style))
 
             self.console.print("\n")
             self.console.print(results_table)
@@ -268,12 +250,7 @@ class SubnetVisualizer:
             avg_score = sum(scores) / len(scores) if scores else 0
             max_score = max(scores) if scores else 0
 
-            summary_table.add_row(
-                agent.id, 
-                str(len(scores)), 
-                f"{avg_score:.4f}", 
-                f"{max_score:.4f}"
-            )
+            summary_table.add_row(agent.id, str(len(scores)), f"{avg_score:.4f}", f"{max_score:.4f}")
 
         self.console.print(summary_table)
 
@@ -297,12 +274,7 @@ class SubnetVisualizer:
                 avg_score = sum(scores) / len(scores)
                 max_score = max(scores)
 
-                project_table.add_row(
-                    project_name, 
-                    str(len(scores)), 
-                    f"{avg_score:.4f}", 
-                    f"{max_score:.4f}"
-                )
+                project_table.add_row(project_name, str(len(scores)), f"{avg_score:.4f}", f"{max_score:.4f}")
 
             self.console.print(project_table)
 
@@ -311,8 +283,10 @@ class SubnetVisualizer:
 
 # Decoradores para integrar en el benchmark
 
+
 def visualize_task(visualizer):
     """Decorator para visualizar una tarea y sus tests"""
+
     def decorator(func):
         async def wrapper(*args, **kwargs):
             result = await func(*args, **kwargs)
@@ -322,12 +296,15 @@ def visualize_task(visualizer):
             else:
                 visualizer.show_task_with_tests(result)
             return result
+
         return wrapper
+
     return decorator
 
 
 def visualize_evaluation(visualizer):
     """Decorator para visualizar la evaluación de un agente"""
+
     def decorator(func):
         async def wrapper(web_project, task, task_solution, *args, **kwargs):
             result = await func(web_project, task, task_solution, *args, **kwargs)
@@ -336,19 +313,24 @@ def visualize_evaluation(visualizer):
                 task=task,
                 actions=task_solution.actions,
                 test_results_matrix=result.test_results_matrix if hasattr(result, "test_results_matrix") else [],
-                evaluation_result=result
+                evaluation_result=result,
             )
             return result
+
         return wrapper
+
     return decorator
 
 
 def visualize_summary(visualizer):
     """Decorator para visualizar el resumen final"""
+
     def decorator(func):
         def wrapper(results, agents, *args, **kwargs):
             func(results, agents, *args, **kwargs)
             visualizer.print_summary(results, agents)
             return None
+
         return wrapper
+
     return decorator

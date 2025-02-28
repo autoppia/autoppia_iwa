@@ -1,6 +1,7 @@
-import time
-import requests
 import json
+import time
+
+import requests
 
 
 def make_request():
@@ -8,17 +9,11 @@ def make_request():
     headers = {"Content-Type": "application/json"}
     data = {
         "messages": [
-            {
-                "role": "system",
-                "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
-            },
-            {
-                "role": "user",
-                "content": "Give me a short introduction to large language model."
-            }
+            {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
+            {"role": "user", "content": "Give me a short introduction to large language model."},
         ],
         "temperature": 0.1,
-        "max_tokens": 256
+        "max_tokens": 256,
     }
 
     start_time = time.time()
@@ -29,7 +24,7 @@ def make_request():
     result_json = {}
     try:
         result_json = response.json()
-    except:
+    except Exception:
         pass
 
     return end_time - start_time, result_json

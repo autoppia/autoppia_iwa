@@ -1,45 +1,29 @@
 import asyncio
-import statistics
 import json
 import os
+import statistics
 import time
-from typing import List, Dict, Optional
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 
-
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, Task
 from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.base import BaseAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
-    TestGenerationPipeline)
 
 # Importar el visualizador
-from autoppia_iwa.src.shared.visualizator import (
-    SubnetVisualizer,
-    visualize_task,
-    visualize_evaluation,
-    visualize_summary
-)
+from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_summary, visualize_task
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.base import BaseAgent, IWebAgent
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # ============================================================
 # CONFIGURACIÓN GLOBAL
@@ -52,7 +36,7 @@ LOG_DIR = os.path.join("logs", f"benchmark_{timestamp}")
 TASKS_CACHE_DIR = "data/tasks_cache"
 
 # Configuración de caching
-USE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles
+USE_CACHED_TASKS = True  # Usar tareas cacheadas si están disponibles
 
 # Configuración del benchmark
 ITERATIONS = 1  # Número de iteraciones por tarea
@@ -62,7 +46,7 @@ app = AppBootstrap()
 visualizer = SubnetVisualizer(log_directory=LOG_DIR)
 
 # Agentes a evaluar
-AGENTS: List[BaseAgent] = [
+AGENTS: List[IWebAgent] = [
     # RandomClickerWebAgent(name="Random-clicker"),
     ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)
 ]
@@ -138,12 +122,7 @@ async def save_tasks_to_json(project: WebProject, tasks: List[Task]) -> bool:
     filename = get_cache_filename(project)
 
     try:
-        cache_data = {
-            "project_id": project.id,
-            "project_name": project.name,
-            "created_at": datetime.now().isoformat(),
-            "tasks": [task.serialize() for task in tasks]
-        }
+        cache_data = {"project_id": project.id, "project_name": project.name, "created_at": datetime.now().isoformat(), "tasks": [task.serialize() for task in tasks]}
 
         with open(filename, 'w') as f:
             json.dump(cache_data, f, indent=2)
@@ -153,6 +132,7 @@ async def save_tasks_to_json(project: WebProject, tasks: List[Task]) -> bool:
     except Exception as e:
         print(f"Error al guardar tareas en {filename}: {str(e)}")
         return False
+
 
 # ============================================================
 # FUNCIONES DE GENERACIÓN DE TAREAS Y TESTS
@@ -181,13 +161,7 @@ async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int 
             print(f"No se encontraron tareas cacheadas válidas para el proyecto '{demo_project.name}', generando nuevas tareas...")
 
     # Generar nuevas tareas
-    config = TaskGenerationConfig(
-        web_project=demo_project,
-        save_web_analysis_in_db=True,
-        save_task_in_db=False,
-        number_of_prompts_per_task=3,
-        num_or_urls=num_of_urls
-    )
+    config = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False, number_of_prompts_per_task=3, num_or_urls=num_of_urls)
 
     print(f"Generando tareas para {demo_project.name}...")
     pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
@@ -221,6 +195,7 @@ async def add_tests_to_tasks(tasks, test_pipeline):
     """
     print(f"Generando tests para {len(tasks)} tareas...")
     return await test_pipeline.add_tests_to_tasks(tasks)
+
 
 # ============================================================
 # FUNCIONES DE EVALUACIÓN
@@ -267,19 +242,11 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
         task_solution: TaskSolution = await agent.solve_task(task)
         actions: List[BaseAction] = task_solution.actions
 
-        # Prepare evaluator input and configuration.
-        task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(save_results_in_db=False)
-        evaluator = ConcurrentEvaluator(demo_project, evaluator_config)
         # Preparar evaluación
         task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
 
         # Usar método decorado para evaluar
-        evaluation_result: EvaluationResult = await evaluate_task_solution(
-            web_project=demo_project,
-            task=task,
-            task_solution=task_solution
-        )
+        evaluation_result: EvaluationResult = await evaluate_task_solution(web_project=demo_project, task=task, task_solution=task_solution)
 
         # Registrar puntuación
         score = evaluation_result.final_score
@@ -289,6 +256,7 @@ async def evaluate_project_for_agent(agent, demo_project, tasks, results):
         # Mostrar tiempo de evaluación
         elapsed_time = time.time() - start_time
         print(f"Tarea {task.id} evaluada en {elapsed_time:.2f} segundos. Puntuación: {score:.4f}")
+
 
 # ============================================================
 # FUNCIONES DE ANÁLISIS Y PRESENTACIÓN DE RESULTADOS
@@ -317,24 +285,6 @@ def compute_statistics(scores: List[float]) -> dict:
     else:
         stats = {"count": 0, "mean": None, "median": None, "min": None, "max": None, "stdev": None}
     return stats
-
-
-async def generate_tasks_for_project(demo_project: WebProject, generate_new_tasks=True):
-    """
-    Generate tasks for the given demo project.
-
-    If TASKS is provided, it will be used. Otherwise, tasks are generated
-    through the TaskGenerationPipeline.
-    """
-    config = TaskGenerationConfig(save_web_analysis_in_db=True, save_task_in_db=False, number_of_prompts_per_task=3, num_or_urls=NUM_OF_URLS)
-
-    print("Generating Tasks...")
-    tasks = []
-    for i in range(iterations):
-        new_tasks = await TaskGenerationPipeline(web_project=demo_project, config=config).generate()
-        tasks.extend(new_tasks.tasks)
-
-    return tasks
 
 
 @visualize_summary(visualizer)
@@ -417,20 +367,11 @@ def save_benchmark_results(results, agents, demo_web_projects):
     """
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    output_data = {
-        "timestamp": datetime.now().isoformat(),
-        "results": {},
-        "projects": [p.name for p in demo_web_projects],
-        "agents": [a.id for a in agents]
-    }
+    output_data = {"timestamp": datetime.now().isoformat(), "results": {}, "projects": [p.name for p in demo_web_projects], "agents": [a.id for a in agents]}
 
     # Convertir resultados a formato serializable
     for agent_id, agent_results in results.items():
-        output_data["results"][agent_id] = {
-            "global_scores": agent_results["global_scores"],
-            "projects": agent_results["projects"],
-            "statistics": compute_statistics(agent_results["global_scores"])
-        }
+        output_data["results"][agent_id] = {"global_scores": agent_results["global_scores"], "projects": agent_results["projects"], "statistics": compute_statistics(agent_results["global_scores"])}
 
     # Guardar resultados
     filename = os.path.join(OUTPUT_DIR, f"benchmark_results_{timestamp}.json")
@@ -438,6 +379,7 @@ def save_benchmark_results(results, agents, demo_web_projects):
         json.dump(output_data, f, indent=2)
 
     print(f"Resultados del benchmark guardados en: {filename}")
+
 
 # ============================================================
 # FUNCIÓN PRINCIPAL DEL BENCHMARK
@@ -474,7 +416,7 @@ async def main():
         # ---------------------------
         for index, demo_project in enumerate(demo_web_projects):
             print(f"\n{'=' * 40}")
-            print(f"Procesando proyecto {index+1}/{len(demo_web_projects)}: {demo_project.name}")
+            print(f"Procesando proyecto {index + 1}/{len(demo_web_projects)}: {demo_project.name}")
             print(f"{'=' * 40}")
 
             # Generar o cargar tareas para el proyecto actual
@@ -486,7 +428,7 @@ async def main():
 
             # Contar cuántos tests se generaron en total
             total_tests = sum(len(task.tests) if hasattr(task, "tests") else 0 for task in tasks)
-            print(f"Tests generados: {total_tests} (promedio: {total_tests/len(tasks):.1f} por tarea)")
+            print(f"Tests generados: {total_tests} (promedio: {total_tests / len(tasks):.1f} por tarea)")
 
             # ---------------------------
             # 4. Evaluar Cada Agente en el Proyecto Actual
@@ -507,15 +449,15 @@ async def main():
                 print(f"Evaluación completada en {elapsed_time:.2f} segundos")
                 print(f"Puntuación media: {avg_score:.4f}")
 
-    # ---------------------------
-    # 3. Print Performance Statistics.
-    # ---------------------------
-    print_performance_statistics(results, agents)
+        # ---------------------------
+        # 3. Print Performance Statistics.
+        # ---------------------------
+        print_performance_statistics(results, agents)
 
-    # ---------------------------
-    # 4. Plot the Agent Results.
-    # ---------------------------
-    plot_agent_results(results, agents)
+        # ---------------------------
+        # 4. Plot the Agent Results.
+        # ---------------------------
+        plot_agent_results(results, agents)
 
         # ---------------------------
         # 7. Guardar Resultados
@@ -530,6 +472,7 @@ async def main():
 
     except Exception as e:
         import traceback
+
         print(f"\n[ERROR] Durante la ejecución: {e}")
         print(traceback.format_exc())
 
