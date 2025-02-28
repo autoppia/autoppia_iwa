@@ -4,6 +4,7 @@ from autoppia_iwa.config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
     LOCAL_MODEL_ENDPOINT,
+    LOCAL_PARALLEL_MODEL_ENDPOINT,
     LLM_PROVIDER,
     MONGODB_NAME,
     MONGODB_URL,
@@ -68,5 +69,6 @@ class DIContainer(containers.DeclarativeContainer):
             llm_type=LLM_PROVIDER,
             config=config,
             api_key=OPENAI_API_KEY,
-            endpoint_url=LOCAL_MODEL_ENDPOINT
+            endpoint_url=LOCAL_MODEL_ENDPOINT,
+            parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT
         )

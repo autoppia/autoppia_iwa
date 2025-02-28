@@ -1,7 +1,6 @@
 # file: data_generation/domain/classes.py
 
 import uuid
-from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Literal, Union
 
@@ -138,7 +137,7 @@ class TaskGenerationConfig(BaseModel):
     save_web_analysis_in_db: bool = True
     enable_crawl: bool = True
     generate_milestones: bool = False
-    number_of_prompts_per_task: int = 1
-    global_tasks_to_generate: int = 2
-    local_tasks_to_generate_per_url: int = 2
-    num_or_urls: int = None
+    num_or_urls:int = None
+    random_urls:bool = True
+    prompts_per_url:int = 20
+    num_or_urls:int = None

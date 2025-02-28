@@ -1,7 +1,7 @@
 # actions.py
 import asyncio
 import json
-import logging
+from loguru import logger
 from functools import wraps
 from typing import Optional, Union
 
@@ -12,7 +12,8 @@ from typing_extensions import Annotated, Literal
 # Use your new combined base classes
 from autoppia_iwa.src.execution.actions.base import BaseAction, BaseActionWithSelector
 
-action_logger = logging.getLogger(__name__)
+action_logger = logger.bind(action="autoppia_action")
+logger.disable("autoppia_action")  # Disable logging for agent actions execution as its so annoying
 
 
 def log_action(action_name: str):
@@ -28,7 +29,7 @@ def log_action(action_name: str):
                 # error_details = traceback.format_exc()
                 # action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
                 action_logger.error(f"{action_name} failed: {e}")
-                raise
+                raise e
 
         return wrapper
 
@@ -139,13 +140,13 @@ class ScrollAction(BaseAction):
             try:
                 await page.evaluate(f"window.scrollBy(0, -{self.value});")
             except Exception as e:
-                print(e)
+                logger.error(e)
                 await page.keyboard.press("PageUp")
         elif self.down:
             try:
                 await page.evaluate(f"window.scrollBy(0, {self.value});")
             except Exception as e:
-                print(e)
+                logger.error(e)
                 await page.keyboard.press("PageDown")
         else:
             # Attempt text-based scroll
@@ -161,7 +162,7 @@ class ScrollAction(BaseAction):
                         await asyncio.sleep(0.5)
                         return
                 except Exception as e:
-                    print(e)
+                    logger.error(e)
                     continue
             raise ValueError(f"Could not scroll to: {self.value}")
 

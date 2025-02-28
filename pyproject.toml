@@ -1,7 +1,7 @@
 [project]
 name = "autoppia_iwa"
 version = "0.0.1"
-description = "A short description of the autoppia_iwa package"
+description = "Autoppia IWA Sythetic Benchmark for Web Agents Evaluation"
 requires-python = ">=3.11"
 dynamic = ["dependencies"]
 

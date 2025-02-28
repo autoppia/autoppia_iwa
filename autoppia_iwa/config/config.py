@@ -14,6 +14,7 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "serverless", "local
 LLM_THRESHOLD = 100
 LLM_CONTEXT_WINDOW = int(os.getenv("LLM_CONTEXT_WINDOW", 10000))
 LOCAL_MODEL_ENDPOINT = os.getenv("LOCAL_MODEL_ENDPOINT", "http://127.0.0.1:6000/generate")
+LOCAL_PARALLEL_MODEL_ENDPOINT = os.getenv("LOCAL_PARALLEL_MODEL_ENDPOINT", "http://127.0.0.1:6000/generate_parallel")
 
 # OpenAI Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -45,12 +46,12 @@ PROFILE = os.getenv("PROFILE", "Profile 6")
 # ============================
 # Application Configuration
 # ============================
-EVALUATOR_HEADLESS = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "true")))
+EVALUATOR_HEADLESS = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "True")))
 
 # ============================
 # Application Configuration
 # ============================
-GENERATE_MILESTONES = os.getenv("GENERATE_MILESTONES", "false").lower() == "true"
+GENERATE_MILESTONES = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "False")))
 
 # ============================
 # Project Base Directory Path

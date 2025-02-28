@@ -1,117 +1,86 @@
 # file: prompts.py
+TEST_GENERATION_PROMPT = """
+You are a specialized test engineer tasked with generating validation tests for our web agent benchmark framework. These tests will execute after each agent action, examining browser snapshots to determine if the agent has successfully completed the required task.
 
-TEST_CONTEXT_PROMPT = """
-Context on what we are doing:
-The Infinite Web Arena (IWA) is an autonomous web agent evaluation framework that overcomes traditional benchmarking limitations by leveraging generative AI and synthetic data to create a scalable testing environment. It enables continuous assessment of web agents in novel scenarios without human intervention.
+## Task Information
+- Task Description: {task_prompt}
+- Success Requirements: {success_criteria}
 
-Key Features of IWA:
+## Context
+- Current Page URL: {current_url}
+- Current Page HTML (truncated): {truncated_html}
+- Visual State Description: {screenshot_desc}
+- Available Interactive Elements: {interactive_elements}
 
-- **Autonomous Task Generation:** Utilizes large language models (LLMs) to generate tasks and validation criteria, eliminating the need for human task designers.
-- **Comprehensive Testing Methodology:** Manages both frontend and backend environments to evaluate web agent behavior across multiple layers.
+## Available Backend Events
+{events}
 
-  - **Frontend Tests:** Include DOM analysis, network activity monitoring, visual verification, and browser event tracking.
-  - **Backend Tests:** Encompass event tracking, state validation, process flow confirmation, and custom event utilization.
+## Test Classes
+{test_classes_info}
 
-### Example Use Case:
+## Instructions on deciding which tests to use and its arguments
+1. For each test class, evaluate whether it is appropriate for verifying the success criteria for this task.
+2. You can just use 1 test of each type. 
+3. Each test should objectively and deterministically evaluate the completion of the task
+4. Avoid creating tests that validate the same thing; prioritize CheckEventTest in case of duplication
+5. Do not create a lot of FindInHTML tests. If you want to use this test use it wisely and in moderation.
+6. Do not use any event_name not in the 'Available Backend Events' list
 
-1. **Task Generation:** Assigns the task *"Purchase a red dress for under $10,"* with tests verifying a `Purchase()` event where the item is *"red dress"* and the price is less than $10.
-2. **Agent Execution:** The agent navigates the site, searches for the product, applies filters, and completes the purchase.
-3. **Validation:** Confirms the correct item selection, adherence to price constraints, and successful purchase completion.
+#Instruction on output format
+1. YOU MUST OUTPUT ONLY THE JSON ARRAY WITH NO ADDITIONAL TEXT OR FORMATTING.
+   - Strictly adheres to the provided schema
+   - Contains ONLY fields defined in the schema (no additional keys)
+   - Sets the `type` field to exactly the test class name
+   - Provides meaningful values for all required fields that will effectively validate task completion
+2. YOUR RESPONSE MUST BE A VALID JSON ARRAY ONLY. Do not include code blocks, markdown formatting, explanations, or any text outside the JSON array
 
-By developing skills in controlled settings, agents trained with IWA can effectively navigate complex DOM structures, handle dynamic content, and adapt to diverse website architectures, making them proficient in real-world web environments.
-"""
+## Response Format Examples
 
-TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT = """
-You are a test-generation expert responsible for generating test definitions for our web agents benchmark. 
-Our goal is to confirm whether the agent truly completed the user task by checking relevant conditions.
+For a login task, appropriate tests might look like this exact format:
 
-We have a specific test class named: {test_class_name}
-
-Below is the Pydantic (or equivalent) JSON schema describing the fields for {test_class_name}:
-{schema_json}
-
-Extra Class-Specific Data:
-{extra_data}
-
-Given the following context:
-- Task Prompt: {task_prompt}
-- Success Criteria: {success_criteria}
-- Truncated HTML (if available):
-{truncated_html}
-- Screenshot description (if available):
-{screenshot_desc}
-- Interactive elements (if available):
-{interactive_elements}
-- Domain/Project analysis (if available):
-{domain_analysis}
-
-
-
-### Instructions
-1. Determine if the test class **{test_class_name}** is relevant for verifying the success criteria. 
-   - If **not** relevant, return: `[]` (an empty JSON array).
-
-2. If **{test_class_name}** is relevant, return a strictly valid JSON array with exactly ONE object that adheres to the schema above. 
-   - **Do not** include any extra keys that are not in the schema.
-   - **Do not** rename or omit the fields that the schema requires.
-   - The `type` field **must** be exactly "{test_class_name}".
-   - You can fill out the fields with the minimal necessary info to make the test meaningful.
-
-3. Return ONLY valid JSON and nothing else. NO explanations, NO markdown code blocks, NO comments.
-
-Example of valid response format:
 [
   {{
-    "type": "{test_class_name}",
-    "parameter1": "value1",
-    "parameter2": "value2"
-  }}
-]
-
-Example if not relevant:
-[]
-"""
-
-TEST_FILTERING_PROMPT = """
-You are a test analyzer for web automation testing. Review the tests below and decide which ones to keep.
-
-TASK CONTEXT:
-- Task Prompt: {task_prompt}
-- Success Criteria: {success_criteria}
-
-TESTS TO REVIEW:
-{tests_json}
-
-GUIDELINES:
-1. Backend tests (CheckEventTest, CheckPageViewEventTest) are preferred over frontend tests or checkUrl tests as they are more reliable. Only in case they try to validate the same thing.
-2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful for complex criteria
-3. Avoid keeping tests that check for the same thing in different ways
-4. Prioritize tests that directly verify the success criteria
-5. Aim to keep 1-3 high-quality tests in total
-6. Delete tests that make up parameters like making up event_names in CheckEventTest, or making up keywords in FindInHtmlTest.
-7. Judge Tests like JudgeBaseOnHTML or JudgeBaseOnScreenshot should be use if all the other tests do not validate completely the task or there are no more tests. This are fallback tests.
-
-RESPOND WITH A JSON ARRAY of decisions, one for each test, like this:
-[
-  {{
-    "index": 0,
-    "keep": true,
-    "reason": "High quality backend test that verifies core success criteria"
+    "type": "CheckUrlTest",
+    "url": "http://localhost:8000/dashboard",
+    "description": "Check if user was redirected to dashboard after login"
   }},
   {{
-    "index": 1,
-    "keep": false,
-    "reason": "Redundant with test #0 which is more reliable"
+    "type": "FindInHtmlTest",
+    "substring": "Welcome back",
+    "description": "Verify welcome message appears after successful login" 
+  }},
+  {{
+    "type": "CheckEventTest",
+    "event_name": "login_success",
+    "description": "Check if login_success event was triggered"
   }}
 ]
 
-For EACH test in the input, include a decision object with:
-- "index": The original index of the test
-- "keep": true/false decision
-- "reason": Brief explanation of your decision
+For a job application task, appropriate tests might look like this exact format:
 
-Return ONLY the JSON array, no additional text.
+[
+  {{
+    "type": "CheckUrlTest",
+    "url": "http://localhost:8000/application-confirmation",
+    "description": "Check if user was redirected to confirmation page"
+  }},
+  {{
+    "type": "FindInHtmlTest",
+    "substring": "Application submitted successfully",
+    "description": "Verify success message appears after application"
+  }},
+  {{
+    "type": "CheckEventTest",
+    "event_name": "application_submitted",
+    "description": "Check if application_submitted event was triggered"
+  }}
+]
 
-Extra Class-Specific Data:
-{extra_data}
+CRITICAL REQUIREMENTS:
+1. Return ONLY the raw JSON array without any backticks, code blocks, or markdown
+2. Do not include any text before or after the JSON array
+3. The JSON must start with '[' and end with ']'
+4. Do not use indentation or newlines different from the examples above
+5. Include only test classes that are relevant to the specific task
+6. Ensure each test has a clear, descriptive "description" field
 """
