@@ -171,7 +171,7 @@ class TestGenerationPipeline:
                     messages=[
                         {"role": "system", "content": system_prompt}
                     ],
-                    json_format=True
+                    json_format=True,
                 )
 
                 last_response = response

@@ -98,17 +98,19 @@ class LocalTaskGenerationPipeline:
         # Implement retry logic
         for attempt in range(self.max_retries):
             try:
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_msg}
+                ]
                 # Request the LLM to generate tasks (in JSON format)
                 resp_text = await self.llm_service.async_predict(
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_msg}
-                    ],
+                    messages=messages,
                     json_format=True,
                     schema=schema
                 )
 
                 # Try to parse the response
+
                 validated_tasks = await self._parse_llm_response(resp_text)
                 if validated_tasks:
                     logger.info(f"Successfully generated tasks for {current_url} on attempt {attempt + 1}")

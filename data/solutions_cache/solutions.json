@@ -2382,5 +2382,152 @@
         "web_agent_id": "RwfnlAZ8pQ8GCV5l"
       }
     }
+  },
+  "af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3": {
+    "6Iymlg1eskIs9nNJ": {
+      "agent_id": "6Iymlg1eskIs9nNJ",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740747231.9358568,
+      "solution": {
+        "task_id": "af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1524,
+            "y": 61
+          }
+        ],
+        "web_agent_id": "6Iymlg1eskIs9nNJ"
+      }
+    },
+    "qkrGQqUqQ4MGc2cJ": {
+      "agent_id": "qkrGQqUqQ4MGc2cJ",
+      "agent_name": "browser-use",
+      "timestamp": 1740747314.0546772,
+      "solution": {
+        "task_id": "af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "NavigateAction",
+            "url": "",
+            "go_back": true,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "qkrGQqUqQ4MGc2cJ"
+      }
+    }
   }
 }

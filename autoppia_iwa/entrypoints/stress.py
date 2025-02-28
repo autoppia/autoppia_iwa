@@ -50,8 +50,8 @@ TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 SOLUTIONS_CACHE_DIR = "data/solutions_cache"  # Directory to store solution cache files
 OUTPUT_DIR = "results"     # Directory to store test results
 M = 1   # Number of copies of each solution to evaluate
-PROMPTS_PER_URL = 5
-NUM_OF_URLS = 5
+PROMPTS_PER_URL = 1
+NUM_OF_URLS = 1
 
 # Create output/cache directories if needed
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -165,11 +165,11 @@ async def main():
                         agent_name=agent.name
                     )
                     if success:
-                        logger.info(f"    Solution cached successfully for future runs")
+                        logger.info("Solution cached successfully for future runs")
                     else:
-                        logger.warning(f"    Failed to cache solution")
+                        logger.warning("Failed to cache solution")
                 except Exception as e:
-                    logger.error(f"    Error caching solution: {str(e)}")
+                    logger.error(f"Error caching solution: {str(e)}")
 
             # Store solution for evaluation phase
             all_solutions[agent.id][task.id] = task_solution
