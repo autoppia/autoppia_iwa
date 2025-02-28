@@ -52,12 +52,7 @@ class TestActionGenerationAndEvaluation(unittest.TestCase):
         tests = assign_tests(task_data["tests"])
 
         # Create and return a Task instance
-        return Task(
-            prompt=task_data["prompt"],
-            url=task_data["url"],
-            tests=tests,
-            milestones=task_data["milestones"],
-        )
+        return Task(prompt=task_data["prompt"], url=task_data["url"], tests=tests)
 
     def test_action_generation_and_evaluation(self):
         """
@@ -89,6 +84,11 @@ class TestActionGenerationAndEvaluation(unittest.TestCase):
         # Optional debugging output for evaluation
         print("\n--- Evaluation Results ---")
         print(f"Final score: {evaluated_task.feedback.final_score}")
+
+    def tearDown(self):
+        self.loop.close()
+        self.web_agent = None
+        self.app_bootstrap = None
 
 
 if __name__ == "__main__":
