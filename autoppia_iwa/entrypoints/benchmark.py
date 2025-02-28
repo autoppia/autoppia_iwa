@@ -157,11 +157,10 @@ async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int 
             print(f"No valid cached tasks found for project '{demo_project.name}', generating new tasks...")
 
     config = TaskGenerationConfig(
-        web_project=demo_project,
         save_web_analysis_in_db=True,
         save_task_in_db=False,
         number_of_prompts_per_task=3,
-        num_of_urls=num_of_urls,
+        num_or_urls=num_of_urls,
     )
 
     print(f"Generating tasks for {demo_project.name}...")
