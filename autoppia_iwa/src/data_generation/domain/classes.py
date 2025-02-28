@@ -50,7 +50,7 @@ class Task(BaseModel):
     """
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task")
-    type: Literal["global", "local"] = Field(default="local", description="Task scope: 'global' for system-wide tasks, 'local' for specific context tasks")
+    scope: Literal["global", "local"] = Field(default="local", description="Task scope: 'global' for system-wide tasks, 'local' for specific context tasks")
     is_web_real: bool = Field(default=False, description="Indicates if the task operates on a real web environment versus simulation")
     web_project_id: Optional[str] = Field(default=None, description="Web project ID")
     url: str = Field(..., description="Target URL where the task will be executed")

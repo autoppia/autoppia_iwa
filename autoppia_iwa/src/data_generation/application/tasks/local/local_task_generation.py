@@ -1,6 +1,6 @@
 from dependency_injector.wiring import Provide
 import json
-from typing import List, Dict
+from typing import List, Dict, Any
 from pydantic import ValidationError
 import asyncio
 import logging
@@ -8,9 +8,7 @@ from autoppia_iwa.src.data_generation.domain.classes import Task, BrowserSpecifi
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot, detect_interactive_elements
 from autoppia_iwa.src.shared.utils import transform_image_into_base64
-from autoppia_iwa.src.data_generation.application.tasks.local.prompts import (
-    PHASE1_GENERATION_SYSTEM_PROMPT
-)
+from autoppia_iwa.src.data_generation.application.tasks.local.prompts import PHASE1_GENERATION_SYSTEM_PROMPT
 from autoppia_iwa.src.di_container import DIContainer
 from .schemas import DraftTaskList
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -33,9 +31,7 @@ class LocalTaskGenerationPipeline:
         interactive_elems = detect_interactive_elements(clean_html)
 
         # Phase 1: Draft generation
-        draft_list = await self._phase1_generate_draft_tasks(
-            page_url, clean_html, screenshot_desc, interactive_elems
-        )
+        draft_list = await self._phase1_generate_draft_tasks(page_url, clean_html, screenshot_desc, interactive_elems)
 
         # Construct final tasks
         final_tasks = [
@@ -48,7 +44,7 @@ class LocalTaskGenerationPipeline:
                 screenshot=screenshot,
                 screenshot_desc=screenshot_desc,
                 success_criteria=item.get("success_criteria", ""),
-                relevant_data=self.web_project.relevant_data
+                relevant_data=self.web_project.relevant_data,
             )
             for item in draft_list
         ]
@@ -59,13 +55,7 @@ class LocalTaskGenerationPipeline:
 
         return shuffle_tasks(final_tasks)
 
-    async def _phase1_generate_draft_tasks(
-        self,
-        current_url: str, 
-        html_text: str,
-        screenshot_text: str,
-        interactive_elems: Dict
-    ) -> List[dict]:
+    async def _phase1_generate_draft_tasks(self, current_url: str, html_text: str, screenshot_text: str, interactive_elems: Dict) -> List[dict]:
         """
         Phase 1: Generate a draft list of tasks based on the system prompt + user context.
         With retry mechanism for handling invalid JSON responses.
@@ -85,15 +75,9 @@ class LocalTaskGenerationPipeline:
         # Implement retry logic
         for attempt in range(self.max_retries):
             try:
-                messages = [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_msg}
-                ]
+                messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_msg}]
                 # Request the LLM to generate tasks (in JSON format)
-                resp_text = await self.llm_service.async_predict(
-                    messages=messages,
-                    json_format=True
-                )
+                resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
 
                 # Try to parse the response
                 validated_tasks = await self._parse_llm_response(resp_text)
@@ -126,6 +110,7 @@ class LocalTaskGenerationPipeline:
             if resp_text.strip().startswith("'```") or resp_text.strip().startswith("```"):
                 # Extract content between markdown code blocks
                 import re
+
                 code_block_pattern = r'```(?:json)?\n([\s\S]*?)\n```'
                 matches = re.search(code_block_pattern, resp_text)
                 if matches:
@@ -145,10 +130,7 @@ class LocalTaskGenerationPipeline:
             if isinstance(data, list) and all(isinstance(item, dict) and "prompt" in item for item in data):
                 validated_tasks = []
                 for item in data:
-                    validated_tasks.append({
-                        "prompt": item.get("prompt", ""),
-                        "success_criteria": item.get("success_criteria", "")
-                    })
+                    validated_tasks.append({"prompt": item.get("prompt", ""), "success_criteria": item.get("success_criteria", "")})
                 return validated_tasks
 
             # Handle different possible JSON structures
@@ -178,10 +160,7 @@ class LocalTaskGenerationPipeline:
                 draft_list = DraftTaskList.model_validate(data)
                 validated_tasks = []
                 for item in draft_list.root:
-                    validated_tasks.append({
-                        "prompt": item.prompt,
-                        "success_criteria": item.success_criteria or ""
-                    })
+                    validated_tasks.append({"prompt": item.prompt, "success_criteria": item.success_criteria or ""})
                 return validated_tasks
             except ValidationError as ve:
                 logger.warning(f"Pydantic validation error: {ve}, trying basic validation")
@@ -189,10 +168,7 @@ class LocalTaskGenerationPipeline:
                 validated_tasks = []
                 for item in data:
                     if isinstance(item, dict) and "prompt" in item:
-                        validated_tasks.append({
-                            "prompt": item.get("prompt", ""),
-                            "success_criteria": item.get("success_criteria", "")
-                        })
+                        validated_tasks.append({"prompt": item.get("prompt", ""), "success_criteria": item.get("success_criteria", "")})
                 return validated_tasks
         except json.JSONDecodeError as je:
             logger.error(f"JSON decode error: {je}")
@@ -200,6 +176,7 @@ class LocalTaskGenerationPipeline:
             try:
                 # Try to extract just the JSON part using a more aggressive approach
                 import re
+
                 json_pattern = r'\[\s*\{.*?\}\s*\]'
                 matches = re.search(json_pattern, resp_text, re.DOTALL)
                 if matches:
@@ -208,10 +185,7 @@ class LocalTaskGenerationPipeline:
                     validated_tasks = []
                     for item in data:
                         if isinstance(item, dict) and "prompt" in item:
-                            validated_tasks.append({
-                                "prompt": item.get("prompt", ""),
-                                "success_criteria": item.get("success_criteria", "")
-                            })
+                            validated_tasks.append({"prompt": item.get("prompt", ""), "success_criteria": item.get("success_criteria", "")})
                     return validated_tasks
             except Exception:
                 pass
@@ -220,31 +194,20 @@ class LocalTaskGenerationPipeline:
             logger.error(f"Unexpected error parsing LLM response: {str(e)}")
             return []
 
-    def _assemble_task(
-        self,
-        web_project_id: int, 
-        url: str,
-        prompt: str,
-        html: str,
-        clean_html: str,
-        screenshot: bytes,
-        screenshot_desc: str,
-        success_criteria: str,
-        relevant_data: str
-    ) -> "Task":
+    def _assemble_task(self, web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: bytes, screenshot_desc: str, success_criteria: str, relevant_data: Any) -> "Task":
         """
         Assembles a final Task object from the filtered task data.
         """
         return Task(
-            type="local",
+            scope="local",
             web_project_id=web_project_id,
             prompt=prompt,
             url=url,
             html=str(html),
             clean_html=str(clean_html),
-            screenshot_desc=screenshot_desc,
+            screenshot_description=screenshot_desc,
             screenshot=str(transform_image_into_base64(screenshot)),
             success_criteria=success_criteria,
             specifications=BrowserSpecification(),
-            relevant_data=relevant_data
+            relevant_data=relevant_data,
         )
