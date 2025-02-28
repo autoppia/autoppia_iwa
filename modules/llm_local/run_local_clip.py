@@ -1,43 +1,55 @@
+import argparse
 from PIL import Image
 import torch
 from transformers import CLIPProcessor, CLIPModel
 
-# 1. Load the pre-trained CLIP model and processor
-model_name = "openai/clip-vit-base-patch32"
-model = CLIPModel.from_pretrained(model_name)
-processor = CLIPProcessor.from_pretrained(model_name)
 
-# 2. Load your screenshot (replace with your local file path or URL)
-image_path = "screenshot.png"
-image = Image.open(image_path).convert("RGB")
+def main():
+    # 1. Parse command-line arguments
+    parser = argparse.ArgumentParser(description="Use CLIP to classify screenshot content.")
+    parser.add_argument("--filename", required=True, help="Path to the screenshot image file.")
+    parser.add_argument("--model_name", default="openai/clip-vit-large-patch14",
+                        help="Name of the CLIP-like model on the Hugging Face Hub.")
+    args = parser.parse_args()
 
-# 3. Define text labels for your use case
-labels = [
-    "The user is logged in",
-    "The user is not logged in"
-]
+    # 2. Load the specified CLIP model and processor
+    model = CLIPModel.from_pretrained(args.model_name)
+    processor = CLIPProcessor.from_pretrained(args.model_name)
 
-# 4. Process inputs for CLIP
-inputs = processor(
-    text=labels,
-    images=image,
-    return_tensors="pt",
-    padding=True
-)
+    # 3. Load your screenshot
+    image = Image.open(args.filename).convert("RGB")
 
-# 5. Forward pass: get similarity logits for image-text pairs
-with torch.no_grad():
-    outputs = model(**inputs)
-    logits_per_image = outputs.logits_per_image  # shape: [batch_size, num_labels]
+    # 4. Define text labels for your use case
+    labels = [
+        "The user is correctly logged in into the website",
+        "The user is NOT correctly logged in into the website"
+    ]
 
-# 6. Convert logits to probabilities
-probs = logits_per_image.softmax(dim=1)  # shape: [1, num_labels]
+    # 5. Process inputs for CLIP
+    inputs = processor(
+        text=labels,
+        images=image,
+        return_tensors="pt",
+        padding=True
+    )
 
-# 7. Print out probabilities for each label
-for label, prob in zip(labels, probs[0].tolist()):
-    print(f"{label}: {prob:.4f}")
+    # 6. Forward pass: get similarity logits for image-text pairs
+    with torch.no_grad():
+        outputs = model(**inputs)
+        logits_per_image = outputs.logits_per_image  # shape: [batch_size, num_labels]
 
-# Optionally, pick the label with the highest probability
-predicted_idx = logits_per_image.argmax(dim=1).item()
-predicted_label = labels[predicted_idx]
-print(f"\nPredicted: {predicted_label}")
+    # 7. Convert logits to probabilities
+    probs = logits_per_image.softmax(dim=1)  # shape: [1, num_labels]
+
+    # 8. Print out probabilities for each label
+    for label, prob in zip(labels, probs[0].tolist()):
+        print(f"{label}: {prob:.4f}")
+
+    # Optionally, pick the label with the highest probability
+    predicted_idx = logits_per_image.argmax(dim=1).item()
+    predicted_label = labels[predicted_idx]
+    print(f"\nPredicted: {predicted_label}")
+
+
+if __name__ == "__main__":
+    main()
