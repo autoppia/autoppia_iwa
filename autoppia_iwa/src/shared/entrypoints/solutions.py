@@ -3,10 +3,11 @@ import logging
 import time
 from pathlib import Path
 from typing import Dict, Any, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 
 from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+import uuid
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -17,41 +18,41 @@ class SolutionData(BaseModel):
     agent_id: str
     agent_name: str
     timestamp: float = Field(default_factory=time.time)
-    actions: List[Dict[str, Any]] = []
+    solution: TaskSolution
 
 
-class TaskCache(BaseModel):
+class TaskCache(RootModel):
     """Model for task cache entries"""
-    __root__: Dict[str, SolutionData] = {}
+    root: Dict[str, SolutionData] = {}
 
     def __getitem__(self, key):
-        return self.__root__[key]
+        return self.root[key]
 
     def __setitem__(self, key, value):
-        self.__root__[key] = value
+        self.root[key] = value
 
     def __contains__(self, key):
-        return key in self.__root__
+        return key in self.root
 
     def keys(self):
-        return self.__root__.keys()
+        return self.root.keys()
 
 
-class SolutionsCache(BaseModel):
+class SolutionsCache(RootModel):
     """Model for the entire solutions cache"""
-    __root__: Dict[str, TaskCache] = {}
+    root: Dict[str, TaskCache] = {}
 
     def __getitem__(self, key):
-        return self.__root__[key]
+        return self.root[key]
 
     def __setitem__(self, key, value):
-        self.__root__[key] = value
+        self.root[key] = value
 
     def __contains__(self, key):
-        return key in self.__root__
+        return key in self.root
 
     def keys(self):
-        return self.__root__.keys()
+        return self.root.keys()
 
 
 class ConsolidatedSolutionCache:
@@ -86,7 +87,41 @@ class ConsolidatedSolutionCache:
 
             with open(self.cache_file, 'r') as f:
                 data = json.load(f)
-                return SolutionsCache.parse_obj(data)
+
+                # Deserialize the solutions
+                solutions_cache = SolutionsCache(root={})
+
+                # Process each task and agent to recreate TaskSolution objects
+                for task_id, task_data in data.items():
+                    solutions_cache[task_id] = TaskCache(root={})
+
+                    for agent_id, agent_data in task_data.items():
+                        # Create a TaskSolution from the serialized data
+                        if 'solution' in agent_data:
+                            solution_data = agent_data['solution']
+
+                            # Create the TaskSolution object
+                            task_solution = TaskSolution(
+                                task_id=solution_data.get('task_id', task_id),
+                                web_agent_id=solution_data.get('web_agent_id')
+                            )
+
+                            # Handle actions - create the BaseAction objects
+                            if 'actions' in solution_data and solution_data['actions']:
+                                for action_data in solution_data['actions']:
+                                    action = BaseAction.create_action(action_data)
+                                    if action:
+                                        task_solution.actions.append(action)
+
+                            # Store in the cache
+                            solutions_cache[task_id][agent_id] = SolutionData(
+                                agent_id=agent_data['agent_id'],
+                                agent_name=agent_data['agent_name'],
+                                timestamp=agent_data['timestamp'],
+                                solution=task_solution
+                            )
+
+                return solutions_cache
 
         except json.JSONDecodeError:
             logger.warning("Corrupted solutions file, creating new one")
@@ -103,8 +138,19 @@ class ConsolidatedSolutionCache:
             data: Pydantic model of all solutions to write
         """
         try:
+            # Custom serialization to handle nested models with actions
+            serialized_data = data.model_dump()
+
+            # Process each task and agent solution to use nested_model_dump for TaskSolution
+            for task_id, task_cache in serialized_data.items():
+                for agent_id, solution_data in task_cache.items():
+                    if 'solution' in solution_data:
+                        # Replace the solution with its nested_model_dump version
+                        solution_obj = data[task_id][agent_id].solution
+                        solution_data['solution'] = solution_obj.nested_model_dump()
+
             with open(self.cache_file, 'w') as f:
-                json.dump(data.dict(), f, indent=2)
+                json.dump(serialized_data, f, indent=2)
 
         except Exception as e:
             logger.error(f"Error writing to solutions file: {str(e)}")
@@ -136,15 +182,12 @@ class ConsolidatedSolutionCache:
             # Get existing solutions
             cache = self._read_cache()
 
-            # Serialize actions
-            serialized_actions = self._serialize_actions(task_solution.actions) if task_solution.actions else []
-
             # Create solution data using the Pydantic model
             solution_data = SolutionData(
                 agent_id=agent_id,
                 agent_name=agent_name,
                 timestamp=time.time(),
-                actions=serialized_actions
+                solution=task_solution
             )
 
             # Initialize task entry if needed
@@ -164,50 +207,28 @@ class ConsolidatedSolutionCache:
             logger.error(f"Error saving solution to cache: {str(e)}")
             return False
 
-    async def load_solution(self, task_id: str, agent_id: str) -> Optional[SolutionData]:
+    async def load_solution(self, task_id: str, agent_id: str) -> Optional[TaskSolution]:
         """
         Load a solution from the cache.
         Args:
             task_id: ID of the task
             agent_id: ID of the agent
         Returns:
-            SolutionData model containing the solution data or None if not found
+            TaskSolution object or None if not found
         """
         try:
             cache = self._read_cache()
             if task_id not in cache or agent_id not in cache[task_id]:
                 return None
 
-            return cache[task_id][agent_id]
+            solution_data = cache[task_id][agent_id]
+            return solution_data.solution
 
         except Exception as e:
             logger.error(f"Error loading solution from cache: {str(e)}")
             return None
 
-    def _serialize_actions(self, actions: List[BaseAction]) -> List[Dict[str, Any]]:
-        """
-        Serialize a list of actions for storage using Pydantic's dict() method.
-        Args:
-            actions: List of BaseAction objects
-        Returns:
-            List of serialized action dictionaries
-        """
-        serialized_actions = []
-        for action in actions:
-            try:
-                # Convert action to dict using Pydantic's built-in method
-                action_dict = action.dict()
-
-                # Handle selector serialization using Pydantic's dict()
-                if hasattr(action, 'selector') and action.selector:
-                    action_dict['selector'] = action.selector.dict()
-
-                serialized_actions.append(action_dict)
-
-            except Exception as e:
-                logger.error(f"Error serializing action {action}: {str(e)}")
-
-        return serialized_actions
+    # Serialization is handled by TaskSolution.nested_model_dump()
 
     def clear_cache(self) -> bool:
         """
@@ -247,45 +268,15 @@ class ConsolidatedSolutionCache:
 
         return list(cache[task_id].keys())
 
-
-class ActionModel(BaseModel):
-    """Model for deserializing action data"""
-    type: str
-    selector: Optional[Dict[str, Any]] = None
+# No longer needed as we're using TaskSolution directly
 
 
-async def deserialize_actions(action_data_list: List[Dict[str, Any]]) -> List[BaseAction]:
+async def load_task_solution(solution_data: SolutionData) -> TaskSolution:
     """
-    Deserialize a list of action dictionaries back into BaseAction objects.
+    Load a TaskSolution from cached SolutionData.
     Args:
-        action_data_list: List of serialized action dictionaries
+        solution_data: The cached solution data
     Returns:
-        List of BaseAction objects
+        TaskSolution object
     """
-    actions = []
-    for action_data in action_data_list:
-        try:
-            # Validate the action data with Pydantic
-            action_model = ActionModel.parse_obj(action_data)
-
-            # Handle selector deserialization if present
-            if action_model.selector:
-                selector_data = action_model.selector
-                action_data['selector'] = Selector(
-                    type=SelectorType(selector_data['type']),
-                    attribute=selector_data.get('attribute'),
-                    value=selector_data['value'],
-                    case_sensitive=selector_data.get('case_sensitive', False)
-                )
-
-            # Create action using BaseAction's factory method
-            action = BaseAction.create_action(action_data)
-            if action:
-                actions.append(action)
-            else:
-                logger.warning(f"Failed to deserialize action: {action_data}")
-
-        except Exception as e:
-            logger.error(f"Error deserializing action {action_data}: {str(e)}")
-
-    return actions
+    return solution_data.solution

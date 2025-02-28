@@ -65,6 +65,8 @@ class TestGenerationPipeline:
 
         # Map for extra data needed for specific test classes
         self.test_class_extra_data = {
+            "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very usefull to check navigation or where the agent is.",
+            "FindInHtmlTest": "Use this FindInHtmlTest test to check for stirngs that you expect to appear after the task is completed. very usefull for tasks that trigger UI updates",
             "CheckEventTest": "For CheckEventTest pls select event_name from this List of allowed event names: " + json.dumps(web_project.events),
         }
 
@@ -85,12 +87,14 @@ class TestGenerationPipeline:
 
                 # STEP 3: Optionally generate a logic function that references these tests
                 if task.tests:
+                    pass
                     # task.logic_function = await self.logic_generator.generate_logic(
                     #     task=task,
                     #     tests=task.tests
                     # )
-                    logger.info(f"Generated logic function for task {task.id}")
+                    # logger.info(f"Generated logic function for task {task.id}")
             except Exception as e:
+                raise e
                 logger.error(f"Failed to generate tests for task={task.id}: {str(e)}")
                 logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
 
@@ -105,12 +109,8 @@ class TestGenerationPipeline:
         cleaned_html = task.clean_html[:self.truncate_html_chars] if task.clean_html else ""
         screenshot_desc = task.screenshot_description or ""
         interactive_elements = detect_interactive_elements(cleaned_html)
-        domain_analysis = self.web_project.domain_analysis or {}
-
-        # Get serializable domain analysis
-        domain_analysis_dict = {}
-        if hasattr(domain_analysis, 'dump_excluding_page_analyses'):
-            domain_analysis_dict = domain_analysis.dump_excluding_page_analyses()
+        domain_analysis = self.web_project.domain_analysis
+        domain_analysis_dict = domain_analysis.dump_excluding_page_analyses_except_one(task.url)
 
         # Prepare schemas for all test classes
         test_class_schemas = {}
@@ -148,10 +148,11 @@ class TestGenerationPipeline:
         system_prompt = TEST_GENERATION_PROMPT.format(
             task_prompt=task.prompt,
             success_criteria=task.success_criteria or "N/A",
+            current_url=task.url,
             truncated_html=cleaned_html,
             screenshot_desc=screenshot_desc,
             interactive_elements=json.dumps(interactive_elements, indent=2),
-            domain_analysis=json.dumps(domain_analysis_dict, indent=2),
+            # domain_analysis=json.dumps(domain_analysis_dict, indent=2),
             test_classes_info="\n\n".join([
                 f"### {test_class_name}\n{schema}\n{self.test_class_extra_data.get(test_class_name, '')}" 
                 for test_class_name, schema in test_class_schemas.items()

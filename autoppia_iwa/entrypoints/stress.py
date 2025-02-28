@@ -27,8 +27,7 @@ from autoppia_iwa.src.shared.entrypoints.results import (
 
 # Import the consolidated solution cache system
 from autoppia_iwa.src.shared.entrypoints.solutions import (
-    ConsolidatedSolutionCache, 
-    deserialize_actions
+    ConsolidatedSolutionCache
 )
 
 # Configure logging
@@ -45,14 +44,14 @@ logger = logging.getLogger("stress_test")
 # -----------------------------------------------------------------------------
 # Configuration for the stress test
 # -----------------------------------------------------------------------------
-USE_CACHED_TASKS = True    # Set to True to use cached tasks from JSON file
-USE_CACHED_SOLUTIONS = True  # Set to True to use cached solutions when available
+USE_CACHED_TASKS = False    # Set to True to use cached tasks from JSON file
+USE_CACHED_SOLUTIONS = False  # Set to True to use cached solutions when available
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 SOLUTIONS_CACHE_DIR = "data/solutions_cache"  # Directory to store solution cache files
 OUTPUT_DIR = "results"     # Directory to store test results
 M = 1   # Number of copies of each solution to evaluate
-PROMPTS_PER_URL = 1
-NUM_OF_URLS = 1
+PROMPTS_PER_URL = 5
+NUM_OF_URLS = 5
 
 # Create output/cache directories if needed
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -79,7 +78,7 @@ async def main():
     logger.info("Starting comprehensive multi-task agent evaluation with batch processing...")
 
     # Initialize the application
-    app = AppBootstrap()
+    AppBootstrap()
 
     # Initialize timing metrics
     timing_metrics = TimingMetrics()
@@ -106,7 +105,6 @@ async def main():
         prompts_per_url=PROMPTS_PER_URL,
         num_of_urls=NUM_OF_URLS
     )
-    tasks = tasks[:1]  # Limiting to first task for this demo
 
     if not tasks:
         logger.error("No tasks available.")
@@ -129,19 +127,10 @@ async def main():
             if USE_CACHED_SOLUTIONS and solution_cache.solution_exists(task.id, agent.id):
                 logger.info(f"  Loading cached solution for Task {task.id}...")
                 try:
-                    # Load cached solution data
-                    cached_solution = await solution_cache.load_solution(task.id, agent.id)
-                    if cached_solution:
-                        # Deserialize actions using deserialize_actions function
-                        actions = await deserialize_actions(cached_solution.get("actions", []))
-
-                        # Create TaskSolution object from cached data
-                        task_solution = TaskSolution(
-                            task=task, 
-                            actions=actions,
-                            web_agent_id=agent.id
-                        )
-                        logger.info(f"    Successfully loaded cached solution with {len(actions)} actions")
+                    # Load cached solution - now returns TaskSolution directly
+                    task_solution = await solution_cache.load_solution(task.id, agent.id)
+                    if task_solution:
+                        logger.info(f"    Successfully loaded cached solution with {len(task_solution.actions)} actions")
                     else:
                         logger.warning(f"    Failed to load cached solution for {task.id}, will generate new one")
                 except Exception as e:
@@ -155,8 +144,9 @@ async def main():
                 # Solve the task
                 solution = await agent.solve_task(task)
                 actions = solution.actions or []
+
                 task_solution = TaskSolution(
-                    task=task, 
+                    task_id=task.id, 
                     actions=actions, 
                     web_agent_id=agent.id
                 )
@@ -201,7 +191,7 @@ async def main():
             solution_copies = []
             for _ in range(M):
                 copy_solution = TaskSolution(
-                    task=task,
+                    task_id=task.id,
                     actions=original_solution.actions.copy() if original_solution.actions else [],
                     web_agent_id=agent.id
                 )

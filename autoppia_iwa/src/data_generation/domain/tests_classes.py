@@ -194,13 +194,10 @@ class FindInHtmlTest(BaseTaskTest):
 
         # Apply case conversion if needed
         search_substring = self.substring if case_sensitive else self.substring.lower()
-        print(f"Checking for substring: {self.substring}")
 
         if search_substring in content:
-            print(f"Found substring: {self.substring}")
             return True
         else:
-            print(f"Substring not found: {self.substring}")
             return False
 
 

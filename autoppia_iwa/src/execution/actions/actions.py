@@ -140,7 +140,7 @@ class ScrollAction(BaseAction):
             try:
                 await page.evaluate(f"window.scrollBy(0, -{self.value});")
             except Exception as e:
-                print(e)
+                logger.error(e)
                 await page.keyboard.press("PageUp")
         elif self.down:
             try:

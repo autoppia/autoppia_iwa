@@ -1,5 +1,4 @@
 # file: prompts.py
-
 TEST_GENERATION_PROMPT = """
 You are a specialized test engineer tasked with generating validation tests for our web agent benchmark framework. These tests will execute after each agent action, examining browser snapshots to determine if the agent has successfully completed the required task.
 
@@ -8,81 +7,74 @@ You are a specialized test engineer tasked with generating validation tests for 
 - Success Requirements: {success_criteria}
 
 ## Context
+- Current Page URL: {current_url}
 - Current Page HTML (truncated): {truncated_html}
 - Visual State Description: {screenshot_desc}
 - Available Interactive Elements: {interactive_elements}
-- Domain/Project Context: {domain_analysis}
 
 ## Test Classes
 {test_classes_info}
 
-
 ## Instructions
-1. For each test class, evaluate whether it is appropriate for verifying the success criteria for this task. If not do not include that test class.
-2. For each relevant test class, create ONE test object that:
+1. For each test class, evaluate whether it is appropriate for verifying the success criteria for this task.
+2. Create ONE test object for each appropriate test class that:
+3. YOU MUST OUTPUT ONLY THE JSON ARRAY WITH NO ADDITIONAL TEXT OR FORMATTING.
    - Strictly adheres to the provided schema
    - Contains ONLY fields defined in the schema (no additional keys)
    - Sets the `type` field to exactly the test class name
    - Provides meaningful values for all required fields that will effectively validate task completion
-3. Your response must ONLY contain valid JSON array of tests (no explanations, markdown, or comments)
-4. The test should successfully evaluates the completion of the task in an objective and deterministic way. 
-5. Avoid including tests that validate the same thing. Prioritize keeping CheckEvents tests in case you have to delete 1 to avoid duplication. 
-6. Try not to make up things and when creating the test attrs like substring for the FindInHTMl test.
+3. YOUR RESPONSE MUST BE A VALID JSON ARRAY ONLY. Do not include code blocks, markdown formatting, explanations, or any text outside the JSON array
+4. Each test should objectively and deterministically evaluate the completion of the task
+5. Avoid creating tests that validate the same thing; prioritize CheckEventTest in case of duplication
+6. Use actual values from the provided HTML/context when creating tests (e.g., don't make up substrings for FindInHtmlTest)
 
-## Response Format
-Return an array of test objects, one for each relevant test class:
+## Response Format Examples
+
+For a login task, appropriate tests might look like this exact format:
+
 [
   {{
-    "type": "TestClassName1",
-    ...other required and optional fields...
+    "type": "CheckUrlTest",
+    "url": "http://localhost:8000/dashboard",
+    "description": "Check if user was redirected to dashboard after login"
   }},
   {{
-    "type": "TestClassName2",
-    ...other required and optional fields...
-  }}
-]
-"""
-
-TEST_FILTERING_PROMPT = """
-You are a test analyzer for web automation testing. Review the tests below and decide which ones to keep.
-
-TASK CONTEXT:
-- Task Prompt: {task_prompt}
-- Success Criteria: {success_criteria}
-
-TESTS TO REVIEW:
-{tests_json}
-
-GUIDELINES:
-1. Backend tests (CheckEventTest, CheckPageViewEventTest) are preferred over frontend tests or checkUrl tests as they are more reliable. Only in case they try to validate the same thing.
-2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful for complex criteria
-3. Avoid keeping tests that check for the same thing in different ways
-4. Prioritize tests that directly verify the success criteria
-5. Aim to keep 1-3 high-quality tests in total
-6. Delete tests that make up parameters like making up event_names in CheckEventTest, or making up keywords in FindInHtmlTest.
-7. Judge Tests like JudgeBaseOnHTML or JudgeBaseOnScreenshot should be use if all the other tests do not validate completely the task or there are no more tests. This are fallback tests.
-
-RESPOND WITH A JSON ARRAY of decisions, one for each test, like this:
-[
-  {{
-    "index": 0,
-    "keep": true,
-    "reason": "High quality backend test that verifies core success criteria"
+    "type": "FindInHtmlTest",
+    "substring": "Welcome back",
+    "description": "Verify welcome message appears after successful login" 
   }},
   {{
-    "index": 1,
-    "keep": false,
-    "reason": "Redundant with test #0 which is more reliable"
+    "type": "CheckEventTest",
+    "event_name": "login_success",
+    "description": "Check if login_success event was triggered"
   }}
 ]
 
-For EACH test in the input, include a decision object with:
-- "index": The original index of the test
-- "keep": true/false decision
-- "reason": Brief explanation of your decision
+For a job application task, appropriate tests might look like this exact format:
 
-Return ONLY the JSON array, no additional text.
+[
+  {{
+    "type": "CheckUrlTest",
+    "url": "http://localhost:8000/application-confirmation",
+    "description": "Check if user was redirected to confirmation page"
+  }},
+  {{
+    "type": "FindInHtmlTest",
+    "substring": "Application submitted successfully",
+    "description": "Verify success message appears after application"
+  }},
+  {{
+    "type": "CheckEventTest",
+    "event_name": "application_submitted",
+    "description": "Check if application_submitted event was triggered"
+  }}
+]
 
-Extra Class-Specific Data:
-{extra_data}
+CRITICAL REQUIREMENTS:
+1. Return ONLY the raw JSON array without any backticks, code blocks, or markdown
+2. Do not include any text before or after the JSON array
+3. The JSON must start with '[' and end with ']'
+4. Do not use indentation or newlines different from the examples above
+5. Include only test classes that are relevant to the specific task
+6. Ensure each test has a clear, descriptive "description" field
 """
