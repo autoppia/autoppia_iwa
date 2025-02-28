@@ -1,101 +1,131 @@
-import asyncio
+import json
 import unittest
+from typing import List, Optional
 
+from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
-from modules.webs_demo.web_1_demo_django_jobs.events.events import EVENTS_ALLOWED
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
+
+# ============================================================
+# GLOBAL CONFIGURATION
+# ============================================================
+
+TASKS_PARENT_DIR = PROJECT_BASE_DIR.parent / "tests/data_generation"
+OUTPUT_DIR = TASKS_PARENT_DIR / "results"
+TASKS_CACHE_DIR = TASKS_PARENT_DIR / "tasks_cache"
+
+# Ensure cache directory exists
+TASKS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+USE_CACHED_TASKS = True
+NUMBER_OF_TASKS = 3
+
+# ============================================================
+# TASK CACHING FUNCTIONS
+# ============================================================
 
 
-class TestTaskTestGenerationWithWebAnalysis(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        """
-        Set up class-level test environment.
-        """
-        cls.app_bootstrap = AppBootstrap()
-        cls.analysis_repo = cls.app_bootstrap.container.analysis_repository()
-        cls.llm_service = cls.app_bootstrap.container.llm_service()
+async def load_tasks_from_json(project: WebProject) -> Optional[List[Task]]:
+    """
+    Loads tasks from a project-specific JSON file if available and valid.
+    """
+    filename = TASKS_CACHE_DIR / f"{project.name.replace(' ', '_').lower()}_tasks.json"
+    if not filename.is_file():
+        print(f"Cache file {filename} not found for project '{project.name}'")
+        return None
 
-        # Local testing setup
-        cls.local_page_url = "http://localhost:8000/"
-        cls.local_enable_crawl = False
-        cls.local_task_description = "Click on the Login button and then introduce your username and password."
+    try:
+        with filename.open() as f:
+            cache_data = json.load(f)
 
-        # Real web testing setup
-        cls.example_url = "https://example.com/"
-        cls.example_enable_crawl = False
-        cls.example_task_description = "Navigate to the homepage and verify the page title."
+        if cache_data.get("project_id") != project.id and cache_data.get("project_name") != project.name:
+            print(f"Cache file exists but for a different project. Expected '{project.name}', found '{cache_data.get('project_name')}'")
+            return None
 
-    async def _generate_tests_for_web_project(self, url: str, task_description: str, enable_crawl: bool, is_web_real: bool = False) -> list:
-        """
-        Helper method to perform web analysis and generate task-based tests.
+        tasks = [Task.deserialize(task_data) for task_data in cache_data.get("tasks", [])]
+        print(f"Loaded {len(tasks)} tasks for project '{project.name}' from {filename}")
+        return tasks[0:NUMBER_OF_TASKS]
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        print(f"Cache loading error for '{project.name}': {e}")
+        return None
 
-        Args:
-            url (str): The target web page URL.
-            task_description (str): Description of the task to be tested.
-            enable_crawl (bool): Whether to enable crawling.
-            is_web_real (bool): Whether the project is a real web test.
 
-        Returns:
-            list: Generated task tests.
-        """
-        # Perform web analysis
-        web_analysis_pipeline = WebAnalysisPipeline(start_url=url, analysis_repository=self.analysis_repo, llm_service=self.llm_service)
-        web_analysis = await web_analysis_pipeline.analyze(enable_crawl=enable_crawl, save_results_in_db=True)
+# ============================================================
+# TASK AND TEST GENERATION FUNCTIONS
+# ============================================================
 
-        self.assertIsNotNone(web_analysis, f"Web analysis should not return None for {url}.")
-        self.assertTrue(
-            hasattr(web_analysis, "page_analyses"),
-            f"Web analysis result should contain 'Page Analysis' for {url}.",
-        )
 
-        # Initialize Web Project
-        web_project = WebProject(
-            backend_url=url,
-            frontend_url=url,
-            name="example" if is_web_real else "Local Web App",
-            events=EVENTS_ALLOWED,
-            is_web_real=is_web_real,
-        )
+async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int = 3) -> List[Task]:
+    """
+    Generates tasks for the given demo project.
+    If USE_CACHED_TASKS is True, attempts to load from the project-specific cache first.
 
-        # Generate task-based tests
-        task_test_generator = TestGenerationPipeline(web_project=web_project, web_analysis=web_analysis, llm_service=self.llm_service)
-        tests = await task_test_generator.generate_task_tests(task_description, url)
+    Args:
+        demo_project: The web project for which to generate tasks.
+        num_of_urls: Number of URLs to include in task generation.
 
-        self.assertIsInstance(tests, list, "Generated tests should be a list.")
-        self.assertGreater(len(tests), 0, f"At least one test should be generated for {url}.")
+    Returns:
+        List of Task objects.
+    """
+    if USE_CACHED_TASKS:
+        cached_tasks = await load_tasks_from_json(demo_project)
+        if cached_tasks and len(cached_tasks) > 0:
+            print(f"Using {len(cached_tasks)} cached tasks for project '{demo_project.name}'")
+            return cached_tasks
+        else:
+            print(f"No valid cached tasks found for project '{demo_project.name}', generating new tasks...")
 
-        return tests
+    config = TaskGenerationConfig(
+        save_web_analysis_in_db=True,
+        save_task_in_db=False,
+        number_of_prompts_per_task=1,
+        num_or_urls=num_of_urls,
+    )
 
-    def test_task_test_generation_for_local_web(self) -> None:
-        """
-        Test generating task-based tests for a local web application.
-        """
-        tests = asyncio.run(
-            self._generate_tests_for_web_project(
-                url=self.local_page_url,
-                task_description=self.local_task_description,
-                enable_crawl=self.local_enable_crawl,
-                is_web_real=False,
-            )
-        )
-        print("Generated Tests (Local Web):", tests)
+    print(f"Generating tasks for {demo_project.name}...")
+    pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
+    return await pipeline.generate()
 
-    def test_task_test_generation_for_real_web_example(self) -> None:
-        """
-        Test generating task-based tests for real web.
-        """
-        tests = asyncio.run(
-            self._generate_tests_for_web_project(
-                url=self.example_url,
-                task_description=self.example_task_description,
-                enable_crawl=self.example_enable_crawl,
-                is_web_real=True,
-            )
-        )
-        print("Generated Tests (Real Web):", tests)
+
+# ============================================================
+# UNIT TESTS
+# ============================================================
+
+
+class TestTaskTestGenerationWithWebAnalysis(unittest.IsolatedAsyncioTestCase):
+    LOCAL_PAGE_URL = "http://localhost:8000/"
+    EXAMPLE_URL = "https://example.com/"
+
+    async def asyncSetUp(self) -> None:
+        """Initialize test environment."""
+        self.app_bootstrap = AppBootstrap()
+        self.llm_service = self.app_bootstrap.container.llm_service()
+
+    async def _generate_tests_for_web_project(self, url: str) -> List[Task]:
+        """Helper method to generate tasks and test cases."""
+        web_project = await initialize_demo_webs_projects()
+        tasks = await generate_tasks_for_project(web_project[0])
+
+        test_generator = TestGenerationPipeline(web_project=web_project[0], llm_service=self.llm_service)
+        tasks_with_tests = await test_generator.add_tests_to_tasks(tasks=tasks)
+
+        self.assertIsInstance(tasks_with_tests, list, "Tasks with tests should be a list.")
+        self.assertGreater(len(tasks_with_tests), 0, "At least one task should be generated.")
+        return tasks_with_tests
+
+    async def test_task_test_generation_for_local_web(self) -> None:
+        """Test generating task-based tests for a local web application."""
+        tasks_with_tests = await self._generate_tests_for_web_project(url=self.LOCAL_PAGE_URL)
+        self.assertTrue(tasks_with_tests, "No tasks generated for local web.")
+
+    async def test_task_test_generation_for_real_web_example(self) -> None:
+        """Test generating task-based tests for a real web application."""
+        tasks_with_tests = await self._generate_tests_for_web_project(url=self.EXAMPLE_URL)
+        self.assertTrue(tasks_with_tests, "No tasks generated for real web.")
 
 
 if __name__ == "__main__":
