@@ -1,0 +1,48 @@
+{
+  "timestamp": "2025-02-28T19:21:24.481384",
+  "total_execution_time": 77.10106992721558,
+  "agents": {
+    "Xw7N5DaM8Zpwt6rU": {
+      "name": "Random-clicker",
+      "score_statistics": {
+        "count": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0
+      },
+      "avg_solution_time": 0.00034809112548828125,
+      "avg_evaluation_time": 2.0306904315948486,
+      "tasks": {
+        "e024b2c0-7862-4606-8d5f-f772c1bc68c2": {
+          "score": 0.0,
+          "solution_time": 0.00034809112548828125,
+          "evaluation_time": 2.0306904315948486,
+          "has_cached_solution": false
+        }
+      }
+    },
+    "cKMDSEAGjJJZc9nJ": {
+      "name": "browser-use",
+      "score_statistics": {
+        "count": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0
+      },
+      "avg_solution_time": 0.006658315658569336,
+      "avg_evaluation_time": 0.0035400390625,
+      "tasks": {
+        "e024b2c0-7862-4606-8d5f-f772c1bc68c2": {
+          "score": 0.0,
+          "solution_time": 0.006658315658569336,
+          "evaluation_time": 0.0035400390625,
+          "has_cached_solution": true
+        }
+      }
+    }
+  }
+}

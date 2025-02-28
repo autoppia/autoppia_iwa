@@ -113,7 +113,7 @@ class FindInHtmlTest(BaseTaskTest):
         text = re.sub(r'\s+', ' ', text).strip()
         return text
 
-    def execute_test(
+    def _execute_test(
         self,
         current_iteration: int,
         prompt: str,
