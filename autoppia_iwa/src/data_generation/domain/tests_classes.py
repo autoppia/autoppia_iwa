@@ -3,8 +3,7 @@
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List
-
+from typing import List, Literal  # <-- move the import here
 from pydantic import BaseModel, Field, field_validator
 from dependency_injector.wiring import Provide
 
@@ -31,7 +30,6 @@ class BaseTaskTest(BaseModel, ITest):
         arbitrary_types_allowed = True
 
     def execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
-        """Public method that calls the internal _execute_test."""
         return self._execute_test(current_iteration, prompt, snapshot, browser_snapshots)
 
     @abstractmethod
@@ -42,20 +40,18 @@ class BaseTaskTest(BaseModel, ITest):
 
     def serialize(self) -> dict:
         """
-        Serialize a BaseTaskTest (or subclass) to a dict for JSON.
-        Ensures 'type' is included.
+        Serialize a BaseTaskTest (or subclass) to a dict, ensuring 'type' is included.
         """
         serialized = self.model_dump()
         if "type" not in serialized:
-            # if the subclass doesn't define a literal type, fallback
             serialized["type"] = self.__class__.__name__
         return serialized
 
     @classmethod
     def deserialize(cls, data: dict) -> "BaseTaskTest":
         """
-        Generic manual approach if needed.
-        If using Union approach in `Task`, you typically won't call this.
+        A fallback manual approach if needed,
+        in case you do not rely on the 'Union[...]' approach in your Task model.
         """
         test_type = data.get("type", "")
         test_classes = {
@@ -74,8 +70,7 @@ class BaseTaskTest(BaseModel, ITest):
 
 
 class CheckUrlTest(BaseTaskTest):
-    from typing import Literal
-
+    # We define the 'type' field with a Pydantic Literal
     type: Literal["CheckUrlTest"] = "CheckUrlTest"
     url: str
     description: str = Field(default="Check URL")
@@ -85,8 +80,6 @@ class CheckUrlTest(BaseTaskTest):
 
 
 class FindInHtmlTest(BaseTaskTest):
-    from typing import Literal
-
     type: Literal["FindInHtmlTest"] = "FindInHtmlTest"
     keywords: List[str] = Field(..., description="List of keywords to search in the HTML")
     description: str = Field(default="Find keywords in HTML")
@@ -104,8 +97,6 @@ class FindInHtmlTest(BaseTaskTest):
 
 
 class CheckEventTest(BaseTaskTest):
-    from typing import Literal
-
     type: Literal["CheckEventTest"] = "CheckEventTest"
     event_name: str
     description: str = Field(default="Check event")
@@ -115,8 +106,6 @@ class CheckEventTest(BaseTaskTest):
 
 
 class CheckPageViewEventTest(BaseTaskTest):
-    from typing import Literal
-
     type: Literal["CheckPageViewEventTest"] = "CheckPageViewEventTest"
     page_view_url: str
     description: str = Field(default="Check page view event")
@@ -127,10 +116,8 @@ class CheckPageViewEventTest(BaseTaskTest):
 
 
 class JudgeBaseOnHTML(BaseTaskTest):
-    from typing import Literal
-
     type: Literal["JudgeBaseOnHTML"] = "JudgeBaseOnHTML"
-    success_criteria: str = Field(..., description="What should the LLM look for to verify success of the task.")
+    success_criteria: str
     description: str = Field(default="Judge based on HTML changes")
 
     def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
@@ -160,10 +147,8 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
 
 class JudgeBaseOnScreenshot(BaseTaskTest):
-    from typing import Literal
-
     type: Literal["JudgeBaseOnScreenshot"] = "JudgeBaseOnScreenshot"
-    success_criteria: str = Field(..., description="What should the LLM look for to verify success of the task.")
+    success_criteria: str
     description: str = Field(default="Judge based on screenshot changes")
 
     def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
