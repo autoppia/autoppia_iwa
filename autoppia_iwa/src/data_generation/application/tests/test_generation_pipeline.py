@@ -14,7 +14,6 @@ from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_gen
     TestLogicGenerator,
 )
 from .prompts import TEST_FILTERING_PROMPT, TEST_GENERATION_PER_CLASS_SYSTEM_PROMPT
-from autoppia_web_agents_subnet.utils.logging import ColoredLogger
 
 
 class TestGenerationPipeline:
@@ -145,10 +144,7 @@ class TestGenerationPipeline:
 
                 # Call the LLM
                 response = await self.llm_service.async_predict(messages=[{"role": "system", "content": system_prompt}], json_format=True)
-                ColoredLogger.info(
-                    f"REPSONSE LLM: PORMOPT:{system_prompt}; REPONSE: {response}s",
-                    ColoredLogger.RED,
-                )
+
                 # Parse the response - Fix for JSON parsing error
                 response_data = None
                 if isinstance(response, str):

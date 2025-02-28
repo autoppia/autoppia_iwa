@@ -4,7 +4,6 @@ from typing import Dict, List, Optional
 
 import httpx
 from openai import OpenAI, AsyncOpenAI
-from autoppia_web_agents_subnet.utils.logging import ColoredLogger
 
 from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
 import time
@@ -53,10 +52,7 @@ class OpenAIService(ILLM):
 
     async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         try:
-            ColoredLogger.info(
-                f"LLM MESSAGES:{messages}s",
-                ColoredLogger.YELLOW,
-            )
+
             params = {
                 "model": self.config.model,
                 "messages": messages,

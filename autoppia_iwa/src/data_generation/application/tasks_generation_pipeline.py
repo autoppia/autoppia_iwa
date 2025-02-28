@@ -63,11 +63,10 @@ class TaskGenerationPipeline:
                 all_tasks.extend(local_tasks)
 
             # Additional global tasks can be added here if needed
-            for t in all_tasks:
-                if self.task_config.save_task_in_db:
+            if self.task_config.save_task_in_db:
+                for t in all_tasks:
                     self.synthetic_task_repository.save(t.model_dump())
                     logger.info(f"Task saved to DB: {t}")
-                all_tasks.append(t)
 
             test_pipeline = TestGenerationPipeline(llm_service=self.llm_service, web_project=self.web_project)
             all_tasks = await test_pipeline.add_tests_to_tasks(all_tasks)

@@ -19,7 +19,7 @@ from autoppia_iwa.src.evaluation.evaluator.evaluator import (
     EvaluatorConfig,
 )
 from autoppia_iwa.src.web_agents.base import BaseAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution,
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
@@ -153,7 +153,7 @@ def judge_tasks_feasibility(tasks, results, agents):
 
 
 async def main():
-    tasks = generate_tasks(num_tasks=3)
+    tasks = await generate_tasks(num_tasks=1)
 
     agents: List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
     results = {agent.id: {"global_scores": [], "projects": {}} for agent in agents}

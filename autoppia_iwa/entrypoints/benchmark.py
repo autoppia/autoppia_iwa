@@ -42,7 +42,7 @@ LOG_DIR = os.path.join("logs", f"benchmark_{timestamp}")
 TASKS_CACHE_DIR = "data/tasks_cache"
 
 # Configuración de caching
-USE_CACHED_TASKS = True  # Usar tareas cacheadas si están disponibles
+USE_CACHED_TASKS = False  # Usar tareas cacheadas si están disponibles
 
 # Configuración del benchmark
 ITERATIONS = 1  # Número de iteraciones por tarea
@@ -149,7 +149,7 @@ async def save_tasks_to_json(project: WebProject, tasks: List[Task]) -> bool:
 # ============================================================
 
 
-async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int = 7) -> List[Task]:
+async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int = 1) -> List[Task]:
     """
     Genera tareas para el proyecto demo dado.
     Si USE_CACHED_TASKS es True, intenta cargar primero desde la caché específica del proyecto.
@@ -175,7 +175,7 @@ async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int 
         web_project=demo_project,
         save_web_analysis_in_db=True, 
         save_task_in_db=False,
-        number_of_prompts_per_task=3,
+        number_of_prompts_per_task=1,
         num_or_urls=num_of_urls
     )
 
@@ -187,7 +187,7 @@ async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int 
 
     # Generar tests para las tareas
     test_pipeline = TestGenerationPipeline(llm_service=DIContainer.llm_service(), web_project=demo_project)
-    tasks_with_tests = await add_tests_to_tasks(task_results.tasks, test_pipeline)
+    tasks_with_tests = await add_tests_to_tasks(task_results, test_pipeline)
 
     # Guardar en caché para uso futuro
     if USE_CACHED_TASKS:
