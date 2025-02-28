@@ -1,17 +1,13 @@
+# llm_service.py
 
-# llms.py
+from typing import Dict, List, Optional, Any
 
-from typing import Dict, List, Optional
-
+import time
 import httpx
 from openai import OpenAI, AsyncOpenAI
 
 from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
-import time
-import httpx
 
-
-# In llms.py
 
 class OpenAIService(ILLM):
     """
@@ -107,7 +103,7 @@ class LocalLLMService(ILLM):
 
     def __init__(self, config: LLMConfig, endpoint_url: str):
         self.config = config
-        self.endpoint_url = endpoint_url
+        self.endpoint_url = endpoint_url  # Typically something like "http://localhost:6000/generate"
 
     def predict(
         self,
@@ -144,6 +140,9 @@ class LocalLLMService(ILLM):
         json_format: bool = False,
         schema: Optional[Dict] = None
     ) -> str:
+        """
+        Asynchronously sends a single request to the local LLM endpoint "/generate".
+        """
         start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
@@ -153,7 +152,7 @@ class LocalLLMService(ILLM):
                     "max_tokens": self.config.max_tokens,
                 }
                 if json_format:
-                    payload["json_format"] = "json"
+                    payload["json_format"] = True
                 if schema:
                     payload["schema"] = schema
 
@@ -165,6 +164,50 @@ class LocalLLMService(ILLM):
                 raise RuntimeError(f"Local LLM Async Error: {e}")
             finally:
                 elapsed_time = time.time() - start_time
+                # print(f"Async request took {elapsed_time:.2f} seconds.")
+
+    async def async_predict_parallel(
+        self,
+        requests_list: List[Dict[str, Any]]
+    ) -> List[str]:
+        """
+        Asynchronously sends a *batch* of requests to the local LLM endpoint "/generate_parallel".
+
+        Each element in `requests_list` is expected to be a dict:
+          {
+            "messages": [...],
+            "json_format": bool,
+            "schema": {...}
+          }
+        (All these keys optional except "messages".)
+
+        Returns a list of generated outputs (strings), one per sub-request.
+        """
+        start_time = time.time()
+        # Construct the parallel endpoint (assuming endpoint_url is something like ".../generate")
+        # If your endpoint_url already points to "/generate_parallel", you can just use that.
+        parallel_endpoint = self.endpoint_url.replace("/generate", "/generate_parallel")
+
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            try:
+                payload = {
+                    "requests": requests_list,
+                    "temperature": self.config.temperature,
+                    "max_tokens": self.config.max_tokens
+                }
+
+                response = await client.post(parallel_endpoint, json=payload)
+                response.raise_for_status()
+                data = response.json()
+
+                # "outputs" should be a list of strings, according to /generate_parallel
+                outputs = data.get("outputs", [])
+                return outputs
+            except httpx.HTTPError as e:
+                raise RuntimeError(f"Local LLM Async Parallel Error: {e}")
+            finally:
+                elapsed_time = time.time() - start_time
+                # print(f"Async parallel request took {elapsed_time:.2f} seconds.")
 
 
 class LLMFactory:
