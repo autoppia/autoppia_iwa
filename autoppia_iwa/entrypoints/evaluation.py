@@ -43,10 +43,10 @@ async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
 
     for task in tasks:
         task_solution: TaskSolution = await agent.solve_task(task)
-        evaluator_input = TaskSolution(task=task, actions=task_solution.actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(starting_url=task.url, save_results_in_db=False)
-        evaluator = ConcurrentEvaluator(evaluator_config)
-        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task(evaluator_input)
+        evaluator_input = TaskSolution(task_id=task.id, actions=task_solution.actions, web_agent_id=agent.id)
+        evaluator_config = EvaluatorConfig(save_results_in_db=False)
+        evaluator = ConcurrentEvaluator(project, evaluator_config)
+        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task_solution(task, evaluator_input)
         score = evaluation_result.final_score
         results[agent.id]["global_scores"].append(score)
         results[agent.id]["projects"][project.name].append(score)
@@ -146,9 +146,9 @@ def judge_tasks_feasibility(tasks, results, agents):
 
 
 async def main():
-    tasks = generate_tasks(num_tasks=3)
+    tasks = await generate_tasks(num_tasks=3)
 
-    agents: List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
+    agents: List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=9000)]
     results = {agent.id: {"global_scores": [], "projects": {}} for agent in agents}
 
     for demo_project in demo_web_projects:
