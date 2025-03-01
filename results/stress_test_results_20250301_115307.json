@@ -1,0 +1,216 @@
+{
+  "timestamp": "2025-03-01T11:53:07.284765",
+  "total_execution_time": 1033.3594493865967,
+  "agents": {
+    "CK7n8e2FnZbCK4ZY": {
+      "name": "Random-clicker",
+      "score_statistics": {
+        "count": 15,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0
+      },
+      "avg_solution_time": 0.00012769699096679688,
+      "avg_evaluation_time": 1.3269739786783854,
+      "tasks": {
+        "4df874c6-d057-441a-81c8-6b978459ddf4": {
+          "score": 0.0,
+          "solution_time": 0.0001480579376220703,
+          "evaluation_time": 1.5223407745361328,
+          "has_cached_solution": false
+        },
+        "e641c663-1287-4fad-b930-9c22c2882f30": {
+          "score": 0.0,
+          "solution_time": 0.00013566017150878906,
+          "evaluation_time": 1.3974153995513916,
+          "has_cached_solution": false
+        },
+        "5f5c56f1-d449-41f0-b0e4-1321fa382a0b": {
+          "score": 0.0,
+          "solution_time": 0.00010442733764648438,
+          "evaluation_time": 1.2531440258026123,
+          "has_cached_solution": false
+        },
+        "ea93d63e-8c6a-44eb-9b04-2a35cd728713": {
+          "score": 0.0,
+          "solution_time": 0.00011348724365234375,
+          "evaluation_time": 1.287492036819458,
+          "has_cached_solution": false
+        },
+        "b8bb5969-ccfe-4c88-8cd5-fff49e86bf26": {
+          "score": 0.0,
+          "solution_time": 0.00011968612670898438,
+          "evaluation_time": 1.3332023620605469,
+          "has_cached_solution": false
+        },
+        "2aa730b7-9b21-4071-9889-525ef3394cae": {
+          "score": 0.0,
+          "solution_time": 0.00011205673217773438,
+          "evaluation_time": 1.2544100284576416,
+          "has_cached_solution": false
+        },
+        "7b7086a3-6c55-4b59-ab3b-dcf8c26cd062": {
+          "score": 0.0,
+          "solution_time": 0.0001366138458251953,
+          "evaluation_time": 1.333165168762207,
+          "has_cached_solution": false
+        },
+        "ec6f6d1a-99ab-4413-bba0-cbea59fc0871": {
+          "score": 0.0,
+          "solution_time": 0.00011706352233886719,
+          "evaluation_time": 1.315385103225708,
+          "has_cached_solution": false
+        },
+        "05227341-0bb6-4544-9f29-73f542ad4711": {
+          "score": 0.0,
+          "solution_time": 0.000102996826171875,
+          "evaluation_time": 1.2756667137145996,
+          "has_cached_solution": false
+        },
+        "857963f9-5ff1-4ef0-82bc-f0a6f045fef8": {
+          "score": 0.0,
+          "solution_time": 0.00010228157043457031,
+          "evaluation_time": 1.297804832458496,
+          "has_cached_solution": false
+        },
+        "efb69fed-a31f-4eff-bdab-10387865ac98": {
+          "score": 0.0,
+          "solution_time": 0.0001125335693359375,
+          "evaluation_time": 1.3597354888916016,
+          "has_cached_solution": false
+        },
+        "a22052c8-f19c-4e26-b515-94085c41bb8c": {
+          "score": 0.0,
+          "solution_time": 0.00016450881958007812,
+          "evaluation_time": 1.3638513088226318,
+          "has_cached_solution": false
+        },
+        "c3ad7aaa-603f-4c4d-8ab1-c61b8fc5244b": {
+          "score": 0.0,
+          "solution_time": 0.0001671314239501953,
+          "evaluation_time": 1.285675287246704,
+          "has_cached_solution": false
+        },
+        "5266cedd-346b-4786-83b4-5af978d025b1": {
+          "score": 0.0,
+          "solution_time": 0.0001621246337890625,
+          "evaluation_time": 1.2978758811950684,
+          "has_cached_solution": false
+        },
+        "e8a638c7-dda8-42c4-81ae-31b9514b9c14": {
+          "score": 0.0,
+          "solution_time": 0.00011682510375976562,
+          "evaluation_time": 1.3274452686309814,
+          "has_cached_solution": false
+        }
+      }
+    },
+    "0GmfwiNrecZBxhWG": {
+      "name": "browser-use",
+      "score_statistics": {
+        "count": 15,
+        "mean": 0.8666666666666667,
+        "median": 1.0,
+        "min": 0.0,
+        "max": 1.0,
+        "stdev": 0.3518657752744984
+      },
+      "avg_solution_time": 37.65295246442159,
+      "avg_evaluation_time": 6.262460470199585,
+      "tasks": {
+        "4df874c6-d057-441a-81c8-6b978459ddf4": {
+          "score": 1.0,
+          "solution_time": 13.38361930847168,
+          "evaluation_time": 3.2563345432281494,
+          "has_cached_solution": true
+        },
+        "e641c663-1287-4fad-b930-9c22c2882f30": {
+          "score": 1.0,
+          "solution_time": 31.085031270980835,
+          "evaluation_time": 4.279535531997681,
+          "has_cached_solution": true
+        },
+        "5f5c56f1-d449-41f0-b0e4-1321fa382a0b": {
+          "score": 1.0,
+          "solution_time": 65.46593022346497,
+          "evaluation_time": 7.975987911224365,
+          "has_cached_solution": true
+        },
+        "ea93d63e-8c6a-44eb-9b04-2a35cd728713": {
+          "score": 1.0,
+          "solution_time": 12.450963735580444,
+          "evaluation_time": 2.338301658630371,
+          "has_cached_solution": true
+        },
+        "b8bb5969-ccfe-4c88-8cd5-fff49e86bf26": {
+          "score": 1.0,
+          "solution_time": 34.66547679901123,
+          "evaluation_time": 5.905729293823242,
+          "has_cached_solution": true
+        },
+        "2aa730b7-9b21-4071-9889-525ef3394cae": {
+          "score": 1.0,
+          "solution_time": 16.863099336624146,
+          "evaluation_time": 2.792322874069214,
+          "has_cached_solution": true
+        },
+        "7b7086a3-6c55-4b59-ab3b-dcf8c26cd062": {
+          "score": 1.0,
+          "solution_time": 15.163539171218872,
+          "evaluation_time": 3.079972505569458,
+          "has_cached_solution": true
+        },
+        "ec6f6d1a-99ab-4413-bba0-cbea59fc0871": {
+          "score": 1.0,
+          "solution_time": 25.645179271697998,
+          "evaluation_time": 4.064889192581177,
+          "has_cached_solution": true
+        },
+        "05227341-0bb6-4544-9f29-73f542ad4711": {
+          "score": 1.0,
+          "solution_time": 63.39760112762451,
+          "evaluation_time": 6.5841357707977295,
+          "has_cached_solution": true
+        },
+        "857963f9-5ff1-4ef0-82bc-f0a6f045fef8": {
+          "score": 1.0,
+          "solution_time": 117.2676796913147,
+          "evaluation_time": 18.983595609664917,
+          "has_cached_solution": true
+        },
+        "efb69fed-a31f-4eff-bdab-10387865ac98": {
+          "score": 0.0,
+          "solution_time": 15.229588985443115,
+          "evaluation_time": 2.867389678955078,
+          "has_cached_solution": true
+        },
+        "a22052c8-f19c-4e26-b515-94085c41bb8c": {
+          "score": 1.0,
+          "solution_time": 34.78012275695801,
+          "evaluation_time": 13.850412845611572,
+          "has_cached_solution": true
+        },
+        "c3ad7aaa-603f-4c4d-8ab1-c61b8fc5244b": {
+          "score": 1.0,
+          "solution_time": 22.276780128479004,
+          "evaluation_time": 4.681105852127075,
+          "has_cached_solution": true
+        },
+        "5266cedd-346b-4786-83b4-5af978d025b1": {
+          "score": 1.0,
+          "solution_time": 16.68530583381653,
+          "evaluation_time": 3.210106134414673,
+          "has_cached_solution": true
+        },
+        "e8a638c7-dda8-42c4-81ae-31b9514b9c14": {
+          "score": 0.0,
+          "solution_time": 80.43436932563782,
+          "evaluation_time": 10.067087650299072,
+          "has_cached_solution": true
+        }
+      }
+    }
+  }
+}

@@ -50,8 +50,8 @@ TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 SOLUTIONS_CACHE_DIR = "data/solutions_cache"  # Directory to store solution cache files
 OUTPUT_DIR = "results"     # Directory to store test results
 M = 1   # Number of copies of each solution to evaluate
-PROMPTS_PER_URL = 1
-NUM_OF_URLS = 1
+PROMPTS_PER_URL = 3
+NUM_OF_URLS = 5
 
 # Create output/cache directories if needed
 os.makedirs(OUTPUT_DIR, exist_ok=True)

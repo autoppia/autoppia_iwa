@@ -140,13 +140,13 @@ class ScrollAction(BaseAction):
             try:
                 await page.evaluate(f"window.scrollBy(0, -{self.value});")
             except Exception as e:
-                logger.error(e)
+                # logger.error(e)
                 await page.keyboard.press("PageUp")
         elif self.down:
             try:
                 await page.evaluate(f"window.scrollBy(0, {self.value});")
             except Exception as e:
-                logger.error(e)
+                # logger.error(e)
                 await page.keyboard.press("PageDown")
         else:
             # Attempt text-based scroll
@@ -162,7 +162,7 @@ class ScrollAction(BaseAction):
                         await asyncio.sleep(0.5)
                         return
                 except Exception as e:
-                    logger.error(e)
+                    # logger.error(e)
                     continue
             raise ValueError(f"Could not scroll to: {self.value}")
 
