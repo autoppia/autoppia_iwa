@@ -4,7 +4,7 @@ import json
 
 
 def make_request():
-    url = "http://127.0.0.1:6000/generate"
+    url = "http://127.0.0.1:22185/generate"
     headers = {"Content-Type": "application/json"}
     data = {
         "messages": [
