@@ -1,7 +1,6 @@
 import asyncio
 import os
-import time
-from typing import List, Optional
+from typing import List
 import logging
 
 # Autoppia/third-party imports
@@ -10,22 +9,10 @@ from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-
-# Local imports (within the same "entrypoints" directory)
 from autoppia_iwa.src.shared.entrypoints.tasks import (
     generate_tasks_for_project,
 )
 from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.entrypoints.results import (
-    print_performance_statistics,
-    plot_results,
-    plot_task_comparison,
-    save_results_to_json
-)
-
-# Import the consolidated solution cache system
 from autoppia_iwa.src.shared.entrypoints.solutions import (
     ConsolidatedSolutionCache
 )
@@ -51,7 +38,7 @@ SOLUTIONS_CACHE_DIR = "data/solutions_cache"  # Directory to store solution cach
 OUTPUT_DIR = "results"     # Directory to store test results
 M = 1   # Number of copies of each solution to evaluate
 PROMPTS_PER_URL = 15
-NUM_OF_URLS = 1
+NUM_OF_URLS = 10
 
 # Create output/cache directories if needed
 os.makedirs(OUTPUT_DIR, exist_ok=True)
