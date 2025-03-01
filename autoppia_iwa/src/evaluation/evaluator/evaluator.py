@@ -150,7 +150,8 @@ class ConcurrentEvaluator(IEvaluator):
                 self.evaluation_stats.append(r.stats)
 
         # Display the final report after all evaluations
-        self._display_batch_evaluation_summary(task.id)
+        # TODO: DESCOMENTAR
+        # self._display_batch_evaluation_summary(task.id)
 
         await self.backend_demo_webs_service.close()
         return result
@@ -245,6 +246,7 @@ class ConcurrentEvaluator(IEvaluator):
                         cloned_result.stats = stats_copy
 
                     results.append(cloned_result)
+                logger.info(f"------> _evaluate_group_with_semaphore MINER{task_solution.web_agent_id}. RESULTS:{results}%)")
 
                 return results
 
@@ -705,20 +707,22 @@ class ConcurrentEvaluator(IEvaluator):
             agent_groups[agent_type].append(stat)
 
         # Output formatted table for batch summary
-        logger.info(f"\n{'=' * 80}")
-        logger.info(f"EVALUATION SUMMARY FOR TASK: {task_id}")
-        logger.info(f"{'=' * 80}")
-        logger.info(f"Total Agents: {total_agents}, Success Rate: {successful_agents}/{total_agents} ({successful_agents/total_agents*100:.1f}%)")
-        logger.info(f"Average Score: {avg_score:.4f}, Average Time: {avg_time:.2f}s")
+        # TODO: PDESCOMENTAR
+        # logger.info(f"\n{'=' * 80}")
+        # logger.info(f"EVALUATION SUMMARY FOR TASK: {task_id}")
+        # logger.info(f"{'=' * 80}")
+        # logger.info(f"Total Agents: {total_agents}, Success Rate: {successful_agents}/{total_agents} ({successful_agents/total_agents*100:.1f}%)")
+        # logger.info(f"Average Score: {avg_score:.4f}, Average Time: {avg_time:.2f}s")
 
         # Create a summary table for each agent group
         for agent_type, stats in agent_groups.items():
             avg_group_score = sum(s.final_score for s in stats) / max(1, len(stats))
             avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
+            # TODO: PDESCOMENTAR
 
-            logger.info(f"\n{'-' * 60}")
-            logger.info(f"Web Agent ID: {agent_type} ({len(stats)} agents)")
-            logger.info(f"Average Score: {avg_group_score:.4f}, Average Time: {avg_group_time:.2f}s")
+            # logger.info(f"\n{'-' * 60}")
+            # logger.info(f"Web Agent ID: {agent_type} ({len(stats)} agents)")
+            # logger.info(f"Average Score: {avg_group_score:.4f}, Average Time: {avg_group_time:.2f}s")
 
             # Action timing statistics
             all_action_times = []
