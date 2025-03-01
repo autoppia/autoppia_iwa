@@ -4611,6 +4611,14 @@
         "documentation": {}
     },
     {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
         "label": "string",
         "kind": 6,
         "isExtraImport": true,
@@ -4934,6 +4942,22 @@
         "importPath": "torch",
         "description": "torch",
         "detail": "torch",
+        "documentation": {}
+    },
+    {
+        "label": "Blip2Processor",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "Blip2ForConditionalGeneration",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
         "documentation": {}
     },
     {
@@ -10171,6 +10195,15 @@
         "description": "modules.llm_local.test.test_parallel_request",
         "peekOfCode": "def main():\n    parser = argparse.ArgumentParser(description=\"Test parallel requests to /generate_parallel.\")\n    parser.add_argument(\n        \"--number_request\",\n        type=int,\n        default=5,\n        help=\"Number of sub-requests to batch in one call\"\n    )\n    args = parser.parse_args()\n    # Number of sub-requests to batch in one call",
         "detail": "modules.llm_local.test.test_parallel_request",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "modules.llm_local.run_local_blip2",
+        "description": "modules.llm_local.run_local_blip2",
+        "peekOfCode": "def main():\n    # 1. Parse command-line arguments\n    parser = argparse.ArgumentParser(description=\"Use BLIP-2 to classify screenshot content.\")\n    parser.add_argument(\"--filename\", required=True, help=\"Path to the screenshot image file.\")\n    args = parser.parse_args()\n    # 2. Load the BLIP-2 model and processor\n    processor = Blip2Processor.from_pretrained(\"Salesforce/blip2-opt-2.7b\")\n    model = Blip2ForConditionalGeneration.from_pretrained(\"Salesforce/blip2-opt-2.7b\")\n    # 3. Load your screenshot\n    image = Image.open(args.filename).convert(\"RGB\")",
+        "detail": "modules.llm_local.run_local_blip2",
         "documentation": {}
     },
     {
