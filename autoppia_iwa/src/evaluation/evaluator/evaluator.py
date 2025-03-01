@@ -24,6 +24,7 @@ from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 class EvaluationStats(BaseModel):
     """Statistics for a single evaluation"""
+
     web_agent_id: str
     task_id: str
     action_count: int
@@ -53,7 +54,7 @@ class EvaluationStats(BaseModel):
         action_time = sum(self.action_execution_times) if self.action_execution_times else 0
         return {
             "agent_id": self.web_agent_id,
-            "task_id": self.task_id, 
+            "task_id": self.task_id,
             "actions": self.action_count,
             "score": self.final_score,
             "time_total": round(self.total_time, 2),
@@ -62,7 +63,7 @@ class EvaluationStats(BaseModel):
             "time_avg_per_action": round(action_time / max(1, len(self.action_execution_times)), 3),
             "time_random": round(self.random_clicker_time, 2),
             "tests_passed": f"{self.tests_passed}/{self.total_tests}",
-            "success": not self.had_errors
+            "success": not self.had_errors,
         }
 
 
@@ -106,11 +107,7 @@ class ConcurrentEvaluator(IEvaluator):
         # Configure loguru levels
         if not self.config.verbose_logging:
             logger.remove()
-            logger.add(
-                lambda msg: print(msg, end=""), 
-                level="WARNING" if self.config.debug_mode else "INFO",
-                format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {message}"
-            )
+            logger.add(lambda msg: print(msg, end=""), level="WARNING" if self.config.debug_mode else "INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {message}")
 
     async def evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution) -> EvaluationResult:
         """
@@ -177,8 +174,7 @@ class ConcurrentEvaluator(IEvaluator):
 
         # Use semaphore to limit concurrent evaluations
         semaphore = asyncio.Semaphore(self.config.chunk_size)
-        group_tasks = [self._evaluate_group_with_semaphore(task, group, semaphore) 
-                       for group in grouped_tasks.values()]
+        group_tasks = [self._evaluate_group_with_semaphore(task, group, semaphore) for group in grouped_tasks.values()]
 
         # Show minimal progress for large batches
         if len(group_tasks) > 5 and self.config.verbose_logging:
@@ -222,8 +218,7 @@ class ConcurrentEvaluator(IEvaluator):
             completed = 0
             while True:
                 await asyncio.sleep(10)  # Only update every 10 seconds
-                completed = sum(1 for t in asyncio.all_tasks() 
-                                if t.done() and "evaluate_group_with_semaphore" in str(t))
+                completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
                 logger.info(f"Progress: {completed}/{total_groups} groups ({completed/total_groups*100:.0f}%)")
         except asyncio.CancelledError:
             pass
@@ -264,20 +259,14 @@ class ConcurrentEvaluator(IEvaluator):
                         final_score=0,
                         raw_score=0,
                         random_clicker_score=0,
-                        test_results_matrix=[],
+                        test_results_matrix=initialize_test_results_matrix(task=task, num_actions=len(ts.actions)),
                         feedback=None,
                         execution_history=[],
                         random_passed_tests=[],
                         evaluation_time=0,
-                        stats=EvaluationStats(
-                            web_agent_id=ts.web_agent_id,
-                            task_id=task.id,
-                            action_count=len(ts.actions),
-                            start_time=time.time(),
-                            had_errors=True,
-                            error_message=str(e)
-                        )
-                    ) for ts in group
+                        stats=EvaluationStats(web_agent_id=ts.web_agent_id, task_id=task.id, action_count=len(ts.actions), start_time=time.time(), had_errors=True, error_message=str(e)),
+                    )
+                    for ts in group
                 ]
 
     @staticmethod
@@ -303,12 +292,7 @@ class ConcurrentEvaluator(IEvaluator):
         is_web_real = task.is_web_real
 
         # Create stats object to track this evaluation
-        stats = EvaluationStats(
-            web_agent_id=web_agent_id,
-            task_id=task.id,
-            action_count=len(actions),
-            start_time=time.time()
-        )
+        stats = EvaluationStats(web_agent_id=web_agent_id, task_id=task.id, action_count=len(actions), start_time=time.time())
 
         # Count action types
         for action in actions:
@@ -318,7 +302,7 @@ class ConcurrentEvaluator(IEvaluator):
             stats.had_errors = True
             stats.error_message = "No actions provided"
             stats.total_time = time.time() - stats.start_time
-            test_results_matrix = initialize_test_results_matrix(task,actions)
+            test_results_matrix = initialize_test_results_matrix(task, 0)
             return EvaluationResult(
                 web_agent_id=web_agent_id,
                 final_score=0,
@@ -329,7 +313,7 @@ class ConcurrentEvaluator(IEvaluator):
                 execution_history=[],
                 random_passed_tests=[],
                 evaluation_time=0.1,
-                stats=stats
+                stats=stats,
             )
 
         try:
@@ -342,15 +326,16 @@ class ConcurrentEvaluator(IEvaluator):
             browser_execution_start = time.time()
             stats.browser_setup_time = browser_execution_start - browser_setup_start
 
-            execution_history, action_execution_times = await self._evaluate_in_browser(
-                task, web_agent_id, actions, is_web_real
-            )
+            execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
 
             stats.action_execution_times = action_execution_times
 
             # Run tests on agent's actions
             test_start_time = time.time()
             test_results_matrix = self._run_tests(task, execution_history)
+            if not test_results_matrix or len(test_results_matrix) == 0:
+                logger.error(f"----->MATRIZ DE RESULTADOS VACIA: {execution_history}")
+
             stats.test_execution_time = time.time() - test_start_time
 
             # Get or compute random clicker performance for baseline score
@@ -421,7 +406,7 @@ class ConcurrentEvaluator(IEvaluator):
                 execution_history=execution_history,
                 random_passed_tests=random_passed_tests,
                 evaluation_time=stats.total_time,
-                stats=stats
+                stats=stats,
             )
 
             return result
@@ -432,18 +417,19 @@ class ConcurrentEvaluator(IEvaluator):
             stats.total_time = time.time() - stats.start_time
 
             logger.error(f"Error evaluating task solution: {e}")
+            logger.error(f"--------------------ESTOY EN LA EXCEPCION DEL EVALUATE SINGLE TASK SOLUTION ----------------------")
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,
                 final_score=0,
                 raw_score=0,
                 random_clicker_score=0,
-                test_results_matrix=[],
+                test_results_matrix=initialize_test_results_matrix(task=task, num_actions=len(task_solution.actions)),
                 feedback=None,
                 execution_history=[],
                 random_passed_tests=[],
                 evaluation_time=0,
-                stats=stats
+                stats=stats,
             )
 
     async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], is_web_real: bool) -> Tuple[List[ActionExecutionResult], List[float]]:
@@ -482,9 +468,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                         # Execute single action
                         try:
-                            result = await browser_executor.execute_single_action(
-                                action, web_agent_id, iteration=i, is_web_real=is_web_real
-                            )
+                            result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real)
                             action_results.append(result)
 
                             action_end = time.time()
@@ -538,12 +522,11 @@ class ConcurrentEvaluator(IEvaluator):
             page: Playwright page object
             web_agent_id: ID of the web agent
         """
+
         def on_frame_navigated(frame):
             if frame.url:
                 # Create a task to run the async code without awaiting it directly
-                asyncio.create_task(
-                    _handle_frame_navigation(web_project, frame.url, task_url, web_agent_id)
-                )
+                asyncio.create_task(_handle_frame_navigation(web_project, frame.url, task_url, web_agent_id))
 
         async def _handle_frame_navigation(web_project, url, task_url, web_agent_id):
             try:
@@ -590,9 +573,7 @@ class ConcurrentEvaluator(IEvaluator):
         if not task.is_web_real:
             await self.backend_demo_webs_service.reset_backend_events_db(random_web_agent_id)
 
-        random_execution_history, _ = await self._evaluate_in_browser(
-            task, random_web_agent_id, random_actions, task.is_web_real
-        )
+        random_execution_history, _ = await self._evaluate_in_browser(task, random_web_agent_id, random_actions, task.is_web_real)
 
         # Run tests on random clicker actions
         random_test_results = self._run_tests(task, random_execution_history)
@@ -631,7 +612,7 @@ class ConcurrentEvaluator(IEvaluator):
         Returns:
             List[List[TestResult]]: A matrix where each row contains test results after each action
         """
-        test_results_matrix = []
+        test_results_matrix = initialize_test_results_matrix(task=task, num_actions=len(execution_history))
         browser_snapshots = []
 
         for i, action_result in enumerate(execution_history):
@@ -641,21 +622,15 @@ class ConcurrentEvaluator(IEvaluator):
             test_runner = TestRunner(task.tests)
 
             # Run tests for the current snapshot, giving it access to all snapshots up to this point
-            test_results = test_runner.run_tests(
-                prompt=task.prompt, 
-                snapshot=snapshot, 
-                browser_snapshots=browser_snapshots,
-                current_action_index=i
-            )
+            test_results = test_runner.run_tests(prompt=task.prompt, snapshot=snapshot, browser_snapshots=browser_snapshots, current_action_index=i)
 
             # Add the results for this snapshot to the matrix
-            test_results_matrix.append(test_results)
+            test_results_matrix[i] = test_results
 
         return test_results_matrix
 
     @staticmethod
-    def _generate_feedback(task: Task, execution_history: List[ActionExecutionResult], 
-                           test_results_matrix: List[List[TestResult]]) -> Feedback:
+    def _generate_feedback(task: Task, execution_history: List[ActionExecutionResult], test_results_matrix: List[List[TestResult]]) -> Feedback:
         """
         Generate feedback based on test results.
         Args:
@@ -665,11 +640,7 @@ class ConcurrentEvaluator(IEvaluator):
         Returns:
             Feedback: Generated feedback
         """
-        return FeedbackGenerator.generate_feedback(
-            task_prompt=task.prompt, 
-            execution_history=execution_history, 
-            test_results_matrix=test_results_matrix
-        )
+        return FeedbackGenerator.generate_feedback(task_prompt=task.prompt, execution_history=execution_history, test_results_matrix=test_results_matrix)
 
     def _display_single_evaluation_summary(self, stats: EvaluationStats):
         """Display a concise summary for a single evaluation"""
@@ -790,11 +761,7 @@ class ConcurrentEvaluator(IEvaluator):
         if self.action_type_timing:
             logger.info(f"\n{'-' * 60}")
             logger.info("ACTION TYPE PERFORMANCE")
-            for action_type, times in sorted(
-                self.action_type_timing.items(),
-                key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0,
-                reverse=True
-            ):
+            for action_type, times in sorted(self.action_type_timing.items(), key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0, reverse=True):
                 if times:
                     avg = sum(times) / len(times)
                     max_time = max(times)
