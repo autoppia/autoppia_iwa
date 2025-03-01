@@ -17,7 +17,7 @@ def make_request():
                 "content": "Give me a short introduction to large language model."
             }
         ],
-        "temperature": 0.1,
+        "temperature": 10,
         "max_tokens": 256
     }
 
