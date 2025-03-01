@@ -246,7 +246,7 @@ class ConcurrentEvaluator(IEvaluator):
                         cloned_result.stats = stats_copy
 
                     results.append(cloned_result)
-                logger.info(f"------> _evaluate_group_with_semaphore MINER{task_solution.web_agent_id}. RESULTS:{results}%)")
+                logger.info(f"------> _evaluate_group_with_semaphore MINER{task_solution.web_agent_id}%)")
 
                 return results
 
