@@ -748,40 +748,40 @@ class ConcurrentEvaluator(IEvaluator):
         all_random_time = sum(s.random_clicker_time for s in task_stats)
         all_total_time = sum(s.total_time for s in task_stats)
 
-        logger.info(f"\n{'-' * 60}")
-        logger.info("TIMING BREAKDOWN (across all agents)")
-        logger.info(f"Total Evaluation Time: {all_total_time:.2f}s")
-        if all_total_time > 0:
-            logger.info(f"Browser Setup: {all_browser_setup:.2f}s ({all_browser_setup/all_total_time*100:.1f}%)")
-            logger.info(f"Action Execution: {all_action_time:.2f}s ({all_action_time/all_total_time*100:.1f}%)")
-            logger.info(f"Test Execution: {all_test_time:.2f}s ({all_test_time/all_total_time*100:.1f}%)")
-            logger.info(f"Random Evaluation: {all_random_time:.2f}s ({all_random_time/all_total_time*100:.1f}%)")
-        else:
-            logger.info("Browser Setup: 0.00s (0.0%)")
-            logger.info("Action Execution: 0.00s (0.0%)")
-            logger.info("Test Execution: 0.00s (0.0%)")
-            logger.info("Random Evaluation: 0.00s (0.0%)")
+        # logger.info(f"\n{'-' * 60}")
+        # logger.info("TIMING BREAKDOWN (across all agents)")
+        # logger.info(f"Total Evaluation Time: {all_total_time:.2f}s")
+        # if all_total_time > 0:
+        #     logger.info(f"Browser Setup: {all_browser_setup:.2f}s ({all_browser_setup/all_total_time*100:.1f}%)")
+        #     logger.info(f"Action Execution: {all_action_time:.2f}s ({all_action_time/all_total_time*100:.1f}%)")
+        #     logger.info(f"Test Execution: {all_test_time:.2f}s ({all_test_time/all_total_time*100:.1f}%)")
+        #     logger.info(f"Random Evaluation: {all_random_time:.2f}s ({all_random_time/all_total_time*100:.1f}%)")
+        # else:
+        #     logger.info("Browser Setup: 0.00s (0.0%)")
+        #     logger.info("Action Execution: 0.00s (0.0%)")
+        #     logger.info("Test Execution: 0.00s (0.0%)")
+        #     logger.info("Random Evaluation: 0.00s (0.0%)")
         # Display action type timing statistics
-        if self.action_type_timing:
-            logger.info(f"\n{'-' * 60}")
-            logger.info("ACTION TYPE PERFORMANCE")
-            for action_type, times in sorted(self.action_type_timing.items(), key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0, reverse=True):
-                if times:
-                    avg = sum(times) / len(times)
-                    max_time = max(times)
-                    min_time = min(times)
-                    logger.info(f"{action_type}: {len(times)} actions, {avg:.3f}s avg ({min_time:.3f}s - {max_time:.3f}s)")
+        # if self.action_type_timing:
+        #     logger.info(f"\n{'-' * 60}")
+        #     logger.info("ACTION TYPE PERFORMANCE")
+        #     for action_type, times in sorted(self.action_type_timing.items(), key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0, reverse=True):
+        #         if times:
+        #             avg = sum(times) / len(times)
+        #             max_time = max(times)
+        #             min_time = min(times)
+        #             logger.info(f"{action_type}: {len(times)} actions, {avg:.3f}s avg ({min_time:.3f}s - {max_time:.3f}s)")
 
-        # Display any errors that occurred during evaluation
-        if self.errors:
-            logger.info(f"\n{'-' * 60}")
-            logger.info(f"ERRORS ({len(self.errors)})")
-            for i, error in enumerate(self.errors[:5]):  # Show first 5 errors only
-                logger.info(f"{i+1}. {error}")
-            if len(self.errors) > 5:
-                logger.info(f"... and {len(self.errors) - 5} more errors")
+        # # Display any errors that occurred during evaluation
+        # if self.errors:
+        #     logger.info(f"\n{'-' * 60}")
+        #     logger.info(f"ERRORS ({len(self.errors)})")
+        #     for i, error in enumerate(self.errors[:5]):  # Show first 5 errors only
+        #         logger.info(f"{i+1}. {error}")
+        #     if len(self.errors) > 5:
+        #         logger.info(f"... and {len(self.errors) - 5} more errors")
 
-        logger.info(f"{'=' * 80}")
+        # logger.info(f"{'=' * 80}")
 
     def print_evaluation_summary(self):
         """Print a summary of all evaluations performed"""
