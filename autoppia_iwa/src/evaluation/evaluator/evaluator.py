@@ -12,6 +12,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluati
 from autoppia_iwa.src.evaluation.classes import Feedback
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
+from autoppia_iwa.src.evaluation.evaluator.utils import initialize_test_results_matrix
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
@@ -317,17 +318,17 @@ class ConcurrentEvaluator(IEvaluator):
             stats.had_errors = True
             stats.error_message = "No actions provided"
             stats.total_time = time.time() - stats.start_time
-
+            test_results_matrix = initialize_test_results_matrix(task,actions)
             return EvaluationResult(
                 web_agent_id=web_agent_id,
                 final_score=0,
                 raw_score=0,
                 random_clicker_score=0,
-                test_results_matrix=[],
+                test_results_matrix=test_results_matrix,
                 feedback=None,
                 execution_history=[],
                 random_passed_tests=[],
-                evaluation_time=0,
+                evaluation_time=0.1,
                 stats=stats
             )
 
@@ -775,11 +776,16 @@ class ConcurrentEvaluator(IEvaluator):
         logger.info(f"\n{'-' * 60}")
         logger.info("TIMING BREAKDOWN (across all agents)")
         logger.info(f"Total Evaluation Time: {all_total_time:.2f}s")
-        logger.info(f"Browser Setup: {all_browser_setup:.2f}s ({all_browser_setup/all_total_time*100:.1f}%)")
-        logger.info(f"Action Execution: {all_action_time:.2f}s ({all_action_time/all_total_time*100:.1f}%)")
-        logger.info(f"Test Execution: {all_test_time:.2f}s ({all_test_time/all_total_time*100:.1f}%)")
-        logger.info(f"Random Evaluation: {all_random_time:.2f}s ({all_random_time/all_total_time*100:.1f}%)")
-
+        if all_total_time > 0:
+            logger.info(f"Browser Setup: {all_browser_setup:.2f}s ({all_browser_setup/all_total_time*100:.1f}%)")
+            logger.info(f"Action Execution: {all_action_time:.2f}s ({all_action_time/all_total_time*100:.1f}%)")
+            logger.info(f"Test Execution: {all_test_time:.2f}s ({all_test_time/all_total_time*100:.1f}%)")
+            logger.info(f"Random Evaluation: {all_random_time:.2f}s ({all_random_time/all_total_time*100:.1f}%)")
+        else:
+            logger.info("Browser Setup: 0.00s (0.0%)")
+            logger.info("Action Execution: 0.00s (0.0%)")
+            logger.info("Test Execution: 0.00s (0.0%)")
+            logger.info("Random Evaluation: 0.00s (0.0%)")
         # Display action type timing statistics
         if self.action_type_timing:
             logger.info(f"\n{'-' * 60}")
