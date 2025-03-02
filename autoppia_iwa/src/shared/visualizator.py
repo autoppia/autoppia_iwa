@@ -115,9 +115,14 @@ class SubnetVisualizer:
                 if idx < len(test_results_matrix[0]):
                     test_passed = False
                     for action_idx in range(len(test_results_matrix)):
-                        if test_results_matrix[action_idx][idx].success:
-                            test_passed = True
-                            break
+                        if isinstance(test_results_matrix[action_idx][idx], dict):
+                            if test_results_matrix[action_idx][idx]['success']:
+                                test_passed = True
+                                break
+                        else:
+                            if test_results_matrix[action_idx][idx].success:
+                                test_passed = True
+                                break
 
                     # Get detailed test description
                     test_type = type(test).__name__
