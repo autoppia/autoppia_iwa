@@ -17,8 +17,6 @@ Usage example:
       --url http://localhost:6000/generate \
       --concurrency 5 \
       --total_requests 20
-
-You can tweak or extend the code below as needed.
 """
 
 import argparse
@@ -222,7 +220,7 @@ def generate_random_request():
     data = dict(base)
     # Slight random variations on temperature or max_tokens if desired
     data["temperature"] = round(random.uniform(0.1, 1.0), 2)
-    data["max_tokens"] = random.choice([512,1024,2048])
+    data["max_tokens"] = random.choice([512, 1024, 2048])
     # Return a new request
     return data
 
@@ -262,12 +260,12 @@ def main():
         # As soon as each future completes, we process the result
         for future in concurrent.futures.as_completed(future_to_request):
             req_id = future_to_request[future]
-            success = False
-            error = None
-
             try:
                 (request_id, success, resp_time, error_msg, output_text) = future.result()
                 results.append((request_id, success, resp_time, error_msg, output_text))
+
+                # Print a log for each finished request
+                print(f"Request #{request_id} finished in {resp_time:.2f}s. Success: {success}")
 
                 # If we detect an error, we print debug info and stop immediately
                 if not success:
