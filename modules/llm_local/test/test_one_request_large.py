@@ -224,4 +224,6 @@ def make_request():
 
 
 if __name__ == "__main__":
-    make_request()
+    for i in range(1,100):
+        print(f"Request {i}")
+        make_request()
