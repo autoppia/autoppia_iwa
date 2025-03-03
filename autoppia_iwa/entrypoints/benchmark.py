@@ -1,454 +1,233 @@
 import asyncio
-import json
-import os
-import statistics
+import logging
 import time
-from datetime import datetime
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional
 
-import matplotlib.pyplot as plt
-
+from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
-from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.evaluation.classes import EvaluationResult
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-from autoppia_iwa.src.execution.actions.base import BaseAction
-
-# Importar el visualizador
-from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_summary, visualize_task
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluationResult, EvaluatorConfig
+from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
+from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
+from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
+from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
+from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.base import BaseAgent, IWebAgent
+from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.web_voyager_test.utils import TaskData, load_jsonl_file
 
-# ============================================================
-# GLOBAL CONFIGURATION
-# ============================================================
 
-# Directory configuration
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-OUTPUT_DIR = "results"
-LOG_DIR = os.path.join("logs", f"benchmark_{timestamp}")
-TASKS_CACHE_DIR = "data/tasks_cache"
+@dataclass
+class BenchmarkConfig:
+    """Configuration for the benchmark test."""
 
-# Caching configuration
-USE_CACHED_TASKS = True  # Use cached tasks if available
+    use_cached_tasks: bool = False  # Set to True to use cached tasks from JSON file
+    use_cached_solutions: bool = False  # Set to True to use cached solutions when available
+    evaluate_real_tasks: bool = True
 
-# Benchmark configuration
-ITERATIONS = 1  # Number of iterations per task
-NUM_OF_TASKS = 3
+    base_dir: Path = PROJECT_BASE_DIR.parent
+    data_dir: Path = base_dir / "data"
+    tasks_cache_dir: str = str(data_dir / "tasks_cache")  # Directory to store task cache files
+    solutions_cache_dir: str = str(data_dir / "solutions_cache")  # Directory to store solution cache files
+    output_dir: str = str(base_dir / "results")  # Directory to store test results
 
-# Initialize main components
-app = AppBootstrap()
-visualizer = SubnetVisualizer(log_directory=LOG_DIR)
+    m: int = 1  # Number of copies of each solution to evaluate
+    prompts_per_url: int = 1
+    num_of_urls: int = 1
 
-# Agents to evaluate
-AGENTS: List[IWebAgent] = [
-    # RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="Text-External-Agent", host="localhost", port=9000)
+    def __post_init__(self):
+        """Post-initialization logic to ensure directories exist."""
+        self._ensure_directories_exist()
+
+    def _ensure_directories_exist(self):
+        """Ensure that all necessary directories exist."""
+        for directory in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir):
+            Path(directory).mkdir(parents=True, exist_ok=True)
+
+
+# Initialize configuration
+config = BenchmarkConfig()
+
+# Initialize the solution cache manager (single file for all solutions)
+solution_cache = ConsolidatedSolutionCache(config.solutions_cache_dir)
+
+# -----------------------------------------------------------------------------
+# Define the agents for the stress test
+# -----------------------------------------------------------------------------
+AGENTS: List[BaseAgent] = [
+    RandomClickerWebAgent(name="Random-clicker"),
+    ApifiedWebAgent(name="browser-use", host="localhost", port=9000),
 ]
 
-# ============================================================
-# TASK CACHING FUNCTIONS
-# ============================================================
+# Visualizer
+visualizer = SubnetVisualizer()
 
-
-def get_cache_filename(project: WebProject) -> str:
-    """
-    Generates a cache filename specific to a project.
-
-    Args:
-        project (WebProject): The web project.
-
-    Returns:
-        str: Path to the cache file for this specific project.
-    """
-    os.makedirs(TASKS_CACHE_DIR, exist_ok=True)
-    safe_name = project.name.replace(" ", "_").lower()
-    return os.path.join(TASKS_CACHE_DIR, f"{safe_name}_tasks.json")
-
-
-async def load_tasks_from_json(project: WebProject) -> Optional[List[Task]]:
-    """
-    Loads tasks from a project-specific JSON file.
-
-    Args:
-        project (WebProject): The project associated with the tasks.
-
-    Returns:
-        List[Task]: List of deserialized Task objects or None if not found/invalid.
-    """
-    filename = get_cache_filename(project)
-    if not os.path.exists(filename):
-        print(f"Cache file {filename} not found for project '{project.name}'")
-        return None
-
-    try:
-        with open(filename, 'r') as f:
-            cache_data = json.load(f)
-
-        if cache_data.get("project_id") != project.id and cache_data.get("project_name") != project.name:
-            print(f"Cache file exists but for a different project. Expected '{project.name}', found '{cache_data.get('project_name')}'")
-            return None
-
-        tasks = [Task.deserialize(task_data) for task_data in cache_data.get("tasks", [])]
-        print(f"Loaded {len(tasks)} tasks for project '{project.name}' from {filename}")
-        return tasks
-    except Exception as e:
-        print(f"Error loading tasks from {filename}: {str(e)}")
-        return None
-
-
-async def save_tasks_to_json(project: WebProject, tasks: List[Task]) -> bool:
-    """
-    Saves tasks to a project-specific JSON file.
-
-    Args:
-        project (WebProject): The project associated with the tasks.
-        tasks (List[Task]): List of tasks to save.
-
-    Returns:
-        bool: True if saved successfully, False otherwise.
-    """
-    filename = get_cache_filename(project)
-
-    try:
-        cache_data = {
-            "project_id": project.id,
-            "project_name": project.name,
-            "created_at": datetime.now().isoformat(),
-            "tasks": [task.serialize() for task in tasks],
-        }
-
-        with open(filename, 'w') as f:
-            json.dump(cache_data, f, indent=2)
-
-        print(f"Saved {len(tasks)} tasks for project '{project.name}' to {filename}")
-        return True
-    except Exception as e:
-        print(f"Error saving tasks to {filename}: {str(e)}")
-        return False
-
-
-# ============================================================
-# TASK AND TEST GENERATION FUNCTIONS
-# ============================================================
-
-
-async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int = 1) -> List[Task]:
-    """
-    Generates tasks for the given demo project.
-    If USE_CACHED_TASKS is True, attempts to load from the project-specific cache first.
-
-    Args:
-        demo_project: The web project for which to generate tasks.
-        num_of_urls: Number of URLs to include in task generation.
-
-    Returns:
-        List of Task objects.
-    """
-    if USE_CACHED_TASKS:
-        cached_tasks = await load_tasks_from_json(demo_project)
-        if cached_tasks and len(cached_tasks) > 0:
-            print(f"Using {len(cached_tasks)} cached tasks for project '{demo_project.name}'")
-            return cached_tasks
-        else:
-            print(f"No valid cached tasks found for project '{demo_project.name}', generating new tasks...")
-
-    config = TaskGenerationConfig(
-        save_web_analysis_in_db=True,
-        save_task_in_db=False,
-        number_of_prompts_per_task=3,
-        num_or_urls=num_of_urls,
-    )
-
-    print(f"Generating tasks for {demo_project.name}...")
-    pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
-    task_results = await pipeline.generate()
-
-    test_pipeline = TestGenerationPipeline(llm_service=DIContainer.llm_service(), web_project=demo_project)
-    tasks_with_tests = await add_tests_to_tasks(task_results.tasks, test_pipeline)
-
-    if USE_CACHED_TASKS:
-        await save_tasks_to_json(demo_project, tasks_with_tests)
-
-    return tasks_with_tests
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("benchmark.log"),
+    ],
+)
+logger = logging.getLogger("benchmark")
 
 
 @visualize_task(visualizer)
-async def add_tests_to_tasks(tasks: List[Task], test_pipeline: TestGenerationPipeline) -> List[Task]:
-    """
-    Adds tests to the generated tasks and visualizes them.
-
-    Args:
-        tasks: List of tasks to add tests to.
-        test_pipeline: Pipeline for test generation.
-
-    Returns:
-        List of tasks with added tests.
-    """
-    print(f"Generating tests for {len(tasks)} tasks...")
-    return await test_pipeline.add_tests_to_tasks(tasks)
-
-
-# ============================================================
-# EVALUATION FUNCTIONS
-# ============================================================
+async def generate_tasks(demo_project) -> List[Task]:
+    """Generate or load tasks for evaluation."""
+    if config.evaluate_real_tasks:
+        logger.info("Loading real tasks...")
+        original_tasks = load_jsonl_file(config.data_dir / "WebVoyager_data.jsonl")
+        impossible_tasks_ids = load_jsonl_file(config.data_dir / "WebVoyagerImpossibleTasks.json")
+        tasks_data = [TaskData(**task) for task in original_tasks if task["id"] not in impossible_tasks_ids]
+        tasks = [Task(url=t.web, prompt=t.ques, is_web_real=True) for t in tasks_data][:config.num_of_urls]
+        return await TestGenerationPipeline(demo_project).add_tests_to_tasks(tasks)
+    return await generate_tasks_for_project(
+        demo_project,
+        config.use_cached_tasks,
+        config.tasks_cache_dir,
+        config.prompts_per_url,
+        config.num_of_urls,
+    )
 
 
 @visualize_evaluation(visualizer)
-async def evaluate_task_solution(web_project: WebProject, task: Task, task_solution: TaskSolution) -> EvaluationResult:
-    """
-    Evaluates a single task solution with visualization.
-
-    Args:
-        web_project: The associated web project.
-        task: The task to evaluate.
-        task_solution: The task solution proposed by the agent.
-
-    Returns:
-        Evaluation result.
-    """
-    evaluator_config = EvaluatorConfig(save_results_in_db=False)
-    evaluator = ConcurrentEvaluator(web_project=web_project, config=evaluator_config)
-    return await evaluator.evaluate_single_task_solution(task=task, task_solution=task_solution)
+async def evaluate_task_solution(web_project, task: Task, task_solution: TaskSolution) -> EvaluationResult:
+    """Evaluate a single task solution."""
+    evaluator = ConcurrentEvaluator(
+        web_project=web_project,
+        config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20),
+    )
+    return await evaluator.evaluate_single_task_solution(task, task_solution)
 
 
-async def evaluate_project_for_agent(agent: IWebAgent, demo_project: WebProject, tasks: List[Task], results: Dict):
-    """
-    Evaluates all tasks of a project for a given agent.
-
-    Args:
-        agent: The agent to evaluate.
-        demo_project: The web project to evaluate.
-        tasks: List of tasks.
-        results: Dictionary to store the results.
-    """
-    if demo_project.name not in results[agent.id]["projects"]:
-        results[agent.id]["projects"][demo_project.name] = []
+async def generate_solutions(agent: BaseAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
+    """Generate or load solutions for a given agent and tasks."""
+    solutions = {}
+    logger.info(f"\nAgent: {agent.name}")
 
     for task in tasks:
-        start_time = time.time()
-        task_solution: TaskSolution = await agent.solve_task(task)
-        actions: List[BaseAction] = task_solution.actions
+        task_solution: Optional[TaskSolution] = None
 
-        task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
-        evaluation_result: EvaluationResult = await evaluate_task_solution(web_project=demo_project, task=task, task_solution=task_solution)
+        # Check if solution should be loaded from cache
+        if config.use_cached_solutions and solution_cache.solution_exists(task.id, agent.id):
+            logger.info(f"  Loading cached solution for Task {task.id}...")
+            try:
+                task_solution = await solution_cache.load_solution(task.id, agent.id)
+                if task_solution:
+                    logger.info(f"    Successfully loaded cached solution with {len(task_solution.actions)} actions")
+                else:
+                    logger.warning(f"    Failed to load cached solution for {task.id}, will generate new one")
+            except Exception as e:
+                logger.error(f"    Error loading cached solution: {str(e)}")
 
-        score = evaluation_result.final_score
-        results[agent.id]["global_scores"].append(score)
-        results[agent.id]["projects"][demo_project.name].append(score)
+        # Generate new solution if needed
+        if task_solution is None:
+            logger.info(f"  Generating new solution for Task {task.id}...")
+            start_time = time.time()
 
-        elapsed_time = time.time() - start_time
-        print(f"Task {task.id} evaluated in {elapsed_time:.2f} seconds. Score: {score:.4f}")
+            # Solve the task
+            solution = await agent.solve_task(task)
+            actions = solution.actions or []
+            task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
 
+            # Measure solution time
+            end_time = time.time()
+            solution_time = end_time - start_time
+            timing_metrics.record_solution_time(agent.id, task.id, solution_time)
+            logger.info(f"    Solution generated in {solution_time:.2f} seconds with {len(actions)} actions")
 
-# ============================================================
-# RESULT ANALYSIS AND VISUALIZATION FUNCTIONS
-# ============================================================
+            # Cache the solution for future use
+            try:
+                success = solution_cache.save_solution(task_solution=task_solution, agent_id=agent.id, agent_name=agent.name)
+                if success:
+                    logger.info("Solution cached successfully for future runs")
+                else:
+                    logger.warning("Failed to cache solution")
+            except Exception as e:
+                logger.error(f"Error caching solution: {str(e)}")
 
+        # Store solution for evaluation phase
+        solutions[task.id] = task_solution
 
-def compute_statistics(scores: List[float]) -> Dict:
-    """
-    Computes basic statistics for a list of scores.
-
-    Args:
-        scores: List of scores.
-
-    Returns:
-        Dictionary with computed statistics.
-    """
-    if scores:
-        stats = {
-            "count": len(scores),
-            "mean": statistics.mean(scores),
-            "median": statistics.median(scores),
-            "min": min(scores),
-            "max": max(scores),
-            "stdev": statistics.stdev(scores) if len(scores) > 1 else 0.0,
-        }
-    else:
-        stats = {"count": 0, "mean": None, "median": None, "min": None, "max": None, "stdev": None}
-    return stats
-
-
-@visualize_summary(visualizer)
-def print_performance_statistics(results: Dict, agents: List[IWebAgent]):
-    """
-    Prints performance statistics for each agent.
-
-    Args:
-        results: Dictionary containing results.
-        agents: List of evaluated agents.
-    """
-    print("\n" + "=" * 50)
-    print("AGENT PERFORMANCE STATISTICS")
-    print("=" * 50)
-
-    for agent in agents:
-        agent_stats = results[agent.id]
-        global_stats = compute_statistics(agent_stats["global_scores"])
-        print(f"\nAgent: {agent.id}")
-        print("  Global Statistics:")
-        print(f"    Tasks completed: {global_stats['count']}")
-        print(f"    Average score: {global_stats['mean']:.2f}")
-        print(f"    Maximum score: {global_stats['max']:.2f}")
-
-        print("  Project Statistics:")
-        for project_name, scores in agent_stats["projects"].items():
-            project_stats = compute_statistics(scores)
-            print(f"    Project: {project_name}")
-            print(f"      Tasks completed: {project_stats['count']}")
-            print(f"      Average score: {project_stats['mean']:.2f}")
-            print(f"      Maximum score: {project_stats['max']:.2f}")
+    return solutions
 
 
-def plot_agent_results(results: Dict, agents: List[IWebAgent]):
-    """
-    Creates a bar chart with the average scores of the agents.
+async def evaluate_solutions(agent: BaseAgent, tasks: List[Task], solutions: Dict[str, TaskSolution], demo_project) -> Dict[str, Dict]:
+    """Evaluate solutions for a given agent and tasks."""
+    results = {}
+    logger.info(f"\nEvaluating solutions for Agent: {agent.name}")
 
-    Args:
-        results: Dictionary containing results.
-        agents: List of evaluated agents.
-    """
-    os.makedirs(LOG_DIR, exist_ok=True)
+    for task in tasks:
+        logger.info(f"  Evaluating solution for Task {task.id}...")
+        task_solution = solutions[task.id]
+        eval_result = await evaluate_task_solution(demo_project, task, task_solution)
+        results[task.id] = {"score": eval_result.final_score, "evaluation_result": eval_result}
 
-    agent_names = []
-    agent_avg_scores = []
-
-    for agent in agents:
-        scores = results[agent.id]["global_scores"]
-        avg_score = sum(scores) / len(scores) if scores else 0
-        agent_names.append(agent.id)
-        agent_avg_scores.append(avg_score)
-
-    plt.figure(figsize=(10, 6))
-    bars = plt.bar(agent_names, agent_avg_scores, color='skyblue')
-    plt.ylim(0, 1.0)
-    plt.ylabel('Score')
-    plt.title('Agent Performance')
-
-    for bar, score in zip(bars, agent_avg_scores):
-        yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2, yval, f'{score:.2f}', ha='center', va='bottom')
-
-    plt.savefig(os.path.join(LOG_DIR, "agent_performance.png"))
-    print(f"Chart saved to: {os.path.join(LOG_DIR, 'agent_performance.png')}")
-
-
-def save_benchmark_results(results: Dict, agents: List[IWebAgent], demo_web_projects: List[WebProject]):
-    """
-    Saves benchmark results to a JSON file for further analysis.
-
-    Args:
-        results: Dictionary containing results.
-        agents: List of evaluated agents.
-        demo_web_projects: List of evaluated projects.
-    """
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    output_data = {
-        "timestamp": datetime.now().isoformat(),
-        "results": {},
-        "projects": [p.name for p in demo_web_projects],
-        "agents": [a.id for a in agents],
-    }
-
-    for agent_id, agent_results in results.items():
-        output_data["results"][agent_id] = {
-            "global_scores": agent_results["global_scores"],
-            "projects": agent_results["projects"],
-            "statistics": compute_statistics(agent_results["global_scores"]),
-        }
-
-    filename = os.path.join(OUTPUT_DIR, f"benchmark_results_{timestamp}.json")
-    with open(filename, 'w') as f:
-        json.dump(output_data, f, indent=2)
-
-    print(f"Benchmark results saved to: {filename}")
-
-
-# ============================================================
-# MAIN BENCHMARK FUNCTION
-# ============================================================
+    return results
 
 
 async def main():
-    print("\n" + "=" * 50)
-    print("WEB AGENT BENCHMARK - SUBNET 36")
-    print("=" * 50)
+    """Main function to run the multi-task agent evaluation."""
+    logger.info("Starting multi-task agent evaluation...")
+    AppBootstrap()
 
-    try:
-        os.makedirs(LOG_DIR, exist_ok=True)
+    timing_metrics = TimingMetrics()
+    timing_metrics.start()
 
-        # Initialize agents and results storage
-        agents: List[BaseAgent] = AGENTS
-        results = {}
-        for agent in agents:
-            results[agent.id] = {"global_scores": [], "projects": {}}
-            print(f"Registered agent: {agent.id}")
+    # Container to store results: { agent_id: { task_id: {"score": ...} } }
+    results: Dict[str, Dict[str, Dict]] = {}
 
-        # Initialize demo web projects
-        print("\nInitializing demo web projects...")
-        demo_web_projects: List[WebProject] = await initialize_demo_webs_projects()
-        print(f"Available projects: {', '.join([p.name for p in demo_web_projects])}")
+    # Load or create demo web projects
+    demo_web_projects = await initialize_demo_webs_projects()
+    if not demo_web_projects:
+        logger.error("No demo web projects available.")
+        return
 
-        # Process each demo web project
-        for index, demo_project in enumerate(demo_web_projects):
-            print(f"\n{'=' * 40}")
-            print(f"Processing project {index + 1}/{len(demo_web_projects)}: {demo_project.name}")
-            print(f"{'=' * 40}")
+    # Use the first project for demonstration
+    demo_project = demo_web_projects[0]
+    logger.info(f"Using project: {demo_project.name}")
 
-            start_time = time.time()
-            tasks = await generate_tasks_for_project(demo_project)
-            tasks = tasks[0:NUM_OF_TASKS]
-            elapsed_time = time.time() - start_time
+    # Generate or load tasks with visualization
+    tasks = await generate_tasks(demo_project)
+    if not tasks:
+        logger.error("No tasks available.")
+        return
 
-            print(f"Tasks obtained: {len(tasks)} in {elapsed_time:.2f} seconds")
+    logger.info(f"Evaluating {len(tasks)} tasks with {len(AGENTS)} agents, {config.m} solution copies each...")
 
-            total_tests = sum(len(task.tests) if hasattr(task, "tests") else 0 for task in tasks)
-            print(f"Tests generated: {total_tests} (average: {total_tests / len(tasks):.1f} per task)")
+    # Phase 1: Generate solutions (once per agent per task)
+    all_solutions: Dict[str, Dict[str, TaskSolution]] = {}
+    logger.info("\n--- Phase 1: Generating Solutions ---")
 
-            # Evaluate each agent on the current project
-            for agent in agents:
-                print(f"\n{'-' * 30}")
-                print(f"Evaluating agent: {agent.id}")
-                print(f"{'-' * 30}")
+    for agent in AGENTS:
+        all_solutions[agent.id] = await generate_solutions(agent, tasks, timing_metrics)
 
-                start_time = time.time()
-                await evaluate_project_for_agent(agent, demo_project, tasks, results)
-                elapsed_time = time.time() - start_time
+    # Phase 2: Evaluate M copies of each solution
+    logger.info("\n--- Phase 2: Evaluating Solutions in Batches ---")
 
-                project_scores = results[agent.id]["projects"].get(demo_project.name, [])
-                avg_score = sum(project_scores) / len(project_scores) if project_scores else 0
+    for agent in AGENTS:
+        results[agent.id] = await evaluate_solutions(agent, tasks, all_solutions[agent.id], demo_project)
 
-                print(f"Evaluation completed in {elapsed_time:.2f} seconds")
-                print(f"Average score: {avg_score:.4f}")
+    # End timing and summarize results with visualization
+    timing_metrics.end()
 
-        # Print performance statistics
-        print_performance_statistics(results, agents)
+    # Print summary and generate plots
+    print_performance_statistics(results, AGENTS, timing_metrics)
+    plot_results(results, AGENTS, timing_metrics, config.output_dir)
+    plot_task_comparison(results, AGENTS, tasks, config.output_dir)
+    save_results_to_json(results, AGENTS, timing_metrics, config.output_dir)
 
-        # Plot agent results
-        plot_agent_results(results, agents)
-
-        # Save benchmark results
-        save_benchmark_results(results, agents, demo_web_projects)
-
-        print("\n" + "=" * 50)
-        print("EVALUATION COMPLETED")
-        print(f"Results and logs available in: {LOG_DIR}")
-        print(f"Charts available in: {OUTPUT_DIR}")
-        print("=" * 50)
-
-    except Exception as e:
-        import traceback
-
-        print(f"\n[ERROR] During execution: {e}")
-        print(traceback.format_exc())
+    logger.info(f"\nEvaluation complete! Results have been saved to {config.output_dir}.")
+    logger.info(f"Agent solutions have been cached to {config.solutions_cache_dir}/solutions.json")
 
 
 if __name__ == "__main__":
