@@ -62,7 +62,6 @@ class BaseTaskTest(BaseModel, ITest):
             "CheckUrlTest": CheckUrlTest,
             "FindInHtmlTest": FindInHtmlTest,
             "CheckEventTest": CheckEventTest,
-            "CheckPageViewEventTest": CheckPageViewEventTest,
             "JudgeBaseOnHTML": JudgeBaseOnHTML,
             "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
         }
@@ -143,16 +142,6 @@ class CheckEventTest(BaseTaskTest):
 
     def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         return any(event.event_type == self.event_name for event in snapshot.backend_events)
-
-
-class CheckPageViewEventTest(BaseTaskTest):
-    type: Literal["CheckPageViewEventTest"] = "CheckPageViewEventTest"
-    page_view_url: str
-    description: str = Field(default="Check page view event")
-
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
-        events = snapshot.backend_events
-        return self.page_view_url in [e.data.get("url", "") for e in events if e.data]
 
 
 class JudgeBaseOnHTML(BaseTaskTest):

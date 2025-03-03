@@ -32,7 +32,7 @@ def make_parallel_request(N=5):
                                     example test
 
                                     GUIDELINES:
-                                    1. Backend tests (CheckEventTest, CheckPageViewEventTest) are preferred over frontend tests or checkUrl tests as they are more reliable. Only in case they try to validate the same thing.
+                                    1. Backend tests (CheckEventTest) are preferred over frontend tests or checkUrl tests as they are more reliable. Only in case they try to validate the same thing.
                                     2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful for complex criteria
                                     3. Avoid keeping tests that check for the same thing in different ways
                                     4. Prioritize tests that directly verify the success criteria

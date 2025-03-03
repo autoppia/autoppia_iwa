@@ -57,7 +57,7 @@ def assign_tests(test_configs: List[Dict]) -> List["BaseTaskTest"]:
     Returns:
         List[BaseTaskTest]: A list of instantiated test objects.
     """
-    from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckPageViewEventTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
+    from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 
     assigned_tests = []
 
@@ -74,9 +74,7 @@ def assign_tests(test_configs: List[Dict]) -> List["BaseTaskTest"]:
                 elif config["name"] == "JudgeBaseOnScreenshot":
                     assigned_tests.append(JudgeBaseOnScreenshot(**config))
         elif test_type == "backend":
-            if "page_view_url" in config:
-                assigned_tests.append(CheckPageViewEventTest(**config))
-            elif "event_name" in config:
+            if "event_name" in config:
                 assigned_tests.append(CheckEventTest(**config))
         else:
             raise ValueError(f"Unsupported test configuration: {config}")

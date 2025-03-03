@@ -44,11 +44,12 @@ class SubnetVisualizer:
             tests_table.add_column("Test #", style="dim", width=6)
             tests_table.add_column("Type", style="cyan", width=22)
             tests_table.add_column("Description", style="yellow")
+            tests_table.add_column("Attributes", style="red")
 
             for idx, test in enumerate(task.tests):
                 test_type = type(test).__name__
-                description = self._get_detailed_test_description(test)
-                tests_table.add_row(str(idx + 1), test_type, description)
+                description,attributes = self._get_detailed_test_description_and_attributes(test)
+                tests_table.add_row(str(idx + 1), test_type, description, attributes)
 
             self.console.print("\n[bold magenta]CONFIGURED TESTS:[/bold magenta]")
             self.console.print(tests_table)
@@ -119,13 +120,13 @@ class SubnetVisualizer:
 
                     # Get detailed test description
                     test_type = type(test).__name__
-                    description = self._get_detailed_test_description(test)
+                    description,attributes = self._get_detailed_test_description_and_attributes(test)
 
                     # Format the result
                     result_text = "✅ PASS" if test_passed else "❌ FAIL"
                     result_style = "green" if test_passed else "red"
 
-                    tests_table.add_row(str(idx + 1), test_type, description, Text(result_text, style=result_style))
+                    tests_table.add_row(str(idx + 1), test_type, description,attributes, Text(result_text, style=result_style))
 
             tests_panel = Panel(tests_table, title="[bold magenta]TESTS AND RESULTS[/bold magenta]", border_style="magenta", padding=(1, 1))
             self.console.print("\n")
@@ -198,11 +199,12 @@ class SubnetVisualizer:
             details = str(action)
         return details
 
-    def _get_detailed_test_description(self, test):
+    def _get_detailed_test_description_and_attributes(self, test):
         """
         Extracts a specific, detailed description of the test based on its type and attributes.
         """
         description = ""
+        attributes = {}
         test_type = type(test).__name__
 
         # Specific information by test type
@@ -214,6 +216,14 @@ class SubnetVisualizer:
                 description = f"Check navigation to URL: '{test.expected_url}'"
             elif hasattr(test, "url_pattern"):
                 description = f"Check URL pattern: '{test.url_pattern}'"
+            attributes['url'] = test.url if hasattr(test, "url") else test.expected_url if hasattr(test, "expected_url") else test.url_pattern
+
+        if test_type == "FindInHtmlTest":
+            # For URL tests, show the expected URL or path
+            if hasattr(test, "substring"):
+                description = f"Find in HTML next substring:: '{test.substring}'"
+
+            attributes['substring'] = test.substring
 
         elif "HTML" in test_type or test_type == "JudgeBaseOnHTML" or test_type == "OpinionBasedHTMLTest":
             # For HTML opinion tests, show the success criteria
@@ -231,13 +241,7 @@ class SubnetVisualizer:
                 description = f"Check backend event: '{test.event_name}'"
             elif hasattr(test, "event_type"):
                 description = f"Check event type: '{test.event_type}'"
-
-        elif test_type == "CheckPageViewEventTest":
-            # For page view event tests
-            if hasattr(test, "url_path"):
-                description = f"Check page access: '{test.url_path}'"
-            elif hasattr(test, "page_name"):
-                description = f"Check page view: '{test.page_name}'"
+            attributes['event_name'] = test.event_name if hasattr(test, "event_name") else test.event_type
 
         # If no description was generated with the specific cases, try to extract common attributes
         if not description:
@@ -265,7 +269,7 @@ class SubnetVisualizer:
                     # If no attributes were found, use the test type
                     description = f"Test type {test_type}"
 
-        return description
+        return description,str(attributes)
 
     def print_summary(self, results, agents):
         """
