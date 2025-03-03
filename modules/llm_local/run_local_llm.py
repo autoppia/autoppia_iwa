@@ -84,7 +84,8 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
         generated_ids = model.generate(
             **model_inputs,
             max_new_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
+            top_p=0.9
         )
 
         # Subtract the prompt tokens so we only decode newly generated tokens
