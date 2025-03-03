@@ -30,7 +30,7 @@ class BenchmarkConfig:
 
     use_cached_tasks: bool = False
     use_cached_solutions: bool = False
-    evaluate_real_tasks: bool = False
+    evaluate_real_tasks: bool = True
 
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
@@ -53,9 +53,9 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
 AGENTS: List[BaseAgent] = [
-    RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
-    ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9001, timeout=120),
+    # RandomClickerWebAgent(name="Random-clicker"),
+    # ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
+    ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
 # Setup logging
