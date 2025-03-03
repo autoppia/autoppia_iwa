@@ -82,7 +82,6 @@ async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int 
     config = TaskGenerationConfig(
         save_web_analysis_in_db=True,
         save_task_in_db=False,
-        number_of_prompts_per_task=1,
         num_or_urls=num_of_urls,
     )
 

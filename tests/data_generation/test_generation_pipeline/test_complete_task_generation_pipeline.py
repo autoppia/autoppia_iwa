@@ -3,7 +3,7 @@ from typing import List
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, TasksGenerationOutput
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 
@@ -42,10 +42,7 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
             self.assertGreater(len(web_projects), 0, "No demo web projects were initialized.")
 
             # Create task generation configuration
-            task_config = TaskGenerationConfig(
-                save_web_analysis_in_db=True,
-                number_of_prompts_per_task=3,
-            )
+            task_config = TaskGenerationConfig(save_web_analysis_in_db=True)
 
             # Run the task generation pipeline
             task_generator = TaskGenerationPipeline(
@@ -54,22 +51,21 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
                 llm_service=self.llm_service,
                 synthetic_task_repository=self.task_repo,
             )
-            task_output: TasksGenerationOutput = await task_generator.generate()
+            task_output: List[Task] = await task_generator.generate()
 
             # Validate the output
             self.assertIsNotNone(task_output, "Task generation pipeline returned None.")
-            self.assertIsNotNone(task_output.tasks, "Task generation output has no tasks.")
-            self.assertIsInstance(task_output.tasks, list, "Generated tasks should be a list.")
-            self.assertGreater(len(task_output.tasks), 0, "Expected at least one task to be generated.")
+            self.assertIsInstance(task_output, list, "Generated tasks should be a list.")
+            self.assertGreater(len(task_output), 0, "Expected at least one task to be generated.")
 
             # Validate the structure of each task
-            for task in task_output.tasks:
+            for task in task_output:
                 self.assertTrue(hasattr(task, "id"), "Task should have an 'id' attribute.")
                 self.assertTrue(hasattr(task, "prompt"), "Task should have a 'prompts' attribute.")
                 self.assertTrue(hasattr(task, "url"), "Task should have a 'url' attribute.")
                 self.assertIsInstance(task.prompt, str, "Task prompts should be a list.")
 
-            print("Generated Tasks:", task_output.tasks)
+            print("Generated Tasks:", task_output)
 
         except Exception as e:
             self.fail(f"Test failed with exception: {e}")
