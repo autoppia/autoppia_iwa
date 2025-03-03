@@ -7,7 +7,8 @@ from typing import List, Optional
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
+from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 

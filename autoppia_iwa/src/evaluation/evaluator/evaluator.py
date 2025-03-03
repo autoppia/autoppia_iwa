@@ -2,17 +2,16 @@ import asyncio
 import hashlib
 import time
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from loguru import logger
 from playwright.async_api import async_playwright
-from pydantic import BaseModel, Field
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig, EvaluationStats
 from autoppia_iwa.src.evaluation.classes import Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
@@ -23,74 +22,6 @@ from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecuto
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-
-
-class EvaluationStats(BaseModel):
-    """Statistics for a single evaluation"""
-
-    web_agent_id: str
-    task_id: str
-    action_count: int
-    action_types: Dict[str, int] = Field(default_factory=dict)
-
-    # Timing stats
-    start_time: float
-    total_time: float = 0
-    browser_setup_time: float = 0
-    action_execution_times: List[float] = Field(default_factory=list)
-    test_execution_time: float = 0
-    random_clicker_time: float = 0
-
-    # Performance stats
-    raw_score: float = 0
-    random_clicker_score: float = 0
-    final_score: float = 0
-    tests_passed: int = 0
-    total_tests: int = 0
-
-    # Error tracking
-    had_errors: bool = False
-    error_message: str = ""
-
-    def get_summary_dict(self) -> Dict[str, Any]:
-        """Get a dictionary of summary statistics"""
-        action_time = sum(self.action_execution_times) if self.action_execution_times else 0
-        return {
-            "agent_id": self.web_agent_id,
-            "task_id": self.task_id,
-            "actions": self.action_count,
-            "score": self.final_score,
-            "time_total": round(self.total_time, 2),
-            "time_browser_setup": round(self.browser_setup_time, 2),
-            "time_actions": round(action_time, 2),
-            "time_avg_per_action": round(action_time / max(1, len(self.action_execution_times)), 3),
-            "time_random": round(self.random_clicker_time, 2),
-            "tests_passed": f"{self.tests_passed}/{self.total_tests}",
-            "success": not self.had_errors,
-        }
-
-
-class EvaluationResult(BaseEvaluationResult):
-    web_agent_id: Optional[str] = None
-    raw_score: float = 0.0
-    random_clicker_score: float = 0.0
-    random_passed_tests: List[int] = Field(default_factory=list)
-    evaluation_time: float = 0.0  # Time taken to evaluate this solution
-    stats: Optional[EvaluationStats] = None
-
-
-class EvaluatorConfig(BaseModel):
-    save_results_in_db: bool = False
-    task_delay_in_seconds: float = Field(default=0.1, gt=0)
-    chunk_size: int = Field(default=20, gt=0)
-    browser_timeout: float = Field(default=10000, gt=0)
-    event_monitor_interval: float = Field(default=0.1, gt=0, le=0.5)
-    enable_grouping_tasks: bool = Field(default=True)
-    exclude_random_passed_tests: bool = Field(default=True)
-    cache_random_clicker_results: bool = Field(default=True)
-    normalize_scores: bool = Field(default=True)
-    verbose_logging: bool = Field(default=False)  # Default to minimal logging
-    debug_mode: bool = Field(default=False)  # Even more minimal logging
 
 
 class ConcurrentEvaluator(IEvaluator):
@@ -267,7 +198,7 @@ class ConcurrentEvaluator(IEvaluator):
                         test_results_matrix=initialize_test_results_matrix(task=task, num_actions=len(ts.actions)),
                         feedback=None,
                         execution_history=[],
-                        random_passed_tests=[],
+                        random_clicker_passed_tests_indexes=[],
                         evaluation_time=0,
                         stats=EvaluationStats(web_agent_id=ts.web_agent_id, task_id=task.id, action_count=len(ts.actions), start_time=time.time(), had_errors=True, error_message=str(e)),
                     )
@@ -316,7 +247,7 @@ class ConcurrentEvaluator(IEvaluator):
                 test_results_matrix=test_results_matrix,
                 feedback=None,
                 execution_history=[],
-                random_passed_tests=[],
+                random_clicker_passed_tests_indexes=[],
                 evaluation_time=0.1,
                 stats=stats,
             )
@@ -345,7 +276,7 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Get or compute random clicker performance for baseline score
             random_start_time = time.time()
-            random_passed_tests, random_clicker_score = await self._get_random_clicker_performance(task)
+            random_clicker_passed_tests_indexes, random_clicker_score = await self._get_random_clicker_performance(task)
             stats.random_clicker_time = time.time() - random_start_time
             stats.random_clicker_score = random_clicker_score
 
@@ -380,7 +311,7 @@ class ConcurrentEvaluator(IEvaluator):
             final_score = raw_score
 
             # Adjust score by subtracting random clicker score
-            if self.config.exclude_random_passed_tests and num_tests > 0:
+            if self.config.normalize_score_with_random_clicker and num_tests > 0:
                 # Simple subtraction approach: agent score - random clicker score
                 # If result is negative, set to 0
                 final_score = max(0, raw_score - random_clicker_score)
@@ -403,13 +334,13 @@ class ConcurrentEvaluator(IEvaluator):
             # Create the result
             result = EvaluationResult(
                 web_agent_id=web_agent_id,
-                final_score=1 if final_score > 0.25 else final_score,
+                final_score=1 if final_score >= 0.25 else final_score,
                 raw_score=raw_score,
                 random_clicker_score=random_clicker_score,
                 test_results_matrix=test_results_matrix,
                 feedback=feedback,
                 execution_history=execution_history,
-                random_passed_tests=random_passed_tests,
+                random_clicker_passed_tests_indexes=random_clicker_passed_tests_indexes,
                 evaluation_time=stats.total_time,
                 stats=stats,
             )
@@ -432,7 +363,7 @@ class ConcurrentEvaluator(IEvaluator):
                 test_results_matrix=initialize_test_results_matrix(task=task, num_actions=len(task_solution.actions)),
                 feedback=None,
                 execution_history=[],
-                random_passed_tests=[],
+                random_clicker_passed_tests_indexes=[],
                 evaluation_time=0,
                 stats=stats,
             )
@@ -584,7 +515,7 @@ class ConcurrentEvaluator(IEvaluator):
         random_test_results = self._run_tests(task, random_execution_history)
 
         # Calculate which tests the random clicker passed
-        random_passed_tests = []
+        random_clicker_passed_tests_indexes:List[int] = []
         random_score = 0.0
         if random_test_results and random_test_results[0]:
             num_tests = len(random_test_results[0])
@@ -593,7 +524,7 @@ class ConcurrentEvaluator(IEvaluator):
             for test_index in range(num_tests):
                 for action_index in range(len(random_test_results)):
                     if random_test_results[action_index][test_index].success:
-                        random_passed_tests.append(test_index)
+                        random_clicker_passed_tests_indexes.append(test_index)
                         passed_count += 1
                         break
             if num_tests > 0:
@@ -601,9 +532,9 @@ class ConcurrentEvaluator(IEvaluator):
 
         # Cache the results
         if self.config.cache_random_clicker_results:
-            self._random_clicker_cache[task.id] = (random_passed_tests, random_score)
+            self._random_clicker_cache[task.id] = (random_clicker_passed_tests_indexes, random_score)
 
-        return random_passed_tests, random_score
+        return random_clicker_passed_tests_indexes, random_score
 
     @staticmethod
     def _run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:

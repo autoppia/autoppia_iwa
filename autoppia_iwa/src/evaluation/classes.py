@@ -3,6 +3,8 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
+from typing import Any, Dict, List, Optional, Tuple
+from pydantic import BaseModel, Field
 
 
 class TestResult(BaseModel):
@@ -49,6 +51,51 @@ class Feedback(BaseModel):
         return feedback
 
 
+class EvaluationStats(BaseModel):
+    """Statistics for a single evaluation"""
+
+    web_agent_id: str
+    task_id: str
+    action_count: int
+    action_types: Dict[str, int] = Field(default_factory=dict)
+
+    # Timing stats
+    start_time: float
+    total_time: float = 0
+    browser_setup_time: float = 0
+    action_execution_times: List[float] = Field(default_factory=list)
+    test_execution_time: float = 0
+    random_clicker_time: float = 0
+
+    # Performance stats
+    raw_score: float = 0
+    random_clicker_score: float = 0
+    final_score: float = 0
+    tests_passed: int = 0
+    total_tests: int = 0
+
+    # Error tracking
+    had_errors: bool = False
+    error_message: str = ""
+
+    def get_summary_dict(self) -> Dict[str, Any]:
+        """Get a dictionary of summary statistics"""
+        action_time = sum(self.action_execution_times) if self.action_execution_times else 0
+        return {
+            "agent_id": self.web_agent_id,
+            "task_id": self.task_id,
+            "actions": self.action_count,
+            "score": self.final_score,
+            "time_total": round(self.total_time, 2),
+            "time_browser_setup": round(self.browser_setup_time, 2),
+            "time_actions": round(action_time, 2),
+            "time_avg_per_action": round(action_time / max(1, len(self.action_execution_times)), 3),
+            "time_random": round(self.random_clicker_time, 2),
+            "tests_passed": f"{self.tests_passed}/{self.total_tests}",
+            "success": not self.had_errors,
+        }
+
+
 class EvaluationResult(BaseModel):
     """Encapsulates the output of a task evaluation."""
 
@@ -56,6 +103,12 @@ class EvaluationResult(BaseModel):
     test_results_matrix: List[List[TestResult]]  # List of test evaluation results
     execution_history: List[ActionExecutionResult]  # History of all actions executed
     feedback: Optional[Feedback] = None  # Feedback generated during the evaluation
+    web_agent_id: Optional[str] = None
+    raw_score: float = 0.0
+    random_clicker_score: float = 0.0
+    random_clicker_passed_tests_indexes: List[int] = Field(default_factory=list)
+    evaluation_time: float = 0.0  # Time taken to evaluate this solution
+    stats: Optional[EvaluationStats] = None
 
     def model_dump(self, *args, **kwargs):
         base_dump = super().model_dump(*args, **kwargs)
@@ -64,3 +117,17 @@ class EvaluationResult(BaseModel):
         base_dump["feedback"].pop("execution_history", None)
         base_dump["feedback"].pop("test_results", None)
         return base_dump
+
+
+class EvaluatorConfig(BaseModel):
+    save_results_in_db: bool = False
+    task_delay_in_seconds: float = Field(default=0.1, gt=0)
+    chunk_size: int = Field(default=20, gt=0)
+    browser_timeout: float = Field(default=10000, gt=0)
+    event_monitor_interval: float = Field(default=0.1, gt=0, le=0.5)
+    enable_grouping_tasks: bool = Field(default=True)
+    normalize_score_with_random_clicker: bool = Field(default=True)
+    cache_random_clicker_results: bool = Field(default=True)
+    normalize_scores: bool = Field(default=True)
+    verbose_logging: bool = Field(default=False)  # Default to minimal logging
+    debug_mode: bool = Field(default=False)  # Even more minimal logging
