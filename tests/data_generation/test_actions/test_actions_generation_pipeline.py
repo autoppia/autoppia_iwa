@@ -8,7 +8,7 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from tests import test_container
 
 
-class TestNewActionsGeneration(unittest.IsolatedAsyncioTestCase):
+class TestActionsGeneration(unittest.IsolatedAsyncioTestCase):
     """
     Unit tests for generating new actions based on task configurations.
     """

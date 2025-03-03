@@ -101,8 +101,8 @@ class LocalLLMService(ILLM):
                 return output
         except httpx.HTTPError as e:
             raise RuntimeError(f"Local LLM Sync Error: {e}")
-        finally:
-            elapsed_time = time.time() - start_time
+        # finally:
+        #     elapsed_time = time.time() - start_time
             # print(f"Sync request took {elapsed_time:.2f} seconds.")
 
     async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
@@ -128,8 +128,8 @@ class LocalLLMService(ILLM):
                 return output
             except httpx.HTTPError as e:
                 raise RuntimeError(f"Local LLM Async Error: {e}")
-            finally:
-                elapsed_time = time.time() - start_time
+            # finally:
+            #     elapsed_time = time.time() - start_time
                 # print(f"Async request took {elapsed_time:.2f} seconds.")
 
     async def async_predict_parallel(self, requests_list: List[Dict[str, Any]]) -> List[str]:
@@ -164,8 +164,8 @@ class LocalLLMService(ILLM):
                 return outputs
             except httpx.HTTPError as e:
                 raise RuntimeError(f"Local LLM Async Parallel Error: {e}")
-            finally:
-                elapsed_time = time.time() - start_time
+            # finally:
+            #     elapsed_time = time.time() - start_time
                 # print(f"Async parallel request took {elapsed_time:.2f} seconds.")
 
 

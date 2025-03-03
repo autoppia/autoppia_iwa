@@ -104,7 +104,7 @@ class TestGenerationPipeline:
         cleaned_html = task.clean_html[: self.truncate_html_chars] if task.clean_html else ""
         screenshot_desc = task.screenshot_description or ""
         interactive_elements = detect_interactive_elements(cleaned_html)
-        domain_analysis = self.web_project.domain_analysis
+        # domain_analysis = self.web_project.domain_analysis
 
         # Prepare schemas for all test classes
         test_class_schemas = {}

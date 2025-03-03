@@ -696,9 +696,9 @@ class ConcurrentEvaluator(IEvaluator):
 
         # Calculate aggregate statistics
         total_agents = len(task_stats)
-        successful_agents = sum(1 for s in task_stats if not s.had_errors)
-        avg_score = sum(s.final_score for s in task_stats) / max(1, total_agents)
-        avg_time = sum(s.total_time for s in task_stats) / max(1, total_agents)
+        # successful_agents = sum(1 for s in task_stats if not s.had_errors)
+        # avg_score = sum(s.final_score for s in task_stats) / max(1, total_agents)
+        # avg_time = sum(s.total_time for s in task_stats) / max(1, total_agents)
 
         # Group by agent type (extract prefix before first hyphen)
         agent_groups = defaultdict(list)
@@ -717,8 +717,8 @@ class ConcurrentEvaluator(IEvaluator):
 
         # Create a summary table for each agent group
         for agent_type, stats in agent_groups.items():
-            avg_group_score = sum(s.final_score for s in stats) / max(1, len(stats))
-            avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
+        #     avg_group_score = sum(s.final_score for s in stats) / max(1, len(stats))
+        #     avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
             # TODO: PDESCOMENTAR
 
             # logger.info(f"\n{'-' * 60}")
@@ -743,11 +743,11 @@ class ConcurrentEvaluator(IEvaluator):
                 logger.info(f"Tests Passed: {avg_passed:.1f}/{total_tests} on average")
 
         # Display timing breakdown across all agents
-        all_browser_setup = sum(s.browser_setup_time for s in task_stats)
-        all_action_time = sum(sum(s.action_execution_times) for s in task_stats)
-        all_test_time = sum(s.test_execution_time for s in task_stats)
-        all_random_time = sum(s.random_clicker_time for s in task_stats)
-        all_total_time = sum(s.total_time for s in task_stats)
+        # all_browser_setup = sum(s.browser_setup_time for s in task_stats)
+        # all_action_time = sum(sum(s.action_execution_times) for s in task_stats)
+        # all_test_time = sum(s.test_execution_time for s in task_stats)
+        # all_random_time = sum(s.random_clicker_time for s in task_stats)
+        # all_total_time = sum(s.total_time for s in task_stats)
 
         # logger.info(f"\n{'-' * 60}")
         # logger.info("TIMING BREAKDOWN (across all agents)")
