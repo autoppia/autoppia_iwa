@@ -4,7 +4,7 @@ import json
 
 
 def make_request():
-    url = "http://127.0.0.1:6000/generate"
+    url = "http://127.0.0.1:22185/generate"
     headers = {"Content-Type": "application/json"}
     data = {
         "messages": [
@@ -36,7 +36,7 @@ def make_request():
 
 
 def main():
-    for i in range(1, 101):
+    for i in range(1, 1001):
         req_time, result = make_request()
         print(f"Request {i} - {req_time:.2f}s")
         # Optionally print the LLM output
