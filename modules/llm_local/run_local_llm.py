@@ -21,7 +21,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     torch_dtype="auto",
-    device_map="cuda:0"
+    device_map={"": 0}
 )
 model.eval()
 
