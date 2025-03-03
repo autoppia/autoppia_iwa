@@ -2,14 +2,14 @@ import argparse
 import gc
 import json
 import sys
-import time  # Added for timing
+import time
+
+from json_repair import repair_json
 
 from flask import Flask, request
 from flask_cors import CORS
 from json_repair import repair_json
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
-from json_repair import repair_json
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -30,14 +30,24 @@ model.eval()
 counters = {"total_requests": 0, "json_requests": 0, "json_correctly_formatted": 0, "json_repair_succeeded": 0}
 
 
+def append_to_file(filepath, data_obj):
+    """
+    Append a single JSON object to a file as a new line.
+    """
+    with open(filepath, 'a', encoding='utf-8') as f:
+        json.dump(data_obj, f, ensure_ascii=False)
+        f.write("\n")
+
+
 def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
     """
     Generate text using Qwen with the given parameters.
     If json_format=True, attempts to repair and return valid JSON.
     If schema is provided, instruct the model to strictly follow it.
 
-    Returns (response_text, tokens_in, tokens_out).
+    Returns (response_text, tokens_in, tokens_out, text_prompt).
     """
+    text_prompt = None
     try:
         # If we have a JSON schema, prepend an instruction to produce valid JSON
         if json_format and schema:
@@ -83,22 +93,25 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
                 except Exception:
                     pass
 
-        return response_text, tokens_in, tokens_out
+        return response_text, tokens_in, tokens_out, text_prompt
 
     except Exception as e:
-        # Debug: Print out the exception
         print("[generate_data] Exception occurred:", e, file=sys.stderr)
-        return f"Generation error: {e}", 0, 0
-
+        return f"Generation error: {e}", 0, 0, text_prompt
     finally:
         gc.collect()
 
 
 @app.route("/generate", methods=["POST"])
 def handler():
-    # Increase total request count
     counters["total_requests"] += 1
-    request_number = counters["total_requests"]  # This is our per-request number
+    request_number = counters["total_requests"]
+
+    # Prepare a dict to record everything about the request (and eventually response)
+    log_data = {
+        "request_number": request_number,
+        "timestamp": time.time()  # Or use time.ctime() if you want a human-readable string
+    }
 
     try:
         data = request.json or {}
@@ -110,18 +123,42 @@ def handler():
         json_format = bool(data.get("json_format", False))
         schema = data.get("schema", None)
 
+        # Keep them in the log
+        log_data.update({
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "json_format": json_format,
+            "schema": schema
+        })
+
         # Time the generation process
         start_time = time.time()
 
         # Generate the response
-        output, tokens_in, tokens_out = generate_data(messages=messages, temperature=temperature, max_tokens=max_tokens, json_format=json_format, schema=schema)
+        output, tokens_in, tokens_out, text_prompt = generate_data(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            json_format=json_format,
+            schema=schema
+        )
 
         end_time = time.time()
         time_per_request = end_time - start_time
-        # Avoid division by zero
         tokens_per_second = tokens_out / time_per_request if time_per_request > 0 else 0
 
-        # Print final parameters & stats
+        # Store final stats & parameters in the log
+        log_data.update({
+            "text_prompt": text_prompt,       # The full text sent into the LLM
+            "tokens_in": tokens_in,
+            "tokens_out": tokens_out,
+            "time_per_request": time_per_request,
+            "tokens_per_second": tokens_per_second,
+            "output": output
+        })
+
+        # Print final parameters & stats (optional debug)
         print("[handler] Final parameters & stats:")
         print(f"  Request number:       {request_number}")
         print(f"  temperature:          {temperature}")
@@ -135,16 +172,26 @@ def handler():
         # Debug: Print final answer
         print(f"[handler] Final Answer:\n{output}")
 
+        # This request ended successfully, so we log to "correct_requests.json"
+        append_to_file("correct_requests.json", log_data)
+
         return {"output": output}
 
     except ValueError as ve:
+        # Log the error
+        log_data["error"] = str(ve)
+        append_to_file("errored_requests.json", log_data)
         print("[handler] ValueError occurred:", ve, file=sys.stderr)
         return {"error": str(ve)}, 400
+
     except Exception as e:
+        # Log the error
+        log_data["error"] = str(e)
+        append_to_file("errored_requests.json", log_data)
         print("[handler] Exception occurred:", e, file=sys.stderr)
         return {"error": str(e)}, 500
+
     finally:
-        # Print counters for debugging
         print("\n=== Current Counter Stats ===")
         print(f"Total requests answered: {counters['total_requests']}")
         print(f"JSON requests: {counters['json_requests']}")

@@ -1360,3 +1360,908 @@ Evaluation complete! Results have been saved to results.
 2025-03-01 10:46:05,518 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
 2025-03-01 10:46:33,321 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
 2025-03-01 10:46:33,742 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 10:53:40,808 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 10:53:41,102 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 10:53:42,374 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:42,385 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:42,385 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:42,752 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:42,763 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:42,763 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:43,245 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:43,310 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:43,311 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:43,311 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/employee/register
+2025-03-01 10:53:44,363 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:44,374 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:44,374 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:44,797 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:44,857 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:44,857 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:45,302 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:45,313 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:45,313 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:45,313 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/49
+2025-03-01 10:53:46,330 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:46,398 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:46,398 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:46,911 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:46,913 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:46,913 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:47,365 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:47,378 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:47,378 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:47,378 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/47
+2025-03-01 10:53:48,528 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:48,591 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:48,592 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:48,967 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:48,978 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:48,978 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:49,465 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:49,528 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:49,528 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:49,528 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs
+2025-03-01 10:53:50,872 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:50,882 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:50,882 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:51,254 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:51,265 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:51,265 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:51,744 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:51,809 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:51,809 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:51,809 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/contact/
+2025-03-01 10:53:52,909 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:52,920 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:52,920 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:53,280 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:53,292 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:53,292 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:53,770 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:53,784 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:53,785 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:53,785 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/
+2025-03-01 10:53:54,789 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:54,799 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:54,800 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:55,163 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:55,177 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:55,178 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:55,768 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:55,778 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:55,778 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:55,778 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/50
+2025-03-01 10:53:56,785 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:56,795 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:56,795 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:57,172 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:57,305 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:57,305 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:57,780 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:57,791 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:57,791 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:57,791 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/48
+2025-03-01 10:53:58,795 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:58,862 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:58,862 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:53:59,230 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:59,289 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:59,289 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:53:59,914 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:53:59,927 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:53:59,928 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:53:59,928 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/login
+2025-03-01 10:54:00,927 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:54:00,987 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:54:00,988 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:54:01,366 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:54:01,432 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:54:01,432 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:54:01,927 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:54:01,959 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:54:01,959 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:54:01,959 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/51
+2025-03-01 10:54:01,960 - stress_test - ERROR - No tasks available.
+2025-03-01 10:55:53,475 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 10:55:53,767 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 10:55:55,602 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:55:55,608 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:55:55,609 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:55:57,927 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:55:57,937 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:55:57,938 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:55:59,395 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:55:59,449 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:55:59,449 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:55:59,449 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/51
+2025-03-01 10:56:02,125 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:02,185 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:02,185 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:56:03,660 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:03,718 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:03,718 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:56:05,146 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:05,208 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:05,208 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:56:05,208 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/48
+2025-03-01 10:56:06,763 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:06,813 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:06,813 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:56:08,211 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:08,224 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:08,224 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:56:09,438 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:09,439 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:09,439 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:56:09,439 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/employer/register
+2025-03-01 10:56:12,336 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:12,396 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:12,396 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:56:14,214 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:14,274 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:14,274 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:56:16,207 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:16,217 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:16,217 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:56:16,217 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/contact/
+2025-03-01 10:56:17,810 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:17,865 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:17,865 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:56:19,309 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:19,319 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:19,319 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:56:20,784 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:20,801 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:20,801 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:56:20,801 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/49
+2025-03-01 10:56:22,247 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:22,258 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:22,258 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:56:23,320 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:23,382 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:23,383 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:56:24,825 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:24,883 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:24,883 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:56:24,884 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/
+2025-03-01 10:56:27,946 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:27,957 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:27,957 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:56:30,614 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:30,675 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:30,675 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:56:31,739 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:31,796 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:31,797 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:56:31,797 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/login
+2025-03-01 10:56:33,686 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:33,744 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:33,744 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-03-01 10:56:35,259 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:35,320 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:35,321 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-03-01 10:56:36,879 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 10:56:36,889 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-03-01 10:56:36,889 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-03-01 10:56:36,889 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/47
+2025-03-01 11:01:30,700 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 11:01:30,997 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 11:02:13,644 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:02:13,654 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/login on attempt 1
+2025-03-01 11:02:59,692 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:02:59,699 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/46 on attempt 1
+2025-03-01 11:03:45,376 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:03:45,387 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/ on attempt 1
+2025-03-01 11:04:24,159 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:04:24,160 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employee/register on attempt 1
+2025-03-01 11:05:07,402 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:05:07,403 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/47 on attempt 1
+2025-03-01 11:05:15,077 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:05:21,739 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:05:33,310 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:05:40,318 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:05:48,976 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:05:57,096 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:03,314 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:12,220 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:19,092 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:22,685 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:31,704 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:35,161 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:38,619 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:42,236 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:51,249 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:06:51,269 - stress_test - INFO - Evaluating 15 tasks with 2 agents, 1 solution copies each...
+2025-03-01 11:06:51,269 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-03-01 11:06:51,269 - stress_test - INFO - 
+Agent: Random-clicker
+2025-03-01 11:06:51,269 - stress_test - INFO -   Generating new solution for Task 8fa74e0f-1e85-40ed-a970-d139f0236e9f...
+2025-03-01 11:06:51,269 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,297 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,297 - stress_test - INFO -   Generating new solution for Task 860d2632-7121-4139-bf84-58d91856a054...
+2025-03-01 11:06:51,297 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,324 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,324 - stress_test - INFO -   Generating new solution for Task 34a83874-9082-4774-940b-bd21f5e070c3...
+2025-03-01 11:06:51,324 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,349 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,349 - stress_test - INFO -   Generating new solution for Task a632c8f8-fc33-4b07-b08c-e29e74417ffb...
+2025-03-01 11:06:51,350 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,375 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,375 - stress_test - INFO -   Generating new solution for Task 7a24fe5a-6141-4bbf-815c-9f70f766b249...
+2025-03-01 11:06:51,375 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,401 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,401 - stress_test - INFO -   Generating new solution for Task 304172db-b7f9-4800-acf6-de5e578cc36b...
+2025-03-01 11:06:51,402 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,426 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,427 - stress_test - INFO -   Generating new solution for Task 5bb8c33f-8218-4e59-98b7-318a22dbcb09...
+2025-03-01 11:06:51,427 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,454 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,455 - stress_test - INFO -   Generating new solution for Task 00706c0f-04bf-4103-b0d1-8c2b840fbe8d...
+2025-03-01 11:06:51,455 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,480 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,480 - stress_test - INFO -   Generating new solution for Task 570944c2-5993-473a-9101-cf4d801204f2...
+2025-03-01 11:06:51,480 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,505 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,505 - stress_test - INFO -   Generating new solution for Task 685f5d92-98e6-4a11-921c-4363e60ce00b...
+2025-03-01 11:06:51,505 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,531 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,531 - stress_test - INFO -   Generating new solution for Task cc81c426-c9ba-4433-a11d-d3e4735d9851...
+2025-03-01 11:06:51,531 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,556 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,556 - stress_test - INFO -   Generating new solution for Task a2289fc1-4c1a-4e2f-b5ba-53f883e94742...
+2025-03-01 11:06:51,556 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,580 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,581 - stress_test - INFO -   Generating new solution for Task bbe613b9-d7a4-460a-8058-fc23436f3c14...
+2025-03-01 11:06:51,581 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,605 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,606 - stress_test - INFO -   Generating new solution for Task 9437d66e-4f8d-4bf3-9b97-cedc48c89d50...
+2025-03-01 11:06:51,606 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,631 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,631 - stress_test - INFO -   Generating new solution for Task c2105ecd-1f6f-44e3-a85a-37c71506868f...
+2025-03-01 11:06:51,632 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:06:51,656 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,656 - stress_test - INFO - 
+Agent: browser-use
+2025-03-01 11:06:51,656 - stress_test - INFO -   Generating new solution for Task 8fa74e0f-1e85-40ed-a970-d139f0236e9f...
+2025-03-01 11:06:51,661 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,687 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,687 - stress_test - INFO -   Generating new solution for Task 860d2632-7121-4139-bf84-58d91856a054...
+2025-03-01 11:06:51,688 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,715 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,715 - stress_test - INFO -   Generating new solution for Task 34a83874-9082-4774-940b-bd21f5e070c3...
+2025-03-01 11:06:51,717 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,744 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,744 - stress_test - INFO -   Generating new solution for Task a632c8f8-fc33-4b07-b08c-e29e74417ffb...
+2025-03-01 11:06:51,746 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,773 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,773 - stress_test - INFO -   Generating new solution for Task 7a24fe5a-6141-4bbf-815c-9f70f766b249...
+2025-03-01 11:06:51,774 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,798 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,799 - stress_test - INFO -   Generating new solution for Task 304172db-b7f9-4800-acf6-de5e578cc36b...
+2025-03-01 11:06:51,800 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,826 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,826 - stress_test - INFO -   Generating new solution for Task 5bb8c33f-8218-4e59-98b7-318a22dbcb09...
+2025-03-01 11:06:51,829 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,856 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,856 - stress_test - INFO -   Generating new solution for Task 00706c0f-04bf-4103-b0d1-8c2b840fbe8d...
+2025-03-01 11:06:51,858 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,885 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,885 - stress_test - INFO -   Generating new solution for Task 570944c2-5993-473a-9101-cf4d801204f2...
+2025-03-01 11:06:51,887 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,913 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,914 - stress_test - INFO -   Generating new solution for Task 685f5d92-98e6-4a11-921c-4363e60ce00b...
+2025-03-01 11:06:51,915 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,941 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,941 - stress_test - INFO -   Generating new solution for Task cc81c426-c9ba-4433-a11d-d3e4735d9851...
+2025-03-01 11:06:51,943 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,970 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,970 - stress_test - INFO -   Generating new solution for Task a2289fc1-4c1a-4e2f-b5ba-53f883e94742...
+2025-03-01 11:06:51,972 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:51,999 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:51,999 - stress_test - INFO -   Generating new solution for Task bbe613b9-d7a4-460a-8058-fc23436f3c14...
+2025-03-01 11:06:52,001 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:52,027 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:52,027 - stress_test - INFO -   Generating new solution for Task 9437d66e-4f8d-4bf3-9b97-cedc48c89d50...
+2025-03-01 11:06:52,029 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:52,056 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:52,056 - stress_test - INFO -   Generating new solution for Task c2105ecd-1f6f-44e3-a85a-37c71506868f...
+2025-03-01 11:06:52,057 - stress_test - INFO -     Solution generated in 0.00 seconds with 0 actions
+2025-03-01 11:06:52,084 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:06:52,084 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-03-01 11:06:52,084 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-03-01 11:06:52,084 - stress_test - INFO -   Evaluating solution for Task 8fa74e0f-1e85-40ed-a970-d139f0236e9f...
+2025-03-01 11:06:52,104 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:06:52,702 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-8fa74e0f-1e85-40ed-a970-d139f0236e9f' despite error.
+2025-03-01 11:06:53,284 - stress_test - INFO -     Batch evaluation in 1.19 seconds; Avg score = 0.00
+2025-03-01 11:06:53,284 - stress_test - INFO -   Evaluating solution for Task 860d2632-7121-4139-bf84-58d91856a054...
+2025-03-01 11:06:53,301 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:06:53,886 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-860d2632-7121-4139-bf84-58d91856a054' despite error.
+2025-03-01 11:06:54,443 - stress_test - INFO -     Batch evaluation in 1.15 seconds; Avg score = 0.00
+2025-03-01 11:06:54,443 - stress_test - INFO -   Evaluating solution for Task 34a83874-9082-4774-940b-bd21f5e070c3...
+2025-03-01 11:06:54,460 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:06:55,034 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-34a83874-9082-4774-940b-bd21f5e070c3' despite error.
+2025-03-01 11:06:55,611 - stress_test - INFO -     Batch evaluation in 1.16 seconds; Avg score = 0.00
+2025-03-01 11:06:55,611 - stress_test - INFO -   Evaluating solution for Task a632c8f8-fc33-4b07-b08c-e29e74417ffb...
+2025-03-01 11:06:55,628 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:06:56,200 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-a632c8f8-fc33-4b07-b08c-e29e74417ffb' despite error.
+2025-03-01 11:06:56,760 - stress_test - INFO -     Batch evaluation in 1.14 seconds; Avg score = 0.00
+2025-03-01 11:06:56,760 - stress_test - INFO -   Evaluating solution for Task 7a24fe5a-6141-4bbf-815c-9f70f766b249...
+2025-03-01 11:06:56,776 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:06:57,331 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-7a24fe5a-6141-4bbf-815c-9f70f766b249' despite error.
+2025-03-01 11:06:57,892 - stress_test - INFO -     Batch evaluation in 1.13 seconds; Avg score = 0.00
+2025-03-01 11:06:57,892 - stress_test - INFO -   Evaluating solution for Task 304172db-b7f9-4800-acf6-de5e578cc36b...
+2025-03-01 11:06:57,910 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:06:58,502 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-304172db-b7f9-4800-acf6-de5e578cc36b' despite error.
+2025-03-01 11:06:59,060 - stress_test - INFO -     Batch evaluation in 1.16 seconds; Avg score = 0.00
+2025-03-01 11:06:59,060 - stress_test - INFO -   Evaluating solution for Task 5bb8c33f-8218-4e59-98b7-318a22dbcb09...
+2025-03-01 11:06:59,077 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:06:59,650 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-5bb8c33f-8218-4e59-98b7-318a22dbcb09' despite error.
+2025-03-01 11:07:00,211 - stress_test - INFO -     Batch evaluation in 1.14 seconds; Avg score = 0.00
+2025-03-01 11:07:00,212 - stress_test - INFO -   Evaluating solution for Task 00706c0f-04bf-4103-b0d1-8c2b840fbe8d...
+2025-03-01 11:07:00,228 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:07:00,805 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-00706c0f-04bf-4103-b0d1-8c2b840fbe8d' despite error.
+2025-03-01 11:07:01,434 - stress_test - INFO -     Batch evaluation in 1.22 seconds; Avg score = 0.00
+2025-03-01 11:07:01,434 - stress_test - INFO -   Evaluating solution for Task 570944c2-5993-473a-9101-cf4d801204f2...
+2025-03-01 11:07:01,452 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:07:02,082 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-570944c2-5993-473a-9101-cf4d801204f2' despite error.
+2025-03-01 11:07:02,661 - stress_test - INFO -     Batch evaluation in 1.22 seconds; Avg score = 0.00
+2025-03-01 11:07:02,661 - stress_test - INFO -   Evaluating solution for Task 685f5d92-98e6-4a11-921c-4363e60ce00b...
+2025-03-01 11:07:02,678 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:07:03,253 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-685f5d92-98e6-4a11-921c-4363e60ce00b' despite error.
+2025-03-01 11:07:03,827 - stress_test - INFO -     Batch evaluation in 1.16 seconds; Avg score = 0.00
+2025-03-01 11:07:03,827 - stress_test - INFO -   Evaluating solution for Task cc81c426-c9ba-4433-a11d-d3e4735d9851...
+2025-03-01 11:07:03,845 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:07:04,418 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-cc81c426-c9ba-4433-a11d-d3e4735d9851' despite error.
+2025-03-01 11:07:04,982 - stress_test - INFO -     Batch evaluation in 1.15 seconds; Avg score = 0.00
+2025-03-01 11:07:04,983 - stress_test - INFO -   Evaluating solution for Task a2289fc1-4c1a-4e2f-b5ba-53f883e94742...
+2025-03-01 11:07:05,001 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:07:05,600 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-a2289fc1-4c1a-4e2f-b5ba-53f883e94742' despite error.
+2025-03-01 11:07:06,206 - stress_test - INFO -     Batch evaluation in 1.22 seconds; Avg score = 0.00
+2025-03-01 11:07:06,206 - stress_test - INFO -   Evaluating solution for Task bbe613b9-d7a4-460a-8058-fc23436f3c14...
+2025-03-01 11:07:06,229 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:07:06,903 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-bbe613b9-d7a4-460a-8058-fc23436f3c14' despite error.
+2025-03-01 11:07:07,476 - stress_test - INFO -     Batch evaluation in 1.26 seconds; Avg score = 0.00
+2025-03-01 11:07:07,476 - stress_test - INFO -   Evaluating solution for Task 9437d66e-4f8d-4bf3-9b97-cedc48c89d50...
+2025-03-01 11:07:07,493 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:07:08,099 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-9437d66e-4f8d-4bf3-9b97-cedc48c89d50' despite error.
+2025-03-01 11:07:08,659 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-03-01 11:07:08,659 - stress_test - INFO -   Evaluating solution for Task c2105ecd-1f6f-44e3-a85a-37c71506868f...
+2025-03-01 11:07:08,676 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'maHiyLqtWg2vz2CF' despite error.
+2025-03-01 11:07:09,251 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-c2105ecd-1f6f-44e3-a85a-37c71506868f' despite error.
+2025-03-01 11:07:09,831 - stress_test - INFO -     Batch evaluation in 1.16 seconds; Avg score = 0.00
+2025-03-01 11:07:09,831 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-03-01 11:07:09,831 - stress_test - INFO -   Evaluating solution for Task 8fa74e0f-1e85-40ed-a970-d139f0236e9f...
+2025-03-01 11:07:09,840 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,840 - stress_test - INFO -   Evaluating solution for Task 860d2632-7121-4139-bf84-58d91856a054...
+2025-03-01 11:07:09,849 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,849 - stress_test - INFO -   Evaluating solution for Task 34a83874-9082-4774-940b-bd21f5e070c3...
+2025-03-01 11:07:09,857 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,857 - stress_test - INFO -   Evaluating solution for Task a632c8f8-fc33-4b07-b08c-e29e74417ffb...
+2025-03-01 11:07:09,866 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,866 - stress_test - INFO -   Evaluating solution for Task 7a24fe5a-6141-4bbf-815c-9f70f766b249...
+2025-03-01 11:07:09,875 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,875 - stress_test - INFO -   Evaluating solution for Task 304172db-b7f9-4800-acf6-de5e578cc36b...
+2025-03-01 11:07:09,883 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,883 - stress_test - INFO -   Evaluating solution for Task 5bb8c33f-8218-4e59-98b7-318a22dbcb09...
+2025-03-01 11:07:09,891 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,891 - stress_test - INFO -   Evaluating solution for Task 00706c0f-04bf-4103-b0d1-8c2b840fbe8d...
+2025-03-01 11:07:09,900 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,900 - stress_test - INFO -   Evaluating solution for Task 570944c2-5993-473a-9101-cf4d801204f2...
+2025-03-01 11:07:09,909 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,909 - stress_test - INFO -   Evaluating solution for Task 685f5d92-98e6-4a11-921c-4363e60ce00b...
+2025-03-01 11:07:09,917 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,917 - stress_test - INFO -   Evaluating solution for Task cc81c426-c9ba-4433-a11d-d3e4735d9851...
+2025-03-01 11:07:09,925 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,925 - stress_test - INFO -   Evaluating solution for Task a2289fc1-4c1a-4e2f-b5ba-53f883e94742...
+2025-03-01 11:07:09,933 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,933 - stress_test - INFO -   Evaluating solution for Task bbe613b9-d7a4-460a-8058-fc23436f3c14...
+2025-03-01 11:07:09,941 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,942 - stress_test - INFO -   Evaluating solution for Task 9437d66e-4f8d-4bf3-9b97-cedc48c89d50...
+2025-03-01 11:07:09,950 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:09,950 - stress_test - INFO -   Evaluating solution for Task c2105ecd-1f6f-44e3-a85a-37c71506868f...
+2025-03-01 11:07:09,960 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:07:10,695 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-03-01 11:07:10,695 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-03-01 11:11:57,642 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 11:11:57,917 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 11:12:43,193 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:12:43,198 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/48 on attempt 1
+2025-03-01 11:13:26,346 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 11:13:26,612 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 11:14:13,484 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:14:13,493 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/contact/ on attempt 1
+2025-03-01 11:14:59,180 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:14:59,216 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/50 on attempt 1
+2025-03-01 11:15:42,168 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:15:42,170 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/46 on attempt 1
+2025-03-01 11:16:30,437 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:16:30,831 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/48 on attempt 1
+2025-03-01 11:17:26,852 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:17:26,862 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/49 on attempt 1
+2025-03-01 11:17:33,274 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:17:37,001 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:17:44,759 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:17:51,132 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:17:59,884 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:18:05,858 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:18:09,930 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:18:13,732 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:18:19,880 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:18:26,484 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:18:32,052 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:18:38,211 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:19:01,957 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:19:01,967 - stress_test - INFO - Evaluating 13 tasks with 2 agents, 1 solution copies each...
+2025-03-01 11:19:01,967 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-03-01 11:19:01,967 - stress_test - INFO - 
+Agent: Random-clicker
+2025-03-01 11:19:01,967 - stress_test - INFO -   Generating new solution for Task c109cbdf-9b2d-4954-be3b-150f8df76fbd...
+2025-03-01 11:19:01,968 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:01,999 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:01,999 - stress_test - INFO -   Generating new solution for Task 949f220a-0d6b-4a91-963d-db523db1f5f1...
+2025-03-01 11:19:01,999 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,026 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,026 - stress_test - INFO -   Generating new solution for Task 52928bde-b32c-42c9-ab57-e4998b086fbc...
+2025-03-01 11:19:02,026 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,052 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,052 - stress_test - INFO -   Generating new solution for Task 3c1f3f9f-18f3-45b4-9096-557188cba8cd...
+2025-03-01 11:19:02,053 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,084 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,085 - stress_test - INFO -   Generating new solution for Task 90bfb6f9-6753-43b8-be1d-556dc86333f9...
+2025-03-01 11:19:02,085 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,112 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,112 - stress_test - INFO -   Generating new solution for Task cbfa779f-afac-4604-b87c-d1b1f1cf6984...
+2025-03-01 11:19:02,112 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,139 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,139 - stress_test - INFO -   Generating new solution for Task a7ec804f-c4f8-4ee4-a6b0-6ddda2ca00f0...
+2025-03-01 11:19:02,139 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,167 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,167 - stress_test - INFO -   Generating new solution for Task 3d907536-9544-4759-9404-949e5a933387...
+2025-03-01 11:19:02,167 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,195 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,195 - stress_test - INFO -   Generating new solution for Task be34c8a3-1372-40ad-838c-0e18cded7b73...
+2025-03-01 11:19:02,195 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,222 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,222 - stress_test - INFO -   Generating new solution for Task 6a178174-696e-401f-ae7e-4f41898cf9a3...
+2025-03-01 11:19:02,223 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,251 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,252 - stress_test - INFO -   Generating new solution for Task 8cc97274-e33f-40ae-93b6-667d966f6ede...
+2025-03-01 11:19:02,252 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,280 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,280 - stress_test - INFO -   Generating new solution for Task 1eb078a9-d657-4a5a-aef3-802791e32c95...
+2025-03-01 11:19:02,281 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,309 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,309 - stress_test - INFO -   Generating new solution for Task e3f4ceab-7352-4737-a1f6-d7ee6e0811ea...
+2025-03-01 11:19:02,309 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:19:02,337 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:02,337 - stress_test - INFO - 
+Agent: browser-use
+2025-03-01 11:19:02,337 - stress_test - INFO -   Generating new solution for Task c109cbdf-9b2d-4954-be3b-150f8df76fbd...
+2025-03-01 11:19:43,737 - stress_test - INFO -     Solution generated in 41.40 seconds with 8 actions
+2025-03-01 11:19:43,773 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:19:43,773 - stress_test - INFO -   Generating new solution for Task 949f220a-0d6b-4a91-963d-db523db1f5f1...
+2025-03-01 11:21:44,742 - stress_test - INFO -     Solution generated in 120.97 seconds with 0 actions
+2025-03-01 11:21:44,777 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:21:44,777 - stress_test - INFO -   Generating new solution for Task 52928bde-b32c-42c9-ab57-e4998b086fbc...
+2025-03-01 11:22:09,763 - stress_test - INFO -     Solution generated in 24.99 seconds with 4 actions
+2025-03-01 11:22:09,793 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:22:09,793 - stress_test - INFO -   Generating new solution for Task 3c1f3f9f-18f3-45b4-9096-557188cba8cd...
+2025-03-01 11:22:22,844 - stress_test - INFO -     Solution generated in 13.05 seconds with 0 actions
+2025-03-01 11:22:22,874 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:22:22,874 - stress_test - INFO -   Generating new solution for Task 90bfb6f9-6753-43b8-be1d-556dc86333f9...
+2025-03-01 11:22:57,114 - stress_test - INFO -     Solution generated in 34.24 seconds with 6 actions
+2025-03-01 11:22:57,148 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:22:57,148 - stress_test - INFO -   Generating new solution for Task cbfa779f-afac-4604-b87c-d1b1f1cf6984...
+2025-03-01 11:23:09,520 - stress_test - INFO -     Solution generated in 12.37 seconds with 2 actions
+2025-03-01 11:23:09,560 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:23:09,560 - stress_test - INFO -   Generating new solution for Task a7ec804f-c4f8-4ee4-a6b0-6ddda2ca00f0...
+2025-03-01 11:23:21,097 - stress_test - INFO -     Solution generated in 11.54 seconds with 0 actions
+2025-03-01 11:23:21,129 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:23:21,129 - stress_test - INFO -   Generating new solution for Task 3d907536-9544-4759-9404-949e5a933387...
+2025-03-01 11:23:33,121 - stress_test - INFO -     Solution generated in 11.99 seconds with 2 actions
+2025-03-01 11:23:33,153 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:23:33,153 - stress_test - INFO -   Generating new solution for Task be34c8a3-1372-40ad-838c-0e18cded7b73...
+2025-03-01 11:25:27,455 - stress_test - INFO -     Solution generated in 114.30 seconds with 32 actions
+2025-03-01 11:25:27,491 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:25:27,491 - stress_test - INFO -   Generating new solution for Task 6a178174-696e-401f-ae7e-4f41898cf9a3...
+2025-03-01 11:25:46,493 - stress_test - INFO -     Solution generated in 19.00 seconds with 2 actions
+2025-03-01 11:25:46,537 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:25:46,537 - stress_test - INFO -   Generating new solution for Task 8cc97274-e33f-40ae-93b6-667d966f6ede...
+2025-03-01 11:26:08,193 - stress_test - INFO -     Solution generated in 21.66 seconds with 4 actions
+2025-03-01 11:26:08,229 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:26:08,229 - stress_test - INFO -   Generating new solution for Task 1eb078a9-d657-4a5a-aef3-802791e32c95...
+2025-03-01 11:26:40,353 - stress_test - INFO -     Solution generated in 32.12 seconds with 9 actions
+2025-03-01 11:26:40,389 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:26:40,389 - stress_test - INFO -   Generating new solution for Task e3f4ceab-7352-4737-a1f6-d7ee6e0811ea...
+2025-03-01 11:26:52,300 - stress_test - INFO -     Solution generated in 11.91 seconds with 2 actions
+2025-03-01 11:26:52,341 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:26:52,341 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-03-01 11:26:52,341 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-03-01 11:26:52,341 - stress_test - INFO -   Evaluating solution for Task c109cbdf-9b2d-4954-be3b-150f8df76fbd...
+2025-03-01 11:26:52,362 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:26:52,981 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-c109cbdf-9b2d-4954-be3b-150f8df76fbd' despite error.
+2025-03-01 11:26:53,587 - stress_test - INFO -     Batch evaluation in 1.24 seconds; Avg score = 0.00
+2025-03-01 11:26:53,587 - stress_test - INFO -   Evaluating solution for Task 949f220a-0d6b-4a91-963d-db523db1f5f1...
+2025-03-01 11:26:53,607 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:26:54,226 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-949f220a-0d6b-4a91-963d-db523db1f5f1' despite error.
+2025-03-01 11:26:54,839 - stress_test - INFO -     Batch evaluation in 1.24 seconds; Avg score = 0.00
+2025-03-01 11:26:54,839 - stress_test - INFO -   Evaluating solution for Task 52928bde-b32c-42c9-ab57-e4998b086fbc...
+2025-03-01 11:26:54,857 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:26:55,450 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-52928bde-b32c-42c9-ab57-e4998b086fbc' despite error.
+2025-03-01 11:26:56,028 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-03-01 11:26:56,028 - stress_test - INFO -   Evaluating solution for Task 3c1f3f9f-18f3-45b4-9096-557188cba8cd...
+2025-03-01 11:26:56,045 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:26:56,617 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-3c1f3f9f-18f3-45b4-9096-557188cba8cd' despite error.
+2025-03-01 11:26:57,179 - stress_test - INFO -     Batch evaluation in 1.14 seconds; Avg score = 0.00
+2025-03-01 11:26:57,179 - stress_test - INFO -   Evaluating solution for Task 90bfb6f9-6753-43b8-be1d-556dc86333f9...
+2025-03-01 11:26:57,195 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:26:57,749 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-90bfb6f9-6753-43b8-be1d-556dc86333f9' despite error.
+2025-03-01 11:26:58,308 - stress_test - INFO -     Batch evaluation in 1.12 seconds; Avg score = 0.00
+2025-03-01 11:26:58,308 - stress_test - INFO -   Evaluating solution for Task cbfa779f-afac-4604-b87c-d1b1f1cf6984...
+2025-03-01 11:26:58,325 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:26:58,911 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-cbfa779f-afac-4604-b87c-d1b1f1cf6984' despite error.
+2025-03-01 11:26:59,476 - stress_test - INFO -     Batch evaluation in 1.16 seconds; Avg score = 0.00
+2025-03-01 11:26:59,476 - stress_test - INFO -   Evaluating solution for Task a7ec804f-c4f8-4ee4-a6b0-6ddda2ca00f0...
+2025-03-01 11:26:59,494 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:27:00,068 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-a7ec804f-c4f8-4ee4-a6b0-6ddda2ca00f0' despite error.
+2025-03-01 11:27:00,628 - stress_test - INFO -     Batch evaluation in 1.14 seconds; Avg score = 0.00
+2025-03-01 11:27:00,629 - stress_test - INFO -   Evaluating solution for Task 3d907536-9544-4759-9404-949e5a933387...
+2025-03-01 11:27:00,646 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:27:01,233 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-3d907536-9544-4759-9404-949e5a933387' despite error.
+2025-03-01 11:27:01,813 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-03-01 11:27:01,813 - stress_test - INFO -   Evaluating solution for Task be34c8a3-1372-40ad-838c-0e18cded7b73...
+2025-03-01 11:27:01,830 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:27:02,402 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-be34c8a3-1372-40ad-838c-0e18cded7b73' despite error.
+2025-03-01 11:27:02,976 - stress_test - INFO -     Batch evaluation in 1.16 seconds; Avg score = 0.00
+2025-03-01 11:27:02,976 - stress_test - INFO -   Evaluating solution for Task 6a178174-696e-401f-ae7e-4f41898cf9a3...
+2025-03-01 11:27:02,994 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:27:03,574 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-6a178174-696e-401f-ae7e-4f41898cf9a3' despite error.
+2025-03-01 11:27:04,168 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-03-01 11:27:04,168 - stress_test - INFO -   Evaluating solution for Task 8cc97274-e33f-40ae-93b6-667d966f6ede...
+2025-03-01 11:27:04,193 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:27:04,836 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-8cc97274-e33f-40ae-93b6-667d966f6ede' despite error.
+2025-03-01 11:27:05,433 - stress_test - INFO -     Batch evaluation in 1.26 seconds; Avg score = 0.00
+2025-03-01 11:27:05,433 - stress_test - INFO -   Evaluating solution for Task 1eb078a9-d657-4a5a-aef3-802791e32c95...
+2025-03-01 11:27:05,452 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:27:06,057 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-1eb078a9-d657-4a5a-aef3-802791e32c95' despite error.
+2025-03-01 11:27:06,631 - stress_test - INFO -     Batch evaluation in 1.19 seconds; Avg score = 0.00
+2025-03-01 11:27:06,631 - stress_test - INFO -   Evaluating solution for Task e3f4ceab-7352-4737-a1f6-d7ee6e0811ea...
+2025-03-01 11:27:06,648 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '46EfnRqF5PCiZ2I9' despite error.
+2025-03-01 11:27:07,234 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-e3f4ceab-7352-4737-a1f6-d7ee6e0811ea' despite error.
+2025-03-01 11:27:07,814 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-03-01 11:27:07,814 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-03-01 11:27:07,814 - stress_test - INFO -   Evaluating solution for Task c109cbdf-9b2d-4954-be3b-150f8df76fbd...
+2025-03-01 11:27:07,831 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:27:13,186 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-c109cbdf-9b2d-4954-be3b-150f8df76fbd' despite error.
+2025-03-01 11:27:13,788 - stress_test - INFO -     Batch evaluation in 5.97 seconds; Avg score = 0.00
+2025-03-01 11:27:13,789 - stress_test - INFO -   Evaluating solution for Task 949f220a-0d6b-4a91-963d-db523db1f5f1...
+2025-03-01 11:27:13,798 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:27:13,798 - stress_test - INFO -   Evaluating solution for Task 52928bde-b32c-42c9-ab57-e4998b086fbc...
+2025-03-01 11:27:13,815 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:27:16,458 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-52928bde-b32c-42c9-ab57-e4998b086fbc' despite error.
+2025-03-01 11:27:17,034 - stress_test - INFO -     Batch evaluation in 3.23 seconds; Avg score = 1.00
+2025-03-01 11:27:17,034 - stress_test - INFO -   Evaluating solution for Task 3c1f3f9f-18f3-45b4-9096-557188cba8cd...
+2025-03-01 11:27:17,043 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:27:17,043 - stress_test - INFO -   Evaluating solution for Task 90bfb6f9-6753-43b8-be1d-556dc86333f9...
+2025-03-01 11:27:17,068 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:27:20,933 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-90bfb6f9-6753-43b8-be1d-556dc86333f9' despite error.
+2025-03-01 11:27:21,494 - stress_test - INFO -     Batch evaluation in 4.44 seconds; Avg score = 0.00
+2025-03-01 11:27:21,494 - stress_test - INFO -   Evaluating solution for Task cbfa779f-afac-4604-b87c-d1b1f1cf6984...
+2025-03-01 11:27:21,521 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:27:23,069 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-cbfa779f-afac-4604-b87c-d1b1f1cf6984' despite error.
+2025-03-01 11:27:23,651 - stress_test - INFO -     Batch evaluation in 2.15 seconds; Avg score = 1.00
+2025-03-01 11:27:23,652 - stress_test - INFO -   Evaluating solution for Task a7ec804f-c4f8-4ee4-a6b0-6ddda2ca00f0...
+2025-03-01 11:27:23,661 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-01 11:27:23,661 - stress_test - INFO -   Evaluating solution for Task 3d907536-9544-4759-9404-949e5a933387...
+2025-03-01 11:27:23,688 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:27:25,349 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-3d907536-9544-4759-9404-949e5a933387' despite error.
+2025-03-01 11:27:25,932 - stress_test - INFO -     Batch evaluation in 2.26 seconds; Avg score = 1.00
+2025-03-01 11:27:25,932 - stress_test - INFO -   Evaluating solution for Task be34c8a3-1372-40ad-838c-0e18cded7b73...
+2025-03-01 11:27:25,959 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:27:50,395 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-be34c8a3-1372-40ad-838c-0e18cded7b73' despite error.
+2025-03-01 11:27:51,043 - stress_test - INFO -     Batch evaluation in 25.10 seconds; Avg score = 1.00
+2025-03-01 11:27:51,043 - stress_test - INFO -   Evaluating solution for Task 6a178174-696e-401f-ae7e-4f41898cf9a3...
+2025-03-01 11:27:51,071 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:27:52,721 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-6a178174-696e-401f-ae7e-4f41898cf9a3' despite error.
+2025-03-01 11:27:53,333 - stress_test - INFO -     Batch evaluation in 2.28 seconds; Avg score = 1.00
+2025-03-01 11:27:53,333 - stress_test - INFO -   Evaluating solution for Task 8cc97274-e33f-40ae-93b6-667d966f6ede...
+2025-03-01 11:27:53,362 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:27:56,079 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-8cc97274-e33f-40ae-93b6-667d966f6ede' despite error.
+2025-03-01 11:27:56,668 - stress_test - INFO -     Batch evaluation in 3.33 seconds; Avg score = 1.00
+2025-03-01 11:27:56,668 - stress_test - INFO -   Evaluating solution for Task 1eb078a9-d657-4a5a-aef3-802791e32c95...
+2025-03-01 11:27:56,697 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:28:01,387 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-1eb078a9-d657-4a5a-aef3-802791e32c95' despite error.
+2025-03-01 11:28:02,003 - stress_test - INFO -     Batch evaluation in 5.33 seconds; Avg score = 1.00
+2025-03-01 11:28:02,003 - stress_test - INFO -   Evaluating solution for Task e3f4ceab-7352-4737-a1f6-d7ee6e0811ea...
+2025-03-01 11:28:02,030 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '3nxf5PH4OoAO8h7T' despite error.
+2025-03-01 11:28:03,616 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-e3f4ceab-7352-4737-a1f6-d7ee6e0811ea' despite error.
+2025-03-01 11:28:04,217 - stress_test - INFO -     Batch evaluation in 2.21 seconds; Avg score = 1.00
+2025-03-01 11:28:04,883 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-03-01 11:28:04,883 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-03-01 11:28:19,993 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 11:28:20,266 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 11:29:00,228 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 1: Error during LLM prediction: Local LLM Async Error: Server disconnected without sending a response.
+2025-03-01 11:29:00,416 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 2: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:00,694 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 3: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:00,695 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/49
+2025-03-01 11:29:01,606 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 1: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:01,783 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 2: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:02,072 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 3: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:02,073 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/about/
+2025-03-01 11:29:02,887 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 1: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:03,065 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 2: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:03,354 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 3: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:03,356 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/48
+2025-03-01 11:29:04,572 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 1: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:04,774 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 2: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:05,055 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 3: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:05,057 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/contact/
+2025-03-01 11:29:05,935 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 1: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:06,120 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 2: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:06,411 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - Attempt 3: Error during LLM prediction: Local LLM Async Error: All connection attempts failed
+2025-03-01 11:29:06,413 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/employee/register
+2025-03-01 11:29:06,413 - stress_test - ERROR - No tasks available.
+2025-03-01 11:35:52,820 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 11:35:53,092 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 11:36:36,771 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:37:09,734 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/47 on attempt 1
+2025-03-01 11:37:56,219 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:37:56,220 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/about/ on attempt 1
+2025-03-01 11:38:44,090 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:38:44,092 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/49 on attempt 1
+2025-03-01 11:39:24,524 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:39:24,534 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs on attempt 1
+2025-03-01 11:40:10,651 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:40:10,652 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/50 on attempt 1
+2025-03-01 11:40:17,852 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:40:24,403 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:40:28,222 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:40:35,710 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:40:41,644 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:40:49,636 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:40:55,633 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:01,837 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:10,321 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:16,620 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:20,782 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:27,319 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:34,177 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:40,787 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:46,131 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-03-01 11:41:46,139 - stress_test - INFO - Evaluating 15 tasks with 2 agents, 1 solution copies each...
+2025-03-01 11:41:46,139 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-03-01 11:41:46,139 - stress_test - INFO - 
+Agent: Random-clicker
+2025-03-01 11:41:46,139 - stress_test - INFO -   Generating new solution for Task 4df874c6-d057-441a-81c8-6b978459ddf4...
+2025-03-01 11:41:46,139 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,181 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,181 - stress_test - INFO -   Generating new solution for Task e641c663-1287-4fad-b930-9c22c2882f30...
+2025-03-01 11:41:46,181 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,220 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,220 - stress_test - INFO -   Generating new solution for Task 5f5c56f1-d449-41f0-b0e4-1321fa382a0b...
+2025-03-01 11:41:46,220 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,255 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,255 - stress_test - INFO -   Generating new solution for Task ea93d63e-8c6a-44eb-9b04-2a35cd728713...
+2025-03-01 11:41:46,255 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,291 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,291 - stress_test - INFO -   Generating new solution for Task b8bb5969-ccfe-4c88-8cd5-fff49e86bf26...
+2025-03-01 11:41:46,291 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,327 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,327 - stress_test - INFO -   Generating new solution for Task 2aa730b7-9b21-4071-9889-525ef3394cae...
+2025-03-01 11:41:46,327 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,363 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,363 - stress_test - INFO -   Generating new solution for Task 7b7086a3-6c55-4b59-ab3b-dcf8c26cd062...
+2025-03-01 11:41:46,363 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,399 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,399 - stress_test - INFO -   Generating new solution for Task ec6f6d1a-99ab-4413-bba0-cbea59fc0871...
+2025-03-01 11:41:46,399 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,436 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,436 - stress_test - INFO -   Generating new solution for Task 05227341-0bb6-4544-9f29-73f542ad4711...
+2025-03-01 11:41:46,436 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,473 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,473 - stress_test - INFO -   Generating new solution for Task 857963f9-5ff1-4ef0-82bc-f0a6f045fef8...
+2025-03-01 11:41:46,473 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,510 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,510 - stress_test - INFO -   Generating new solution for Task efb69fed-a31f-4eff-bdab-10387865ac98...
+2025-03-01 11:41:46,510 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,560 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,560 - stress_test - INFO -   Generating new solution for Task a22052c8-f19c-4e26-b515-94085c41bb8c...
+2025-03-01 11:41:46,560 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,608 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,609 - stress_test - INFO -   Generating new solution for Task c3ad7aaa-603f-4c4d-8ab1-c61b8fc5244b...
+2025-03-01 11:41:46,609 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,650 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,650 - stress_test - INFO -   Generating new solution for Task 5266cedd-346b-4786-83b4-5af978d025b1...
+2025-03-01 11:41:46,650 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,689 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,690 - stress_test - INFO -   Generating new solution for Task e8a638c7-dda8-42c4-81ae-31b9514b9c14...
+2025-03-01 11:41:46,690 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-01 11:41:46,728 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:41:46,729 - stress_test - INFO - 
+Agent: browser-use
+2025-03-01 11:41:46,729 - stress_test - INFO -   Generating new solution for Task 4df874c6-d057-441a-81c8-6b978459ddf4...
+2025-03-01 11:42:00,112 - stress_test - INFO -     Solution generated in 13.38 seconds with 2 actions
+2025-03-01 11:42:00,150 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:42:00,150 - stress_test - INFO -   Generating new solution for Task e641c663-1287-4fad-b930-9c22c2882f30...
+2025-03-01 11:42:31,235 - stress_test - INFO -     Solution generated in 31.09 seconds with 5 actions
+2025-03-01 11:42:31,279 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:42:31,279 - stress_test - INFO -   Generating new solution for Task 5f5c56f1-d449-41f0-b0e4-1321fa382a0b...
+2025-03-01 11:43:36,745 - stress_test - INFO -     Solution generated in 65.47 seconds with 13 actions
+2025-03-01 11:43:36,788 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:43:36,788 - stress_test - INFO -   Generating new solution for Task ea93d63e-8c6a-44eb-9b04-2a35cd728713...
+2025-03-01 11:43:49,239 - stress_test - INFO -     Solution generated in 12.45 seconds with 2 actions
+2025-03-01 11:43:49,281 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:43:49,281 - stress_test - INFO -   Generating new solution for Task b8bb5969-ccfe-4c88-8cd5-fff49e86bf26...
+2025-03-01 11:44:23,947 - stress_test - INFO -     Solution generated in 34.67 seconds with 10 actions
+2025-03-01 11:44:23,993 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:44:23,993 - stress_test - INFO -   Generating new solution for Task 2aa730b7-9b21-4071-9889-525ef3394cae...
+2025-03-01 11:44:40,857 - stress_test - INFO -     Solution generated in 16.86 seconds with 3 actions
+2025-03-01 11:44:40,900 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:44:40,900 - stress_test - INFO -   Generating new solution for Task 7b7086a3-6c55-4b59-ab3b-dcf8c26cd062...
+2025-03-01 11:44:56,064 - stress_test - INFO -     Solution generated in 15.16 seconds with 3 actions
+2025-03-01 11:44:56,109 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:44:56,110 - stress_test - INFO -   Generating new solution for Task ec6f6d1a-99ab-4413-bba0-cbea59fc0871...
+2025-03-01 11:45:21,755 - stress_test - INFO -     Solution generated in 25.65 seconds with 5 actions
+2025-03-01 11:45:21,809 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:45:21,809 - stress_test - INFO -   Generating new solution for Task 05227341-0bb6-4544-9f29-73f542ad4711...
+2025-03-01 11:46:25,207 - stress_test - INFO -     Solution generated in 63.40 seconds with 9 actions
+2025-03-01 11:46:25,263 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:46:25,264 - stress_test - INFO -   Generating new solution for Task 857963f9-5ff1-4ef0-82bc-f0a6f045fef8...
+2025-03-01 11:48:22,531 - stress_test - INFO -     Solution generated in 117.27 seconds with 40 actions
+2025-03-01 11:48:22,586 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:48:22,586 - stress_test - INFO -   Generating new solution for Task efb69fed-a31f-4eff-bdab-10387865ac98...
+2025-03-01 11:48:37,815 - stress_test - INFO -     Solution generated in 15.23 seconds with 3 actions
+2025-03-01 11:48:37,878 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:48:37,878 - stress_test - INFO -   Generating new solution for Task a22052c8-f19c-4e26-b515-94085c41bb8c...
+2025-03-01 11:49:12,658 - stress_test - INFO -     Solution generated in 34.78 seconds with 6 actions
+2025-03-01 11:49:12,722 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:49:12,723 - stress_test - INFO -   Generating new solution for Task c3ad7aaa-603f-4c4d-8ab1-c61b8fc5244b...
+2025-03-01 11:49:35,000 - stress_test - INFO -     Solution generated in 22.28 seconds with 5 actions
+2025-03-01 11:49:35,063 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:49:35,063 - stress_test - INFO -   Generating new solution for Task 5266cedd-346b-4786-83b4-5af978d025b1...
+2025-03-01 11:49:51,749 - stress_test - INFO -     Solution generated in 16.69 seconds with 3 actions
+2025-03-01 11:49:51,810 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:49:51,810 - stress_test - INFO -   Generating new solution for Task e8a638c7-dda8-42c4-81ae-31b9514b9c14...
+2025-03-01 11:51:12,244 - stress_test - INFO -     Solution generated in 80.43 seconds with 13 actions
+2025-03-01 11:51:12,305 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-01 11:51:12,305 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-03-01 11:51:12,306 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-03-01 11:51:12,306 - stress_test - INFO -   Evaluating solution for Task 4df874c6-d057-441a-81c8-6b978459ddf4...
+2025-03-01 11:51:12,371 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:13,185 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-4df874c6-d057-441a-81c8-6b978459ddf4' despite error.
+2025-03-01 11:51:13,860 - stress_test - INFO -     Batch evaluation in 1.52 seconds; Avg score = 0.00
+2025-03-01 11:51:13,860 - stress_test - INFO -   Evaluating solution for Task e641c663-1287-4fad-b930-9c22c2882f30...
+2025-03-01 11:51:13,881 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:14,616 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-e641c663-1287-4fad-b930-9c22c2882f30' despite error.
+2025-03-01 11:51:15,266 - stress_test - INFO -     Batch evaluation in 1.40 seconds; Avg score = 0.00
+2025-03-01 11:51:15,266 - stress_test - INFO -   Evaluating solution for Task 5f5c56f1-d449-41f0-b0e4-1321fa382a0b...
+2025-03-01 11:51:15,286 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:15,920 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-5f5c56f1-d449-41f0-b0e4-1321fa382a0b' despite error.
+2025-03-01 11:51:16,528 - stress_test - INFO -     Batch evaluation in 1.25 seconds; Avg score = 0.00
+2025-03-01 11:51:16,528 - stress_test - INFO -   Evaluating solution for Task ea93d63e-8c6a-44eb-9b04-2a35cd728713...
+2025-03-01 11:51:16,548 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:17,194 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ea93d63e-8c6a-44eb-9b04-2a35cd728713' despite error.
+2025-03-01 11:51:17,823 - stress_test - INFO -     Batch evaluation in 1.29 seconds; Avg score = 0.00
+2025-03-01 11:51:17,823 - stress_test - INFO -   Evaluating solution for Task b8bb5969-ccfe-4c88-8cd5-fff49e86bf26...
+2025-03-01 11:51:17,845 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:18,512 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b8bb5969-ccfe-4c88-8cd5-fff49e86bf26' despite error.
+2025-03-01 11:51:19,165 - stress_test - INFO -     Batch evaluation in 1.33 seconds; Avg score = 0.00
+2025-03-01 11:51:19,165 - stress_test - INFO -   Evaluating solution for Task 2aa730b7-9b21-4071-9889-525ef3394cae...
+2025-03-01 11:51:19,187 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:19,820 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-2aa730b7-9b21-4071-9889-525ef3394cae' despite error.
+2025-03-01 11:51:20,428 - stress_test - INFO -     Batch evaluation in 1.25 seconds; Avg score = 0.00
+2025-03-01 11:51:20,429 - stress_test - INFO -   Evaluating solution for Task 7b7086a3-6c55-4b59-ab3b-dcf8c26cd062...
+2025-03-01 11:51:20,448 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:21,096 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-7b7086a3-6c55-4b59-ab3b-dcf8c26cd062' despite error.
+2025-03-01 11:51:21,770 - stress_test - INFO -     Batch evaluation in 1.33 seconds; Avg score = 0.00
+2025-03-01 11:51:21,770 - stress_test - INFO -   Evaluating solution for Task ec6f6d1a-99ab-4413-bba0-cbea59fc0871...
+2025-03-01 11:51:21,791 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:22,468 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ec6f6d1a-99ab-4413-bba0-cbea59fc0871' despite error.
+2025-03-01 11:51:23,094 - stress_test - INFO -     Batch evaluation in 1.32 seconds; Avg score = 0.00
+2025-03-01 11:51:23,094 - stress_test - INFO -   Evaluating solution for Task 05227341-0bb6-4544-9f29-73f542ad4711...
+2025-03-01 11:51:23,115 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:23,751 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-05227341-0bb6-4544-9f29-73f542ad4711' despite error.
+2025-03-01 11:51:24,378 - stress_test - INFO -     Batch evaluation in 1.28 seconds; Avg score = 0.00
+2025-03-01 11:51:24,378 - stress_test - INFO -   Evaluating solution for Task 857963f9-5ff1-4ef0-82bc-f0a6f045fef8...
+2025-03-01 11:51:24,397 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:25,047 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-857963f9-5ff1-4ef0-82bc-f0a6f045fef8' despite error.
+2025-03-01 11:51:25,683 - stress_test - INFO -     Batch evaluation in 1.30 seconds; Avg score = 0.00
+2025-03-01 11:51:25,683 - stress_test - INFO -   Evaluating solution for Task efb69fed-a31f-4eff-bdab-10387865ac98...
+2025-03-01 11:51:25,702 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:26,360 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-efb69fed-a31f-4eff-bdab-10387865ac98' despite error.
+2025-03-01 11:51:27,050 - stress_test - INFO -     Batch evaluation in 1.36 seconds; Avg score = 0.00
+2025-03-01 11:51:27,051 - stress_test - INFO -   Evaluating solution for Task a22052c8-f19c-4e26-b515-94085c41bb8c...
+2025-03-01 11:51:27,086 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:27,782 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-a22052c8-f19c-4e26-b515-94085c41bb8c' despite error.
+2025-03-01 11:51:28,429 - stress_test - INFO -     Batch evaluation in 1.36 seconds; Avg score = 0.00
+2025-03-01 11:51:28,429 - stress_test - INFO -   Evaluating solution for Task c3ad7aaa-603f-4c4d-8ab1-c61b8fc5244b...
+2025-03-01 11:51:28,449 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:29,086 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-c3ad7aaa-603f-4c4d-8ab1-c61b8fc5244b' despite error.
+2025-03-01 11:51:29,723 - stress_test - INFO -     Batch evaluation in 1.29 seconds; Avg score = 0.00
+2025-03-01 11:51:29,723 - stress_test - INFO -   Evaluating solution for Task 5266cedd-346b-4786-83b4-5af978d025b1...
+2025-03-01 11:51:29,742 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:30,399 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-5266cedd-346b-4786-83b4-5af978d025b1' despite error.
+2025-03-01 11:51:31,029 - stress_test - INFO -     Batch evaluation in 1.30 seconds; Avg score = 0.00
+2025-03-01 11:51:31,029 - stress_test - INFO -   Evaluating solution for Task e8a638c7-dda8-42c4-81ae-31b9514b9c14...
+2025-03-01 11:51:31,050 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'CK7n8e2FnZbCK4ZY' despite error.
+2025-03-01 11:51:31,688 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-e8a638c7-dda8-42c4-81ae-31b9514b9c14' despite error.
+2025-03-01 11:51:32,364 - stress_test - INFO -     Batch evaluation in 1.33 seconds; Avg score = 0.00
+2025-03-01 11:51:32,364 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-03-01 11:51:32,364 - stress_test - INFO -   Evaluating solution for Task 4df874c6-d057-441a-81c8-6b978459ddf4...
+2025-03-01 11:51:32,384 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:51:34,993 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-4df874c6-d057-441a-81c8-6b978459ddf4' despite error.
+2025-03-01 11:51:35,628 - stress_test - INFO -     Batch evaluation in 3.26 seconds; Avg score = 1.00
+2025-03-01 11:51:35,628 - stress_test - INFO -   Evaluating solution for Task e641c663-1287-4fad-b930-9c22c2882f30...
+2025-03-01 11:51:35,650 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:51:39,282 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-e641c663-1287-4fad-b930-9c22c2882f30' despite error.
+2025-03-01 11:51:39,916 - stress_test - INFO -     Batch evaluation in 4.28 seconds; Avg score = 1.00
+2025-03-01 11:51:39,916 - stress_test - INFO -   Evaluating solution for Task 5f5c56f1-d449-41f0-b0e4-1321fa382a0b...
+2025-03-01 11:51:39,937 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:51:47,271 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-5f5c56f1-d449-41f0-b0e4-1321fa382a0b' despite error.
+2025-03-01 11:51:47,900 - stress_test - INFO -     Batch evaluation in 7.98 seconds; Avg score = 1.00
+2025-03-01 11:51:47,900 - stress_test - INFO -   Evaluating solution for Task ea93d63e-8c6a-44eb-9b04-2a35cd728713...
+2025-03-01 11:51:47,920 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:51:49,583 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ea93d63e-8c6a-44eb-9b04-2a35cd728713' despite error.
+2025-03-01 11:51:50,246 - stress_test - INFO -     Batch evaluation in 2.34 seconds; Avg score = 1.00
+2025-03-01 11:51:50,247 - stress_test - INFO -   Evaluating solution for Task b8bb5969-ccfe-4c88-8cd5-fff49e86bf26...
+2025-03-01 11:51:50,269 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:51:55,524 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b8bb5969-ccfe-4c88-8cd5-fff49e86bf26' despite error.
+2025-03-01 11:51:56,162 - stress_test - INFO -     Batch evaluation in 5.91 seconds; Avg score = 1.00
+2025-03-01 11:51:56,162 - stress_test - INFO -   Evaluating solution for Task 2aa730b7-9b21-4071-9889-525ef3394cae...
+2025-03-01 11:51:56,184 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:51:58,355 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-2aa730b7-9b21-4071-9889-525ef3394cae' despite error.
+2025-03-01 11:51:58,962 - stress_test - INFO -     Batch evaluation in 2.79 seconds; Avg score = 1.00
+2025-03-01 11:51:58,963 - stress_test - INFO -   Evaluating solution for Task 7b7086a3-6c55-4b59-ab3b-dcf8c26cd062...
+2025-03-01 11:51:58,983 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:52:01,390 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-7b7086a3-6c55-4b59-ab3b-dcf8c26cd062' despite error.
+2025-03-01 11:52:02,050 - stress_test - INFO -     Batch evaluation in 3.08 seconds; Avg score = 1.00
+2025-03-01 11:52:02,050 - stress_test - INFO -   Evaluating solution for Task ec6f6d1a-99ab-4413-bba0-cbea59fc0871...
+2025-03-01 11:52:02,072 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:52:05,498 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ec6f6d1a-99ab-4413-bba0-cbea59fc0871' despite error.
+2025-03-01 11:52:06,123 - stress_test - INFO -     Batch evaluation in 4.06 seconds; Avg score = 1.00
+2025-03-01 11:52:06,123 - stress_test - INFO -   Evaluating solution for Task 05227341-0bb6-4544-9f29-73f542ad4711...
+2025-03-01 11:52:06,146 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:52:12,071 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-05227341-0bb6-4544-9f29-73f542ad4711' despite error.
+2025-03-01 11:52:12,715 - stress_test - INFO -     Batch evaluation in 6.58 seconds; Avg score = 1.00
+2025-03-01 11:52:12,715 - stress_test - INFO -   Evaluating solution for Task 857963f9-5ff1-4ef0-82bc-f0a6f045fef8...
+2025-03-01 11:52:12,736 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:52:31,044 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-857963f9-5ff1-4ef0-82bc-f0a6f045fef8' despite error.
+2025-03-01 11:52:31,706 - stress_test - INFO -     Batch evaluation in 18.98 seconds; Avg score = 1.00
+2025-03-01 11:52:31,707 - stress_test - INFO -   Evaluating solution for Task efb69fed-a31f-4eff-bdab-10387865ac98...
+2025-03-01 11:52:31,728 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:52:33,956 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-efb69fed-a31f-4eff-bdab-10387865ac98' despite error.
+2025-03-01 11:52:34,582 - stress_test - INFO -     Batch evaluation in 2.87 seconds; Avg score = 0.00
+2025-03-01 11:52:34,582 - stress_test - INFO -   Evaluating solution for Task a22052c8-f19c-4e26-b515-94085c41bb8c...
+2025-03-01 11:52:34,611 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:52:47,723 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-a22052c8-f19c-4e26-b515-94085c41bb8c' despite error.
+2025-03-01 11:52:48,441 - stress_test - INFO -     Batch evaluation in 13.85 seconds; Avg score = 1.00
+2025-03-01 11:52:48,441 - stress_test - INFO -   Evaluating solution for Task c3ad7aaa-603f-4c4d-8ab1-c61b8fc5244b...
+2025-03-01 11:52:48,464 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:52:52,424 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-c3ad7aaa-603f-4c4d-8ab1-c61b8fc5244b' despite error.
+2025-03-01 11:52:53,131 - stress_test - INFO -     Batch evaluation in 4.68 seconds; Avg score = 1.00
+2025-03-01 11:52:53,131 - stress_test - INFO -   Evaluating solution for Task 5266cedd-346b-4786-83b4-5af978d025b1...
+2025-03-01 11:52:53,153 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:52:55,622 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-5266cedd-346b-4786-83b4-5af978d025b1' despite error.
+2025-03-01 11:52:56,350 - stress_test - INFO -     Batch evaluation in 3.21 seconds; Avg score = 1.00
+2025-03-01 11:52:56,350 - stress_test - INFO -   Evaluating solution for Task e8a638c7-dda8-42c4-81ae-31b9514b9c14...
+2025-03-01 11:52:56,380 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '0GmfwiNrecZBxhWG' despite error.
+2025-03-01 11:53:05,723 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-e8a638c7-dda8-42c4-81ae-31b9514b9c14' despite error.
+2025-03-01 11:53:06,426 - stress_test - INFO -     Batch evaluation in 10.07 seconds; Avg score = 0.00
+2025-03-01 11:53:07,288 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-03-01 11:53:07,288 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
