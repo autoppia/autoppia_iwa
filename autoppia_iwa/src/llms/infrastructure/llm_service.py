@@ -110,7 +110,7 @@ class LocalLLMService(ILLM):
         """
         Asynchronously sends a single request to the local LLM endpoint "/generate".
         """
-        start_time = time.time()
+        # start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
                 payload = {
@@ -131,7 +131,7 @@ class LocalLLMService(ILLM):
                 raise RuntimeError(f"Local LLM Async Error: {e}")
             # finally:
             #     elapsed_time = time.time() - start_time
-                # print(f"Async request took {elapsed_time:.2f} seconds.")
+            # print(f"Async request took {elapsed_time:.2f} seconds.")
 
 
 class LLMFactory:

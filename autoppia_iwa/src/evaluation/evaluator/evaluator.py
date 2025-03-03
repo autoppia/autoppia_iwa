@@ -695,7 +695,7 @@ class ConcurrentEvaluator(IEvaluator):
             return
 
         # Calculate aggregate statistics
-        total_agents = len(task_stats)
+        # total_agents = len(task_stats)
         # successful_agents = sum(1 for s in task_stats if not s.had_errors)
         # avg_score = sum(s.final_score for s in task_stats) / max(1, total_agents)
         # avg_time = sum(s.total_time for s in task_stats) / max(1, total_agents)
@@ -717,8 +717,8 @@ class ConcurrentEvaluator(IEvaluator):
 
         # Create a summary table for each agent group
         for agent_type, stats in agent_groups.items():
-        #     avg_group_score = sum(s.final_score for s in stats) / max(1, len(stats))
-        #     avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
+            #     avg_group_score = sum(s.final_score for s in stats) / max(1, len(stats))
+            #     avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
             # TODO: PDESCOMENTAR
 
             # logger.info(f"\n{'-' * 60}")

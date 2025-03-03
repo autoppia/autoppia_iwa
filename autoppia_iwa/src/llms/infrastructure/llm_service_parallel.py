@@ -82,7 +82,7 @@ class LocalLLMService(ILLM):
         self.parallel_endpoint_url = parallel_endpoint_url
 
     def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
-        start_time = time.time()
+        # start_time = time.time()
         try:
             with httpx.Client(timeout=180.0) as client:
                 payload = {
@@ -103,13 +103,13 @@ class LocalLLMService(ILLM):
             raise RuntimeError(f"Local LLM Sync Error: {e}")
         # finally:
         #     elapsed_time = time.time() - start_time
-            # print(f"Sync request took {elapsed_time:.2f} seconds.")
+        # print(f"Sync request took {elapsed_time:.2f} seconds.")
 
     async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         """
         Asynchronously sends a single request to the local LLM endpoint "/generate".
         """
-        start_time = time.time()
+        # start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
                 payload = {
@@ -130,7 +130,7 @@ class LocalLLMService(ILLM):
                 raise RuntimeError(f"Local LLM Async Error: {e}")
             # finally:
             #     elapsed_time = time.time() - start_time
-                # print(f"Async request took {elapsed_time:.2f} seconds.")
+            # print(f"Async request took {elapsed_time:.2f} seconds.")
 
     async def async_predict_parallel(self, requests_list: List[Dict[str, Any]]) -> List[str]:
         """
@@ -150,7 +150,7 @@ class LocalLLMService(ILLM):
         if not self.parallel_endpoint_url:
             raise RuntimeError("No parallel endpoint URL provided for batch requests.")
 
-        start_time = time.time()
+        # start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
                 payload = {"requests": requests_list, "temperature": self.config.temperature, "max_tokens": self.config.max_tokens}
@@ -166,7 +166,7 @@ class LocalLLMService(ILLM):
                 raise RuntimeError(f"Local LLM Async Parallel Error: {e}")
             # finally:
             #     elapsed_time = time.time() - start_time
-                # print(f"Async parallel request took {elapsed_time:.2f} seconds.")
+            # print(f"Async parallel request took {elapsed_time:.2f} seconds.")
 
 
 class LLMFactory:
