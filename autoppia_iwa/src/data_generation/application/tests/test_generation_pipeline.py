@@ -60,8 +60,8 @@ class TestGenerationPipeline:
 
         # Map for extra data needed for specific test classes
         self.test_class_extra_data = {
-            "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very usefull to check navigation or where the agent is.",
-            "FindInHtmlTest": "Use this FindInHtmlTest test to check for stirngs that you expect to appear after the task is completed. very usefull for tasks that trigger UI updates",
+            "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very useful to check navigation or where the agent is.",
+            "FindInHtmlTest": "Use this FindInHtmlTest test to check for strings that you expect to appear after the task is completed. very useful for tasks that trigger UI updates",
             "CheckEventTest": "For CheckEventTest pls select event_name from this List of allowed event names: " + json.dumps(web_project.events),
         }
 
