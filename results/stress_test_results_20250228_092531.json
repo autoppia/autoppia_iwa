@@ -1,0 +1,136 @@
+{
+  "timestamp": "2025-02-28T09:25:31.343127",
+  "total_execution_time": 118.16067337989807,
+  "agents": {
+    "S5fu1OcCl9FFrK03": {
+      "name": "Random-clicker",
+      "score_statistics": {
+        "count": 10,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0
+      },
+      "avg_solution_time": 0.00010883808135986328,
+      "avg_evaluation_time": 1.2794050455093384,
+      "tasks": {
+        "11e3f53d-cf22-4c83-a372-0b81917c2496": {
+          "score": 0.0,
+          "solution_time": 0.0003821849822998047,
+          "evaluation_time": 1.2606470584869385
+        },
+        "300b2211-16e2-402a-8c8d-b74bb2195097": {
+          "score": 0.0,
+          "solution_time": 9.393692016601562e-05,
+          "evaluation_time": 1.1928613185882568
+        },
+        "af2331ae-a5f6-4325-a038-2bafb9e8bbdb": {
+          "score": 0.0,
+          "solution_time": 9.059906005859375e-05,
+          "evaluation_time": 1.2651753425598145
+        },
+        "2a372597-873c-4675-a969-a90cc5a6631d": {
+          "score": 0.0,
+          "solution_time": 7.176399230957031e-05,
+          "evaluation_time": 1.3125638961791992
+        },
+        "0f08f3a8-e5fa-40aa-8e1b-c2e4db452cb8": {
+          "score": 0.0,
+          "solution_time": 6.365776062011719e-05,
+          "evaluation_time": 1.3040611743927002
+        },
+        "1f6fd3d7-d1a0-495b-b6db-ca2e0c51b368": {
+          "score": 0.0,
+          "solution_time": 6.4849853515625e-05,
+          "evaluation_time": 1.289198398590088
+        },
+        "a1205fb7-1757-4e5e-a8e5-6cf86dd26832": {
+          "score": 0.0,
+          "solution_time": 0.00010776519775390625,
+          "evaluation_time": 1.2201988697052002
+        },
+        "07da6508-5346-4cf5-b8e0-cc5c30435fa4": {
+          "score": 0.0,
+          "solution_time": 6.723403930664062e-05,
+          "evaluation_time": 1.2463884353637695
+        },
+        "26d6e159-adbd-41f3-83ff-338a4a10e3cb": {
+          "score": 0.0,
+          "solution_time": 6.270408630371094e-05,
+          "evaluation_time": 1.3834924697875977
+        },
+        "95614371-9fee-4c5d-9eb6-e555d995fbaf": {
+          "score": 0.0,
+          "solution_time": 8.368492126464844e-05,
+          "evaluation_time": 1.3194634914398193
+        }
+      }
+    },
+    "SyMkrvMWO82gN9sd": {
+      "name": "browser-use",
+      "score_statistics": {
+        "count": 10,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0
+      },
+      "avg_solution_time": 0.0017194509506225585,
+      "avg_evaluation_time": 0.008815360069274903,
+      "tasks": {
+        "11e3f53d-cf22-4c83-a372-0b81917c2496": {
+          "score": 0.0,
+          "solution_time": 0.0073091983795166016,
+          "evaluation_time": 0.008261680603027344
+        },
+        "300b2211-16e2-402a-8c8d-b74bb2195097": {
+          "score": 0.0,
+          "solution_time": 0.0013427734375,
+          "evaluation_time": 0.008824825286865234
+        },
+        "af2331ae-a5f6-4325-a038-2bafb9e8bbdb": {
+          "score": 0.0,
+          "solution_time": 0.00107574462890625,
+          "evaluation_time": 0.007909774780273438
+        },
+        "2a372597-873c-4675-a969-a90cc5a6631d": {
+          "score": 0.0,
+          "solution_time": 0.0009212493896484375,
+          "evaluation_time": 0.008589029312133789
+        },
+        "0f08f3a8-e5fa-40aa-8e1b-c2e4db452cb8": {
+          "score": 0.0,
+          "solution_time": 0.0009837150573730469,
+          "evaluation_time": 0.008383750915527344
+        },
+        "1f6fd3d7-d1a0-495b-b6db-ca2e0c51b368": {
+          "score": 0.0,
+          "solution_time": 0.001012563705444336,
+          "evaluation_time": 0.009240865707397461
+        },
+        "a1205fb7-1757-4e5e-a8e5-6cf86dd26832": {
+          "score": 0.0,
+          "solution_time": 0.0010194778442382812,
+          "evaluation_time": 0.009361028671264648
+        },
+        "07da6508-5346-4cf5-b8e0-cc5c30435fa4": {
+          "score": 0.0,
+          "solution_time": 0.0009205341339111328,
+          "evaluation_time": 0.009283781051635742
+        },
+        "26d6e159-adbd-41f3-83ff-338a4a10e3cb": {
+          "score": 0.0,
+          "solution_time": 0.0014107227325439453,
+          "evaluation_time": 0.009708881378173828
+        },
+        "95614371-9fee-4c5d-9eb6-e555d995fbaf": {
+          "score": 0.0,
+          "solution_time": 0.0011985301971435547,
+          "evaluation_time": 0.008589982986450195
+        }
+      }
+    }
+  }
+}

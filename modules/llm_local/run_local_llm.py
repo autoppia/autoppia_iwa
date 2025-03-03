@@ -9,6 +9,8 @@ from flask_cors import CORS
 from json_repair import repair_json
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from json_repair import repair_json
+
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 

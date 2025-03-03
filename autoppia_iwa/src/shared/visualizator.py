@@ -1,43 +1,42 @@
 import os
-from typing import Any, Dict, List, Optional
-
-from rich import box
-from rich.align import Align
+import json
+from typing import List, Dict, Any, Optional
+from datetime import datetime
 from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
+from rich.panel import Panel
+from rich import box
 from rich.text import Text
+from rich.padding import Padding
+from rich.layout import Layout
+from rich.align import Align
+from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import (
+    CheckUrlTest,
+)
 
 
 class SubnetVisualizer:
     """
-    Enhanced visualizer for Subnet 36 that displays:
-    1. Task with its prompt
-    2. Associated tests with detailed information
-    3. Agent actions
+    Improved visualizer for Subnet 36, which displays:
+    1. The Task with its prompt
+    2. Associated Tests with detailed information
+    3. The Agent's Actions
     4. Test results (✅/❌)
     5. Scores
     """
 
     def __init__(self, log_directory: Optional[str] = None):
-        """
-        Initialize the visualizer.
-
-        Args:
-            log_directory (Optional[str]): Directory to save logs. If None, logs are not saved.
-        """
         self.console = Console()
         if log_directory:
             os.makedirs(log_directory, exist_ok=True)
         self.log_directory = log_directory
 
-    def show_task_with_tests(self, task: Any) -> None:
+    def show_task_with_tests(self, task):
         """
-        Display a task and its configured tests.
-
-        Args:
-            task (Any): The task to display.
+        Displays a task and its configured tests.
         """
+        # Panel to show the task prompt
         task_id = task.id if hasattr(task, "id") else "Unknown"
         prompt = task.prompt if hasattr(task, "prompt") else "No prompt available"
 
@@ -46,149 +45,141 @@ class SubnetVisualizer:
         task_panel = Panel(prompt, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
         self.console.print(task_panel)
 
+        # Table of configured tests
         if hasattr(task, "tests") and task.tests:
-            self._display_tests_table(task.tests)
+            tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
+            tests_table.add_column("Test #", style="dim", width=6)
+            tests_table.add_column("Type", style="cyan", width=22)
+            tests_table.add_column("Description", style="yellow")
 
-    def _display_tests_table(self, tests: List[Any]) -> None:
+            for idx, test in enumerate(task.tests):
+                test_type = type(test).__name__
+                description = self._get_detailed_test_description(test)
+                tests_table.add_row(str(idx + 1), test_type, description)
+
+            self.console.print("\n[bold magenta]CONFIGURED TESTS:[/bold magenta]")
+            self.console.print(tests_table)
+            self.console.print("-" * 80)
+
+    def show_full_evaluation(self, agent_id, task, actions, test_results_matrix, evaluation_result=None, feedback=None):
         """
-        Display a table of configured tests.
+        Displays a full evaluation with all details: task, actions, tests, and results.
+        Actions are shown first, followed by tests, each in its own panel.
 
         Args:
-            tests (List[Any]): List of tests to display.
+            agent_id: ID of the evaluated agent
+            task: The evaluated task
+            actions: List of actions taken
+            test_results_matrix: Matrix of test results
+            evaluation_result: The evaluation result object
+            feedback: Optional additional feedback
         """
-        tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
-        tests_table.add_column("Test #", style="dim", width=6)
-        tests_table.add_column("Type", style="cyan", width=22)
-        tests_table.add_column("Description", style="yellow")
+        self.console.print("\n" + "=" * 80)
+        self.console.print(f"\n[bold white on blue]COMPLETE EVALUATION - AGENT: {agent_id}[/bold white on blue]\n")
 
-        for idx, test in enumerate(tests):
-            test_type = type(test).__name__
-            description = self._get_detailed_test_description(test)
-            tests_table.add_row(str(idx + 1), test_type, description)
-
-        self.console.print("\n[bold magenta]CONFIGURED TESTS:[/bold magenta]")
-        self.console.print(tests_table)
-        self.console.print("-" * 80)
-
-    def show_agent_evaluation(self, agent_id: str, task: Any, actions: List[Any], test_results_matrix: List[List[Any]], evaluation_result: Optional[Any] = None) -> None:
-        """
-        Display the evaluation results for a specific agent.
-
-        Args:
-            agent_id (str): The ID of the agent.
-            task (Any): The task being evaluated.
-            actions (List[Any]): List of actions performed by the agent.
-            test_results_matrix (List[List[Any]]): Matrix of test results.
-            evaluation_result (Optional[Any]): The evaluation result.
-        """
-        self.console.print(f"\n[bold white on blue]AGENT EVALUATION: {agent_id}[/bold white on blue]\n")
-
+        # 1. Show task details
         task_id = task.id if hasattr(task, "id") else "Unknown"
         prompt = task.prompt if hasattr(task, "prompt") else "No prompt available"
 
-        task_panel = Panel(prompt, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 1))
+        task_panel = Panel(prompt, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
         self.console.print(task_panel)
 
-        self._display_actions_table(actions)
-        self._display_test_results_table(task, test_results_matrix)
+        # 2. Table of executed actions (shown first now)
+        if actions:
+            actions_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            actions_table.add_column("#", style="dim", width=4)
+            actions_table.add_column("Type", style="cyan", width=18)
+            actions_table.add_column("Details", style="green")
 
+            for idx, action in enumerate(actions):
+                action_type = type(action).__name__ if hasattr(action, "__class__") else "Unknown"
+                details = self._format_action_details(action)
+                actions_table.add_row(str(idx + 1), action_type, details)
+
+            actions_panel = Panel(actions_table, title="[bold green]ACTIONS EXECUTED[/bold green]", border_style="green", padding=(1, 1))
+            self.console.print("\n")
+            self.console.print(actions_panel)
+        else:
+            self.console.print("\n[yellow]No actions were executed[/yellow]")
+
+        # 3. Table of configured tests with their results (now shown after the actions)
+        if hasattr(task, "tests") and task.tests and test_results_matrix and len(test_results_matrix) > 0:
+            tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
+            tests_table.add_column("Test #", style="dim", width=6)
+            tests_table.add_column("Type", style="cyan", width=22)
+            tests_table.add_column("Description", style="yellow")
+            tests_table.add_column("Result", style="bold", width=10)
+
+            for idx, test in enumerate(task.tests):
+                # Ensure there's a result for this test
+                if idx < len(test_results_matrix[0]):
+                    test_passed = False
+                    for action_idx in range(len(test_results_matrix)):
+                        if isinstance(test_results_matrix[action_idx][idx], dict):
+                            if test_results_matrix[action_idx][idx]['success']:
+                                test_passed = True
+                                break
+                        else:
+                            if test_results_matrix[action_idx][idx].success:
+                                test_passed = True
+                                break
+
+                    # Get detailed test description
+                    test_type = type(test).__name__
+                    description = self._get_detailed_test_description(test)
+
+                    # Format the result
+                    result_text = "✅ PASS" if test_passed else "❌ FAIL"
+                    result_style = "green" if test_passed else "red"
+
+                    tests_table.add_row(str(idx + 1), test_type, description, Text(result_text, style=result_style))
+
+            tests_panel = Panel(tests_table, title="[bold magenta]TESTS AND RESULTS[/bold magenta]", border_style="magenta", padding=(1, 1))
+            self.console.print("\n")
+            self.console.print(tests_panel)
+        else:
+            self.console.print("\n[yellow]No configured tests or available results[/yellow]")
+
+        # 4. Show scores
         if evaluation_result:
-            self._display_scores_table(evaluation_result)
+            scores_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            scores_table.add_column("Type", style="yellow", justify="right", width=25)
+            scores_table.add_column("Value", style="cyan", width=10)
 
+            # Extract available scores
+            raw_score = evaluation_result.raw_score if hasattr(evaluation_result, "raw_score") else 0.0
+            random_score = evaluation_result.random_clicker_score if hasattr(evaluation_result, "random_clicker_score") else 0.0
+            final_score = evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
+
+            scores_table.add_row("Raw Score:", f"{raw_score:.4f}")
+            scores_table.add_row("Random Clicker Score:", f"{random_score:.4f}")
+            scores_table.add_row("Adjusted Score:", Text(f"{final_score:.4f}", style="bold green" if final_score > 0.5 else "bold red"))
+
+            scores_panel = Panel(scores_table, title="[bold blue]SCORES[/bold blue]", border_style="blue", padding=(1, 1))
+            self.console.print("\n")
+            self.console.print(scores_panel)
+
+        # 5. Additional feedback information, if provided
+        if feedback:
+            feedback_content = f"""
+    [bold]Tests passed:[/bold] {feedback.passed_tests}/{feedback.passed_tests + feedback.failed_tests}
+    [bold]Total time:[/bold] {feedback.total_execution_time:.2f}s
+            """
+
+            feedback_panel = Panel(feedback_content, title="[bold green]ADDITIONAL FEEDBACK[/bold green]", border_style="green", padding=(1, 1))
+            self.console.print("\n")
+            self.console.print(feedback_panel)
+
+        # Final separator
         self.console.print("\n" + "=" * 80)
 
-    def _display_actions_table(self, actions: List[Any]) -> None:
+    def _format_action_details(self, action):
         """
-        Display a table of actions performed by the agent.
-
-        Args:
-            actions (List[Any]): List of actions to display.
-        """
-        actions_table = Table(title="[bold green]EXECUTED ACTIONS[/bold green]", show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
-        actions_table.add_column("#", style="dim", width=4)
-        actions_table.add_column("Type", style="cyan", width=18)
-        actions_table.add_column("Details", style="green")
-
-        for idx, action in enumerate(actions):
-            action_type = type(action).__name__ if hasattr(action, "__class__") else "Unknown"
-            details = self._format_action_details(action)
-            actions_table.add_row(str(idx + 1), action_type, details)
-
-        self.console.print("\n")
-        self.console.print(actions_table)
-
-    def _display_test_results_table(self, task: Any, test_results_matrix: List[List[Any]]) -> None:
-        """
-        Display a table of test results.
-
-        Args:
-            task (Any): The task being evaluated.
-            test_results_matrix (List[List[Any]]): Matrix of test results.
-        """
-        if not test_results_matrix or not test_results_matrix[0]:
-            return
-
-        results_table = Table(title="[bold yellow]TEST RESULTS[/bold yellow]", show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
-        results_table.add_column("Test #", style="dim", width=6)
-        results_table.add_column("Type", style="cyan", width=22)
-        results_table.add_column("Description", style="yellow")
-        results_table.add_column("Result", style="bold", width=10)
-
-        num_tests = len(test_results_matrix[0])
-
-        for test_idx in range(num_tests):
-            test_passed = any(test_results_matrix[action_idx][test_idx].success for action_idx in range(len(test_results_matrix)))
-
-            test_type = "Unknown"
-            description = ""
-
-            if hasattr(task, "tests") and test_idx < len(task.tests):
-                test = task.tests[test_idx]
-                test_type = type(test).__name__
-                description = self._get_detailed_test_description(test)
-
-            result_text = "✅ PASS" if test_passed else "❌ FAIL"
-            result_style = "green" if test_passed else "red"
-
-            results_table.add_row(str(test_idx + 1), test_type, description, Text(result_text, style=result_style))
-
-        self.console.print("\n")
-        self.console.print(results_table)
-
-    def _display_scores_table(self, evaluation_result: Any) -> None:
-        """
-        Display a table of scores.
-
-        Args:
-            evaluation_result (Any): The evaluation result.
-        """
-        scores_table = Table(title="[bold blue]SCORES[/bold blue]", show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
-        scores_table.add_column("Type", style="yellow", justify="right", width=25)
-        scores_table.add_column("Value", style="cyan", width=10)
-
-        raw_score = evaluation_result.raw_score if hasattr(evaluation_result, "raw_score") else 0.0
-        random_score = evaluation_result.random_clicker_score if hasattr(evaluation_result, "random_clicker_score") else 0.0
-        final_score = evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
-
-        scores_table.add_row("Raw Score:", f"{raw_score:.4f}")
-        scores_table.add_row("Random Clicker Score:", f"{random_score:.4f}")
-        scores_table.add_row("Adjusted Score:", Text(f"{final_score:.4f}", style="bold green" if final_score > 0.5 else "bold red"))
-
-        self.console.print("\n")
-        self.console.print(scores_table)
-
-    def _format_action_details(self, action: Any) -> str:
-        """
-        Format the details of an action for display.
-
-        Args:
-            action (Any): The action to format.
-
-        Returns:
-            str: Formatted action details.
+        Formats the details of a single action for display in a readable manner.
         """
         details = ""
         if hasattr(action, "model_dump"):
+            # For Pydantic actions
             action_dict = action.model_dump()
             exclude_keys = ["type"]
             for key, value in action_dict.items():
@@ -200,6 +191,7 @@ class SubnetVisualizer:
                     details += f"{key}={value}, "
             details = details.rstrip(", ")
         elif hasattr(action, "__dict__"):
+            # For regular objects
             vars_dict = vars(action)
             for key, value in vars_dict.items():
                 if not key.startswith("_") and value:
@@ -213,28 +205,25 @@ class SubnetVisualizer:
             details = str(action)
         return details
 
-    def _get_detailed_test_description(self, test: Any) -> str:
+    def _get_detailed_test_description(self, test):
         """
-        Extract a detailed description of the test based on its type and attributes.
-
-        Args:
-            test (Any): The test to describe.
-
-        Returns:
-            str: Detailed description of the test.
+        Extracts a specific, detailed description of the test based on its type and attributes.
         """
         description = ""
         test_type = type(test).__name__
 
+        # Specific information by test type
         if test_type == "CheckUrlTest":
+            # For URL tests, show the expected URL or path
             if hasattr(test, "url"):
-                description = f"Verify navigation to URL: '{test.url}'"
+                description = f"Check navigation to URL: '{test.url}'"
             elif hasattr(test, "expected_url"):
-                description = f"Verify navigation to URL: '{test.expected_url}'"
+                description = f"Check navigation to URL: '{test.expected_url}'"
             elif hasattr(test, "url_pattern"):
-                description = f"Verify URL pattern: '{test.url_pattern}'"
+                description = f"Check URL pattern: '{test.url_pattern}'"
 
         elif "HTML" in test_type or test_type == "JudgeBaseOnHTML" or test_type == "OpinionBasedHTMLTest":
+            # For HTML opinion tests, show the success criteria
             if hasattr(test, "success_criteria"):
                 criteria = test.success_criteria
                 if len(criteria) > 60:
@@ -244,17 +233,20 @@ class SubnetVisualizer:
                 description = f"Query: '{test.query}'"
 
         elif "Event" in test_type or test_type == "CheckEventTest":
+            # For event tests, show the event name
             if hasattr(test, "event_name"):
-                description = f"Verify backend event: '{test.event_name}'"
+                description = f"Check backend event: '{test.event_name}'"
             elif hasattr(test, "event_type"):
-                description = f"Verify event type: '{test.event_type}'"
+                description = f"Check event type: '{test.event_type}'"
 
         elif test_type == "CheckPageViewEventTest":
+            # For page view event tests
             if hasattr(test, "url_path"):
-                description = f"Verify page access: '{test.url_path}'"
+                description = f"Check page access: '{test.url_path}'"
             elif hasattr(test, "page_name"):
-                description = f"Verify page view: '{test.page_name}'"
+                description = f"Check page view: '{test.page_name}'"
 
+        # If no description was generated with the specific cases, try to extract common attributes
         if not description:
             priority_attrs = ["description", "text", "expected", "target", "selector"]
             for attr in priority_attrs:
@@ -265,6 +257,7 @@ class SubnetVisualizer:
                     description = f"{attr.capitalize()}: '{value}'"
                     break
 
+            # If there is still no description, try to show all relevant attributes
             if not description:
                 all_attrs = []
                 for attr_name, attr_value in vars(test).items():
@@ -276,17 +269,14 @@ class SubnetVisualizer:
                 if all_attrs:
                     description = ", ".join(all_attrs)
                 else:
+                    # If no attributes were found, use the test type
                     description = f"Test type {test_type}"
 
         return description
 
-    def print_summary(self, results: Dict[str, Any], agents: List[Any]) -> None:
+    def print_summary(self, results, agents):
         """
-        Print a performance summary for each agent.
-
-        Args:
-            results (Dict[str, Any]): Dictionary of results.
-            agents (List[Any]): List of agents.
+        Prints a performance summary for each agent.
         """
         self.console.print("\n" + "=" * 80)
         self.console.print(Align.center("[bold white on blue]PERFORMANCE SUMMARY[/bold white on blue]"))
@@ -307,6 +297,7 @@ class SubnetVisualizer:
 
         self.console.print(summary_table)
 
+        # Project details
         for agent in agents:
             if not results[agent.id]["projects"]:
                 continue
@@ -333,16 +324,11 @@ class SubnetVisualizer:
         self.console.print("\n" + "=" * 80)
 
 
-# Decorators for integration into the benchmark
+# Decorators to integrate with the benchmark
 
 
-def visualize_task(visualizer: SubnetVisualizer):
-    """
-    Decorator to visualize a task and its tests.
-
-    Args:
-        visualizer (SubnetVisualizer): The visualizer instance.
-    """
+def visualize_task(visualizer):
+    """Decorator to visualize a task and its tests."""
 
     def decorator(func):
         async def wrapper(*args, **kwargs):
@@ -359,23 +345,20 @@ def visualize_task(visualizer: SubnetVisualizer):
     return decorator
 
 
-def visualize_evaluation(visualizer: SubnetVisualizer):
-    """
-    Decorator to visualize the evaluation of an agent.
-
-    Args:
-        visualizer (SubnetVisualizer): The visualizer instance.
-    """
+def visualize_evaluation(visualizer):
+    """Decorator to visualize an agent's evaluation."""
 
     def decorator(func):
         async def wrapper(web_project, task, task_solution, *args, **kwargs):
             result = await func(web_project, task, task_solution, *args, **kwargs)
-            visualizer.show_agent_evaluation(
+            # Changed from show_agent_evaluation to show_full_evaluation
+            visualizer.show_full_evaluation(
                 agent_id=task_solution.web_agent_id,
                 task=task,
                 actions=task_solution.actions,
                 test_results_matrix=result.test_results_matrix if hasattr(result, "test_results_matrix") else [],
                 evaluation_result=result,
+                feedback=result.feedback if hasattr(result, "feedback") else None,
             )
             return result
 
@@ -384,13 +367,8 @@ def visualize_evaluation(visualizer: SubnetVisualizer):
     return decorator
 
 
-def visualize_summary(visualizer: SubnetVisualizer):
-    """
-    Decorator to visualize the final summary.
-
-    Args:
-        visualizer (SubnetVisualizer): The visualizer instance.
-    """
+def visualize_summary(visualizer):
+    """Decorator to visualize the final summary."""
 
     def decorator(func):
         def wrapper(results, agents, *args, **kwargs):
@@ -401,3 +379,66 @@ def visualize_summary(visualizer: SubnetVisualizer):
         return wrapper
 
     return decorator
+
+
+def test_visualization():
+    # Simplified classes for this example
+    class Task:
+        def __init__(self, id, prompt, tests):
+            self.id = id
+            self.prompt = prompt
+            self.tests = tests
+
+    class CheckUrlTest:
+        def __init__(self, type, url, description):
+            self.type = type
+            self.url = url
+            self.description = description
+
+    class ClickAction:
+        def __init__(self, type, x, y, selector=None):
+            self.type = type
+            self.x = x
+            self.y = y
+            self.selector = selector
+
+        def __str__(self):
+            return f"ClickAction(x={self.x}, y={self.y})"
+
+        def model_dump(self):
+            return {"type": self.type, "x": self.x, "y": self.y, "selector": self.selector}
+
+    class TestResult:
+        def __init__(self, success, message):
+            self.success = success
+            self.message = message
+
+    class EvaluationResult:
+        def __init__(self):
+            self.raw_score = 0.0
+            self.random_clicker_score = 0.0
+            self.final_score = 0.0
+
+    # Create a visualizer
+    visualizer = SubnetVisualizer()
+
+    # Example data
+    task = Task(id='41b0f865-d1f1-47bb-8ab7-9572dea9ca4a', prompt="Navigate to the 'About Us' page.", tests=[CheckUrlTest(type='CheckUrlTest', url='/about/', description='Check URL')])
+
+    agent_id = "browser-agent-1"
+
+    actions = [ClickAction(type='ClickAction', x=1711, y=978)]
+
+    # Create a simulated test results matrix
+    test_result = TestResult(success=False, message="URL does not match /about/")
+    test_results_matrix = [[test_result]]
+
+    # Create a simulated evaluation result object
+    evaluation_result = EvaluationResult()
+
+    # Call the visualization function
+    visualizer.show_full_evaluation(agent_id=agent_id, task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
+
+
+# Run the test function if needed:
+# test_visualization()

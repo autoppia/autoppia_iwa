@@ -1,0 +1,1336 @@
+{
+  "timestamp": "2025-02-28T00:08:56.908440",
+  "total_execution_time": 646.7271208763123,
+  "agents": {
+    "hxPQG8z7ZtrM4VW5": {
+      "name": "Random-clicker",
+      "score_statistics": {
+        "count": 130,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0
+      },
+      "avg_solution_time": 3.10054192176232e-05,
+      "avg_evaluation_time": 1.3445095117275532,
+      "tasks": {
+        "a18a276d-e35b-40fc-a861-4098a43d6332": {
+          "score": 0.0,
+          "solution_time": 0.0001513957977294922,
+          "evaluation_time": 1.4385287761688232
+        },
+        "e823d1e4-90e6-47a2-ba58-a05e5b317048": {
+          "score": 0.0,
+          "solution_time": 3.790855407714844e-05,
+          "evaluation_time": 1.3122334480285645
+        },
+        "cf980940-d40e-41b1-a279-2c20a89f3796": {
+          "score": 0.0,
+          "solution_time": 3.337860107421875e-05,
+          "evaluation_time": 1.315547227859497
+        },
+        "e96121e4-572d-4190-9f9b-fda2b015ee6a": {
+          "score": 0.0,
+          "solution_time": 3.695487976074219e-05,
+          "evaluation_time": 1.2821457386016846
+        },
+        "ec524a3c-2f42-4bf0-ac32-73258861471b": {
+          "score": 0.0,
+          "solution_time": 2.956390380859375e-05,
+          "evaluation_time": 1.2872354984283447
+        },
+        "0bc0f3e9-7fe6-466a-8294-4d4c6507bb40": {
+          "score": 0.0,
+          "solution_time": 2.8848648071289062e-05,
+          "evaluation_time": 1.300262451171875
+        },
+        "dc257ddd-5615-4f00-ac2e-40930e072726": {
+          "score": 0.0,
+          "solution_time": 2.8848648071289062e-05,
+          "evaluation_time": 1.3186366558074951
+        },
+        "728c0509-1c68-4844-896a-9e259cc3a66b": {
+          "score": 0.0,
+          "solution_time": 2.9325485229492188e-05,
+          "evaluation_time": 1.3305039405822754
+        },
+        "7e4730b7-1cf4-4d9f-bf48-74b0b5b62cc5": {
+          "score": 0.0,
+          "solution_time": 2.8371810913085938e-05,
+          "evaluation_time": 1.3018970489501953
+        },
+        "3379599a-ac49-4b43-b695-303ffee542e8": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.333158254623413
+        },
+        "ef71f4c0-bbc5-428e-aa60-c2ffaf627314": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3455829620361328
+        },
+        "6b37ad98-e80e-4c59-a29e-37d7f18b4024": {
+          "score": 0.0,
+          "solution_time": 2.86102294921875e-05,
+          "evaluation_time": 1.3156778812408447
+        },
+        "c70d313c-f5dd-433a-9b29-009cc5872363": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3009891510009766
+        },
+        "ab15a8a0-ee33-4eff-9234-de9368be0526": {
+          "score": 0.0,
+          "solution_time": 2.8133392333984375e-05,
+          "evaluation_time": 1.2842516899108887
+        },
+        "0d35cc17-2574-459e-be58-a60e9a3058d6": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3265275955200195
+        },
+        "3d877bfe-f23f-440e-8379-919128c99872": {
+          "score": 0.0,
+          "solution_time": 2.8848648071289062e-05,
+          "evaluation_time": 1.356919527053833
+        },
+        "1c4a630a-9957-448b-8789-f69b84108859": {
+          "score": 0.0,
+          "solution_time": 3.0994415283203125e-05,
+          "evaluation_time": 1.298839807510376
+        },
+        "9ab44570-e72c-4eb8-9808-52c6060b52a3": {
+          "score": 0.0,
+          "solution_time": 2.8371810913085938e-05,
+          "evaluation_time": 1.3017480373382568
+        },
+        "31dbe754-78eb-493e-ae75-01624a237837": {
+          "score": 0.0,
+          "solution_time": 2.7894973754882812e-05,
+          "evaluation_time": 1.428069829940796
+        },
+        "288cd647-26b8-4853-b68c-0be03dcc81a3": {
+          "score": 0.0,
+          "solution_time": 2.7894973754882812e-05,
+          "evaluation_time": 1.370243787765503
+        },
+        "1a23e1d7-65b2-492c-89d7-b5ce7a9120d8": {
+          "score": 0.0,
+          "solution_time": 2.7894973754882812e-05,
+          "evaluation_time": 1.332646131515503
+        },
+        "d2bdbe3a-d88e-45b9-ab8b-4daceef28d88": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.2845399379730225
+        },
+        "06308bb3-0686-4f83-9718-1a1c5cec43b1": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3168303966522217
+        },
+        "7702dcec-d4c0-47a5-b9c7-6a7e0d2e2d29": {
+          "score": 0.0,
+          "solution_time": 2.7418136596679688e-05,
+          "evaluation_time": 1.333669900894165
+        },
+        "f2bd1aa2-a762-473c-bfe2-a08958a8e970": {
+          "score": 0.0,
+          "solution_time": 2.8848648071289062e-05,
+          "evaluation_time": 1.3055953979492188
+        },
+        "be8f4e01-1450-4f18-9968-1586a32ae0e8": {
+          "score": 0.0,
+          "solution_time": 2.8133392333984375e-05,
+          "evaluation_time": 1.3155038356781006
+        },
+        "02cd9f0b-befa-433d-812b-d01fcc07be1a": {
+          "score": 0.0,
+          "solution_time": 2.8133392333984375e-05,
+          "evaluation_time": 1.3259434700012207
+        },
+        "0f0716a7-e19b-473e-816c-b37958669521": {
+          "score": 0.0,
+          "solution_time": 2.8371810913085938e-05,
+          "evaluation_time": 1.3532536029815674
+        },
+        "606124c0-f5d2-4d1b-bff1-3ef927a22fe4": {
+          "score": 0.0,
+          "solution_time": 2.8848648071289062e-05,
+          "evaluation_time": 1.3881254196166992
+        },
+        "5cbeddf8-466a-4b1a-b9ed-2dfd80d6f753": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3446006774902344
+        },
+        "1ed0b65c-fb17-4acb-8751-dacbc8d7949d": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3512980937957764
+        },
+        "af6e641b-8a6c-4a2f-8e3b-ddea05fe378a": {
+          "score": 0.0,
+          "solution_time": 2.7894973754882812e-05,
+          "evaluation_time": 1.3280820846557617
+        },
+        "35bd228e-8108-4982-9b5d-6a9d0360a6d6": {
+          "score": 0.0,
+          "solution_time": 2.8133392333984375e-05,
+          "evaluation_time": 1.28409743309021
+        },
+        "7f50723f-4e35-437c-9c30-bc458d23efe3": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3381106853485107
+        },
+        "02335922-15c8-44a9-b3c9-55cac63c00e2": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3142528533935547
+        },
+        "dd8cb93d-3eea-4f08-a6cb-9e0676fa5c20": {
+          "score": 0.0,
+          "solution_time": 2.5987625122070312e-05,
+          "evaluation_time": 1.298126459121704
+        },
+        "f6d4aa84-accd-4aca-bda0-771fd894709c": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.4945085048675537
+        },
+        "3f66749c-a5b0-4b33-b06f-7f4d5db0cfd6": {
+          "score": 0.0,
+          "solution_time": 2.6226043701171875e-05,
+          "evaluation_time": 1.3932344913482666
+        },
+        "4b895dfb-7cda-4778-813d-39be0ef8862d": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.3468964099884033
+        },
+        "2fb4bd1b-70ea-4ecc-ac24-2936c1c89a70": {
+          "score": 0.0,
+          "solution_time": 2.6464462280273438e-05,
+          "evaluation_time": 1.3159453868865967
+        },
+        "1052af88-5d4e-483a-9919-0b3524eff6d9": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.333585262298584
+        },
+        "93fc1f74-cda1-4d47-a4f8-1290b02f6694": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.3008370399475098
+        },
+        "29aeaf5a-2730-410f-910e-d01e3a34c8eb": {
+          "score": 0.0,
+          "solution_time": 3.504753112792969e-05,
+          "evaluation_time": 1.315185308456421
+        },
+        "8cb00eb5-ae92-42c8-9eba-7e815bbe811b": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.317342758178711
+        },
+        "469e3937-53ab-43f9-8ab2-79843974e8d0": {
+          "score": 0.0,
+          "solution_time": 2.8371810913085938e-05,
+          "evaluation_time": 1.3302638530731201
+        },
+        "4014fee9-89bb-4327-b638-83a1cef3f291": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3710153102874756
+        },
+        "3ed21b71-70a6-4309-bad7-c0fda1eec1a9": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.4199068546295166
+        },
+        "bbcb1d1e-0227-4472-b9d9-3978d481e25c": {
+          "score": 0.0,
+          "solution_time": 2.8133392333984375e-05,
+          "evaluation_time": 1.3642756938934326
+        },
+        "0bd04dc3-de39-4db9-b5e0-7ec1e7f453a5": {
+          "score": 0.0,
+          "solution_time": 2.7418136596679688e-05,
+          "evaluation_time": 1.308525800704956
+        },
+        "3e1d12e0-a966-43ed-8e82-7a859edeccfb": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3216361999511719
+        },
+        "6829139a-dd5f-4622-b6bf-1b5e8c89f556": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3161249160766602
+        },
+        "540cbd58-9019-42c4-a76b-490d9344c52f": {
+          "score": 0.0,
+          "solution_time": 2.6226043701171875e-05,
+          "evaluation_time": 1.3137505054473877
+        },
+        "24ca3c31-4e1f-44e2-8507-8d0393fcbfb8": {
+          "score": 0.0,
+          "solution_time": 2.6702880859375e-05,
+          "evaluation_time": 1.301628589630127
+        },
+        "b9175e74-bbac-4e01-a0ee-b316e281044a": {
+          "score": 0.0,
+          "solution_time": 2.9087066650390625e-05,
+          "evaluation_time": 1.3183348178863525
+        },
+        "25a1c649-7ea4-4f32-bd7c-b6f776bb95d2": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.4964005947113037
+        },
+        "296c92b0-f09d-4fdb-8106-8273b4a1f9a4": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.388474702835083
+        },
+        "93a81b12-adb9-4fd0-882d-dc4b823c87e8": {
+          "score": 0.0,
+          "solution_time": 2.6702880859375e-05,
+          "evaluation_time": 1.3165113925933838
+        },
+        "bdedb976-68d2-4db5-aa63-4fbb083dede5": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3470277786254883
+        },
+        "f10e4dd5-5596-4712-9ce6-300db04fe78a": {
+          "score": 0.0,
+          "solution_time": 2.7418136596679688e-05,
+          "evaluation_time": 1.331496238708496
+        },
+        "1ebded63-cfbc-45c9-a687-77fd98a4ac8a": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3014421463012695
+        },
+        "47f9a492-c457-46ff-b956-d8392357f532": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.3304815292358398
+        },
+        "2af37e6e-e535-420c-ac3b-1f0602ae16c2": {
+          "score": 0.0,
+          "solution_time": 2.86102294921875e-05,
+          "evaluation_time": 1.3358428478240967
+        },
+        "c7b7f2bd-2d96-47b4-bbd2-3c2327a47890": {
+          "score": 0.0,
+          "solution_time": 2.7894973754882812e-05,
+          "evaluation_time": 1.3035869598388672
+        },
+        "79bd5579-c104-46e2-856e-2bd8a10a7b00": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.3991482257843018
+        },
+        "666146d7-35df-48a9-80fe-0395613685a5": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3646445274353027
+        },
+        "4ef61c5a-7971-4827-9c76-054b0a469e79": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.3462741374969482
+        },
+        "076d9158-0381-48e5-a625-9dbfa711d75b": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.3070709705352783
+        },
+        "0bd5ef44-e080-4b39-b2dd-370c8321408e": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3435776233673096
+        },
+        "c92bc6f2-5f9d-4678-8595-ccdae513a6eb": {
+          "score": 0.0,
+          "solution_time": 2.6226043701171875e-05,
+          "evaluation_time": 1.3027596473693848
+        },
+        "270274c7-09e8-4c8b-8f67-3b82d74d4e91": {
+          "score": 0.0,
+          "solution_time": 3.647804260253906e-05,
+          "evaluation_time": 1.329465389251709
+        },
+        "7b5aa04a-09b7-4952-818b-b57d3db6f056": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3208081722259521
+        },
+        "78416dae-dfea-4d49-9888-6fa885c5fcf8": {
+          "score": 0.0,
+          "solution_time": 2.6702880859375e-05,
+          "evaluation_time": 1.29007887840271
+        },
+        "51a706cc-7719-4afa-ba9c-75f96313e37b": {
+          "score": 0.0,
+          "solution_time": 2.6702880859375e-05,
+          "evaluation_time": 1.473384141921997
+        },
+        "8e110caa-7b56-4f7b-91f8-f04ef5d98609": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.4058842658996582
+        },
+        "50e90327-4b28-4f1e-a48a-bcc1bf4155f0": {
+          "score": 0.0,
+          "solution_time": 2.6464462280273438e-05,
+          "evaluation_time": 1.3534445762634277
+        },
+        "2e5e559a-86f0-44bb-b440-45985bfa568b": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3265712261199951
+        },
+        "b2b59f1a-d7f8-4f8b-ac08-52f10a8b953d": {
+          "score": 0.0,
+          "solution_time": 2.7418136596679688e-05,
+          "evaluation_time": 1.3117427825927734
+        },
+        "a965c1de-0633-45b5-9b79-663faaed2c06": {
+          "score": 0.0,
+          "solution_time": 5.936622619628906e-05,
+          "evaluation_time": 1.3397908210754395
+        },
+        "e010e8e5-9433-443d-a368-3a34d452ed5b": {
+          "score": 0.0,
+          "solution_time": 4.506111145019531e-05,
+          "evaluation_time": 1.3560271263122559
+        },
+        "e7441d93-5609-441b-9790-9d37b1de22ec": {
+          "score": 0.0,
+          "solution_time": 3.266334533691406e-05,
+          "evaluation_time": 1.3392090797424316
+        },
+        "36455704-b9eb-4ce8-ab43-83be8527d7ce": {
+          "score": 0.0,
+          "solution_time": 3.218650817871094e-05,
+          "evaluation_time": 1.3288524150848389
+        },
+        "da91480f-a513-4142-8ca0-3b8df035cb13": {
+          "score": 0.0,
+          "solution_time": 3.1948089599609375e-05,
+          "evaluation_time": 1.3981740474700928
+        },
+        "3ea55386-d21f-4d93-b02c-acc494983db3": {
+          "score": 0.0,
+          "solution_time": 2.9087066650390625e-05,
+          "evaluation_time": 1.374009132385254
+        },
+        "9046fcfd-4c97-46bf-a2f0-403722073ec6": {
+          "score": 0.0,
+          "solution_time": 2.8848648071289062e-05,
+          "evaluation_time": 1.335233449935913
+        },
+        "d08dadc7-6f34-478d-a0e9-fdcb6d89dba8": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3367366790771484
+        },
+        "dbb1328f-0043-4d41-8be8-1f9c0fe456de": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.32737398147583
+        },
+        "97706853-4ae1-4c05-92d5-7d47cec3ba8f": {
+          "score": 0.0,
+          "solution_time": 3.0040740966796875e-05,
+          "evaluation_time": 1.329857349395752
+        },
+        "e7151bb6-8fb0-4f6e-a190-e196320d246f": {
+          "score": 0.0,
+          "solution_time": 2.956390380859375e-05,
+          "evaluation_time": 1.2987751960754395
+        },
+        "0798f906-6705-4864-a455-95a49ee77c62": {
+          "score": 0.0,
+          "solution_time": 2.86102294921875e-05,
+          "evaluation_time": 1.3203999996185303
+        },
+        "7a3c0fd5-b49f-4fb9-aca9-e4303b48cdb5": {
+          "score": 0.0,
+          "solution_time": 3.600120544433594e-05,
+          "evaluation_time": 1.4433503150939941
+        },
+        "facce346-34db-4419-a60f-30e9a26ac9bb": {
+          "score": 0.0,
+          "solution_time": 3.075599670410156e-05,
+          "evaluation_time": 1.4633805751800537
+        },
+        "513358dc-aaf4-453f-aa60-539b3280f42d": {
+          "score": 0.0,
+          "solution_time": 2.8371810913085938e-05,
+          "evaluation_time": 1.3581011295318604
+        },
+        "0ce9f557-2fba-4396-a3a9-948b3c58cf57": {
+          "score": 0.0,
+          "solution_time": 2.8133392333984375e-05,
+          "evaluation_time": 1.3155097961425781
+        },
+        "da326533-f4a2-4828-8de8-dfdd440e06d4": {
+          "score": 0.0,
+          "solution_time": 4.291534423828125e-05,
+          "evaluation_time": 1.3321120738983154
+        },
+        "3e18a2de-3bf7-4675-9b36-13ae973eb680": {
+          "score": 0.0,
+          "solution_time": 2.9802322387695312e-05,
+          "evaluation_time": 1.301384449005127
+        },
+        "5e4762e9-f47d-42b4-a8c0-a4a60db97b19": {
+          "score": 0.0,
+          "solution_time": 2.9087066650390625e-05,
+          "evaluation_time": 1.5670793056488037
+        },
+        "f4aebd47-785d-4b51-ac42-152f68056612": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3313133716583252
+        },
+        "3d3bd57e-f3e5-40ad-b078-7f1df784cc7c": {
+          "score": 0.0,
+          "solution_time": 2.8133392333984375e-05,
+          "evaluation_time": 1.318361520767212
+        },
+        "911b59a0-1031-4251-8224-22f08cd2ed34": {
+          "score": 0.0,
+          "solution_time": 3.147125244140625e-05,
+          "evaluation_time": 1.3650403022766113
+        },
+        "d22d0ab1-7ccb-45bc-8cf4-01ff9d356415": {
+          "score": 0.0,
+          "solution_time": 3.552436828613281e-05,
+          "evaluation_time": 1.3910026550292969
+        },
+        "12e94777-ceb0-4ccd-b51f-7ba55f9ec79e": {
+          "score": 0.0,
+          "solution_time": 5.3882598876953125e-05,
+          "evaluation_time": 1.3783929347991943
+        },
+        "58f7000d-6dcb-432c-803f-a543a7161cf7": {
+          "score": 0.0,
+          "solution_time": 3.170967102050781e-05,
+          "evaluation_time": 1.3296442031860352
+        },
+        "f405981f-dbf1-4069-8534-256e4219a64a": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.334263801574707
+        },
+        "3cceb917-0a4b-41ec-a4fe-7eabf2667854": {
+          "score": 0.0,
+          "solution_time": 2.6226043701171875e-05,
+          "evaluation_time": 1.3176064491271973
+        },
+        "dce32d9e-b762-45fe-adfb-8cf4d2bb6947": {
+          "score": 0.0,
+          "solution_time": 6.556510925292969e-05,
+          "evaluation_time": 1.3146789073944092
+        },
+        "6da0f7c7-74a5-4f9e-82c9-5c1bc313a589": {
+          "score": 0.0,
+          "solution_time": 3.0279159545898438e-05,
+          "evaluation_time": 1.3752624988555908
+        },
+        "37fed11b-e6d0-44b3-9c6e-99622cd95a7d": {
+          "score": 0.0,
+          "solution_time": 2.86102294921875e-05,
+          "evaluation_time": 1.3117036819458008
+        },
+        "def87bbd-9b03-4864-8b1a-e2ac5e2387d8": {
+          "score": 0.0,
+          "solution_time": 3.170967102050781e-05,
+          "evaluation_time": 1.480419397354126
+        },
+        "46bd4f95-a7f4-49a4-b8b2-bcb11801d55c": {
+          "score": 0.0,
+          "solution_time": 4.7206878662109375e-05,
+          "evaluation_time": 1.3877506256103516
+        },
+        "872e4635-3bb1-47e7-8b53-17b4ec74b51a": {
+          "score": 0.0,
+          "solution_time": 3.075599670410156e-05,
+          "evaluation_time": 1.3494079113006592
+        },
+        "7661c017-a957-48af-905c-71abb9c78f01": {
+          "score": 0.0,
+          "solution_time": 3.170967102050781e-05,
+          "evaluation_time": 1.3314907550811768
+        },
+        "27d815fe-1273-4825-8bda-a9dad8e26a55": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3122124671936035
+        },
+        "d30a3dbf-46f2-4cc1-b837-07ecf47427fc": {
+          "score": 0.0,
+          "solution_time": 2.7894973754882812e-05,
+          "evaluation_time": 1.30000638961792
+        },
+        "33424873-4001-434d-bba8-1e1969573a14": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.300644874572754
+        },
+        "e2e51f20-2689-4831-b540-790d6a07545b": {
+          "score": 0.0,
+          "solution_time": 2.6226043701171875e-05,
+          "evaluation_time": 1.316044807434082
+        },
+        "7fe4cef5-0841-47d0-a3c5-6111717d549e": {
+          "score": 0.0,
+          "solution_time": 2.7418136596679688e-05,
+          "evaluation_time": 1.3323006629943848
+        },
+        "46e46887-e091-41dd-8537-18187cf66ead": {
+          "score": 0.0,
+          "solution_time": 4.0531158447265625e-05,
+          "evaluation_time": 1.383493423461914
+        },
+        "9a3eb2de-98fb-43a4-835f-d8d558776517": {
+          "score": 0.0,
+          "solution_time": 2.86102294921875e-05,
+          "evaluation_time": 1.4055955410003662
+        },
+        "b8e06c05-4b49-4dd8-8c28-d3d78638dc06": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3987321853637695
+        },
+        "0a11c51b-d47f-47f8-83a5-e403a30b4520": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3134503364562988
+        },
+        "28a4ac76-466f-4409-a772-c2727d9a3a8e": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.3352184295654297
+        },
+        "1baa2a66-033e-49be-be21-027951ea0038": {
+          "score": 0.0,
+          "solution_time": 2.6702880859375e-05,
+          "evaluation_time": 1.3016369342803955
+        },
+        "ab285897-05de-4248-8dd2-f1ca5357a0a5": {
+          "score": 0.0,
+          "solution_time": 2.6702880859375e-05,
+          "evaluation_time": 1.3317091464996338
+        },
+        "94109b5f-5a24-4fcb-95c0-e3c1bb0a5efd": {
+          "score": 0.0,
+          "solution_time": 2.7418136596679688e-05,
+          "evaluation_time": 1.3161792755126953
+        },
+        "d7df93c8-62d7-4a03-97ba-19601e6475dc": {
+          "score": 0.0,
+          "solution_time": 2.7179718017578125e-05,
+          "evaluation_time": 1.313774824142456
+        },
+        "5225c50e-ff0f-4218-8c4d-d41e42abbdcf": {
+          "score": 0.0,
+          "solution_time": 5.555152893066406e-05,
+          "evaluation_time": 1.5228958129882812
+        },
+        "03938a9d-b70b-43d3-837f-ff52640a6b3e": {
+          "score": 0.0,
+          "solution_time": 4.506111145019531e-05,
+          "evaluation_time": 1.4186146259307861
+        },
+        "40407143-0b17-4a56-bd20-188f298a8c01": {
+          "score": 0.0,
+          "solution_time": 3.2901763916015625e-05,
+          "evaluation_time": 1.324775218963623
+        },
+        "8a931959-03ec-4a90-9dee-2fd85f323b8c": {
+          "score": 0.0,
+          "solution_time": 2.765655517578125e-05,
+          "evaluation_time": 1.3402159214019775
+        },
+        "42fed3c8-4bac-4654-959c-34c0461bf29f": {
+          "score": 0.0,
+          "solution_time": 2.6941299438476562e-05,
+          "evaluation_time": 1.3642475605010986
+        }
+      }
+    },
+    "icuhGvpmdZVvye9q": {
+      "name": "browser-use",
+      "score_statistics": {
+        "count": 130,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0
+      },
+      "avg_solution_time": 0.0010563281866220328,
+      "avg_evaluation_time": 0.008266025323134201,
+      "tasks": {
+        "a18a276d-e35b-40fc-a861-4098a43d6332": {
+          "score": 0.0,
+          "solution_time": 0.003436565399169922,
+          "evaluation_time": 0.008330583572387695
+        },
+        "e823d1e4-90e6-47a2-ba58-a05e5b317048": {
+          "score": 0.0,
+          "solution_time": 0.001641988754272461,
+          "evaluation_time": 0.008215665817260742
+        },
+        "cf980940-d40e-41b1-a279-2c20a89f3796": {
+          "score": 0.0,
+          "solution_time": 0.0011501312255859375,
+          "evaluation_time": 0.008013248443603516
+        },
+        "e96121e4-572d-4190-9f9b-fda2b015ee6a": {
+          "score": 0.0,
+          "solution_time": 0.0010006427764892578,
+          "evaluation_time": 0.008685111999511719
+        },
+        "ec524a3c-2f42-4bf0-ac32-73258861471b": {
+          "score": 0.0,
+          "solution_time": 0.0009222030639648438,
+          "evaluation_time": 0.007877349853515625
+        },
+        "0bc0f3e9-7fe6-466a-8294-4d4c6507bb40": {
+          "score": 0.0,
+          "solution_time": 0.0009210109710693359,
+          "evaluation_time": 0.007912158966064453
+        },
+        "dc257ddd-5615-4f00-ac2e-40930e072726": {
+          "score": 0.0,
+          "solution_time": 0.000896453857421875,
+          "evaluation_time": 0.008077859878540039
+        },
+        "728c0509-1c68-4844-896a-9e259cc3a66b": {
+          "score": 0.0,
+          "solution_time": 0.0011980533599853516,
+          "evaluation_time": 0.00796198844909668
+        },
+        "7e4730b7-1cf4-4d9f-bf48-74b0b5b62cc5": {
+          "score": 0.0,
+          "solution_time": 0.0009257793426513672,
+          "evaluation_time": 0.008017539978027344
+        },
+        "3379599a-ac49-4b43-b695-303ffee542e8": {
+          "score": 0.0,
+          "solution_time": 0.0008893013000488281,
+          "evaluation_time": 0.008140802383422852
+        },
+        "ef71f4c0-bbc5-428e-aa60-c2ffaf627314": {
+          "score": 0.0,
+          "solution_time": 0.0009531974792480469,
+          "evaluation_time": 0.008007049560546875
+        },
+        "6b37ad98-e80e-4c59-a29e-37d7f18b4024": {
+          "score": 0.0,
+          "solution_time": 0.0010483264923095703,
+          "evaluation_time": 0.008144855499267578
+        },
+        "c70d313c-f5dd-433a-9b29-009cc5872363": {
+          "score": 0.0,
+          "solution_time": 0.001230001449584961,
+          "evaluation_time": 0.008104801177978516
+        },
+        "ab15a8a0-ee33-4eff-9234-de9368be0526": {
+          "score": 0.0,
+          "solution_time": 0.0010962486267089844,
+          "evaluation_time": 0.008134841918945312
+        },
+        "0d35cc17-2574-459e-be58-a60e9a3058d6": {
+          "score": 0.0,
+          "solution_time": 0.0011560916900634766,
+          "evaluation_time": 0.007969141006469727
+        },
+        "3d877bfe-f23f-440e-8379-919128c99872": {
+          "score": 0.0,
+          "solution_time": 0.0014564990997314453,
+          "evaluation_time": 0.008031845092773438
+        },
+        "1c4a630a-9957-448b-8789-f69b84108859": {
+          "score": 0.0,
+          "solution_time": 0.001409292221069336,
+          "evaluation_time": 0.008105754852294922
+        },
+        "9ab44570-e72c-4eb8-9808-52c6060b52a3": {
+          "score": 0.0,
+          "solution_time": 0.0013997554779052734,
+          "evaluation_time": 0.008199214935302734
+        },
+        "31dbe754-78eb-493e-ae75-01624a237837": {
+          "score": 0.0,
+          "solution_time": 0.0010502338409423828,
+          "evaluation_time": 0.008070707321166992
+        },
+        "288cd647-26b8-4853-b68c-0be03dcc81a3": {
+          "score": 0.0,
+          "solution_time": 0.0010941028594970703,
+          "evaluation_time": 0.00810551643371582
+        },
+        "1a23e1d7-65b2-492c-89d7-b5ce7a9120d8": {
+          "score": 0.0,
+          "solution_time": 0.0009567737579345703,
+          "evaluation_time": 0.008120536804199219
+        },
+        "d2bdbe3a-d88e-45b9-ab8b-4daceef28d88": {
+          "score": 0.0,
+          "solution_time": 0.0009016990661621094,
+          "evaluation_time": 0.008205175399780273
+        },
+        "06308bb3-0686-4f83-9718-1a1c5cec43b1": {
+          "score": 0.0,
+          "solution_time": 0.00098419189453125,
+          "evaluation_time": 0.008284330368041992
+        },
+        "7702dcec-d4c0-47a5-b9c7-6a7e0d2e2d29": {
+          "score": 0.0,
+          "solution_time": 0.001129150390625,
+          "evaluation_time": 0.008377313613891602
+        },
+        "f2bd1aa2-a762-473c-bfe2-a08958a8e970": {
+          "score": 0.0,
+          "solution_time": 0.0009436607360839844,
+          "evaluation_time": 0.008203268051147461
+        },
+        "be8f4e01-1450-4f18-9968-1586a32ae0e8": {
+          "score": 0.0,
+          "solution_time": 0.0009481906890869141,
+          "evaluation_time": 0.008177518844604492
+        },
+        "02cd9f0b-befa-433d-812b-d01fcc07be1a": {
+          "score": 0.0,
+          "solution_time": 0.0008890628814697266,
+          "evaluation_time": 0.008366107940673828
+        },
+        "0f0716a7-e19b-473e-816c-b37958669521": {
+          "score": 0.0,
+          "solution_time": 0.0009005069732666016,
+          "evaluation_time": 0.008315324783325195
+        },
+        "606124c0-f5d2-4d1b-bff1-3ef927a22fe4": {
+          "score": 0.0,
+          "solution_time": 0.0008790493011474609,
+          "evaluation_time": 0.008383035659790039
+        },
+        "5cbeddf8-466a-4b1a-b9ed-2dfd80d6f753": {
+          "score": 0.0,
+          "solution_time": 0.0009860992431640625,
+          "evaluation_time": 0.00835561752319336
+        },
+        "1ed0b65c-fb17-4acb-8751-dacbc8d7949d": {
+          "score": 0.0,
+          "solution_time": 0.000965118408203125,
+          "evaluation_time": 0.00833582878112793
+        },
+        "af6e641b-8a6c-4a2f-8e3b-ddea05fe378a": {
+          "score": 0.0,
+          "solution_time": 0.0012791156768798828,
+          "evaluation_time": 0.008402347564697266
+        },
+        "35bd228e-8108-4982-9b5d-6a9d0360a6d6": {
+          "score": 0.0,
+          "solution_time": 0.0009448528289794922,
+          "evaluation_time": 0.008329629898071289
+        },
+        "7f50723f-4e35-437c-9c30-bc458d23efe3": {
+          "score": 0.0,
+          "solution_time": 0.0009007453918457031,
+          "evaluation_time": 0.008324623107910156
+        },
+        "02335922-15c8-44a9-b3c9-55cac63c00e2": {
+          "score": 0.0,
+          "solution_time": 0.0009019374847412109,
+          "evaluation_time": 0.008376836776733398
+        },
+        "dd8cb93d-3eea-4f08-a6cb-9e0676fa5c20": {
+          "score": 0.0,
+          "solution_time": 0.0009121894836425781,
+          "evaluation_time": 0.008153915405273438
+        },
+        "f6d4aa84-accd-4aca-bda0-771fd894709c": {
+          "score": 0.0,
+          "solution_time": 0.0008933544158935547,
+          "evaluation_time": 0.008337736129760742
+        },
+        "3f66749c-a5b0-4b33-b06f-7f4d5db0cfd6": {
+          "score": 0.0,
+          "solution_time": 0.000881195068359375,
+          "evaluation_time": 0.008292675018310547
+        },
+        "4b895dfb-7cda-4778-813d-39be0ef8862d": {
+          "score": 0.0,
+          "solution_time": 0.0009033679962158203,
+          "evaluation_time": 0.008311271667480469
+        },
+        "2fb4bd1b-70ea-4ecc-ac24-2936c1c89a70": {
+          "score": 0.0,
+          "solution_time": 0.0011668205261230469,
+          "evaluation_time": 0.008216142654418945
+        },
+        "1052af88-5d4e-483a-9919-0b3524eff6d9": {
+          "score": 0.0,
+          "solution_time": 0.0009243488311767578,
+          "evaluation_time": 0.008131027221679688
+        },
+        "93fc1f74-cda1-4d47-a4f8-1290b02f6694": {
+          "score": 0.0,
+          "solution_time": 0.0008904933929443359,
+          "evaluation_time": 0.008399724960327148
+        },
+        "29aeaf5a-2730-410f-910e-d01e3a34c8eb": {
+          "score": 0.0,
+          "solution_time": 0.0009801387786865234,
+          "evaluation_time": 0.009462833404541016
+        },
+        "8cb00eb5-ae92-42c8-9eba-7e815bbe811b": {
+          "score": 0.0,
+          "solution_time": 0.0009243488311767578,
+          "evaluation_time": 0.008753538131713867
+        },
+        "469e3937-53ab-43f9-8ab2-79843974e8d0": {
+          "score": 0.0,
+          "solution_time": 0.0008671283721923828,
+          "evaluation_time": 0.008252620697021484
+        },
+        "4014fee9-89bb-4327-b638-83a1cef3f291": {
+          "score": 0.0,
+          "solution_time": 0.0009491443634033203,
+          "evaluation_time": 0.008100271224975586
+        },
+        "3ed21b71-70a6-4309-bad7-c0fda1eec1a9": {
+          "score": 0.0,
+          "solution_time": 0.0009589195251464844,
+          "evaluation_time": 0.008000850677490234
+        },
+        "bbcb1d1e-0227-4472-b9d9-3978d481e25c": {
+          "score": 0.0,
+          "solution_time": 0.0010569095611572266,
+          "evaluation_time": 0.007973194122314453
+        },
+        "0bd04dc3-de39-4db9-b5e0-7ec1e7f453a5": {
+          "score": 0.0,
+          "solution_time": 0.0009598731994628906,
+          "evaluation_time": 0.008201360702514648
+        },
+        "3e1d12e0-a966-43ed-8e82-7a859edeccfb": {
+          "score": 0.0,
+          "solution_time": 0.0009818077087402344,
+          "evaluation_time": 0.00833439826965332
+        },
+        "6829139a-dd5f-4622-b6bf-1b5e8c89f556": {
+          "score": 0.0,
+          "solution_time": 0.0009136199951171875,
+          "evaluation_time": 0.008326053619384766
+        },
+        "540cbd58-9019-42c4-a76b-490d9344c52f": {
+          "score": 0.0,
+          "solution_time": 0.0009243488311767578,
+          "evaluation_time": 0.008205175399780273
+        },
+        "24ca3c31-4e1f-44e2-8507-8d0393fcbfb8": {
+          "score": 0.0,
+          "solution_time": 0.0009317398071289062,
+          "evaluation_time": 0.008053302764892578
+        },
+        "b9175e74-bbac-4e01-a0ee-b316e281044a": {
+          "score": 0.0,
+          "solution_time": 0.0012753009796142578,
+          "evaluation_time": 0.008019208908081055
+        },
+        "25a1c649-7ea4-4f32-bd7c-b6f776bb95d2": {
+          "score": 0.0,
+          "solution_time": 0.0009379386901855469,
+          "evaluation_time": 0.008193492889404297
+        },
+        "296c92b0-f09d-4fdb-8106-8273b4a1f9a4": {
+          "score": 0.0,
+          "solution_time": 0.001233816146850586,
+          "evaluation_time": 0.008420228958129883
+        },
+        "93a81b12-adb9-4fd0-882d-dc4b823c87e8": {
+          "score": 0.0,
+          "solution_time": 0.001016855239868164,
+          "evaluation_time": 0.008288383483886719
+        },
+        "bdedb976-68d2-4db5-aa63-4fbb083dede5": {
+          "score": 0.0,
+          "solution_time": 0.0009779930114746094,
+          "evaluation_time": 0.008240938186645508
+        },
+        "f10e4dd5-5596-4712-9ce6-300db04fe78a": {
+          "score": 0.0,
+          "solution_time": 0.0008881092071533203,
+          "evaluation_time": 0.00821232795715332
+        },
+        "1ebded63-cfbc-45c9-a687-77fd98a4ac8a": {
+          "score": 0.0,
+          "solution_time": 0.0008730888366699219,
+          "evaluation_time": 0.008138179779052734
+        },
+        "47f9a492-c457-46ff-b956-d8392357f532": {
+          "score": 0.0,
+          "solution_time": 0.0011544227600097656,
+          "evaluation_time": 0.008177042007446289
+        },
+        "2af37e6e-e535-420c-ac3b-1f0602ae16c2": {
+          "score": 0.0,
+          "solution_time": 0.0010423660278320312,
+          "evaluation_time": 0.008092880249023438
+        },
+        "c7b7f2bd-2d96-47b4-bbd2-3c2327a47890": {
+          "score": 0.0,
+          "solution_time": 0.0009148120880126953,
+          "evaluation_time": 0.008126497268676758
+        },
+        "79bd5579-c104-46e2-856e-2bd8a10a7b00": {
+          "score": 0.0,
+          "solution_time": 0.0010597705841064453,
+          "evaluation_time": 0.008112430572509766
+        },
+        "666146d7-35df-48a9-80fe-0395613685a5": {
+          "score": 0.0,
+          "solution_time": 0.0008816719055175781,
+          "evaluation_time": 0.008091449737548828
+        },
+        "4ef61c5a-7971-4827-9c76-054b0a469e79": {
+          "score": 0.0,
+          "solution_time": 0.0009071826934814453,
+          "evaluation_time": 0.008089303970336914
+        },
+        "076d9158-0381-48e5-a625-9dbfa711d75b": {
+          "score": 0.0,
+          "solution_time": 0.0008895397186279297,
+          "evaluation_time": 0.008015871047973633
+        },
+        "0bd5ef44-e080-4b39-b2dd-370c8321408e": {
+          "score": 0.0,
+          "solution_time": 0.0008807182312011719,
+          "evaluation_time": 0.007991313934326172
+        },
+        "c92bc6f2-5f9d-4678-8595-ccdae513a6eb": {
+          "score": 0.0,
+          "solution_time": 0.000885009765625,
+          "evaluation_time": 0.008022308349609375
+        },
+        "270274c7-09e8-4c8b-8f67-3b82d74d4e91": {
+          "score": 0.0,
+          "solution_time": 0.0008826255798339844,
+          "evaluation_time": 0.008029699325561523
+        },
+        "7b5aa04a-09b7-4952-818b-b57d3db6f056": {
+          "score": 0.0,
+          "solution_time": 0.0008897781372070312,
+          "evaluation_time": 0.008057594299316406
+        },
+        "78416dae-dfea-4d49-9888-6fa885c5fcf8": {
+          "score": 0.0,
+          "solution_time": 0.001081705093383789,
+          "evaluation_time": 0.008068323135375977
+        },
+        "51a706cc-7719-4afa-ba9c-75f96313e37b": {
+          "score": 0.0,
+          "solution_time": 0.0008971691131591797,
+          "evaluation_time": 0.008071422576904297
+        },
+        "8e110caa-7b56-4f7b-91f8-f04ef5d98609": {
+          "score": 0.0,
+          "solution_time": 0.0008809566497802734,
+          "evaluation_time": 0.00799417495727539
+        },
+        "50e90327-4b28-4f1e-a48a-bcc1bf4155f0": {
+          "score": 0.0,
+          "solution_time": 0.0008852481842041016,
+          "evaluation_time": 0.007992029190063477
+        },
+        "2e5e559a-86f0-44bb-b440-45985bfa568b": {
+          "score": 0.0,
+          "solution_time": 0.0008754730224609375,
+          "evaluation_time": 0.007966041564941406
+        },
+        "b2b59f1a-d7f8-4f8b-ac08-52f10a8b953d": {
+          "score": 0.0,
+          "solution_time": 0.0008859634399414062,
+          "evaluation_time": 0.007965087890625
+        },
+        "a965c1de-0633-45b5-9b79-663faaed2c06": {
+          "score": 0.0,
+          "solution_time": 0.0008792877197265625,
+          "evaluation_time": 0.007916450500488281
+        },
+        "e010e8e5-9433-443d-a368-3a34d452ed5b": {
+          "score": 0.0,
+          "solution_time": 0.0008778572082519531,
+          "evaluation_time": 0.008005857467651367
+        },
+        "e7441d93-5609-441b-9790-9d37b1de22ec": {
+          "score": 0.0,
+          "solution_time": 0.0010573863983154297,
+          "evaluation_time": 0.007852554321289062
+        },
+        "36455704-b9eb-4ce8-ab43-83be8527d7ce": {
+          "score": 0.0,
+          "solution_time": 0.0008723735809326172,
+          "evaluation_time": 0.007892370223999023
+        },
+        "da91480f-a513-4142-8ca0-3b8df035cb13": {
+          "score": 0.0,
+          "solution_time": 0.0009293556213378906,
+          "evaluation_time": 0.007899999618530273
+        },
+        "3ea55386-d21f-4d93-b02c-acc494983db3": {
+          "score": 0.0,
+          "solution_time": 0.0009169578552246094,
+          "evaluation_time": 0.008013010025024414
+        },
+        "9046fcfd-4c97-46bf-a2f0-403722073ec6": {
+          "score": 0.0,
+          "solution_time": 0.0009303092956542969,
+          "evaluation_time": 0.007939577102661133
+        },
+        "d08dadc7-6f34-478d-a0e9-fdcb6d89dba8": {
+          "score": 0.0,
+          "solution_time": 0.0009503364562988281,
+          "evaluation_time": 0.0079193115234375
+        },
+        "dbb1328f-0043-4d41-8be8-1f9c0fe456de": {
+          "score": 0.0,
+          "solution_time": 0.0009031295776367188,
+          "evaluation_time": 0.007963418960571289
+        },
+        "97706853-4ae1-4c05-92d5-7d47cec3ba8f": {
+          "score": 0.0,
+          "solution_time": 0.0008831024169921875,
+          "evaluation_time": 0.008007049560546875
+        },
+        "e7151bb6-8fb0-4f6e-a190-e196320d246f": {
+          "score": 0.0,
+          "solution_time": 0.0010538101196289062,
+          "evaluation_time": 0.008039474487304688
+        },
+        "0798f906-6705-4864-a455-95a49ee77c62": {
+          "score": 0.0,
+          "solution_time": 0.0009329319000244141,
+          "evaluation_time": 0.008121252059936523
+        },
+        "7a3c0fd5-b49f-4fb9-aca9-e4303b48cdb5": {
+          "score": 0.0,
+          "solution_time": 0.0008959770202636719,
+          "evaluation_time": 0.008123636245727539
+        },
+        "facce346-34db-4419-a60f-30e9a26ac9bb": {
+          "score": 0.0,
+          "solution_time": 0.001743316650390625,
+          "evaluation_time": 0.008171319961547852
+        },
+        "513358dc-aaf4-453f-aa60-539b3280f42d": {
+          "score": 0.0,
+          "solution_time": 0.0017497539520263672,
+          "evaluation_time": 0.008333444595336914
+        },
+        "0ce9f557-2fba-4396-a3a9-948b3c58cf57": {
+          "score": 0.0,
+          "solution_time": 0.0020024776458740234,
+          "evaluation_time": 0.008235692977905273
+        },
+        "da326533-f4a2-4828-8de8-dfdd440e06d4": {
+          "score": 0.0,
+          "solution_time": 0.0017359256744384766,
+          "evaluation_time": 0.008419513702392578
+        },
+        "3e18a2de-3bf7-4675-9b36-13ae973eb680": {
+          "score": 0.0,
+          "solution_time": 0.0017843246459960938,
+          "evaluation_time": 0.008444786071777344
+        },
+        "5e4762e9-f47d-42b4-a8c0-a4a60db97b19": {
+          "score": 0.0,
+          "solution_time": 0.0020623207092285156,
+          "evaluation_time": 0.008519649505615234
+        },
+        "f4aebd47-785d-4b51-ac42-152f68056612": {
+          "score": 0.0,
+          "solution_time": 0.001645803451538086,
+          "evaluation_time": 0.008578300476074219
+        },
+        "3d3bd57e-f3e5-40ad-b078-7f1df784cc7c": {
+          "score": 0.0,
+          "solution_time": 0.0015399456024169922,
+          "evaluation_time": 0.00850534439086914
+        },
+        "911b59a0-1031-4251-8224-22f08cd2ed34": {
+          "score": 0.0,
+          "solution_time": 0.0016109943389892578,
+          "evaluation_time": 0.00836324691772461
+        },
+        "d22d0ab1-7ccb-45bc-8cf4-01ff9d356415": {
+          "score": 0.0,
+          "solution_time": 0.0015873908996582031,
+          "evaluation_time": 0.008602619171142578
+        },
+        "12e94777-ceb0-4ccd-b51f-7ba55f9ec79e": {
+          "score": 0.0,
+          "solution_time": 0.0009706020355224609,
+          "evaluation_time": 0.008836507797241211
+        },
+        "58f7000d-6dcb-432c-803f-a543a7161cf7": {
+          "score": 0.0,
+          "solution_time": 0.0009224414825439453,
+          "evaluation_time": 0.008944034576416016
+        },
+        "f405981f-dbf1-4069-8534-256e4219a64a": {
+          "score": 0.0,
+          "solution_time": 0.0009353160858154297,
+          "evaluation_time": 0.010820150375366211
+        },
+        "3cceb917-0a4b-41ec-a4fe-7eabf2667854": {
+          "score": 0.0,
+          "solution_time": 0.0011396408081054688,
+          "evaluation_time": 0.009040594100952148
+        },
+        "dce32d9e-b762-45fe-adfb-8cf4d2bb6947": {
+          "score": 0.0,
+          "solution_time": 0.0009388923645019531,
+          "evaluation_time": 0.009481430053710938
+        },
+        "6da0f7c7-74a5-4f9e-82c9-5c1bc313a589": {
+          "score": 0.0,
+          "solution_time": 0.0008897781372070312,
+          "evaluation_time": 0.009160041809082031
+        },
+        "37fed11b-e6d0-44b3-9c6e-99622cd95a7d": {
+          "score": 0.0,
+          "solution_time": 0.0009996891021728516,
+          "evaluation_time": 0.009550333023071289
+        },
+        "def87bbd-9b03-4864-8b1a-e2ac5e2387d8": {
+          "score": 0.0,
+          "solution_time": 0.0009267330169677734,
+          "evaluation_time": 0.008473873138427734
+        },
+        "46bd4f95-a7f4-49a4-b8b2-bcb11801d55c": {
+          "score": 0.0,
+          "solution_time": 0.0009162425994873047,
+          "evaluation_time": 0.008235692977905273
+        },
+        "872e4635-3bb1-47e7-8b53-17b4ec74b51a": {
+          "score": 0.0,
+          "solution_time": 0.0010030269622802734,
+          "evaluation_time": 0.00818181037902832
+        },
+        "7661c017-a957-48af-905c-71abb9c78f01": {
+          "score": 0.0,
+          "solution_time": 0.0009341239929199219,
+          "evaluation_time": 0.00831294059753418
+        },
+        "27d815fe-1273-4825-8bda-a9dad8e26a55": {
+          "score": 0.0,
+          "solution_time": 0.0011944770812988281,
+          "evaluation_time": 0.008524417877197266
+        },
+        "d30a3dbf-46f2-4cc1-b837-07ecf47427fc": {
+          "score": 0.0,
+          "solution_time": 0.0008976459503173828,
+          "evaluation_time": 0.00834345817565918
+        },
+        "33424873-4001-434d-bba8-1e1969573a14": {
+          "score": 0.0,
+          "solution_time": 0.0009419918060302734,
+          "evaluation_time": 0.008441686630249023
+        },
+        "e2e51f20-2689-4831-b540-790d6a07545b": {
+          "score": 0.0,
+          "solution_time": 0.0008909702301025391,
+          "evaluation_time": 0.008600950241088867
+        },
+        "7fe4cef5-0841-47d0-a3c5-6111717d549e": {
+          "score": 0.0,
+          "solution_time": 0.0009057521820068359,
+          "evaluation_time": 0.00848841667175293
+        },
+        "46e46887-e091-41dd-8537-18187cf66ead": {
+          "score": 0.0,
+          "solution_time": 0.0008988380432128906,
+          "evaluation_time": 0.008101701736450195
+        },
+        "9a3eb2de-98fb-43a4-835f-d8d558776517": {
+          "score": 0.0,
+          "solution_time": 0.0009136199951171875,
+          "evaluation_time": 0.00823354721069336
+        },
+        "b8e06c05-4b49-4dd8-8c28-d3d78638dc06": {
+          "score": 0.0,
+          "solution_time": 0.000978708267211914,
+          "evaluation_time": 0.008232831954956055
+        },
+        "0a11c51b-d47f-47f8-83a5-e403a30b4520": {
+          "score": 0.0,
+          "solution_time": 0.0010859966278076172,
+          "evaluation_time": 0.00811910629272461
+        },
+        "28a4ac76-466f-4409-a772-c2727d9a3a8e": {
+          "score": 0.0,
+          "solution_time": 0.000997304916381836,
+          "evaluation_time": 0.008217096328735352
+        },
+        "1baa2a66-033e-49be-be21-027951ea0038": {
+          "score": 0.0,
+          "solution_time": 0.0008614063262939453,
+          "evaluation_time": 0.008102178573608398
+        },
+        "ab285897-05de-4248-8dd2-f1ca5357a0a5": {
+          "score": 0.0,
+          "solution_time": 0.0008654594421386719,
+          "evaluation_time": 0.008015632629394531
+        },
+        "94109b5f-5a24-4fcb-95c0-e3c1bb0a5efd": {
+          "score": 0.0,
+          "solution_time": 0.0008771419525146484,
+          "evaluation_time": 0.008516788482666016
+        },
+        "d7df93c8-62d7-4a03-97ba-19601e6475dc": {
+          "score": 0.0,
+          "solution_time": 0.0008692741394042969,
+          "evaluation_time": 0.008391618728637695
+        },
+        "5225c50e-ff0f-4218-8c4d-d41e42abbdcf": {
+          "score": 0.0,
+          "solution_time": 0.0008664131164550781,
+          "evaluation_time": 0.008142232894897461
+        },
+        "03938a9d-b70b-43d3-837f-ff52640a6b3e": {
+          "score": 0.0,
+          "solution_time": 0.000835418701171875,
+          "evaluation_time": 0.00819087028503418
+        },
+        "40407143-0b17-4a56-bd20-188f298a8c01": {
+          "score": 0.0,
+          "solution_time": 0.0011172294616699219,
+          "evaluation_time": 0.008165836334228516
+        },
+        "8a931959-03ec-4a90-9dee-2fd85f323b8c": {
+          "score": 0.0,
+          "solution_time": 0.0008473396301269531,
+          "evaluation_time": 0.008104324340820312
+        },
+        "42fed3c8-4bac-4654-959c-34c0461bf29f": {
+          "score": 0.0,
+          "solution_time": 0.0008528232574462891,
+          "evaluation_time": 0.008199453353881836
+        }
+      }
+    }
+  }
+}

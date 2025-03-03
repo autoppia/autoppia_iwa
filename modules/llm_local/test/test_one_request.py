@@ -4,7 +4,7 @@ import requests
 
 
 def make_request():
-    url = "http://127.0.0.1:6000/generate"
+    url = "http://194.68.245.61:22185/generate"
     headers = {"Content-Type": "application/json"}
 
     # Instead of putting everything under "input": {...},

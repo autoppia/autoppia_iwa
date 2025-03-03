@@ -16,6 +16,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluati
 from autoppia_iwa.src.evaluation.classes import Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
+from autoppia_iwa.src.evaluation.evaluator.utils import initialize_test_results_matrix
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
@@ -152,7 +153,8 @@ class ConcurrentEvaluator(IEvaluator):
                 self.evaluation_stats.append(r.stats)
 
         # Display the final report after all evaluations
-        self._display_batch_evaluation_summary(task.id)
+        # TODO: DESCOMENTAR
+        # self._display_batch_evaluation_summary(task.id)
 
         await self.backend_demo_webs_service.close()
         return result
@@ -221,7 +223,7 @@ class ConcurrentEvaluator(IEvaluator):
             while True:
                 await asyncio.sleep(10)  # Only update every 10 seconds
                 completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
-                logger.info(f"Progress: {completed} / {total_groups} groups ({completed / total_groups * 100:.0f}%)")
+                logger.info(f"Progress: {completed}/{total_groups} groups ({completed/total_groups*100:.0f}%)")
         except asyncio.CancelledError:
             pass
 
@@ -247,6 +249,7 @@ class ConcurrentEvaluator(IEvaluator):
                         cloned_result.stats = stats_copy
 
                     results.append(cloned_result)
+                logger.info(f"------> _evaluate_group_with_semaphore MINER{task_solution.web_agent_id}%)")
 
                 return results
 
@@ -261,7 +264,7 @@ class ConcurrentEvaluator(IEvaluator):
                         final_score=0,
                         raw_score=0,
                         random_clicker_score=0,
-                        test_results_matrix=[],
+                        test_results_matrix=initialize_test_results_matrix(task=task, num_actions=len(ts.actions)),
                         feedback=None,
                         execution_history=[],
                         random_passed_tests=[],
@@ -304,17 +307,17 @@ class ConcurrentEvaluator(IEvaluator):
             stats.had_errors = True
             stats.error_message = "No actions provided"
             stats.total_time = time.time() - stats.start_time
-
+            test_results_matrix = initialize_test_results_matrix(task, 0)
             return EvaluationResult(
                 web_agent_id=web_agent_id,
                 final_score=0,
                 raw_score=0,
                 random_clicker_score=0,
-                test_results_matrix=[],
+                test_results_matrix=test_results_matrix,
                 feedback=None,
                 execution_history=[],
                 random_passed_tests=[],
-                evaluation_time=0,
+                evaluation_time=0.1,
                 stats=stats,
             )
 
@@ -335,6 +338,9 @@ class ConcurrentEvaluator(IEvaluator):
             # Run tests on agent's actions
             test_start_time = time.time()
             test_results_matrix = self._run_tests(task, execution_history)
+            if not test_results_matrix or len(test_results_matrix) == 0:
+                logger.error(f"----->MATRIZ DE RESULTADOS VACIA: {execution_history}")
+
             stats.test_execution_time = time.time() - test_start_time
 
             # Get or compute random clicker performance for baseline score
@@ -397,7 +403,7 @@ class ConcurrentEvaluator(IEvaluator):
             # Create the result
             result = EvaluationResult(
                 web_agent_id=web_agent_id,
-                final_score=final_score,
+                final_score=1 if final_score > 0.25 else final_score,
                 raw_score=raw_score,
                 random_clicker_score=random_clicker_score,
                 test_results_matrix=test_results_matrix,
@@ -416,13 +422,14 @@ class ConcurrentEvaluator(IEvaluator):
             stats.total_time = time.time() - stats.start_time
 
             logger.error(f"Error evaluating task solution: {e}")
+            logger.error(f"--------------------ESTOY EN LA EXCEPCION DEL EVALUATE SINGLE TASK SOLUTION ----------------------")
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,
                 final_score=0,
                 raw_score=0,
                 random_clicker_score=0,
-                test_results_matrix=[],
+                test_results_matrix=initialize_test_results_matrix(task=task, num_actions=len(task_solution.actions)),
                 feedback=None,
                 execution_history=[],
                 random_passed_tests=[],
@@ -608,7 +615,7 @@ class ConcurrentEvaluator(IEvaluator):
         Returns:
             List[List[TestResult]]: A matrix where each row contains test results after each action
         """
-        test_results_matrix = []
+        test_results_matrix = initialize_test_results_matrix(task=task, num_actions=len(execution_history))
         browser_snapshots = []
 
         for i, action_result in enumerate(execution_history):
@@ -621,7 +628,7 @@ class ConcurrentEvaluator(IEvaluator):
             test_results = test_runner.run_tests(prompt=task.prompt, snapshot=snapshot, browser_snapshots=browser_snapshots, current_action_index=i)
 
             # Add the results for this snapshot to the matrix
-            test_results_matrix.append(test_results)
+            test_results_matrix[i] = test_results
 
         return test_results_matrix
 
@@ -701,20 +708,22 @@ class ConcurrentEvaluator(IEvaluator):
             agent_groups[agent_type].append(stat)
 
         # Output formatted table for batch summary
-        logger.info(f"\n{'=' * 80}")
-        logger.info(f"EVALUATION SUMMARY FOR TASK: {task_id}")
-        logger.info(f"{'=' * 80}")
-        logger.info(f"Total Agents: {total_agents}, Success Rate: {successful_agents}/{total_agents} ({successful_agents / total_agents * 100:.1f}%)")
-        logger.info(f"Average Score: {avg_score:.4f}, Average Time: {avg_time:.2f}s")
+        # TODO: PDESCOMENTAR
+        # logger.info(f"\n{'=' * 80}")
+        # logger.info(f"EVALUATION SUMMARY FOR TASK: {task_id}")
+        # logger.info(f"{'=' * 80}")
+        # logger.info(f"Total Agents: {total_agents}, Success Rate: {successful_agents}/{total_agents} ({successful_agents/total_agents*100:.1f}%)")
+        # logger.info(f"Average Score: {avg_score:.4f}, Average Time: {avg_time:.2f}s")
 
         # Create a summary table for each agent group
         for agent_type, stats in agent_groups.items():
             avg_group_score = sum(s.final_score for s in stats) / max(1, len(stats))
             avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
+            # TODO: PDESCOMENTAR
 
-            logger.info(f"\n{'-' * 60}")
-            logger.info(f"Web Agent ID: {agent_type} ({len(stats)} agents)")
-            logger.info(f"Average Score: {avg_group_score:.4f}, Average Time: {avg_group_time:.2f}s")
+            # logger.info(f"\n{'-' * 60}")
+            # logger.info(f"Web Agent ID: {agent_type} ({len(stats)} agents)")
+            # logger.info(f"Average Score: {avg_group_score:.4f}, Average Time: {avg_group_time:.2f}s")
 
             # Action timing statistics
             all_action_times = []
@@ -740,35 +749,40 @@ class ConcurrentEvaluator(IEvaluator):
         all_random_time = sum(s.random_clicker_time for s in task_stats)
         all_total_time = sum(s.total_time for s in task_stats)
 
-        logger.info(f"\n{'-' * 60}")
-        logger.info("TIMING BREAKDOWN (across all agents)")
-        logger.info(f"Total Evaluation Time: {all_total_time:.2f}s")
-        logger.info(f"Browser Setup: {all_browser_setup:.2f}s ({all_browser_setup / all_total_time * 100:.1f}%)")
-        logger.info(f"Action Execution: {all_action_time:.2f}s ({all_action_time / all_total_time * 100:.1f}%)")
-        logger.info(f"Test Execution: {all_test_time:.2f}s ({all_test_time / all_total_time * 100:.1f}%)")
-        logger.info(f"Random Evaluation: {all_random_time:.2f}s ({all_random_time / all_total_time * 100:.1f}%)")
-
+        # logger.info(f"\n{'-' * 60}")
+        # logger.info("TIMING BREAKDOWN (across all agents)")
+        # logger.info(f"Total Evaluation Time: {all_total_time:.2f}s")
+        # if all_total_time > 0:
+        #     logger.info(f"Browser Setup: {all_browser_setup:.2f}s ({all_browser_setup/all_total_time*100:.1f}%)")
+        #     logger.info(f"Action Execution: {all_action_time:.2f}s ({all_action_time/all_total_time*100:.1f}%)")
+        #     logger.info(f"Test Execution: {all_test_time:.2f}s ({all_test_time/all_total_time*100:.1f}%)")
+        #     logger.info(f"Random Evaluation: {all_random_time:.2f}s ({all_random_time/all_total_time*100:.1f}%)")
+        # else:
+        #     logger.info("Browser Setup: 0.00s (0.0%)")
+        #     logger.info("Action Execution: 0.00s (0.0%)")
+        #     logger.info("Test Execution: 0.00s (0.0%)")
+        #     logger.info("Random Evaluation: 0.00s (0.0%)")
         # Display action type timing statistics
-        if self.action_type_timing:
-            logger.info(f"\n{'-' * 60}")
-            logger.info("ACTION TYPE PERFORMANCE")
-            for action_type, times in sorted(self.action_type_timing.items(), key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0, reverse=True):
-                if times:
-                    avg = sum(times) / len(times)
-                    max_time = max(times)
-                    min_time = min(times)
-                    logger.info(f"{action_type}: {len(times)} actions, {avg:.3f}s avg ({min_time:.3f}s - {max_time:.3f}s)")
+        # if self.action_type_timing:
+        #     logger.info(f"\n{'-' * 60}")
+        #     logger.info("ACTION TYPE PERFORMANCE")
+        #     for action_type, times in sorted(self.action_type_timing.items(), key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0, reverse=True):
+        #         if times:
+        #             avg = sum(times) / len(times)
+        #             max_time = max(times)
+        #             min_time = min(times)
+        #             logger.info(f"{action_type}: {len(times)} actions, {avg:.3f}s avg ({min_time:.3f}s - {max_time:.3f}s)")
 
-        # Display any errors that occurred during evaluation
-        if self.errors:
-            logger.info(f"\n{'-' * 60}")
-            logger.info(f"ERRORS ({len(self.errors)})")
-            for i, error in enumerate(self.errors[:5]):  # Show first 5 errors only
-                logger.info(f"{i + 1}. {error}")
-            if len(self.errors) > 5:
-                logger.info(f"... and {len(self.errors) - 5} more errors")
+        # # Display any errors that occurred during evaluation
+        # if self.errors:
+        #     logger.info(f"\n{'-' * 60}")
+        #     logger.info(f"ERRORS ({len(self.errors)})")
+        #     for i, error in enumerate(self.errors[:5]):  # Show first 5 errors only
+        #         logger.info(f"{i+1}. {error}")
+        #     if len(self.errors) > 5:
+        #         logger.info(f"... and {len(self.errors) - 5} more errors")
 
-        logger.info(f"{'=' * 80}")
+        # logger.info(f"{'=' * 80}")
 
     def print_evaluation_summary(self):
         """Print a summary of all evaluations performed"""

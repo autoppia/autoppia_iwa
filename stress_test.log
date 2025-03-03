@@ -1,0 +1,1362 @@
+2025-02-28 12:02:59,602 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:03:00,036 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:03:10,319 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:03:10,334 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/36 on attempt 1
+2025-02-28 12:03:12,914 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:03:12,920 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:03:12,920 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:03:12,920 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:03:12,921 - stress_test - INFO -   Generating new solution for Task ab9baf72-e739-42cd-bc49-754641e66323...
+2025-02-28 12:03:12,921 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:03:12,921 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:03:12,921 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:03:12,922 - stress_test - INFO -   Generating new solution for Task ab9baf72-e739-42cd-bc49-754641e66323...
+2025-02-28 12:03:35,139 - stress_test - INFO -     Solution generated in 22.22 seconds with 5 actions
+2025-02-28 12:03:35,141 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:03:35,141 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 12:03:35,141 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 12:03:35,141 - stress_test - INFO -   Evaluating solution for Task ab9baf72-e739-42cd-bc49-754641e66323...
+2025-02-28 12:03:35,165 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '6lJweeCxKY0Af8RS' despite error.
+2025-02-28 12:03:35,995 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ab9baf72-e739-42cd-bc49-754641e66323' despite error.
+2025-02-28 12:03:36,638 - stress_test - INFO -     Batch evaluation in 1.49 seconds; Avg score = 0.00
+2025-02-28 12:03:36,638 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 12:03:36,638 - stress_test - INFO -   Evaluating solution for Task ab9baf72-e739-42cd-bc49-754641e66323...
+2025-02-28 12:03:36,669 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'VsWdGUuMAxkujsDF' despite error.
+2025-02-28 12:03:40,110 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ab9baf72-e739-42cd-bc49-754641e66323' despite error.
+2025-02-28 12:03:40,743 - stress_test - INFO -     Batch evaluation in 4.10 seconds; Avg score = 1.00
+2025-02-28 12:03:41,470 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 12:03:41,470 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache.
+2025-02-28 12:15:58,134 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:15:58,556 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:16:10,730 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:16:10,744 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/ on attempt 1
+2025-02-28 12:16:13,089 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:16:13,094 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:16:13,094 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:16:13,094 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:16:13,095 - stress_test - INFO -   Generating new solution for Task 04c231bd-a429-4593-b127-f5e0ac03f098...
+2025-02-28 12:16:13,095 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:16:13,095 - autoppia_iwa.src.shared.entrypoints.solutions - ERROR - Error saving solution to cache: 'TaskSolution' object has no attribute 'task'
+2025-02-28 12:16:13,095 - stress_test - WARNING -     Failed to cache solution
+2025-02-28 12:16:13,095 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:16:13,096 - stress_test - INFO -   Generating new solution for Task 04c231bd-a429-4593-b127-f5e0ac03f098...
+2025-02-28 12:16:36,535 - stress_test - INFO -     Solution generated in 23.44 seconds with 4 actions
+2025-02-28 12:16:36,536 - autoppia_iwa.src.shared.entrypoints.solutions - ERROR - Error saving solution to cache: 'TaskSolution' object has no attribute 'task'
+2025-02-28 12:16:36,536 - stress_test - WARNING -     Failed to cache solution
+2025-02-28 12:16:36,536 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 12:16:36,536 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 12:16:36,536 - stress_test - INFO -   Evaluating solution for Task 04c231bd-a429-4593-b127-f5e0ac03f098...
+2025-02-28 12:16:36,565 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'huMLbzwNO27kbKb1' despite error.
+2025-02-28 12:16:37,203 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-04c231bd-a429-4593-b127-f5e0ac03f098' despite error.
+2025-02-28 12:16:37,822 - stress_test - INFO -     Batch evaluation in 1.28 seconds; Avg score = 0.00
+2025-02-28 12:16:37,822 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 12:16:37,822 - stress_test - INFO -   Evaluating solution for Task 04c231bd-a429-4593-b127-f5e0ac03f098...
+2025-02-28 12:16:37,842 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'h7piiFyFU8O9360w' despite error.
+2025-02-28 12:16:40,864 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-04c231bd-a429-4593-b127-f5e0ac03f098' despite error.
+2025-02-28 12:16:41,448 - stress_test - INFO -     Batch evaluation in 3.62 seconds; Avg score = 0.00
+2025-02-28 12:16:42,139 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 12:16:42,140 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 12:18:48,766 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:18:49,190 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:18:58,624 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:18:58,640 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employee/register on attempt 1
+2025-02-28 12:19:00,770 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:19:00,795 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:19:00,795 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:19:00,795 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:19:00,795 - stress_test - INFO -   Generating new solution for Task 27029531-aa2a-4c36-8818-0bd47962ef6e...
+2025-02-28 12:19:00,795 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:19:00,796 - autoppia_iwa.src.shared.entrypoints.solutions - ERROR - Error saving solution to cache: 'TaskSolution' object has no attribute 'task'
+2025-02-28 12:19:00,796 - stress_test - WARNING -     Failed to cache solution
+2025-02-28 12:19:00,796 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:19:00,796 - stress_test - INFO -   Generating new solution for Task 27029531-aa2a-4c36-8818-0bd47962ef6e...
+2025-02-28 12:25:58,000 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:25:58,412 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:26:15,944 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:26:15,957 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/login on attempt 1
+2025-02-28 12:26:18,344 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:26:18,354 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:26:18,354 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:26:18,354 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:26:18,354 - stress_test - INFO -   Generating new solution for Task dadc45cd-353e-4a68-839f-6018fb95c3d2...
+2025-02-28 12:26:18,355 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:26:18,356 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:26:18,356 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:26:18,356 - stress_test - INFO -   Generating new solution for Task dadc45cd-353e-4a68-839f-6018fb95c3d2...
+2025-02-28 12:26:31,788 - stress_test - INFO -     Solution generated in 13.43 seconds with 3 actions
+2025-02-28 12:26:31,789 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:26:31,789 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 12:26:31,789 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 12:26:31,789 - stress_test - INFO -   Evaluating solution for Task dadc45cd-353e-4a68-839f-6018fb95c3d2...
+2025-02-28 12:26:31,813 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'MjhoVf1436rFTVcJ' despite error.
+2025-02-28 12:26:32,481 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-dadc45cd-353e-4a68-839f-6018fb95c3d2' despite error.
+2025-02-28 12:26:33,092 - stress_test - INFO -     Batch evaluation in 1.29 seconds; Avg score = 0.00
+2025-02-28 12:26:33,092 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 12:26:33,092 - stress_test - INFO -   Evaluating solution for Task dadc45cd-353e-4a68-839f-6018fb95c3d2...
+2025-02-28 12:26:33,110 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'VtQtIgURyVEaUJbq' despite error.
+2025-02-28 12:26:35,474 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-dadc45cd-353e-4a68-839f-6018fb95c3d2' despite error.
+2025-02-28 12:26:36,062 - stress_test - INFO -     Batch evaluation in 2.96 seconds; Avg score = 1.00
+2025-02-28 12:26:36,697 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 12:26:36,698 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 12:26:59,303 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:26:59,706 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:26:59,707 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:26:59,707 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:26:59,707 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:26:59,708 - stress_test - INFO -   Generating new solution for Task dadc45cd-353e-4a68-839f-6018fb95c3d2...
+2025-02-28 12:26:59,708 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:26:59,710 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:26:59,710 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:26:59,710 - stress_test - INFO -   Generating new solution for Task dadc45cd-353e-4a68-839f-6018fb95c3d2...
+2025-02-28 12:27:40,975 - stress_test - INFO -     Solution generated in 41.27 seconds with 11 actions
+2025-02-28 12:27:40,978 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:27:40,978 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 12:27:40,978 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 12:27:40,978 - stress_test - INFO -   Evaluating solution for Task dadc45cd-353e-4a68-839f-6018fb95c3d2...
+2025-02-28 12:27:41,000 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'Q3FO6uNojCFUIsGF' despite error.
+2025-02-28 12:27:41,604 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-dadc45cd-353e-4a68-839f-6018fb95c3d2' despite error.
+2025-02-28 12:27:42,176 - stress_test - INFO -     Batch evaluation in 1.19 seconds; Avg score = 0.00
+2025-02-28 12:27:42,176 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 12:27:42,176 - stress_test - INFO -   Evaluating solution for Task dadc45cd-353e-4a68-839f-6018fb95c3d2...
+2025-02-28 12:27:42,205 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'jfftIqgLZg2Z6PC0' despite error.
+2025-02-28 12:27:48,499 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-dadc45cd-353e-4a68-839f-6018fb95c3d2' despite error.
+2025-02-28 12:27:49,093 - stress_test - INFO -     Batch evaluation in 6.91 seconds; Avg score = 1.00
+2025-02-28 12:27:49,771 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 12:27:49,771 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 12:40:36,986 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:40:37,388 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:40:49,731 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:40:49,744 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employer/register on attempt 1
+2025-02-28 12:40:50,246 - stress_test - ERROR - No tasks available.
+2025-02-28 12:44:39,811 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:44:40,232 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:45:09,110 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:45:09,121 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/36 on attempt 1
+2025-02-28 12:45:09,624 - stress_test - ERROR - No tasks available.
+2025-02-28 12:56:37,731 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:56:38,190 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:56:50,282 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:56:50,298 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/33 on attempt 1
+2025-02-28 12:56:50,809 - stress_test - ERROR - No tasks available.
+2025-02-28 12:57:38,390 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:57:38,892 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:57:50,083 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:57:50,095 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs on attempt 1
+2025-02-28 12:57:50,699 - stress_test - ERROR - No tasks available.
+2025-02-28 12:58:30,773 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:58:31,172 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:58:41,990 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:58:42,000 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/32 on attempt 1
+2025-02-28 12:58:42,426 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 12:58:42,426 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 12:58:42,426 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 12:58:42,426 - stress_test - INFO -   Generating new solution for Task e58960aa-74fd-40de-801b-075875a014ac...
+2025-02-28 12:58:42,427 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 12:58:42,430 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:58:42,430 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 12:58:42,430 - stress_test - INFO -   Generating new solution for Task e58960aa-74fd-40de-801b-075875a014ac...
+2025-02-28 12:59:15,114 - stress_test - INFO -     Solution generated in 32.68 seconds with 9 actions
+2025-02-28 12:59:15,119 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 12:59:15,119 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 12:59:15,119 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 12:59:15,119 - stress_test - INFO -   Evaluating solution for Task e58960aa-74fd-40de-801b-075875a014ac...
+2025-02-28 12:59:15,147 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'Dehc5l0M2qNcWwUo' despite error.
+2025-02-28 12:59:15,872 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-e58960aa-74fd-40de-801b-075875a014ac' despite error.
+2025-02-28 12:59:16,595 - stress_test - INFO -     Batch evaluation in 1.47 seconds; Avg score = 0.00
+2025-02-28 12:59:16,596 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 12:59:16,596 - stress_test - INFO -   Evaluating solution for Task e58960aa-74fd-40de-801b-075875a014ac...
+2025-02-28 12:59:16,620 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '8YvY2bFBoIXlT5cL' despite error.
+2025-02-28 12:59:40,231 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 12:59:40,622 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 12:59:48,286 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:59:48,294 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs on attempt 1
+2025-02-28 12:59:50,011 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:59:56,344 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 12:59:57,914 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:00:00,091 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:00:02,221 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:00:02,229 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 13:00:02,229 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 13:00:02,229 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 13:00:02,229 - stress_test - INFO -   Generating new solution for Task b707dcad-f128-490d-bd72-a1d504555337...
+2025-02-28 13:00:02,229 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:00:02,233 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:00:02,233 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 13:00:02,233 - stress_test - INFO -   Generating new solution for Task b707dcad-f128-490d-bd72-a1d504555337...
+2025-02-28 13:00:09,944 - stress_test - INFO -     Solution generated in 7.71 seconds with 0 actions
+2025-02-28 13:00:09,948 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:00:09,948 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 13:00:09,948 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 13:00:09,948 - stress_test - INFO -   Evaluating solution for Task b707dcad-f128-490d-bd72-a1d504555337...
+2025-02-28 13:00:09,973 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'H858OZYZWZNK1SRa' despite error.
+2025-02-28 13:00:10,573 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b707dcad-f128-490d-bd72-a1d504555337' despite error.
+2025-02-28 13:00:11,213 - stress_test - INFO -     Batch evaluation in 1.26 seconds; Avg score = 0.00
+2025-02-28 13:00:11,213 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 13:00:11,213 - stress_test - INFO -   Evaluating solution for Task b707dcad-f128-490d-bd72-a1d504555337...
+2025-02-28 13:00:11,221 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-02-28 13:00:11,784 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 13:00:11,784 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 13:01:26,459 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:01:26,892 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:01:40,249 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:01:40,261 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/35 on attempt 1
+2025-02-28 13:02:02,773 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:02,910 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/33 on attempt 1
+2025-02-28 13:02:16,121 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:16,123 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/about/ on attempt 1
+2025-02-28 13:02:26,703 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:26,711 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employee/register on attempt 1
+2025-02-28 13:02:42,470 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:42,503 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employer/register on attempt 1
+2025-02-28 13:02:44,659 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:46,592 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:48,167 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:50,760 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:52,136 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:53,823 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:54,939 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:56,136 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:02:59,955 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:01,397 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:03,667 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:09,402 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:11,265 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:12,856 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:14,293 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:16,268 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:19,153 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:21,158 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:23,591 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:26,379 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:29,246 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:31,318 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:33,241 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:35,296 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:36,955 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:03:36,976 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 13:03:36,977 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 13:03:36,977 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 13:03:36,977 - stress_test - INFO -   Generating new solution for Task 19cb0eb3-308f-4669-b000-59ebb38a36de...
+2025-02-28 13:03:36,977 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:03:36,978 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:03:36,978 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 13:03:36,978 - stress_test - INFO -   Generating new solution for Task 19cb0eb3-308f-4669-b000-59ebb38a36de...
+2025-02-28 13:03:55,067 - stress_test - INFO -     Solution generated in 18.09 seconds with 3 actions
+2025-02-28 13:03:55,068 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:03:55,068 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 13:03:55,068 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 13:03:55,068 - stress_test - INFO -   Evaluating solution for Task 19cb0eb3-308f-4669-b000-59ebb38a36de...
+2025-02-28 13:03:55,092 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'wMU0U5R8ABCeUcwf' despite error.
+2025-02-28 13:03:55,722 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-19cb0eb3-308f-4669-b000-59ebb38a36de' despite error.
+2025-02-28 13:03:56,353 - stress_test - INFO -     Batch evaluation in 1.28 seconds; Avg score = 0.00
+2025-02-28 13:03:56,354 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 13:03:56,354 - stress_test - INFO -   Evaluating solution for Task 19cb0eb3-308f-4669-b000-59ebb38a36de...
+2025-02-28 13:03:56,374 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'C1Cj7UHodcWz4wsC' despite error.
+2025-02-28 13:03:58,847 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-19cb0eb3-308f-4669-b000-59ebb38a36de' despite error.
+2025-02-28 13:03:59,476 - stress_test - INFO -     Batch evaluation in 3.11 seconds; Avg score = 1.00
+2025-02-28 13:04:00,192 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 13:04:00,192 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 13:17:11,250 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:17:11,644 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:17:26,959 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:17:26,970 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/34 on attempt 1
+2025-02-28 13:17:41,171 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:17:41,175 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/33 on attempt 1
+2025-02-28 13:17:51,877 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:17:51,884 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employer/register on attempt 1
+2025-02-28 13:18:04,068 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:04,072 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs on attempt 1
+2025-02-28 13:18:16,574 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:16,585 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/contact/ on attempt 1
+2025-02-28 13:18:18,336 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:26,800 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:27,942 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:29,434 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:30,627 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:35,639 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:36,692 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:38,076 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:39,650 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:42,710 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:48,767 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:51,058 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:53,710 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:56,210 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:18:59,842 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:01,239 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:04,454 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:06,323 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:08,316 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:10,577 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:15,119 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:16,895 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:18,681 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:20,795 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:22,255 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 13:19:22,277 - stress_test - INFO - Evaluating 25 tasks with 2 agents, 1 solution copies each...
+2025-02-28 13:19:22,278 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 13:19:22,278 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 13:19:22,278 - stress_test - INFO -   Generating new solution for Task 78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010...
+2025-02-28 13:19:22,278 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,279 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,279 - stress_test - INFO -   Generating new solution for Task b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3...
+2025-02-28 13:19:22,279 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,287 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,287 - stress_test - INFO -   Generating new solution for Task 4c21359b-7e52-40f4-94b8-694033bf5ebd...
+2025-02-28 13:19:22,287 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,288 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,288 - stress_test - INFO -   Generating new solution for Task c61b5364-53ab-4c09-a126-8858dd06d865...
+2025-02-28 13:19:22,289 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,290 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,290 - stress_test - INFO -   Generating new solution for Task 63840a65-2d71-4ab0-8fea-71ab1b3530ee...
+2025-02-28 13:19:22,290 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,291 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,291 - stress_test - INFO -   Generating new solution for Task 963d5714-83d4-4003-ad90-468f81c3dedb...
+2025-02-28 13:19:22,292 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,293 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,293 - stress_test - INFO -   Generating new solution for Task ba51b452-0299-45ea-9e44-8c3a24b20cb2...
+2025-02-28 13:19:22,293 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,295 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,295 - stress_test - INFO -   Generating new solution for Task 41daf123-8916-4bc2-8a39-3409600fb4ff...
+2025-02-28 13:19:22,295 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,297 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,297 - stress_test - INFO -   Generating new solution for Task 53d6279f-dd99-4363-8451-28b056fc5e36...
+2025-02-28 13:19:22,297 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,299 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,299 - stress_test - INFO -   Generating new solution for Task 20331a0f-c49d-47fb-8479-5b6fc98ce5b2...
+2025-02-28 13:19:22,299 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,301 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,301 - stress_test - INFO -   Generating new solution for Task db53e801-669d-488c-9975-13430c05d99e...
+2025-02-28 13:19:22,301 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,304 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,304 - stress_test - INFO -   Generating new solution for Task 68242503-e07d-47cf-b323-968445864ac2...
+2025-02-28 13:19:22,304 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,307 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,307 - stress_test - INFO -   Generating new solution for Task d19bef85-0087-4c04-99cb-96cea6e536d4...
+2025-02-28 13:19:22,307 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,310 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,310 - stress_test - INFO -   Generating new solution for Task d0eb32df-096b-4779-86de-1265a538f1d5...
+2025-02-28 13:19:22,310 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,313 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,313 - stress_test - INFO -   Generating new solution for Task a69868d9-2234-4071-9965-54f52be276cf...
+2025-02-28 13:19:22,313 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,316 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,316 - stress_test - INFO -   Generating new solution for Task dcf0f719-e082-4365-bfff-de8380f7b7a6...
+2025-02-28 13:19:22,316 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,319 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,319 - stress_test - INFO -   Generating new solution for Task b3ae93fd-3c9f-4f5e-8745-b10047482980...
+2025-02-28 13:19:22,319 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,322 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,322 - stress_test - INFO -   Generating new solution for Task bf1689f9-053f-427f-a772-58692a661963...
+2025-02-28 13:19:22,322 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,325 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,326 - stress_test - INFO -   Generating new solution for Task 17caacec-f745-4e88-ba22-f06bfd10b895...
+2025-02-28 13:19:22,326 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,330 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,330 - stress_test - INFO -   Generating new solution for Task 83254756-5d65-4b71-8b73-18694ab435f3...
+2025-02-28 13:19:22,330 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,334 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,334 - stress_test - INFO -   Generating new solution for Task f2529be9-00a6-4f94-9920-d66bc3ca36a0...
+2025-02-28 13:19:22,334 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,338 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,338 - stress_test - INFO -   Generating new solution for Task d831ce07-fb60-4571-b6f3-9f8533990787...
+2025-02-28 13:19:22,338 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,342 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,342 - stress_test - INFO -   Generating new solution for Task 6fe2a5e7-d0db-47de-a358-3c33b74bc929...
+2025-02-28 13:19:22,342 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,346 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,346 - stress_test - INFO -   Generating new solution for Task b7802713-b3aa-42e1-93d9-5c404edb4a49...
+2025-02-28 13:19:22,346 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,350 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,350 - stress_test - INFO -   Generating new solution for Task 685763ed-e37e-4205-af7b-4aa75aca6bbd...
+2025-02-28 13:19:22,350 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:19:22,355 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:19:22,355 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 13:19:22,355 - stress_test - INFO -   Generating new solution for Task 78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010...
+2025-02-28 13:20:14,753 - stress_test - INFO -     Solution generated in 52.40 seconds with 10 actions
+2025-02-28 13:20:14,761 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:20:14,761 - stress_test - INFO -   Generating new solution for Task b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3...
+2025-02-28 13:21:20,688 - stress_test - INFO -     Solution generated in 65.93 seconds with 10 actions
+2025-02-28 13:21:20,696 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:21:20,697 - stress_test - INFO -   Generating new solution for Task 4c21359b-7e52-40f4-94b8-694033bf5ebd...
+2025-02-28 13:22:29,246 - stress_test - INFO -     Solution generated in 68.55 seconds with 11 actions
+2025-02-28 13:22:29,256 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:22:29,256 - stress_test - INFO -   Generating new solution for Task c61b5364-53ab-4c09-a126-8858dd06d865...
+2025-02-28 13:22:58,433 - stress_test - INFO -     Solution generated in 29.18 seconds with 4 actions
+2025-02-28 13:22:58,442 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:22:58,443 - stress_test - INFO -   Generating new solution for Task 63840a65-2d71-4ab0-8fea-71ab1b3530ee...
+2025-02-28 13:23:26,252 - stress_test - INFO -     Solution generated in 27.81 seconds with 6 actions
+2025-02-28 13:23:26,261 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:23:26,261 - stress_test - INFO -   Generating new solution for Task 963d5714-83d4-4003-ad90-468f81c3dedb...
+2025-02-28 13:23:40,253 - stress_test - INFO -     Solution generated in 13.99 seconds with 3 actions
+2025-02-28 13:23:40,264 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:23:40,265 - stress_test - INFO -   Generating new solution for Task ba51b452-0299-45ea-9e44-8c3a24b20cb2...
+2025-02-28 13:24:06,394 - stress_test - INFO -     Solution generated in 26.13 seconds with 6 actions
+2025-02-28 13:24:06,408 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:24:06,409 - stress_test - INFO -   Generating new solution for Task 41daf123-8916-4bc2-8a39-3409600fb4ff...
+2025-02-28 13:24:48,058 - stress_test - INFO -     Solution generated in 41.65 seconds with 9 actions
+2025-02-28 13:24:48,069 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:24:48,069 - stress_test - INFO -   Generating new solution for Task 53d6279f-dd99-4363-8451-28b056fc5e36...
+2025-02-28 13:25:14,877 - stress_test - INFO -     Solution generated in 26.81 seconds with 6 actions
+2025-02-28 13:25:14,891 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:25:14,891 - stress_test - INFO -   Generating new solution for Task 20331a0f-c49d-47fb-8479-5b6fc98ce5b2...
+2025-02-28 13:25:31,677 - stress_test - INFO -     Solution generated in 16.79 seconds with 2 actions
+2025-02-28 13:25:31,689 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:25:31,689 - stress_test - INFO -   Generating new solution for Task db53e801-669d-488c-9975-13430c05d99e...
+2025-02-28 13:25:45,988 - stress_test - INFO -     Solution generated in 14.30 seconds with 0 actions
+2025-02-28 13:25:46,003 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:25:46,004 - stress_test - INFO -   Generating new solution for Task 68242503-e07d-47cf-b323-968445864ac2...
+2025-02-28 13:25:57,991 - stress_test - INFO -     Solution generated in 11.99 seconds with 2 actions
+2025-02-28 13:25:58,003 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:25:58,004 - stress_test - INFO -   Generating new solution for Task d19bef85-0087-4c04-99cb-96cea6e536d4...
+2025-02-28 13:26:56,194 - stress_test - INFO -     Solution generated in 58.19 seconds with 12 actions
+2025-02-28 13:26:56,206 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:26:56,206 - stress_test - INFO -   Generating new solution for Task d0eb32df-096b-4779-86de-1265a538f1d5...
+2025-02-28 13:28:45,163 - stress_test - INFO -     Solution generated in 108.96 seconds with 33 actions
+2025-02-28 13:28:45,181 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:28:45,182 - stress_test - INFO -   Generating new solution for Task a69868d9-2234-4071-9965-54f52be276cf...
+2025-02-28 13:29:39,747 - stress_test - INFO -     Solution generated in 54.56 seconds with 13 actions
+2025-02-28 13:29:39,764 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:29:39,764 - stress_test - INFO -   Generating new solution for Task dcf0f719-e082-4365-bfff-de8380f7b7a6...
+2025-02-28 13:29:46,232 - stress_test - INFO -     Solution generated in 6.47 seconds with 0 actions
+2025-02-28 13:29:46,251 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:29:46,251 - stress_test - INFO -   Generating new solution for Task b3ae93fd-3c9f-4f5e-8745-b10047482980...
+2025-02-28 13:30:05,866 - stress_test - INFO -     Solution generated in 19.61 seconds with 3 actions
+2025-02-28 13:30:05,886 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:30:05,886 - stress_test - INFO -   Generating new solution for Task bf1689f9-053f-427f-a772-58692a661963...
+2025-02-28 13:30:55,823 - stress_test - INFO -     Solution generated in 49.94 seconds with 13 actions
+2025-02-28 13:30:55,842 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:30:55,842 - stress_test - INFO -   Generating new solution for Task 17caacec-f745-4e88-ba22-f06bfd10b895...
+2025-02-28 13:31:08,323 - stress_test - INFO -     Solution generated in 12.48 seconds with 2 actions
+2025-02-28 13:31:08,352 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:31:08,352 - stress_test - INFO -   Generating new solution for Task 83254756-5d65-4b71-8b73-18694ab435f3...
+2025-02-28 13:31:29,923 - stress_test - INFO -     Solution generated in 21.57 seconds with 5 actions
+2025-02-28 13:31:29,942 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:31:29,943 - stress_test - INFO -   Generating new solution for Task f2529be9-00a6-4f94-9920-d66bc3ca36a0...
+2025-02-28 13:32:48,687 - stress_test - INFO -     Solution generated in 78.74 seconds with 18 actions
+2025-02-28 13:32:48,720 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:32:48,720 - stress_test - INFO -   Generating new solution for Task d831ce07-fb60-4571-b6f3-9f8533990787...
+2025-02-28 13:33:10,642 - stress_test - INFO -     Solution generated in 21.92 seconds with 5 actions
+2025-02-28 13:33:10,664 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:33:10,664 - stress_test - INFO -   Generating new solution for Task 6fe2a5e7-d0db-47de-a358-3c33b74bc929...
+2025-02-28 13:33:37,666 - stress_test - INFO -     Solution generated in 27.00 seconds with 5 actions
+2025-02-28 13:33:37,690 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:33:37,690 - stress_test - INFO -   Generating new solution for Task b7802713-b3aa-42e1-93d9-5c404edb4a49...
+2025-02-28 13:34:05,334 - stress_test - INFO -     Solution generated in 27.64 seconds with 6 actions
+2025-02-28 13:34:05,359 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:34:05,359 - stress_test - INFO -   Generating new solution for Task 685763ed-e37e-4205-af7b-4aa75aca6bbd...
+2025-02-28 13:34:26,819 - stress_test - INFO -     Solution generated in 21.46 seconds with 0 actions
+2025-02-28 13:34:26,842 - stress_test - INFO -     Solution cached successfully for future runs
+2025-02-28 13:34:26,842 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 13:34:26,842 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 13:34:26,842 - stress_test - INFO -   Evaluating solution for Task 78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010...
+2025-02-28 13:34:26,865 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:27,707 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010' despite error.
+2025-02-28 13:34:28,285 - stress_test - INFO -     Batch evaluation in 1.44 seconds; Avg score = 0.00
+2025-02-28 13:34:28,285 - stress_test - INFO -   Evaluating solution for Task b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3...
+2025-02-28 13:34:28,304 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:28,908 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3' despite error.
+2025-02-28 13:34:29,498 - stress_test - INFO -     Batch evaluation in 1.20 seconds; Avg score = 0.00
+2025-02-28 13:34:29,498 - stress_test - INFO -   Evaluating solution for Task 4c21359b-7e52-40f4-94b8-694033bf5ebd...
+2025-02-28 13:34:29,518 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:30,107 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-4c21359b-7e52-40f4-94b8-694033bf5ebd' despite error.
+2025-02-28 13:34:30,681 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-02-28 13:34:30,682 - stress_test - INFO -   Evaluating solution for Task c61b5364-53ab-4c09-a126-8858dd06d865...
+2025-02-28 13:34:30,701 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:31,299 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-c61b5364-53ab-4c09-a126-8858dd06d865' despite error.
+2025-02-28 13:34:31,897 - stress_test - INFO -     Batch evaluation in 1.21 seconds; Avg score = 0.00
+2025-02-28 13:34:31,897 - stress_test - INFO -   Evaluating solution for Task 63840a65-2d71-4ab0-8fea-71ab1b3530ee...
+2025-02-28 13:34:31,915 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:32,489 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-63840a65-2d71-4ab0-8fea-71ab1b3530ee' despite error.
+2025-02-28 13:34:33,087 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-02-28 13:34:33,088 - stress_test - INFO -   Evaluating solution for Task 963d5714-83d4-4003-ad90-468f81c3dedb...
+2025-02-28 13:34:33,109 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:33,698 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-963d5714-83d4-4003-ad90-468f81c3dedb' despite error.
+2025-02-28 13:34:34,283 - stress_test - INFO -     Batch evaluation in 1.19 seconds; Avg score = 0.00
+2025-02-28 13:34:34,283 - stress_test - INFO -   Evaluating solution for Task ba51b452-0299-45ea-9e44-8c3a24b20cb2...
+2025-02-28 13:34:34,309 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:34,891 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ba51b452-0299-45ea-9e44-8c3a24b20cb2' despite error.
+2025-02-28 13:34:35,472 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-02-28 13:34:35,472 - stress_test - INFO -   Evaluating solution for Task 41daf123-8916-4bc2-8a39-3409600fb4ff...
+2025-02-28 13:34:35,491 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:36,071 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-41daf123-8916-4bc2-8a39-3409600fb4ff' despite error.
+2025-02-28 13:34:36,674 - stress_test - INFO -     Batch evaluation in 1.19 seconds; Avg score = 0.00
+2025-02-28 13:34:36,675 - stress_test - INFO -   Evaluating solution for Task 53d6279f-dd99-4363-8451-28b056fc5e36...
+2025-02-28 13:34:36,694 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:37,288 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-53d6279f-dd99-4363-8451-28b056fc5e36' despite error.
+2025-02-28 13:34:37,868 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-02-28 13:34:37,868 - stress_test - INFO -   Evaluating solution for Task 20331a0f-c49d-47fb-8479-5b6fc98ce5b2...
+2025-02-28 13:34:37,885 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:38,492 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-20331a0f-c49d-47fb-8479-5b6fc98ce5b2' despite error.
+2025-02-28 13:34:39,087 - stress_test - INFO -     Batch evaluation in 1.21 seconds; Avg score = 0.00
+2025-02-28 13:34:39,087 - stress_test - INFO -   Evaluating solution for Task db53e801-669d-488c-9975-13430c05d99e...
+2025-02-28 13:34:39,106 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:39,716 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-db53e801-669d-488c-9975-13430c05d99e' despite error.
+2025-02-28 13:34:40,303 - stress_test - INFO -     Batch evaluation in 1.21 seconds; Avg score = 0.00
+2025-02-28 13:34:40,303 - stress_test - INFO -   Evaluating solution for Task 68242503-e07d-47cf-b323-968445864ac2...
+2025-02-28 13:34:40,330 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:40,938 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-68242503-e07d-47cf-b323-968445864ac2' despite error.
+2025-02-28 13:34:41,517 - stress_test - INFO -     Batch evaluation in 1.21 seconds; Avg score = 0.00
+2025-02-28 13:34:41,518 - stress_test - INFO -   Evaluating solution for Task d19bef85-0087-4c04-99cb-96cea6e536d4...
+2025-02-28 13:34:41,537 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:42,123 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-d19bef85-0087-4c04-99cb-96cea6e536d4' despite error.
+2025-02-28 13:34:42,717 - stress_test - INFO -     Batch evaluation in 1.19 seconds; Avg score = 0.00
+2025-02-28 13:34:42,718 - stress_test - INFO -   Evaluating solution for Task d0eb32df-096b-4779-86de-1265a538f1d5...
+2025-02-28 13:34:42,744 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:43,327 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-d0eb32df-096b-4779-86de-1265a538f1d5' despite error.
+2025-02-28 13:34:43,902 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-02-28 13:34:43,902 - stress_test - INFO -   Evaluating solution for Task a69868d9-2234-4071-9965-54f52be276cf...
+2025-02-28 13:34:43,921 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:44,532 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-a69868d9-2234-4071-9965-54f52be276cf' despite error.
+2025-02-28 13:34:45,102 - stress_test - INFO -     Batch evaluation in 1.19 seconds; Avg score = 0.00
+2025-02-28 13:34:45,102 - stress_test - INFO -   Evaluating solution for Task dcf0f719-e082-4365-bfff-de8380f7b7a6...
+2025-02-28 13:34:45,130 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:45,728 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-dcf0f719-e082-4365-bfff-de8380f7b7a6' despite error.
+2025-02-28 13:34:46,295 - stress_test - INFO -     Batch evaluation in 1.18 seconds; Avg score = 0.00
+2025-02-28 13:34:46,295 - stress_test - INFO -   Evaluating solution for Task b3ae93fd-3c9f-4f5e-8745-b10047482980...
+2025-02-28 13:34:46,322 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:46,929 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b3ae93fd-3c9f-4f5e-8745-b10047482980' despite error.
+2025-02-28 13:34:47,515 - stress_test - INFO -     Batch evaluation in 1.21 seconds; Avg score = 0.00
+2025-02-28 13:34:47,515 - stress_test - INFO -   Evaluating solution for Task bf1689f9-053f-427f-a772-58692a661963...
+2025-02-28 13:34:47,540 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:48,147 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-bf1689f9-053f-427f-a772-58692a661963' despite error.
+2025-02-28 13:34:48,850 - stress_test - INFO -     Batch evaluation in 1.33 seconds; Avg score = 0.00
+2025-02-28 13:34:48,850 - stress_test - INFO -   Evaluating solution for Task 17caacec-f745-4e88-ba22-f06bfd10b895...
+2025-02-28 13:34:48,870 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:49,521 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-17caacec-f745-4e88-ba22-f06bfd10b895' despite error.
+2025-02-28 13:34:50,121 - stress_test - INFO -     Batch evaluation in 1.26 seconds; Avg score = 0.00
+2025-02-28 13:34:50,122 - stress_test - INFO -   Evaluating solution for Task 83254756-5d65-4b71-8b73-18694ab435f3...
+2025-02-28 13:34:50,142 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:50,850 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-83254756-5d65-4b71-8b73-18694ab435f3' despite error.
+2025-02-28 13:34:51,518 - stress_test - INFO -     Batch evaluation in 1.39 seconds; Avg score = 0.00
+2025-02-28 13:34:51,518 - stress_test - INFO -   Evaluating solution for Task f2529be9-00a6-4f94-9920-d66bc3ca36a0...
+2025-02-28 13:34:51,546 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:52,300 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-f2529be9-00a6-4f94-9920-d66bc3ca36a0' despite error.
+2025-02-28 13:34:53,010 - stress_test - INFO -     Batch evaluation in 1.48 seconds; Avg score = 0.00
+2025-02-28 13:34:53,010 - stress_test - INFO -   Evaluating solution for Task d831ce07-fb60-4571-b6f3-9f8533990787...
+2025-02-28 13:34:53,041 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:53,783 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-d831ce07-fb60-4571-b6f3-9f8533990787' despite error.
+2025-02-28 13:34:54,430 - stress_test - INFO -     Batch evaluation in 1.41 seconds; Avg score = 0.00
+2025-02-28 13:34:54,430 - stress_test - INFO -   Evaluating solution for Task 6fe2a5e7-d0db-47de-a358-3c33b74bc929...
+2025-02-28 13:34:54,451 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:55,158 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-6fe2a5e7-d0db-47de-a358-3c33b74bc929' despite error.
+2025-02-28 13:34:56,041 - stress_test - INFO -     Batch evaluation in 1.60 seconds; Avg score = 0.00
+2025-02-28 13:34:56,042 - stress_test - INFO -   Evaluating solution for Task b7802713-b3aa-42e1-93d9-5c404edb4a49...
+2025-02-28 13:34:56,073 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:56,758 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b7802713-b3aa-42e1-93d9-5c404edb4a49' despite error.
+2025-02-28 13:34:57,395 - stress_test - INFO -     Batch evaluation in 1.34 seconds; Avg score = 0.00
+2025-02-28 13:34:57,395 - stress_test - INFO -   Evaluating solution for Task 685763ed-e37e-4205-af7b-4aa75aca6bbd...
+2025-02-28 13:34:57,417 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'i7hh8Sx3Tf8CdOGB' despite error.
+2025-02-28 13:34:58,044 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-685763ed-e37e-4205-af7b-4aa75aca6bbd' despite error.
+2025-02-28 13:34:58,672 - stress_test - INFO -     Batch evaluation in 1.27 seconds; Avg score = 0.00
+2025-02-28 13:34:58,672 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 13:34:58,672 - stress_test - INFO -   Evaluating solution for Task 78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010...
+2025-02-28 13:34:58,705 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:35:14,969 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010' despite error.
+2025-02-28 13:35:15,728 - stress_test - INFO -     Batch evaluation in 17.05 seconds; Avg score = 1.00
+2025-02-28 13:35:15,728 - stress_test - INFO -   Evaluating solution for Task b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3...
+2025-02-28 13:35:15,750 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:35:23,870 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3' despite error.
+2025-02-28 13:35:24,593 - stress_test - INFO -     Batch evaluation in 8.86 seconds; Avg score = 1.00
+2025-02-28 13:35:24,593 - stress_test - INFO -   Evaluating solution for Task 4c21359b-7e52-40f4-94b8-694033bf5ebd...
+2025-02-28 13:35:24,621 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:35:32,345 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-4c21359b-7e52-40f4-94b8-694033bf5ebd' despite error.
+2025-02-28 13:35:32,983 - stress_test - INFO -     Batch evaluation in 8.38 seconds; Avg score = 1.00
+2025-02-28 13:35:32,983 - stress_test - INFO -   Evaluating solution for Task c61b5364-53ab-4c09-a126-8858dd06d865...
+2025-02-28 13:35:33,007 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:35:36,094 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-c61b5364-53ab-4c09-a126-8858dd06d865' despite error.
+2025-02-28 13:35:36,807 - stress_test - INFO -     Batch evaluation in 3.81 seconds; Avg score = 1.00
+2025-02-28 13:35:36,807 - stress_test - INFO -   Evaluating solution for Task 63840a65-2d71-4ab0-8fea-71ab1b3530ee...
+2025-02-28 13:35:36,832 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:35:41,493 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-63840a65-2d71-4ab0-8fea-71ab1b3530ee' despite error.
+2025-02-28 13:35:42,157 - stress_test - INFO -     Batch evaluation in 5.34 seconds; Avg score = 1.00
+2025-02-28 13:35:42,157 - stress_test - INFO -   Evaluating solution for Task 963d5714-83d4-4003-ad90-468f81c3dedb...
+2025-02-28 13:35:42,177 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:35:44,791 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-963d5714-83d4-4003-ad90-468f81c3dedb' despite error.
+2025-02-28 13:35:45,465 - stress_test - INFO -     Batch evaluation in 3.30 seconds; Avg score = 1.00
+2025-02-28 13:35:45,465 - stress_test - INFO -   Evaluating solution for Task ba51b452-0299-45ea-9e44-8c3a24b20cb2...
+2025-02-28 13:35:45,489 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:35:49,812 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-ba51b452-0299-45ea-9e44-8c3a24b20cb2' despite error.
+2025-02-28 13:35:50,462 - stress_test - INFO -     Batch evaluation in 4.99 seconds; Avg score = 1.00
+2025-02-28 13:35:50,462 - stress_test - INFO -   Evaluating solution for Task 41daf123-8916-4bc2-8a39-3409600fb4ff...
+2025-02-28 13:35:50,483 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:35:56,875 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-41daf123-8916-4bc2-8a39-3409600fb4ff' despite error.
+2025-02-28 13:35:57,711 - stress_test - INFO -     Batch evaluation in 7.24 seconds; Avg score = 1.00
+2025-02-28 13:35:57,712 - stress_test - INFO -   Evaluating solution for Task 53d6279f-dd99-4363-8451-28b056fc5e36...
+2025-02-28 13:35:57,738 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:36:02,499 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-53d6279f-dd99-4363-8451-28b056fc5e36' despite error.
+2025-02-28 13:36:03,166 - stress_test - INFO -     Batch evaluation in 5.44 seconds; Avg score = 1.00
+2025-02-28 13:36:03,167 - stress_test - INFO -   Evaluating solution for Task 20331a0f-c49d-47fb-8479-5b6fc98ce5b2...
+2025-02-28 13:36:03,186 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:36:04,957 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-20331a0f-c49d-47fb-8479-5b6fc98ce5b2' despite error.
+2025-02-28 13:36:05,673 - stress_test - INFO -     Batch evaluation in 2.50 seconds; Avg score = 1.00
+2025-02-28 13:36:05,673 - stress_test - INFO -   Evaluating solution for Task db53e801-669d-488c-9975-13430c05d99e...
+2025-02-28 13:36:05,685 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-02-28 13:36:05,686 - stress_test - INFO -   Evaluating solution for Task 68242503-e07d-47cf-b323-968445864ac2...
+2025-02-28 13:36:05,708 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:36:07,445 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-68242503-e07d-47cf-b323-968445864ac2' despite error.
+2025-02-28 13:36:08,073 - stress_test - INFO -     Batch evaluation in 2.38 seconds; Avg score = 1.00
+2025-02-28 13:36:08,074 - stress_test - INFO -   Evaluating solution for Task d19bef85-0087-4c04-99cb-96cea6e536d4...
+2025-02-28 13:36:08,098 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:36:18,352 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-d19bef85-0087-4c04-99cb-96cea6e536d4' despite error.
+2025-02-28 13:36:18,984 - stress_test - INFO -     Batch evaluation in 10.90 seconds; Avg score = 1.00
+2025-02-28 13:36:18,984 - stress_test - INFO -   Evaluating solution for Task d0eb32df-096b-4779-86de-1265a538f1d5...
+2025-02-28 13:36:19,011 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:36:34,575 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-d0eb32df-096b-4779-86de-1265a538f1d5' despite error.
+2025-02-28 13:36:35,218 - stress_test - INFO -     Batch evaluation in 16.23 seconds; Avg score = 1.00
+2025-02-28 13:36:35,218 - stress_test - INFO -   Evaluating solution for Task a69868d9-2234-4071-9965-54f52be276cf...
+2025-02-28 13:36:35,247 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:36:46,533 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-a69868d9-2234-4071-9965-54f52be276cf' despite error.
+2025-02-28 13:36:47,156 - stress_test - INFO -     Batch evaluation in 11.93 seconds; Avg score = 1.00
+2025-02-28 13:36:47,156 - stress_test - INFO -   Evaluating solution for Task dcf0f719-e082-4365-bfff-de8380f7b7a6...
+2025-02-28 13:36:47,175 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-02-28 13:36:47,175 - stress_test - INFO -   Evaluating solution for Task b3ae93fd-3c9f-4f5e-8745-b10047482980...
+2025-02-28 13:36:47,195 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:36:49,755 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b3ae93fd-3c9f-4f5e-8745-b10047482980' despite error.
+2025-02-28 13:36:50,399 - stress_test - INFO -     Batch evaluation in 3.22 seconds; Avg score = 1.00
+2025-02-28 13:36:50,399 - stress_test - INFO -   Evaluating solution for Task bf1689f9-053f-427f-a772-58692a661963...
+2025-02-28 13:36:50,433 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:36:59,611 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-bf1689f9-053f-427f-a772-58692a661963' despite error.
+2025-02-28 13:37:00,251 - stress_test - INFO -     Batch evaluation in 9.84 seconds; Avg score = 0.00
+2025-02-28 13:37:00,252 - stress_test - INFO -   Evaluating solution for Task 17caacec-f745-4e88-ba22-f06bfd10b895...
+2025-02-28 13:37:00,281 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:37:02,013 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-17caacec-f745-4e88-ba22-f06bfd10b895' despite error.
+2025-02-28 13:37:02,644 - stress_test - INFO -     Batch evaluation in 2.38 seconds; Avg score = 1.00
+2025-02-28 13:37:02,644 - stress_test - INFO -   Evaluating solution for Task 83254756-5d65-4b71-8b73-18694ab435f3...
+2025-02-28 13:37:02,671 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:37:06,057 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-83254756-5d65-4b71-8b73-18694ab435f3' despite error.
+2025-02-28 13:37:06,681 - stress_test - INFO -     Batch evaluation in 4.03 seconds; Avg score = 1.00
+2025-02-28 13:37:06,682 - stress_test - INFO -   Evaluating solution for Task f2529be9-00a6-4f94-9920-d66bc3ca36a0...
+2025-02-28 13:37:06,710 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:37:19,006 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-f2529be9-00a6-4f94-9920-d66bc3ca36a0' despite error.
+2025-02-28 13:37:19,637 - stress_test - INFO -     Batch evaluation in 12.95 seconds; Avg score = 1.00
+2025-02-28 13:37:19,637 - stress_test - INFO -   Evaluating solution for Task d831ce07-fb60-4571-b6f3-9f8533990787...
+2025-02-28 13:37:19,663 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:37:23,033 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-d831ce07-fb60-4571-b6f3-9f8533990787' despite error.
+2025-02-28 13:37:23,649 - stress_test - INFO -     Batch evaluation in 4.01 seconds; Avg score = 1.00
+2025-02-28 13:37:23,649 - stress_test - INFO -   Evaluating solution for Task 6fe2a5e7-d0db-47de-a358-3c33b74bc929...
+2025-02-28 13:37:23,676 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:37:27,620 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-6fe2a5e7-d0db-47de-a358-3c33b74bc929' despite error.
+2025-02-28 13:37:28,207 - stress_test - INFO -     Batch evaluation in 4.55 seconds; Avg score = 1.00
+2025-02-28 13:37:28,207 - stress_test - INFO -   Evaluating solution for Task b7802713-b3aa-42e1-93d9-5c404edb4a49...
+2025-02-28 13:37:28,234 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'RwfnlAZ8pQ8GCV5l' despite error.
+2025-02-28 13:37:33,005 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-b7802713-b3aa-42e1-93d9-5c404edb4a49' despite error.
+2025-02-28 13:37:33,599 - stress_test - INFO -     Batch evaluation in 5.38 seconds; Avg score = 1.00
+2025-02-28 13:37:33,600 - stress_test - INFO -   Evaluating solution for Task 685763ed-e37e-4205-af7b-4aa75aca6bbd...
+2025-02-28 13:37:33,609 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-02-28 13:37:34,483 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 13:37:34,483 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 13:42:32,066 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:42:32,380 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:42:40,435 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:42:40,448 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:42:40,448 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 13:42:43,569 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:42:43,579 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:42:43,579 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-02-28 13:42:45,023 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:42:45,088 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:42:45,088 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-02-28 13:42:45,088 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/
+2025-02-28 13:42:45,089 - stress_test - ERROR - No tasks available.
+2025-02-28 13:45:09,165 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:45:09,453 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:45:11,795 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:45:11,809 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:45:11,809 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 13:45:13,915 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:45:13,924 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:45:13,925 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-02-28 13:45:15,861 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:45:15,874 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:45:15,883 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-02-28 13:45:15,883 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/34
+2025-02-28 13:45:15,883 - stress_test - ERROR - No tasks available.
+2025-02-28 13:45:30,690 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:45:30,982 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:46:05,293 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:46:05,578 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:46:07,581 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:46:07,590 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:46:07,590 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 13:47:14,811 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:47:15,089 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:47:44,666 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:47:44,947 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:47:46,982 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:49:28,776 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:49:28,776 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 13:50:05,099 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:50:05,390 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:50:07,893 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:50:07,902 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 13:50:07,903 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 13:50:20,305 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:50:20,564 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:50:43,161 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:50:43,438 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:50:45,515 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:51:14,481 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:51:14,766 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:52:11,479 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:52:21,326 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/35 on attempt 1
+2025-02-28 13:52:56,140 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 13:52:56,451 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 13:53:43,871 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:53:43,902 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/login on attempt 1
+2025-02-28 13:53:51,915 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 13:53:51,931 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 13:53:51,931 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-02-28 13:53:51,931 - stress_test - INFO - 
+Agent: Random-clicker
+2025-02-28 13:53:51,931 - stress_test - INFO -   Generating new solution for Task af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3...
+2025-02-28 13:53:51,931 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-02-28 13:53:51,959 - stress_test - INFO - Solution cached successfully for future runs
+2025-02-28 13:53:51,960 - stress_test - INFO - 
+Agent: browser-use
+2025-02-28 13:53:51,960 - stress_test - INFO -   Generating new solution for Task af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3...
+2025-02-28 13:55:14,050 - stress_test - INFO -     Solution generated in 82.09 seconds with 14 actions
+2025-02-28 13:55:14,077 - stress_test - INFO - Solution cached successfully for future runs
+2025-02-28 13:55:14,077 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-02-28 13:55:14,077 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-02-28 13:55:14,077 - stress_test - INFO -   Evaluating solution for Task af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3...
+2025-02-28 13:55:14,121 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent '6Iymlg1eskIs9nNJ' despite error.
+2025-02-28 13:55:15,006 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3' despite error.
+2025-02-28 13:55:15,619 - stress_test - INFO -     Batch evaluation in 1.53 seconds; Avg score = 0.00
+2025-02-28 13:55:15,619 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-02-28 13:55:15,619 - stress_test - INFO -   Evaluating solution for Task af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3...
+2025-02-28 13:55:15,637 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'qkrGQqUqQ4MGc2cJ' despite error.
+2025-02-28 13:55:25,734 - autoppia_iwa.src.demo_webs.demo_webs_service - INFO - Successfully reset events for web_agent 'random-clicker-af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3' despite error.
+2025-02-28 13:55:26,603 - stress_test - INFO -     Batch evaluation in 10.98 seconds; Avg score = 0.00
+2025-02-28 13:55:27,442 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-02-28 13:55:27,442 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-02-28 14:06:35,996 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 14:06:36,305 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 14:06:38,159 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:06:38,168 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 14:06:38,168 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 14:06:38,521 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:06:38,534 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 14:06:38,534 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-02-28 14:06:39,103 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:06:39,156 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 14:06:39,156 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-02-28 14:06:39,156 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/jobs/35
+2025-02-28 14:06:39,158 - stress_test - ERROR - No tasks available.
+2025-02-28 14:06:56,227 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 14:06:56,533 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 14:06:58,250 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:09:34,918 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 14:09:35,250 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 14:09:37,217 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:10:15,084 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 14:10:15,392 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 14:10:17,164 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 14:10:21,609 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 14:10:21,610 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 14:10:22,021 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.1 200 OK"
+2025-02-28 17:07:21,807 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:07:22,753 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:07:22,754 - stress_test - ERROR - No tasks available.
+2025-02-28 17:10:01,079 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:10:01,919 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:10:01,919 - stress_test - ERROR - No tasks available.
+2025-02-28 17:10:12,485 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:10:13,286 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:10:13,287 - stress_test - ERROR - No tasks available.
+2025-02-28 17:14:15,615 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:14:30,568 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:36,095 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:41,792 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:45,930 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:50,475 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:14:59,906 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:15:00,295 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:15:09,584 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:15:09,594 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:15:09,594 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 17:15:16,779 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:15:16,785 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:15:16,785 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 2: Failed to parse LLM response, retrying...
+2025-02-28 17:15:29,553 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:15:29,555 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:15:29,555 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 3: Failed to parse LLM response, retrying...
+2025-02-28 17:15:29,556 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - All 3 attempts failed for http://localhost:8000/employer/register
+2025-02-28 17:15:29,557 - stress_test - ERROR - No tasks available.
+2025-02-28 17:15:46,073 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:15:46,467 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:16:13,798 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:16:17,536 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:16:17,537 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 17:17:13,190 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:19:58,166 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:19:58,582 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:20:14,919 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:20:14,933 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2025-02-28 17:20:14,934 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - WARNING - Attempt 1: Failed to parse LLM response, retrying...
+2025-02-28 17:23:07,074 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:23:07,466 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:24:08,635 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:24:11,952 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs on attempt 1
+2025-02-28 17:24:13,913 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:24:13,918 - stress_test - INFO - Evaluating 1 tasks with 2 agents, 1 solution copies each...
+2025-02-28 17:25:17,238 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:25:17,628 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:25:30,093 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:30,103 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/31 on attempt 1
+2025-02-28 17:25:33,169 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:35,263 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:37,784 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:39,937 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:42,090 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:44,551 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:46,953 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:51,313 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:53,157 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:54,952 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:57,768 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:25:59,918 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:26:01,763 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:26:03,300 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:26:05,927 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:26:05,937 - stress_test - INFO - Evaluating 15 tasks with 2 agents, 1 solution copies each...
+2025-02-28 17:51:52,486 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 17:52:00,543 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:07,301 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:11,341 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:16,212 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:20,937 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:24,201 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:30,010 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:32,358 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:38,028 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:44,937 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:50,306 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:52,777 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:52:56,778 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:53:02,916 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:53:08,837 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:53:14,325 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:53:19,000 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:53:23,810 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:53:29,234 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:53:36,409 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:53:50,234 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:02,218 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:05,900 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:10,659 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:15,019 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:17,580 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:22,842 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:29,933 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:38,745 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:41,814 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:46,111 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:52,250 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:56,853 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:54:59,385 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:55:02,921 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:55:08,872 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:55:13,433 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:55:16,169 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:55:20,196 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:55:25,717 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:55:29,896 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:55:33,702 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:06,256 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:10,952 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:16,052 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:19,774 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:26,840 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:34,211 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:38,204 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:41,276 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:45,575 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:50,952 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:53,563 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:56:56,329 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:01,041 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:07,693 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:12,908 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:16,908 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:20,287 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:20,294 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 17:57:27,924 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:27,926 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/login on attempt 1
+2025-02-28 17:57:29,549 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:31,653 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:34,111 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:36,261 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:39,024 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:40,868 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:43,018 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:44,797 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:51,619 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:54,076 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:57:58,684 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:58:00,562 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:58:02,953 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:58:04,937 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:58:06,918 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 17:58:06,932 - stress_test - INFO - Evaluating 15 tasks with 2 agents, 1 solution copies each...
+2025-02-28 21:13:53,394 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 21:14:06,417 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:14:10,176 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:14:14,541 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:14:20,933 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:14:24,438 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:14:26,970 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:14:31,196 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:23:14,171 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 21:23:21,152 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:23:25,525 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:23:29,595 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:23:50,913 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-02-28 21:23:56,939 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:01,319 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:03,827 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:07,510 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:12,806 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:17,546 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:19,801 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:24,714 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:29,613 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:32,901 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:35,529 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:39,639 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:45,621 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:51,514 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:24:54,857 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:00,221 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:02,715 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:06,980 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:12,202 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:16,304 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:18,723 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:22,893 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:39,467 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:42,765 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:45,408 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:49,396 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:54,828 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:25:58,723 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:01,179 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:04,837 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:09,781 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:14,258 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:17,022 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:25,548 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:29,851 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:34,764 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:37,838 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:41,522 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:47,641 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:52,547 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:55,247 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:26:59,545 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:04,227 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:08,215 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:12,653 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:16,699 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:20,437 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:23,918 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:29,166 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:36,410 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:40,710 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:46,651 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:49,517 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:52,140 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:27:56,144 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:01,808 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:05,492 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:08,232 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:12,456 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:12,476 - stress_test - INFO - Using project: Jobs Demo Website
+2025-02-28 21:28:20,214 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:20,217 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employer/register on attempt 1
+2025-02-28 21:28:28,087 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:28,097 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/login on attempt 1
+2025-02-28 21:28:35,195 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:35,197 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/50 on attempt 1
+2025-02-28 21:28:42,564 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:42,572 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/48 on attempt 1
+2025-02-28 21:28:50,214 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:50,217 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employee/register on attempt 1
+2025-02-28 21:28:58,742 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:28:58,745 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/about/ on attempt 1
+2025-02-28 21:29:06,953 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:06,955 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/49 on attempt 1
+2025-02-28 21:29:14,953 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:14,956 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/47 on attempt 1
+2025-02-28 21:29:23,528 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:23,530 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/contact/ on attempt 1
+2025-02-28 21:29:30,529 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:30,532 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/51 on attempt 1
+2025-02-28 21:29:32,740 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:34,921 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:36,812 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:38,886 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:40,344 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:42,235 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:44,185 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:46,229 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:47,666 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:49,535 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:51,379 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:53,224 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:29:58,211 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:00,109 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:02,206 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:04,162 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:06,739 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:10,295 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:11,629 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:13,498 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:15,546 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:17,568 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:19,438 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:22,177 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:24,321 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:25,792 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:28,214 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:29,896 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:31,522 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:33,161 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:35,592 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:38,148 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:39,508 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:41,149 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:43,575 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:45,245 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:46,456 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:48,724 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:50,660 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:54,228 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:55,688 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:30:58,589 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:00,808 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:02,651 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:04,699 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:06,209 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:08,254 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:10,435 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:12,251 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:14,194 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:16,783 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:19,018 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:21,108 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:23,135 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:25,562 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:27,843 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:30,169 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:32,220 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:40,204 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:42,283 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:44,902 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:47,504 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:50,243 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:52,421 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:55,491 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:31:58,059 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:00,612 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:02,886 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:05,527 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:07,785 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:09,577 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:11,646 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:13,515 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:15,562 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:17,815 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:20,144 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:21,832 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:24,038 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:26,187 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:27,850 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:29,538 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:31,536 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:33,177 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:35,608 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:37,476 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:38,856 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:40,754 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:42,949 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:45,029 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:46,872 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:48,334 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:50,149 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:52,428 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:54,476 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:56,187 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:32:58,776 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:00,825 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:03,700 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:05,099 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:08,277 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:09,837 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:12,165 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:13,529 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:15,276 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:18,207 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:19,641 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:21,510 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:23,558 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:24,937 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:26,809 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:29,095 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:30,708 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:32,579 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:34,179 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:36,203 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:38,713 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:40,224 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:42,271 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:44,218 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:46,296 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:48,211 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:50,260 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:52,819 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:54,867 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:56,479 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:33:58,788 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:00,901 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:02,950 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:05,542 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:06,921 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:08,794 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:10,842 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:12,891 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:14,732 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:16,777 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:18,446 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:20,263 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:22,748 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:25,214 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:27,635 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:29,638 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:31,552 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:34,190 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:35,855 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:38,183 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:40,949 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:42,949 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:44,839 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-02-28 21:34:44,903 - stress_test - INFO - Evaluating 148 tasks with 2 agents, 1 solution copies each...
+2025-03-01 10:37:33,168 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 10:37:40,094 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:37:44,453 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:37:48,639 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:37:52,711 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:37:55,182 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:37:58,069 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:03,936 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:06,810 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:12,259 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:17,154 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:21,142 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:24,258 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:28,740 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:34,042 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:37,929 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:40,253 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:44,126 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:50,187 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:55,143 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:38:57,404 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:01,783 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:06,614 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:10,308 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:14,321 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:17,851 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:20,812 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:24,773 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:30,094 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:34,710 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:37,614 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:41,671 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:47,492 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:51,259 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:53,824 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:39:58,842 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:04,689 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:08,940 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:12,574 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:16,514 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:22,087 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:27,598 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:30,443 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:34,576 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:41,735 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:51,183 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:54,934 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:40:58,338 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:04,223 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:06,892 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:09,693 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:14,493 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:19,857 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:27,280 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:30,118 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:33,454 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:39,159 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:44,072 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:46,704 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:50,115 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:41:50,139 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-01 10:42:02,068 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:42:02,071 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/47 on attempt 1
+2025-03-01 10:42:10,421 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:42:10,424 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employer/register on attempt 1
+2025-03-01 10:42:19,712 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:42:19,715 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employee/register on attempt 1
+2025-03-01 10:42:27,147 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:42:27,150 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/51 on attempt 1
+2025-03-01 10:42:36,697 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:42:36,700 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/48 on attempt 1
+2025-03-01 10:42:44,474 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:42:44,477 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/46 on attempt 1
+2025-03-01 10:42:52,121 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:42:52,128 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs/50 on attempt 1
+2025-03-01 10:43:00,056 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:00,058 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/about/ on attempt 1
+2025-03-01 10:43:16,733 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:16,736 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/contact/ on attempt 1
+2025-03-01 10:43:24,296 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:24,303 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/jobs on attempt 1
+2025-03-01 10:43:26,978 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:29,752 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:32,006 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:34,873 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:36,920 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:39,170 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:41,459 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:43,396 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:45,274 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:47,599 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:49,690 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:51,669 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:53,828 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:55,983 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:57,778 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:43:59,701 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:01,690 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:03,060 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:04,938 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:07,425 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:09,559 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:11,094 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:13,103 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:15,405 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:21,349 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:23,524 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:25,934 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:28,580 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:31,104 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:33,038 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:35,168 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:37,101 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:39,097 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:41,059 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:43,063 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:47,329 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:49,358 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:52,086 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:54,284 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:56,540 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:44:58,580 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:00,665 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:02,567 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:04,898 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:06,860 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:08,540 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:10,243 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:12,152 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:13,423 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:15,414 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:17,187 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:18,909 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:20,943 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:22,929 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:24,707 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:26,733 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:29,151 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:30,995 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:33,181 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:34,975 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:36,933 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:39,726 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:41,651 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:43,691 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:46,078 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:48,959 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:51,064 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:52,493 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:54,767 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:56,718 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:45:59,286 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:46:00,878 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-01 10:46:05,518 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 10:46:33,321 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-01 10:46:33,742 - stress_test - INFO - Using project: Jobs Demo Website

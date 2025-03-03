@@ -1,27 +1,34 @@
 import asyncio
+import statistics
 import json
 import os
-import statistics
 import time
+from typing import List, Optional
 from datetime import datetime
-from typing import Dict, List, Optional
-
 import matplotlib.pyplot as plt
-
-from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
-from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, Task
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_summary, visualize_task
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.base import BaseAgent, IWebAgent
+from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
+    TestGenerationPipeline)
+
+# Importar el visualizador
+from autoppia_iwa.src.shared.visualizator import (
+    SubnetVisualizer, 
+    visualize_task,
+    visualize_evaluation,
+    visualize_summary
+)
+from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # ============================================================
 # GLOBAL CONFIGURATION
@@ -136,7 +143,7 @@ async def save_tasks_to_json(project: WebProject, tasks: List[Task]) -> bool:
 # ============================================================
 
 
-async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int = 7) -> List[Task]:
+async def generate_tasks_for_project(demo_project: WebProject, num_of_urls: int = 1) -> List[Task]:
     """
     Generates tasks for the given demo project.
     If USE_CACHED_TASKS is True, attempts to load from the project-specific cache first.
@@ -402,6 +409,7 @@ async def main():
 
             start_time = time.time()
             tasks = await generate_tasks_for_project(demo_project)
+            tasks = tasks[0:NUM_OF_TASKS]
             elapsed_time = time.time() - start_time
 
             print(f"Tasks obtained: {len(tasks)} in {elapsed_time:.2f} seconds")

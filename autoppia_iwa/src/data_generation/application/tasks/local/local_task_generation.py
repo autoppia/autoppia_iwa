@@ -1,31 +1,29 @@
-import json
-from typing import Dict, List
-
 from dependency_injector.wiring import Provide
-from PIL import Image
+import json
+from typing import List, Dict, Any
 from pydantic import ValidationError
-
-from autoppia_iwa.src.data_generation.application.tasks.local.prompts import (
-    LOCAL_TASKS_CONTEXT_PROMPT,
-    PHASE1_GENERATION_SYSTEM_PROMPT,
-    PHASE2_CONCEPT_FILTER_PROMPT,
-    PHASE2_FEASIBILITY_FILTER_PROMPT,
-    PHASE2_SUCCESS_CRITERIA_FILTER_PROMPT,
-)
-from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
-from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.di_container import DIContainer
+import asyncio
+import logging
+from autoppia_iwa.src.data_generation.domain.classes import Task, BrowserSpecification
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
+from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot, detect_interactive_elements
 from autoppia_iwa.src.shared.utils import transform_image_into_base64
-from autoppia_iwa.src.shared.web_utils import detect_interactive_elements, get_html_and_screenshot
+from autoppia_iwa.src.data_generation.application.tasks.local.prompts import PHASE1_GENERATION_SYSTEM_PROMPT
+from autoppia_iwa.src.di_container import DIContainer
+from .schemas import DraftTaskList
+from autoppia_iwa.src.demo_webs.classes import WebProject
+import random
 
-from .schemas import DraftTaskList, FilterTaskList
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 class LocalTaskGenerationPipeline:
     def __init__(self, web_project: WebProject, llm_service: "ILLM" = Provide[DIContainer.llm_service]):
         self.web_project: WebProject = web_project
         self.llm_service: ILLM = llm_service
+        self.max_retries: int = 3  # Maximum number of retries for LLM calls
+        self.retry_delay: float = 0.1  # Delay between retries in seconds
 
     async def generate(self, page_url: str) -> List["Task"]:
         # Fetch the HTML and screenshot
@@ -33,12 +31,7 @@ class LocalTaskGenerationPipeline:
         interactive_elems = detect_interactive_elements(clean_html)
 
         # Phase 1: Draft generation
-        draft_list = await self._phase1_generate_draft_tasks(clean_html, screenshot_desc, interactive_elems)
-
-        # Phase 2: Three successive filters
-        feasible_list = await self._phase2_filter(draft_list, PHASE2_FEASIBILITY_FILTER_PROMPT, clean_html, screenshot_desc, interactive_elems)
-        success_list = await self._phase2_filter(feasible_list, PHASE2_SUCCESS_CRITERIA_FILTER_PROMPT, clean_html, screenshot_desc, interactive_elems)
-        concept_list = await self._phase2_filter(success_list, PHASE2_CONCEPT_FILTER_PROMPT, clean_html, screenshot_desc, interactive_elems)
+        draft_list = await self._phase1_generate_draft_tasks(page_url, clean_html, screenshot_desc, interactive_elems)
 
         # Construct final tasks
         final_tasks = [
@@ -53,137 +46,160 @@ class LocalTaskGenerationPipeline:
                 success_criteria=item.get("success_criteria", ""),
                 relevant_data=self.web_project.relevant_data,
             )
-            for item in concept_list
+            for item in draft_list
         ]
-        return final_tasks
 
-    async def _phase1_generate_draft_tasks(self, html_text: str, screenshot_text: str, interactive_elems: Dict) -> List[dict]:
+        def shuffle_tasks(final_tasks):
+            random.shuffle(final_tasks)
+            return final_tasks
+
+        return shuffle_tasks(final_tasks)
+
+    async def _phase1_generate_draft_tasks(self, current_url: str, html_text: str, screenshot_text: str, interactive_elems: Dict) -> List[dict]:
         """
         Phase 1: Generate a draft list of tasks based on the system prompt + user context.
+        With retry mechanism for handling invalid JSON responses.
         """
         # Combine local prompts
-        system_prompt = LOCAL_TASKS_CONTEXT_PROMPT + PHASE1_GENERATION_SYSTEM_PROMPT
+        number_of_prompts = 15
+        system_prompt = PHASE1_GENERATION_SYSTEM_PROMPT.replace("{number_of_prompts}", f"{number_of_prompts}")
 
         # User message with truncated HTML + screenshot text + interactive elements
-        user_msg = f"clean_html:\n{html_text[:1500]}\n\n" f"screenshot_description:\n{screenshot_text}\n\n" f"interactive_elements:\n{json.dumps(interactive_elems, indent=2)}"
+        user_msg = (
+            f"Current url:\n{current_url}\n\n"
+            f"clean_html:\n{html_text[:1500]}\n\n"
+            f"screenshot_description:\n{screenshot_text}\n\n"
+            f"interactive_elements:\n{json.dumps(interactive_elems, indent=2)}"
+        )
 
-        # JSON schema for the response
-        schema = {"type": "array", "items": {"type": "object", "properties": {"prompt": {"type": "string"}, "success_criteria": {"type": "string"}}, "required": ["prompt"]}}
-
-        try:
-            # Request the LLM to generate tasks (in JSON format)
-            resp_text = await self.llm_service.async_predict(messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_msg}], json_format=True, schema=schema)
-
-            # Parse and handle different possible JSON structures
+        # Implement retry logic
+        for attempt in range(self.max_retries):
             try:
-                data = json.loads(resp_text)
-                if isinstance(data, dict):
-                    # If there's a 'result' key containing the actual list
-                    if 'tasks' in data and isinstance(data['tasks'], list):
-                        data = data['tasks']
-                    elif 'result' in data and isinstance(data['result'], list):
-                        data = data['result']
-                    # Or if it has the JSON schema structure
-                    elif data.get("type") == "array" and "items" in data:
-                        data = data["items"]
-                    else:
-                        # Fallback: wrap non-list data in a list if it's a dict
-                        data = [data]
+                messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_msg}]
+                # Request the LLM to generate tasks (in JSON format)
+                resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
 
-                # At this point, data should be a list
+                # Try to parse the response
+                validated_tasks = await self._parse_llm_response(resp_text)
+                if validated_tasks:
+                    logger.info(f"Successfully generated tasks for {current_url} on attempt {attempt + 1}")
+                    for task in validated_tasks:
+                        logger.debug(f"Generated task: {task}")
+                    return validated_tasks
+
+                # If we couldn't parse the response, log and retry
+                logger.warning(f"Attempt {attempt + 1}: Failed to parse LLM response, retrying...")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))  # Exponential backoff
+
+            except Exception as e:
+                logger.error(f"Attempt {attempt + 1}: Error during LLM prediction: {str(e)}")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))
+
+        # If all retries failed, return an empty list
+        logger.error(f"All {self.max_retries} attempts failed for {current_url}")
+        return []
+
+    async def _parse_llm_response(self, resp_text: str) -> List[dict]:
+        """Helper method to parse and validate the LLM response."""
+        try:
+            # Clean up response text if it's wrapped in Markdown code blocks
+            # This handles cases like: '```json\n[...]\n```'
+            cleaned_text = resp_text
+            if resp_text.strip().startswith("'```") or resp_text.strip().startswith("```"):
+                # Extract content between markdown code blocks
+                import re
+
+                code_block_pattern = r'```(?:json)?\n([\s\S]*?)\n```'
+                matches = re.search(code_block_pattern, resp_text)
+                if matches:
+                    cleaned_text = matches.group(1)
+                else:
+                    # If regex doesn't match but we know it starts with backticks,
+                    # try a simpler approach
+                    lines = resp_text.strip().split('\n')
+                    if lines[0].startswith("'```") or lines[0].startswith("```"):
+                        # Remove first and last lines if they contain backticks
+                        cleaned_text = '\n'.join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
+
+            # Now try to parse the cleaned JSON
+            data = json.loads(cleaned_text)
+
+            # Handle the case where data is directly a list of tasks
+            if isinstance(data, list) and all(isinstance(item, dict) and "prompt" in item for item in data):
+                validated_tasks = []
+                for item in data:
+                    validated_tasks.append({"prompt": item.get("prompt", ""), "success_criteria": item.get("success_criteria", "")})
+                return validated_tasks
+
+            # Handle different possible JSON structures
+            if isinstance(data, dict):
+                # If there's a 'tasks' or 'result' key containing the actual list
+                if 'tasks' in data and isinstance(data['tasks'], list):
+                    data = data['tasks']
+                elif 'result' in data and isinstance(data['result'], list):
+                    data = data['result']
+                # Or if it has the JSON schema structure
+                elif data.get("type") == "array" and "items" in data:
+                    data = data["items"]
+                # Fallback: wrap non-list data in a list if it's a dict with a prompt
+                elif "prompt" in data:
+                    data = [data]
+                else:
+                    logger.warning(f"Unexpected JSON structure: {data}")
+                    return []
+
+            # Ensure data is a list at this point
+            if not isinstance(data, list):
+                logger.warning(f"Expected list but got {type(data)}")
+                return []
+
+            # Validate the data using Pydantic
+            try:
                 draft_list = DraftTaskList.model_validate(data)
-
                 validated_tasks = []
                 for item in draft_list.root:
                     validated_tasks.append({"prompt": item.prompt, "success_criteria": item.success_criteria or ""})
                 return validated_tasks
             except ValidationError as ve:
-                print(f"Pydantic validation error (Phase 1): {ve}")
-                return []
-        except Exception as e:
-            print(f"Error processing draft tasks: {e}")
-            return []
-
-    async def _phase2_filter(self, tasks: List[dict], filter_prompt: str, html_text: str, screenshot_text: str, interactive_elems: Dict) -> List[dict]:
-        """
-        Phase 2: Filter out tasks in 3 steps (feasibility, success criteria, concept).
-        Each step uses a system prompt and the current tasks as the user context.
-        The LLM is expected to respond with an array of objects,
-        each specifying "decision" (keep|discard), "prompt", and "success_criteria".
-        """
-        if not tasks:
-            return []
-
-        # Convert the current list of tasks to JSON
-        tasks_json = json.dumps(tasks, indent=2)
-
-        # Combine the system prompt
-        system_prompt = LOCAL_TASKS_CONTEXT_PROMPT + filter_prompt
-
-        # The user message provides the truncated HTML, screenshot text,
-        # interactive elements, and the current tasks to be filtered
-        user_msg = (
-            f"clean_html:\n{html_text[:1500]}\n\n"
-            f"screenshot_description:\n{screenshot_text}\n\n"
-            f"interactive_elements:\n{json.dumps(interactive_elems, indent=2)}\n\n"
-            f"Current tasks:\n{tasks_json}"
-        )
-
-        # Define the expected JSON schema
-        schema = {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {"decision": {"type": "string", "enum": ["keep", "discard"]}, "prompt": {"type": "string"}, "success_criteria": {"type": "string"}},
-                "required": ["decision", "prompt"],
-            },
-        }
-
-        try:
-            # Request the LLM to filter the tasks
-            resp_text = await self.llm_service.async_predict(messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_msg}], json_format=True, schema=schema)
+                logger.warning(f"Pydantic validation error: {ve}, trying basic validation")
+                # Basic validation if Pydantic fails
+                validated_tasks = []
+                for item in data:
+                    if isinstance(item, dict) and "prompt" in item:
+                        validated_tasks.append({"prompt": item.get("prompt", ""), "success_criteria": item.get("success_criteria", "")})
+                return validated_tasks
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON decode error: {je}")
+            # Attempt another cleanup approach if initial parsing fails
             try:
-                # Parse the JSON response
-                data = json.loads(resp_text)
+                # Try to extract just the JSON part using a more aggressive approach
+                import re
 
-                # Handle different response formats
-                if isinstance(data, dict):
-                    # If the response is a dict and has a "result" key
-                    if 'result' in data and isinstance(data['result'], list):
-                        data = data['result']
-                    # Or if it has the JSON schema structure
-                    elif data.get("type") == "array" and "items" in data:
-                        data = data["items"]
-                    else:
-                        # Fallback: wrap non-list data in a list if it's a dict
-                        data = [data]
-
-                # Now data should be a list. Validate it.
-                filter_list = FilterTaskList.model_validate(data)
-
-                # Keep tasks with decision == "keep"
-                kept = []
-                for item in filter_list.root:
-                    if item.decision.strip().lower() == "keep":
-                        kept.append({"prompt": item.prompt, "success_criteria": item.success_criteria or ""})
-                return kept
-
-            except ValidationError as ve:
-                print(f"Pydantic validation error (Phase 2): {ve}")
-                # If there's a validation error, return the original tasks unfiltered
-                return tasks
+                json_pattern = r'\[\s*\{.*?\}\s*\]'
+                matches = re.search(json_pattern, resp_text, re.DOTALL)
+                if matches:
+                    extracted_json = matches.group(0)
+                    data = json.loads(extracted_json)
+                    validated_tasks = []
+                    for item in data:
+                        if isinstance(item, dict) and "prompt" in item:
+                            validated_tasks.append({"prompt": item.get("prompt", ""), "success_criteria": item.get("success_criteria", "")})
+                    return validated_tasks
+            except Exception:
+                pass
+            return []
         except Exception as e:
-            print(f"Error in filter process: {e}")
-            # Return the original tasks if something else breaks
-            return tasks
+            logger.error(f"Unexpected error parsing LLM response: {str(e)}")
+            return []
 
-    @staticmethod
-    def _assemble_task(web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: Image.Image, screenshot_desc: str, success_criteria: str, relevant_data: dict) -> "Task":
+    def _assemble_task(self, web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: bytes, screenshot_desc: str, success_criteria: str, relevant_data: Any) -> "Task":
         """
         Assembles a final Task object from the filtered task data.
         """
         return Task(
-            type="local",
+            scope="local",
             web_project_id=web_project_id,
             prompt=prompt,
             url=url,

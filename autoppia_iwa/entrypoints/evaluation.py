@@ -7,6 +7,10 @@ from typing import List
 import matplotlib.pyplot as plt
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
+from autoppia_iwa.src.data_generation.domain.classes import (
+    TaskGenerationConfig,Task
+)
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, TasksGenerationOutput
 from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
@@ -33,8 +37,8 @@ async def generate_tasks(num_tasks: int = 3):
         local_tasks_to_generate_per_url=1,
     )
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
-    output: TasksGenerationOutput = await pipeline.generate()
-    return output.tasks
+    tasks: List[Task] = await pipeline.generate()
+    return tasks
 
 
 async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
@@ -43,6 +47,10 @@ async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
 
     for task in tasks:
         task_solution: TaskSolution = await agent.solve_task(task)
+        evaluator_input = TaskSolution(task=task, actions=task_solution.actions, web_agent_id=agent.id)
+        evaluator_config = EvaluatorConfig(starting_url=task.url, save_results_in_db=False)
+        evaluator = ConcurrentEvaluator(evaluator_config)
+        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task(evaluator_input)
         evaluator_input = TaskSolution(task_id=task.id, actions=task_solution.actions, web_agent_id=agent.id)
         evaluator_config = EvaluatorConfig(save_results_in_db=False)
         evaluator = ConcurrentEvaluator(project, evaluator_config)
@@ -146,9 +154,9 @@ def judge_tasks_feasibility(tasks, results, agents):
 
 
 async def main():
-    tasks = await generate_tasks(num_tasks=3)
+    tasks = await generate_tasks(num_tasks=1)
 
-    agents: List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=9000)]
+    agents: List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
     results = {agent.id: {"global_scores": [], "projects": {}} for agent in agents}
 
     for demo_project in demo_web_projects:

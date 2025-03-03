@@ -1,0 +1,2591 @@
+{
+  "19cb0eb3-308f-4669-b000-59ebb38a36de": {
+    "wMU0U5R8ABCeUcwf": {
+      "agent_id": "wMU0U5R8ABCeUcwf",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740744216.9776886,
+      "solution": {
+        "task_id": "19cb0eb3-308f-4669-b000-59ebb38a36de",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 296,
+            "y": 234
+          }
+        ],
+        "web_agent_id": "wMU0U5R8ABCeUcwf"
+      }
+    },
+    "C1Cj7UHodcWz4wsC": {
+      "agent_id": "C1Cj7UHodcWz4wsC",
+      "agent_name": "browser-use",
+      "timestamp": 1740744235.067648,
+      "solution": {
+        "task_id": "19cb0eb3-308f-4669-b000-59ebb38a36de",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 2000,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section[4]/div[2]/div/div/p[2]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "C1Cj7UHodcWz4wsC"
+      }
+    }
+  },
+  "78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.27876,
+      "solution": {
+        "task_id": "78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 468,
+            "y": 349
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745214.754812,
+      "solution": {
+        "task_id": "78a45d83-6cb6-4ae1-94d2-3a6f3c1f4010",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.2799034,
+      "solution": {
+        "task_id": "b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1064,
+            "y": 965
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745280.6891513,
+      "solution": {
+        "task_id": "b777fc5d-52d7-4b7c-a6cb-3f6a1c3bbbc3",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "NavigateAction",
+            "url": "https://www.google.com/search?q=Creative Minds site:localhost:8000&udm=14",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "4c21359b-7e52-40f4-94b8-694033bf5ebd": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.2879157,
+      "solution": {
+        "task_id": "4c21359b-7e52-40f4-94b8-694033bf5ebd",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 422,
+            "y": 761
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745349.2480822,
+      "solution": {
+        "task_id": "4c21359b-7e52-40f4-94b8-694033bf5ebd",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": "See our job offers",
+            "up": false,
+            "down": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section[4]/div[2]/div/div/p[2]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section[2]/div/div[3]/div/div/div/div[2]/h4/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "c61b5364-53ab-4c09-a126-8858dd06d865": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.2893136,
+      "solution": {
+        "task_id": "c61b5364-53ab-4c09-a126-8858dd06d865",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1035,
+            "y": 634
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745378.4344282,
+      "solution": {
+        "task_id": "c61b5364-53ab-4c09-a126-8858dd06d865",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section[2]/div/div/div/div/div[2]/h5/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "NavigateAction",
+            "url": "",
+            "go_back": true,
+            "go_forward": false
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "63840a65-2d71-4ab0-8fea-71ab1b3530ee": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.290717,
+      "solution": {
+        "task_id": "63840a65-2d71-4ab0-8fea-71ab1b3530ee",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 479,
+            "y": 19
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745406.2539537,
+      "solution": {
+        "task_id": "63840a65-2d71-4ab0-8fea-71ab1b3530ee",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": "UX Designer",
+            "up": false,
+            "down": false
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "963d5714-83d4-4003-ad90-468f81c3dedb": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.29225,
+      "solution": {
+        "task_id": "963d5714-83d4-4003-ad90-468f81c3dedb",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1838,
+            "y": 336
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745420.2555988,
+      "solution": {
+        "task_id": "963d5714-83d4-4003-ad90-468f81c3dedb",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "ba51b452-0299-45ea-9e44-8c3a24b20cb2": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.2939248,
+      "solution": {
+        "task_id": "ba51b452-0299-45ea-9e44-8c3a24b20cb2",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1055,
+            "y": 190
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745446.3965735,
+      "solution": {
+        "task_id": "ba51b452-0299-45ea-9e44-8c3a24b20cb2",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "41daf123-8916-4bc2-8a39-3409600fb4ff": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.2957766,
+      "solution": {
+        "task_id": "41daf123-8916-4bc2-8a39-3409600fb4ff",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 977,
+            "y": 981
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745488.059728,
+      "solution": {
+        "task_id": "41daf123-8916-4bc2-8a39-3409600fb4ff",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section[3]/div/div[2]/div/div/div/div[2]/h4/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "53d6279f-dd99-4363-8451-28b056fc5e36": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.2977886,
+      "solution": {
+        "task_id": "53d6279f-dd99-4363-8451-28b056fc5e36",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1442,
+            "y": 249
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745514.8793712,
+      "solution": {
+        "task_id": "53d6279f-dd99-4363-8451-28b056fc5e36",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "20331a0f-c49d-47fb-8479-5b6fc98ce5b2": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.2999303,
+      "solution": {
+        "task_id": "20331a0f-c49d-47fb-8479-5b6fc98ce5b2",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1055,
+            "y": 245
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745531.6789343,
+      "solution": {
+        "task_id": "20331a0f-c49d-47fb-8479-5b6fc98ce5b2",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[3]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "db53e801-669d-488c-9975-13430c05d99e": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.302187,
+      "solution": {
+        "task_id": "db53e801-669d-488c-9975-13430c05d99e",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 6,
+            "y": 1062
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745545.9908986,
+      "solution": {
+        "task_id": "db53e801-669d-488c-9975-13430c05d99e",
+        "actions": [],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "68242503-e07d-47cf-b323-968445864ac2": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.304578,
+      "solution": {
+        "task_id": "68242503-e07d-47cf-b323-968445864ac2",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1831,
+            "y": 120
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745557.9931555,
+      "solution": {
+        "task_id": "68242503-e07d-47cf-b323-968445864ac2",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[2]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "d19bef85-0087-4c04-99cb-96cea6e536d4": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3077552,
+      "solution": {
+        "task_id": "d19bef85-0087-4c04-99cb-96cea6e536d4",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 202,
+            "y": 245
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745616.195297,
+      "solution": {
+        "task_id": "d19bef85-0087-4c04-99cb-96cea6e536d4",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1917,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1817,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 800,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1000,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1500,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1000,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1000,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1000,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1000,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 800,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1000,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "d0eb32df-096b-4779-86de-1265a538f1d5": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.310603,
+      "solution": {
+        "task_id": "d0eb32df-096b-4779-86de-1265a538f1d5",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1822,
+            "y": 811
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745725.164875,
+      "solution": {
+        "task_id": "d0eb32df-096b-4779-86de-1265a538f1d5",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "New User"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "User"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "new-user@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[5]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[6]/div/input",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": 400,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[8]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "unique-user@jobsapp.com"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[8]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[6]/div/input",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[8]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "unique-user@jobsapp.com"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[6]/div/input",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[8]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[6]/div/input",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[8]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "New User"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "User"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[8]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "New"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "User"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "unique-user@jobsapp.com"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[6]/div/input",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[8]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "New User"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "User"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "unique-user@jobsapp.com"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[6]/div/input",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[8]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "a69868d9-2234-4071-9965-54f52be276cf": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3136375,
+      "solution": {
+        "task_id": "a69868d9-2234-4071-9965-54f52be276cf",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 780,
+            "y": 609
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745779.7485554,
+      "solution": {
+        "task_id": "a69868d9-2234-4071-9965-54f52be276cf",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1917,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": true,
+            "down": false
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "dcf0f719-e082-4365-bfff-de8380f7b7a6": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3166149,
+      "solution": {
+        "task_id": "dcf0f719-e082-4365-bfff-de8380f7b7a6",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 205,
+            "y": 397
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745786.2350488,
+      "solution": {
+        "task_id": "dcf0f719-e082-4365-bfff-de8380f7b7a6",
+        "actions": [],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "b3ae93fd-3c9f-4f5e-8745-b10047482980": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3196833,
+      "solution": {
+        "task_id": "b3ae93fd-3c9f-4f5e-8745-b10047482980",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 981,
+            "y": 406
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745805.8687038,
+      "solution": {
+        "task_id": "b3ae93fd-3c9f-4f5e-8745-b10047482980",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section[2]/div/div/div[5]/div/div[2]/h5/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "bf1689f9-053f-427f-a772-58692a661963": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3229475,
+      "solution": {
+        "task_id": "bf1689f9-053f-427f-a772-58692a661963",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1643,
+            "y": 237
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745855.8254857,
+      "solution": {
+        "task_id": "bf1689f9-053f-427f-a772-58692a661963",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 2000,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 5000,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 2000,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "17caacec-f745-4e88-ba22-f06bfd10b895": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3266375,
+      "solution": {
+        "task_id": "17caacec-f745-4e88-ba22-f06bfd10b895",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 220,
+            "y": 929
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745868.3349638,
+      "solution": {
+        "task_id": "17caacec-f745-4e88-ba22-f06bfd10b895",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[3]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "83254756-5d65-4b71-8b73-18694ab435f3": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3309503,
+      "solution": {
+        "task_id": "83254756-5d65-4b71-8b73-18694ab435f3",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 704,
+            "y": 102
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745889.925121,
+      "solution": {
+        "task_id": "83254756-5d65-4b71-8b73-18694ab435f3",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "f2529be9-00a6-4f94-9920-d66bc3ca36a0": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3348885,
+      "solution": {
+        "task_id": "f2529be9-00a6-4f94-9920-d66bc3ca36a0",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1014,
+            "y": 761
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745968.6922755,
+      "solution": {
+        "task_id": "f2529be9-00a6-4f94-9920-d66bc3ca36a0",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 3000,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": "Menu",
+            "up": false,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 1917,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section[4]/div[2]/div/div/p[2]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[2]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[3]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "d831ce07-fb60-4571-b6f3-9f8533990787": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3388853,
+      "solution": {
+        "task_id": "d831ce07-fb60-4571-b6f3-9f8533990787",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 80,
+            "y": 817
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740745990.644757,
+      "solution": {
+        "task_id": "d831ce07-fb60-4571-b6f3-9f8533990787",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "6fe2a5e7-d0db-47de-a358-3c33b74bc929": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3428414,
+      "solution": {
+        "task_id": "6fe2a5e7-d0db-47de-a358-3c33b74bc929",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 74,
+            "y": 414
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740746017.669164,
+      "solution": {
+        "task_id": "6fe2a5e7-d0db-47de-a358-3c33b74bc929",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[4]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 500,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 500,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "b7802713-b3aa-42e1-93d9-5c404edb4a49": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3468952,
+      "solution": {
+        "task_id": "b7802713-b3aa-42e1-93d9-5c404edb4a49",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1019,
+            "y": 760
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740746045.3371134,
+      "solution": {
+        "task_id": "b7802713-b3aa-42e1-93d9-5c404edb4a49",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[3]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section/div/div/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "John Doe"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section/div/div/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "new-user@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section/div/div/div/div/div/form/div[3]/textarea",
+              "case_sensitive": false
+            },
+            "text": "Hello, I would like to know more about your services."
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/section/div/div/div/div/div/form/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "685763ed-e37e-4205-af7b-4aa75aca6bbd": {
+    "i7hh8Sx3Tf8CdOGB": {
+      "agent_id": "i7hh8Sx3Tf8CdOGB",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740745162.3510578,
+      "solution": {
+        "task_id": "685763ed-e37e-4205-af7b-4aa75aca6bbd",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 856,
+            "y": 615
+          }
+        ],
+        "web_agent_id": "i7hh8Sx3Tf8CdOGB"
+      }
+    },
+    "RwfnlAZ8pQ8GCV5l": {
+      "agent_id": "RwfnlAZ8pQ8GCV5l",
+      "agent_name": "browser-use",
+      "timestamp": 1740746066.8214688,
+      "solution": {
+        "task_id": "685763ed-e37e-4205-af7b-4aa75aca6bbd",
+        "actions": [],
+        "web_agent_id": "RwfnlAZ8pQ8GCV5l"
+      }
+    }
+  },
+  "af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3": {
+    "6Iymlg1eskIs9nNJ": {
+      "agent_id": "6Iymlg1eskIs9nNJ",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740747231.9358568,
+      "solution": {
+        "task_id": "af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1524,
+            "y": 61
+          }
+        ],
+        "web_agent_id": "6Iymlg1eskIs9nNJ"
+      }
+    },
+    "qkrGQqUqQ4MGc2cJ": {
+      "agent_id": "qkrGQqUqQ4MGc2cJ",
+      "agent_name": "browser-use",
+      "timestamp": 1740747314.0546772,
+      "solution": {
+        "task_id": "af6fabc1-9b60-4a3e-8b7d-d75c6b36a1a3",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "admin@jobsapp.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "admin123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div/div/div/form/div[3]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "NavigateAction",
+            "url": "",
+            "go_back": true,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/nav/div/div/ul/li[5]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": null,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "qkrGQqUqQ4MGc2cJ"
+      }
+    }
+  },
+  "e024b2c0-7862-4606-8d5f-f772c1bc68c2": {
+    "Xw7N5DaM8Zpwt6rU": {
+      "agent_id": "Xw7N5DaM8Zpwt6rU",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740766881.1606634,
+      "solution": {
+        "task_id": "e024b2c0-7862-4606-8d5f-f772c1bc68c2",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 1589,
+            "y": 97
+          }
+        ],
+        "web_agent_id": "Xw7N5DaM8Zpwt6rU"
+      }
+    },
+    "cKMDSEAGjJJZc9nJ": {
+      "agent_id": "cKMDSEAGjJJZc9nJ",
+      "agent_name": "browser-use",
+      "timestamp": 1740766881.233361,
+      "solution": {
+        "task_id": "e024b2c0-7862-4606-8d5f-f772c1bc68c2",
+        "actions": [],
+        "web_agent_id": "cKMDSEAGjJJZc9nJ"
+      }
+    }
+  },
+  "dbd67cda-d141-4aff-9593-bae59b23c79f": {
+    "4caFYmU3FlSPergP": {
+      "agent_id": "4caFYmU3FlSPergP",
+      "agent_name": "Random-clicker",
+      "timestamp": 1740767054.4434173,
+      "solution": {
+        "task_id": "dbd67cda-d141-4aff-9593-bae59b23c79f",
+        "actions": [
+          {
+            "type": "ClickAction",
+            "selector": null,
+            "x": 174,
+            "y": 667
+          }
+        ],
+        "web_agent_id": "4caFYmU3FlSPergP"
+      }
+    },
+    "dg8f4lN7QpzvIy73": {
+      "agent_id": "dg8f4lN7QpzvIy73",
+      "agent_name": "browser-use",
+      "timestamp": 1740767054.5013936,
+      "solution": {
+        "task_id": "dbd67cda-d141-4aff-9593-bae59b23c79f",
+        "actions": [],
+        "web_agent_id": "dg8f4lN7QpzvIy73"
+      }
+    }
+  }
+}

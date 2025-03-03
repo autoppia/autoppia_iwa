@@ -4,8 +4,9 @@ from pymongo import MongoClient
 from autoppia_iwa.config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
-    LLM_PROVIDER,
     LOCAL_MODEL_ENDPOINT,
+    LOCAL_PARALLEL_MODEL_ENDPOINT,
+    LLM_PROVIDER,
     MONGODB_NAME,
     MONGODB_URL,
     OPENAI_API_KEY,
@@ -65,4 +66,10 @@ class DIContainer(containers.DeclarativeContainer):
             max_tokens=OPENAI_MAX_TOKENS,
         )
 
-        return LLMFactory.create_llm(llm_type=LLM_PROVIDER, config=config, api_key=OPENAI_API_KEY, endpoint_url=LOCAL_MODEL_ENDPOINT)
+        return LLMFactory.create_llm(
+            llm_type=LLM_PROVIDER,
+            config=config,
+            api_key=OPENAI_API_KEY,
+            endpoint_url=LOCAL_MODEL_ENDPOINT,
+            parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT
+        )
