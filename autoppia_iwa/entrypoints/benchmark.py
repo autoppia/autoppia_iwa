@@ -193,7 +193,8 @@ async def main():
     timing_metrics.start()
 
     if not config.evaluate_real_tasks:
-        web_projects = (await initialize_demo_webs_projects())[0]
+        web_projects = await initialize_demo_webs_projects()
+        web_projects = [web_projects[0]]
         for project in web_projects:
             tasks = await generate_tasks(project)
             if tasks:
