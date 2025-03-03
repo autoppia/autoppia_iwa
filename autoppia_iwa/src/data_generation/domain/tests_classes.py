@@ -1,19 +1,19 @@
 # file: data_generation/domain/tests_classes.py
 
 import json
+import re
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Literal  # <-- move the import here
-from pydantic import BaseModel, Field, field_validator
+
+from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
+from pydantic import BaseModel, Field, field_validator
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from bs4 import BeautifulSoup
-import re
-from typing import List
 
 
 class ITest(ABC):

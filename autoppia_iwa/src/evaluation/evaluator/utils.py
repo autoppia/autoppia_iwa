@@ -1,7 +1,4 @@
 from autoppia_iwa.src.data_generation.domain.classes import Task
-
-from typing import List, Optional, Dict, Tuple, Any
-from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.evaluation.classes import TestResult
 
 

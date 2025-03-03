@@ -4,8 +4,6 @@ import json
 import sys
 import time
 
-from json_repair import repair_json
-
 from flask import Flask, request
 from flask_cors import CORS
 from json_repair import repair_json
@@ -108,10 +106,7 @@ def handler():
     request_number = counters["total_requests"]
 
     # Prepare a dict to record everything about the request (and eventually response)
-    log_data = {
-        "request_number": request_number,
-        "timestamp": time.time()  # Or use time.ctime() if you want a human-readable string
-    }
+    log_data = {"request_number": request_number, "timestamp": time.time()}  # Or use time.ctime() if you want a human-readable string
 
     try:
         data = request.json or {}
@@ -124,39 +119,29 @@ def handler():
         schema = data.get("schema", None)
 
         # Keep them in the log
-        log_data.update({
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "json_format": json_format,
-            "schema": schema
-        })
+        log_data.update({"messages": messages, "temperature": temperature, "max_tokens": max_tokens, "json_format": json_format, "schema": schema})
 
         # Time the generation process
         start_time = time.time()
 
         # Generate the response
-        output, tokens_in, tokens_out, text_prompt = generate_data(
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            json_format=json_format,
-            schema=schema
-        )
+        output, tokens_in, tokens_out, text_prompt = generate_data(messages=messages, temperature=temperature, max_tokens=max_tokens, json_format=json_format, schema=schema)
 
         end_time = time.time()
         time_per_request = end_time - start_time
         tokens_per_second = tokens_out / time_per_request if time_per_request > 0 else 0
 
         # Store final stats & parameters in the log
-        log_data.update({
-            "text_prompt": text_prompt,       # The full text sent into the LLM
-            "tokens_in": tokens_in,
-            "tokens_out": tokens_out,
-            "time_per_request": time_per_request,
-            "tokens_per_second": tokens_per_second,
-            "output": output
-        })
+        log_data.update(
+            {
+                "text_prompt": text_prompt,  # The full text sent into the LLM
+                "tokens_in": tokens_in,
+                "tokens_out": tokens_out,
+                "time_per_request": time_per_request,
+                "tokens_per_second": tokens_per_second,
+                "output": output,
+            }
+        )
 
         # Print final parameters & stats (optional debug)
         print("[handler] Final parameters & stats:")

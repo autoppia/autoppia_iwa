@@ -1,18 +1,21 @@
-from dependency_injector.wiring import Provide
-import json
-from typing import List, Dict, Any
-from pydantic import ValidationError
 import asyncio
+import json
 import logging
-from autoppia_iwa.src.data_generation.domain.classes import Task, BrowserSpecification
-from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot, detect_interactive_elements
-from autoppia_iwa.src.shared.utils import transform_image_into_base64
-from autoppia_iwa.src.data_generation.application.tasks.local.prompts import PHASE1_GENERATION_SYSTEM_PROMPT
-from autoppia_iwa.src.di_container import DIContainer
-from .schemas import DraftTaskList
-from autoppia_iwa.src.demo_webs.classes import WebProject
 import random
+from typing import Any, Dict, List
+
+from dependency_injector.wiring import Provide
+from pydantic import ValidationError
+
+from autoppia_iwa.src.data_generation.application.tasks.local.prompts import PHASE1_GENERATION_SYSTEM_PROMPT
+from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.di_container import DIContainer
+from autoppia_iwa.src.llms.domain.interfaces import ILLM
+from autoppia_iwa.src.shared.utils import transform_image_into_base64
+from autoppia_iwa.src.shared.web_utils import detect_interactive_elements, get_html_and_screenshot
+
+from .schemas import DraftTaskList
 
 # Set up logging
 logger = logging.getLogger(__name__)

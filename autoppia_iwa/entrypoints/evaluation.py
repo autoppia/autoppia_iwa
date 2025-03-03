@@ -7,12 +7,8 @@ from typing import List
 import matplotlib.pyplot as plt
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
-from autoppia_iwa.src.data_generation.domain.classes import (
-    TaskGenerationConfig,Task
-)
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, TasksGenerationOutput
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig

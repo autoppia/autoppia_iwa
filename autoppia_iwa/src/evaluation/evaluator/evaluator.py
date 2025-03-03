@@ -223,7 +223,7 @@ class ConcurrentEvaluator(IEvaluator):
             while True:
                 await asyncio.sleep(10)  # Only update every 10 seconds
                 completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
-                logger.info(f"Progress: {completed}/{total_groups} groups ({completed/total_groups*100:.0f}%)")
+                logger.info(f"Progress: {completed}/{total_groups} groups ({completed / total_groups * 100:.0f}%)")
         except asyncio.CancelledError:
             pass
 
@@ -422,7 +422,7 @@ class ConcurrentEvaluator(IEvaluator):
             stats.total_time = time.time() - stats.start_time
 
             logger.error(f"Error evaluating task solution: {e}")
-            logger.error(f"--------------------ESTOY EN LA EXCEPCION DEL EVALUATE SINGLE TASK SOLUTION ----------------------")
+            logger.error("--------------------ESTOY EN LA EXCEPCION DEL EVALUATE SINGLE TASK SOLUTION ----------------------")
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,

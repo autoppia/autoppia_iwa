@@ -1,34 +1,29 @@
 import asyncio
-import statistics
 import json
 import os
+import statistics
 import time
-from typing import List, Optional
 from datetime import datetime
+from typing import Dict, List, Optional
+
 import matplotlib.pyplot as plt
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, Task
-from autoppia_iwa.src.evaluation.classes import EvaluationResult
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.web_agents.base import BaseAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+
 from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
-    TestGenerationPipeline)
+from autoppia_iwa.src.evaluation.classes import EvaluationResult
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
+from autoppia_iwa.src.execution.actions.base import BaseAction
 
 # Importar el visualizador
-from autoppia_iwa.src.shared.visualizator import (
-    SubnetVisualizer, 
-    visualize_task,
-    visualize_evaluation,
-    visualize_summary
-)
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_summary, visualize_task
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.base import BaseAgent, IWebAgent
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # ============================================================
 # GLOBAL CONFIGURATION
@@ -45,6 +40,7 @@ USE_CACHED_TASKS = True  # Use cached tasks if available
 
 # Benchmark configuration
 ITERATIONS = 1  # Number of iterations per task
+NUM_OF_TASKS = 3
 
 # Initialize main components
 app = AppBootstrap()

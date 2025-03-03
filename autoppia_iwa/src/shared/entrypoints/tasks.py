@@ -1,17 +1,12 @@
-import os
 import json
+import os
 from datetime import datetime
 from typing import List, Optional
 
+from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import (
-    TaskGenerationPipeline
-)
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import (
-    TestGenerationPipeline
-)
 from autoppia_iwa.src.di_container import DIContainer
 
 
@@ -29,12 +24,7 @@ async def save_tasks_to_json(tasks: List[Task], project: WebProject, task_cache_
     """
     filename = get_cache_filename(project, task_cache_dir)
     try:
-        cache_data = {
-            "project_id": project.id,
-            "project_name": project.name,
-            "timestamp": datetime.now().isoformat(),
-            "tasks": [task.serialize() for task in tasks]
-        }
+        cache_data = {"project_id": project.id, "project_name": project.name, "timestamp": datetime.now().isoformat(), "tasks": [task.serialize() for task in tasks]}
 
         with open(filename, 'w') as f:
             json.dump(cache_data, f, indent=2)
@@ -46,10 +36,7 @@ async def save_tasks_to_json(tasks: List[Task], project: WebProject, task_cache_
         return False
 
 
-async def load_tasks_from_json(
-    project: WebProject,
-    task_cache_dir: str
-) -> Optional[List[Task]]:
+async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> Optional[List[Task]]:
     """
     Load tasks from a project-specific JSON file if it exists.
     """
@@ -63,8 +50,7 @@ async def load_tasks_from_json(
             cache_data = json.load(f)
 
         # Verify this cache belongs to the correct project
-        if (cache_data.get("project_id") != project.id
-                and cache_data.get("project_name") != project.name):
+        if cache_data.get("project_id") != project.id and cache_data.get("project_name") != project.name:
             print("Cache file belongs to a different project.")
             return None
 
@@ -78,13 +64,7 @@ async def load_tasks_from_json(
         return None
 
 
-async def generate_tasks_for_project(
-    demo_project: WebProject,
-    use_cached_tasks: bool,
-    task_cache_dir: str,
-    prompts_per_url: int,
-    num_of_urls: int
-) -> List[Task]:
+async def generate_tasks_for_project(demo_project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_url: int, num_of_urls: int) -> List[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
     """
@@ -96,13 +76,7 @@ async def generate_tasks_for_project(
         else:
             print(f"No valid cached tasks found for '{demo_project.name}', generating new tasks...")
 
-    config = TaskGenerationConfig(
-        web_project=demo_project,
-        save_web_analysis_in_db=True,
-        save_task_in_db=False,
-        prompts_per_url=prompts_per_url,
-        num_or_urls=num_of_urls
-    )
+    config = TaskGenerationConfig(web_project=demo_project, save_web_analysis_in_db=True, save_task_in_db=False, prompts_per_url=prompts_per_url, num_or_urls=num_of_urls)
 
     print(f"Generating tasks for {demo_project.name}...")
     pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
@@ -114,11 +88,7 @@ async def generate_tasks_for_project(
     return tasks
 
 
-async def add_tests_to_tasks(
-    tasks: List[Task],
-    demo_project: WebProject,
-    task_cache_dir: str
-) -> List[Task]:
+async def add_tests_to_tasks(tasks: List[Task], demo_project: WebProject, task_cache_dir: str) -> List[Task]:
     """
     Ensure each Task has test cases; if not present, generate them.
     """

@@ -2,21 +2,12 @@
 
 import uuid
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
-
 # Import your test classes:
-from autoppia_iwa.src.data_generation.domain.tests_classes import (
-    CheckUrlTest,
-    FindInHtmlTest,
-    CheckEventTest,
-    CheckPageViewEventTest,
-    JudgeBaseOnHTML,
-    JudgeBaseOnScreenshot,
-)
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckPageViewEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 
 
 class TaskDifficultyLevel(Enum):
