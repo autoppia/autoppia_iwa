@@ -66,4 +66,10 @@ class DIContainer(containers.DeclarativeContainer):
             max_tokens=OPENAI_MAX_TOKENS,
         )
 
-        return LLMFactory.create_llm(llm_type=LLM_PROVIDER, config=config, api_key=OPENAI_API_KEY, endpoint_url=LOCAL_MODEL_ENDPOINT, parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT,)
+        return LLMFactory.create_llm(
+            llm_type=LLM_PROVIDER,
+            config=config,
+            api_key=OPENAI_API_KEY,
+            endpoint_url=LOCAL_MODEL_ENDPOINT,
+            parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT,
+        )

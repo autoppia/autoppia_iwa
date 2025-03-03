@@ -26,7 +26,14 @@ class TestGenerationPipeline:
     3) Instantiates the test objects and adds them to the task.
     4) (Optionally) generates a logic function for the entire set of tests."""
 
-    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service], truncate_html_chars: int = 1500, max_retries: int = 3, retry_delay: float = 1.0,):
+    def __init__(
+        self,
+        web_project: WebProject,
+        llm_service: ILLM = Provide[DIContainer.llm_service],
+        truncate_html_chars: int = 1500,
+        max_retries: int = 3,
+        retry_delay: float = 1.0,
+    ):
         self.web_project = web_project
         self.llm_service = llm_service
         self.truncate_html_chars = truncate_html_chars
@@ -36,7 +43,12 @@ class TestGenerationPipeline:
 
         # Real webs dont have backend tests
         if web_project.is_web_real:
-            self.test_class_map = {"CheckUrlTest": CheckUrlTest, "FindInHtmlTest": FindInHtmlTest, "JudgeBaseOnHTML": JudgeBaseOnHTML, "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,}
+            self.test_class_map = {
+                "CheckUrlTest": CheckUrlTest,
+                "FindInHtmlTest": FindInHtmlTest,
+                "JudgeBaseOnHTML": JudgeBaseOnHTML,
+                "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
+            }
         else:
             self.test_class_map = {
                 "CheckUrlTest": CheckUrlTest,
