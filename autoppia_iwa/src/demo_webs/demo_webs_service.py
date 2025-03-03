@@ -1,9 +1,11 @@
 import datetime
 import logging
-import aiohttp
 from typing import List, Optional
 from urllib.parse import urlparse
+
+import aiohttp
 from aiohttp.client_exceptions import ClientError
+
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 logger = logging.getLogger(__name__)
@@ -15,7 +17,7 @@ class BackendDemoWebService:
     Stores the web_project on initialization and uses its backend_url for API calls.
     """
 
-    def __init__(self, web_project:WebProject) -> None:
+    def __init__(self, web_project: WebProject) -> None:
         """
         Initialize a single aiohttp session holder and store the web_project.
 
@@ -23,7 +25,7 @@ class BackendDemoWebService:
             web_project: The web project containing the backend_url to use
         """
         self._session: Optional[aiohttp.ClientSession] = None
-        self.web_project:WebProject = web_project
+        self.web_project: WebProject = web_project
         self.base_url = web_project.backend_url
 
     async def _get_session(self) -> aiohttp.ClientSession:
@@ -125,8 +127,8 @@ class BackendDemoWebService:
             error_message = f"Failed to reset backend events for web_agent '{web_agent_id}': {e}"
             logger.error(error_message)
             raise RuntimeError(error_message) from e
-
-        return False  # Added explicit return for clarity
+        except Exception:
+            return False
 
     async def send_page_view_event(self, url: str, web_agent_id: str) -> bool:
         """

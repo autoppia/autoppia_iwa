@@ -1,6 +1,7 @@
 from dataclasses import fields
 from pathlib import Path
 from typing import List, Optional, Union
+
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
@@ -98,9 +99,7 @@ class WebPageStructureExtractor:
             cleaned_soup_body = cleaned_soup
 
         for soup_element in cleaned_soup_body.find_all(allowed_tags, recursive=False):
-            element, element_id_counter = self.__convert_soup_element_to_element(
-                soup_element, allowed_tags, None, "/", element_id_counter
-            )
+            element, element_id_counter = self.__convert_soup_element_to_element(soup_element, allowed_tags, None, "/", element_id_counter)
             if element:
                 elements.append(element)
 
@@ -182,9 +181,7 @@ class WebPageStructureExtractor:
         element = Element(**filtered_info)
 
         for child in soup_element.children:
-            child_info, current_id = self.__convert_soup_element_to_element(
-                child, allowed_tags, element_id, path, current_id
-            )
+            child_info, current_id = self.__convert_soup_element_to_element(child, allowed_tags, element_id, path, current_id)
             if child_info:
                 element.children.append(child_info)
 

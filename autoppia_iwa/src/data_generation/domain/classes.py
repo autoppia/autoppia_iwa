@@ -1,31 +1,12 @@
 # file: data_generation/domain/classes.py
 
 import uuid
-from enum import Enum
-from typing import Any, Dict, List, Optional, Literal, Union, Annotated
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
 # Import your test classes:
-from autoppia_iwa.src.data_generation.domain.tests_classes import (
-    CheckUrlTest,
-    FindInHtmlTest,
-    CheckEventTest,
-    CheckPageViewEventTest,
-    JudgeBaseOnHTML,
-    JudgeBaseOnScreenshot,
-)
-
-
-class TaskDifficultyLevel(Enum):
-    EASY = "easy"
-    MEDIUM = "medium"
-    HARD = "hard"
-
-
-class TaskPromptForUrl(BaseModel):
-    page_url: str
-    task_prompts: List[str]
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckPageViewEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 
 
 class BrowserSpecification(BaseModel):
@@ -40,7 +21,7 @@ class BrowserSpecification(BaseModel):
     browser_y: int = 0
 
 
-# The union of test classes for polimorphic deserialization
+# The union of test classes for polymorphic deserialization
 TestUnion = Annotated[Union[CheckUrlTest, FindInHtmlTest, CheckEventTest, CheckPageViewEventTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot], Field(discriminator="type")]
 
 
@@ -143,4 +124,3 @@ class TaskGenerationConfig(BaseModel):
     num_or_urls: int = None
     random_urls: bool = True
     prompts_per_url: int = 20
-    num_or_urls: int = None

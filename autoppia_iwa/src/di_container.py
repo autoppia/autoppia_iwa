@@ -1,11 +1,12 @@
 from dependency_injector import containers, providers
 from pymongo import MongoClient
+
 from autoppia_iwa.config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
+    LLM_PROVIDER,
     LOCAL_MODEL_ENDPOINT,
     LOCAL_PARALLEL_MODEL_ENDPOINT,
-    LLM_PROVIDER,
     MONGODB_NAME,
     MONGODB_URL,
     OPENAI_API_KEY,
@@ -14,8 +15,8 @@ from autoppia_iwa.config.config import (
     OPENAI_TEMPERATURE,
     TASKS_COLLECTION,
 )
-from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 from autoppia_iwa.src.llms.infrastructure.llm_service import LLMConfig, LLMFactory
+from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 
 
 class DIContainer(containers.DeclarativeContainer):
@@ -70,5 +71,5 @@ class DIContainer(containers.DeclarativeContainer):
             config=config,
             api_key=OPENAI_API_KEY,
             endpoint_url=LOCAL_MODEL_ENDPOINT,
-            parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT
+            parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT,
         )

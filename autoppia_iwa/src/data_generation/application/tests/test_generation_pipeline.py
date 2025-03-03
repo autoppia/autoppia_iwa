@@ -1,34 +1,30 @@
 import json
-from typing import Any, Dict, List
-from loguru import logger
-from dependency_injector.wiring import Provide
-import time
 import re
+import time
+from typing import Any, Dict, List
+
+from dependency_injector.wiring import Provide
+from loguru import logger
+
+from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import TestLogicGenerator
+from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.di_container import DIContainer
+
 # LLM & domain imports
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.di_container import DIContainer
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.data_generation.domain.tests_classes import (
-    CheckUrlTest, 
-    FindInHtmlTest, 
-    CheckEventTest, 
-    JudgeBaseOnHTML,
-    JudgeBaseOnScreenshot
-)
-from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.shared.web_utils import detect_interactive_elements
-from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import (
-    TestLogicGenerator,
-)
+
 from .prompts import TEST_GENERATION_PROMPT
 
 
 class TestGenerationPipeline:
-    """ A pipeline that: 
-    1) Gathers context (HTML, screenshot info, etc.) for each Task. 
+    """A pipeline that:
+    1) Gathers context (HTML, screenshot info, etc.) for each Task.
     2) Uses LLM to generate appropriate tests in a single call.
-    3) Instantiates the test objects and adds them to the task. 
-    4) (Optionally) generates a logic function for the entire set of tests. """
+    3) Instantiates the test objects and adds them to the task.
+    4) (Optionally) generates a logic function for the entire set of tests."""
 
     def __init__(
         self,
@@ -36,7 +32,7 @@ class TestGenerationPipeline:
         llm_service: ILLM = Provide[DIContainer.llm_service],
         truncate_html_chars: int = 1500,
         max_retries: int = 3,
-        retry_delay: float = 1.0
+        retry_delay: float = 1.0,
     ):
         self.web_project = web_project
         self.llm_service = llm_service
@@ -51,7 +47,7 @@ class TestGenerationPipeline:
                 "CheckUrlTest": CheckUrlTest,
                 "FindInHtmlTest": FindInHtmlTest,
                 "JudgeBaseOnHTML": JudgeBaseOnHTML,
-                "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
+                "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
             }
         else:
             self.test_class_map = {
@@ -64,8 +60,8 @@ class TestGenerationPipeline:
 
         # Map for extra data needed for specific test classes
         self.test_class_extra_data = {
-            "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very usefull to check navigation or where the agent is.",
-            "FindInHtmlTest": "Use this FindInHtmlTest test to check for stirngs that you expect to appear after the task is completed. very usefull for tasks that trigger UI updates",
+            "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very useful to check navigation or where the agent is.",
+            "FindInHtmlTest": "Use this FindInHtmlTest test to check for strings that you expect to appear after the task is completed. very useful for tasks that trigger UI updates",
             "CheckEventTest": "For CheckEventTest pls select event_name from this List of allowed event names: " + json.dumps(web_project.events),
         }
 
@@ -93,9 +89,9 @@ class TestGenerationPipeline:
                     # )
                     # logger.info(f"Generated logic function for task {task.id}")
             except Exception as e:
-                raise e
                 logger.error(f"Failed to generate tests for task={task.id}: {str(e)}")
                 logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
+                raise e
 
         return tasks
 
@@ -108,7 +104,7 @@ class TestGenerationPipeline:
         cleaned_html = task.clean_html[: self.truncate_html_chars] if task.clean_html else ""
         screenshot_desc = task.screenshot_description or ""
         interactive_elements = detect_interactive_elements(cleaned_html)
-        domain_analysis = self.web_project.domain_analysis
+        # domain_analysis = self.web_project.domain_analysis
 
         # Prepare schemas for all test classes
         test_class_schemas = {}
@@ -120,27 +116,17 @@ class TestGenerationPipeline:
                     test_class_schemas[test_class_name] = json.dumps(test_class.schema(), indent=2)
                 else:
                     # Create a basic schema for non-pydantic classes
-                    test_class_schemas[test_class_name] = json.dumps({
-                        "title": test_class_name,
-                        "type": "object",
-                        "properties": {
-                            "type": {"type": "string", "enum": [test_class_name]},
-                            "description": {"type": "string"}
-                        },
-                        "required": ["type"]
-                    }, indent=2)
+                    test_class_schemas[test_class_name] = json.dumps(
+                        {"title": test_class_name, "type": "object", "properties": {"type": {"type": "string", "enum": [test_class_name]}, "description": {"type": "string"}}, "required": ["type"]},
+                        indent=2,
+                    )
             except Exception as e:
                 logger.warning(f"Could not get schema for {test_class_name}: {e}")
                 # Create a basic schema
-                test_class_schemas[test_class_name] = json.dumps({
-                    "title": test_class_name,
-                    "type": "object",
-                    "properties": {
-                        "type": {"type": "string", "enum": [test_class_name]},
-                        "description": {"type": "string"}
-                    },
-                    "required": ["type"]
-                }, indent=2)
+                test_class_schemas[test_class_name] = json.dumps(
+                    {"title": test_class_name, "type": "object", "properties": {"type": {"type": "string", "enum": [test_class_name]}, "description": {"type": "string"}}, "required": ["type"]},
+                    indent=2,
+                )
 
         # Build a unified prompt for all test classes
         system_prompt = TEST_GENERATION_PROMPT.format(
@@ -151,10 +137,7 @@ class TestGenerationPipeline:
             screenshot_desc=screenshot_desc,
             interactive_elements=json.dumps(interactive_elements, indent=2),
             events=self.web_project.events,
-            test_classes_info="\n\n".join([
-                f"### {test_class_name}\n{schema}\n{self.test_class_extra_data.get(test_class_name, '')}" 
-                for test_class_name, schema in test_class_schemas.items()
-            ])
+            test_classes_info="\n\n".join([f"### {test_class_name}\n{schema}\n{self.test_class_extra_data.get(test_class_name, '')}" for test_class_name, schema in test_class_schemas.items()]),
         )
 
         # Implement retry logic for LLM calls and JSON parsing
@@ -166,9 +149,7 @@ class TestGenerationPipeline:
             try:
                 # Call the LLM
                 response = await self.llm_service.async_predict(
-                    messages=[
-                        {"role": "system", "content": system_prompt}
-                    ],
+                    messages=[{"role": "system", "content": system_prompt}],
                     json_format=True,
                 )
 
@@ -240,7 +221,7 @@ class TestGenerationPipeline:
 
                         if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
                             try:
-                                json_str = response[start_idx:end_idx + 1]
+                                json_str = response[start_idx : end_idx + 1]
                                 response_data = json.loads(json_str)
                             except json.JSONDecodeError:
                                 logger.error("Failed to extract JSON array after multiple attempts")

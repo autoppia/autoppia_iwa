@@ -2,12 +2,14 @@ import asyncio
 import base64
 from datetime import datetime
 from typing import List, Optional
+
 from playwright.async_api import Page, async_playwright
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
+
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 
 
 class PlaywrightBrowserExecutor:
@@ -22,7 +24,7 @@ class PlaywrightBrowserExecutor:
         self.browser_config = browser_config
         self.page: Optional[Page] = page
         self.action_execution_results: List[ActionExecutionResult] = []
-        self.backend_demo_webs_service:BackendDemoWebService = backend_demo_webs_service
+        self.backend_demo_webs_service: BackendDemoWebService = backend_demo_webs_service
 
     def execute_actions(self, actions: List[BaseAction], web_agent_id: str) -> List[ActionExecutionResult]:
         """

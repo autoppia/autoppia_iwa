@@ -1,9 +1,9 @@
 # llm_service.py
 
-from typing import Dict, List, Optional, Any
-import time
+from typing import Any, Dict, List, Optional
+
 import httpx
-from openai import OpenAI, AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 
 from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
 
@@ -23,24 +23,9 @@ class OpenAIService(ILLM):
         """
         Prepares the JSON schema for OpenAI's format requirements.
         """
-        return {
-            "type": "object",
-            "properties": {
-                "schema": {
-                    "type": "string",
-                    "enum": ["JSON_SCHEMA"]
-                },
-                "response": schema
-            },
-            "required": ["schema", "response"]
-        }
+        return {"type": "object", "properties": {"schema": {"type": "string", "enum": ["JSON_SCHEMA"]}, "response": schema}, "required": ["schema", "response"]}
 
-    def predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
+    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         try:
             params = {
                 "model": self.config.model,
@@ -49,14 +34,9 @@ class OpenAIService(ILLM):
                 "temperature": self.config.temperature,
             }
             if json_format and schema:
-                params["response_format"] = {
-                    "type": "json_object"
-                }
+                params["response_format"] = {"type": "json_object"}
                 # Add system message for JSON structure
-                messages.insert(0, {
-                    "role": "system",
-                    "content": f"You must respond with JSON that matches this schema: {schema}"
-                })
+                messages.insert(0, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
                 params["messages"] = messages
 
             response = self.sync_client.chat.completions.create(**params)
@@ -64,12 +44,7 @@ class OpenAIService(ILLM):
         except Exception as e:
             raise RuntimeError(f"OpenAI Sync Error: {e}")
 
-    async def async_predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
+    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         try:
             params = {
                 "model": self.config.model,
@@ -78,14 +53,9 @@ class OpenAIService(ILLM):
                 "temperature": self.config.temperature,
             }
             if json_format and schema:
-                params["response_format"] = {
-                    "type": "json_object"
-                }
+                params["response_format"] = {"type": "json_object"}
                 # Add system message for JSON structure
-                messages.insert(0, {
-                    "role": "system",
-                    "content": f"You must respond with JSON that matches this schema: {schema}"
-                })
+                messages.insert(0, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
                 params["messages"] = messages
 
             response = await self.async_client.chat.completions.create(**params)
@@ -100,12 +70,7 @@ class LocalLLMService(ILLM):
     Uses HTTPX for sync and async calls.
     """
 
-    def __init__(
-        self,
-        config: LLMConfig,
-        endpoint_url: str,
-        parallel_endpoint_url: Optional[str] = None
-    ):
+    def __init__(self, config: LLMConfig, endpoint_url: str, parallel_endpoint_url: Optional[str] = None):
         """
         :param config: LLMConfig object with model details, max_tokens, temperature, etc.
         :param endpoint_url: The HTTP endpoint for single-request generation (e.g. /generate).
@@ -115,13 +80,8 @@ class LocalLLMService(ILLM):
         self.endpoint_url = endpoint_url
         self.parallel_endpoint_url = parallel_endpoint_url
 
-    def predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
-        start_time = time.time()
+    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+        # start_time = time.time()
         try:
             with httpx.Client(timeout=180.0) as client:
                 payload = {
@@ -140,20 +100,15 @@ class LocalLLMService(ILLM):
                 return output
         except httpx.HTTPError as e:
             raise RuntimeError(f"Local LLM Sync Error: {e}")
-        finally:
-            elapsed_time = time.time() - start_time
-            # print(f"Sync request took {elapsed_time:.2f} seconds.")
+        # finally:
+        #     elapsed_time = time.time() - start_time
+        # print(f"Sync request took {elapsed_time:.2f} seconds.")
 
-    async def async_predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
+    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         """
         Asynchronously sends a single request to the local LLM endpoint "/generate".
         """
-        start_time = time.time()
+        # start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
                 payload = {
@@ -172,14 +127,11 @@ class LocalLLMService(ILLM):
                 return output
             except httpx.HTTPError as e:
                 raise RuntimeError(f"Local LLM Async Error: {e}")
-            finally:
-                elapsed_time = time.time() - start_time
-                # print(f"Async request took {elapsed_time:.2f} seconds.")
+            # finally:
+            #     elapsed_time = time.time() - start_time
+            # print(f"Async request took {elapsed_time:.2f} seconds.")
 
-    async def async_predict_parallel(
-        self,
-        requests_list: List[Dict[str, Any]]
-    ) -> List[str]:
+    async def async_predict_parallel(self, requests_list: List[Dict[str, Any]]) -> List[str]:
         """
         Asynchronously sends a *batch* of requests to the local LLM endpoint "/generate_parallel".
 
@@ -197,14 +149,10 @@ class LocalLLMService(ILLM):
         if not self.parallel_endpoint_url:
             raise RuntimeError("No parallel endpoint URL provided for batch requests.")
 
-        start_time = time.time()
+        # start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
-                payload = {
-                    "requests": requests_list,
-                    "temperature": self.config.temperature,
-                    "max_tokens": self.config.max_tokens
-                }
+                payload = {"requests": requests_list, "temperature": self.config.temperature, "max_tokens": self.config.max_tokens}
 
                 response = await client.post(self.parallel_endpoint_url, json=payload)
                 response.raise_for_status()
@@ -215,9 +163,9 @@ class LocalLLMService(ILLM):
                 return outputs
             except httpx.HTTPError as e:
                 raise RuntimeError(f"Local LLM Async Parallel Error: {e}")
-            finally:
-                elapsed_time = time.time() - start_time
-                # print(f"Async parallel request took {elapsed_time:.2f} seconds.")
+            # finally:
+            #     elapsed_time = time.time() - start_time
+            # print(f"Async parallel request took {elapsed_time:.2f} seconds.")
 
 
 class LLMFactory:
@@ -227,18 +175,10 @@ class LLMFactory:
     """
 
     @staticmethod
-    def create_llm(
-        llm_type: str,
-        config: LLMConfig,
-        **kwargs
-    ) -> ILLM:
+    def create_llm(llm_type: str, config: LLMConfig, **kwargs) -> ILLM:
         if llm_type.lower() == "openai":
             return OpenAIService(config, api_key=kwargs.get("api_key"))
         elif llm_type.lower() == "local":
-            return LocalLLMService(
-                config,
-                endpoint_url=kwargs.get("endpoint_url"),
-                parallel_endpoint_url=kwargs.get("parallel_endpoint_url")
-            )
+            return LocalLLMService(config, endpoint_url=kwargs.get("endpoint_url"), parallel_endpoint_url=kwargs.get("parallel_endpoint_url"))
         else:
             raise ValueError(f"Unsupported LLM type: {llm_type}")

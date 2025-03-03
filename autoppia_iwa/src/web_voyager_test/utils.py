@@ -27,10 +27,21 @@ def load_jsonl_file(file_path: Path) -> List[Dict]:
         return []
 
     tasks = []
-    with file_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            try:
-                tasks.append(json.loads(line))
-            except json.JSONDecodeError as e:
-                logging.warning(f"Skipping invalid JSON line in {file_path}: {e}")
+    try:
+        with file_path.open("r", encoding="utf-8") as f:
+            if file_path.suffix == ".json":
+                return json.load(f)
+            elif file_path.suffix == ".jsonl":
+                for line in f:
+                    try:
+                        tasks.append(json.loads(line))
+                    except json.JSONDecodeError as e:
+                        logging.warning(f"Skipping invalid JSON line in {file_path}: {e}")
+            else:
+                logging.warning(f"Unsupported file format: {file_path.suffix}. Expected .json or .jsonl.")
+                return []
+    except Exception as e:
+        logging.error(f"Failed to read or parse {file_path}: {e}")
+        return []
+
     return tasks

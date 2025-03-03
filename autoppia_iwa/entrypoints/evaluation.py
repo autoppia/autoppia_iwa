@@ -7,22 +7,15 @@ from typing import List
 import matplotlib.pyplot as plt
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
-from autoppia_iwa.src.data_generation.domain.classes import (
-    TaskGenerationConfig,Task
-)
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
+from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
-from autoppia_iwa.src.evaluation.evaluator.evaluator import (
-    ConcurrentEvaluator,
-    EvaluatorConfig,
-)
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-
 
 # Bootstrap the application and its DI container.
 app = AppBootstrap()
@@ -54,6 +47,10 @@ async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
         evaluator_config = EvaluatorConfig(starting_url=task.url, save_results_in_db=False)
         evaluator = ConcurrentEvaluator(evaluator_config)
         evaluation_result: EvaluationResult = await evaluator.evaluate_single_task(evaluator_input)
+        evaluator_input = TaskSolution(task_id=task.id, actions=task_solution.actions, web_agent_id=agent.id)
+        evaluator_config = EvaluatorConfig(save_results_in_db=False)
+        evaluator = ConcurrentEvaluator(project, evaluator_config)
+        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task_solution(task, evaluator_input)
         score = evaluation_result.final_score
         results[agent.id]["global_scores"].append(score)
         results[agent.id]["projects"][project.name].append(score)

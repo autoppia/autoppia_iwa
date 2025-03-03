@@ -1,25 +1,23 @@
-import asyncio
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.task_prompt_generator import TaskPromptGenerator
-from autoppia_iwa.src.data_generation.domain.classes import TaskDifficultyLevel, TaskPromptForUrl
-from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
+from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
+from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, LLMWebAnalysis
 
 
-class TestTaskPromptGenerator(unittest.TestCase):
+class TestTaskPromptGenerator(unittest.IsolatedAsyncioTestCase):
     """Unit tests for TaskPromptGenerator."""
 
-    @classmethod
-    def setUpClass(cls):
-        """Set up shared test dependencies for all tests."""
-        cls.app_boostrap = AppBootstrap()
-        cls.domain = "localhost:8000"
-        cls.test_data = cls._get_mock_web_analysis()
-        cls.web_analysis = DomainAnalysis(**cls.test_data)
-        cls.llm_service = cls.app_boostrap.container.llm_service()
-        cls.analysis_repository = cls.app_boostrap.container.analysis_repository()
+    async def asyncSetUp(self):
+        """Set up test dependencies for each test."""
+        self.app_bootstrap = AppBootstrap()
+        self.domain = "localhost:8000"
+        self.test_data = self._get_mock_web_analysis()
+        self.web_analysis = DomainAnalysis(**self.test_data)
+        self.llm_service = self.app_bootstrap.container.llm_service()
+        self.analysis_repository = self.app_bootstrap.container.analysis_repository()
 
     @staticmethod
     def _get_mock_web_analysis():
@@ -201,40 +199,33 @@ class TestTaskPromptGenerator(unittest.TestCase):
         test_data["page_analyses"][0]["web_summary"] = LLMWebAnalysis(**test_data["page_analyses"][0]["web_summary"])
         return test_data
 
-    def test_generate_prompts(self):
-        """Test the generation of prompts for a domain."""
-        relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
-        generator = TaskPromptGenerator(web_analysis=self.web_analysis, llm_service=self.llm_service, num_prompts_per_url=1)
-        tasks = generator.generate_prompts_for_domain(web_project_data=relevant_data, task_difficulty_level=TaskDifficultyLevel.MEDIUM)
-
-        # Assertions
-        self.assertIsNotNone(tasks, "Tasks should not be None.")
-        self.assertIsInstance(tasks, list, "Tasks should be a list.")
-        self.assertTrue(all(isinstance(task, TaskPromptForUrl) for task in tasks), "All tasks should be instances of TaskPromptForUrl.")
-
-        print(f"Generated Tasks: {tasks}")
-
-    def test_generate_prompts_for_url(self):
-        """Test the generation of prompts for a url."""
+    async def test_generate_prompts_for_url(self):
+        """Test the generation of prompts for a URL."""
         start_url = "http://localhost:8000/login"
-        analyzer = WebAnalysisPipeline(start_url="http://localhost:8000/", llm_service=self.llm_service, analysis_repository=self.analysis_repository)
-        analysis = asyncio.run(analyzer.analyze())
-
         relevant_data = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
-        generator = TaskPromptGenerator(web_analysis=analysis, llm_service=self.llm_service, num_prompts_per_url=1)
-        tasks = asyncio.run(
-            generator.generate_task_prompts_for_url(
-                specific_url=start_url,
-                web_project_data=relevant_data,
-                task_difficulty_level=TaskDifficultyLevel.MEDIUM,
-            ),
-        )
 
-        # Assertions
-        self.assertIsNotNone(tasks, "Tasks should not be None.")
-        self.assertTrue(isinstance(tasks, TaskPromptForUrl), "Tasks should be instances of TaskPromptForUrl.")
+        try:
+            # Initialize demo web project and set relevant data
+            web_project = await initialize_demo_webs_projects()
+            web_project[0].relevant_data = relevant_data
 
-        print(f"Generated Tasks: {tasks}")
+            # Create task generator
+            generator = LocalTaskGenerationPipeline(web_project[0], llm_service=self.llm_service)
+
+            # Generate tasks
+            tasks = await generator.generate(start_url)
+
+            # Assertions
+            self.assertIsNotNone(tasks, "Tasks should not be None.")
+            self.assertIsInstance(tasks, list, "Tasks should be a list.")
+            self.assertTrue(all(isinstance(task, Task) for task in tasks), "All items in tasks should be instances of Task.")
+            self.assertTrue(all(hasattr(task, "prompt") for task in tasks), "All tasks should have a 'prompts' attribute.")
+            self.assertTrue(all(hasattr(task, "url") for task in tasks), "All tasks should have a 'url' attribute.")
+
+            print(f"Generated Tasks: {tasks}")
+
+        except Exception as e:
+            self.fail(f"Test failed with exception: {e}")
 
 
 if __name__ == "__main__":

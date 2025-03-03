@@ -3,15 +3,16 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
+from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.shared.utils import assign_tests
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from tests import test_container
 
 
-class TestActionsGenerationAndEvaluation(unittest.TestCase):
+class TestActionGenerationAndEvaluation(unittest.TestCase):
     """
     Unit tests for action generation and evaluation.
     """
@@ -25,54 +26,44 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
         cls.llm_service = cls.app_bootstrap.container.llm_service()
         cls.web_agent: ApifiedWebAgent = test_container.web_agent()
 
-        cls.task = cls._create_task()
-
+        cls.task = cls._initialize_task()
         cls.web_agent_id = "miner_123"
+        cls.loop = asyncio.get_event_loop()
 
     @staticmethod
-    def _create_task():
+    def _initialize_task():
         """
-        Create a Task configuration from sample task data.
+        Initializes and returns a Task instance with sample data.
 
         Returns:
-            Task: A Task instance with pre-configured data.
+            Task: A configured Task instance.
         """
-
-        # Sample task data
         task_data = {
-            "prompt": "Click on the \"Login\" link in the header. Then fill the form with email:admin@jobsapp.com and password:admin123 and click on login",
+            "prompt": "Click on the 'Login' link in the header. Then fill the form and click on login.",
             "url": "http://localhost:8000/",
             "tests": [
                 {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view", "page_view_url": "/login"},
                 {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["email"]},
                 {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "login"},
             ],
-            "milestones": None,
-            "web_analysis": None,
         }
 
         # Create tests from test data
-        tests = BaseTaskTest.assign_tests(task_data["tests"])
+        tests = assign_tests(task_data["tests"])
 
         # Create and return a Task instance
-        return Task(
-            prompt=task_data["prompt"],
-            url=task_data["url"],
-            tests=tests,
-            milestones=task_data["milestones"],
-            web_analysis=task_data["web_analysis"],
-        )
+        return Task(prompt=task_data["prompt"], url=task_data["url"], tests=tests)
 
-    def test_actions_generation_and_evaluation(self):
+    def test_action_generation_and_evaluation(self):
         """
-        Test that actions are correctly generated and evaluated.
+        Tests whether actions are correctly generated and evaluated.
         """
         task_solution = self.web_agent.solve_task_sync(task=self.task)
 
-        # Assertions to validate generated actions
-        self.assertTrue(task_solution, "No actions were generated. The action list is empty.")
-        self.assertIsInstance(task_solution.actions, list, "Generated actions should be a list.")
-        self.assertTrue(all(isinstance(action, BaseAction) for action in task_solution.actions), "All items in actions should be instances of Action.")
+        # Validate generated actions
+        self.assertTrue(task_solution, "No actions were generated.")
+        self.assertIsInstance(task_solution.actions, list, "Generated actions should be in a list format.")
+        self.assertTrue(all(isinstance(action, BaseAction) for action in task_solution.actions), "All generated actions should be instances of BaseAction.")
 
         # Optional debugging output
         print(f"Generated {len(task_solution.actions)} actions:")
@@ -80,9 +71,12 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
             print(f"{idx}: {action}")
 
         # Evaluate the actions
-        task_solution = TaskSolution(task=self.task, actions=task_solution.actions, web_agent_id=self.web_agent_id)
-        evaluator = ConcurrentEvaluator(EvaluatorConfig())
-        evaluated_task = asyncio.run(evaluator.evaluate_single_task(task_solution))
+        web_project = self.loop.run_until_complete(initialize_demo_webs_projects())
+        web_project[0].relevant_data = ({"authorization": {"email": "employee@employee.com", "password": "employee"}},)
+
+        task_solution = TaskSolution(actions=task_solution.actions, web_agent_id=self.web_agent_id)
+        evaluator = ConcurrentEvaluator(web_project[0], EvaluatorConfig())
+        evaluated_task = self.loop.run_until_complete(evaluator.evaluate_single_task_solution(self.task, task_solution))
 
         # Assert the evaluation result
         self.assertTrue(evaluated_task, "Task evaluation failed.")
@@ -90,6 +84,11 @@ class TestActionsGenerationAndEvaluation(unittest.TestCase):
         # Optional debugging output for evaluation
         print("\n--- Evaluation Results ---")
         print(f"Final score: {evaluated_task.feedback.final_score}")
+
+    def tearDown(self):
+        self.loop.close()
+        self.web_agent = None
+        self.app_bootstrap = None
 
 
 if __name__ == "__main__":

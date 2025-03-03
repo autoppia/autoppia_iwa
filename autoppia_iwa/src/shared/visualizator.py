@@ -1,19 +1,12 @@
 import os
-import json
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
+from typing import Optional
+
 from rich import box
-from rich.text import Text
-from rich.padding import Padding
-from rich.layout import Layout
 from rich.align import Align
-from autoppia_iwa.src.data_generation.domain.classes import TaskGenerationConfig, Task
-from autoppia_iwa.src.data_generation.domain.tests_classes import (
-    CheckUrlTest,
-)
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 
 class SubnetVisualizer:

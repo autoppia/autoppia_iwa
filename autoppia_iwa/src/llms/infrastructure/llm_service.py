@@ -1,16 +1,15 @@
-# llms.py
+# llm_service.py
 
+import time
 from typing import Dict, List, Optional
 
 import httpx
-from openai import OpenAI, AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 
 from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
-import time
-import httpx
-
 
 # In llms.py
+
 
 class OpenAIService(ILLM):
     """
@@ -31,7 +30,6 @@ class OpenAIService(ILLM):
 
     def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         try:
-
             params = {
                 "model": self.config.model,
                 "messages": messages,
@@ -51,7 +49,6 @@ class OpenAIService(ILLM):
 
     async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         try:
-
             params = {
                 "model": self.config.model,
                 "messages": messages,
@@ -76,7 +73,12 @@ class LocalLLMService(ILLM):
     Uses HTTPX for sync and async calls.
     """
 
-    def __init__(self, config: LLMConfig, endpoint_url: str):
+    def __init__(self, config: LLMConfig, endpoint_url: str, parallel_endpoint_url: Optional[str] = None):
+        """
+        :param config: LLMConfig object with model details, max_tokens, temperature, etc.
+        :param endpoint_url: The HTTP endpoint for single-request generation (e.g. /generate).
+        :param parallel_endpoint_url: (Optional) The HTTP endpoint for batch generation (e.g. /generate_parallel).
+        """
         self.config = config
         self.endpoint_url = endpoint_url
 
@@ -104,13 +106,11 @@ class LocalLLMService(ILLM):
             elapsed_time = time.time() - start_time
             print(f"Sync request took {elapsed_time:.2f} seconds.")
 
-    async def async_predict(
-        self,
-        messages: List[Dict[str, str]],
-        json_format: bool = False,
-        schema: Optional[Dict] = None
-    ) -> str:
-        start_time = time.time()
+    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+        """
+        Asynchronously sends a single request to the local LLM endpoint "/generate".
+        """
+        # start_time = time.time()
         async with httpx.AsyncClient(timeout=120.0) as client:
             try:
                 payload = {
@@ -119,7 +119,7 @@ class LocalLLMService(ILLM):
                     "max_tokens": self.config.max_tokens,
                 }
                 if json_format:
-                    payload["json_format"] = "json"
+                    payload["json_format"] = True
                 if schema:
                     payload["schema"] = schema
 
@@ -129,9 +129,9 @@ class LocalLLMService(ILLM):
                 return output
             except httpx.HTTPError as e:
                 raise RuntimeError(f"Local LLM Async Error: {e}")
-            finally:
-                elapsed_time = time.time() - start_time
-                # print(f"Async request took {elapsed_time:.2f} seconds.")
+            # finally:
+            #     elapsed_time = time.time() - start_time
+            # print(f"Async request took {elapsed_time:.2f} seconds.")
 
 
 class LLMFactory:

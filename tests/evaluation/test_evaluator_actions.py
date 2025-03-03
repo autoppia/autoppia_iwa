@@ -6,7 +6,7 @@ from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.shared.web_utils import generate_random_web_agent_id
+from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 

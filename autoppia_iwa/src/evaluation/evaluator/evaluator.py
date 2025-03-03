@@ -2,14 +2,18 @@ import asyncio
 import hashlib
 import time
 from collections import defaultdict
-from typing import List, Optional, Dict, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
+
+from loguru import logger
 from playwright.async_api import async_playwright
 from pydantic import BaseModel, Field
-from loguru import logger
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
+
+from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
-from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult, TestResult
-from autoppia_iwa.src.evaluation.classes import Feedback
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
+from autoppia_iwa.src.evaluation.classes import EvaluationResult as BaseEvaluationResult
+from autoppia_iwa.src.evaluation.classes import Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
 from autoppia_iwa.src.evaluation.evaluator.utils import initialize_test_results_matrix
@@ -18,7 +22,6 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 
@@ -91,7 +94,7 @@ class EvaluatorConfig(BaseModel):
 
 
 class ConcurrentEvaluator(IEvaluator):
-    def __init__(self, web_project, config: EvaluatorConfig):
+    def __init__(self, web_project: WebProject, config: EvaluatorConfig):
         self.config = config
         self._random_clicker_cache: Dict[str, Tuple[List[int], float]] = {}
         self.total_evaluation_time = 0.0
@@ -220,7 +223,7 @@ class ConcurrentEvaluator(IEvaluator):
             while True:
                 await asyncio.sleep(10)  # Only update every 10 seconds
                 completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
-                logger.info(f"Progress: {completed}/{total_groups} groups ({completed/total_groups*100:.0f}%)")
+                logger.info(f"Progress: {completed}/{total_groups} groups ({completed / total_groups * 100:.0f}%)")
         except asyncio.CancelledError:
             pass
 
@@ -419,7 +422,7 @@ class ConcurrentEvaluator(IEvaluator):
             stats.total_time = time.time() - stats.start_time
 
             logger.error(f"Error evaluating task solution: {e}")
-            logger.error(f"--------------------ESTOY EN LA EXCEPCION DEL EVALUATE SINGLE TASK SOLUTION ----------------------")
+            logger.error("--------------------ESTOY EN LA EXCEPCION DEL EVALUATE SINGLE TASK SOLUTION ----------------------")
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,
@@ -484,8 +487,8 @@ class ConcurrentEvaluator(IEvaluator):
                             if i < len(actions) - 1 and self.config.task_delay_in_seconds > 0:
                                 await asyncio.sleep(self.config.task_delay_in_seconds)
 
-                        except Exception:
-                            # logger.error(f"Action {i+1}/{len(actions)}: {action.type} failed with error: {e}")
+                        except Exception as e:
+                            logger.error(f"Action {i + 1}/{len(actions)}: {action.type} failed with error: {e}")
 
                             # Add a placeholder for timing
                             action_end = time.time()
@@ -588,12 +591,10 @@ class ConcurrentEvaluator(IEvaluator):
             passed_count = 0
             # For each test, check if random clicker passed it
             for test_index in range(num_tests):
-                test_passed = False
                 for action_index in range(len(random_test_results)):
                     if random_test_results[action_index][test_index].success:
                         random_passed_tests.append(test_index)
                         passed_count += 1
-                        test_passed = True
                         break
             if num_tests > 0:
                 random_score = passed_count / num_tests
@@ -646,7 +647,7 @@ class ConcurrentEvaluator(IEvaluator):
 
     def _display_single_evaluation_summary(self, stats: EvaluationStats):
         """Display a concise summary for a single evaluation"""
-        summary = stats.get_summary_dict()
+        stats.get_summary_dict()
 
         if self.config.debug_mode:
             return  # Skip display in debug mode
@@ -694,10 +695,10 @@ class ConcurrentEvaluator(IEvaluator):
             return
 
         # Calculate aggregate statistics
-        total_agents = len(task_stats)
-        successful_agents = sum(1 for s in task_stats if not s.had_errors)
-        avg_score = sum(s.final_score for s in task_stats) / max(1, total_agents)
-        avg_time = sum(s.total_time for s in task_stats) / max(1, total_agents)
+        # total_agents = len(task_stats)
+        # successful_agents = sum(1 for s in task_stats if not s.had_errors)
+        # avg_score = sum(s.final_score for s in task_stats) / max(1, total_agents)
+        # avg_time = sum(s.total_time for s in task_stats) / max(1, total_agents)
 
         # Group by agent type (extract prefix before first hyphen)
         agent_groups = defaultdict(list)
@@ -716,8 +717,8 @@ class ConcurrentEvaluator(IEvaluator):
 
         # Create a summary table for each agent group
         for agent_type, stats in agent_groups.items():
-            avg_group_score = sum(s.final_score for s in stats) / max(1, len(stats))
-            avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
+            #     avg_group_score = sum(s.final_score for s in stats) / max(1, len(stats))
+            #     avg_group_time = sum(s.total_time for s in stats) / max(1, len(stats))
             # TODO: PDESCOMENTAR
 
             # logger.info(f"\n{'-' * 60}")
@@ -742,11 +743,11 @@ class ConcurrentEvaluator(IEvaluator):
                 logger.info(f"Tests Passed: {avg_passed:.1f}/{total_tests} on average")
 
         # Display timing breakdown across all agents
-        all_browser_setup = sum(s.browser_setup_time for s in task_stats)
-        all_action_time = sum(sum(s.action_execution_times) for s in task_stats)
-        all_test_time = sum(s.test_execution_time for s in task_stats)
-        all_random_time = sum(s.random_clicker_time for s in task_stats)
-        all_total_time = sum(s.total_time for s in task_stats)
+        # all_browser_setup = sum(s.browser_setup_time for s in task_stats)
+        # all_action_time = sum(sum(s.action_execution_times) for s in task_stats)
+        # all_test_time = sum(s.test_execution_time for s in task_stats)
+        # all_random_time = sum(s.random_clicker_time for s in task_stats)
+        # all_total_time = sum(s.total_time for s in task_stats)
 
         # logger.info(f"\n{'-' * 60}")
         # logger.info("TIMING BREAKDOWN (across all agents)")

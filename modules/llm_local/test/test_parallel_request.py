@@ -1,7 +1,8 @@
-import requests
+import argparse
 import json
 import time
-import argparse
+
+import requests
 
 
 def make_parallel_request(N=5):
@@ -15,18 +16,13 @@ def make_parallel_request(N=5):
     # Build the "requests" array with N copies (or variations) of the messages
     requests_list = []
     for i in range(N):
-        requests_list.append({
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        f"You are Qwen, created by Alibaba Cloud. "
-                        f"You are a helpful assistant. (Sub-request {i+1})"
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": """"
+        requests_list.append(
+            {
+                "messages": [
+                    {"role": "system", "content": (f"You are Qwen, created by Alibaba Cloud. " f"You are a helpful assistant. (Sub-request {i + 1})")},
+                    {
+                        "role": "user",
+                        "content": """"
                                     You are a test analyzer for web automation testing. Review the tests below and decide which ones to keep.
 
                                     TASK CONTEXT:
@@ -67,19 +63,16 @@ def make_parallel_request(N=5):
 
                                     Extra Class-Specific Data:
                                     example extra data
-                                    """
-                }
-            ],
-            "json_format": False,
-            "schema": None
-        })
+                                    """,
+                    },
+                ],
+                "json_format": False,
+                "schema": None,
+            }
+        )
 
     # Global parameters for the entire batch
-    data = {
-        "requests": requests_list,
-        "temperature": 0.1,
-        "max_tokens": 256
-    }
+    data = {"requests": requests_list, "temperature": 0.1, "max_tokens": 256}
 
     start_time = time.time()
     response = requests.post(url, headers=headers, data=json.dumps(data))
@@ -88,7 +81,7 @@ def make_parallel_request(N=5):
     # Parse JSON response
     try:
         response_json = response.json()
-    except:
+    except Exception:
         response_json = {"error": "Unable to parse JSON from server response"}
 
     return end_time - start_time, response_json
@@ -96,12 +89,7 @@ def make_parallel_request(N=5):
 
 def main():
     parser = argparse.ArgumentParser(description="Test parallel requests to /generate_parallel.")
-    parser.add_argument(
-        "--number_request",
-        type=int,
-        default=5,
-        help="Number of sub-requests to batch in one call"
-    )
+    parser.add_argument("--number_request", type=int, default=5, help="Number of sub-requests to batch in one call")
     args = parser.parse_args()
 
     # Number of sub-requests to batch in one call

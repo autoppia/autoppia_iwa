@@ -1,5 +1,6 @@
 # Corrected TestRunner class
 from typing import List
+
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.evaluation.classes import TestResult
 from autoppia_iwa.src.execution.classes import BrowserSnapshot

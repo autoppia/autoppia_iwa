@@ -1,55 +1,39 @@
 import asyncio
+import logging
 import os
 import time
 from typing import List, Optional
-import logging
 
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.web_agents.base import BaseAgent
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
-
-# Local imports (within the same "entrypoints" directory)
-from autoppia_iwa.src.shared.entrypoints.tasks import (
-    generate_tasks_for_project,
-)
 from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.entrypoints.results import (
-    print_performance_statistics,
-    plot_results,
-    plot_task_comparison,
-    save_results_to_json
-)
+from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 
 # Import the consolidated solution cache system
-from autoppia_iwa.src.shared.entrypoints.solutions import (
-    ConsolidatedSolutionCache
-)
+from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
+
+# Local imports (within the same "entrypoints" directory)
+from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.base import BaseAgent
+from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("stress_test.log")
-    ]
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler(), logging.FileHandler("stress_test.log")])
 logger = logging.getLogger("stress_test")
 
 # -----------------------------------------------------------------------------
 # Configuration for the stress test
 # -----------------------------------------------------------------------------
-USE_CACHED_TASKS = False    # Set to True to use cached tasks from JSON file
+USE_CACHED_TASKS = False  # Set to True to use cached tasks from JSON file
 USE_CACHED_SOLUTIONS = False  # Set to True to use cached solutions when available
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 SOLUTIONS_CACHE_DIR = "data/solutions_cache"  # Directory to store solution cache files
-OUTPUT_DIR = "results"     # Directory to store test results
-M = 1   # Number of copies of each solution to evaluate
+OUTPUT_DIR = "results"  # Directory to store test results
+M = 1  # Number of copies of each solution to evaluate
 PROMPTS_PER_URL = 3
 NUM_OF_URLS = 5
 
@@ -64,10 +48,7 @@ solution_cache = ConsolidatedSolutionCache(SOLUTIONS_CACHE_DIR)
 # -----------------------------------------------------------------------------
 # Define the agents for the stress test
 # -----------------------------------------------------------------------------
-AGENTS: List[BaseAgent] = [
-    RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="browser-use", host="localhost", port=9000)
-]
+AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="browser-use", host="localhost", port=9000)]
 
 # Identifier for the browser-use agent
 BROWSER_USE_AGENT_ID = "ApifiedWebAgent-browser-use"
@@ -98,13 +79,7 @@ async def main():
     logger.info(f"Using project: {demo_project.name}")
 
     # Generate or load tasks for the project
-    tasks = await generate_tasks_for_project(
-        demo_project,
-        use_cached_tasks=USE_CACHED_TASKS,
-        task_cache_dir=TASKS_CACHE_DIR,
-        prompts_per_url=PROMPTS_PER_URL,
-        num_of_urls=NUM_OF_URLS
-    )
+    tasks = await generate_tasks_for_project(demo_project, use_cached_tasks=USE_CACHED_TASKS, task_cache_dir=TASKS_CACHE_DIR, prompts_per_url=PROMPTS_PER_URL, num_of_urls=NUM_OF_URLS)
 
     if not tasks:
         logger.error("No tasks available.")
@@ -145,11 +120,7 @@ async def main():
                 solution = await agent.solve_task(task)
                 actions = solution.actions or []
 
-                task_solution = TaskSolution(
-                    task_id=task.id, 
-                    actions=actions, 
-                    web_agent_id=agent.id
-                )
+                task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
 
                 # Measure solution time
                 end_time = time.time()
@@ -159,11 +130,7 @@ async def main():
 
                 # Cache the solution for future use
                 try:
-                    success = solution_cache.save_solution(
-                        task_solution=task_solution,
-                        agent_id=agent.id,
-                        agent_name=agent.name
-                    )
+                    success = solution_cache.save_solution(task_solution=task_solution, agent_id=agent.id, agent_name=agent.name)
                     if success:
                         logger.info("Solution cached successfully for future runs")
                     else:
@@ -190,18 +157,10 @@ async def main():
             # Make M copies of that solution
             solution_copies = []
             for _ in range(M):
-                copy_solution = TaskSolution(
-                    task_id=task.id,
-                    actions=original_solution.actions.copy() if original_solution.actions else [],
-                    web_agent_id=agent.id
-                )
+                copy_solution = TaskSolution(task_id=task.id, actions=original_solution.actions.copy() if original_solution.actions else [], web_agent_id=agent.id)
                 solution_copies.append(copy_solution)
 
-            evaluator_config = EvaluatorConfig(
-                save_results_in_db=False,
-                enable_grouping_tasks=False,
-                chunk_size=20
-            )
+            evaluator_config = EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20)
             evaluator = ConcurrentEvaluator(web_project=demo_project, config=evaluator_config)
 
             start_eval_time = time.time()
@@ -213,33 +172,24 @@ async def main():
             # Compute average score
             if evaluation_results:
                 avg_score = sum(er.final_score for er in evaluation_results) / len(evaluation_results)
-                results[agent.id][task.id] = {
-                    "score": avg_score,
-                    "num_solutions_evaluated": M,
-                    "total_evaluation_time": eval_time,
-                    "per_solution_time": eval_time / M
-                }
+                results[agent.id][task.id] = {"score": avg_score, "num_solutions_evaluated": M, "total_evaluation_time": eval_time, "per_solution_time": eval_time / M}
                 logger.info(f"    Batch evaluation in {eval_time:.2f} seconds; Avg score = {avg_score:.2f}")
             else:
                 logger.warning(f"    No evaluation results returned for task {task.id}")
-                results[agent.id][task.id] = {
-                    "score": 0.0,
-                    "num_solutions_evaluated": 0,
-                    "total_evaluation_time": eval_time,
-                    "per_solution_time": 0.0
-                }
+                results[agent.id][task.id] = {"score": 0.0, "num_solutions_evaluated": 0, "total_evaluation_time": eval_time, "per_solution_time": 0.0}
 
     # End timing
     timing_metrics.end()
 
     # Print summary and generate plots
     print_performance_statistics(results, AGENTS, timing_metrics)
-    chart_path = plot_results(results, AGENTS, timing_metrics, OUTPUT_DIR)
-    task_chart_path = plot_task_comparison(results, AGENTS, tasks, OUTPUT_DIR)
-    json_path = save_results_to_json(results, AGENTS, timing_metrics, OUTPUT_DIR)
+    plot_results(results, AGENTS, timing_metrics, OUTPUT_DIR)
+    plot_task_comparison(results, AGENTS, tasks, OUTPUT_DIR)
+    save_results_to_json(results, AGENTS, timing_metrics, OUTPUT_DIR)
 
     logger.info(f"\nEvaluation complete! Results have been saved to {OUTPUT_DIR}.")
     logger.info(f"Agent solutions have been cached to {SOLUTIONS_CACHE_DIR}/solutions.json")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
