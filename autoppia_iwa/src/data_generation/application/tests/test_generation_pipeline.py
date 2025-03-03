@@ -89,9 +89,9 @@ class TestGenerationPipeline:
                     # )
                     # logger.info(f"Generated logic function for task {task.id}")
             except Exception as e:
-                raise e
                 logger.error(f"Failed to generate tests for task={task.id}: {str(e)}")
                 logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
+                raise e
 
         return tasks
 

@@ -5,6 +5,7 @@ import random
 from typing import Any, Dict, List
 
 from dependency_injector.wiring import Provide
+from PIL import Image
 from pydantic import ValidationError
 
 from autoppia_iwa.src.data_generation.application.tasks.local.prompts import PHASE1_GENERATION_SYSTEM_PROMPT
@@ -197,7 +198,8 @@ class LocalTaskGenerationPipeline:
             logger.error(f"Unexpected error parsing LLM response: {str(e)}")
             return []
 
-    def _assemble_task(self, web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: bytes, screenshot_desc: str, success_criteria: str, relevant_data: Any) -> "Task":
+    @staticmethod
+    def _assemble_task(web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: Image.Image, screenshot_desc: str, success_criteria: str, relevant_data: Any) -> "Task":
         """
         Assembles a final Task object from the filtered task data.
         """
