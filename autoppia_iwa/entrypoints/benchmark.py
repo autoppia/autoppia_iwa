@@ -30,7 +30,7 @@ class BenchmarkConfig:
 
     use_cached_tasks: bool = False
     use_cached_solutions: bool = False
-    evaluate_real_tasks: bool = True
+    evaluate_real_tasks: bool = False
 
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
