@@ -153,6 +153,14 @@
         "documentation": {}
     },
     {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
         "label": "strtobool",
         "importPath": "distutils.util",
         "description": "distutils.util",
@@ -193,6 +201,14 @@
         "importPath": "time",
         "description": "time",
         "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
         "documentation": {}
     },
     {
@@ -268,6 +284,30 @@
         "documentation": {}
     },
     {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -357,6 +397,22 @@
     },
     {
         "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -588,6 +644,46 @@
         "documentation": {}
     },
     {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Any",
         "importPath": "typing",
         "description": "typing",
@@ -628,6 +724,14 @@
         "documentation": {}
     },
     {
+        "label": "Type",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -645,6 +749,14 @@
     },
     {
         "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1228,38 +1340,6 @@
         "documentation": {}
     },
     {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Type",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -1281,6 +1361,14 @@
         "description": "typing",
         "isExtraImport": true,
         "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_BASE_DIR",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
     {
@@ -1596,6 +1684,22 @@
         "documentation": {}
     },
     {
+        "label": "AppBootstrap",
+        "importPath": "autoppia_iwa.src.bootstrap",
+        "description": "autoppia_iwa.src.bootstrap",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.bootstrap",
+        "documentation": {}
+    },
+    {
+        "label": "LocalTestGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "documentation": {}
+    },
+    {
         "label": "LocalTestGenerationPipeline",
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
         "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
@@ -1612,6 +1716,22 @@
         "documentation": {}
     },
     {
+        "label": "LocalTestGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "Task",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
         "label": "Task",
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
@@ -1884,7 +2004,7 @@
         "documentation": {}
     },
     {
-        "label": "WebProject",
+        "label": "UseCase",
         "importPath": "autoppia_iwa.src.demo_webs.classes",
         "description": "autoppia_iwa.src.demo_webs.classes",
         "isExtraImport": true,
@@ -1909,6 +2029,30 @@
     },
     {
         "label": "WebProject",
+        "importPath": "autoppia_iwa.src.demo_webs.classes",
+        "description": "autoppia_iwa.src.demo_webs.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.classes",
+        "documentation": {}
+    },
+    {
+        "label": "WebProject",
+        "importPath": "autoppia_iwa.src.demo_webs.classes",
+        "description": "autoppia_iwa.src.demo_webs.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.classes",
+        "documentation": {}
+    },
+    {
+        "label": "WebProject",
+        "importPath": "autoppia_iwa.src.demo_webs.classes",
+        "description": "autoppia_iwa.src.demo_webs.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.classes",
+        "documentation": {}
+    },
+    {
+        "label": "UseCase",
         "importPath": "autoppia_iwa.src.demo_webs.classes",
         "description": "autoppia_iwa.src.demo_webs.classes",
         "isExtraImport": true,
@@ -2028,6 +2172,14 @@
         "documentation": {}
     },
     {
+        "label": "demo_web_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.config",
+        "description": "autoppia_iwa.src.demo_webs.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.config",
+        "documentation": {}
+    },
+    {
         "label": "test_demo_web_projects",
         "importPath": "autoppia_iwa.src.demo_webs.config",
         "description": "autoppia_iwa.src.demo_webs.config",
@@ -2132,6 +2284,22 @@
         "documentation": {}
     },
     {
+        "label": "EvaluationResult",
+        "importPath": "autoppia_iwa.src.evaluation.classes",
+        "description": "autoppia_iwa.src.evaluation.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.evaluation.classes",
+        "documentation": {}
+    },
+    {
+        "label": "EvaluatorConfig",
+        "importPath": "autoppia_iwa.src.evaluation.classes",
+        "description": "autoppia_iwa.src.evaluation.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.evaluation.classes",
+        "documentation": {}
+    },
+    {
         "label": "EvaluatorConfig",
         "importPath": "autoppia_iwa.src.evaluation.classes",
         "description": "autoppia_iwa.src.evaluation.classes",
@@ -2284,6 +2452,22 @@
         "documentation": {}
     },
     {
+        "label": "ConcurrentEvaluator",
+        "importPath": "autoppia_iwa.src.evaluation.evaluator.evaluator",
+        "description": "autoppia_iwa.src.evaluation.evaluator.evaluator",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.evaluation.evaluator.evaluator",
+        "documentation": {}
+    },
+    {
+        "label": "TimingMetrics",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "documentation": {}
+    },
+    {
         "label": "TimingMetrics",
         "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
         "description": "autoppia_iwa.src.shared.entrypoints.metrics",
@@ -2372,11 +2556,35 @@
         "documentation": {}
     },
     {
-        "label": "ConsolidatedSolutionCache",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "label": "plot_results",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
+        "description": "autoppia_iwa.src.shared.entrypoints.results",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "plot_task_comparison",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
+        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "print_performance_statistics",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
+        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "save_results_to_json",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
+        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.results",
         "documentation": {}
     },
     {
@@ -2396,11 +2604,19 @@
         "documentation": {}
     },
     {
-        "label": "generate_tasks_for_project",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "label": "ConsolidatedSolutionCache",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "documentation": {}
+    },
+    {
+        "label": "ConsolidatedSolutionCache",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
         "documentation": {}
     },
     {
@@ -2425,6 +2641,46 @@
         "description": "autoppia_iwa.src.shared.entrypoints.tasks",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "documentation": {}
+    },
+    {
+        "label": "generate_tasks_for_project",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "documentation": {}
+    },
+    {
+        "label": "generate_tasks_for_project",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "documentation": {}
+    },
+    {
+        "label": "SubnetVisualizer",
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.visualizator",
+        "documentation": {}
+    },
+    {
+        "label": "visualize_evaluation",
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.visualizator",
+        "documentation": {}
+    },
+    {
+        "label": "visualize_task",
+        "importPath": "autoppia_iwa.src.shared.visualizator",
+        "description": "autoppia_iwa.src.shared.visualizator",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.visualizator",
         "documentation": {}
     },
     {
@@ -2513,6 +2769,22 @@
         "description": "autoppia_iwa.src.web_agents.apified_agent",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "BaseAgent",
+        "importPath": "autoppia_iwa.src.web_agents.base",
+        "description": "autoppia_iwa.src.web_agents.base",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.base",
         "documentation": {}
     },
     {
@@ -2652,6 +2924,22 @@
         "documentation": {}
     },
     {
+        "label": "TaskSolution",
+        "importPath": "autoppia_iwa.src.web_agents.classes",
+        "description": "autoppia_iwa.src.web_agents.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.classes",
+        "documentation": {}
+    },
+    {
+        "label": "RandomClickerWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.random.agent",
+        "description": "autoppia_iwa.src.web_agents.random.agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.random.agent",
+        "documentation": {}
+    },
+    {
         "label": "RandomClickerWebAgent",
         "importPath": "autoppia_iwa.src.web_agents.random.agent",
         "description": "autoppia_iwa.src.web_agents.random.agent",
@@ -2708,6 +2996,54 @@
         "documentation": {}
     },
     {
+        "label": "TaskData",
+        "importPath": "autoppia_iwa.src.web_voyager_test.utils",
+        "description": "autoppia_iwa.src.web_voyager_test.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_voyager_test.utils",
+        "documentation": {}
+    },
+    {
+        "label": "load_jsonl_file",
+        "importPath": "autoppia_iwa.src.web_voyager_test.utils",
+        "description": "autoppia_iwa.src.web_voyager_test.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_voyager_test.utils",
+        "documentation": {}
+    },
+    {
+        "label": "initialize_demo_webs_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.utils",
+        "documentation": {}
+    },
+    {
+        "label": "_load_web_analysis",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.utils",
+        "documentation": {}
+    },
+    {
+        "label": "initialize_demo_webs_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.utils",
+        "documentation": {}
+    },
+    {
+        "label": "initialize_demo_webs_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.utils",
+        "documentation": {}
+    },
+    {
         "label": "statistics",
         "kind": 6,
         "isExtraImport": true,
@@ -2755,22 +3091,6 @@
         "description": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "initialize_demo_webs_projects",
-        "importPath": "autoppia_iwa.src.demo_webs.utils",
-        "description": "autoppia_iwa.src.demo_webs.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.utils",
-        "documentation": {}
-    },
-    {
-        "label": "initialize_demo_webs_projects",
-        "importPath": "autoppia_iwa.src.demo_webs.utils",
-        "description": "autoppia_iwa.src.demo_webs.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.utils",
         "documentation": {}
     },
     {
@@ -2871,6 +3191,46 @@
     },
     {
         "label": "Field",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "field_validator",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "Field",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "AnyUrl",
         "importPath": "pydantic",
         "description": "pydantic",
         "isExtraImport": true,
@@ -3030,14 +3390,6 @@
         "documentation": {}
     },
     {
-        "label": "BaseModel",
-        "importPath": "pydantic",
-        "description": "pydantic",
-        "isExtraImport": true,
-        "detail": "pydantic",
-        "documentation": {}
-    },
-    {
         "label": "json",
         "kind": 6,
         "isExtraImport": true,
@@ -3133,6 +3485,14 @@
         "description": "dependency_injector.wiring",
         "isExtraImport": true,
         "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
         "documentation": {}
     },
     {
@@ -3657,14 +4017,6 @@
         "documentation": {}
     },
     {
-        "label": "TestLogicGenerator",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "description": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "documentation": {}
-    },
-    {
         "label": "Image",
         "importPath": "PIL",
         "description": "PIL",
@@ -3734,6 +4086,14 @@
         "isExtraImport": true,
         "importPath": "datetime",
         "description": "datetime",
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
         "detail": "datetime",
         "documentation": {}
     },
@@ -3871,14 +4231,6 @@
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
-        "documentation": {}
-    },
-    {
-        "label": "TestGenerationPipeline",
-        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
-        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
         "documentation": {}
     },
     {
@@ -4155,35 +4507,27 @@
         "documentation": {}
     },
     {
-        "label": "USE_CASES",
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
+        "label": "Movie",
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
         "isExtraImport": true,
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
         "documentation": {}
     },
     {
-        "label": "EVENTS",
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
+        "label": "Faker",
+        "importPath": "faker",
+        "description": "faker",
         "isExtraImport": true,
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
+        "detail": "faker",
         "documentation": {}
     },
     {
-        "label": "RELEVANT_DATA",
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
+        "label": "Event",
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
         "isExtraImport": true,
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "MODELS",
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "isExtraImport": true,
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
         "documentation": {}
     },
     {
@@ -4654,22 +4998,6 @@
         "description": "openai",
         "isExtraImport": true,
         "detail": "openai",
-        "documentation": {}
-    },
-    {
-        "label": "TestGenerationPipeline",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "TestGenerationPipeline",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
         "documentation": {}
     },
     {
@@ -9013,46 +9341,6 @@
         "documentation": {}
     },
     {
-        "label": "Genre",
-        "importPath": "movieapp.models",
-        "description": "movieapp.models",
-        "isExtraImport": true,
-        "detail": "movieapp.models",
-        "documentation": {}
-    },
-    {
-        "label": "Movie",
-        "importPath": "movieapp.models",
-        "description": "movieapp.models",
-        "isExtraImport": true,
-        "detail": "movieapp.models",
-        "documentation": {}
-    },
-    {
-        "label": "Comment",
-        "importPath": "movieapp.models",
-        "description": "movieapp.models",
-        "isExtraImport": true,
-        "detail": "movieapp.models",
-        "documentation": {}
-    },
-    {
-        "label": "UserProfile",
-        "importPath": "movieapp.models",
-        "description": "movieapp.models",
-        "isExtraImport": true,
-        "detail": "movieapp.models",
-        "documentation": {}
-    },
-    {
-        "label": "ContactMessage",
-        "importPath": "movieapp.models",
-        "description": "movieapp.models",
-        "isExtraImport": true,
-        "detail": "movieapp.models",
-        "documentation": {}
-    },
-    {
         "label": "ContentFile",
         "importPath": "django.core.files.base",
         "description": "django.core.files.base",
@@ -9118,14 +9406,6 @@
         "documentation": {}
     },
     {
-        "label": "Faker",
-        "importPath": "faker",
-        "description": "faker",
-        "isExtraImport": true,
-        "detail": "faker",
-        "documentation": {}
-    },
-    {
         "label": "unittest",
         "kind": 6,
         "isExtraImport": true,
@@ -9148,6 +9428,14 @@
         "description": "tests",
         "isExtraImport": true,
         "detail": "tests",
+        "documentation": {}
+    },
+    {
+        "label": "TestGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
         "documentation": {}
     },
     {
@@ -9396,9 +9684,63 @@
     {
         "label": "BenchmarkConfig",
         "kind": 6,
+        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
+        "description": "autoppia_iwa.entrypoints.benchmark copy",
+        "peekOfCode": "class BenchmarkConfig:\n    \"\"\"Configuration for the benchmark test.\"\"\"\n    use_cached_tasks: bool = False\n    use_cached_solutions: bool = False\n    evaluate_real_tasks: bool = True\n    base_dir: Path = PROJECT_BASE_DIR.parent\n    data_dir: Path = base_dir / \"data\"\n    tasks_cache_dir: Path = data_dir / \"tasks_cache\"\n    solutions_cache_dir: Path = data_dir / \"solutions_cache\"\n    output_dir: Path = base_dir / \"results\"",
+        "detail": "autoppia_iwa.entrypoints.benchmark copy",
+        "documentation": {}
+    },
+    {
+        "label": "load_real_tasks",
+        "kind": 2,
+        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
+        "description": "autoppia_iwa.entrypoints.benchmark copy",
+        "peekOfCode": "def load_real_tasks() -> List[TaskData]:\n    \"\"\"Load real tasks, excluding impossible ones.\"\"\"\n    logger.info(\"Loading real tasks...\")\n    original_tasks = load_jsonl_file(config.data_dir / \"WebVoyager_data.jsonl\")\n    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / \"WebVoyagerImpossibleTasks.json\"))\n    return [TaskData(**task) for task in original_tasks if task[\"id\"] not in impossible_tasks_ids][: config.num_of_urls]\n@visualize_task(visualizer)\nasync def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:\n    \"\"\"Generate tasks with caching support.\"\"\"\n    if config.evaluate_real_tasks and tasks_data:",
+        "detail": "autoppia_iwa.entrypoints.benchmark copy",
+        "documentation": {}
+    },
+    {
+        "label": "config",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
+        "description": "autoppia_iwa.entrypoints.benchmark copy",
+        "peekOfCode": "config = BenchmarkConfig()\nsolution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Browser-Use\", host=\"localhost\", port=9000, timeout=120),\n    ApifiedWebAgent(name=\"Autoppia-Agent\", host=\"localhost\", port=9002, timeout=120),\n]\n# Setup logging\nlogging.basicConfig(",
+        "detail": "autoppia_iwa.entrypoints.benchmark copy",
+        "documentation": {}
+    },
+    {
+        "label": "solution_cache",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
+        "description": "autoppia_iwa.entrypoints.benchmark copy",
+        "peekOfCode": "solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Browser-Use\", host=\"localhost\", port=9000, timeout=120),\n    ApifiedWebAgent(name=\"Autoppia-Agent\", host=\"localhost\", port=9002, timeout=120),\n]\n# Setup logging\nlogging.basicConfig(\n    level=logging.INFO,",
+        "detail": "autoppia_iwa.entrypoints.benchmark copy",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
+        "description": "autoppia_iwa.entrypoints.benchmark copy",
+        "peekOfCode": "logger = logging.getLogger(\"benchmark\")\nvisualizer = SubnetVisualizer()\ndef load_real_tasks() -> List[TaskData]:\n    \"\"\"Load real tasks, excluding impossible ones.\"\"\"\n    logger.info(\"Loading real tasks...\")\n    original_tasks = load_jsonl_file(config.data_dir / \"WebVoyager_data.jsonl\")\n    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / \"WebVoyagerImpossibleTasks.json\"))\n    return [TaskData(**task) for task in original_tasks if task[\"id\"] not in impossible_tasks_ids][: config.num_of_urls]\n@visualize_task(visualizer)\nasync def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:",
+        "detail": "autoppia_iwa.entrypoints.benchmark copy",
+        "documentation": {}
+    },
+    {
+        "label": "visualizer",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
+        "description": "autoppia_iwa.entrypoints.benchmark copy",
+        "peekOfCode": "visualizer = SubnetVisualizer()\ndef load_real_tasks() -> List[TaskData]:\n    \"\"\"Load real tasks, excluding impossible ones.\"\"\"\n    logger.info(\"Loading real tasks...\")\n    original_tasks = load_jsonl_file(config.data_dir / \"WebVoyager_data.jsonl\")\n    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / \"WebVoyagerImpossibleTasks.json\"))\n    return [TaskData(**task) for task in original_tasks if task[\"id\"] not in impossible_tasks_ids][: config.num_of_urls]\n@visualize_task(visualizer)\nasync def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:\n    \"\"\"Generate tasks with caching support.\"\"\"",
+        "detail": "autoppia_iwa.entrypoints.benchmark copy",
+        "documentation": {}
+    },
+    {
+        "label": "BenchmarkConfig",
+        "kind": 6,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "class BenchmarkConfig:\n    \"\"\"Configuration for the benchmark test.\"\"\"\n    use_cached_tasks: bool = False\n    use_cached_solutions: bool = False\n    evaluate_real_tasks: bool = True\n    base_dir: Path = PROJECT_BASE_DIR.parent\n    data_dir: Path = base_dir / \"data\"\n    tasks_cache_dir: Path = data_dir / \"tasks_cache\"\n    solutions_cache_dir: Path = data_dir / \"solutions_cache\"\n    output_dir: Path = base_dir / \"results\"",
+        "peekOfCode": "class BenchmarkConfig:\n    \"\"\"Configuration for the benchmark test.\"\"\"\n    use_cached_tasks: bool = False\n    use_cached_solutions: bool = False\n    evaluate_real_tasks: bool = False\n    m: int = 1  # Number of copies of each solution to evaluate\n    prompts_per_url: int = 5\n    num_of_urls: int = 2\n    # Paths\n    base_dir: Path = PROJECT_BASE_DIR.parent",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -9416,7 +9758,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "config = BenchmarkConfig()\nsolution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Browser-Use\", host=\"localhost\", port=9000, timeout=120),\n    ApifiedWebAgent(name=\"Autoppia-Agent\", host=\"localhost\", port=9002, timeout=120),\n]\n# Setup logging\nlogging.basicConfig(",
+        "peekOfCode": "config = BenchmarkConfig()\nsolution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    # ApifiedWebAgent(name=\"Browser-Use\", host=\"localhost\", port=9000, timeout=120),\n    # ApifiedWebAgent(name=\"Autoppia-Agent\", host=\"localhost\", port=9002, timeout=120),\n]\n# Setup logging\nlogging.basicConfig(",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -9425,7 +9767,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Browser-Use\", host=\"localhost\", port=9000, timeout=120),\n    ApifiedWebAgent(name=\"Autoppia-Agent\", host=\"localhost\", port=9002, timeout=120),\n]\n# Setup logging\nlogging.basicConfig(\n    level=logging.INFO,",
+        "peekOfCode": "solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    # ApifiedWebAgent(name=\"Browser-Use\", host=\"localhost\", port=9000, timeout=120),\n    # ApifiedWebAgent(name=\"Autoppia-Agent\", host=\"localhost\", port=9002, timeout=120),\n]\n# Setup logging\nlogging.basicConfig(\n    level=logging.INFO,",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -9740,17 +10082,17 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
-        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service]):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate_tasks(self, use_case_name: str, num_prompts: int = 5) -> List[Task]:\n        use_case = next(uc for uc in self.web_project.use_cases if uc[\"name\"] == use_case_name)\n        films = [self.web_project.random_generation_function(use_case[\"model_class\"]) for _ in range(num_prompts)]\n        examples_str = '\\n\\n'.join(\n            f\"{idx + 1}. Title: {film.title}\\nGenre: {film.genre}\\nDirector: {film.director}\\nYear: {film.release_year}\"\n            for idx, film in enumerate(films)",
+        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(\n        self, \n        web_project: WebProject, \n        llm_service: ILLM = Provide[DIContainer.llm_service]\n    ):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate_tasks_for_use_case(self, use_case: UseCase, num_prompts: int = 10) -> List[Task]:\n        \"\"\"",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "documentation": {}
     },
     {
-        "label": "logger",
+        "label": "GLOBAL_TASK_GENERATION_PROMPT",
         "kind": 5,
-        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
-        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
-        "peekOfCode": "logger = logging.getLogger(__name__)\nclass GlobalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service]):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate_tasks(self, use_case_name: str, num_prompts: int = 5) -> List[Task]:\n        use_case = next(uc for uc in self.web_project.use_cases if uc[\"name\"] == use_case_name)\n        films = [self.web_project.random_generation_function(use_case[\"model_class\"]) for _ in range(num_prompts)]\n        examples_str = '\\n\\n'.join(\n            f\"{idx + 1}. Title: {film.title}\\nGenre: {film.genre}\\nDirector: {film.director}\\nYear: {film.release_year}\"",
-        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
+        "peekOfCode": "GLOBAL_TASK_GENERATION_PROMPT = \"\"\"\n# Task Generation Request\n## Use Case Information\n- Name: {use_case_name}\n- Description: {use_case_description}\n- Success Criteria: {success_criteria}\n## Domain-Specific Examples:\n{examples_str}\n## Validation Requirements:\nThis task must create an event that satisfies these validation criteria:",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
         "documentation": {}
     },
     {
@@ -9947,7 +10289,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "peekOfCode": "class TaskGenerationConfig(BaseModel):\n    save_task_in_db: bool = False\n    save_web_analysis_in_db: bool = True\n    enable_crawl: bool = True\n    generate_milestones: bool = False\n    num_or_urls: int = None\n    random_urls: bool = True\n    prompts_per_url: int = 20\n    generate_local_tasks: bool = True\n    generate_global_tasks: bool = True",
+        "peekOfCode": "class TaskGenerationConfig(BaseModel):\n    # Database saving options\n    save_task_in_db: bool = False    \n    # URL handling\n    num_of_urls: int = 5  # Number of URLs to process\n    random_urls: bool = True  # Whether to randomly select URLs\n    # Task generation controls\n    generate_local_tasks: bool = False  # Generate page-specific tasks\n    generate_global_tasks: bool = True  # Generate global use case tasks\n    # Task quantity controls",
         "detail": "autoppia_iwa.src.data_generation.domain.classes",
         "documentation": {}
     },
@@ -10033,30 +10375,246 @@
         "documentation": {}
     },
     {
+        "label": "Event",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "peekOfCode": "class Event(BaseModel):\n    \"\"\"Base event class for all event types\"\"\"\n    type: str\n    timestamp: int\n    web_agent_id: int\n    user_id: Optional[int] = None\n    class ValidationCriteria(BaseModel):\n        pass\n    def validate(self) -> bool:\n        \"\"\"Check if this event meets the validation criteria\"\"\"",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "documentation": {}
+    },
+    {
+        "label": "FilmDetailEvent",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "peekOfCode": "class FilmDetailEvent(Event):\n    \"\"\"Event triggered when a film detail page is viewed\"\"\"\n    movie: Movie\n    class ValidationCriteria(BaseModel):\n        \"\"\"Validation criteria for FilmDetailEvent\"\"\"\n        name: Optional[str] = None\n        genre: Optional[str] = None\n        director: Optional[str] = None\n        year: Optional[int] = None\n        class Config:",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "documentation": {}
+    },
+    {
+        "label": "SearchEvent",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "peekOfCode": "class SearchEvent(Event):\n    \"\"\"Event triggered when a search is performed\"\"\"\n    query: str\n    class ValidationCriteria(Event.ValidationCriteria):\n        \"\"\"Validation criteria for SearchEvent\"\"\"\n        query: Optional[str] = None\n        match_type: str = \"exact\"  # Default to exact matching\n        class Config:\n            title = \"Search Validation\"\n            description = \"Validates that a search was performed with specific query\"",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "documentation": {}
+    },
+    {
+        "label": "RegistrationEvent",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "peekOfCode": "class RegistrationEvent(Event):\n    \"\"\"Event triggered when a user registration is completed\"\"\"\n    # No additional validation needed, just check the event type\nclass LoginEvent(Event):\n    \"\"\"Event triggered when a user logs in\"\"\"\n    username: str\n    # No additional validation needed, just check the event type\n# ================ Available Events and Use Cases ================\nEVENTS = [FilmDetailEvent, SearchEvent, RegistrationEvent, LoginEvent]",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "documentation": {}
+    },
+    {
+        "label": "LoginEvent",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "peekOfCode": "class LoginEvent(Event):\n    \"\"\"Event triggered when a user logs in\"\"\"\n    username: str\n    # No additional validation needed, just check the event type\n# ================ Available Events and Use Cases ================\nEVENTS = [FilmDetailEvent, SearchEvent, RegistrationEvent, LoginEvent]",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "documentation": {}
+    },
+    {
+        "label": "EVENTS",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "peekOfCode": "EVENTS = [FilmDetailEvent, SearchEvent, RegistrationEvent, LoginEvent]",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "documentation": {}
+    },
+    {
         "label": "FRONTEND_PORT_INDEX",
         "kind": 5,
-        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema",
-        "description": "autoppia_iwa.src.demo_webs.projects.cinema",
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "peekOfCode": "FRONTEND_PORT_INDEX = 1\nBACKEND_PORT_INDEX = 1\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,",
-        "detail": "autoppia_iwa.src.demo_webs.projects.cinema",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "documentation": {}
     },
     {
         "label": "BACKEND_PORT_INDEX",
         "kind": 5,
-        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema",
-        "description": "autoppia_iwa.src.demo_webs.projects.cinema",
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "peekOfCode": "BACKEND_PORT_INDEX = 1\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES",
-        "detail": "autoppia_iwa.src.demo_webs.projects.cinema",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "documentation": {}
     },
     {
         "label": "cinema_project",
         "kind": 5,
-        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema",
-        "description": "autoppia_iwa.src.demo_webs.projects.cinema",
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "peekOfCode": "cinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES\n)",
-        "detail": "autoppia_iwa.src.demo_webs.projects.cinema",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
+        "documentation": {}
+    },
+    {
+        "label": "Genre",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "class Genre(BaseModel):\n    id: Optional[int] = None\n    name: str = Field(max_length=100)\n    model_config = {\n        \"from_attributes\": True\n    }\nclass Comment(BaseModel):\n    id: Optional[int] = None\n    movie_id: int\n    name: str = Field(max_length=100)",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "Comment",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "class Comment(BaseModel):\n    id: Optional[int] = None\n    movie_id: int\n    name: str = Field(max_length=100)\n    content: str\n    created_at: Optional[datetime] = None\n    avatar: Optional[str] = None\n    model_config = {\n        \"from_attributes\": True\n    }",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "Movie",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "class Movie(BaseModel):\n    id: Optional[int] = None\n    name: str = Field(max_length=250)\n    desc: str\n    year: int = Field(ge=1900, le=2100)\n    img: str\n    director: Optional[str] = Field(None, max_length=250)\n    cast: Optional[str] = None\n    duration: Optional[int] = Field(None, description=\"Duration in minutes\")\n    trailer_url: Optional[AnyUrl] = None",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "UserProfile",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "class UserProfile(BaseModel):\n    id: Optional[int] = None\n    user_id: int\n    bio: Optional[str] = Field(None, max_length=500)\n    profile_pic: Optional[str] = None\n    favorite_genres: List[Genre] = []\n    website: Optional[AnyUrl] = None\n    location: Optional[str] = Field(None, max_length=100)\n    model_config = {\n        \"from_attributes\": True",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "User",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "class User(BaseModel):\n    id: Optional[int] = None\n    username: str\n    email: str\n    first_name: Optional[str] = None\n    last_name: Optional[str] = None\n    profile: Optional[UserProfile] = None\n    model_config = {\n        \"from_attributes\": True\n    }",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "ContactMessage",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "class ContactMessage(BaseModel):\n    id: Optional[int] = None\n    name: str = Field(max_length=100)\n    email: str\n    subject: str = Field(max_length=200)\n    message: str\n    created_at: Optional[datetime] = None\n    model_config = {\n        \"from_attributes\": True\n    }",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "generate_fake_genre",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "def generate_fake_genre() -> Genre:\n    return Genre(\n        id=faker.random_int(min=1, max=100),\n        name=faker.word().capitalize()\n    )\ndef generate_fake_movie() -> Movie:\n    return Movie(\n        id=faker.random_int(min=1, max=1000),\n        name=faker.catch_phrase(),\n        desc=faker.text(),",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "generate_fake_movie",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "def generate_fake_movie() -> Movie:\n    return Movie(\n        id=faker.random_int(min=1, max=1000),\n        name=faker.catch_phrase(),\n        desc=faker.text(),\n        year=faker.random_int(min=1950, max=2023),\n        img=f\"gallery/{faker.file_name(extension='jpg')}\",\n        director=faker.name(),\n        cast=\", \".join([faker.name() for _ in range(3)]),\n        duration=faker.random_int(min=60, max=180),",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "generate_fake_comment",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "def generate_fake_comment(movie_id: Optional[int] = None) -> Comment:\n    return Comment(\n        id=faker.random_int(min=1, max=1000),\n        movie_id=movie_id or faker.random_int(min=1, max=100),\n        name=faker.name(),\n        content=faker.text(),\n        created_at=faker.date_time_this_year(),\n        avatar=f\"gallery/avatars/{faker.file_name(extension='jpg')}\" if faker.boolean() else None\n    )\ndef generate_fake_user_profile(user_id: Optional[int] = None) -> UserProfile:",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "generate_fake_user_profile",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "def generate_fake_user_profile(user_id: Optional[int] = None) -> UserProfile:\n    return UserProfile(\n        id=faker.random_int(min=1, max=1000),\n        user_id=user_id or faker.random_int(min=1, max=100),\n        bio=faker.text(max_nb_chars=200) if faker.boolean() else None,\n        profile_pic=f\"gallery/profiles/{faker.file_name(extension='jpg')}\" if faker.boolean() else None,\n        favorite_genres=[generate_fake_genre() for _ in range(faker.random_int(min=0, max=3))],\n        website=faker.url() if faker.boolean() else None,\n        location=faker.city() if faker.boolean() else None\n    )",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "generate_fake_user",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "def generate_fake_user() -> User:\n    user_id = faker.random_int(min=1, max=100)\n    return User(\n        id=user_id,\n        username=faker.user_name(),\n        email=faker.email(),\n        first_name=faker.first_name(),\n        last_name=faker.last_name(),\n        profile=generate_fake_user_profile(user_id)\n    )",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "generate_fake_contact_message",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "def generate_fake_contact_message() -> ContactMessage:\n    return ContactMessage(\n        id=faker.random_int(min=1, max=1000),\n        name=faker.name(),\n        email=faker.email(),\n        subject=faker.sentence(),\n        message=faker.text(max_nb_chars=200),\n        created_at=faker.date_time_this_year()\n    )\ndef generate_fake_data(count: int = 5) -> Dict[str, List[Any]]:",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "generate_fake_data",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "def generate_fake_data(count: int = 5) -> Dict[str, List[Any]]:\n    \"\"\"Generate fake data for all models\"\"\"\n    movies = [generate_fake_movie() for _ in range(count)]\n    # Add comments to movies\n    for movie in movies:\n        movie.comments = [generate_fake_comment(movie.id) for _ in range(faker.random_int(min=0, max=5))]\n    return {\n        \"genres\": [generate_fake_genre() for _ in range(count)],\n        \"movies\": movies,\n        \"comments\": [c for m in movies for c in m.comments],",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "MODELS",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "MODELS = [Genre,Comment,Movie,UserProfile,User,ContactMessage]\n# ================ Data Generation Functions ================\n# Initialize Faker\nfaker = Faker()\ndef generate_fake_genre() -> Genre:\n    return Genre(\n        id=faker.random_int(min=1, max=100),\n        name=faker.word().capitalize()\n    )\ndef generate_fake_movie() -> Movie:",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "faker",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "peekOfCode": "faker = Faker()\ndef generate_fake_genre() -> Genre:\n    return Genre(\n        id=faker.random_int(min=1, max=100),\n        name=faker.word().capitalize()\n    )\ndef generate_fake_movie() -> Movie:\n    return Movie(\n        id=faker.random_int(min=1, max=1000),\n        name=faker.catch_phrase(),",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "documentation": {}
+    },
+    {
+        "label": "RELEVANT_DATA",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.relevant_data",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.relevant_data",
+        "peekOfCode": "RELEVANT_DATA = {\n    \"User for Login\": {\n        \"email\": \"admin@moviesapp.com\",\n        \"password\": \"admin123\"\n    },\n    \"User for Registration\": {\n        \"email\": \"new-user@moviesapp.com\",\n        \"password\": \"admin123\"\n    }\n}",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.relevant_data",
+        "documentation": {}
+    },
+    {
+        "label": "USE_CASES",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "peekOfCode": "USE_CASES = [\n    UseCase(\n        name=\"Registration\",\n        prompt_template=\"Fill registration form and register\",\n        event=RegistrationEvent,\n        success_criteria=\"Task is successful if the user is actually registered\",\n        test_examples=[\n            {\n                \"type\": \"CheckEventTest\", \n                \"event_name\": \"RegistrationEvent\",",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "documentation": {}
+    },
+    {
+        "label": "UseCase",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.demo_webs.classes",
+        "description": "autoppia_iwa.src.demo_webs.classes",
+        "peekOfCode": "class UseCase(BaseModel):\n    \"\"\"Represents a use case in the application\"\"\"\n    name: str\n    prompt_template: str\n    event: Type  # The event type associated with this use case\n    success_criteria: str\n    test_examples: List[dict]\n    def get_prompt(self, **kwargs) -> str:\n        \"\"\"\n        Generate a concrete prompt by filling in the template",
+        "detail": "autoppia_iwa.src.demo_webs.classes",
         "documentation": {}
     },
     {
@@ -10064,7 +10622,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.demo_webs.classes",
         "description": "autoppia_iwa.src.demo_webs.classes",
-        "peekOfCode": "class WebProject(BaseModel):\n    id: str = Field(..., description=\"Unique identifier of the web project\")\n    name: str = Field(..., min_length=1, description=\"Name of the web project\")\n    backend_url: str = Field(..., description=\"URL of the backend server\")\n    frontend_url: str = Field(..., description=\"URL of the frontend application\")\n    is_web_real: bool = False\n    urls: List[str] = []\n    domain_analysis: Optional[DomainAnalysis] = None\n    events: Dict[str, Any] = Field(default_factory=dict, description=\"Structured events information\")\n    relevant_data: Dict[str, Any] = Field(default_factory=dict, description=\"Structured additional information about the web project\")",
+        "peekOfCode": "class WebProject(BaseModel):\n    id: str = Field(..., description=\"Unique identifier of the web project\")\n    name: str = Field(..., min_length=1, description=\"Name of the web project\")\n    backend_url: str = Field(..., description=\"URL of the backend server\")\n    frontend_url: str = Field(..., description=\"URL of the frontend application\")\n    is_web_real: bool = False\n    urls: List[str] = []\n    domain_analysis: Optional[DomainAnalysis] = None\n    events: List[Type] = Field(default_factory=dict, description=\"Structured events information\")\n    relevant_data: Dict[str, Any] = Field(default_factory=dict, description=\"Structured additional information about the web project\")",
         "detail": "autoppia_iwa.src.demo_webs.classes",
         "documentation": {}
     },
@@ -10082,7 +10640,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.config",
         "description": "autoppia_iwa.src.demo_webs.config",
-        "peekOfCode": "demo_web_projects = [\n    cinema_project\n]\ntest_demo_web_projects = [\n    WebProject(\n        name=\"Autoppia\", \n        backend_url=\"\", \n        frontend_url=\"https://www.autoppia.com\", \n        is_web_real=True, \n        events=[], ",
+        "peekOfCode": "demo_web_projects = [\n    cinema_project\n]\ntest_demo_web_projects = [\n    WebProject(\n        id=\"autoppia\",\n        name=\"Autoppia\", \n        backend_url=\"\", \n        frontend_url=\"https://www.autoppia.com\", \n        is_web_real=True, ",
         "detail": "autoppia_iwa.src.demo_webs.config",
         "documentation": {}
     },
@@ -10091,7 +10649,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.config",
         "description": "autoppia_iwa.src.demo_webs.config",
-        "peekOfCode": "test_demo_web_projects = [\n    WebProject(\n        name=\"Autoppia\", \n        backend_url=\"\", \n        frontend_url=\"https://www.autoppia.com\", \n        is_web_real=True, \n        events=[], \n        relevant_data={})\n]",
+        "peekOfCode": "test_demo_web_projects = [\n    WebProject(\n        id=\"autoppia\",\n        name=\"Autoppia\", \n        backend_url=\"\", \n        frontend_url=\"https://www.autoppia.com\", \n        is_web_real=True, \n        events=[], \n        relevant_data={}\n    )",
         "detail": "autoppia_iwa.src.demo_webs.config",
         "documentation": {}
     },
@@ -10118,7 +10676,7 @@
         "kind": 2,
         "importPath": "autoppia_iwa.src.demo_webs.utils",
         "description": "autoppia_iwa.src.demo_webs.utils",
-        "peekOfCode": "def get_frontend_url(index):\n    return f\"{DEMO_WEBS_ENDPOINT}:{str(8000 + index) + '/'}\"\ndef get_backend_url(index: int, symetric=True):\n    if symetric:\n        return f\"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}\"\n    else:\n        return f\"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}\"\nasync def initialize_demo_webs_projects(demo_web_projects):\n    for demo_web_project in demo_web_projects:\n        await _load_web_analysis(demo_web_project)",
+        "peekOfCode": "def get_frontend_url(index):\n    return f\"{DEMO_WEBS_ENDPOINT}:{str(8000 + index) + '/'}\"\ndef get_backend_url(index: int, symetric=True):\n    if symetric:\n        return f\"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}\"\n    else:\n        return f\"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}\"\nasync def initialize_demo_webs_projects(demo_web_projects:List[WebProject]):\n    for demo_web_project in demo_web_projects:\n        await _load_web_analysis(demo_web_project)",
         "detail": "autoppia_iwa.src.demo_webs.utils",
         "documentation": {}
     },
@@ -10127,7 +10685,7 @@
         "kind": 2,
         "importPath": "autoppia_iwa.src.demo_webs.utils",
         "description": "autoppia_iwa.src.demo_webs.utils",
-        "peekOfCode": "def get_backend_url(index: int, symetric=True):\n    if symetric:\n        return f\"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}\"\n    else:\n        return f\"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}\"\nasync def initialize_demo_webs_projects(demo_web_projects):\n    for demo_web_project in demo_web_projects:\n        await _load_web_analysis(demo_web_project)\n    return demo_web_projects\nasync def _run_web_analysis(",
+        "peekOfCode": "def get_backend_url(index: int, symetric=True):\n    if symetric:\n        return f\"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}\"\n    else:\n        return f\"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}\"\nasync def initialize_demo_webs_projects(demo_web_projects:List[WebProject]):\n    for demo_web_project in demo_web_projects:\n        await _load_web_analysis(demo_web_project)\n    return demo_web_projects\nasync def _run_web_analysis(",
         "detail": "autoppia_iwa.src.demo_webs.utils",
         "documentation": {}
     },
@@ -15484,123 +16042,6 @@
         "description": "modules.webs_demo.web_3_demo_movies.movieproject.wsgi",
         "peekOfCode": "application = get_wsgi_application()",
         "detail": "modules.webs_demo.web_3_demo_movies.movieproject.wsgi",
-        "documentation": {}
-    },
-    {
-        "label": "Event",
-        "kind": 6,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "class Event(BaseModel):\n    \"\"\"Base event class for all event types\"\"\"\n    type: str\n    timestamp: int\n    web_agent_id: int\n    user_id: Optional[int] = None\n    class ValidationCriteria(BaseModel):\n        pass\n    def validate(self) -> bool:\n        \"\"\"Check if this event meets the validation criteria\"\"\"",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "FilmDetailEvent",
-        "kind": 6,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "class FilmDetailEvent(Event):\n    \"\"\"Event triggered when a film detail page is viewed\"\"\"\n    movie: Movie\n    class ValidationCriteria(BaseModel):\n        \"\"\"Validation criteria for FilmDetailEvent\"\"\"\n        title: Optional[str] = None\n        genre: Optional[str] = None\n        director: Optional[str] = None\n        year: Optional[int] = None\n        class Config:",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "SearchEvent",
-        "kind": 6,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "class SearchEvent(Event):\n    \"\"\"Event triggered when a search is performed\"\"\"\n    query: str\n    class ValidationCriteria(Event.ValidationCriteria):\n        \"\"\"Validation criteria for SearchEvent\"\"\"\n        query: Optional[str] = None\n        class Config:\n            title = \"Search Validation\"\n            description = \"Validates that a search was performed with specific query\"\n    def validate(self, criteria: ValidationCriteria) -> bool:",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "RegistrationEvent",
-        "kind": 6,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "class RegistrationEvent(Event):\n    \"\"\"Event triggered when a user registration is completed\"\"\"\n    # No additional validation needed, just check the event type\nclass LoginEvent(Event):\n    \"\"\"Event triggered when a user logs in\"\"\"\n    username: str\n    # No additional validation needed, just check the event type\n# ================ Available Events and Use Cases ================\nEVENTS = [FilmDetailEvent, SearchEvent, RegistrationEvent, LoginEvent]\nUSE_CASES = [",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "LoginEvent",
-        "kind": 6,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "class LoginEvent(Event):\n    \"\"\"Event triggered when a user logs in\"\"\"\n    username: str\n    # No additional validation needed, just check the event type\n# ================ Available Events and Use Cases ================\nEVENTS = [FilmDetailEvent, SearchEvent, RegistrationEvent, LoginEvent]\nUSE_CASES = [\n    {\n        \"name\": \"Registration\",\n        \"prompt_template\": \"Fill registration form and register\",",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "generate_random_movie_instance",
-        "kind": 2,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "def generate_random_movie_instance():\n    \"\"\"Generate a random movie instance for testing\"\"\"\n    return Movie(\n        id=faker.random_number(),\n        title=faker.catch_phrase(),\n        genre=faker.word(),\n        director=faker.name(),\n        release_year=int(faker.year())\n    )\ndef generate_random_instance(model_class: Type[Any]) -> Any:",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "generate_random_instance",
-        "kind": 2,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "def generate_random_instance(model_class: Type[Any]) -> Any:\n    \"\"\"Generates a random instance of the specified model class\"\"\"\n    model_name = model_class.__name__\n    generator = MODEL_GENERATION_MAP.get(model_name)\n    if not generator:\n        raise ValueError(f\"No generator defined for model {model_name}\")\n    instance_data = generator(faker)\n    return model_class(**instance_data)\ndef model_to_schema(model_class: Any) -> Dict[str, str]:\n    \"\"\"Extracts schema (field names and types) from a model class for event validation\"\"\"",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "model_to_schema",
-        "kind": 2,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "def model_to_schema(model_class: Any) -> Dict[str, str]:\n    \"\"\"Extracts schema (field names and types) from a model class for event validation\"\"\"\n    return {field: field_type.__name__ for field, field_type in model_class.__annotations__.items()}",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "MODELS",
-        "kind": 5,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "MODELS = [Genre, Movie, Comment, UserProfile, ContactMessage]\n# ================ Event Classes with Nested Validation Criteria ================\nclass Event(BaseModel):\n    \"\"\"Base event class for all event types\"\"\"\n    type: str\n    timestamp: int\n    web_agent_id: int\n    user_id: Optional[int] = None\n    class ValidationCriteria(BaseModel):\n        pass",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "EVENTS",
-        "kind": 5,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "EVENTS = [FilmDetailEvent, SearchEvent, RegistrationEvent, LoginEvent]\nUSE_CASES = [\n    {\n        \"name\": \"Registration\",\n        \"prompt_template\": \"Fill registration form and register\",\n        \"event\": RegistrationEvent,\n        \"success_criteria\": \"Task is successful if the user is actually registered\",\n        \"tests\": [\n            {\n                \"type\": \"CheckEventTest\", ",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "USE_CASES",
-        "kind": 5,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "USE_CASES = [\n    {\n        \"name\": \"Registration\",\n        \"prompt_template\": \"Fill registration form and register\",\n        \"event\": RegistrationEvent,\n        \"success_criteria\": \"Task is successful if the user is actually registered\",\n        \"tests\": [\n            {\n                \"type\": \"CheckEventTest\", \n                \"event_name\": \"RegistrationEvent\",",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "RELEVANT_DATA",
-        "kind": 5,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "RELEVANT_DATA = {\n    \"User for Login\": {\n        \"email\": \"admin@moviesapp.com\",\n        \"password\": \"admin123\"\n    },\n    \"User for Registration\": {\n        \"email\": \"new-user@moviesapp.com\",\n        \"password\": \"admin123\"\n    }\n}",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
-        "documentation": {}
-    },
-    {
-        "label": "faker",
-        "kind": 5,
-        "importPath": "modules.webs_demo.web_3_demo_movies.export",
-        "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "faker = Faker()\nMODEL_GENERATION_MAP: Dict[str, Any] = {\n    \"Genre\": lambda faker: {\"name\": faker.word()},\n    \"Movie\": lambda faker: {\n        \"id\": faker.random_number(digits=6),\n        \"title\": faker.catch_phrase(),\n        \"genre\": faker.word(),\n        \"director\": faker.name(),\n        \"release_year\": int(faker.year())\n    },",
-        "detail": "modules.webs_demo.web_3_demo_movies.export",
         "documentation": {}
     },
     {

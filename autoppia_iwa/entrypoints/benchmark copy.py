@@ -9,8 +9,8 @@ from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects, _load_web_analysis
+from autoppia_iwa.src.demo_webs.config import (_load_web_analysis, demo_web_projects,
+                                               initialize_demo_webs_projects)
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
@@ -31,18 +31,17 @@ class BenchmarkConfig:
 
     use_cached_tasks: bool = False
     use_cached_solutions: bool = False
-    evaluate_real_tasks: bool = False
+    evaluate_real_tasks: bool = True
 
-    m: int = 1  # Number of copies of each solution to evaluate
-    prompts_per_url: int = 5
-    num_of_urls: int = 2
-
-    # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
     tasks_cache_dir: Path = data_dir / "tasks_cache"
     solutions_cache_dir: Path = data_dir / "solutions_cache"
     output_dir: Path = base_dir / "results"
+
+    m: int = 1  # Number of copies of each solution to evaluate
+    prompts_per_url: int = 2
+    num_of_urls: int = 2
 
     def __post_init__(self):
         for directory in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir):
@@ -56,8 +55,8 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Define agents
 AGENTS: List[BaseAgent] = [
     RandomClickerWebAgent(name="Random-clicker"),
-    # ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
-    # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
+    ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
+    ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
 # Setup logging
@@ -196,7 +195,7 @@ async def main():
 
     if not config.evaluate_real_tasks:
         web_projects = demo_web_projects
-        web_projects = await initialize_demo_webs_projects(demo_web_projects)
+        web_projects = await initialize_demo_webs_projects()
         web_projects = [web_projects[0]]
         for project in web_projects:
             tasks = await generate_tasks(project)

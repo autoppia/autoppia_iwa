@@ -1,7 +1,31 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, List, Optional, Callable, Type
 from pydantic import BaseModel, Field
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
+from autoppia_iwa.src.demo_webs.projects.cinema_1.events import Event
+
+
+class UseCase(BaseModel):
+    """Represents a use case in the application"""
+    name: str
+    prompt_template: str
+    event: Type  # The event type associated with this use case
+    success_criteria: str
+    test_examples: List[dict]
+
+    def get_prompt(self, **kwargs) -> str:
+        """
+        Generate a concrete prompt by filling in the template
+        with the provided arguments
+        """
+        return self.prompt_template.format(**kwargs)
+
+    def check_success(self, events: List[Any]) -> bool:
+        """
+        Check if the use case was successful based on the events that occurred
+        """
+        # Basic implementation - check if any event of the expected type exists
+        return any(isinstance(event, self.event) for event in events)
 
 
 class WebProject(BaseModel):
@@ -12,10 +36,10 @@ class WebProject(BaseModel):
     is_web_real: bool = False
     urls: List[str] = []
     domain_analysis: Optional[DomainAnalysis] = None
-    events: Dict[str, Any] = Field(default_factory=dict, description="Structured events information")
+    events: List[Type] = Field(default_factory=dict, description="Structured events information")
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
     models: List[Any] = []
-    use_cases:Dict[Any] = None
+    use_cases:List[UseCase] = None
     random_generation_function: Callable[[Any], Any] = None
 
 

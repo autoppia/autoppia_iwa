@@ -1,6 +1,9 @@
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from modules.webs_demo.web_3_demo_movies.export import USE_CASES, EVENTS , RELEVANT_DATA, MODELS
-from ..utils import get_frontend_url, get_backend_url
+from .events import EVENTS
+from .relevant_data import RELEVANT_DATA
+from .models import MODELS
+from .use_cases import USE_CASES
+from ...utils import get_frontend_url, get_backend_url
 
 FRONTEND_PORT_INDEX = 1
 BACKEND_PORT_INDEX = 1

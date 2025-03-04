@@ -6,7 +6,6 @@ from typing import Any, Dict, List
 from dependency_injector.wiring import Provide
 from loguru import logger
 
-from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import TestLogicGenerator
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -37,7 +36,6 @@ class LocalTestGenerationPipeline:
         self.web_project = web_project
         self.llm_service = llm_service
         self.truncate_html_chars = truncate_html_chars
-        self.logic_generator = TestLogicGenerator()
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 

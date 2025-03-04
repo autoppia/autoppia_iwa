@@ -10,6 +10,7 @@ from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
+from typing import List
 
 
 def get_frontend_url(index):
@@ -23,7 +24,7 @@ def get_backend_url(index: int, symetric=True):
         return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}"
 
 
-async def initialize_demo_webs_projects(demo_web_projects):
+async def initialize_demo_webs_projects(demo_web_projects:List[WebProject]):
     for demo_web_project in demo_web_projects:
         await _load_web_analysis(demo_web_project)
     return demo_web_projects

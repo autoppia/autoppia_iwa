@@ -117,12 +117,18 @@ class Task(BaseModel):
 
 
 class TaskGenerationConfig(BaseModel):
-    save_task_in_db: bool = False
-    save_web_analysis_in_db: bool = True
-    enable_crawl: bool = True
-    generate_milestones: bool = False
-    num_or_urls: int = None
-    random_urls: bool = True
-    prompts_per_url: int = 20
-    generate_local_tasks: bool = True
-    generate_global_tasks: bool = True
+    # Database saving options
+    save_task_in_db: bool = False    
+
+    # URL handling
+    num_of_urls: int = 5  # Number of URLs to process
+    random_urls: bool = True  # Whether to randomly select URLs
+
+    # Task generation controls
+    generate_local_tasks: bool = False  # Generate page-specific tasks
+    generate_global_tasks: bool = True  # Generate global use case tasks
+
+    # Task quantity controls
+    prompts_per_url: int = 20  # Maximum tasks to return per URL
+    tasks_per_use_case: int = 10  # Number of task variations to generate per use case
+    final_task_limit: int = 50  # Total maximum tasks to return from the pipeline
