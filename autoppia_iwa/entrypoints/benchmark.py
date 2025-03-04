@@ -4,13 +4,14 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
+
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects, _load_web_analysis
+from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
@@ -18,7 +19,6 @@ from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_
 from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
@@ -34,7 +34,7 @@ class BenchmarkConfig:
     evaluate_real_tasks: bool = False
 
     m: int = 1  # Number of copies of each solution to evaluate
-    prompts_per_url: int = 5
+    prompts_per_url: int = 3
     num_of_urls: int = 2
 
     # Paths
