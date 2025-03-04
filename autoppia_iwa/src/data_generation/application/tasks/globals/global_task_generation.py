@@ -2,12 +2,11 @@ import asyncio
 import json
 import random
 import re
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from dependency_injector.wiring import Provide
 from loguru import logger
 from PIL import Image
-from pydantic import ValidationError
 
 # Domain & framework imports (adjust paths as needed):
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
@@ -19,9 +18,6 @@ from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot
 
 # Prompt template (adjust path if it's in a different folder):
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
-
-# Adjust the import below to match where DraftTaskList is located in your codebase
-from .schemas import DraftTaskList
 
 
 class GlobalTaskGenerationPipeline:
@@ -72,7 +68,6 @@ class GlobalTaskGenerationPipeline:
         # 2) Build the LLM prompt using a template
         prompt_examples_str = "\n".join(use_case.prompt_examples)
 
-        # Luego usas esta variable en tu formato
         llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
             use_case_name=use_case.name,
             use_case_description=use_case.description,
@@ -80,18 +75,17 @@ class GlobalTaskGenerationPipeline:
             prompt_examples=prompt_examples_str,
             random_generated_instances_str=random_instances_str,
         )
-        # 3) Call the LLM (with retry logic) and parse the JSON result
-        tasks_data: List[Dict[str, str]] = await self._call_llm_with_retry(llm_prompt)
 
-        # 4) For each parsed JSON object, create a Task
+        # 3) Call the LLM (with retry logic) and parse the list of strings result
+        prompt_list = await self._call_llm_with_retry(llm_prompt)
+
+        # 4) For each prompt string, create a Task
         #    We'll fetch the HTML and screenshot just once for all tasks
         url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
 
         tasks: List[Task] = []
-        for item in tasks_data:
-            prompt_text = item.get("prompt", "")
-
+        for prompt_text in prompt_list:
             try:
                 task_obj = self._assemble_task(
                     web_project_id=self.web_project.id,
@@ -129,20 +123,18 @@ class GlobalTaskGenerationPipeline:
                     else:
                         instance_data = {k: getattr(instance, k) for k in dir(instance) if not k.startswith("_") and not callable(getattr(instance, k))}
                     generated_list.append(instance_data)
-
                 return "Random Generated Instances:\n" + json.dumps(generated_list, indent=2)
             except Exception as ex:
                 logger.warning(f"Failed to gather random instances: {str(ex)}")
-
         return "No random instances available."
 
-    async def _call_llm_with_retry(self, llm_prompt: str) -> List[Dict[str, str]]:
+    async def _call_llm_with_retry(self, llm_prompt: str) -> List[str]:
         """
-        Calls the LLM with the given prompt, parsing JSON in a loop with retry.
-        Returns a list of dict objects with at least {"prompt": ..., "success_criteria": ...}.
+        Calls the LLM with the given prompt, parsing the response as a list of strings with retry.
+        Returns a list of prompt strings.
         """
         messages = [
-            {"role": "system", "content": "You are a helpful assistant that generates user tasks in strict JSON."},
+            {"role": "system", "content": "You are a helpful assistant that generates user tasks as a list of strings."},
             {"role": "user", "content": llm_prompt},
         ]
 
@@ -152,7 +144,6 @@ class GlobalTaskGenerationPipeline:
                 parsed_data = await self._parse_llm_response(resp_text)
                 if parsed_data:
                     return parsed_data
-
                 logger.warning(f"Attempt {attempt + 1}: Could not parse LLM response, retrying...")
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))
@@ -164,10 +155,9 @@ class GlobalTaskGenerationPipeline:
         logger.error(f"All {self.max_retries} attempts to parse LLM response have failed.")
         return []
 
-    async def _parse_llm_response(self, resp_text: str) -> List[dict]:
+    async def _parse_llm_response(self, resp_text: str) -> List[str]:
         """
-        Helper method to parse and validate the LLM response as a JSON array of tasks,
-        each with "prompt" and "success_criteria" fields.
+        Helper method to parse the LLM response as a list of strings.
         """
         try:
             # Clean up possible Markdown code blocks like ```json ... ```
@@ -185,57 +175,24 @@ class GlobalTaskGenerationPipeline:
             # Now parse the cleaned JSON
             data = json.loads(cleaned_text)
 
-            # If data is a dict with known keys
-            if isinstance(data, dict):
-                if 'tasks' in data and isinstance(data['tasks'], list):
-                    data = data['tasks']
-                elif 'result' in data and isinstance(data['result'], list):
-                    data = data['result']
-                elif data.get("type") == "array" and "items" in data:
-                    data = data["items"]
-                elif "prompt" in data:
-                    # It's a single-task dict
-                    data = [data]
-                else:
-                    logger.warning(f"Unexpected JSON structure: {data}")
-                    return []
-
-            # At this point we expect data to be a list
-            if not isinstance(data, list):
+            # Ensure we have a list of strings
+            if isinstance(data, list):
+                # Convert any non-string items to strings if needed
+                return [str(item) for item in data]
+            else:
                 logger.warning(f"Expected a list but got {type(data)}.")
                 return []
 
-            # Optionally validate with Pydantic DraftTaskList
-            try:
-                draft_list = DraftTaskList.model_validate(data)
-                validated_tasks = []
-                for item in draft_list.root:
-                    validated_tasks.append({"prompt": item.prompt, "success_criteria": item.success_criteria or ""})
-                return validated_tasks
-            except ValidationError as ve:
-                logger.warning(f"Pydantic validation error: {ve}, doing basic fallback validation.")
-                # Fallback: just pull out "prompt" and "success_criteria"
-                validated_tasks = []
-                for i in data:
-                    if isinstance(i, dict) and "prompt" in i:
-                        validated_tasks.append({"prompt": i.get("prompt", ""), "success_criteria": i.get("success_criteria", "")})
-                return validated_tasks
-
         except json.JSONDecodeError as je:
             logger.error(f"JSON decode error: {je}")
-
-            # Attempt a simpler extraction: look for [ { ... } ]
+            # Attempt a simpler extraction: look for [ ... ]
             try:
-                json_pattern = r'\[\s*\{.*?\}\s*\]'
-                array_match = re.search(json_pattern, resp_text, re.DOTALL)
+                array_pattern = r'\[\s*".*?"\s*(?:,\s*".*?"\s*)*\]'
+                array_match = re.search(array_pattern, resp_text, re.DOTALL)
                 if array_match:
                     extracted_json = array_match.group(0)
                     data = json.loads(extracted_json)
-                    validated_tasks = []
-                    for i in data:
-                        if isinstance(i, dict) and "prompt" in i:
-                            validated_tasks.append({"prompt": i.get("prompt", ""), "success_criteria": i.get("success_criteria", "")})
-                    return validated_tasks
+                    return [str(item) for item in data]
             except Exception:
                 pass
             return []
@@ -255,7 +212,7 @@ class GlobalTaskGenerationPipeline:
         screenshot_desc: str,
     ) -> Task:
         """
-        Assembles a final Task object from the filtered LLM data and loaded page info.
+        Assembles a final Task object from the prompt string and loaded page info.
         """
         return Task(
             scope="global",
