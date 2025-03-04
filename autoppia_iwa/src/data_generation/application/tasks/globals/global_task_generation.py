@@ -1,10 +1,15 @@
+import asyncio
 import json
 import random
-from typing import Any, Dict, List
+import re
+from typing import Dict, List, Optional
 
 from dependency_injector.wiring import Provide
 from loguru import logger
+from PIL import Image
+from pydantic import ValidationError
 
+# Domain & framework imports (adjust paths as needed):
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
@@ -12,204 +17,261 @@ from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.utils import transform_image_into_base64
 from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot
 
+# Prompt template (adjust path if it's in a different folder):
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
+
+# Adjust the import below to match where DraftTaskList is located in your codebase
+from .schemas import DraftTaskList
 
 
 class GlobalTaskGenerationPipeline:
-    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service]):
+    def __init__(
+        self,
+        web_project: WebProject,
+        llm_service: ILLM = Provide[DIContainer.llm_service],
+        max_retries: int = 3,
+        retry_delay: float = 0.1,
+    ):
         self.web_project = web_project
         self.llm_service = llm_service
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
 
-    async def generate(self, prompts_per_use_case: int = 10) -> List[Task]:
+    async def generate(self, prompts_per_use_case: int = 5) -> List[Task]:
         """
         Generate tasks for all use cases in the web project.
-
-        Args:
-            prompts_per_use_case: Number of task variations to generate per use case
-
-        Returns:
-            List of Task objects across all use cases
         """
-        logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks per use case")
+        logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each.")
+        all_tasks: List[Task] = []
 
-        all_tasks = []
-
-        # Check if we have use cases in the web project
+        # If there are no use cases, just return empty
         if not self.web_project.use_cases:
-            logger.warning("No use cases found in web project")
+            logger.warning("No use cases found in web project.")
             return all_tasks
 
-        # Generate tasks for each use case directly from web_project
         for use_case in self.web_project.use_cases:
             logger.info(f"Generating tasks for use case: {use_case.name}")
-
             try:
-                use_case_tasks = await self.generate_tasks_for_use_case(use_case=use_case, num_prompts=prompts_per_use_case)
-
-                all_tasks.extend(use_case_tasks)
-                logger.info(f"Generated {len(use_case_tasks)} tasks for use case: {use_case.name}")
-
+                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case)
+                all_tasks.extend(tasks_for_use_case)
+                logger.info(f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}'")
             except Exception as e:
-                logger.error(f"Error generating tasks for use case {use_case.name}: {str(e)}")
-                # Continue with next use case instead of stopping the process
+                logger.error(f"Error generating tasks for {use_case.name}: {str(e)}")
                 continue
 
-        logger.info(f"Generated {len(all_tasks)} global tasks across all use cases")
+        logger.info(f"Total generated tasks across all use cases: {len(all_tasks)}")
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, num_prompts: int = 10) -> List[Task]:
+    async def generate_tasks_for_use_case(self, use_case: UseCase, num_prompts: int = 5) -> List[Task]:
         """
-        Generate tasks for a specific use case.
-
-        Args:
-            use_case: The UseCase object to generate tasks for
-            num_prompts: Number of task variations to generate
-
-        Returns:
-            List of Task objects
+        Generate tasks for a specific use case by calling the LLM with relevant context.
         """
-        logger.debug(f"Generating {num_prompts} tasks for use case: {use_case.name}")
+        # 1) Gather random model instances to inject into the prompt (if applicable)
+        random_instances_str = await self._gather_random_instances(use_case, num_prompts)
 
-        # Generate examples string for the prompt
-        examples_str = self._get_examples_for_use_case(use_case, num_prompts)
-
-        # Generate prompts using LLM
-        tasks = await self._generate_llm_prompts(use_case, examples_str, num_prompts)
-
-        # Shuffle tasks to ensure randomness
-        random.shuffle(tasks)
-
-        return tasks
-
-    def _get_examples_for_use_case(self, use_case: UseCase, num_prompts: int) -> str:
-        """Get formatted examples for a use case"""
-        # Generate model instances for task examples
-        model_class = use_case.event
-
-        if self.web_project.random_generation_function:
-            # For movie app example
-            if use_case.name == "Search film":
-                films = [self.web_project.random_generation_function(model_class) for _ in range(num_prompts)]
-                examples_str = self._format_film_examples(films)
-            else:
-                # For other use cases, provide relevant data from the web project
-                examples_str = self._format_use_case_data(use_case.name)
-        else:
-            examples_str = f"Use case: {use_case.name}\nSuccess criteria: {use_case.success_criteria}"
-
-        return examples_str
-
-    def _format_film_examples(self, films: List[Any]) -> str:
-        """Format film examples for LLM prompt"""
-        return '\n\n'.join(
-            f"{idx + 1}. Title: {film.title if hasattr(film, 'title') else film.name}\n"
-            f"Genre: {film.genre if hasattr(film, 'genre') else 'Drama'}\n"
-            f"Director: {film.director}\n"
-            f"Year: {film.release_year if hasattr(film, 'release_year') else film.year}"
-            for idx, film in enumerate(films)
-        )
-
-    def _format_use_case_data(self, use_case_name: str) -> str:
-        """Format relevant data for a use case"""
-        if not self.web_project.relevant_data:
-            return f"Use case: {use_case_name}"
-
-        relevant_data = self.web_project.relevant_data.get(use_case_name, {})
-        if not relevant_data:
-            return f"Use case: {use_case_name}"
-
-        formatted_data = []
-        for key, value in relevant_data.items():
-            if isinstance(value, dict):
-                formatted_data.append(f"{key}:\n" + "\n".join(f"  - {k}: {v}" for k, v in value.items()))
-            else:
-                formatted_data.append(f"{key}: {value}")
-
-        return "\n\n".join(formatted_data)
-
-    async def _generate_llm_prompts(self, use_case: UseCase, examples_str: str, num_prompts: int) -> List[Task]:
-        """Generate task prompts using LLM and create Task objects"""
-        event_validation = None
-        tests = use_case.test_examples
-
-        for test in tests:
-            if test.get("type") == "CheckEventTest":
-                event_validation = test.get("validation_schema", {})
-                break
-
+        # 2) Build the LLM prompt using a template
         llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
             use_case_name=use_case.name,
             use_case_description=use_case.prompt_template,
             success_criteria=use_case.success_criteria,
-            examples_str=examples_str,
-            validation_schema=json.dumps(event_validation, indent=2) if event_validation else "No specific validation schema",
+            random_generated_instances_str=random_instances_str,
             num_prompts=num_prompts,
         )
 
-        messages = [{"role": "system", "content": "Generate realistic user task prompts based on the provided use case."}, {"role": "user", "content": llm_prompt}]
+        # 3) Call the LLM (with retry logic) and parse the JSON result
+        tasks_data: List[Dict[str, str]] = await self._call_llm_with_retry(llm_prompt)
 
-        logger.debug("Calling LLM to generate task prompts")
+        # 4) For each parsed JSON object, create a Task
+        #    We'll fetch the HTML and screenshot just once for all tasks
+        url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
+        html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
 
-        try:
-            resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
-            prompts = json.loads(resp_text)
+        tasks: List[Task] = []
+        for item in tasks_data:
+            prompt_text = item.get("prompt", "")
+            success_text = item.get("success_criteria", use_case.success_criteria)
 
-            if not isinstance(prompts, list):
-                logger.error(f"LLM returned invalid format for prompts: {type(prompts)}")
-                return []
-
-            logger.debug(f"Generated {len(prompts)} prompts for use case: {use_case.name}")
-
-            # Create Task objects for each prompt
-            tasks = await self._create_tasks_from_prompts(prompts, use_case)
-            return tasks
-
-        except Exception as e:
-            logger.exception(f"Error generating prompts: {str(e)}")
-            return []
-
-    async def _create_tasks_from_prompts(self, prompts: List[Dict[str, str]], use_case: UseCase) -> List[Task]:
-        """Create Task objects from the generated prompts"""
-        tasks = []
-
-        # Choose a representative URL for the tasks
-        url = self._get_representative_url()
-
-        # For each prompt, create a Task object
-        for prompt_data in prompts:
             try:
-                # Get the page HTML and screenshot
-                html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
-
-                # Create the Task object
-                task = Task(
-                    scope="global",
+                task_obj = self._assemble_task(
                     web_project_id=self.web_project.id,
-                    prompt=prompt_data.get("prompt", ""),
-                    success_criteria=prompt_data.get("success_criteria", use_case.success_criteria),
                     url=url,
-                    html=str(html),
-                    clean_html=str(clean_html),
-                    screenshot=str(transform_image_into_base64(screenshot)) if screenshot else "",
-                    screenshot_description=screenshot_desc,
-                    specifications=BrowserSpecification(),
-                    relevant_data={},
-                    tests=use_case.test_examples,
+                    prompt=prompt_text,
+                    success_criteria=success_text,
+                    html=html,
+                    clean_html=clean_html,
+                    screenshot=screenshot,
+                    screenshot_desc=screenshot_desc,
                 )
-                tasks.append(task)
+                tasks.append(task_obj)
+            except Exception as ex:
+                logger.error(f"Could not assemble Task for prompt '{prompt_text}': {str(ex)}")
 
-            except Exception as e:
-                logger.exception(f"Error creating task from prompt: {str(e)}")
-
+        # Shuffle them if you wish, for variety
+        random.shuffle(tasks)
         return tasks
 
-    def _get_representative_url(self) -> str:
-        """Get a representative URL for the tasks"""
-        # Default to frontend URL
-        url = self.web_project.frontend_url
+    async def _gather_random_instances(self, use_case: UseCase, num_prompts: int) -> str:
+        """
+        Example method to generate random instance data from your domain models,
+        then return them as a JSON string for the LLM to reference.
+        """
+        if hasattr(self.web_project, "random_generation_function") and self.web_project.random_generation_function and getattr(use_case, "event", None) is not None:
+            try:
+                model_class = use_case.event
+                generated_list = []
+                for _ in range(num_prompts):
+                    instance = self.web_project.random_generation_function(model_class)
+                    # Convert to dict if possible
+                    if hasattr(instance, "model_dump"):
+                        instance_data = instance.model_dump()
+                    elif hasattr(instance, "dict"):
+                        instance_data = instance.dict()
+                    else:
+                        instance_data = {k: getattr(instance, k) for k in dir(instance) if not k.startswith("_") and not callable(getattr(instance, k))}
+                    generated_list.append(instance_data)
 
-        # Try to get a more specific URL if available
-        if hasattr(self.web_project, "urls") and self.web_project.urls:
-            url = self.web_project.urls[0]
+                return "Random Generated Instances:\n" + json.dumps(generated_list, indent=2)
+            except Exception as ex:
+                logger.warning(f"Failed to gather random instances: {str(ex)}")
 
-        return url
+        return "No random instances available."
+
+    async def _call_llm_with_retry(self, llm_prompt: str) -> List[Dict[str, str]]:
+        """
+        Calls the LLM with the given prompt, parsing JSON in a loop with retry.
+        Returns a list of dict objects with at least {"prompt": ..., "success_criteria": ...}.
+        """
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant that generates user tasks in strict JSON."},
+            {"role": "user", "content": llm_prompt},
+        ]
+
+        for attempt in range(self.max_retries):
+            try:
+                resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
+                parsed_data = await self._parse_llm_response(resp_text)
+                if parsed_data:
+                    return parsed_data
+
+                logger.warning(f"Attempt {attempt + 1}: Could not parse LLM response, retrying...")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))
+            except Exception as e:
+                logger.error(f"Error on LLM call attempt {attempt + 1}: {str(e)}")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(self.retry_delay * (attempt + 1))
+
+        logger.error(f"All {self.max_retries} attempts to parse LLM response have failed.")
+        return []
+
+    async def _parse_llm_response(self, resp_text: str) -> List[dict]:
+        """
+        Helper method to parse and validate the LLM response as a JSON array of tasks,
+        each with "prompt" and "success_criteria" fields.
+        """
+        try:
+            # Clean up possible Markdown code blocks like ```json ... ```
+            cleaned_text = resp_text
+            if resp_text.strip().startswith("'```") or resp_text.strip().startswith("```"):
+                code_block_pattern = r'```(?:json)?\n([\s\S]*?)\n```'
+                matches = re.search(code_block_pattern, resp_text)
+                if matches:
+                    cleaned_text = matches.group(1)
+                else:
+                    lines = resp_text.strip().split('\n')
+                    if lines[0].startswith("'```") or lines[0].startswith("```"):
+                        cleaned_text = '\n'.join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
+
+            # Now parse the cleaned JSON
+            data = json.loads(cleaned_text)
+
+            # If data is a direct list of tasks
+            if isinstance(data, list) and all(isinstance(i, dict) and "prompt" in i for i in data):
+                return [{"prompt": i.get("prompt", ""), "success_criteria": i.get("success_criteria", "")} for i in data]
+
+            # If data is a dict with known keys
+            if isinstance(data, dict):
+                if 'tasks' in data and isinstance(data['tasks'], list):
+                    data = data['tasks']
+                elif 'result' in data and isinstance(data['result'], list):
+                    data = data['result']
+                elif data.get("type") == "array" and "items" in data:
+                    data = data["items"]
+                elif "prompt" in data:
+                    # It's a single-task dict
+                    data = [data]
+                else:
+                    logger.warning(f"Unexpected JSON structure: {data}")
+                    return []
+
+            # At this point we expect data to be a list
+            if not isinstance(data, list):
+                logger.warning(f"Expected a list but got {type(data)}.")
+                return []
+
+            # Optionally validate with Pydantic DraftTaskList
+            try:
+                draft_list = DraftTaskList.model_validate(data)
+                validated_tasks = []
+                for item in draft_list.root:
+                    validated_tasks.append({"prompt": item.prompt, "success_criteria": item.success_criteria or ""})
+                return validated_tasks
+            except ValidationError as ve:
+                logger.warning(f"Pydantic validation error: {ve}, doing basic fallback validation.")
+                # Fallback: just pull out "prompt" and "success_criteria"
+                validated_tasks = []
+                for i in data:
+                    if isinstance(i, dict) and "prompt" in i:
+                        validated_tasks.append({"prompt": i.get("prompt", ""), "success_criteria": i.get("success_criteria", "")})
+                return validated_tasks
+
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON decode error: {je}")
+
+            # Attempt a simpler extraction: look for [ { ... } ]
+            try:
+                json_pattern = r'\[\s*\{.*?\}\s*\]'
+                array_match = re.search(json_pattern, resp_text, re.DOTALL)
+                if array_match:
+                    extracted_json = array_match.group(0)
+                    data = json.loads(extracted_json)
+                    validated_tasks = []
+                    for i in data:
+                        if isinstance(i, dict) and "prompt" in i:
+                            validated_tasks.append({"prompt": i.get("prompt", ""), "success_criteria": i.get("success_criteria", "")})
+                    return validated_tasks
+            except Exception:
+                pass
+            return []
+
+        except Exception as e:
+            logger.error(f"Unexpected error parsing LLM response: {str(e)}")
+            return []
+
+    @staticmethod
+    def _assemble_task(
+        web_project_id: str,
+        url: str,
+        prompt: str,
+        success_criteria: str,
+        html: str,
+        clean_html: str,
+        screenshot: Optional[Image.Image],
+        screenshot_desc: str,
+    ) -> Task:
+        """
+        Assembles a final Task object from the filtered LLM data and loaded page info.
+        """
+        return Task(
+            scope="global",
+            web_project_id=web_project_id,
+            prompt=prompt,
+            success_criteria=success_criteria,
+            url=url,
+            html=str(html),
+            clean_html=str(clean_html),
+            screenshot_description=screenshot_desc,
+            screenshot=str(transform_image_into_base64(screenshot)) if screenshot else "",
+            specifications=BrowserSpecification(),
+            relevant_data={},
+        )

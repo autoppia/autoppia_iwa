@@ -356,14 +356,6 @@
         "documentation": {}
     },
     {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
         "label": "Dict",
         "importPath": "typing",
         "description": "typing",
@@ -373,6 +365,14 @@
     },
     {
         "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -2846,6 +2846,14 @@
         "documentation": {}
     },
     {
+        "label": "ValidationError",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
         "label": "BaseModel",
         "importPath": "pydantic",
         "description": "pydantic",
@@ -3713,6 +3721,70 @@
         "documentation": {}
     },
     {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
         "label": "transform_image_into_base64",
         "importPath": "autoppia_iwa.src.shared.utils",
         "description": "autoppia_iwa.src.shared.utils",
@@ -3750,62 +3822,6 @@
         "description": "autoppia_iwa.src.shared.utils",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.shared.utils",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
-        "documentation": {}
-    },
-    {
-        "label": "Image",
-        "importPath": "PIL",
-        "description": "PIL",
-        "isExtraImport": true,
-        "detail": "PIL",
         "documentation": {}
     },
     {
@@ -4176,6 +4192,14 @@
         "description": "autoppia_iwa.src.execution.classes",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.execution.classes",
+        "documentation": {}
+    },
+    {
+        "label": "Movie",
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
         "documentation": {}
     },
     {
@@ -9748,7 +9772,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
-        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service]):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate(self, prompts_per_use_case: int = 10) -> List[Task]:\n        \"\"\"\n        Generate tasks for all use cases in the web project.\n        Args:\n            prompts_per_use_case: Number of task variations to generate per use case\n        Returns:",
+        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(\n        self,\n        web_project: WebProject,\n        llm_service: ILLM = Provide[DIContainer.llm_service],\n        max_retries: int = 3,\n        retry_delay: float = 0.1,\n    ):\n        self.web_project = web_project\n        self.llm_service = llm_service",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "documentation": {}
     },
@@ -9757,7 +9781,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
-        "peekOfCode": "GLOBAL_TASK_GENERATION_PROMPT = \"\"\"\n# Task Generation Request\n## Use Case Information\n- Name: {use_case_name}\n- Description: {use_case_description}\n- Success Criteria: {success_criteria}\n## Domain-Specific Examples:\n{examples_str}\n## Validation Requirements:\nThis task must create an event that satisfies these validation criteria:",
+        "peekOfCode": "GLOBAL_TASK_GENERATION_PROMPT = \"\"\"\n# Global Task Generation Request\n## Use Case Information\n- Name: {use_case_name}\n- Description: {use_case_description}\n- Success Criteria: {success_criteria}\n## Random Generated Instances:\n{random_generated_instances_str}\n## Instructions\nGenerate {num_prompts} realistic, specific user tasks for the \"{use_case_name}\" use case.",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
         "documentation": {}
     },
@@ -9955,7 +9979,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "peekOfCode": "class TaskGenerationConfig(BaseModel):\n    # Database saving options\n    save_task_in_db: bool = False    \n    # URL handling\n    num_of_urls: int = 5  # Number of URLs to process\n    random_urls: bool = True  # Whether to randomly select URLs\n    # Task generation controls\n    generate_local_tasks: bool = False  # Generate page-specific tasks\n    generate_global_tasks: bool = True  # Generate global use case tasks\n    # Task quantity controls",
+        "peekOfCode": "class TaskGenerationConfig(BaseModel):\n    # Database saving options\n    save_task_in_db: bool = False\n    # URL handling\n    num_of_urls: int = 5  # Number of URLs to process\n    random_urls: bool = True  # Whether to randomly select URLs\n    # Task generation controls\n    generate_local_tasks: bool = False  # Generate page-specific tasks\n    generate_global_tasks: bool = True  # Generate global use case tasks\n    # Task quantity controls",
         "detail": "autoppia_iwa.src.data_generation.domain.classes",
         "documentation": {}
     },
@@ -10279,7 +10303,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "USE_CASES = [\n    UseCase(\n        name=\"Registration\",\n        prompt_template=\"Fill registration form and register\",\n        event=RegistrationEvent,\n        success_criteria=\"Task is successful if the user is actually registered\",\n        test_examples=[\n            {\n                \"type\": \"CheckEventTest\", \n                \"event_name\": \"RegistrationEvent\",",
+        "peekOfCode": "USE_CASES = [\n    UseCase(\n        name=\"Registration\",\n        prompt_template=\"Fill registration form and register\",\n        event=RegistrationEvent,\n        success_criteria=\"Task is successful if the user is actually registered\",\n        test_examples=[\n            {\"type\": \"CheckEventTest\", \"event_name\": \"RegistrationEvent\", \"event_criteria\": {}, \"code\": RegistrationEvent.code()},  # No special criteria needed\n        ],\n    ),",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },

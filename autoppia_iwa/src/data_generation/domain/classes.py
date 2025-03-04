@@ -42,9 +42,7 @@ class Task(BaseModel):
     screenshot: Optional[str] = Field(default=None, description="Pil Image of the task environment or webpage encoded in base64 and stringify")
     screenshot_description: Optional[str] = Field(default=None, description="Textual description of the screenshot content and relevant elements")
     specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser configuration and requirements for task execution")
-
     tests: List[TestUnion] = Field(default_factory=list, description="Collection of validation tests that verify the task")
-
     milestones: Optional[List["Task"]] = Field(default=None, description="Ordered list of Subtasks that must be completed sequentially")
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     success_criteria: Optional[str] = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
@@ -118,7 +116,7 @@ class Task(BaseModel):
 
 class TaskGenerationConfig(BaseModel):
     # Database saving options
-    save_task_in_db: bool = False    
+    save_task_in_db: bool = False
 
     # URL handling
     num_of_urls: int = 5  # Number of URLs to process
