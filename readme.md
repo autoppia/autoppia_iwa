@@ -81,13 +81,13 @@ Tests: Verify Purchase() event with parameters
 ## 📈 Execution Examples
 
 ### ✨ Perfect Execution (100/100)
-![All Actions Successful](docs/perfect_actions.png)
+![All Actions Successful](docs/images/perfect_actions.png)
 
 ### 🔄 Partial Success (50/100)
-![Half Actions Complete](docs/half_actions.png)
+![Half Actions Complete](docs/images/half_actions.png)
 
 ### ❌ Failed Execution (0/100)
-![Failed Actions](docs/wrong_actions.png)
+![Failed Actions](docs/images/wrong_actions.png)
 
 <br>
 
