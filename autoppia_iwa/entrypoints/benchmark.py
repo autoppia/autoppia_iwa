@@ -11,18 +11,17 @@ from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import _load_web_analysis, initialize_demo_webs_projects
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_voyager_test.utils import TaskData, load_jsonl_file
-from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
 
 
 @dataclass

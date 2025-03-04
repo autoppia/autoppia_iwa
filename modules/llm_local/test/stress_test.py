@@ -24,6 +24,7 @@ import concurrent.futures
 import json
 import random
 import time
+
 import requests
 
 # ============================================================================================
@@ -35,18 +36,9 @@ import requests
 EXAMPLE_REQUESTS = [
     # Simple request: short question
     {
-        "messages": [
-            {
-                "role": "system",
-                "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
-            },
-            {
-                "role": "user",
-                "content": "What is the capital of France?"
-            }
-        ],
+        "messages": [{"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."}, {"role": "user", "content": "What is the capital of France?"}],
         "temperature": 0.1,
-        "max_tokens": 128
+        "max_tokens": 128,
     },
     # JSON-format request with a schema (somewhat simpler)
     {
@@ -63,43 +55,30 @@ EXAMPLE_REQUESTS = [
                     "  },\n"
                     "  \"required\": [\"title\", \"description\"]\n"
                     "}"
-                )
+                ),
             },
-            {
-                "role": "user",
-                "content": "Provide a short JSON object describing the Mona Lisa painting."
-            }
+            {"role": "user", "content": "Provide a short JSON object describing the Mona Lisa painting."},
         ],
         "temperature": 0.5,
         "max_tokens": 256,
         "json_format": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "title": {"type": "string"},
-                "description": {"type": "string"}
-            },
-            "required": ["title", "description"]
-        }
+        "schema": {"type": "object", "properties": {"title": {"type": "string"}, "description": {"type": "string"}}, "required": ["title", "description"]},
     },
     # Longer text request:
     {
         "messages": [
-            {
-                "role": "system",
-                "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
-            },
+            {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
             {
                 "role": "user",
                 "content": (
                     "Please provide a detailed explanation of how Large Language Models are trained, "
                     "including information on tokenization, neural network architectures, training "
                     "objectives, and typical hardware requirements."
-                )
-            }
+                ),
+            },
         ],
         "temperature": 0.8,
-        "max_tokens": 512
+        "max_tokens": 512,
     },
     # Potentially complex JSON request with user-provided schema
     {
@@ -123,34 +102,15 @@ EXAMPLE_REQUESTS = [
                     "  },\n"
                     "  \"required\": [\"one_phrase_summary\", \"details\"]\n"
                     "}"
-                )
+                ),
             },
-            {
-                "role": "system",
-                "content": (
-                    "You are an expert content reviewer who only returns valid JSON. "
-                    "No extra fields, no text outside JSON."
-                )
-            },
-            {
-                "role": "user",
-                "content": (
-                    "Summarize the pros and cons of using an advanced language model in "
-                    "a customer service chat application."
-                )
-            }
+            {"role": "system", "content": ("You are an expert content reviewer who only returns valid JSON. " "No extra fields, no text outside JSON.")},
+            {"role": "user", "content": ("Summarize the pros and cons of using an advanced language model in " "a customer service chat application.")},
         ],
         "temperature": 0.6,
         "max_tokens": 300,
         "json_format": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "one_phrase_summary": {"type": "string"},
-                "details": {"type": "string"}
-            },
-            "required": ["one_phrase_summary", "details"]
-        }
+        "schema": {"type": "object", "properties": {"one_phrase_summary": {"type": "string"}, "details": {"type": "string"}}, "required": ["one_phrase_summary", "details"]},
     },
 ]
 
@@ -191,11 +151,7 @@ def send_request(url, request_data, request_id):
         # Check for known "Generation error" messages
         # We will look for "Generation error:" substring, or any mention of "CUDA error"
         # or the known "probability tensor contains either `inf`, `nan`" snippet.
-        error_substrings = [
-            "Generation error:",
-            "CUDA error",
-            "probability tensor contains either `inf`, `nan`"
-        ]
+        error_substrings = ["Generation error:", "CUDA error", "probability tensor contains either `inf`, `nan`"]
         for sub in error_substrings:
             if sub in output_text:
                 # We treat it as a failure
@@ -227,22 +183,16 @@ def generate_random_request():
 
 def main():
     parser = argparse.ArgumentParser(description="Stress test a Qwen inference endpoint.")
-    parser.add_argument("--url", type=str, default="http://localhost:6000/generate",
-                        help="Full URL of the /generate endpoint.")
-    parser.add_argument("--concurrency", type=int, default=5,
-                        help="Number of concurrent threads.")
-    parser.add_argument("--total_requests", type=int, default=20,
-                        help="Total number of requests to send.")
+    parser.add_argument("--url", type=str, default="http://localhost:6000/generate", help="Full URL of the /generate endpoint.")
+    parser.add_argument("--concurrency", type=int, default=5, help="Number of concurrent threads.")
+    parser.add_argument("--total_requests", type=int, default=20, help="Total number of requests to send.")
     args = parser.parse_args()
 
     url = args.url
     concurrency = args.concurrency
     total_requests = args.total_requests
 
-    print(f"== Starting Stress Test ==\n"
-          f"Endpoint: {url}\n"
-          f"Concurrency: {concurrency}\n"
-          f"Total requests: {total_requests}\n")
+    print(f"== Starting Stress Test ==\n" f"Endpoint: {url}\n" f"Concurrency: {concurrency}\n" f"Total requests: {total_requests}\n")
 
     # We'll store the results here
     results = []
@@ -308,7 +258,7 @@ def summarize_results(results):
 
     if failures:
         print("Failures detail:")
-        for (req_id, _, t, err, out) in failures:
+        for req_id, _, t, err, out in failures:
             print(f"  - Request #{req_id} took {t:.2f}s, error = {err}")
 
 

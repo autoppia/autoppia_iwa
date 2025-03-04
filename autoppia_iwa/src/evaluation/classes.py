@@ -1,10 +1,8 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
-from typing import Any, Dict, List, Optional, Tuple
-from pydantic import BaseModel, Field
 
 
 class TestResult(BaseModel):

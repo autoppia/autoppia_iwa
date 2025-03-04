@@ -11,31 +11,24 @@ from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.classes import (
-    EvaluationResult,
-    EvaluatorConfig,
-    EvaluationStats,
-    Feedback,
-    TestResult
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
+
+# Import all needed helpers from evaluation_helper.py
+from autoppia_iwa.src.evaluation.evaluator.utils import (
+    display_batch_evaluation_summary,
+    display_single_evaluation_summary,
+    generate_feedback,
+    get_random_clicker_performance,
+    hash_actions,
+    initialize_test_results_matrix,
+    log_progress,
+    run_tests,
 )
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-
-# Import all needed helpers from evaluation_helper.py
-from autoppia_iwa.src.evaluation.evaluator.utils import (
-    display_single_evaluation_summary,
-    display_batch_evaluation_summary,
-    run_tests,
-    generate_feedback,
-    log_progress,
-    get_random_clicker_performance,
-    hash_actions,
-    monitor_browser,
-    initialize_test_results_matrix
-)
 
 
 class ConcurrentEvaluator(IEvaluator):
@@ -148,9 +141,7 @@ class ConcurrentEvaluator(IEvaluator):
             browser_execution_start = time.time()
             stats.browser_setup_time = browser_execution_start - browser_setup_start
 
-            execution_history, action_execution_times = await self._evaluate_in_browser(
-                task, web_agent_id, actions, is_web_real
-            )
+            execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
             stats.action_execution_times = action_execution_times
 
             # Run tests
@@ -165,7 +156,7 @@ class ConcurrentEvaluator(IEvaluator):
                 config=self.config,
                 random_clicker_cache=self._random_clicker_cache,
                 backend_demo_webs_service=self.backend_demo_webs_service,
-                evaluate_in_browser_func=self._evaluate_in_browser
+                evaluate_in_browser_func=self._evaluate_in_browser,
             )
             stats.random_clicker_time = time.time() - random_start_time
             stats.random_clicker_score = random_clicker_score
@@ -234,9 +225,7 @@ class ConcurrentEvaluator(IEvaluator):
                 stats=stats,
             )
 
-    async def _group_and_evaluate_task_solutions(
-        self, task: Task, task_solutions: List[TaskSolution]
-    ) -> List[EvaluationResult]:
+    async def _group_and_evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         """
         Groups identical solutions by hashing their actions, evaluates them, and clones results.
         """
@@ -256,10 +245,7 @@ class ConcurrentEvaluator(IEvaluator):
                 grouped_tasks[unique_hash].append(solution)
 
         semaphore = asyncio.Semaphore(self.config.chunk_size)
-        tasks = [
-            self._evaluate_group_with_semaphore(task, group, semaphore)
-            for group in grouped_tasks.values()
-        ]
+        tasks = [self._evaluate_group_with_semaphore(task, group, semaphore) for group in grouped_tasks.values()]
 
         # If large, log minimal progress in background
         if len(tasks) > 5 and self.config.verbose_logging:
@@ -292,12 +278,7 @@ class ConcurrentEvaluator(IEvaluator):
 
         return final_results
 
-    async def _evaluate_group_with_semaphore(
-        self,
-        task: Task,
-        group: List[TaskSolution],
-        semaphore: asyncio.Semaphore
-    ) -> List[EvaluationResult]:
+    async def _evaluate_group_with_semaphore(self, task: Task, group: List[TaskSolution], semaphore: asyncio.Semaphore) -> List[EvaluationResult]:
         """
         Evaluates a group of identical solutions (all share the same actions).
         """
@@ -347,13 +328,7 @@ class ConcurrentEvaluator(IEvaluator):
                     for sol in group
                 ]
 
-    async def _evaluate_in_browser(
-        self,
-        task: Task,
-        web_agent_id: str,
-        actions: List[BaseAction],
-        is_web_real: bool
-    ) -> Tuple[List[ActionExecutionResult], List[float]]:
+    async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], is_web_real: bool) -> Tuple[List[ActionExecutionResult], List[float]]:
         """
         Executes all actions in a Playwright browser context and returns the results + times.
         """
@@ -382,22 +357,13 @@ class ConcurrentEvaluator(IEvaluator):
                 #     )
                 # )
 
-                browser_executor = PlaywrightBrowserExecutor(
-                    BrowserSpecification(),
-                    page,
-                    self.backend_demo_webs_service
-                )
+                browser_executor = PlaywrightBrowserExecutor(BrowserSpecification(), page, self.backend_demo_webs_service)
 
                 try:
                     for i, action in enumerate(actions):
                         start_time_action = time.time()
                         try:
-                            result = await browser_executor.execute_single_action(
-                                action,
-                                web_agent_id,
-                                iteration=i,
-                                is_web_real=is_web_real
-                            )
+                            result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real)
                             action_results.append(result)
                             elapsed = time.time() - start_time_action
                             action_execution_times.append(elapsed)
@@ -410,7 +376,7 @@ class ConcurrentEvaluator(IEvaluator):
                                 await asyncio.sleep(self.config.task_delay_in_seconds)
 
                         except Exception as e:
-                            logger.error(f"Action {i+1}/{len(actions)} failed: {e}")
+                            logger.error(f"Action {i + 1}/{len(actions)} failed: {e}")
                             elapsed = time.time() - start_time_action
                             action_execution_times.append(elapsed)
 
