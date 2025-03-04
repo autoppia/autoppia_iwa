@@ -70,14 +70,16 @@ class GlobalTaskGenerationPipeline:
         random_instances_str = await self._gather_random_instances(use_case, num_prompts)
 
         # 2) Build the LLM prompt using a template
+        prompt_examples_str = "\n".join(use_case.prompt_examples)
+
+        # Luego usas esta variable en tu formato
         llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
             use_case_name=use_case.name,
-            use_case_description=use_case.prompt_template,
-            success_criteria=use_case.success_criteria,
+            use_case_description=use_case.description,
+            prompt_template=use_case.prompt_template,
+            prompt_examples=prompt_examples_str,
             random_generated_instances_str=random_instances_str,
-            num_prompts=num_prompts,
         )
-
         # 3) Call the LLM (with retry logic) and parse the JSON result
         tasks_data: List[Dict[str, str]] = await self._call_llm_with_retry(llm_prompt)
 
@@ -89,14 +91,12 @@ class GlobalTaskGenerationPipeline:
         tasks: List[Task] = []
         for item in tasks_data:
             prompt_text = item.get("prompt", "")
-            success_text = item.get("success_criteria", use_case.success_criteria)
 
             try:
                 task_obj = self._assemble_task(
                     web_project_id=self.web_project.id,
                     url=url,
                     prompt=prompt_text,
-                    success_criteria=success_text,
                     html=html,
                     clean_html=clean_html,
                     screenshot=screenshot,
@@ -185,10 +185,6 @@ class GlobalTaskGenerationPipeline:
             # Now parse the cleaned JSON
             data = json.loads(cleaned_text)
 
-            # If data is a direct list of tasks
-            if isinstance(data, list) and all(isinstance(i, dict) and "prompt" in i for i in data):
-                return [{"prompt": i.get("prompt", ""), "success_criteria": i.get("success_criteria", "")} for i in data]
-
             # If data is a dict with known keys
             if isinstance(data, dict):
                 if 'tasks' in data and isinstance(data['tasks'], list):
@@ -253,7 +249,6 @@ class GlobalTaskGenerationPipeline:
         web_project_id: str,
         url: str,
         prompt: str,
-        success_criteria: str,
         html: str,
         clean_html: str,
         screenshot: Optional[Image.Image],
@@ -266,7 +261,6 @@ class GlobalTaskGenerationPipeline:
             scope="global",
             web_project_id=web_project_id,
             prompt=prompt,
-            success_criteria=success_criteria,
             url=url,
             html=str(html),
             clean_html=str(clean_html),
