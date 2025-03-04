@@ -10115,7 +10115,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
-        "peekOfCode": "FRONTEND_PORT_INDEX = 1\nBACKEND_PORT_INDEX = 1\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,",
+        "peekOfCode": "FRONTEND_PORT_INDEX = 0\nBACKEND_PORT_INDEX = 0\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "documentation": {}
     },
@@ -10124,7 +10124,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
-        "peekOfCode": "BACKEND_PORT_INDEX = 1\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES,",
+        "peekOfCode": "BACKEND_PORT_INDEX = 0\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES,",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "documentation": {}
     },
