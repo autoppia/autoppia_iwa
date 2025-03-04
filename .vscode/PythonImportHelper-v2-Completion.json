@@ -153,14 +153,6 @@
         "documentation": {}
     },
     {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
-        "isExtraImport": true,
-        "detail": "pathlib",
-        "documentation": {}
-    },
-    {
         "label": "strtobool",
         "importPath": "distutils.util",
         "description": "distutils.util",
@@ -220,14 +212,6 @@
         "documentation": {}
     },
     {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
         "label": "fields",
         "importPath": "dataclasses",
         "description": "dataclasses",
@@ -257,30 +241,6 @@
         "description": "dataclasses",
         "isExtraImport": true,
         "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
         "documentation": {}
     },
     {
@@ -1380,14 +1340,6 @@
         "documentation": {}
     },
     {
-        "label": "PROJECT_BASE_DIR",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
         "label": "DEMO_WEBS_ENDPOINT",
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
@@ -1684,14 +1636,6 @@
         "documentation": {}
     },
     {
-        "label": "AppBootstrap",
-        "importPath": "autoppia_iwa.src.bootstrap",
-        "description": "autoppia_iwa.src.bootstrap",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.bootstrap",
-        "documentation": {}
-    },
-    {
         "label": "LocalTestGenerationPipeline",
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
         "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
@@ -1713,22 +1657,6 @@
         "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "LocalTestGenerationPipeline",
-        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
-        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "Task",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
         "documentation": {}
     },
     {
@@ -1969,14 +1897,6 @@
         "description": "autoppia_iwa.src.data_generation.domain.classes",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "WebProject",
-        "importPath": "autoppia_iwa.src.demo_webs.classes",
-        "description": "autoppia_iwa.src.demo_webs.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.classes",
         "documentation": {}
     },
     {
@@ -2145,30 +2065,6 @@
         "description": "autoppia_iwa.src.demo_webs.classes",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.demo_webs.classes",
-        "documentation": {}
-    },
-    {
-        "label": "_load_web_analysis",
-        "importPath": "autoppia_iwa.src.demo_webs.config",
-        "description": "autoppia_iwa.src.demo_webs.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.config",
-        "documentation": {}
-    },
-    {
-        "label": "demo_web_projects",
-        "importPath": "autoppia_iwa.src.demo_webs.config",
-        "description": "autoppia_iwa.src.demo_webs.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.config",
-        "documentation": {}
-    },
-    {
-        "label": "initialize_demo_webs_projects",
-        "importPath": "autoppia_iwa.src.demo_webs.config",
-        "description": "autoppia_iwa.src.demo_webs.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.config",
         "documentation": {}
     },
     {
@@ -2252,19 +2148,35 @@
         "documentation": {}
     },
     {
-        "label": "EvaluationResult",
-        "importPath": "autoppia_iwa.src.evaluation.classes",
-        "description": "autoppia_iwa.src.evaluation.classes",
+        "label": "initialize_demo_webs_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.evaluation.classes",
+        "detail": "autoppia_iwa.src.demo_webs.utils",
         "documentation": {}
     },
     {
-        "label": "EvaluatorConfig",
-        "importPath": "autoppia_iwa.src.evaluation.classes",
-        "description": "autoppia_iwa.src.evaluation.classes",
+        "label": "_load_web_analysis",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.evaluation.classes",
+        "detail": "autoppia_iwa.src.demo_webs.utils",
+        "documentation": {}
+    },
+    {
+        "label": "initialize_demo_webs_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.utils",
+        "documentation": {}
+    },
+    {
+        "label": "initialize_demo_webs_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.utils",
         "documentation": {}
     },
     {
@@ -2452,22 +2364,6 @@
         "documentation": {}
     },
     {
-        "label": "ConcurrentEvaluator",
-        "importPath": "autoppia_iwa.src.evaluation.evaluator.evaluator",
-        "description": "autoppia_iwa.src.evaluation.evaluator.evaluator",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.evaluation.evaluator.evaluator",
-        "documentation": {}
-    },
-    {
-        "label": "TimingMetrics",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "documentation": {}
-    },
-    {
         "label": "TimingMetrics",
         "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
         "description": "autoppia_iwa.src.shared.entrypoints.metrics",
@@ -2556,46 +2452,6 @@
         "documentation": {}
     },
     {
-        "label": "plot_results",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "plot_task_comparison",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "print_performance_statistics",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "save_results_to_json",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "ConsolidatedSolutionCache",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "documentation": {}
-    },
-    {
         "label": "ConsolidatedSolutionCache",
         "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
         "description": "autoppia_iwa.src.shared.entrypoints.solutions",
@@ -2649,38 +2505,6 @@
         "description": "autoppia_iwa.src.shared.entrypoints.tasks",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "generate_tasks_for_project",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "SubnetVisualizer",
-        "importPath": "autoppia_iwa.src.shared.visualizator",
-        "description": "autoppia_iwa.src.shared.visualizator",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.visualizator",
-        "documentation": {}
-    },
-    {
-        "label": "visualize_evaluation",
-        "importPath": "autoppia_iwa.src.shared.visualizator",
-        "description": "autoppia_iwa.src.shared.visualizator",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.visualizator",
-        "documentation": {}
-    },
-    {
-        "label": "visualize_task",
-        "importPath": "autoppia_iwa.src.shared.visualizator",
-        "description": "autoppia_iwa.src.shared.visualizator",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.visualizator",
         "documentation": {}
     },
     {
@@ -2769,22 +2593,6 @@
         "description": "autoppia_iwa.src.web_agents.apified_agent",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "BaseAgent",
-        "importPath": "autoppia_iwa.src.web_agents.base",
-        "description": "autoppia_iwa.src.web_agents.base",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.base",
         "documentation": {}
     },
     {
@@ -2924,22 +2732,6 @@
         "documentation": {}
     },
     {
-        "label": "TaskSolution",
-        "importPath": "autoppia_iwa.src.web_agents.classes",
-        "description": "autoppia_iwa.src.web_agents.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.classes",
-        "documentation": {}
-    },
-    {
-        "label": "RandomClickerWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.random.agent",
-        "description": "autoppia_iwa.src.web_agents.random.agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.random.agent",
-        "documentation": {}
-    },
-    {
         "label": "RandomClickerWebAgent",
         "importPath": "autoppia_iwa.src.web_agents.random.agent",
         "description": "autoppia_iwa.src.web_agents.random.agent",
@@ -2993,54 +2785,6 @@
         "description": "autoppia_iwa.src.web_voyager_test.utils",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.web_voyager_test.utils",
-        "documentation": {}
-    },
-    {
-        "label": "TaskData",
-        "importPath": "autoppia_iwa.src.web_voyager_test.utils",
-        "description": "autoppia_iwa.src.web_voyager_test.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_voyager_test.utils",
-        "documentation": {}
-    },
-    {
-        "label": "load_jsonl_file",
-        "importPath": "autoppia_iwa.src.web_voyager_test.utils",
-        "description": "autoppia_iwa.src.web_voyager_test.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_voyager_test.utils",
-        "documentation": {}
-    },
-    {
-        "label": "initialize_demo_webs_projects",
-        "importPath": "autoppia_iwa.src.demo_webs.utils",
-        "description": "autoppia_iwa.src.demo_webs.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.utils",
-        "documentation": {}
-    },
-    {
-        "label": "_load_web_analysis",
-        "importPath": "autoppia_iwa.src.demo_webs.utils",
-        "description": "autoppia_iwa.src.demo_webs.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.utils",
-        "documentation": {}
-    },
-    {
-        "label": "initialize_demo_webs_projects",
-        "importPath": "autoppia_iwa.src.demo_webs.utils",
-        "description": "autoppia_iwa.src.demo_webs.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.utils",
-        "documentation": {}
-    },
-    {
-        "label": "initialize_demo_webs_projects",
-        "importPath": "autoppia_iwa.src.demo_webs.utils",
-        "description": "autoppia_iwa.src.demo_webs.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.utils",
         "documentation": {}
     },
     {
@@ -4266,70 +4010,6 @@
         "documentation": {}
     },
     {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
-        "label": "SinglePageAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
-        "label": "LLMWebAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
-        "label": "DomainAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
-        "label": "LLMWebAnalysis",
-        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
-        "documentation": {}
-    },
-    {
         "label": "uuid",
         "kind": 6,
         "isExtraImport": true,
@@ -4523,11 +4203,59 @@
         "documentation": {}
     },
     {
-        "label": "Event",
-        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
-        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "SinglePageAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "LLMWebAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DomainAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "documentation": {}
+    },
+    {
+        "label": "LLMWebAnalysis",
+        "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "documentation": {}
     },
     {
@@ -9684,60 +9412,6 @@
     {
         "label": "BenchmarkConfig",
         "kind": 6,
-        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
-        "description": "autoppia_iwa.entrypoints.benchmark copy",
-        "peekOfCode": "class BenchmarkConfig:\n    \"\"\"Configuration for the benchmark test.\"\"\"\n    use_cached_tasks: bool = False\n    use_cached_solutions: bool = False\n    evaluate_real_tasks: bool = True\n    base_dir: Path = PROJECT_BASE_DIR.parent\n    data_dir: Path = base_dir / \"data\"\n    tasks_cache_dir: Path = data_dir / \"tasks_cache\"\n    solutions_cache_dir: Path = data_dir / \"solutions_cache\"\n    output_dir: Path = base_dir / \"results\"",
-        "detail": "autoppia_iwa.entrypoints.benchmark copy",
-        "documentation": {}
-    },
-    {
-        "label": "load_real_tasks",
-        "kind": 2,
-        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
-        "description": "autoppia_iwa.entrypoints.benchmark copy",
-        "peekOfCode": "def load_real_tasks() -> List[TaskData]:\n    \"\"\"Load real tasks, excluding impossible ones.\"\"\"\n    logger.info(\"Loading real tasks...\")\n    original_tasks = load_jsonl_file(config.data_dir / \"WebVoyager_data.jsonl\")\n    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / \"WebVoyagerImpossibleTasks.json\"))\n    return [TaskData(**task) for task in original_tasks if task[\"id\"] not in impossible_tasks_ids][: config.num_of_urls]\n@visualize_task(visualizer)\nasync def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:\n    \"\"\"Generate tasks with caching support.\"\"\"\n    if config.evaluate_real_tasks and tasks_data:",
-        "detail": "autoppia_iwa.entrypoints.benchmark copy",
-        "documentation": {}
-    },
-    {
-        "label": "config",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
-        "description": "autoppia_iwa.entrypoints.benchmark copy",
-        "peekOfCode": "config = BenchmarkConfig()\nsolution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Browser-Use\", host=\"localhost\", port=9000, timeout=120),\n    ApifiedWebAgent(name=\"Autoppia-Agent\", host=\"localhost\", port=9002, timeout=120),\n]\n# Setup logging\nlogging.basicConfig(",
-        "detail": "autoppia_iwa.entrypoints.benchmark copy",
-        "documentation": {}
-    },
-    {
-        "label": "solution_cache",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
-        "description": "autoppia_iwa.entrypoints.benchmark copy",
-        "peekOfCode": "solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: List[BaseAgent] = [\n    RandomClickerWebAgent(name=\"Random-clicker\"),\n    ApifiedWebAgent(name=\"Browser-Use\", host=\"localhost\", port=9000, timeout=120),\n    ApifiedWebAgent(name=\"Autoppia-Agent\", host=\"localhost\", port=9002, timeout=120),\n]\n# Setup logging\nlogging.basicConfig(\n    level=logging.INFO,",
-        "detail": "autoppia_iwa.entrypoints.benchmark copy",
-        "documentation": {}
-    },
-    {
-        "label": "logger",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
-        "description": "autoppia_iwa.entrypoints.benchmark copy",
-        "peekOfCode": "logger = logging.getLogger(\"benchmark\")\nvisualizer = SubnetVisualizer()\ndef load_real_tasks() -> List[TaskData]:\n    \"\"\"Load real tasks, excluding impossible ones.\"\"\"\n    logger.info(\"Loading real tasks...\")\n    original_tasks = load_jsonl_file(config.data_dir / \"WebVoyager_data.jsonl\")\n    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / \"WebVoyagerImpossibleTasks.json\"))\n    return [TaskData(**task) for task in original_tasks if task[\"id\"] not in impossible_tasks_ids][: config.num_of_urls]\n@visualize_task(visualizer)\nasync def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:",
-        "detail": "autoppia_iwa.entrypoints.benchmark copy",
-        "documentation": {}
-    },
-    {
-        "label": "visualizer",
-        "kind": 5,
-        "importPath": "autoppia_iwa.entrypoints.benchmark copy",
-        "description": "autoppia_iwa.entrypoints.benchmark copy",
-        "peekOfCode": "visualizer = SubnetVisualizer()\ndef load_real_tasks() -> List[TaskData]:\n    \"\"\"Load real tasks, excluding impossible ones.\"\"\"\n    logger.info(\"Loading real tasks...\")\n    original_tasks = load_jsonl_file(config.data_dir / \"WebVoyager_data.jsonl\")\n    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / \"WebVoyagerImpossibleTasks.json\"))\n    return [TaskData(**task) for task in original_tasks if task[\"id\"] not in impossible_tasks_ids][: config.num_of_urls]\n@visualize_task(visualizer)\nasync def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:\n    \"\"\"Generate tasks with caching support.\"\"\"",
-        "detail": "autoppia_iwa.entrypoints.benchmark copy",
-        "documentation": {}
-    },
-    {
-        "label": "BenchmarkConfig",
-        "kind": 6,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
         "peekOfCode": "class BenchmarkConfig:\n    \"\"\"Configuration for the benchmark test.\"\"\"\n    use_cached_tasks: bool = False\n    use_cached_solutions: bool = False\n    evaluate_real_tasks: bool = False\n    m: int = 1  # Number of copies of each solution to evaluate\n    prompts_per_url: int = 5\n    num_of_urls: int = 2\n    # Paths\n    base_dir: Path = PROJECT_BASE_DIR.parent",
@@ -10082,7 +9756,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
-        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(\n        self, \n        web_project: WebProject, \n        llm_service: ILLM = Provide[DIContainer.llm_service]\n    ):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate_tasks_for_use_case(self, use_case: UseCase, num_prompts: int = 10) -> List[Task]:\n        \"\"\"",
+        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(\n        self, \n        web_project: WebProject, \n        llm_service: ILLM = Provide[DIContainer.llm_service]\n    ):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate_all(self, tasks_per_use_case: int = 10) -> List[Task]:\n        \"\"\"",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "documentation": {}
     },

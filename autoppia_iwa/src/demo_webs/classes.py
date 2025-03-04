@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Callable, Type
 from pydantic import BaseModel, Field
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
-from autoppia_iwa.src.demo_webs.projects.cinema_1.events import Event
 
 
 class UseCase(BaseModel):

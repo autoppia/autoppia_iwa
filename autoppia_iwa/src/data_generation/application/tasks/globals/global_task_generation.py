@@ -3,6 +3,7 @@ import json
 from typing import List, Dict, Any
 from dependency_injector.wiring import Provide
 from loguru import logger
+
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import WebProject, UseCase
 from autoppia_iwa.src.di_container import DIContainer
@@ -21,21 +22,76 @@ class GlobalTaskGenerationPipeline:
         self.web_project = web_project
         self.llm_service = llm_service
 
+    async def generate_all(self, tasks_per_use_case: int = 10) -> List[Task]:
+        """
+        Generate tasks for all use cases in the web project.
+
+        Args:
+            tasks_per_use_case: Number of task variations to generate per use case
+
+        Returns:
+            List of Task objects across all use cases
+        """
+        logger.info(f"Generating tasks for all use cases with {tasks_per_use_case} tasks per use case")
+
+        all_tasks = []
+
+        # Check if we have use cases in the web project
+        if not self.web_project.use_cases:
+            logger.warning("No use cases found in web project")
+            return all_tasks
+
+        # Generate tasks for each use case directly from web_project
+        for use_case in self.web_project.use_cases:
+            logger.info(f"Generating tasks for use case: {use_case.name}")
+
+            try:
+                use_case_tasks = await self.generate_tasks_for_use_case(
+                    use_case=use_case,
+                    num_prompts=tasks_per_use_case
+                )
+
+                all_tasks.extend(use_case_tasks)
+                logger.info(f"Generated {len(use_case_tasks)} tasks for use case: {use_case.name}")
+
+            except Exception as e:
+                logger.error(f"Error generating tasks for use case {use_case.name}: {str(e)}")
+                # Continue with next use case instead of stopping the process
+                continue
+
+        logger.info(f"Generated {len(all_tasks)} global tasks across all use cases")
+        return all_tasks
+
     async def generate_tasks_for_use_case(self, use_case: UseCase, num_prompts: int = 10) -> List[Task]:
         """
         Generate tasks for a specific use case.
+
         Args:
             use_case: The UseCase object to generate tasks for
-            num_prompts: Number of task variations to generate (default: 10)
+            num_prompts: Number of task variations to generate
+
         Returns:
             List of Task objects
         """
         logger.debug(f"Generating {num_prompts} tasks for use case: {use_case.name}")
 
-        # Generate model instances for task examples
-        model_class = use_case.event.__class__ if hasattr(use_case, "event") else None
+        # Generate examples string for the prompt
+        examples_str = self._get_examples_for_use_case(use_case, num_prompts)
 
-        if not model_class and hasattr(self.web_project, "random_generation_function"):
+        # Generate prompts using LLM
+        tasks = await self._generate_llm_prompts(use_case, examples_str, num_prompts)
+
+        # Shuffle tasks to ensure randomness
+        random.shuffle(tasks)
+
+        return tasks
+
+    def _get_examples_for_use_case(self, use_case: UseCase, num_prompts: int) -> str:
+        """Get formatted examples for a use case"""
+        # Generate model instances for task examples
+        model_class = use_case.event
+
+        if self.web_project.random_generation_function:
             # For movie app example
             if use_case.name == "Search film":
                 films = [self.web_project.random_generation_function(model_class) for _ in range(num_prompts)]
@@ -46,12 +102,7 @@ class GlobalTaskGenerationPipeline:
         else:
             examples_str = f"Use case: {use_case.name}\nSuccess criteria: {use_case.success_criteria}"
 
-        # Generate prompts using LLM
-        tasks = await self._generate_llm_prompts(use_case, examples_str, num_prompts)
-
-        # Shuffle tasks to ensure randomness
-        random.shuffle(tasks)
-        return tasks
+        return examples_str
 
     def _format_film_examples(self, films: List[Any]) -> str:
         """Format film examples for LLM prompt"""
@@ -65,6 +116,9 @@ class GlobalTaskGenerationPipeline:
 
     def _format_use_case_data(self, use_case_name: str) -> str:
         """Format relevant data for a use case"""
+        if not self.web_project.relevant_data:
+            return f"Use case: {use_case_name}"
+
         relevant_data = self.web_project.relevant_data.get(use_case_name, {})
         if not relevant_data:
             return f"Use case: {use_case_name}"
@@ -81,7 +135,7 @@ class GlobalTaskGenerationPipeline:
     async def _generate_llm_prompts(self, use_case: UseCase, examples_str: str, num_prompts: int) -> List[Task]:
         """Generate task prompts using LLM and create Task objects"""
         event_validation = None
-        tests = use_case.test_examples if hasattr(use_case, "test_examples") else []
+        tests = use_case.test_examples
 
         for test in tests:
             if test.get("type") == "CheckEventTest":
@@ -103,9 +157,11 @@ class GlobalTaskGenerationPipeline:
         ]
 
         logger.debug("Calling LLM to generate task prompts")
+
         try:
             resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
             prompts = json.loads(resp_text)
+
             if not isinstance(prompts, list):
                 logger.error(f"LLM returned invalid format for prompts: {type(prompts)}")
                 return []
@@ -115,6 +171,7 @@ class GlobalTaskGenerationPipeline:
             # Create Task objects for each prompt
             tasks = await self._create_tasks_from_prompts(prompts, use_case)
             return tasks
+
         except Exception as e:
             logger.exception(f"Error generating prompts: {str(e)}")
             return []
@@ -124,10 +181,7 @@ class GlobalTaskGenerationPipeline:
         tasks = []
 
         # Choose a representative URL for the tasks
-        url = self.web_project.frontend_url
-        if hasattr(self.web_project, "urls") and self.web_project.urls:
-            # Use the first URL if available
-            url = self.web_project.urls[0]
+        url = self._get_representative_url()
 
         # For each prompt, create a Task object
         for prompt_data in prompts:
@@ -148,10 +202,22 @@ class GlobalTaskGenerationPipeline:
                     screenshot_description=screenshot_desc,
                     specifications=BrowserSpecification(),
                     relevant_data={},
-                    tests=use_case.test_examples if hasattr(use_case, "test_examples") else []
+                    tests=use_case.test_examples
                 )
                 tasks.append(task)
+
             except Exception as e:
                 logger.exception(f"Error creating task from prompt: {str(e)}")
 
         return tasks
+
+    def _get_representative_url(self) -> str:
+        """Get a representative URL for the tasks"""
+        # Default to frontend URL
+        url = self.web_project.frontend_url
+
+        # Try to get a more specific URL if available
+        if hasattr(self.web_project, "urls") and self.web_project.urls:
+            url = self.web_project.urls[0]
+
+        return url
