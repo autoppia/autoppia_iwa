@@ -1,11 +1,12 @@
 import random
 from datetime import datetime
 from typing import List
+
 from dependency_injector.wiring import Provide
 from loguru import logger
 
-from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -29,10 +30,7 @@ class TaskGenerationPipeline:
 
         # Initialize pipelines
         self.local_pipeline = LocalTaskGenerationPipeline(web_project=web_project)
-        self.global_pipeline = GlobalTaskGenerationPipeline(
-            web_project=web_project, 
-            llm_service=llm_service
-        )
+        self.global_pipeline = GlobalTaskGenerationPipeline(web_project=web_project, llm_service=llm_service)
         self.test_pipeline = LocalTestGenerationPipeline(web_project=web_project)
 
     async def generate(self) -> List[Task]:
@@ -50,27 +48,23 @@ class TaskGenerationPipeline:
         try:
             # 1) Generate local tasks if configured
             if self.task_config.generate_local_tasks:
+                # We generate 15 prompts for each url
                 logger.info("Generating local tasks")
-                local_tasks = await self.local_pipeline.generate_all(
-                    random_urls=self.task_config.random_urls,
-                    num_of_urls=self.task_config.num_of_urls
-                )
+                local_tasks = await self.local_pipeline.generate(number_of_prompts_per_url=3, max_urls=5, random_urls=True)
                 all_tasks.extend(local_tasks)
                 logger.info(f"Generated {len(local_tasks)} local tasks")
 
             # 2) Generate global tasks if configured
             if self.task_config.generate_global_tasks:
                 logger.info("Generating global tasks")
-                global_tasks = await self.global_pipeline.generate(
-                    tasks_per_use_case=self.task_config.tasks_per_use_case
-                )
+                global_tasks = await self.global_pipeline.generate(tasks_per_use_case=self.task_config.tasks_per_use_case)
                 all_tasks.extend(global_tasks)
                 logger.info(f"Generated {len(global_tasks)} global tasks")
 
             # Apply final task limit if configured
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:
                 random.shuffle(all_tasks)
-                all_tasks = all_tasks[:self.task_config.final_task_limit]
+                all_tasks = all_tasks[: self.task_config.final_task_limit]
                 logger.info(f"Applied final task limit: {len(all_tasks)} tasks")
 
             # Save tasks in DB if configured

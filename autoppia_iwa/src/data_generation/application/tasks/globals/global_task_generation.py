@@ -20,17 +20,17 @@ class GlobalTaskGenerationPipeline:
         self.web_project = web_project
         self.llm_service = llm_service
 
-    async def generate(self, tasks_per_use_case: int = 10) -> List[Task]:
+    async def generate(self, prompts_per_use_case: int = 10) -> List[Task]:
         """
         Generate tasks for all use cases in the web project.
 
         Args:
-            tasks_per_use_case: Number of task variations to generate per use case
+            prompts_per_use_case: Number of task variations to generate per use case
 
         Returns:
             List of Task objects across all use cases
         """
-        logger.info(f"Generating tasks for all use cases with {tasks_per_use_case} tasks per use case")
+        logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks per use case")
 
         all_tasks = []
 
@@ -44,7 +44,7 @@ class GlobalTaskGenerationPipeline:
             logger.info(f"Generating tasks for use case: {use_case.name}")
 
             try:
-                use_case_tasks = await self.generate_tasks_for_use_case(use_case=use_case, num_prompts=tasks_per_use_case)
+                use_case_tasks = await self.generate_tasks_for_use_case(use_case=use_case, num_prompts=prompts_per_use_case)
 
                 all_tasks.extend(use_case_tasks)
                 logger.info(f"Generated {len(use_case_tasks)} tasks for use case: {use_case.name}")

@@ -3946,27 +3946,27 @@
         "documentation": {}
     },
     {
-        "label": "LocalTaskGenerationPipeline",
-        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
-        "description": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
-        "documentation": {}
-    },
-    {
-        "label": "LocalTaskGenerationPipeline",
-        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
-        "description": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
-        "documentation": {}
-    },
-    {
         "label": "GlobalTaskGenerationPipeline",
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
+        "documentation": {}
+    },
+    {
+        "label": "LocalTaskGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
+        "documentation": {}
+    },
+    {
+        "label": "LocalTaskGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
         "documentation": {}
     },
     {
@@ -9748,7 +9748,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
-        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service]):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate(self, tasks_per_use_case: int = 10) -> List[Task]:\n        \"\"\"\n        Generate tasks for all use cases in the web project.\n        Args:\n            tasks_per_use_case: Number of task variations to generate per use case\n        Returns:",
+        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service]):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate(self, prompts_per_use_case: int = 10) -> List[Task]:\n        \"\"\"\n        Generate tasks for all use cases in the web project.\n        Args:\n            prompts_per_use_case: Number of task variations to generate per use case\n        Returns:",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "documentation": {}
     },
@@ -9865,7 +9865,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
         "description": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
-        "peekOfCode": "class LocalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: \"ILLM\" = Provide[DIContainer.llm_service]):\n        self.web_project: WebProject = web_project\n        self.llm_service: ILLM = llm_service\n        self.max_retries: int = 3  # Maximum number of retries for LLM calls\n        self.retry_delay: float = 0.1  # Delay between retries in seconds\n    async def generate(self, page_url: str) -> List[\"Task\"]:\n        # Fetch the HTML and screenshot\n        html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(page_url)\n        interactive_elems = detect_interactive_elements(clean_html)",
+        "peekOfCode": "class LocalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: \"ILLM\" = Provide[DIContainer.llm_service]):\n        self.web_project: WebProject = web_project\n        self.llm_service: ILLM = llm_service\n        self.max_retries: int = 3  # Maximum number of retries for LLM calls\n        self.retry_delay: float = 0.1  # Delay between retries in seconds\n    async def generate(self, number_of_prompts_per_url: int = 3, max_urls=5, random_urls=True):\n        \"\"\"Generate Local Tasks for a Web Project iterating all the urls\"\"\"\n        all_tasks = []\n        # Get the URLs to process based on parameters",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
         "documentation": {}
     },
@@ -9874,7 +9874,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
         "description": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
-        "peekOfCode": "logger = logging.getLogger(__name__)\nclass LocalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: \"ILLM\" = Provide[DIContainer.llm_service]):\n        self.web_project: WebProject = web_project\n        self.llm_service: ILLM = llm_service\n        self.max_retries: int = 3  # Maximum number of retries for LLM calls\n        self.retry_delay: float = 0.1  # Delay between retries in seconds\n    async def generate(self, page_url: str) -> List[\"Task\"]:\n        # Fetch the HTML and screenshot\n        html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(page_url)",
+        "peekOfCode": "logger = logging.getLogger(__name__)\nclass LocalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: \"ILLM\" = Provide[DIContainer.llm_service]):\n        self.web_project: WebProject = web_project\n        self.llm_service: ILLM = llm_service\n        self.max_retries: int = 3  # Maximum number of retries for LLM calls\n        self.retry_delay: float = 0.1  # Delay between retries in seconds\n    async def generate(self, number_of_prompts_per_url: int = 3, max_urls=5, random_urls=True):\n        \"\"\"Generate Local Tasks for a Web Project iterating all the urls\"\"\"\n        all_tasks = []",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation",
         "documentation": {}
     },
@@ -10108,7 +10108,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
-        "peekOfCode": "BACKEND_PORT_INDEX = 1\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES",
+        "peekOfCode": "BACKEND_PORT_INDEX = 1\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES,",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "documentation": {}
     },
@@ -10117,7 +10117,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
-        "peekOfCode": "cinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES\n)",
+        "peekOfCode": "cinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES,\n    urls=URLS,",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "documentation": {}
     },
@@ -10263,6 +10263,15 @@
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.relevant_data",
         "peekOfCode": "RELEVANT_DATA = {\n    \"User for Login\": {\n        \"email\": \"admin@moviesapp.com\",\n        \"password\": \"admin123\"\n    },\n    \"User for Registration\": {\n        \"email\": \"new-user@moviesapp.com\",\n        \"password\": \"admin123\"\n    }\n}",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.relevant_data",
+        "documentation": {}
+    },
+    {
+        "label": "URLS",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.urls",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.urls",
+        "peekOfCode": "URLS = [\n    \"http://127.0.0.1:8000/\",\n    \"http://127.0.0.1:8000/about/\",\n    \"http://127.0.0.1:8000/contact/\",\n    \"http://127.0.0.1:8000/login/\",\n    \"http://127.0.0.1:8000/register/\",\n    \"http://127.0.0.1:8000/add/\",\n    \"http://127.0.0.1:8000/movie/10/\",\n    \"http://127.0.0.1:8000/movie/9/\",\n    \"http://127.0.0.1:8000/movie/8/\",",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.urls",
         "documentation": {}
     },
     {
