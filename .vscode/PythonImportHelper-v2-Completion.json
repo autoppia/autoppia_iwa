@@ -652,6 +652,14 @@
         "documentation": {}
     },
     {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Dict",
         "importPath": "typing",
         "description": "typing",
@@ -669,14 +677,6 @@
     },
     {
         "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Callable",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -4192,14 +4192,6 @@
         "description": "autoppia_iwa.src.execution.classes",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.execution.classes",
-        "documentation": {}
-    },
-    {
-        "label": "Movie",
-        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
-        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.models",
         "documentation": {}
     },
     {
@@ -9781,7 +9773,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
-        "peekOfCode": "GLOBAL_TASK_GENERATION_PROMPT = \"\"\"\n# Global Task Generation Request\n## Use Case Information\n- Name: {use_case_name}\n- Description: {use_case_description}\n- Success Criteria: {success_criteria}\n## Random Generated Instances:\n{random_generated_instances_str}\n## Instructions\nGenerate {num_prompts} realistic, specific user tasks for the \"{use_case_name}\" use case.",
+        "peekOfCode": "GLOBAL_TASK_GENERATION_PROMPT = \"\"\"\nWe are creating synthetic prompts for a specific web project and we have manually created a list of Use Cases that represent this web project functionality.\nYou are going to receive information of this web project and a specific usecase \nand you are in charge or generating variants of prompts for that use case.\n## Use Case Information\n- Name: {use_case_name}\n- Description: {use_case_description}\n- Prompt Template: {prompt_template}\n##Examples:\n{prompt_examples}",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.prompts",
         "documentation": {}
     },
@@ -10123,7 +10115,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
-        "peekOfCode": "FRONTEND_PORT_INDEX = 1\nBACKEND_PORT_INDEX = 1\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,",
+        "peekOfCode": "FRONTEND_PORT_INDEX = 0\nBACKEND_PORT_INDEX = 0\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "documentation": {}
     },
@@ -10132,7 +10124,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
-        "peekOfCode": "BACKEND_PORT_INDEX = 1\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES,",
+        "peekOfCode": "BACKEND_PORT_INDEX = 0\ncinema_project = WebProject(\n    id=\"cinema\",\n    name=\"Autoppia Cinema\",\n    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),\n    backend_url=get_backend_url(index=BACKEND_PORT_INDEX),\n    events=EVENTS,\n    relevant_data=RELEVANT_DATA,\n    models=MODELS,\n    use_cases=USE_CASES,",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.main",
         "documentation": {}
     },
@@ -10303,7 +10295,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "USE_CASES = [\n    UseCase(\n        name=\"Registration\",\n        prompt_template=\"Fill registration form and register\",\n        event=RegistrationEvent,\n        success_criteria=\"Task is successful if the user is actually registered\",\n        test_examples=[\n            {\"type\": \"CheckEventTest\", \"event_name\": \"RegistrationEvent\", \"event_criteria\": {}, \"code\": RegistrationEvent.code()},  # No special criteria needed\n        ],\n    ),",
+        "peekOfCode": "USE_CASES = [\n    UseCase(\n        name=\"Registration\",\n        description=\"User fill the registration form and registers successfully.\",\n        prompt_template=\"Register a new user\",\n        prompt_examples=[\"Fill the registration form and register\", \"Register a new user\", \"create a new account\"],\n        event=RegistrationEvent,\n        test_examples=[\n            {\"type\": \"CheckEventTest\", \"event_name\": \"RegistrationEvent\", \"event_criteria\": {}, \"code\": RegistrationEvent.code()},  # No special criteria needed\n        ],",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
@@ -10312,7 +10304,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.demo_webs.classes",
         "description": "autoppia_iwa.src.demo_webs.classes",
-        "peekOfCode": "class UseCase(BaseModel):\n    \"\"\"Represents a use case in the application\"\"\"\n    name: str\n    prompt_template: str\n    event: Type  # The event type associated with this use case\n    success_criteria: str\n    test_examples: List[dict]\n    def get_prompt(self, **kwargs) -> str:\n        \"\"\"\n        Generate a concrete prompt by filling in the template",
+        "peekOfCode": "class UseCase(BaseModel):\n    \"\"\"Represents a use case in the application\"\"\"\n    name: str\n    description: str\n    prompt_template: str\n    prompt_examples: List[str]\n    event: Type  # The event type associated with this use case\n    test_examples: List[dict]\n    def get_prompt(self, **kwargs) -> str:\n        \"\"\"",
         "detail": "autoppia_iwa.src.demo_webs.classes",
         "documentation": {}
     },

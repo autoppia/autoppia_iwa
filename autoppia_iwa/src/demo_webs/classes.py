@@ -1,15 +1,19 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Callable, Type
+from typing import Any, Callable, Dict, List, Optional, Type
+
 from pydantic import BaseModel, Field
+
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class UseCase(BaseModel):
     """Represents a use case in the application"""
+
     name: str
+    description: str
     prompt_template: str
+    prompt_examples: List[str]
     event: Type  # The event type associated with this use case
-    success_criteria: str
     test_examples: List[dict]
 
     def get_prompt(self, **kwargs) -> str:
@@ -38,7 +42,7 @@ class WebProject(BaseModel):
     events: List[Type] = Field(default_factory=dict, description="Structured events information")
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
     models: List[Any] = []
-    use_cases:List[UseCase] = None
+    use_cases: List[UseCase] = None
     random_generation_function: Callable[[Any], Any] = None
 
 
