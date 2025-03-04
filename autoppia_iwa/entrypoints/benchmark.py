@@ -18,6 +18,7 @@ from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_
 from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
@@ -30,7 +31,7 @@ class BenchmarkConfig:
 
     use_cached_tasks: bool = False
     use_cached_solutions: bool = False
-    evaluate_real_tasks: bool = False
+    evaluate_real_tasks: bool = True
 
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
@@ -54,8 +55,8 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Define agents
 AGENTS: List[BaseAgent] = [
     RandomClickerWebAgent(name="Random-clicker"),
-    # ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
-    # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
+    ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
+    ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
 # Setup logging
@@ -197,8 +198,8 @@ async def main():
         web_projects = [web_projects[0]]
         for project in web_projects:
             tasks = await generate_tasks(project)
-            # if tasks:
-            # await run_evaluation(project, tasks, timing_metrics)
+            if tasks:
+                await run_evaluation(project, tasks, timing_metrics)
     else:
         tasks_data = load_real_tasks()
         web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
