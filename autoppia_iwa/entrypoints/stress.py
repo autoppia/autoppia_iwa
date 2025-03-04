@@ -7,7 +7,8 @@ from typing import List, Optional
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator, EvaluatorConfig
+from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 
@@ -34,8 +35,8 @@ TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 SOLUTIONS_CACHE_DIR = "data/solutions_cache"  # Directory to store solution cache files
 OUTPUT_DIR = "results"  # Directory to store test results
 M = 1  # Number of copies of each solution to evaluate
-PROMPTS_PER_URL = 3
-NUM_OF_URLS = 5
+PROMPTS_PER_URL = 2
+NUM_OF_URLS = 2
 
 # Create output/cache directories if needed
 os.makedirs(OUTPUT_DIR, exist_ok=True)

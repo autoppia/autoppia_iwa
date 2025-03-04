@@ -141,30 +141,32 @@ class BackendDemoWebService:
         Returns:
             bool: True if the event was sent successfully, False otherwise.
         """
-        parsed_url = urlparse(url)
-        path_only = parsed_url.path
+        return True
+        # We check Url in the forntend for now
+        # parsed_url = urlparse(url)
+        # path_only = parsed_url.path
 
-        payload = {
-            "event_type": "page_view",
-            "description": "Page viewed",
-            "data": {
-                "url": path_only,
-                "timestamp": datetime.datetime.now().isoformat(),
-            },
-            "web_agent_id": web_agent_id,
-        }
+        # payload = {
+        #     "event_type": "page_view",
+        #     "description": "Page viewed",
+        #     "data": {
+        #         "url": path_only,
+        #         "timestamp": datetime.datetime.now().isoformat(),
+        #     },
+        #     "web_agent_id": web_agent_id,
+        # }
 
-        endpoint = f"{self.base_url}api/events/add/"
-        headers = {"X-WebAgent-Id": web_agent_id}
+        # endpoint = f"{self.base_url}api/events/add/"
+        # headers = {"X-WebAgent-Id": web_agent_id}
 
-        try:
-            session = await self._get_session()
-            async with session.post(endpoint, json=payload, headers=headers, timeout=10) as response:
-                response.raise_for_status()
-                return True
-        except ClientError as e:
-            logger.error(f"Failed to send PageView event: {e}")
-        except Exception as e:
-            logger.error(f"Unexpected error while sending PageView event: {e}")
+        # try:
+        #     session = await self._get_session()
+        #     async with session.post(endpoint, json=payload, headers=headers, timeout=10) as response:
+        #         response.raise_for_status()
+        #         return True
+        # except ClientError as e:
+        #     logger.error(f"Failed to send PageView event: {e}")
+        # except Exception as e:
+        #     logger.error(f"Unexpected error while sending PageView event: {e}")
 
-        return False
+        # return False

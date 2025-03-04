@@ -2265,3 +2265,79 @@ Evaluating solutions for Agent: browser-use
 2025-03-01 11:53:07,288 - stress_test - INFO - 
 Evaluation complete! Results have been saved to results.
 2025-03-01 11:53:07,288 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json
+2025-03-03 19:50:47,668 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-03 19:50:48,335 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-03 19:50:50,349 - stress_test - ERROR - No tasks available.
+2025-03-03 20:04:59,147 - stress_test - INFO - Starting comprehensive multi-task agent evaluation with batch processing...
+2025-03-03 20:04:59,764 - stress_test - INFO - Using project: Jobs Demo Website
+2025-03-03 20:05:17,212 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-03 20:05:21,079 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/employer/register on attempt 1
+2025-03-03 20:05:35,342 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-03 20:05:39,262 - autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation - INFO - Successfully generated tasks for http://localhost:8000/ on attempt 1
+2025-03-03 20:05:43,010 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-03 20:05:45,925 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-03 20:05:49,089 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-03 20:05:52,140 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-03 20:05:52,157 - stress_test - INFO - Evaluating 4 tasks with 2 agents, 1 solution copies each...
+2025-03-03 20:05:52,157 - stress_test - INFO - 
+--- Phase 1: Generating Solutions ---
+2025-03-03 20:05:52,158 - stress_test - INFO - 
+Agent: Random-clicker
+2025-03-03 20:05:52,158 - stress_test - INFO -   Generating new solution for Task 316bff0e-b3fd-4492-821b-e47fb0b6274a...
+2025-03-03 20:05:52,159 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-03 20:05:52,262 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-03 20:05:52,262 - stress_test - INFO -   Generating new solution for Task a7bccbe3-4c40-44d0-8e2d-d66f5a1bcc76...
+2025-03-03 20:05:52,262 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-03 20:05:52,416 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-03 20:05:52,416 - stress_test - INFO -   Generating new solution for Task 7f487350-fe85-4abc-8653-9317f01d587d...
+2025-03-03 20:05:52,417 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-03 20:05:52,500 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-03 20:05:52,500 - stress_test - INFO -   Generating new solution for Task cd8ddbbd-577f-440b-ac37-e5425fb3ccda...
+2025-03-03 20:05:52,500 - stress_test - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-03 20:05:52,586 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-03 20:05:52,586 - stress_test - INFO - 
+Agent: browser-use
+2025-03-03 20:05:52,586 - stress_test - INFO -   Generating new solution for Task 316bff0e-b3fd-4492-821b-e47fb0b6274a...
+2025-03-03 20:07:52,995 - stress_test - INFO -     Solution generated in 120.41 seconds with 0 actions
+2025-03-03 20:07:53,077 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-03 20:07:53,077 - stress_test - INFO -   Generating new solution for Task a7bccbe3-4c40-44d0-8e2d-d66f5a1bcc76...
+2025-03-03 20:08:09,174 - stress_test - INFO -     Solution generated in 16.10 seconds with 1 actions
+2025-03-03 20:08:09,270 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-03 20:08:09,270 - stress_test - INFO -   Generating new solution for Task 7f487350-fe85-4abc-8653-9317f01d587d...
+2025-03-03 20:08:33,972 - stress_test - INFO -     Solution generated in 24.70 seconds with 3 actions
+2025-03-03 20:08:34,074 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-03 20:08:34,074 - stress_test - INFO -   Generating new solution for Task cd8ddbbd-577f-440b-ac37-e5425fb3ccda...
+2025-03-03 20:08:51,325 - stress_test - INFO -     Solution generated in 17.25 seconds with 3 actions
+2025-03-03 20:08:51,428 - stress_test - INFO - Solution cached successfully for future runs
+2025-03-03 20:08:51,429 - stress_test - INFO - 
+--- Phase 2: Evaluating Solutions in Batches ---
+2025-03-03 20:08:51,429 - stress_test - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-03-03 20:08:51,429 - stress_test - INFO -   Evaluating solution for Task 316bff0e-b3fd-4492-821b-e47fb0b6274a...
+2025-03-03 20:08:51,453 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'Qq1JMj8xqil4hesz': Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+2025-03-03 20:08:51,457 - stress_test - INFO -     Batch evaluation in 0.01 seconds; Avg score = 0.00
+2025-03-03 20:08:51,458 - stress_test - INFO -   Evaluating solution for Task a7bccbe3-4c40-44d0-8e2d-d66f5a1bcc76...
+2025-03-03 20:08:51,481 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'Qq1JMj8xqil4hesz': Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+2025-03-03 20:08:51,486 - stress_test - INFO -     Batch evaluation in 0.01 seconds; Avg score = 0.00
+2025-03-03 20:08:51,486 - stress_test - INFO -   Evaluating solution for Task 7f487350-fe85-4abc-8653-9317f01d587d...
+2025-03-03 20:08:51,508 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'Qq1JMj8xqil4hesz': Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+2025-03-03 20:08:51,510 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-03 20:08:51,511 - stress_test - INFO -   Evaluating solution for Task cd8ddbbd-577f-440b-ac37-e5425fb3ccda...
+2025-03-03 20:08:51,536 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'Qq1JMj8xqil4hesz': Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+2025-03-03 20:08:51,539 - stress_test - INFO -     Batch evaluation in 0.01 seconds; Avg score = 0.00
+2025-03-03 20:08:51,539 - stress_test - INFO - 
+Evaluating solutions for Agent: browser-use
+2025-03-03 20:08:51,539 - stress_test - INFO -   Evaluating solution for Task 316bff0e-b3fd-4492-821b-e47fb0b6274a...
+2025-03-03 20:08:51,560 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-03 20:08:51,560 - stress_test - INFO -   Evaluating solution for Task a7bccbe3-4c40-44d0-8e2d-d66f5a1bcc76...
+2025-03-03 20:08:51,582 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent '44wcm8jui6WGT7Nv': Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+2025-03-03 20:08:51,586 - stress_test - INFO -     Batch evaluation in 0.01 seconds; Avg score = 0.00
+2025-03-03 20:08:51,587 - stress_test - INFO -   Evaluating solution for Task 7f487350-fe85-4abc-8653-9317f01d587d...
+2025-03-03 20:08:51,608 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent '44wcm8jui6WGT7Nv': Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+2025-03-03 20:08:51,611 - stress_test - INFO -     Batch evaluation in 0.00 seconds; Avg score = 0.00
+2025-03-03 20:08:51,611 - stress_test - INFO -   Evaluating solution for Task cd8ddbbd-577f-440b-ac37-e5425fb3ccda...
+2025-03-03 20:08:51,634 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent '44wcm8jui6WGT7Nv': Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]
+2025-03-03 20:08:51,637 - stress_test - INFO -     Batch evaluation in 0.01 seconds; Avg score = 0.00
+2025-03-03 20:08:52,383 - stress_test - INFO - 
+Evaluation complete! Results have been saved to results.
+2025-03-03 20:08:52,383 - stress_test - INFO - Agent solutions have been cached to data/solutions_cache/solutions.json

@@ -18,7 +18,6 @@ def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:
     test_type_mapping = {
         "FindInHtmlTest": "frontend",
         "CheckEventTest": "backend",
-        "CheckPageViewEventTest": "backend",
         "JudgeBaseOnHTML": "frontend",
         "OpinionBaseOnScreenshot": "frontend",
         "CheckUrlTest": "frontend",
@@ -29,13 +28,6 @@ def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:
         # Optionally set a name for specific test types
         if raw_test_type in ["JudgeBaseOnHTML", "OpinionBaseOnScreenshot"]:
             test_config["name"] = raw_test_type
-
-    # Ensure page_view_url is set for CheckPageViewEventTest to avoid None values.
-    if raw_test_type == "CheckPageViewEventTest":
-        if not test_config.get("page_view_url"):
-            test_config["page_view_url"] = ""  # or a default URL string if applicable
-
-    return test_config
 
 
 def extract_domain(url: str) -> str:
