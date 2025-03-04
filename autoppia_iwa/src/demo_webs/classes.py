@@ -1,8 +1,6 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-
+from typing import Any, Dict, List, Optional, Callable
 from pydantic import BaseModel, Field
-
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
@@ -12,10 +10,13 @@ class WebProject(BaseModel):
     backend_url: str = Field(..., description="URL of the backend server")
     frontend_url: str = Field(..., description="URL of the frontend application")
     is_web_real: bool = False
-    domain_analysis: Optional[DomainAnalysis] = None
-    events: List[str] = Field(default_factory=list, description="List of events to monitor")
     urls: List[str] = []
+    domain_analysis: Optional[DomainAnalysis] = None
+    events: Dict[str, Any] = Field(default_factory=dict, description="Structured events information")
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
+    models: List[Any] = []
+    use_cases:Dict[Any] = None
+    random_generation_function: Callable[[Any], Any] = None
 
 
 class BackendEvent(BaseModel):

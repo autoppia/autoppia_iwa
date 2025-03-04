@@ -21,9 +21,9 @@ class StressTestDataGenerator(unittest.TestCase):
             "domain": "localhost:8000",
             "url": "http://localhost:8000/",
             "tests": [
-                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "page_view"},
+                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_type": "page_view"},
                 {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["login"]},
-                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_name": "login"},
+                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_type": "login"},
                 {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["logout"]},
             ],
             "milestones": None,

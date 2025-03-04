@@ -24,7 +24,7 @@ You are a specialized test engineer tasked with generating validation tests for 
 3. Each test should objectively and deterministically evaluate the completion of the task
 4. Avoid creating tests that validate the same thing; prioritize CheckEventTest in case of duplication
 5. Do not create a lot of FindInHTML tests. If you want to use this test use it wisely and in moderation.
-6. Do not use any event_name not in the 'Available Backend Events' list
+6. Do not use any event_type not in the 'Available Backend Events' list
 
 #Instruction on output format
 1. YOU MUST OUTPUT ONLY THE JSON ARRAY WITH NO ADDITIONAL TEXT OR FORMATTING.
@@ -51,7 +51,7 @@ For a login task, appropriate tests might look like this exact format:
   }},
   {{
     "type": "CheckEventTest",
-    "event_name": "login_success",
+    "event_type": "login_success",
     "description": "Check if login_success event was triggered"
   }}
 ]
@@ -71,7 +71,7 @@ For a job application task, appropriate tests might look like this exact format:
   }},
   {{
     "type": "CheckEventTest",
-    "event_name": "application_submitted",
+    "event_type": "application_submitted",
     "description": "Check if application_submitted event was triggered"
   }}
 ]

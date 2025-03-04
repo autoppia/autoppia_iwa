@@ -21,7 +21,7 @@ class TestConcurrentTaskExecution(unittest.TestCase):
             "url": "http://localhost:8000/",
             "tests": [
                 {"description": "Check if login button is present", "test_type": "frontend", "keywords": ["Login"]},
-                {"description": "Check if the backend recorded the login event", "test_type": "backend", "event_name": "login", "app_type": "jobs"},
+                {"description": "Check if the backend recorded the login event", "test_type": "backend", "event_type": "login", "app_type": "jobs"},
             ],
             "milestones": None,
             "web_analysis": None,

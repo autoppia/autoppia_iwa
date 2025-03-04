@@ -8,7 +8,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "registration"
+                    "event_type": "registration"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -51,7 +51,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -79,7 +79,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -187,7 +187,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -210,7 +210,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -233,7 +233,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "registration"
+                    "event_type": "registration"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -256,7 +256,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "registration"
+                    "event_type": "registration"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -286,7 +286,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "search"
+                    "event_type": "search"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -314,7 +314,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "registration"
+                    "event_type": "registration"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -342,7 +342,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -370,7 +370,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "registration"
+                    "event_type": "registration"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -446,7 +446,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -475,7 +475,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "registration"
+                    "event_type": "registration"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -503,7 +503,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "search"
+                    "event_type": "search"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -547,7 +547,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "registration"
+                    "event_type": "registration"
                 },
                 {
                     "description": "Find keywords in the current HTML content",
@@ -570,7 +570,7 @@
                 {
                     "description": "Verify if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "registration"
+                    "event_type": "registration"
                 },
                 {
                     "description": "Find keywords in the current HTML content",

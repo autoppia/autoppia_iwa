@@ -84,7 +84,7 @@
         },
         {
           "type": "CheckEventTest",
-          "event_name": "page_view",
+          "event_type": "page_view",
           "description": "Check if a page view event was triggered for the third page of job listings"
         }
       ],
@@ -134,7 +134,7 @@
         },
         {
           "type": "CheckEventTest",
-          "event_name": "page_view",
+          "event_type": "page_view",
           "description": "Check if page_view event was triggered for job offers page"
         }
       ],

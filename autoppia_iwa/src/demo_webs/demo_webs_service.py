@@ -1,8 +1,5 @@
-import datetime
 import logging
 from typing import List, Optional
-from urllib.parse import urlparse
-
 import aiohttp
 from aiohttp.client_exceptions import ClientError
 

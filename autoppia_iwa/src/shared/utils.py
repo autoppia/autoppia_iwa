@@ -74,7 +74,7 @@ def assign_tests(test_configs: List[Dict]) -> List["BaseTaskTest"]:
                 elif config["name"] == "JudgeBaseOnScreenshot":
                     assigned_tests.append(JudgeBaseOnScreenshot(**config))
         elif test_type == "backend":
-            if "event_name" in config:
+            if "event_type" in config:
                 assigned_tests.append(CheckEventTest(**config))
         else:
             raise ValueError(f"Unsupported test configuration: {config}")

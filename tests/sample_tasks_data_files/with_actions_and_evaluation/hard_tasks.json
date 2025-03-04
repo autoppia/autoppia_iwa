@@ -279,7 +279,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
                 }
             },
             {
@@ -307,7 +307,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
                 }
             },
             {
@@ -335,35 +335,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
-                }
-            },
-            {
-                "description": "Find keywords in the current HTML content",
-                "test_type": "frontend",
-                "success": false,
-                "extra_data": {
-                    "keywords": [
-                        "Logout",
-                        "Sign Out",
-                        "Welcome"
-                    ]
-                }
-            },
-            {
-                "description": "Check if the backend logged a page view event for the specified URL",
-                "test_type": "backend",
-                "success": true,
-                "extra_data": {
-                    "page_view_url": "/login"
-                }
-            },
-            {
-                "description": "Verify if the backend emitted the specified event",
-                "test_type": "backend",
-                "success": false,
-                "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
                 }
             },
             {
@@ -391,7 +363,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
                 }
             },
             {
@@ -419,7 +391,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
                 }
             },
             {
@@ -447,7 +419,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
                 }
             },
             {
@@ -475,7 +447,35 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
+                }
+            },
+            {
+                "description": "Find keywords in the current HTML content",
+                "test_type": "frontend",
+                "success": false,
+                "extra_data": {
+                    "keywords": [
+                        "Logout",
+                        "Sign Out",
+                        "Welcome"
+                    ]
+                }
+            },
+            {
+                "description": "Check if the backend logged a page view event for the specified URL",
+                "test_type": "backend",
+                "success": true,
+                "extra_data": {
+                    "page_view_url": "/login"
+                }
+            },
+            {
+                "description": "Verify if the backend emitted the specified event",
+                "test_type": "backend",
+                "success": false,
+                "extra_data": {
+                    "event_type": "login"
                 }
             },
             {
@@ -825,7 +825,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -857,7 +857,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -889,7 +889,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -921,7 +921,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -953,7 +953,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -985,7 +985,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -3163,7 +3163,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3191,7 +3191,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3219,7 +3219,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3247,7 +3247,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3275,7 +3275,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3303,7 +3303,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3331,7 +3331,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3359,7 +3359,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3771,7 +3771,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3791,7 +3791,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3811,7 +3811,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3831,7 +3831,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3851,7 +3851,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3871,7 +3871,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3891,7 +3891,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -3911,7 +3911,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -4506,7 +4506,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -4526,7 +4526,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -4546,7 +4546,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -4566,7 +4566,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -4586,7 +4586,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -4606,7 +4606,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -4626,7 +4626,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -5113,7 +5113,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
                 }
             },
             {
@@ -5141,7 +5141,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "login"
+                    "event_type": "login"
                 }
             },
             {
@@ -5243,7 +5243,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -5271,7 +5271,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -5299,7 +5299,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -5327,7 +5327,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -5355,7 +5355,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -6622,7 +6622,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -6642,7 +6642,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -6662,7 +6662,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -6682,7 +6682,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -6702,7 +6702,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -6722,7 +6722,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -7308,7 +7308,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "search"
+                    "event_type": "search"
                 }
             },
             {
@@ -7337,7 +7337,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "search"
+                    "event_type": "search"
                 }
             },
             {
@@ -7366,7 +7366,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "search"
+                    "event_type": "search"
                 }
             },
             {
@@ -7395,7 +7395,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "search"
+                    "event_type": "search"
                 }
             },
             {
@@ -7534,7 +7534,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -7554,7 +7554,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -7574,7 +7574,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -7594,7 +7594,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "job_application"
+                    "event_type": "job_application"
                 }
             },
             {
@@ -7724,7 +7724,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7752,7 +7752,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7780,7 +7780,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7808,7 +7808,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7836,7 +7836,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7864,7 +7864,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7892,7 +7892,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7920,7 +7920,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7948,7 +7948,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -7976,7 +7976,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -8004,7 +8004,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -8341,7 +8341,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -8369,7 +8369,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -8397,7 +8397,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -8425,7 +8425,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -8453,7 +8453,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {
@@ -8481,7 +8481,7 @@
                 "test_type": "backend",
                 "success": false,
                 "extra_data": {
-                    "event_name": "registration"
+                    "event_type": "registration"
                 }
             },
             {

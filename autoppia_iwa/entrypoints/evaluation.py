@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
-from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
+from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult,EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
@@ -22,7 +22,7 @@ app = AppBootstrap()
 
 
 async def generate_tasks(num_tasks: int = 3):
-    test_projects = await initialize_test_demo_web_projects()
+    test_projects = await initialize_demo_webs_projects()
     web_project = test_projects[0]
     config = TaskGenerationConfig(
         save_task_in_db=False,

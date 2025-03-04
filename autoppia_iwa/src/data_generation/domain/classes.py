@@ -124,3 +124,5 @@ class TaskGenerationConfig(BaseModel):
     num_or_urls: int = None
     random_urls: bool = True
     prompts_per_url: int = 20
+    generate_local_tasks: bool = True
+    generate_global_tasks: bool = True

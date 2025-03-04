@@ -8,7 +8,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -20,7 +20,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -96,7 +96,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -108,7 +108,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -184,7 +184,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -196,7 +196,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -272,7 +272,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -284,7 +284,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -360,7 +360,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -372,7 +372,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -448,7 +448,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -460,7 +460,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -536,7 +536,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -548,7 +548,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -624,7 +624,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -636,7 +636,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -712,7 +712,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -724,7 +724,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -800,7 +800,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -812,7 +812,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -888,7 +888,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -900,7 +900,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -966,7 +966,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -978,7 +978,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1044,7 +1044,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1056,7 +1056,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1122,7 +1122,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1134,7 +1134,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1200,7 +1200,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1212,7 +1212,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1278,7 +1278,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1290,7 +1290,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1356,7 +1356,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1368,7 +1368,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1434,7 +1434,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1446,7 +1446,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1512,7 +1512,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1524,7 +1524,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1590,7 +1590,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1602,7 +1602,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1668,7 +1668,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1680,7 +1680,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1746,7 +1746,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1758,7 +1758,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1824,7 +1824,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1836,7 +1836,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1902,7 +1902,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1914,7 +1914,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1980,7 +1980,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -1992,7 +1992,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2058,7 +2058,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2070,7 +2070,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2136,7 +2136,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2148,7 +2148,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2214,7 +2214,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2226,7 +2226,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2292,7 +2292,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2304,7 +2304,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2370,7 +2370,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2382,7 +2382,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2448,7 +2448,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2460,7 +2460,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2526,7 +2526,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2538,7 +2538,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2604,7 +2604,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2616,7 +2616,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2682,7 +2682,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2694,7 +2694,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2760,7 +2760,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2772,7 +2772,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2838,7 +2838,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2850,7 +2850,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2916,7 +2916,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2928,7 +2928,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -2994,7 +2994,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3006,7 +3006,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3072,7 +3072,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3084,7 +3084,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3150,7 +3150,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3162,7 +3162,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3228,7 +3228,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3240,7 +3240,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3306,7 +3306,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3318,7 +3318,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3384,7 +3384,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3396,7 +3396,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3462,7 +3462,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3474,7 +3474,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3540,7 +3540,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3552,7 +3552,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3618,7 +3618,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3630,7 +3630,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3696,7 +3696,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3708,7 +3708,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3774,7 +3774,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3786,7 +3786,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3852,7 +3852,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3864,7 +3864,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3930,7 +3930,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "page_view"
+                    "event_type": "page_view"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",
@@ -3942,7 +3942,7 @@
                 {
                     "description": "Check if the backend emitted the specified event",
                     "test_type": "backend",
-                    "event_name": "login"
+                    "event_type": "login"
                 },
                 {
                     "description": "Find in the current HTML some of the words in the list",

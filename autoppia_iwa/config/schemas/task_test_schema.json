@@ -16,7 +16,7 @@
                 "const": "CheckEventTest",
                 "description": "Specifies that this test is related to an event check."
               },
-              "event_name": {
+              "event_type": {
                 "type": "string",
                 "enum": [],
                 "description": "The name of the event to check within the test case."
@@ -24,7 +24,7 @@
             },
             "required": [
               "type",
-              "event_name"
+              "event_type"
             ]
           },
           {
