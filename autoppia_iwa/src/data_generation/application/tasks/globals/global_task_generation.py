@@ -1,28 +1,26 @@
-import random
 import json
-from typing import List, Dict, Any
+import random
+from typing import Any, Dict, List
+
 from dependency_injector.wiring import Provide
 from loguru import logger
 
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
-from autoppia_iwa.src.demo_webs.classes import WebProject, UseCase
+from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.utils import transform_image_into_base64
 from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot
+
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 
 
 class GlobalTaskGenerationPipeline:
-    def __init__(
-        self, 
-        web_project: WebProject, 
-        llm_service: ILLM = Provide[DIContainer.llm_service]
-    ):
+    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service]):
         self.web_project = web_project
         self.llm_service = llm_service
 
-    async def generate_all(self, tasks_per_use_case: int = 10) -> List[Task]:
+    async def generate(self, tasks_per_use_case: int = 10) -> List[Task]:
         """
         Generate tasks for all use cases in the web project.
 
@@ -46,10 +44,7 @@ class GlobalTaskGenerationPipeline:
             logger.info(f"Generating tasks for use case: {use_case.name}")
 
             try:
-                use_case_tasks = await self.generate_tasks_for_use_case(
-                    use_case=use_case,
-                    num_prompts=tasks_per_use_case
-                )
+                use_case_tasks = await self.generate_tasks_for_use_case(use_case=use_case, num_prompts=tasks_per_use_case)
 
                 all_tasks.extend(use_case_tasks)
                 logger.info(f"Generated {len(use_case_tasks)} tasks for use case: {use_case.name}")
@@ -148,13 +143,10 @@ class GlobalTaskGenerationPipeline:
             success_criteria=use_case.success_criteria,
             examples_str=examples_str,
             validation_schema=json.dumps(event_validation, indent=2) if event_validation else "No specific validation schema",
-            num_prompts=num_prompts
+            num_prompts=num_prompts,
         )
 
-        messages = [
-            {"role": "system", "content": "Generate realistic user task prompts based on the provided use case."},
-            {"role": "user", "content": llm_prompt}
-        ]
+        messages = [{"role": "system", "content": "Generate realistic user task prompts based on the provided use case."}, {"role": "user", "content": llm_prompt}]
 
         logger.debug("Calling LLM to generate task prompts")
 
@@ -202,7 +194,7 @@ class GlobalTaskGenerationPipeline:
                     screenshot_description=screenshot_desc,
                     specifications=BrowserSpecification(),
                     relevant_data={},
-                    tests=use_case.test_examples
+                    tests=use_case.test_examples,
                 )
                 tasks.append(task)
 

@@ -14,10 +14,10 @@ from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
-from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
-from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
+from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
+from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
+from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
+from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution

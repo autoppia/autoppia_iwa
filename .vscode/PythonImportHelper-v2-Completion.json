@@ -356,7 +356,7 @@
         "documentation": {}
     },
     {
-        "label": "List",
+        "label": "Any",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -372,7 +372,7 @@
         "documentation": {}
     },
     {
-        "label": "Any",
+        "label": "List",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -980,62 +980,6 @@
         "documentation": {}
     },
     {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
         "label": "Any",
         "importPath": "typing",
         "description": "typing",
@@ -1045,6 +989,62 @@
     },
     {
         "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1916,7 +1916,7 @@
         "documentation": {}
     },
     {
-        "label": "WebProject",
+        "label": "UseCase",
         "importPath": "autoppia_iwa.src.demo_webs.classes",
         "description": "autoppia_iwa.src.demo_webs.classes",
         "isExtraImport": true,
@@ -1924,7 +1924,7 @@
         "documentation": {}
     },
     {
-        "label": "UseCase",
+        "label": "WebProject",
         "importPath": "autoppia_iwa.src.demo_webs.classes",
         "description": "autoppia_iwa.src.demo_webs.classes",
         "isExtraImport": true,
@@ -2148,14 +2148,6 @@
         "documentation": {}
     },
     {
-        "label": "initialize_demo_webs_projects",
-        "importPath": "autoppia_iwa.src.demo_webs.utils",
-        "description": "autoppia_iwa.src.demo_webs.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.demo_webs.utils",
-        "documentation": {}
-    },
-    {
         "label": "_load_web_analysis",
         "importPath": "autoppia_iwa.src.demo_webs.utils",
         "description": "autoppia_iwa.src.demo_webs.utils",
@@ -2180,6 +2172,14 @@
         "documentation": {}
     },
     {
+        "label": "initialize_demo_webs_projects",
+        "importPath": "autoppia_iwa.src.demo_webs.utils",
+        "description": "autoppia_iwa.src.demo_webs.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.utils",
+        "documentation": {}
+    },
+    {
         "label": "EvaluationResult",
         "importPath": "autoppia_iwa.src.evaluation.classes",
         "description": "autoppia_iwa.src.evaluation.classes",
@@ -2365,146 +2365,58 @@
     },
     {
         "label": "TimingMetrics",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "documentation": {}
-    },
-    {
-        "label": "TimingMetrics",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "documentation": {}
-    },
-    {
-        "label": "TimingMetrics",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
         "documentation": {}
     },
     {
         "label": "plot_results",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.results",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.results",
         "documentation": {}
     },
     {
         "label": "plot_task_comparison",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.results",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.results",
         "documentation": {}
     },
     {
         "label": "print_performance_statistics",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.results",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.results",
         "documentation": {}
     },
     {
         "label": "save_results_to_json",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.results",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "plot_results",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "plot_task_comparison",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "print_performance_statistics",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "save_results_to_json",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.results",
         "documentation": {}
     },
     {
         "label": "ConsolidatedSolutionCache",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "documentation": {}
-    },
-    {
-        "label": "ConsolidatedSolutionCache",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "documentation": {}
-    },
-    {
-        "label": "ConsolidatedSolutionCache",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
         "documentation": {}
     },
     {
         "label": "generate_tasks_for_project",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.tasks",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.tasks",
         "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "generate_tasks_for_project",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "generate_tasks_for_project",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
-        "label": "generate_tasks_for_project",
-        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.tasks",
         "documentation": {}
     },
     {
@@ -2529,70 +2441,6 @@
         "description": "autoppia_iwa.src.shared.visualizator",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.shared.visualizator",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
-        "documentation": {}
-    },
-    {
-        "label": "ApifiedWebAgent",
-        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
-        "description": "autoppia_iwa.src.web_agents.apified_agent",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.web_agents.apified_agent",
         "documentation": {}
     },
     {
@@ -2835,6 +2683,150 @@
         "description": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.tasks_generation_pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "ApifiedWebAgent",
+        "importPath": "autoppia_iwa.src.web_agents.apified_agent",
+        "description": "autoppia_iwa.src.web_agents.apified_agent",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.web_agents.apified_agent",
+        "documentation": {}
+    },
+    {
+        "label": "TimingMetrics",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "TimingMetrics",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "plot_results",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
+        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "plot_task_comparison",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
+        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "print_performance_statistics",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
+        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "save_results_to_json",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
+        "description": "autoppia_iwa.src.shared.entrypoints.results",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "ConsolidatedSolutionCache",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "documentation": {}
+    },
+    {
+        "label": "ConsolidatedSolutionCache",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
+        "documentation": {}
+    },
+    {
+        "label": "generate_tasks_for_project",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "documentation": {}
+    },
+    {
+        "label": "generate_tasks_for_project",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "documentation": {}
+    },
+    {
+        "label": "generate_tasks_for_project",
+        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
         "documentation": {}
     },
     {
@@ -9414,7 +9406,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "class BenchmarkConfig:\n    \"\"\"Configuration for the benchmark test.\"\"\"\n    use_cached_tasks: bool = False\n    use_cached_solutions: bool = False\n    evaluate_real_tasks: bool = False\n    m: int = 1  # Number of copies of each solution to evaluate\n    prompts_per_url: int = 5\n    num_of_urls: int = 2\n    # Paths\n    base_dir: Path = PROJECT_BASE_DIR.parent",
+        "peekOfCode": "class BenchmarkConfig:\n    \"\"\"Configuration for the benchmark test.\"\"\"\n    use_cached_tasks: bool = False\n    use_cached_solutions: bool = False\n    evaluate_real_tasks: bool = False\n    m: int = 1  # Number of copies of each solution to evaluate\n    prompts_per_url: int = 3\n    num_of_urls: int = 2\n    # Paths\n    base_dir: Path = PROJECT_BASE_DIR.parent",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -9756,7 +9748,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
-        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(\n        self, \n        web_project: WebProject, \n        llm_service: ILLM = Provide[DIContainer.llm_service]\n    ):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate_all(self, tasks_per_use_case: int = 10) -> List[Task]:\n        \"\"\"",
+        "peekOfCode": "class GlobalTaskGenerationPipeline:\n    def __init__(self, web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service]):\n        self.web_project = web_project\n        self.llm_service = llm_service\n    async def generate(self, tasks_per_use_case: int = 10) -> List[Task]:\n        \"\"\"\n        Generate tasks for all use cases in the web project.\n        Args:\n            tasks_per_use_case: Number of task variations to generate per use case\n        Returns:",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "documentation": {}
     },
@@ -10877,120 +10869,120 @@
         "documentation": {}
     },
     {
-        "label": "TimingMetrics",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "peekOfCode": "class TimingMetrics:\n    \"\"\"Track timing metrics for tasks and agents.\"\"\"\n    def __init__(self):\n        self.start_time = None\n        self.end_time = None\n        # Structure: {agent_id: {task_id: float}} for solution & evaluation times\n        self.solution_times: Dict[str, Dict[str, float]] = {}\n        self.evaluation_times: Dict[str, Dict[str, float]] = {}\n    def start(self):\n        \"\"\"Start the overall timing.\"\"\"",
-        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "documentation": {}
-    },
-    {
-        "label": "compute_statistics",
-        "kind": 2,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "description": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "peekOfCode": "def compute_statistics(values: List[float]) -> dict:\n    \"\"\"\n    Compute basic statistics for a list of numeric values.\n    Returns:\n        dict: A dictionary with count, mean, median, min, max, stdev.\n    \"\"\"\n    if not values:\n        return {\n            \"count\": 0,\n            \"mean\": None,",
-        "detail": "autoppia_iwa.src.shared.entrypoints.metrics",
-        "documentation": {}
-    },
-    {
-        "label": "save_results_to_json",
-        "kind": 2,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "peekOfCode": "def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> str:\n    \"\"\"\n    Save comprehensive results to a JSON file and return the file path.\n    \"\"\"\n    os.makedirs(output_dir, exist_ok=True)\n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = os.path.join(output_dir, f\"stress_test_results_{timestamp}.json\")\n    output_data = {\"timestamp\": datetime.now().isoformat(), \"total_execution_time\": timing_metrics.get_total_time(), \"agents\": {}}\n    for agent in agents:\n        agent_scores = []",
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "print_performance_statistics",
-        "kind": 2,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "peekOfCode": "def print_performance_statistics(results, agents, timing_metrics: TimingMetrics):\n    \"\"\"\n    Print performance stats (scores, timings) for each agent.\n    \"\"\"\n    timestamp = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n    print(f\"\\n===== PERFORMANCE REPORT ({timestamp}) =====\")\n    total_time = timing_metrics.get_total_time()\n    print(f\"\\nTotal test execution time: {total_time:.2f} seconds\")\n    for agent in agents:\n        print(f\"\\n== Agent: {agent.name} ({agent.id}) ==\")",
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "plot_results",
-        "kind": 2,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "peekOfCode": "def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> str:\n    \"\"\"\n    Plot average score, solution time, and evaluation time for each agent.\n    Returns the path to the saved plot image.\n    \"\"\"\n    import statistics\n    os.makedirs(output_dir, exist_ok=True)\n    agent_names = [agent.name for agent in agents]\n    agent_ids = [agent.id for agent in agents]\n    avg_scores = []",
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "plot_task_comparison",
-        "kind": 2,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.results",
-        "description": "autoppia_iwa.src.shared.entrypoints.results",
-        "peekOfCode": "def plot_task_comparison(results, agents, tasks, output_dir: str) -> str:\n    \"\"\"\n    Plot each agent's score on each task (up to 10 tasks).\n    Returns the path to the saved plot image.\n    \"\"\"\n    os.makedirs(output_dir, exist_ok=True)\n    max_tasks_to_show = min(10, len(tasks))\n    selected_tasks = tasks[:max_tasks_to_show]\n    fig, ax = plt.subplots(figsize=(12, 6))\n    bar_width = 0.35",
-        "detail": "autoppia_iwa.src.shared.entrypoints.results",
-        "documentation": {}
-    },
-    {
-        "label": "SolutionData",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "peekOfCode": "class SolutionData(BaseModel):\n    \"\"\"Model for caching solution data\"\"\"\n    agent_id: str\n    agent_name: str\n    timestamp: float = Field(default_factory=time.time)\n    solution: TaskSolution\nclass TaskCache(RootModel):\n    \"\"\"Model for task cache entries\"\"\"\n    root: Dict[str, SolutionData] = {}\n    def __getitem__(self, key):",
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "documentation": {}
-    },
-    {
-        "label": "TaskCache",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "peekOfCode": "class TaskCache(RootModel):\n    \"\"\"Model for task cache entries\"\"\"\n    root: Dict[str, SolutionData] = {}\n    def __getitem__(self, key):\n        return self.root[key]\n    def __setitem__(self, key, value):\n        self.root[key] = value\n    def __contains__(self, key):\n        return key in self.root\n    def keys(self):",
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "documentation": {}
-    },
-    {
-        "label": "SolutionsCache",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "peekOfCode": "class SolutionsCache(RootModel):\n    \"\"\"Model for the entire solutions cache\"\"\"\n    root: Dict[str, TaskCache] = {}\n    def __getitem__(self, key):\n        return self.root[key]\n    def __setitem__(self, key, value):\n        self.root[key] = value\n    def __contains__(self, key):\n        return key in self.root\n    def keys(self):",
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "documentation": {}
-    },
-    {
-        "label": "ConsolidatedSolutionCache",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "peekOfCode": "class ConsolidatedSolutionCache:\n    \"\"\"\n    Class to handle caching of task solutions in a single JSON file.\n    Uses Pydantic models for data validation and serialization.\n    \"\"\"\n    def __init__(self, cache_dir: str):\n        \"\"\"\n        Initialize the solution cache.\n        Args:\n            cache_dir: Directory where solution cache file will be stored",
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "documentation": {}
-    },
-    {
-        "label": "logger",
-        "kind": 5,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "description": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "peekOfCode": "logger = logging.getLogger(__name__)\nclass SolutionData(BaseModel):\n    \"\"\"Model for caching solution data\"\"\"\n    agent_id: str\n    agent_name: str\n    timestamp: float = Field(default_factory=time.time)\n    solution: TaskSolution\nclass TaskCache(RootModel):\n    \"\"\"Model for task cache entries\"\"\"\n    root: Dict[str, SolutionData] = {}",
-        "detail": "autoppia_iwa.src.shared.entrypoints.solutions",
-        "documentation": {}
-    },
-    {
-        "label": "get_cache_filename",
-        "kind": 2,
-        "importPath": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "description": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "peekOfCode": "def get_cache_filename(project: WebProject, task_cache_dir: str) -> str:\n    \"\"\"\n    Generate a project-specific cache filename based on the project's name or ID.\n    \"\"\"\n    safe_name = project.name.replace(\" \", \"_\").lower()\n    return os.path.join(task_cache_dir, f\"{safe_name}_tasks.json\")\nasync def save_tasks_to_json(tasks: List[Task], project: WebProject, task_cache_dir: str) -> bool:\n    \"\"\"\n    Save tasks to a project-specific JSON file.\n    \"\"\"",
-        "detail": "autoppia_iwa.src.shared.entrypoints.tasks",
-        "documentation": {}
-    },
-    {
         "label": "BaseMongoRepository",
         "kind": 6,
         "importPath": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
         "description": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
         "peekOfCode": "class BaseMongoRepository:\n    \"\"\"\n    A generic repository for performing CRUD operations on a MongoDB collection.\n    \"\"\"\n    def __init__(self, mongo_client: MongoClient, db_name: str, collection_name: str):\n        \"\"\"\n        Initialize the BaseMongoRepository.\n        Args:\n            mongo_client (MongoClient): The MongoDB client.\n            db_name (str): The name of the database.",
         "detail": "autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository",
+        "documentation": {}
+    },
+    {
+        "label": "TimingMetrics",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
+        "peekOfCode": "class TimingMetrics:\n    \"\"\"Track timing metrics for tasks and agents.\"\"\"\n    def __init__(self):\n        self.start_time = None\n        self.end_time = None\n        # Structure: {agent_id: {task_id: float}} for solution & evaluation times\n        self.solution_times: Dict[str, Dict[str, float]] = {}\n        self.evaluation_times: Dict[str, Dict[str, float]] = {}\n    def start(self):\n        \"\"\"Start the overall timing.\"\"\"",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "compute_statistics",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
+        "peekOfCode": "def compute_statistics(values: List[float]) -> dict:\n    \"\"\"\n    Compute basic statistics for a list of numeric values.\n    Returns:\n        dict: A dictionary with count, mean, median, min, max, stdev.\n    \"\"\"\n    if not values:\n        return {\n            \"count\": 0,\n            \"mean\": None,",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "save_results_to_json",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "peekOfCode": "def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> str:\n    \"\"\"\n    Save comprehensive results to a JSON file and return the file path.\n    \"\"\"\n    os.makedirs(output_dir, exist_ok=True)\n    timestamp = datetime.now().strftime(\"%Y%m%d_%H%M%S\")\n    filename = os.path.join(output_dir, f\"stress_test_results_{timestamp}.json\")\n    output_data = {\"timestamp\": datetime.now().isoformat(), \"total_execution_time\": timing_metrics.get_total_time(), \"agents\": {}}\n    for agent in agents:\n        agent_scores = []",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "print_performance_statistics",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "peekOfCode": "def print_performance_statistics(results, agents, timing_metrics: TimingMetrics):\n    \"\"\"\n    Print performance stats (scores, timings) for each agent.\n    \"\"\"\n    timestamp = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n    print(f\"\\n===== PERFORMANCE REPORT ({timestamp}) =====\")\n    total_time = timing_metrics.get_total_time()\n    print(f\"\\nTotal test execution time: {total_time:.2f} seconds\")\n    for agent in agents:\n        print(f\"\\n== Agent: {agent.name} ({agent.id}) ==\")",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "plot_results",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "peekOfCode": "def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> str:\n    \"\"\"\n    Plot average score, solution time, and evaluation time for each agent.\n    Returns the path to the saved plot image.\n    \"\"\"\n    import statistics\n    os.makedirs(output_dir, exist_ok=True)\n    agent_names = [agent.name for agent in agents]\n    agent_ids = [agent.id for agent in agents]\n    avg_scores = []",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "plot_task_comparison",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "peekOfCode": "def plot_task_comparison(results, agents, tasks, output_dir: str) -> str:\n    \"\"\"\n    Plot each agent's score on each task (up to 10 tasks).\n    Returns the path to the saved plot image.\n    \"\"\"\n    os.makedirs(output_dir, exist_ok=True)\n    max_tasks_to_show = min(10, len(tasks))\n    selected_tasks = tasks[:max_tasks_to_show]\n    fig, ax = plt.subplots(figsize=(12, 6))\n    bar_width = 0.35",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.results",
+        "documentation": {}
+    },
+    {
+        "label": "SolutionData",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "peekOfCode": "class SolutionData(BaseModel):\n    \"\"\"Model for caching solution data\"\"\"\n    agent_id: str\n    agent_name: str\n    timestamp: float = Field(default_factory=time.time)\n    solution: TaskSolution\nclass TaskCache(RootModel):\n    \"\"\"Model for task cache entries\"\"\"\n    root: Dict[str, SolutionData] = {}\n    def __getitem__(self, key):",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "documentation": {}
+    },
+    {
+        "label": "TaskCache",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "peekOfCode": "class TaskCache(RootModel):\n    \"\"\"Model for task cache entries\"\"\"\n    root: Dict[str, SolutionData] = {}\n    def __getitem__(self, key):\n        return self.root[key]\n    def __setitem__(self, key, value):\n        self.root[key] = value\n    def __contains__(self, key):\n        return key in self.root\n    def keys(self):",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "documentation": {}
+    },
+    {
+        "label": "SolutionsCache",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "peekOfCode": "class SolutionsCache(RootModel):\n    \"\"\"Model for the entire solutions cache\"\"\"\n    root: Dict[str, TaskCache] = {}\n    def __getitem__(self, key):\n        return self.root[key]\n    def __setitem__(self, key, value):\n        self.root[key] = value\n    def __contains__(self, key):\n        return key in self.root\n    def keys(self):",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "documentation": {}
+    },
+    {
+        "label": "ConsolidatedSolutionCache",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "peekOfCode": "class ConsolidatedSolutionCache:\n    \"\"\"\n    Class to handle caching of task solutions in a single JSON file.\n    Uses Pydantic models for data validation and serialization.\n    \"\"\"\n    def __init__(self, cache_dir: str):\n        \"\"\"\n        Initialize the solution cache.\n        Args:\n            cache_dir: Directory where solution cache file will be stored",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "peekOfCode": "logger = logging.getLogger(__name__)\nclass SolutionData(BaseModel):\n    \"\"\"Model for caching solution data\"\"\"\n    agent_id: str\n    agent_name: str\n    timestamp: float = Field(default_factory=time.time)\n    solution: TaskSolution\nclass TaskCache(RootModel):\n    \"\"\"Model for task cache entries\"\"\"\n    root: Dict[str, SolutionData] = {}",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.solutions",
+        "documentation": {}
+    },
+    {
+        "label": "get_cache_filename",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.shared.utils_entrypoints.tasks",
+        "description": "autoppia_iwa.src.shared.utils_entrypoints.tasks",
+        "peekOfCode": "def get_cache_filename(project: WebProject, task_cache_dir: str) -> str:\n    \"\"\"\n    Generate a project-specific cache filename based on the project's name or ID.\n    \"\"\"\n    safe_name = project.name.replace(\" \", \"_\").lower()\n    return os.path.join(task_cache_dir, f\"{safe_name}_tasks.json\")\nasync def save_tasks_to_json(tasks: List[Task], project: WebProject, task_cache_dir: str) -> bool:\n    \"\"\"\n    Save tasks to a project-specific JSON file.\n    \"\"\"",
+        "detail": "autoppia_iwa.src.shared.utils_entrypoints.tasks",
         "documentation": {}
     },
     {
