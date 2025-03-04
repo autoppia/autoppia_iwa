@@ -76,11 +76,6 @@ class TaskGenerationPipeline:
             # Add tests to tasks
             tasks_with_tests = await self.test_pipeline.add_tests_to_tasks(all_tasks)
 
-            # Filter out tasks without tests if needed
-            if self.task_config.require_tests:
-                tasks_with_tests = [t for t in tasks_with_tests if t.tests]
-                logger.info(f"Filtered to {len(tasks_with_tests)} tasks with tests")
-
             # Log completion
             total_time = (datetime.now() - start_time).total_seconds()
             logger.info(f"Task generation completed in {total_time:.2f} seconds. Generated {len(tasks_with_tests)} tasks.")
