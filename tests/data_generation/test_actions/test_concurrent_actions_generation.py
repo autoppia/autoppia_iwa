@@ -4,7 +4,7 @@ import unittest
 import httpx
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.shared.utils import assign_tests
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 
 
 class TestConcurrentTaskExecution(unittest.TestCase):
@@ -19,30 +19,19 @@ class TestConcurrentTaskExecution(unittest.TestCase):
         task1_data = {
             "prompt": "Click on the 'Login' link in the header, fill credentials, and login.",
             "url": "http://localhost:8000/",
-            "tests": [
-                {"description": "Check if login button is present", "test_type": "frontend", "keywords": ["Login"]},
-                {"description": "Check if the backend recorded the login event", "test_type": "backend", "event_type": "login", "app_type": "jobs"},
-            ],
-            "milestones": None,
-            "web_analysis": None,
+            "tests": [{"type": "CheckEventTest", "event_name": "login"}, {"type": "FindInHtmlTest", "substring": "login"}],
             "relevant_data": {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
         }
-        task1_data["tests"] = assign_tests(task1_data["tests"])
+        task1_data["tests"] = [BaseTaskTest.deserialize(test) for test in task1_data["tests"]]
         cls.task1_json = Task(**task1_data).model_dump()
 
         # Task 2 Data
         task2_data = {
             "prompt": "Navigate to the 'Jobs' section and verify the listed job postings.",
             "url": "http://localhost:8000/jobs",
-            "tests": [
-                {"description": "Check if the 'Jobs' section is visible", "test_type": "frontend", "keywords": ["Jobs"]},
-                {"description": "Ensure at least one job posting is displayed", "test_type": "frontend", "keywords": ["Apply Now"]},
-            ],
-            "milestones": None,
-            "web_analysis": None,
-            "relevant_data": {},
+            "tests": [{"type": "FindInHtmlTest", "substring": "Jobs"}, {"type": "FindInHtmlTest", "substring": "Apply Now"}],
         }
-        task2_data["tests"] = assign_tests(task2_data["tests"])
+        task2_data["tests"] = [BaseTaskTest.deserialize(test) for test in task2_data["tests"]]
         cls.task2_json = Task(**task2_data).model_dump()
 
     async def send_request(self, task_json):

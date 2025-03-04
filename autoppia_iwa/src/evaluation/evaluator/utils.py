@@ -2,7 +2,7 @@
 import asyncio
 import hashlib
 from collections import defaultdict
-from typing import List, Dict, Tuple
+from typing import Dict, List, Tuple
 
 from loguru import logger
 from playwright.async_api import Page
@@ -10,22 +10,17 @@ from playwright.async_api import Page
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.classes import (
-    EvaluationStats,
-    Feedback,
-    TestResult,
-    EvaluatorConfig
-)
-from autoppia_iwa.src.execution.classes import ActionExecutionResult
-from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
+from autoppia_iwa.src.evaluation.classes import EvaluationStats, EvaluatorConfig, Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
+from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
+from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.execution.classes import ActionExecutionResult
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-
 
 # ---------------------------------------------------------------------------------
 # DISPLAY/REPORTING HELPERS
 # ---------------------------------------------------------------------------------
+
 
 def display_single_evaluation_summary(stats: EvaluationStats, debug_mode: bool = False):
     """
@@ -44,15 +39,9 @@ def display_single_evaluation_summary(stats: EvaluationStats, debug_mode: bool =
     logger.info(f"Evaluation Results for Agent: {stats.web_agent_id}")
     logger.info(f"{'-' * 60}")
     logger.info(f"Task: {stats.task_id}")
-    logger.info(
-        f"Score: {stats.final_score:.2f} "
-        f"(Raw: {stats.raw_score:.2f}, Random: {stats.random_clicker_score:.2f})"
-    )
+    logger.info(f"Score: {stats.final_score:.2f} " f"(Raw: {stats.raw_score:.2f}, Random: {stats.random_clicker_score:.2f})")
     logger.info(f"Tests Passed: {stats.tests_passed}/{stats.total_tests}")
-    logger.info(
-        f"Actions: {stats.action_count} "
-        f"({', '.join(f'{k}: {v}' for k, v in stats.action_types.items())})"
-    )
+    logger.info(f"Actions: {stats.action_count} " f"({', '.join(f'{k}: {v}' for k, v in stats.action_types.items())})")
     logger.info(f"{'-' * 40}")
 
     total_time = stats.total_time
@@ -119,11 +108,7 @@ def display_batch_evaluation_summary(
     logger.info(f"\n{'=' * 80}")
     logger.info(f"EVALUATION SUMMARY FOR TASK: {task_id}")
     logger.info(f"{'=' * 80}")
-    logger.info(
-        f"Total Agents: {total_agents}, "
-        f"Success Rate: {successful_agents}/{total_agents} "
-        f"({successful_agents / total_agents * 100:.1f}%)"
-    )
+    logger.info(f"Total Agents: {total_agents}, " f"Success Rate: {successful_agents}/{total_agents} " f"({successful_agents / total_agents * 100:.1f}%)")
     logger.info(f"Average Score: {avg_score:.4f}, Average Time: {avg_time:.2f}s")
 
     # Per-agent-type summaries
@@ -143,10 +128,7 @@ def display_batch_evaluation_summary(
         if all_action_times:
             avg_action_time = sum(all_action_times) / len(all_action_times)
             max_action_time = max(all_action_times)
-            logger.info(
-                f"Actions: {sum(s.action_count for s in stats_list)}, "
-                f"Avg Time: {avg_action_time:.3f}s, Max: {max_action_time:.3f}s"
-            )
+            logger.info(f"Actions: {sum(s.action_count for s in stats_list)}, " f"Avg Time: {avg_action_time:.3f}s, Max: {max_action_time:.3f}s")
 
         # Test results
         total_tests = stats_list[0].total_tests if stats_list else 0
@@ -180,26 +162,19 @@ def display_batch_evaluation_summary(
     if action_type_timing:
         logger.info(f"\n{'-' * 60}")
         logger.info("ACTION TYPE PERFORMANCE")
-        for a_type, times in sorted(
-            action_type_timing.items(),
-            key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0,
-            reverse=True
-        ):
+        for a_type, times in sorted(action_type_timing.items(), key=lambda x: sum(x[1]) / len(x[1]) if x[1] else 0, reverse=True):
             if times:
                 avg_t = sum(times) / len(times)
                 max_t = max(times)
                 min_t = min(times)
-                logger.info(
-                    f"{a_type}: {len(times)} actions, {avg_t:.3f}s avg "
-                    f"({min_t:.3f}s - {max_t:.3f}s)"
-                )
+                logger.info(f"{a_type}: {len(times)} actions, {avg_t:.3f}s avg " f"({min_t:.3f}s - {max_t:.3f}s)")
 
     # Display errors if any
     if errors:
         logger.info(f"\n{'-' * 60}")
         logger.info(f"ERRORS ({len(errors)})")
         for i, error in enumerate(errors[:5]):
-            logger.info(f"{i+1}. {error}")
+            logger.info(f"{i + 1}. {error}")
         if len(errors) > 5:
             logger.info(f"... and {len(errors) - 5} more errors")
 
@@ -209,6 +184,7 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 # TEST / FEEDBACK HELPERS
 # ---------------------------------------------------------------------------------
+
 
 def run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
     """
@@ -231,22 +207,13 @@ def run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> Lis
         browser_snapshots.append(snapshot)
 
         # Run the test suite for the current action
-        test_results = test_runner.run_tests(
-            prompt=task.prompt,
-            snapshot=snapshot,
-            browser_snapshots=browser_snapshots,
-            current_action_index=i
-        )
+        test_results = test_runner.run_tests(prompt=task.prompt, snapshot=snapshot, browser_snapshots=browser_snapshots, current_action_index=i)
         test_results_matrix.append(test_results)
 
     return test_results_matrix
 
 
-def generate_feedback(
-    task: Task,
-    execution_history: List[ActionExecutionResult],
-    test_results_matrix: List[List[TestResult]]
-) -> Feedback:
+def generate_feedback(task: Task, execution_history: List[ActionExecutionResult], test_results_matrix: List[List[TestResult]]) -> Feedback:
     """
     Generates feedback based on the given test results.
 
@@ -258,16 +225,13 @@ def generate_feedback(
     Returns:
         Feedback: The generated feedback for this task solution.
     """
-    return FeedbackGenerator.generate_feedback(
-        task_prompt=task.prompt,
-        execution_history=execution_history,
-        test_results_matrix=test_results_matrix
-    )
+    return FeedbackGenerator.generate_feedback(task_prompt=task.prompt, execution_history=execution_history, test_results_matrix=test_results_matrix)
 
 
 # ---------------------------------------------------------------------------------
 # ASYNC HELPERS
 # ---------------------------------------------------------------------------------
+
 
 async def log_progress(total_groups: int, interval: int = 10):
     """
@@ -280,25 +244,13 @@ async def log_progress(total_groups: int, interval: int = 10):
     try:
         while True:
             await asyncio.sleep(interval)
-            completed = sum(
-                1 for t in asyncio.all_tasks()
-                if t.done() and "evaluate_group_with_semaphore" in str(t)
-            )
-            logger.info(
-                f"Progress: {completed}/{total_groups} groups "
-                f"({completed / total_groups * 100:.0f}%)"
-            )
+            completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
+            logger.info(f"Progress: {completed}/{total_groups} groups " f"({completed / total_groups * 100:.0f}%)")
     except asyncio.CancelledError:
         pass
 
 
-async def monitor_browser(
-    web_project: WebProject, 
-    task_url: str, 
-    page: Page, 
-    web_agent_id: str,
-    monitor_interval: float = 1.0
-):
+async def monitor_browser(web_project: WebProject, task_url: str, page: Page, web_agent_id: str, monitor_interval: float = 1.0):
     """
     Monitors browser navigation events and sends them to the backend.
 
@@ -309,6 +261,7 @@ async def monitor_browser(
         web_agent_id (str): ID of the web agent
         monitor_interval (float): Interval in seconds to check page status
     """
+
     def on_frame_navigated(frame):
         if frame.url:
             asyncio.create_task(_handle_frame_navigation(web_project, frame.url, task_url, web_agent_id))
@@ -372,9 +325,7 @@ async def get_random_clicker_performance(
         await backend_demo_webs_service.reset_backend_events_db(random_web_agent_id)
 
     # Execute random clicker actions in browser
-    random_execution_history, _ = await evaluate_in_browser_func(
-        task, random_web_agent_id, random_actions, task.is_web_real
-    )
+    random_execution_history, _ = await evaluate_in_browser_func(task, random_web_agent_id, random_actions, task.is_web_real)
 
     # Run tests
     random_test_results = run_tests(task, random_execution_history)
@@ -438,10 +389,7 @@ def initialize_test_results_matrix(task: Task, num_actions: int):
         row = []
         for test in task.tests:
             # Build a TestResult with success=False; copy any extra info from the test if needed
-            extra_data = {
-                key: value for key, value in test.model_dump().items()
-                if key not in {"description", "test_type"}
-            }
+            extra_data = {key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}}
             row.append(TestResult(success=False, extra_data=extra_data))
         test_results_matrix.append(row)
 

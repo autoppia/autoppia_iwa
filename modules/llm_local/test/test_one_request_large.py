@@ -1,5 +1,6 @@
-import requests
 import json
+
+import requests
 
 
 def make_request():
@@ -127,7 +128,7 @@ def make_request():
                     "    \"curiosities\",\n"
                     "    \"accessibility\"\n"
                     "  ]\n"
-                )
+                ),
             },
             {
                 "role": "system",
@@ -144,7 +145,7 @@ def make_request():
                     "- Do not include comments or additional text outside the JSON.\n"
                     "- Do not include code fences (```).\n\n"
                     "If the input cannot be summarized into a valid JSON object, return an empty JSON object: {}."
-                )
+                ),
             },
             {
                 "role": "user",
@@ -211,12 +212,12 @@ def make_request():
                     "for this section.Do not add boilerplate or not useful information. Only add quality information that adds value and insights to the "
                     "understanding of the web.If something do not add value set it as nullONLY INCLUDE THIS FIELDS AND NOT THE ELEMENT ITSELFPlease provide "
                     "the JSON output in the format specified above."
-                )
-            }
+                ),
+            },
         ],
         "temperature": 0.7,
         "max_tokens": 2000,
-        "json_format": True
+        "json_format": True,
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
@@ -224,6 +225,6 @@ def make_request():
 
 
 if __name__ == "__main__":
-    for i in range(1,100):
+    for i in range(1, 100):
         print(f"Request {i}")
         make_request()

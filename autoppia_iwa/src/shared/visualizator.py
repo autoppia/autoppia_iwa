@@ -48,7 +48,7 @@ class SubnetVisualizer:
 
             for idx, test in enumerate(task.tests):
                 test_type = type(test).__name__
-                description,attributes = self._get_detailed_test_description_and_attributes(test)
+                description, attributes = self._get_detailed_test_description_and_attributes(test)
                 tests_table.add_row(str(idx + 1), test_type, description, attributes)
 
             self.console.print("\n[bold magenta]CONFIGURED TESTS:[/bold magenta]")
@@ -120,13 +120,13 @@ class SubnetVisualizer:
 
                     # Get detailed test description
                     test_type = type(test).__name__
-                    description,attributes = self._get_detailed_test_description_and_attributes(test)
+                    description, attributes = self._get_detailed_test_description_and_attributes(test)
 
                     # Format the result
                     result_text = "✅ PASS" if test_passed else "❌ FAIL"
                     result_style = "green" if test_passed else "red"
 
-                    tests_table.add_row(str(idx + 1), test_type, description,attributes, Text(result_text, style=result_style))
+                    tests_table.add_row(str(idx + 1), test_type, description, attributes, Text(result_text, style=result_style))
 
             tests_panel = Panel(tests_table, title="[bold magenta]TESTS AND RESULTS[/bold magenta]", border_style="magenta", padding=(1, 1))
             self.console.print("\n")
@@ -269,7 +269,7 @@ class SubnetVisualizer:
                     # If no attributes were found, use the test type
                     description = f"Test type {test_type}"
 
-        return description,str(attributes)
+        return description, str(attributes)
 
     def print_summary(self, results, agents):
         """

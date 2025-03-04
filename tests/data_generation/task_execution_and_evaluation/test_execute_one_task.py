@@ -3,11 +3,11 @@ import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.shared.utils import assign_tests
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from tests import test_container
@@ -42,15 +42,11 @@ class TestActionGenerationAndEvaluation(unittest.TestCase):
         task_data = {
             "prompt": "Click on the 'Login' link in the header. Then fill the form and click on login.",
             "url": "http://localhost:8000/",
-            "tests": [
-                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_type": "page_view", "page_view_url": "/login"},
-                {"description": "Find in the current HTML some of the words in the list", "test_type": "frontend", "keywords": ["email"]},
-                {"description": "Check if the backend emitted the specified event", "test_type": "backend", "event_type": "login"},
-            ],
+            "tests": [{"type": "CheckEventTest", "event_name": "login"}, {"type": "FindInHtmlTest", "substring": "email"}],
         }
 
         # Create tests from test data
-        tests = assign_tests(task_data["tests"])
+        tests = [BaseTaskTest.deserialize(test) for test in task_data["tests"]]
 
         # Create and return a Task instance
         return Task(prompt=task_data["prompt"], url=task_data["url"], tests=tests)

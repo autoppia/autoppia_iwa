@@ -9,28 +9,28 @@ import matplotlib.pyplot as plt
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
-from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_demo_webs_projects
-from autoppia_iwa.src.evaluation.classes import EvaluationResult,EvaluatorConfig
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.demo_webs.config import test_demo_web_projects, demo_web_projects
+from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 # Bootstrap the application and its DI container.
 app = AppBootstrap()
 
 
 async def generate_tasks(num_tasks: int = 3):
-    test_projects = await initialize_demo_webs_projects()
+    test_projects = test_demo_web_projects
+    test_projects = await initialize_demo_webs_projects(test_projects)
     web_project = test_projects[0]
     config = TaskGenerationConfig(
         save_task_in_db=False,
         save_web_analysis_in_db=True,
         enable_crawl=True,
         generate_milestones=False,
-        global_tasks_to_generate=num_tasks,
-        local_tasks_to_generate_per_url=1,
     )
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
     tasks: List[Task] = await pipeline.generate()
@@ -43,10 +43,6 @@ async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
 
     for task in tasks:
         task_solution: TaskSolution = await agent.solve_task(task)
-        evaluator_input = TaskSolution(task=task, actions=task_solution.actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(starting_url=task.url, save_results_in_db=False)
-        evaluator = ConcurrentEvaluator(evaluator_config)
-        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task(evaluator_input)
         evaluator_input = TaskSolution(task_id=task.id, actions=task_solution.actions, web_agent_id=agent.id)
         evaluator_config = EvaluatorConfig(save_results_in_db=False)
         evaluator = ConcurrentEvaluator(project, evaluator_config)
