@@ -29,8 +29,6 @@ async def generate_tasks(num_tasks: int = 3):
         save_web_analysis_in_db=True,
         enable_crawl=True,
         generate_milestones=False,
-        global_tasks_to_generate=num_tasks,
-        local_tasks_to_generate_per_url=1,
     )
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
     tasks: List[Task] = await pipeline.generate()
@@ -43,10 +41,6 @@ async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
 
     for task in tasks:
         task_solution: TaskSolution = await agent.solve_task(task)
-        evaluator_input = TaskSolution(task=task, actions=task_solution.actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(starting_url=task.url, save_results_in_db=False)
-        evaluator = ConcurrentEvaluator(evaluator_config)
-        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task(evaluator_input)
         evaluator_input = TaskSolution(task_id=task.id, actions=task_solution.actions, web_agent_id=agent.id)
         evaluator_config = EvaluatorConfig(save_results_in_db=False)
         evaluator = ConcurrentEvaluator(project, evaluator_config)
