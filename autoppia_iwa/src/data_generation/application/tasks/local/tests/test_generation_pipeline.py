@@ -60,7 +60,7 @@ class LocalTestGenerationPipeline:
         self.test_class_extra_data = {
             "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very useful to check navigation or where the agent is.",
             "FindInHtmlTest": "Use this FindInHtmlTest test to check for strings that you expect to appear after the task is completed. very useful for tasks that trigger UI updates",
-            "CheckEventTest": "For CheckEventTest pls select event_type from this List of allowed event names: " + json.dumps(web_project.events),
+            "CheckEventTest": "For CheckEventTest pls select event_type from this List of allowed event names: " + json.dumps([event.__name__ for event in web_project.events]),
         }
 
     async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:
