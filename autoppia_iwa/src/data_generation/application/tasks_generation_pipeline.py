@@ -9,7 +9,8 @@ from loguru import logger
 
 from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline import TestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer

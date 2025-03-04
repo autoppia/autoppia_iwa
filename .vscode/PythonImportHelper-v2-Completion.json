@@ -300,6 +300,62 @@
         "documentation": {}
     },
     {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -348,6 +404,86 @@
         "documentation": {}
     },
     {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -357,86 +493,6 @@
     },
     {
         "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1244,14 +1300,6 @@
         "documentation": {}
     },
     {
-        "label": "Literal",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -1612,14 +1660,6 @@
         "documentation": {}
     },
     {
-        "label": "TestGenerationPipeline",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "documentation": {}
-    },
-    {
         "label": "Task",
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
@@ -1644,63 +1684,7 @@
         "documentation": {}
     },
     {
-        "label": "BrowserSpecification",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
         "label": "Task",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "BrowserSpecification",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "Task",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "Task",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "Task",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "Task",
-        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
-        "description": "autoppia_iwa.src.data_generation.domain.classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.classes",
-        "documentation": {}
-    },
-    {
-        "label": "TaskGenerationConfig",
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
         "isExtraImport": true,
@@ -1756,6 +1740,70 @@
         "documentation": {}
     },
     {
+        "label": "Task",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "TaskGenerationConfig",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "BrowserSpecification",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "Task",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "Task",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "Task",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "BrowserSpecification",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "Task",
+        "importPath": "autoppia_iwa.src.data_generation.domain.classes",
+        "description": "autoppia_iwa.src.data_generation.domain.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
         "label": "TaskGenerationConfig",
         "importPath": "autoppia_iwa.src.data_generation.domain.classes",
         "description": "autoppia_iwa.src.data_generation.domain.classes",
@@ -1849,6 +1897,14 @@
         "description": "autoppia_iwa.src.data_generation.domain.classes",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.domain.classes",
+        "documentation": {}
+    },
+    {
+        "label": "WebProject",
+        "importPath": "autoppia_iwa.src.demo_webs.classes",
+        "description": "autoppia_iwa.src.demo_webs.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.classes",
         "documentation": {}
     },
     {
@@ -2758,384 +2814,6 @@
         "documentation": {}
     },
     {
-        "label": "random",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "random",
-        "description": "random",
-        "detail": "random",
-        "documentation": {}
-    },
-    {
-        "label": "json",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "Provide",
-        "importPath": "dependency_injector.wiring",
-        "description": "dependency_injector.wiring",
-        "isExtraImport": true,
-        "detail": "dependency_injector.wiring",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "DIContainer",
-        "importPath": "autoppia_iwa.src.di_container",
-        "description": "autoppia_iwa.src.di_container",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.di_container",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "LLMConfig",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "LLMConfig",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "ILLM",
-        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
-        "description": "autoppia_iwa.src.llms.domain.interfaces",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.llms.domain.interfaces",
-        "documentation": {}
-    },
-    {
-        "label": "transform_image_into_base64",
-        "importPath": "autoppia_iwa.src.shared.utils",
-        "description": "autoppia_iwa.src.shared.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.utils",
-        "documentation": {}
-    },
-    {
-        "label": "transform_image_into_base64",
-        "importPath": "autoppia_iwa.src.shared.utils",
-        "description": "autoppia_iwa.src.shared.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.utils",
-        "documentation": {}
-    },
-    {
-        "label": "extract_json_in_markdown",
-        "importPath": "autoppia_iwa.src.shared.utils",
-        "description": "autoppia_iwa.src.shared.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.utils",
-        "documentation": {}
-    },
-    {
-        "label": "generate_random_web_agent_id",
-        "importPath": "autoppia_iwa.src.shared.utils",
-        "description": "autoppia_iwa.src.shared.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.utils",
-        "documentation": {}
-    },
-    {
-        "label": "assign_tests",
-        "importPath": "autoppia_iwa.src.shared.utils",
-        "description": "autoppia_iwa.src.shared.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.utils",
-        "documentation": {}
-    },
-    {
-        "label": "assign_tests",
-        "importPath": "autoppia_iwa.src.shared.utils",
-        "description": "autoppia_iwa.src.shared.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.utils",
-        "documentation": {}
-    },
-    {
-        "label": "generate_random_web_agent_id",
-        "importPath": "autoppia_iwa.src.shared.utils",
-        "description": "autoppia_iwa.src.shared.utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.utils",
-        "documentation": {}
-    },
-    {
-        "label": "get_html_and_screenshot",
-        "importPath": "autoppia_iwa.src.shared.web_utils",
-        "description": "autoppia_iwa.src.shared.web_utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.web_utils",
-        "documentation": {}
-    },
-    {
-        "label": "detect_interactive_elements",
-        "importPath": "autoppia_iwa.src.shared.web_utils",
-        "description": "autoppia_iwa.src.shared.web_utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.web_utils",
-        "documentation": {}
-    },
-    {
-        "label": "get_html_and_screenshot",
-        "importPath": "autoppia_iwa.src.shared.web_utils",
-        "description": "autoppia_iwa.src.shared.web_utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.web_utils",
-        "documentation": {}
-    },
-    {
-        "label": "detect_interactive_elements",
-        "importPath": "autoppia_iwa.src.shared.web_utils",
-        "description": "autoppia_iwa.src.shared.web_utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.web_utils",
-        "documentation": {}
-    },
-    {
-        "label": "async_extract_html",
-        "importPath": "autoppia_iwa.src.shared.web_utils",
-        "description": "autoppia_iwa.src.shared.web_utils",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.shared.web_utils",
-        "documentation": {}
-    },
-    {
         "label": "BaseModel",
         "importPath": "pydantic",
         "description": "pydantic",
@@ -3144,15 +2822,7 @@
         "documentation": {}
     },
     {
-        "label": "RootModel",
-        "importPath": "pydantic",
-        "description": "pydantic",
-        "isExtraImport": true,
-        "detail": "pydantic",
-        "documentation": {}
-    },
-    {
-        "label": "ValidationError",
+        "label": "Field",
         "importPath": "pydantic",
         "description": "pydantic",
         "isExtraImport": true,
@@ -3185,6 +2855,30 @@
     },
     {
         "label": "Field",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "ValidationError",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "RootModel",
         "importPath": "pydantic",
         "description": "pydantic",
         "isExtraImport": true,
@@ -3392,6 +3086,641 @@
         "documentation": {}
     },
     {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "Provide",
+        "importPath": "dependency_injector.wiring",
+        "description": "dependency_injector.wiring",
+        "isExtraImport": true,
+        "detail": "dependency_injector.wiring",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "CheckEventTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "CheckUrlTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "FindInHtmlTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "JudgeBaseOnHTML",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "JudgeBaseOnScreenshot",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "BaseTaskTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "CheckEventTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "CheckUrlTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "FindInHtmlTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "JudgeBaseOnHTML",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "JudgeBaseOnScreenshot",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "CheckEventTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "CheckUrlTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "FindInHtmlTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "JudgeBaseOnHTML",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "JudgeBaseOnScreenshot",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "BaseTaskTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "BaseTaskTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "BaseTaskTest",
+        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "DIContainer",
+        "importPath": "autoppia_iwa.src.di_container",
+        "description": "autoppia_iwa.src.di_container",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.di_container",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "LLMConfig",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "LLMConfig",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "ILLM",
+        "importPath": "autoppia_iwa.src.llms.domain.interfaces",
+        "description": "autoppia_iwa.src.llms.domain.interfaces",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.llms.domain.interfaces",
+        "documentation": {}
+    },
+    {
+        "label": "detect_interactive_elements",
+        "importPath": "autoppia_iwa.src.shared.web_utils",
+        "description": "autoppia_iwa.src.shared.web_utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.web_utils",
+        "documentation": {}
+    },
+    {
+        "label": "get_html_and_screenshot",
+        "importPath": "autoppia_iwa.src.shared.web_utils",
+        "description": "autoppia_iwa.src.shared.web_utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.web_utils",
+        "documentation": {}
+    },
+    {
+        "label": "detect_interactive_elements",
+        "importPath": "autoppia_iwa.src.shared.web_utils",
+        "description": "autoppia_iwa.src.shared.web_utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.web_utils",
+        "documentation": {}
+    },
+    {
+        "label": "detect_interactive_elements",
+        "importPath": "autoppia_iwa.src.shared.web_utils",
+        "description": "autoppia_iwa.src.shared.web_utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.web_utils",
+        "documentation": {}
+    },
+    {
+        "label": "get_html_and_screenshot",
+        "importPath": "autoppia_iwa.src.shared.web_utils",
+        "description": "autoppia_iwa.src.shared.web_utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.web_utils",
+        "documentation": {}
+    },
+    {
+        "label": "async_extract_html",
+        "importPath": "autoppia_iwa.src.shared.web_utils",
+        "description": "autoppia_iwa.src.shared.web_utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.web_utils",
+        "documentation": {}
+    },
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "transform_image_into_base64",
+        "importPath": "autoppia_iwa.src.shared.utils",
+        "description": "autoppia_iwa.src.shared.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.utils",
+        "documentation": {}
+    },
+    {
+        "label": "extract_json_in_markdown",
+        "importPath": "autoppia_iwa.src.shared.utils",
+        "description": "autoppia_iwa.src.shared.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.utils",
+        "documentation": {}
+    },
+    {
+        "label": "transform_image_into_base64",
+        "importPath": "autoppia_iwa.src.shared.utils",
+        "description": "autoppia_iwa.src.shared.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.utils",
+        "documentation": {}
+    },
+    {
+        "label": "generate_random_web_agent_id",
+        "importPath": "autoppia_iwa.src.shared.utils",
+        "description": "autoppia_iwa.src.shared.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.utils",
+        "documentation": {}
+    },
+    {
+        "label": "assign_tests",
+        "importPath": "autoppia_iwa.src.shared.utils",
+        "description": "autoppia_iwa.src.shared.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.utils",
+        "documentation": {}
+    },
+    {
+        "label": "assign_tests",
+        "importPath": "autoppia_iwa.src.shared.utils",
+        "description": "autoppia_iwa.src.shared.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.utils",
+        "documentation": {}
+    },
+    {
+        "label": "generate_random_web_agent_id",
+        "importPath": "autoppia_iwa.src.shared.utils",
+        "description": "autoppia_iwa.src.shared.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.shared.utils",
+        "documentation": {}
+    },
+    {
+        "label": "TestLogicGenerator",
+        "importPath": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
+        "description": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
+        "documentation": {}
+    },
+    {
         "label": "Image",
         "importPath": "PIL",
         "description": "PIL",
@@ -3453,183 +3782,6 @@
         "description": "autoppia_iwa.src.data_generation.application.tasks.local.prompts",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.tasks.local.prompts",
-        "documentation": {}
-    },
-    {
-        "label": "logger",
-        "importPath": "loguru",
-        "description": "loguru",
-        "isExtraImport": true,
-        "detail": "loguru",
-        "documentation": {}
-    },
-    {
-        "label": "logger",
-        "importPath": "loguru",
-        "description": "loguru",
-        "isExtraImport": true,
-        "detail": "loguru",
-        "documentation": {}
-    },
-    {
-        "label": "logger",
-        "importPath": "loguru",
-        "description": "loguru",
-        "isExtraImport": true,
-        "detail": "loguru",
-        "documentation": {}
-    },
-    {
-        "label": "logger",
-        "importPath": "loguru",
-        "description": "loguru",
-        "isExtraImport": true,
-        "detail": "loguru",
-        "documentation": {}
-    },
-    {
-        "label": "logger",
-        "importPath": "loguru",
-        "description": "loguru",
-        "isExtraImport": true,
-        "detail": "loguru",
-        "documentation": {}
-    },
-    {
-        "label": "logger",
-        "importPath": "loguru",
-        "description": "loguru",
-        "isExtraImport": true,
-        "detail": "loguru",
-        "documentation": {}
-    },
-    {
-        "label": "BaseTaskTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "CheckEventTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "CheckUrlTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "FindInHtmlTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "JudgeBaseOnHTML",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "JudgeBaseOnScreenshot",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "CheckEventTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "CheckUrlTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "FindInHtmlTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "JudgeBaseOnHTML",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "JudgeBaseOnScreenshot",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "BaseTaskTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "BaseTaskTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "BaseTaskTest",
-        "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "documentation": {}
-    },
-    {
-        "label": "re",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "re",
-        "description": "re",
-        "detail": "re",
-        "documentation": {}
-    },
-    {
-        "label": "TestLogicGenerator",
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "description": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
         "documentation": {}
     },
     {
@@ -3767,6 +3919,22 @@
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
         "isExtraImport": true,
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
+        "documentation": {}
+    },
+    {
+        "label": "LocalTestGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "TestGenerationPipeline",
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
         "documentation": {}
     },
     {
@@ -9553,6 +9721,51 @@
         "documentation": {}
     },
     {
+        "label": "TEST_GENERATION_PROMPT",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.prompts",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.prompts",
+        "peekOfCode": "TEST_GENERATION_PROMPT = \"\"\"\nYou are a specialized test engineer tasked with generating validation tests for our web agent benchmark framework. These tests will execute after each agent action, examining browser snapshots to determine if the agent has successfully completed the required task.\n## Task Information\n- Task Description: {task_prompt}\n- Success Requirements: {success_criteria}\n## Context\n- Current Page URL: {current_url}\n- Current Page HTML (truncated): {truncated_html}\n- Visual State Description: {screenshot_desc}\n- Available Interactive Elements: {interactive_elements}",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.prompts",
+        "documentation": {}
+    },
+    {
+        "label": "TestEvaluationResult",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.schemas",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.schemas",
+        "peekOfCode": "class TestEvaluationResult(BaseModel):\n    \"\"\"\n    Model for LLM response when evaluating a specific test type for a task\n    \"\"\"\n    applicable: bool = Field(..., description=\"Whether this test type is applicable for the task\")\n    reason: str = Field(..., description=\"Explanation for why this test is or is not applicable\")\n    parameters: Dict[str, Any] = Field(default_factory=dict, description=\"If applicable=true, the parameters to use when creating the test instance\")",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "GlobalTestGenerationPipeline",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
+        "peekOfCode": "class GlobalTestGenerationPipeline:\n    \"\"\"A pipeline that:\n    1) Gathers context (HTML, screenshot info, etc.) for each Task.\n    2) Uses LLM to generate appropriate tests in a single call.\n    3) Instantiates the test objects and adds them to the task.\n    4) (Optionally) generates a logic function for the entire set of tests.\"\"\"\n    def __init__(\n        self,\n        web_project: WebProject,\n        llm_service: ILLM = Provide[DIContainer.llm_service],",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "normalize_test_config",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.utils",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.utils",
+        "peekOfCode": "def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:\n    \"\"\"\n    Converts LLM-produced test_config (with nested 'fields') into a flattened structure.\n    \"\"\"\n    # Get the original test type\n    raw_test_type = test_config.get(\"test_type\")\n    # Flatten the 'fields' dictionary into the main dictionary\n    if \"fields\" in test_config and isinstance(test_config[\"fields\"], dict):\n        fields = test_config.pop(\"fields\")\n        test_config.update(fields)",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.utils",
+        "documentation": {}
+    },
+    {
+        "label": "extract_domain",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.utils",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.utils",
+        "peekOfCode": "def extract_domain(url: str) -> str:\n    \"\"\"Extract domain from a full URL.\"\"\"\n    if not url:\n        return \"\"\n    pattern = re.compile(r\"https?://([^/]+)\")\n    match = pattern.match(url)\n    return match.group(1).lower() if match else \"\"",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.tests.utils",
+        "documentation": {}
+    },
+    {
         "label": "GlobalTaskGenerationPipeline",
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation",
@@ -9604,6 +9817,69 @@
         "description": "autoppia_iwa.src.data_generation.application.tasks.globals.schemas",
         "peekOfCode": "class FilterTaskList(RootModel[List[FilterTask]]):\n    \"\"\"A container for a list of filtered tasks.\"\"\"\n    # Access items via self.root (a List[FilterTask])",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.globals.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "TestLogicGenerator",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.logic.logic_function_generator",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.logic.logic_function_generator",
+        "peekOfCode": "class TestLogicGenerator:\n    \"\"\"\n    Generates executable logic expressions for test evaluation.\n    Uses a structured JSON format that can be directly translated to executable code.\n    \"\"\"\n    def __init__(self, llm_service: ILLM = Provide[DIContainer.llm_service]):\n        self.llm_service = llm_service\n    async def generate_logic(self, task: Task, tests: List[BaseTaskTest]) -> Dict[str, Any]:\n        \"\"\"\n        Generate a logic expression for the given task and tests.",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.logic.logic_function_generator",
+        "documentation": {}
+    },
+    {
+        "label": "LOGIC_SYSTEM_PROMPT",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.logic.prompts",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.logic.prompts",
+        "peekOfCode": "LOGIC_SYSTEM_PROMPT = \"\"\"\n    You are an expert at creating precise, executable logic expressions for test evaluation.\n    Given a matrix M where:\n    - Rows (i) represent steps/actions (1 to N)\n    - Columns (j) represent tests (1 to M)\n    - M[i][j] is True if test j passes at step i\n    Generate a logic expression in the following JSON format:\n    {\n        \"type\": \"operation\",\n        \"operator\": \"<operator>\",  # AND, OR, SEQUENCE, EXISTS, ALL",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.logic.prompts",
+        "documentation": {}
+    },
+    {
+        "label": "TEST_GENERATION_PROMPT",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.prompts",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.prompts",
+        "peekOfCode": "TEST_GENERATION_PROMPT = \"\"\"\nYou are a specialized test engineer tasked with generating validation tests for our web agent benchmark framework. These tests will execute after each agent action, examining browser snapshots to determine if the agent has successfully completed the required task.\n## Task Information\n- Task Description: {task_prompt}\n- Success Requirements: {success_criteria}\n## Context\n- Current Page URL: {current_url}\n- Current Page HTML (truncated): {truncated_html}\n- Visual State Description: {screenshot_desc}\n- Available Interactive Elements: {interactive_elements}",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.prompts",
+        "documentation": {}
+    },
+    {
+        "label": "TestEvaluationResult",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.schemas",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.schemas",
+        "peekOfCode": "class TestEvaluationResult(BaseModel):\n    \"\"\"\n    Model for LLM response when evaluating a specific test type for a task\n    \"\"\"\n    applicable: bool = Field(..., description=\"Whether this test type is applicable for the task\")\n    reason: str = Field(..., description=\"Explanation for why this test is or is not applicable\")\n    parameters: Dict[str, Any] = Field(default_factory=dict, description=\"If applicable=true, the parameters to use when creating the test instance\")",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "LocalTestGenerationPipeline",
+        "kind": 6,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "peekOfCode": "class LocalTestGenerationPipeline:\n    \"\"\"A pipeline that:\n    1) Gathers context (HTML, screenshot info, etc.) for each Task.\n    2) Uses LLM to generate appropriate tests in a single call.\n    3) Instantiates the test objects and adds them to the task.\n    4) (Optionally) generates a logic function for the entire set of tests.\"\"\"\n    def __init__(\n        self,\n        web_project: WebProject,\n        llm_service: ILLM = Provide[DIContainer.llm_service],",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline",
+        "documentation": {}
+    },
+    {
+        "label": "normalize_test_config",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.utils",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.utils",
+        "peekOfCode": "def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:\n    \"\"\"\n    Converts LLM-produced test_config (with nested 'fields') into a flattened structure.\n    \"\"\"\n    # Get the original test type\n    raw_test_type = test_config.get(\"test_type\")\n    # Flatten the 'fields' dictionary into the main dictionary\n    if \"fields\" in test_config and isinstance(test_config[\"fields\"], dict):\n        fields = test_config.pop(\"fields\")\n        test_config.update(fields)",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.utils",
+        "documentation": {}
+    },
+    {
+        "label": "extract_domain",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.data_generation.application.tasks.local.tests.utils",
+        "description": "autoppia_iwa.src.data_generation.application.tasks.local.tests.utils",
+        "peekOfCode": "def extract_domain(url: str) -> str:\n    \"\"\"Extract domain from a full URL.\"\"\"\n    if not url:\n        return \"\"\n    pattern = re.compile(r\"https?://([^/]+)\")\n    match = pattern.match(url)\n    return match.group(1).lower() if match else \"\"",
+        "detail": "autoppia_iwa.src.data_generation.application.tasks.local.tests.utils",
         "documentation": {}
     },
     {
@@ -9667,69 +9943,6 @@
         "description": "autoppia_iwa.src.data_generation.application.tasks.local.schemas",
         "peekOfCode": "class FilterTaskList(RootModel[List[FilterTask]]):\n    \"\"\"A container for a list of filtered tasks.\"\"\"\n    # Access items via self.root (a List[FilterTask])",
         "detail": "autoppia_iwa.src.data_generation.application.tasks.local.schemas",
-        "documentation": {}
-    },
-    {
-        "label": "TestLogicGenerator",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "description": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "peekOfCode": "class TestLogicGenerator:\n    \"\"\"\n    Generates executable logic expressions for test evaluation.\n    Uses a structured JSON format that can be directly translated to executable code.\n    \"\"\"\n    def __init__(self, llm_service: ILLM = Provide[DIContainer.llm_service]):\n        self.llm_service = llm_service\n    async def generate_logic(self, task: Task, tests: List[BaseTaskTest]) -> Dict[str, Any]:\n        \"\"\"\n        Generate a logic expression for the given task and tests.",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator",
-        "documentation": {}
-    },
-    {
-        "label": "LOGIC_SYSTEM_PROMPT",
-        "kind": 5,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.logic.prompts",
-        "description": "autoppia_iwa.src.data_generation.application.tests.logic.prompts",
-        "peekOfCode": "LOGIC_SYSTEM_PROMPT = \"\"\"\n    You are an expert at creating precise, executable logic expressions for test evaluation.\n    Given a matrix M where:\n    - Rows (i) represent steps/actions (1 to N)\n    - Columns (j) represent tests (1 to M)\n    - M[i][j] is True if test j passes at step i\n    Generate a logic expression in the following JSON format:\n    {\n        \"type\": \"operation\",\n        \"operator\": \"<operator>\",  # AND, OR, SEQUENCE, EXISTS, ALL",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.logic.prompts",
-        "documentation": {}
-    },
-    {
-        "label": "TEST_GENERATION_PROMPT",
-        "kind": 5,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.prompts",
-        "description": "autoppia_iwa.src.data_generation.application.tests.prompts",
-        "peekOfCode": "TEST_GENERATION_PROMPT = \"\"\"\nYou are a specialized test engineer tasked with generating validation tests for our web agent benchmark framework. These tests will execute after each agent action, examining browser snapshots to determine if the agent has successfully completed the required task.\n## Task Information\n- Task Description: {task_prompt}\n- Success Requirements: {success_criteria}\n## Context\n- Current Page URL: {current_url}\n- Current Page HTML (truncated): {truncated_html}\n- Visual State Description: {screenshot_desc}\n- Available Interactive Elements: {interactive_elements}",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.prompts",
-        "documentation": {}
-    },
-    {
-        "label": "TestEvaluationResult",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "description": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "peekOfCode": "class TestEvaluationResult(BaseModel):\n    \"\"\"\n    Model for LLM response when evaluating a specific test type for a task\n    \"\"\"\n    applicable: bool = Field(..., description=\"Whether this test type is applicable for the task\")\n    reason: str = Field(..., description=\"Explanation for why this test is or is not applicable\")\n    parameters: Dict[str, Any] = Field(default_factory=dict, description=\"If applicable=true, the parameters to use when creating the test instance\")",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.schemas",
-        "documentation": {}
-    },
-    {
-        "label": "TestGenerationPipeline",
-        "kind": 6,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "description": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "peekOfCode": "class TestGenerationPipeline:\n    \"\"\"A pipeline that:\n    1) Gathers context (HTML, screenshot info, etc.) for each Task.\n    2) Uses LLM to generate appropriate tests in a single call.\n    3) Instantiates the test objects and adds them to the task.\n    4) (Optionally) generates a logic function for the entire set of tests.\"\"\"\n    def __init__(\n        self,\n        web_project: WebProject,\n        llm_service: ILLM = Provide[DIContainer.llm_service],",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline",
-        "documentation": {}
-    },
-    {
-        "label": "normalize_test_config",
-        "kind": 2,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.utils",
-        "description": "autoppia_iwa.src.data_generation.application.tests.utils",
-        "peekOfCode": "def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:\n    \"\"\"\n    Converts LLM-produced test_config (with nested 'fields') into a flattened structure.\n    \"\"\"\n    # Get the original test type\n    raw_test_type = test_config.get(\"test_type\")\n    # Flatten the 'fields' dictionary into the main dictionary\n    if \"fields\" in test_config and isinstance(test_config[\"fields\"], dict):\n        fields = test_config.pop(\"fields\")\n        test_config.update(fields)",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.utils",
-        "documentation": {}
-    },
-    {
-        "label": "extract_domain",
-        "kind": 2,
-        "importPath": "autoppia_iwa.src.data_generation.application.tests.utils",
-        "description": "autoppia_iwa.src.data_generation.application.tests.utils",
-        "peekOfCode": "def extract_domain(url: str) -> str:\n    \"\"\"Extract domain from a full URL.\"\"\"\n    if not url:\n        return \"\"\n    pattern = re.compile(r\"https?://([^/]+)\")\n    match = pattern.match(url)\n    return match.group(1).lower() if match else \"\"",
-        "detail": "autoppia_iwa.src.data_generation.application.tests.utils",
         "documentation": {}
     },
     {
@@ -9818,7 +10031,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "peekOfCode": "class CheckEventTest(BaseTaskTest):\n    \"\"\"\n    Test that checks if specific events were triggered based on event type and criteria.\n    \"\"\"\n    type: Literal[\"CheckEventTest\"] = \"CheckEventTest\"\n    event_type: str\n    event_criteria: Dict = Field(default_factory=dict)\n    description: str = Field(default=\"Check if specific event was triggered\")\n    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:\n        \"\"\"",
+        "peekOfCode": "class CheckEventTest(BaseTaskTest):\n    \"\"\"\n    Test that checks if specific events were triggered based on event type and criteria.\n    \"\"\"\n    type: Literal[\"CheckEventTest\"] = \"CheckEventTest\"\n    event_name: str\n    event_criteria: Dict = Field(default_factory=dict)\n    description: str = Field(default=\"Check if specific event was triggered\")\n    def _execute_test(self, web_project:WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:\n        \"\"\"",
         "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "documentation": {}
     },
@@ -9845,7 +10058,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "description": "autoppia_iwa.src.data_generation.domain.tests_classes",
-        "peekOfCode": "class WebProjectCheckEventTest(BaseTaskTest):\n    \"\"\"\n    Test that checks if specific events were triggered with access to WebProject\n    \"\"\"\n    type: Literal[\"WebProjectCheckEventTest\"] = \"WebProjectCheckEventTest\"\n    event_type: str\n    event_criteria: Dict = Field(default_factory=dict)\n    description: str = Field(default=\"Check if specific event was triggered (with WebProject)\")\n    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, \n                     snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:",
+        "peekOfCode": "class WebProjectCheckEventTest(BaseTaskTest):\n    \"\"\"\n    Test that checks if specific events were triggered with access to WebProject\n    \"\"\"\n    type: Literal[\"WebProjectCheckEventTest\"] = \"WebProjectCheckEventTest\"\n    event_name: str\n    event_criteria: Dict = Field(default_factory=dict)\n    description: str = Field(default=\"Check if specific event was triggered (with WebProject)\")\n    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, \n                     snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:",
         "detail": "autoppia_iwa.src.data_generation.domain.tests_classes",
         "documentation": {}
     },
@@ -15263,7 +15476,7 @@
         "kind": 6,
         "importPath": "modules.webs_demo.web_3_demo_movies.export",
         "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "class Event(BaseModel):\n    \"\"\"Base event class for all event types\"\"\"\n    type: str\n    timestamp: int\n    web_agent_id: int\n    user_id: Optional[int] = None\n    class ValidationCriteria(BaseModel):\n        \"\"\"Base validation criteria for any event\"\"\"\n        match_type: Literal[\"exact\", \"contains\", \"regex\"] = \"contains\"\n    def validate(self, criteria: \"Event.ValidationCriteria\") -> bool:",
+        "peekOfCode": "class Event(BaseModel):\n    \"\"\"Base event class for all event types\"\"\"\n    type: str\n    timestamp: int\n    web_agent_id: int\n    user_id: Optional[int] = None\n    class ValidationCriteria(BaseModel):\n        pass\n    def validate(self) -> bool:\n        \"\"\"Check if this event meets the validation criteria\"\"\"",
         "detail": "modules.webs_demo.web_3_demo_movies.export",
         "documentation": {}
     },
@@ -15272,7 +15485,7 @@
         "kind": 6,
         "importPath": "modules.webs_demo.web_3_demo_movies.export",
         "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "class FilmDetailEvent(Event):\n    \"\"\"Event triggered when a film detail page is viewed\"\"\"\n    movie: Movie\n    class ValidationCriteria(Event.ValidationCriteria):\n        \"\"\"Validation criteria for FilmDetailEvent\"\"\"\n        movie_title: Optional[str] = None\n        movie_genre: Optional[str] = None\n        movie_director: Optional[str] = None\n        movie_year: Optional[int] = None\n        class Config:",
+        "peekOfCode": "class FilmDetailEvent(Event):\n    \"\"\"Event triggered when a film detail page is viewed\"\"\"\n    movie: Movie\n    class ValidationCriteria(BaseModel):\n        \"\"\"Validation criteria for FilmDetailEvent\"\"\"\n        title: Optional[str] = None\n        genre: Optional[str] = None\n        director: Optional[str] = None\n        year: Optional[int] = None\n        class Config:",
         "detail": "modules.webs_demo.web_3_demo_movies.export",
         "documentation": {}
     },
@@ -15335,7 +15548,7 @@
         "kind": 5,
         "importPath": "modules.webs_demo.web_3_demo_movies.export",
         "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "MODELS = [Genre, Movie, Comment, UserProfile, ContactMessage]\n# ================ Event Classes with Nested Validation Criteria ================\nclass Event(BaseModel):\n    \"\"\"Base event class for all event types\"\"\"\n    type: str\n    timestamp: int\n    web_agent_id: int\n    user_id: Optional[int] = None\n    class ValidationCriteria(BaseModel):\n        \"\"\"Base validation criteria for any event\"\"\"",
+        "peekOfCode": "MODELS = [Genre, Movie, Comment, UserProfile, ContactMessage]\n# ================ Event Classes with Nested Validation Criteria ================\nclass Event(BaseModel):\n    \"\"\"Base event class for all event types\"\"\"\n    type: str\n    timestamp: int\n    web_agent_id: int\n    user_id: Optional[int] = None\n    class ValidationCriteria(BaseModel):\n        pass",
         "detail": "modules.webs_demo.web_3_demo_movies.export",
         "documentation": {}
     },
@@ -15353,7 +15566,7 @@
         "kind": 5,
         "importPath": "modules.webs_demo.web_3_demo_movies.export",
         "description": "modules.webs_demo.web_3_demo_movies.export",
-        "peekOfCode": "USE_CASES = [\n    {\n        \"name\": \"Registration\",\n        \"prompt_template\": \"Fill registration form and register\",\n        \"event\": RegistrationEvent,\n        \"success_criteria\": \"Task is successful if the user is actually registered\",\n        \"tests\": [\n            {\n                \"type\": \"CheckEventTest\", \n                \"event_type\": \"RegistrationEvent\",",
+        "peekOfCode": "USE_CASES = [\n    {\n        \"name\": \"Registration\",\n        \"prompt_template\": \"Fill registration form and register\",\n        \"event\": RegistrationEvent,\n        \"success_criteria\": \"Task is successful if the user is actually registered\",\n        \"tests\": [\n            {\n                \"type\": \"CheckEventTest\", \n                \"event_name\": \"RegistrationEvent\",",
         "detail": "modules.webs_demo.web_3_demo_movies.export",
         "documentation": {}
     },

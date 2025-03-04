@@ -149,11 +149,11 @@ class CheckEventTest(BaseTaskTest):
     Test that checks if specific events were triggered based on event type and criteria.
     """
     type: Literal["CheckEventTest"] = "CheckEventTest"
-    event_type: str
+    event_name: str
     event_criteria: Dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered")
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project:WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         """
         Execute the test on the given snapshots by checking for specific events.
         """
@@ -162,10 +162,10 @@ class CheckEventTest(BaseTaskTest):
 
         # Assuming the snapshot contains backend_events and we can access the event classes
         # from somewhere accessible in this context
-        from autoppia_iwa.src.demo_webs.classes import EVENTS  # Adjust import as needed
+        events = web_project.events 
 
-        # Get the event class matching event_type
-        event_class = next((event_cls for event_cls in EVENTS if event_cls.__name__ == self.event_type), None)
+        # Get the event class matching event_name
+        event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_name), None)
         if not event_class:
             return False
 
@@ -268,7 +268,7 @@ class WebProjectCheckEventTest(BaseTaskTest):
     Test that checks if specific events were triggered with access to WebProject
     """
     type: Literal["WebProjectCheckEventTest"] = "WebProjectCheckEventTest"
-    event_type: str
+    event_name: str
     event_criteria: Dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered (with WebProject)")
 
@@ -278,8 +278,8 @@ class WebProjectCheckEventTest(BaseTaskTest):
         Special version of execute_test that accepts web_project parameter
         """
         events = web_project.events
-        # Get the event class matching event_type
-        event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_type), None)
+        # Get the event class matching event_name
+        event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_name), None)
         if not event_class:
             return False
         # Check if any event of the correct type matches our criteria

@@ -19,7 +19,7 @@ from autoppia_iwa.src.shared.web_utils import detect_interactive_elements
 from .prompts import TEST_GENERATION_PROMPT
 
 
-class TestGenerationPipeline:
+class LocalTestGenerationPipeline:
     """A pipeline that:
     1) Gathers context (HTML, screenshot info, etc.) for each Task.
     2) Uses LLM to generate appropriate tests in a single call.
