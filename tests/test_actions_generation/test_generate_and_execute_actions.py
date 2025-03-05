@@ -10,7 +10,7 @@ from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from tests import test_container
+from tests.test_di_container import TestDIContainer
 
 
 class TestActionGenerationAndEvaluation(unittest.TestCase):
@@ -25,7 +25,7 @@ class TestActionGenerationAndEvaluation(unittest.TestCase):
         """
         cls.app_bootstrap = AppBootstrap()
         cls.llm_service = cls.app_bootstrap.container.llm_service()
-        cls.web_agent: ApifiedWebAgent = test_container.web_agent()
+        cls.web_agent: ApifiedWebAgent = TestDIContainer().web_agent()
 
         cls.task = cls._initialize_task()
         cls.web_agent_id = "miner_123"
