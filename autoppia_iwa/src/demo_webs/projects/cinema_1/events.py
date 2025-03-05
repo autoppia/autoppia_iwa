@@ -4,32 +4,25 @@ from typing import Optional
 from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.projects.cinema_1.models import Movie
+from autoppia_iwa.src.demo_webs.projects.events import Event
 
 # ================ Event Classes with Nested Validation Criteria ================
 
 
-class Event(BaseModel):
-    """Base event class for all event types"""
+class RegistrationEvent(Event):
+    """Event triggered when a user registration is completed"""
 
-    type: str
-    timestamp: int
-    web_agent_id: int
-    user_id: Optional[int] = None
 
-    class ValidationCriteria(BaseModel):
-        pass
+class LoginEvent(Event):
+    """Event triggered when a user logs in"""
 
-    def validate_criteria(self) -> bool:
-        """Check if this event meets the validation criteria"""
-        # Base implementation just checks event type
-        return self.type == self.__class__.__name__
+    username: str
 
-    @classmethod
-    def code(cls) -> str:
-        """Return the source code of the class"""
-        import inspect
 
-        return inspect.getsource(cls)
+class LogoutEvent(Event):
+    """Event triggered when a user logs in"""
+
+    username: str
 
 
 class FilmDetailEvent(Event):
@@ -89,9 +82,9 @@ class SearchEvent(Event):
             title = "Search Validation"
             description = "Validates that a search was performed with specific query"
 
-    def validate(self, criteria: ValidationCriteria) -> bool:
+    def validate_criteria(self, criteria: ValidationCriteria) -> bool:
         """Validate this SearchEvent against the criteria"""
-        if not super().validate():
+        if not super().validate_criteria():
             return False
 
         if not criteria.query:
@@ -108,18 +101,11 @@ class SearchEvent(Event):
         return False
 
 
-class RegistrationEvent(Event):
-    """Event triggered when a user registration is completed"""
-
-    # No additional validation needed, just check the event type
-
-
-class LoginEvent(Event):
-    """Event triggered when a user logs in"""
-
-    username: str
-    # No additional validation needed, just check the event type
-
-
 # ================ Available Events and Use Cases ================
-EVENTS = [FilmDetailEvent, SearchEvent, RegistrationEvent, LoginEvent]
+EVENTS = [
+    RegistrationEvent,
+    LoginEvent,
+    LogoutEvent,
+    FilmDetailEvent,
+    SearchEvent,
+]

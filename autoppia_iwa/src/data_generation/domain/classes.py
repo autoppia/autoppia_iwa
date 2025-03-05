@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 # Import your test classes:
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
+from autoppia_iwa.src.demo_webs.classes import UseCase
 
 
 class BrowserSpecification(BaseModel):
@@ -47,6 +48,7 @@ class Task(BaseModel):
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     success_criteria: Optional[str] = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
     logic_function: Optional[dict] = Field(default=None, description="Boolean expression using T1..Tn notation to evaluate overall task success")
+    use_case: Optional[UseCase] = None
 
     class Config:
         extra = "allow"
