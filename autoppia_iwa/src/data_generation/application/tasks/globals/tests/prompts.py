@@ -1,86 +1,54 @@
-# file: prompts.py
-TEST_GENERATION_PROMPT = """
-You are a specialized test engineer tasked with generating validation tests for our web agent benchmark framework. These tests will execute after each agent action, examining browser snapshots to determine if the agent has successfully completed the required task.
+# prompts.py
 
-## Task Information
-- Task Description: {task_prompt}
-- Success Requirements: {success_criteria}
+USE_CASE_TEST_GENERATION_PROMPT = """
+You are an AI assistant that generates automated tests for a specific use case in JSON format.
+Below is the context you have:
 
-## Context
-- Current Page URL: {current_url}
-- Current Page HTML (truncated): {truncated_html}
-- Visual State Description: {screenshot_desc}
-- Available Interactive Elements: {interactive_elements}
+- **Use Case Name**: {use_case_name}
+- **Use Case Description**: {use_case_description}
+- **Task Prompt**: {task_prompt}
 
-## Available Backend Events
-{events}
+- **Example Tests for this Use Case** (these are typical tests or checks we often do):
+{use_case_test_examples}
 
-## Test Classes
-{test_classes_info}
+- **Event Code** (if this use case corresponds to a particular event that gets emitted, here is the relevant code snippet):
+{event_code}
 
-## Instructions on deciding which tests to use and its arguments
-1. For each test class, evaluate whether it is appropriate for verifying the success criteria for this task.
-2. You can just use 1 test of each type. 
-3. Each test should objectively and deterministically evaluate the completion of the task
-4. Avoid creating tests that validate the same thing; prioritize CheckEventTest in case of duplication
-5. Do not create a lot of FindInHTML tests. If you want to use this test use it wisely and in moderation.
-6. Do not use any event_type not in the 'Available Backend Events' list
+- **Partial/Truncated HTML** (this is the HTML relevant to the page where the task occurs):
+{html}
 
-#Instruction on output format
-1. YOU MUST OUTPUT ONLY THE JSON ARRAY WITH NO ADDITIONAL TEXT OR FORMATTING.
-   - Strictly adheres to the provided schema
-   - Contains ONLY fields defined in the schema (no additional keys)
-   - Sets the `type` field to exactly the test class name
-   - Provides meaningful values for all required fields that will effectively validate task completion
-2. YOUR RESPONSE MUST BE A VALID JSON ARRAY ONLY. Do not include code blocks, markdown formatting, explanations, or any text outside the JSON array
+- **Screenshot Description** (a textual description of the page or screenshot):
+{screenshot_desc}
 
-## Response Format Examples
+- **Interactive Elements** (JSON array describing forms, buttons, links, etc., extracted from HTML):
+{interactive_elements}
 
-For a login task, appropriate tests might look like this exact format:
+Your job:
+1. Propose a list of tests that ensure this task was completed successfully **with respect to the described use case**.
+2. Return the tests **exclusively** in the form of a **valid JSON array** of objects (no markdown, no extra fields).
+3. Each test object **must** have at least:
+   - a `"type"` key (e.g. `"CheckEventTest"`, `"CheckUrlTest"`, `"FindInHtmlTest"`, etc.),
+   - any additional fields that the chosen test type requires (e.g., `"event_name"`, `"criteria"`, `"code"`, `"selector"`, etc.)
+
+Important:
+- Do **not** wrap your JSON in markdown or include any extra commentary.
+- Do **not** output anything except the JSON array.
+
+Example format:
 
 [
-  {{
-    "type": "CheckUrlTest",
-    "url": "http://localhost:8000/dashboard",
-    "description": "Check if user was redirected to dashboard after login"
-  }},
-  {{
-    "type": "FindInHtmlTest",
-    "substring": "Welcome back",
-    "description": "Verify welcome message appears after successful login" 
-  }},
-  {{
+  {
     "type": "CheckEventTest",
-    "event_type": "login_success",
-    "description": "Check if login_success event was triggered"
-  }}
+    "event_name": "RegistrationEvent",
+    "criteria": {},
+    "code": "function or snippet here"
+  },
+  {
+    "type": "FindInHtmlTest",
+    "selector": "input[name='username']",
+    "expected_value": "some default"
+  }
 ]
 
-For a job application task, appropriate tests might look like this exact format:
-
-[
-  {{
-    "type": "CheckUrlTest",
-    "url": "http://localhost:8000/application-confirmation",
-    "description": "Check if user was redirected to confirmation page"
-  }},
-  {{
-    "type": "FindInHtmlTest",
-    "substring": "Application submitted successfully",
-    "description": "Verify success message appears after application"
-  }},
-  {{
-    "type": "CheckEventTest",
-    "event_type": "application_submitted",
-    "description": "Check if application_submitted event was triggered"
-  }}
-]
-
-CRITICAL REQUIREMENTS:
-1. Return ONLY the raw JSON array without any backticks, code blocks, or markdown
-2. Do not include any text before or after the JSON array
-3. The JSON must start with '[' and end with ']'
-4. Do not use indentation or newlines different from the examples above
-5. Include only test classes that are relevant to the specific task
-6. Ensure each test has a clear, descriptive "description" field
+Now, **generate the JSON array of test definitions**.
 """

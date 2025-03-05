@@ -12,7 +12,7 @@ USE_CASES = [
         prompt_examples=["Fill the registration form and register", "Register a new user", "create a new account"],
         event=RegistrationEvent,
         test_examples=[
-            {"type": "CheckEventTest", "event_name": "RegistrationEvent", "event_criteria": {}, "code": RegistrationEvent.code()},  # No special criteria needed
+            {"type": "CheckEventTest", "event_name": "RegistrationEvent", "criteria": {}, "code": RegistrationEvent.code()},  # No special criteria needed
         ],
     ),
     UseCase(
@@ -22,7 +22,7 @@ USE_CASES = [
         prompt_examples=["Log in with a user", "sign in with your account", "Fill the login form and Sign In"],
         event=LoginEvent,
         test_examples=[
-            {"type": "CheckEventTest", "event_name": "LoginEvent", "event_criteria": {}, "code": LoginEvent.code()},  # No special criteria needed
+            {"type": "CheckEventTest", "event_name": "LoginEvent", "criteria": {}, "code": LoginEvent.code()},  # No special criteria needed
         ],
     ),
     UseCase(
@@ -32,7 +32,7 @@ USE_CASES = [
         prompt_examples=["Log out from the platform", "sign out with your account", "Click on the logout button"],
         event=LoginEvent,
         test_examples=[
-            {"type": "CheckEventTest", "event_name": "LoginEvent", "event_criteria": {}, "code": LoginEvent.code()},  # No special criteria needed
+            {"type": "CheckEventTest", "event_name": "LoginEvent", "criteria": {}, "code": LoginEvent.code()},  # No special criteria needed
         ],
     ),
     # UseCase(

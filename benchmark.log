@@ -229,3 +229,231 @@ Agent: Browser-Use
 2025-03-04 20:24:01,553 - benchmark - INFO - Starting evaluation...
 2025-03-04 20:24:26,490 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 2025-03-04 20:51:09,824 - benchmark - INFO - Starting evaluation...
+2025-03-05 20:07:38,213 - benchmark - INFO - Starting evaluation...
+2025-03-05 20:08:03,789 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:08:22,992 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:08:39,834 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:08:52,706 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:09:07,471 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:09:21,305 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:09:34,105 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:09:46,394 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:09:58,481 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:10:14,866 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:10:29,202 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:10:42,508 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:10:56,010 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:11:09,244 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:11:21,903 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:11:35,723 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:11:48,457 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:12:09,758 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:12:22,659 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:12:34,062 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:12:46,691 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:13:00,137 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:13:16,836 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:13:30,999 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:13:44,991 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:13:57,722 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:14:12,116 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:14:24,722 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:14:38,445 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:14:52,370 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:15:06,580 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:15:18,995 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:15:32,508 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:15:45,825 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:16:00,573 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:16:13,455 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:16:26,376 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:16:39,279 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:16:53,206 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:17:06,723 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:17:18,647 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:17:33,347 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:17:46,455 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:18:00,587 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:18:14,101 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:18:25,901 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:20:22,513 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:20:26,682 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:20:48,647 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:21:10,029 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:22:01,028 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:22:24,782 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:22:44,346 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:22:59,891 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:23:21,697 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:23:27,382 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:23:33,437 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:23:39,368 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:23:51,047 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:24:35,857 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:25:09,433 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:25:21,418 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:25:26,443 - httpx - INFO - HTTP Request: POST http://194.68.245.61:22185/generate "HTTP/1.0 200 OK"
+2025-03-05 20:27:03,665 - benchmark - INFO - Starting evaluation...
+2025-03-05 20:27:48,310 - benchmark - INFO - Starting evaluation...
+2025-03-05 20:31:31,473 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-05 20:31:36,933 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-05 20:31:41,027 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-05 20:34:35,273 - benchmark - INFO - 
+Agent: Random-clicker
+2025-03-05 20:34:35,273 - benchmark - INFO -   Generating new solution for Task 28bef179-cda3-42c4-83b6-a9f42903d2bb...
+2025-03-05 20:34:35,274 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,327 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,327 - benchmark - INFO -   Generating new solution for Task e5dea2b8-baba-4dd3-9eae-19a279764f15...
+2025-03-05 20:34:35,327 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,379 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,379 - benchmark - INFO -   Generating new solution for Task 748e6bd9-9f20-40f5-a6de-4ba971803755...
+2025-03-05 20:34:35,379 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,528 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,528 - benchmark - INFO -   Generating new solution for Task 7fc75f1c-a221-468a-9161-3ca9fed637fb...
+2025-03-05 20:34:35,528 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,582 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,583 - benchmark - INFO -   Generating new solution for Task 9d48f7d9-e595-4789-9807-ecf9ab98b75b...
+2025-03-05 20:34:35,583 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,633 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,633 - benchmark - INFO -   Generating new solution for Task a427c93e-94f9-4b52-b63f-92e42ad705eb...
+2025-03-05 20:34:35,634 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,684 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,684 - benchmark - INFO -   Generating new solution for Task 3f448dae-1283-4b9c-8d1a-45b3cf4719b7...
+2025-03-05 20:34:35,684 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,736 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,736 - benchmark - INFO -   Generating new solution for Task 0629fd4c-f3d7-4278-901a-9f85981a0572...
+2025-03-05 20:34:35,736 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,787 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,788 - benchmark - INFO -   Generating new solution for Task f7b85ecf-9543-4ffd-be95-edfc336fed6b...
+2025-03-05 20:34:35,788 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,839 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,840 - benchmark - INFO -   Generating new solution for Task c00340e4-3dd4-43e3-baa5-08753e20ac4e...
+2025-03-05 20:34:35,840 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,891 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,892 - benchmark - INFO -   Generating new solution for Task 7ac4fec3-2259-45d8-87d0-39d3769f1919...
+2025-03-05 20:34:35,892 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,943 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,944 - benchmark - INFO -   Generating new solution for Task 5b5452ad-874a-4b5b-adf1-3468b3368812...
+2025-03-05 20:34:35,944 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:35,996 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:35,997 - benchmark - INFO -   Generating new solution for Task 6095ea69-a104-4163-8b42-ec38770098a7...
+2025-03-05 20:34:35,997 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,049 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,049 - benchmark - INFO -   Generating new solution for Task d0962236-80a8-4b64-b6b0-db2fb8ddf448...
+2025-03-05 20:34:36,049 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,101 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,102 - benchmark - INFO -   Generating new solution for Task 35626fc9-3200-44ed-8894-64163ebec9be...
+2025-03-05 20:34:36,102 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,154 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,155 - benchmark - INFO -   Generating new solution for Task 89f474b4-9365-402c-b5a4-4c183a516024...
+2025-03-05 20:34:36,155 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,207 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,207 - benchmark - INFO -   Generating new solution for Task 36e16614-870a-4cd8-b2aa-6c0f7ddf7e46...
+2025-03-05 20:34:36,208 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,260 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,260 - benchmark - INFO -   Generating new solution for Task 705941f0-f977-4c29-945c-1238d9e9e855...
+2025-03-05 20:34:36,260 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,313 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,313 - benchmark - INFO -   Generating new solution for Task 666521f2-c2f8-4d73-b66b-722fb1220c3f...
+2025-03-05 20:34:36,313 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,366 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,366 - benchmark - INFO -   Generating new solution for Task 5af9edf1-c96b-404b-8ed6-a80035fdc328...
+2025-03-05 20:34:36,367 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,419 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,419 - benchmark - INFO -   Generating new solution for Task 3b8a49b9-24b8-4915-a28c-a6f8d3a1cda0...
+2025-03-05 20:34:36,420 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,473 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,473 - benchmark - INFO -   Generating new solution for Task ead46212-8497-4f24-8fcf-b6f666f444e7...
+2025-03-05 20:34:36,473 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,527 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,527 - benchmark - INFO -   Generating new solution for Task deeea20d-3f4f-4791-b3c4-88ab2066d0e2...
+2025-03-05 20:34:36,527 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,581 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,581 - benchmark - INFO -   Generating new solution for Task 57b07a16-cdf3-4e81-86fb-376f65efe3d2...
+2025-03-05 20:34:36,582 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,635 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,636 - benchmark - INFO -   Generating new solution for Task b8a1b4d0-c2cf-4996-97a9-2d0328603dfd...
+2025-03-05 20:34:36,636 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,690 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,690 - benchmark - INFO -   Generating new solution for Task 6df624b4-04a6-4806-874e-a433a0aa433c...
+2025-03-05 20:34:36,690 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,745 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,745 - benchmark - INFO -   Generating new solution for Task 7ca25a6f-ee39-4e8f-8eeb-b4430107c6aa...
+2025-03-05 20:34:36,745 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,800 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,800 - benchmark - INFO -   Generating new solution for Task 2048ced1-b900-46ba-86ee-a9a90926a1c6...
+2025-03-05 20:34:36,800 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,855 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,855 - benchmark - INFO -   Generating new solution for Task f70b8f60-7dbc-4b50-b070-dabb0f85c829...
+2025-03-05 20:34:36,855 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,909 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,909 - benchmark - INFO -   Generating new solution for Task 5125b868-d09b-489c-92e7-26544fc3770b...
+2025-03-05 20:34:36,909 - benchmark - INFO -     Solution generated in 0.00 seconds with 1 actions
+2025-03-05 20:34:36,964 - benchmark - INFO - Solution cached successfully for future runs
+2025-03-05 20:34:36,964 - benchmark - INFO - 
+Evaluating solutions for Agent: Random-clicker
+2025-03-05 20:34:36,964 - benchmark - INFO -   Evaluating solution for Task 28bef179-cda3-42c4-83b6-a9f42903d2bb...
+2025-03-05 20:34:37,056 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:37,066 - benchmark - INFO -   Evaluating solution for Task e5dea2b8-baba-4dd3-9eae-19a279764f15...
+2025-03-05 20:34:37,496 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:37,504 - benchmark - INFO -   Evaluating solution for Task 748e6bd9-9f20-40f5-a6de-4ba971803755...
+2025-03-05 20:34:37,807 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:37,815 - benchmark - INFO -   Evaluating solution for Task 7fc75f1c-a221-468a-9161-3ca9fed637fb...
+2025-03-05 20:34:38,002 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:38,011 - benchmark - INFO -   Evaluating solution for Task 9d48f7d9-e595-4789-9807-ecf9ab98b75b...
+2025-03-05 20:34:38,220 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:38,229 - benchmark - INFO -   Evaluating solution for Task a427c93e-94f9-4b52-b63f-92e42ad705eb...
+2025-03-05 20:34:38,297 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:38,306 - benchmark - INFO -   Evaluating solution for Task 3f448dae-1283-4b9c-8d1a-45b3cf4719b7...
+2025-03-05 20:34:38,677 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:38,686 - benchmark - INFO -   Evaluating solution for Task 0629fd4c-f3d7-4278-901a-9f85981a0572...
+2025-03-05 20:34:39,318 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:39,327 - benchmark - INFO -   Evaluating solution for Task f7b85ecf-9543-4ffd-be95-edfc336fed6b...
+2025-03-05 20:34:39,458 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:39,467 - benchmark - INFO -   Evaluating solution for Task c00340e4-3dd4-43e3-baa5-08753e20ac4e...
+2025-03-05 20:34:39,580 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:39,589 - benchmark - INFO -   Evaluating solution for Task 7ac4fec3-2259-45d8-87d0-39d3769f1919...
+2025-03-05 20:34:39,673 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:39,683 - benchmark - INFO -   Evaluating solution for Task 5b5452ad-874a-4b5b-adf1-3468b3368812...
+2025-03-05 20:34:39,756 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:39,765 - benchmark - INFO -   Evaluating solution for Task 6095ea69-a104-4163-8b42-ec38770098a7...
+2025-03-05 20:34:39,855 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:39,864 - benchmark - INFO -   Evaluating solution for Task d0962236-80a8-4b64-b6b0-db2fb8ddf448...
+2025-03-05 20:34:39,947 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:39,956 - benchmark - INFO -   Evaluating solution for Task 35626fc9-3200-44ed-8894-64163ebec9be...
+2025-03-05 20:34:40,111 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,120 - benchmark - INFO -   Evaluating solution for Task 89f474b4-9365-402c-b5a4-4c183a516024...
+2025-03-05 20:34:40,204 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,214 - benchmark - INFO -   Evaluating solution for Task 36e16614-870a-4cd8-b2aa-6c0f7ddf7e46...
+2025-03-05 20:34:40,295 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,304 - benchmark - INFO -   Evaluating solution for Task 705941f0-f977-4c29-945c-1238d9e9e855...
+2025-03-05 20:34:40,379 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,388 - benchmark - INFO -   Evaluating solution for Task 666521f2-c2f8-4d73-b66b-722fb1220c3f...
+2025-03-05 20:34:40,465 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,474 - benchmark - INFO -   Evaluating solution for Task 5af9edf1-c96b-404b-8ed6-a80035fdc328...
+2025-03-05 20:34:40,549 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,558 - benchmark - INFO -   Evaluating solution for Task 3b8a49b9-24b8-4915-a28c-a6f8d3a1cda0...
+2025-03-05 20:34:40,644 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,652 - benchmark - INFO -   Evaluating solution for Task ead46212-8497-4f24-8fcf-b6f666f444e7...
+2025-03-05 20:34:40,731 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,739 - benchmark - INFO -   Evaluating solution for Task deeea20d-3f4f-4791-b3c4-88ab2066d0e2...
+2025-03-05 20:34:40,816 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,825 - benchmark - INFO -   Evaluating solution for Task 57b07a16-cdf3-4e81-86fb-376f65efe3d2...
+2025-03-05 20:34:40,902 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,911 - benchmark - INFO -   Evaluating solution for Task b8a1b4d0-c2cf-4996-97a9-2d0328603dfd...
+2025-03-05 20:34:40,987 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:40,996 - benchmark - INFO -   Evaluating solution for Task 6df624b4-04a6-4806-874e-a433a0aa433c...
+2025-03-05 20:34:41,078 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:41,086 - benchmark - INFO -   Evaluating solution for Task 7ca25a6f-ee39-4e8f-8eeb-b4430107c6aa...
+2025-03-05 20:34:41,184 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:41,193 - benchmark - INFO -   Evaluating solution for Task 2048ced1-b900-46ba-86ee-a9a90926a1c6...
+2025-03-05 20:34:41,274 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:41,283 - benchmark - INFO -   Evaluating solution for Task f70b8f60-7dbc-4b50-b070-dabb0f85c829...
+2025-03-05 20:34:41,359 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:41,368 - benchmark - INFO -   Evaluating solution for Task 5125b868-d09b-489c-92e7-26544fc3770b...
+2025-03-05 20:34:41,444 - autoppia_iwa.src.demo_webs.demo_webs_service - ERROR - Failed to reset backend events for web_agent 'VaS5YQecucvgLDJ9': 500, message='Internal Server Error', url='http://localhost:8000/api/events/reset/'
+2025-03-05 20:34:42,121 - benchmark - INFO - Evaluation complete!
+2025-03-05 20:35:21,021 - benchmark - INFO - Starting evaluation...
+2025-03-05 20:35:28,651 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-05 20:35:35,091 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-03-05 20:35:38,347 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"

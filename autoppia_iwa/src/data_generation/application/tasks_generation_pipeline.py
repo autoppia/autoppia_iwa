@@ -6,6 +6,7 @@ from dependency_injector.wiring import Provide
 from loguru import logger
 
 from autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tasks.globals.tests.test_generation_pipeline import GlobalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
@@ -31,7 +32,8 @@ class TaskGenerationPipeline:
         # Initialize pipelines
         self.local_pipeline = LocalTaskGenerationPipeline(web_project=web_project)
         self.global_pipeline = GlobalTaskGenerationPipeline(web_project=web_project, llm_service=llm_service)
-        self.test_pipeline = LocalTestGenerationPipeline(web_project=web_project)
+        self.local_test_pipeline = LocalTestGenerationPipeline(web_project=web_project)
+        self.global_test_pipeline = GlobalTestGenerationPipeline(web_project=web_project)
 
     async def generate(self) -> List[Task]:
         """
@@ -51,15 +53,21 @@ class TaskGenerationPipeline:
                 # We generate 15 prompts for each url
                 logger.info("Generating local tasks")
                 local_tasks = await self.local_pipeline.generate(number_of_prompts_per_url=3, max_urls=5, random_urls=True)
-                all_tasks.extend(local_tasks)
                 logger.info(f"Generated {len(local_tasks)} local tasks")
+
+                # Add tests to tasks
+                local_tasks_with_tests = await self.local_test_pipeline.add_tests_to_tasks(local_tasks)
+                all_tasks.extend(local_tasks_with_tests)
 
             # 2) Generate global tasks if configured
             if self.task_config.generate_global_tasks:
                 logger.info("Generating global tasks")
                 global_tasks = await self.global_pipeline.generate(prompts_per_use_case=self.task_config.prompts_per_use_case)
-                all_tasks.extend(global_tasks)
                 logger.info(f"Generated {len(global_tasks)} global tasks")
+
+                # Add tests to tasks
+                global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
+                all_tasks.extend(global_tasks_with_tests)
 
             # Apply final task limit if configured
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:
@@ -73,13 +81,10 @@ class TaskGenerationPipeline:
                     self.synthetic_task_repository.save(task.model_dump())
                 logger.info(f"Saved {len(all_tasks)} tasks to database")
 
-            # Add tests to tasks
-            tasks_with_tests = await self.test_pipeline.add_tests_to_tasks(all_tasks)
-
             # Log completion
             total_time = (datetime.now() - start_time).total_seconds()
-            logger.info(f"Task generation completed in {total_time:.2f} seconds. Generated {len(tasks_with_tests)} tasks.")
-            return tasks_with_tests
+            logger.info(f"Task generation completed in {total_time:.2f} seconds. Generated {len(all_tasks)} tasks.")
+            return all_tasks
 
         except Exception as e:
             logger.exception(f"Task generation failed: {e}")

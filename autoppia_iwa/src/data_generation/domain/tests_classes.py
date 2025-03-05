@@ -3,15 +3,18 @@ import json
 import re
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Literal, Dict
+from typing import Dict, List, Literal
+
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, field_validator
+
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.projects.events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.demo_webs.classes import WebProject
 
 
 class ITest(ABC):
@@ -26,6 +29,7 @@ class BaseTaskTest(BaseModel, ITest):
     """
     Base class for all task tests.
     """
+
     class Config:
         extra = "allow"
         arbitrary_types_allowed = True
@@ -73,6 +77,7 @@ class CheckUrlTest(BaseTaskTest):
     """
     Test that checks if the browser navigated to a specific URL with different matching options.
     """
+
     type: Literal["CheckUrlTest"] = "CheckUrlTest"
     url: str
     match_type: Literal["exact", "contains", "regex"] = "contains"
@@ -98,6 +103,7 @@ class FindInHtmlTest(BaseTaskTest):
     """
     Test class to find content in the current HTML with different matching strategies.
     """
+
     type: Literal["FindInHtmlTest"] = "FindInHtmlTest"
     content: str = Field(..., description="Content to look for in the HTML")
     match_type: Literal["exact", "contains", "regex"] = "contains"
@@ -148,12 +154,13 @@ class CheckEventTest(BaseTaskTest):
     """
     Test that checks if specific events were triggered based on event type and criteria.
     """
+
     type: Literal["CheckEventTest"] = "CheckEventTest"
     event_name: str
     event_criteria: Dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered")
 
-    def _execute_test(self, web_project:WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         """
         Execute the test on the given snapshots by checking for specific events.
         """
@@ -162,7 +169,7 @@ class CheckEventTest(BaseTaskTest):
 
         # Assuming the snapshot contains backend_events and we can access the event classes
         # from somewhere accessible in this context
-        events = web_project.events 
+        events = web_project.events
 
         # Get the event class matching event_name
         event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_name), None)
@@ -180,8 +187,8 @@ class CheckEventTest(BaseTaskTest):
             return False
 
         # Check if any event of the correct type matches our criteria
-        for event in snapshot.backend_events:
-            if isinstance(event, event_class) and event.validate(parsed_criteria):
+        for event in Event.parse_all(snapshot.backend_events):
+            if isinstance(event, event_class) and event.validate_criteria(parsed_criteria):
                 return True
 
         return False
@@ -194,6 +201,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
     def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         from autoppia_iwa.src.shared.web_utils import clean_html
+
         if current_iteration == 0:
             return False
         html_before = clean_html(browser_snapshots[current_iteration - 1].current_html)
@@ -203,14 +211,10 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
     def _analyze_htmls(self, action: str, html_before: str, html_after: str, llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
         system_message = (
-            "You are a professional web page analyzer. Your task is to determine whether the given task was completed " 
-            "with the action given, by analyzing the HTML before and after the action."
+            "You are a professional web page analyzer. Your task is to determine whether the given task was completed " "with the action given, by analyzing the HTML before and after the action."
         )
         user_message = f"Current action: {action}\nHTML Before:\n{html_before}\n\nHTML After:\n{html_after}"
-        payload = [
-            {"role": "system", "content": system_message}, 
-            {"role": "user", "content": user_message}
-        ]
+        payload = [{"role": "system", "content": system_message}, {"role": "user", "content": user_message}]
 
         # load schema
         schema_path = Path(PROJECT_BASE_DIR) / "config" / "schemas" / "eval_html_test.json"
@@ -232,10 +236,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         if current_iteration == 0:
             return False
-        return self._analyze_screenshots(
-            screenshot_before=browser_snapshots[current_iteration].screenshot_before, 
-            screenshot_after=browser_snapshots[current_iteration].screenshot_after
-        )
+        return self._analyze_screenshots(screenshot_before=browser_snapshots[current_iteration].screenshot_before, screenshot_after=browser_snapshots[current_iteration].screenshot_after)
 
     def _analyze_screenshots(self, screenshot_before: str, screenshot_after: str, llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
         system_msg = "You are a professional web page analyzer..."
@@ -267,13 +268,13 @@ class WebProjectCheckEventTest(BaseTaskTest):
     """
     Test that checks if specific events were triggered with access to WebProject
     """
+
     type: Literal["WebProjectCheckEventTest"] = "WebProjectCheckEventTest"
     event_name: str
     event_criteria: Dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered (with WebProject)")
 
-    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, 
-                     snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         """
         Special version of execute_test that accepts web_project parameter
         """
@@ -288,8 +289,7 @@ class WebProjectCheckEventTest(BaseTaskTest):
                 return True
         return False
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, 
-                      browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         """
         Fallback implementation when web_project is not available
         """

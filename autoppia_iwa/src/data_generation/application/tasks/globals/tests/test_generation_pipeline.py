@@ -1,29 +1,28 @@
 import json
 import re
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from dependency_injector.wiring import Provide
 from loguru import logger
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
-from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
-
-# LLM & domain imports
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.web_utils import detect_interactive_elements
 
-from .prompts import TEST_GENERATION_PROMPT
+# Import your new prompt
+from .prompts import USE_CASE_TEST_GENERATION_PROMPT
 
 
 class GlobalTestGenerationPipeline:
     """A pipeline that:
-    1) Gathers context (HTML, screenshot info, etc.) for each Task.
-    2) Uses LLM to generate appropriate tests in a single call.
-    3) Instantiates the test objects and adds them to the task.
-    4) (Optionally) generates a logic function for the entire set of tests."""
+    1) Iterates over global tasks that have a reference to a UseCase.
+    2) Uses the LLM to generate test definitions specific to that UseCase.
+    3) Instantiates and attaches test objects to each Task.
+    """
 
     def __init__(
         self,
@@ -39,256 +38,201 @@ class GlobalTestGenerationPipeline:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 
-        # Real webs dont have backend tests
-        if web_project.is_web_real:
-            self.test_class_map = {
-                "CheckUrlTest": CheckUrlTest,
-                "FindInHtmlTest": FindInHtmlTest,
-                "JudgeBaseOnHTML": JudgeBaseOnHTML,
-                "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
-            }
-        else:
-            self.test_class_map = {
-                "CheckUrlTest": CheckUrlTest,
-                "CheckEventTest": CheckEventTest,
-                "FindInHtmlTest": FindInHtmlTest,
-                # "JudgeBaseOnHTML": JudgeBaseOnHTML,
-                # "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot
-            }
-
-        # Map for extra data needed for specific test classes
-        self.test_class_extra_data = {
-            "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very useful to check navigation or where the agent is.",
-            "FindInHtmlTest": "Use this FindInHtmlTest test to check for strings that you expect to appear after the task is completed. very useful for tasks that trigger UI updates",
-            "CheckEventTest": "For CheckEventTest pls select event_type from this List of allowed event names: " + json.dumps([event.__name__ for event in web_project.events]),
+        # Map of test_class "type" strings to actual classes
+        self.test_class_map = {
+            "CheckEventTest": CheckEventTest,
+            "CheckUrlTest": CheckUrlTest,
+            "FindInHtmlTest": FindInHtmlTest,
+            "JudgeBaseOnHTML": JudgeBaseOnHTML,
+            "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
         }
 
     async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:
         """
-        Main pipeline function that adds appropriate tests to each task
+        Main function that adds appropriate tests to each task.
+        Only tasks which reference a recognized UseCase will get tests.
         """
         for task in tasks:
             try:
-                # STEP 1: Generate tests using LLM (single call for all test classes)
-                all_tests = await self._generate_tests(task)
-                if not all_tests:
-                    logger.warning(f"No tests generated for task {task.id}")
+                # 1) Identify the use case from the task
+                if not hasattr(task, "use_case_name") or not task.use_case_name:
+                    logger.warning(f"Task {task.id} has no 'use_case_name', skipping test generation.")
                     continue
 
-                # STEP 2: Instantiate and add the test objects to the task
-                await self._instantiate_tests(task, all_tests)
+                use_case = self._find_use_case_by_name(task.use_case_name)
+                if not use_case:
+                    logger.warning(f"Could not find UseCase '{task.use_case_name}' for task {task.id}, skipping.")
+                    continue
 
-                # STEP 3: Optionally generate a logic function that references these tests
-                if task.tests:
-                    pass
-                    # task.logic_function = await self.logic_generator.generate_logic(
-                    #     task=task,
-                    #     tests=task.tests
-                    # )
-                    # logger.info(f"Generated logic function for task {task.id}")
+                # 2) Generate tests using LLM
+                generated_test_defs = await self._generate_tests_for_use_case(task, use_case)
+                if not generated_test_defs:
+                    logger.warning(f"No tests generated for task {task.id} / useCase '{use_case.name}'.")
+                    continue
+
+                # 3) Instantiate and add the test objects to the task
+                self._instantiate_tests(task, generated_test_defs)
+
             except Exception as e:
                 logger.error(f"Failed to generate tests for task={task.id}: {str(e)}")
                 logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
-                raise e
+                # Optionally continue or re-raise
+                # raise e
 
         return tasks
 
-    async def _generate_tests(self, task: Task) -> List[Dict[str, Any]]:
+    def _find_use_case_by_name(self, use_case_name: str) -> Optional[UseCase]:
         """
-        Generate test definitions for all test classes in a single LLM call
-        with retry logic for handling JSON parsing errors
+        Look up a UseCase in web_project.use_cases by matching the name field.
+        Adjust as needed if you store them differently.
         """
-        # Gather contextual data needed for the prompt
-        cleaned_html = task.clean_html[: self.truncate_html_chars] if task.clean_html else ""
+        if not self.web_project.use_cases:
+            return None
+        for uc in self.web_project.use_cases:
+            if uc.name.lower() == use_case_name.lower():
+                return uc
+        return None
+
+    async def _generate_tests_for_use_case(self, task: Task, use_case: UseCase) -> List[Dict[str, Any]]:
+        """
+        Build the specialized prompt for the given Task & UseCase,
+        call the LLM to produce test definitions, then parse the JSON.
+        """
+        # 1) Gather relevant context
+        truncated_html = task.clean_html[: self.truncate_html_chars] if task.clean_html else ""
         screenshot_desc = task.screenshot_description or ""
-        interactive_elements = detect_interactive_elements(cleaned_html)
-        # domain_analysis = self.web_project.domain_analysis
+        interactive_elements = detect_interactive_elements(truncated_html) or []
+        event_code = ""
+        if hasattr(use_case.event, "code") and callable(use_case.event.code):
+            event_code = use_case.event.code()
 
-        # Prepare schemas for all test classes
-        test_class_schemas = {}
-        for test_class_name, test_class in self.test_class_map.items():
-            try:
-                if hasattr(test_class, 'model_json_schema'):
-                    test_class_schemas[test_class_name] = json.dumps(test_class.model_json_schema(), indent=2)
-                elif hasattr(test_class, 'schema'):
-                    test_class_schemas[test_class_name] = json.dumps(test_class.schema(), indent=2)
-                else:
-                    # Create a basic schema for non-pydantic classes
-                    test_class_schemas[test_class_name] = json.dumps(
-                        {"title": test_class_name, "type": "object", "properties": {"type": {"type": "string", "enum": [test_class_name]}, "description": {"type": "string"}}, "required": ["type"]},
-                        indent=2,
-                    )
-            except Exception as e:
-                logger.warning(f"Could not get schema for {test_class_name}: {e}")
-                # Create a basic schema
-                test_class_schemas[test_class_name] = json.dumps(
-                    {"title": test_class_name, "type": "object", "properties": {"type": {"type": "string", "enum": [test_class_name]}, "description": {"type": "string"}}, "required": ["type"]},
-                    indent=2,
-                )
+        # Convert test_examples to a JSON string or bullet list
+        # so the LLM sees typical examples for that use case
+        use_case_test_examples_str = json.dumps(use_case.test_examples, indent=2)
 
-        # Build a unified prompt for all test classes
-        system_prompt = TEST_GENERATION_PROMPT.format(
+        # 2) Format the LLM prompt
+        llm_prompt = USE_CASE_TEST_GENERATION_PROMPT.format(
+            use_case_name=use_case.name,
+            use_case_description=use_case.description,
             task_prompt=task.prompt,
-            success_criteria=task.success_criteria or "N/A",
-            current_url=task.url,
-            truncated_html=cleaned_html,
+            use_case_test_examples=use_case_test_examples_str,
+            event_code=event_code,
+            html=truncated_html,
             screenshot_desc=screenshot_desc,
             interactive_elements=json.dumps(interactive_elements, indent=2),
-            events=self.web_project.events,
-            test_classes_info="\n\n".join([f"### {test_class_name}\n{schema}\n{self.test_class_extra_data.get(test_class_name, '')}" for test_class_name, schema in test_class_schemas.items()]),
         )
 
-        # Implement retry logic for LLM calls and JSON parsing
-        retry_count = 0
-        last_error = None
-        last_response = None
-
-        while retry_count < self.max_retries:
+        # 3) Invoke LLM with retry
+        for attempt in range(self.max_retries):
             try:
-                # Call the LLM
-                response = await self.llm_service.async_predict(
-                    messages=[{"role": "system", "content": system_prompt}],
-                    json_format=True,
-                )
+                response = await self.llm_service.async_predict(messages=[{"role": "system", "content": llm_prompt}], json_format=True)
 
-                last_response = response
-                # Parse the response
-                all_tests = self._parse_llm_response(response)
-                if all_tests:
-                    logger.info(f"Successfully generated {len(all_tests)} tests for task {task.id} on attempt {retry_count + 1}")
-                    return all_tests
+                # 4) Parse the LLM response as JSON array
+                test_defs = self._parse_llm_response(response)
+                if test_defs:
+                    logger.info(f"Successfully generated {len(test_defs)} tests for task {task.id} (useCase={use_case.name}) " f"on attempt {attempt + 1}.")
+                    return test_defs
 
-                # If we got an empty list but no exception, we should retry with a modified prompt
-                retry_count += 1
-                if retry_count < self.max_retries:
-                    logger.warning(f"Got empty test list on attempt {retry_count}, retrying...")
-                    # Add an emphasis on proper JSON format in the retry
-                    system_prompt += "\n\nIMPORTANT: Return ONLY a valid JSON array of test objects. Each test must have a 'type' field matching one of the provided test classes."
-                    time.sleep(self.retry_delay)
+                # If empty or invalid, try again (with a small tweak to the prompt)
+                logger.warning(f"Attempt {attempt + 1}: Got empty or invalid test list. Retrying...")
+                time.sleep(self.retry_delay)
 
             except Exception as e:
-                retry_count += 1
-                last_error = e
+                logger.warning(f"Attempt {attempt + 1} failed: {str(e)}. Retrying...")
+                time.sleep(self.retry_delay)
 
-                if retry_count < self.max_retries:
-                    logger.warning(f"Attempt {retry_count} failed: {str(e)}. Retrying in {self.retry_delay} seconds...")
-                    # Add an emphasis on proper JSON format in the retry
-                    system_prompt += "\n\nIMPORTANT: Return ONLY a valid JSON array of test objects. Each test must have a 'type' field matching one of the provided test classes."
-                    time.sleep(self.retry_delay)
-                else:
-                    logger.error(f"All {self.max_retries} attempts failed. Last error: {str(e)}")
-                    logger.debug(f"Last response received: {last_response}")
-
-        # All retries failed
-        if last_error:
-            logger.error(f"Failed to generate tests after {self.max_retries} attempts: {str(last_error)}")
-            logger.debug(f"Exception details: {type(last_error).__name__}, {repr(last_error)}")
-        else:
-            logger.error(f"Failed to generate valid tests after {self.max_retries} attempts")
-
+        # If all retries failed
+        logger.error(f"All {self.max_retries} attempts to generate tests for task {task.id} have failed.")
         return []
 
     def _parse_llm_response(self, response: Any) -> List[Dict[str, Any]]:
         """
-        Parse and validate the LLM response, extracting valid test definitions
+        Parse the LLM response (which should be a JSON array of test objects).
+        Return a list of test dicts if successful, otherwise [].
         """
-        all_tests = []
-        response_data = None
-
-        # If the response is already a list, use it directly
         if isinstance(response, list):
-            response_data = response
-        # If it's a string, try to parse it as JSON
-        elif isinstance(response, str):
+            # If the LLM already returned a Python list, just validate test objects
+            return self._validate_test_list(response)
+
+        if isinstance(response, dict):
+            # Possibly a single test or a dict containing the array
+            if "type" in response:
+                # It's likely a single test, wrap in list
+                return self._validate_test_list([response])
+            # Or search if there's a key containing the array
+            for v in response.values():
+                if isinstance(v, list):
+                    return self._validate_test_list(v)
+            return []
+
+        if isinstance(response, str):
+            # Try to parse as JSON
             try:
-                # First, try parsing the raw response
-                response_data = json.loads(response.strip())
+                data = json.loads(response.strip())
+                if isinstance(data, list):
+                    return self._validate_test_list(data)
+                elif isinstance(data, dict):
+                    # Single test or nested structure
+                    if "type" in data:
+                        return self._validate_test_list([data])
+                    # or search sub-fields
+                    for v in data.values():
+                        if isinstance(v, list):
+                            return self._validate_test_list(v)
             except json.JSONDecodeError:
-                # If that fails, try to extract a JSON array using regex
-                json_array_pattern = r'\[\s*{.*}\s*\]'
-                matches = re.search(json_array_pattern, response, re.DOTALL)
-
-                if matches:
+                # Try regex extraction of JSON array
+                match = re.search(r"\[\s*{.*}\s*\]", response, re.DOTALL)
+                if match:
                     try:
-                        potential_json = matches.group(0)
-                        response_data = json.loads(potential_json)
+                        array_str = match.group(0)
+                        data = json.loads(array_str)
+                        if isinstance(data, list):
+                            return self._validate_test_list(data)
                     except json.JSONDecodeError:
-                        # If regex extraction fails, try manual search for array brackets
-                        start_idx = response.find('[')
-                        end_idx = response.rfind(']')
-
-                        if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
-                            try:
-                                json_str = response[start_idx : end_idx + 1]
-                                response_data = json.loads(json_str)
-                            except json.JSONDecodeError:
-                                logger.error("Failed to extract JSON array after multiple attempts")
-                                return []
-                else:
-                    logger.error("Could not find JSON array pattern in response")
-                    return []
-        # If it's a dict, it might be wrapped incorrectly
-        elif isinstance(response, dict):
-            # Check if there's a field that contains the array
-            for key, value in response.items():
-                if isinstance(value, list) and value and isinstance(value[0], dict):
-                    response_data = value
-                    break
-
-            if response_data is None:
-                # Just use the dict itself if it has a 'type' field (single test case)
-                if 'type' in response and response['type'] in self.test_class_map:
-                    return [response]
-                logger.warning(f"Response is a dict but doesn't contain a test array: {response}")
-                return []
-        else:
-            logger.warning(f"Unexpected response type: {type(response)}")
+                        pass
             return []
 
-        # Ensure we have a list at this point
-        if not isinstance(response_data, list):
-            logger.warning(f"Expected a JSON array of tests, got: {type(response_data)}")
-            return []
+        logger.warning(f"Unexpected LLM response type: {type(response)}. Cannot parse tests.")
+        return []
 
-        # Validate each test
-        for test in response_data:
-            if isinstance(test, dict):
-                test_type = test.get("type")
-                if test_type in self.test_class_map:
-                    all_tests.append(test)
-                    logger.debug(f"Validated test of type {test_type}")
-                else:
-                    logger.warning(f"Test has invalid type: {test_type}")
+    def _validate_test_list(self, test_list: List[Any]) -> List[Dict[str, Any]]:
+        """
+        Ensure each item in `test_list` is a dict with a valid "type"
+        recognized by `self.test_class_map`.
+        """
+        valid_tests = []
+        for test_item in test_list:
+            if not isinstance(test_item, dict):
+                continue
+            ttype = test_item.get("type")
+            if ttype in self.test_class_map:
+                valid_tests.append(test_item)
             else:
-                logger.warning(f"Test is not a dictionary: {test}")
+                logger.warning(f"Skipping unknown test type: {ttype}")
+        return valid_tests
 
-        return all_tests
+    def _instantiate_tests(self, task: Task, test_defs: List[Dict[str, Any]]) -> None:
+        """
+        Given raw test definitions (dicts with 'type' etc.), instantiate the
+        corresponding test classes and append them to `task.tests`.
+        """
+        for test_def in test_defs:
+            ttype = test_def.get("type")
+            if not ttype:
+                logger.warning(f"Test definition missing 'type': {test_def}")
+                continue
 
-    async def _instantiate_tests(self, task: Task, valid_tests: List[Dict[str, Any]]) -> None:
-        """
-        Instantiate test objects and add them to the task
-        """
-        for test_def in valid_tests:
+            test_class = self.test_class_map.get(ttype)
+            if not test_class:
+                logger.warning(f"Unknown test type '{ttype}' encountered.")
+                continue
+
             try:
-                # Create a copy of the test definition to avoid modifying the original
-                test_def_copy = test_def.copy()
-
-                # Extract test type
-                test_type = test_def_copy.get("type")
-                if not test_type:
-                    logger.warning(f"Test definition missing type: {test_def}")
-                    continue
-
-                # Get corresponding test class
-                test_class = self.test_class_map.get(test_type)
-                if not test_class:
-                    logger.warning(f"Unknown test type: {test_type}")
-                    continue
-
-                # Instantiate the test object
-                test_instance = test_class(**test_def_copy)
+                # Some of your test classes might be Pydantic-based,
+                # so you can do something like: test_instance = test_class(**test_def)
+                # If they're not, adapt accordingly.
+                test_instance = test_class(**test_def)
                 task.tests.append(test_instance)
-                logger.info(f"Added {test_type} to task {task.id}")
+                logger.debug(f"Appended test '{ttype}' to Task {task.id}.")
             except Exception as e:
-                logger.error(f"Failed to instantiate test {test_def}: {str(e)}")
-                logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
+                logger.error(f"Failed to instantiate test {ttype} for Task {task.id}: {str(e)}")
