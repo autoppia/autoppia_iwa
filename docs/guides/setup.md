@@ -9,7 +9,7 @@ project dependencies.
 To ensure the proper functioning of the project, three essential components need to be running simultaneously:
 
 1. **run_local_llm.py**: Local model server (used if you don't want to use the Runpod serverless model). Check the
-   [Model Deployment Guide](modules/llm_local/setup.md): Step-by-step instructions for deploying the local model.
+   [Model Deployment Guide](../../modules/llm_local/setup.md): Step-by-step instructions for deploying the local model.
 
 2. **webApp/app.py** OR **app.py**: Main project's endpoints that handle the core functionality of the project.
 
