@@ -18,11 +18,11 @@ from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_
 from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
+from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_jsonl_file
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.web_voyager_test.utils import TaskData, load_jsonl_file
 
 
 @dataclass
@@ -73,8 +73,8 @@ visualizer = SubnetVisualizer()
 def load_real_tasks() -> List[TaskData]:
     """Load real tasks, excluding impossible ones."""
     logger.info("Loading real tasks...")
-    original_tasks = load_jsonl_file(config.data_dir / "WebVoyager_data.jsonl")
-    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / "WebVoyagerImpossibleTasks.json"))
+    original_tasks = load_jsonl_file(config.data_dir / "web_voyager_tasks/web_voyager_data.jsonl")
+    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / "web_voyager_tasks/web_voyager_impossible_tasks.json"))
     return [TaskData(**task) for task in original_tasks if task["id"] not in impossible_tasks_ids][: config.num_of_urls]
 
 
