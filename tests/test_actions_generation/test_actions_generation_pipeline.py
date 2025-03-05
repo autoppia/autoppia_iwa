@@ -7,25 +7,20 @@ from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from tests import test_container
 
+# ============================================================
+# GLOBAL CONFIGURATION
+# ============================================================
+
+TASKS_CACHE_DIR = PROJECT_BASE_DIR.parent / "tests"
+
+USE_CACHED_TASKS = True
+NUMBER_OF_TASKS = 3
+
 
 class TestActionsGeneration(unittest.IsolatedAsyncioTestCase):
     """
     Unit tests for generating new actions based on task configurations.
     """
-
-    # ============================================================
-    # GLOBAL CONFIGURATION
-    # ============================================================
-
-    TASKS_PARENT_DIR = PROJECT_BASE_DIR.parent / "tests/data_generation"
-    OUTPUT_DIR = TASKS_PARENT_DIR / "results"
-    TASKS_CACHE_DIR = TASKS_PARENT_DIR / "tasks_cache"
-
-    # Ensure cache directory exists
-    TASKS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-
-    USE_CACHED_TASKS = True
-    NUMBER_OF_TASKS = 3
 
     @classmethod
     async def asyncSetUpClass(cls):
@@ -39,7 +34,7 @@ class TestActionsGeneration(unittest.IsolatedAsyncioTestCase):
         web_project = await initialize_demo_webs_projects()
 
         # Create the task configuration
-        cls.tasks = await generate_tasks_for_project(web_project, cls.USE_CACHED_TASKS, cls.TASKS_CACHE_DIR, 1, 3)
+        cls.tasks = await generate_tasks_for_project(web_project, USE_CACHED_TASKS, TASKS_CACHE_DIR, 1, 3)
 
     async def test_new_actions_generation(self):
         """Test that actions are generated correctly from a goal and URL."""

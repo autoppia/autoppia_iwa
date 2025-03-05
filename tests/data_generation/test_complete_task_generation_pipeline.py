@@ -7,6 +7,14 @@ from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGeneration
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
 
+# ============================================================
+# GLOBAL CONFIGURATION
+# ============================================================
+
+NUM_OF_URLS: int = 1
+PROMPTS_PER_URL: int = 5
+RANDOM_URLS: bool = False
+
 
 class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
     """
@@ -23,10 +31,6 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
         self.llm_service = self.app_bootstrap.container.llm_service()
         self.task_repo = self.app_bootstrap.container.synthetic_task_repository()
 
-        self.page_url = "http://localhost:8000/"
-        self.enable_crawl = False
-        self.save_task_in_db = True
-
     async def test_task_generation_pipeline(self) -> None:
         """
         Test that the TaskGenerationPipeline produces valid structured tasks.
@@ -42,7 +46,12 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
             self.assertGreater(len(web_projects), 0, "No demo web projects were initialized.")
 
             # Create task generation configuration
-            task_config = TaskGenerationConfig(save_web_analysis_in_db=True)
+            task_config = TaskGenerationConfig(
+                save_web_analysis_in_db=True,
+                num_of_urls=NUM_OF_URLS,
+                prompts_per_url=PROMPTS_PER_URL,
+                random_urls=RANDOM_URLS,
+            )
 
             # Run the task generation pipeline
             task_generator = TaskGenerationPipeline(

@@ -263,7 +263,7 @@ python3 tests/test_tasks_generator/test_generate_task_prompts.py
 To test action generation functionality, execute:
 
 ```bash
-python3 tests/test_actions/test_actions_generation.py
+python3 tests/test_actions_generation/test_actions_generation.py
 ```
 
 ---
@@ -275,7 +275,7 @@ python3 tests/test_actions/test_actions_generation.py
 To test the execution and evaluation of a single task, use:
 
 ```bash
-python3 tests/task_execution_and_evaluation/test_execute_one_task.py
+python3 tests/task_execution_and_evaluation/test_generate_and_execute_actions.py
 ```
 
 #### **2. Complete Task Generation and Execution**
