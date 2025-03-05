@@ -22,8 +22,9 @@ class Event(BaseModel):
     def parse(cls, backend_event) -> "Event":
         return cls()
 
-    def parse_all(self, backend_events) -> List["Event"]:
-        events = []
+    @staticmethod
+    def parse_all(backend_events) -> List["Event"]:
+        events: List["Event"] = []
         for event in backend_events:
             events.append(Event.parse(event))
         return events

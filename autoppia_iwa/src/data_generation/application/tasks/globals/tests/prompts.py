@@ -1,54 +1,55 @@
 # prompts.py
 
-USE_CASE_TEST_GENERATION_PROMPT = """
-You are an AI assistant that generates automated tests for a specific use case in JSON format.
-Below is the context you have:
+CHECK_EVENT_TEST_GENERATION_PROMPT = """
+You are an AI assistant that generates automated tests for a single use case in JSON format.
+Here are the important details:
 
-- **Use Case Name**: {use_case_name}
-- **Use Case Description**: {use_case_description}
-- **Task Prompt**: {task_prompt}
+- **Use Case**: "{use_case_name}"
+  - Description: "{use_case_description}"
+  - We have manually curated test examples for this use case (see below).
+  - If relevant, the event code snippet for this use case is shown further below.
 
-- **Example Tests for this Use Case** (these are typical tests or checks we often do):
+- **Task Prompt**: 
+{task_prompt}
+
+- **Use Case Test Examples** (manually assigned):
 {use_case_test_examples}
 
-- **Event Code** (if this use case corresponds to a particular event that gets emitted, here is the relevant code snippet):
+- **Event Code** (if any):
 {event_code}
 
-- **Partial/Truncated HTML** (this is the HTML relevant to the page where the task occurs):
-{html}
+- **Partial HTML** (truncated for brevity):
+{truncated_html}
 
-- **Screenshot Description** (a textual description of the page or screenshot):
+- **Screenshot Description**:
 {screenshot_desc}
 
-- **Interactive Elements** (JSON array describing forms, buttons, links, etc., extracted from HTML):
+- **Interactive Elements** (JSON array):
 {interactive_elements}
 
-Your job:
-1. Propose a list of tests that ensure this task was completed successfully **with respect to the described use case**.
-2. Return the tests **exclusively** in the form of a **valid JSON array** of objects (no markdown, no extra fields).
-3. Each test object **must** have at least:
-   - a `"type"` key (e.g. `"CheckEventTest"`, `"CheckUrlTest"`, `"FindInHtmlTest"`, etc.),
-   - any additional fields that the chosen test type requires (e.g., `"event_name"`, `"criteria"`, `"code"`, `"selector"`, etc.)
+**Only test type** to generate: `CheckEventTest`
+Each test object must be in the form:
+{
+  "type": "CheckEventTest",
+  "event_name": "NameOfEventClass",
+  "event_criteria": { ... },
+  "description": "Optional human-readable note"
+}
 
-Important:
-- Do **not** wrap your JSON in markdown or include any extra commentary.
-- Do **not** output anything except the JSON array.
+**Your job**: 
+1. Generate a JSON array of **one or more** `CheckEventTest` objects that validate this task’s success under the described use case. 
+2. Reference or adapt the "test_examples" if useful, but ensure correctness given the dynamic info in the prompt, HTML, or event code.
+3. **Output only** a JSON array with no extra keys or commentary. 
+4. Do not wrap the JSON in Markdown. 
 
-Example format:
+Example final structure (no commentary, just JSON):
 
 [
   {
     "type": "CheckEventTest",
-    "event_name": "RegistrationEvent",
-    "criteria": {},
-    "code": "function or snippet here"
-  },
-  {
-    "type": "FindInHtmlTest",
-    "selector": "input[name='username']",
-    "expected_value": "some default"
+    "event_name": "MyEvent",
+    "event_criteria": { "expected_field": "someValue" },
+    "description": "Ensure MyEvent is triggered with correct data"
   }
 ]
-
-Now, **generate the JSON array of test definitions**.
 """
