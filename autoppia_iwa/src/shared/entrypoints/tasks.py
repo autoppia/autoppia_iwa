@@ -76,7 +76,7 @@ async def generate_tasks_for_project(demo_project: WebProject, use_cached_tasks:
         else:
             print(f"No valid cached tasks found for '{demo_project.name}', generating new tasks...")
 
-    config = TaskGenerationConfig(save_web_analysis_in_db=True, save_task_in_db=False, prompts_per_url=prompts_per_url, num_or_urls=num_of_urls)
+    config = TaskGenerationConfig(save_web_analysis_in_db=True, save_task_in_db=False, prompts_per_url=prompts_per_url, num_of_urls=num_of_urls)
 
     print(f"Generating tasks for {demo_project.name}...")
     pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)

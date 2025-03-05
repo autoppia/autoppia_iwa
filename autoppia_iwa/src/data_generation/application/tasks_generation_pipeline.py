@@ -54,7 +54,7 @@ class TaskGenerationPipeline:
             if self.task_config.random_urls:
                 random.shuffle(selected_pages)
 
-            selected_pages = selected_pages[: self.task_config.num_or_urls]
+            selected_pages = selected_pages[: self.task_config.num_of_urls]
 
             # Generate local tasks for each page
             for page_info in selected_pages:

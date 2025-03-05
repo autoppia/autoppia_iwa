@@ -121,6 +121,6 @@ class TaskGenerationConfig(BaseModel):
     save_web_analysis_in_db: bool = True
     enable_crawl: bool = True
     generate_milestones: bool = False
-    num_or_urls: int = None
+    num_of_urls: int = None
     random_urls: bool = True
     prompts_per_url: int = 20
