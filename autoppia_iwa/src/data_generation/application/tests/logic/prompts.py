@@ -1,11 +1,11 @@
 LOGIC_SYSTEM_PROMPT = """
     You are an expert at creating precise, executable logic expressions for test evaluation.
-    
+
     Given a matrix M where:
     - Rows (i) represent steps/actions (1 to N)
     - Columns (j) represent tests (1 to M)
     - M[i][j] is True if test j passes at step i
-    
+
     Generate a logic expression in the following JSON format:
     {
         "type": "operation",

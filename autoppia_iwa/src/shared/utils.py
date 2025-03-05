@@ -1,8 +1,9 @@
-import random
-import string
-import re
 import base64
+import random
+import re
+import string
 from io import BytesIO
+
 from PIL import Image
 
 

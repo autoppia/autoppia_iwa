@@ -8,11 +8,7 @@ from transformers import pipeline
 class UIParserService:
     def __init__(self):
         device = 0 if torch.cuda.is_available() else -1
-        self.ui_parser = pipeline(
-            "image-to-text",
-            model="microsoft/OmniParser-v2.0",
-            device=device
-        )
+        self.ui_parser = pipeline("image-to-text", model="microsoft/OmniParser-v2.0", device=device)
 
     def summarize_image(self, image: Image.Image) -> str:
         try:

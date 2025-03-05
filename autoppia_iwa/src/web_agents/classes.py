@@ -1,14 +1,13 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field
-from autoppia_iwa.src.execution.actions.base import BaseAction
 import uuid
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
+
+from autoppia_iwa.src.execution.actions.base import BaseAction
 
 
 class TaskSolution(BaseModel):
-    task_id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
-        description="Unique identifier for the task, auto-generated using UUID4"
-    )
+    task_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task, auto-generated using UUID4")
     actions: List[BaseAction] = Field(default_factory=list)
     web_agent_id: Optional[str] = None
 

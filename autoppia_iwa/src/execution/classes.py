@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -20,7 +20,7 @@ class BrowserSnapshot(BaseModel):
     screenshot_before: str = Field(..., description="Base64-encoded screenshot before actions")
     screenshot_after: str = Field(..., description="Base64-encoded screenshot after actions")
     backend_events: List[BackendEvent] = Field(..., description="List of backend events after execution")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of the snapshot")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Timestamp of the snapshot")
     current_url: str = Field(..., description="Current URL of the browser")
 
     def model_dump(self, *args, **kwargs):

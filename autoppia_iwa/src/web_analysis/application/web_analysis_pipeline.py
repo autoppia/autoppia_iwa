@@ -2,7 +2,10 @@ import time
 from datetime import datetime
 from typing import List, Optional
 from urllib.parse import urlparse
+
 from dependency_injector.wiring import Provide
+
+from autoppia_iwa.config.config import LLM_CONTEXT_WINDOW
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
@@ -11,8 +14,6 @@ from autoppia_iwa.src.web_analysis.application.web_llm_utils import WebLLMAnalyz
 from autoppia_iwa.src.web_analysis.application.web_page_structure_extractor import WebPageStructureExtractor
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis, SinglePageAnalysis
 from autoppia_iwa.src.web_analysis.domain.classes import WebCrawlerConfig
-from autoppia_iwa.config.config import LLM_CONTEXT_WINDOW
-
 
 MAX_TOKENS_ELEMENT_ANALYZER = LLM_CONTEXT_WINDOW
 

@@ -1,7 +1,8 @@
 import argparse
-from PIL import Image
+
 import torch
-from transformers import Blip2Processor, Blip2ForConditionalGeneration
+from PIL import Image
+from transformers import Blip2ForConditionalGeneration, Blip2Processor
 
 
 def main():

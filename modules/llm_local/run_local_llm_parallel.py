@@ -4,12 +4,10 @@ import json
 import sys
 import time  # For timing
 
-from json_repair import repair_json
-
 from flask import Flask, request
 from flask_cors import CORS
+from json_repair import repair_json
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -21,22 +19,13 @@ MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
 # Load tokenizer & model
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    torch_dtype="auto",
-    device_map="auto"
-)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype="auto", device_map="auto")
 model.eval()
 
 # ---------------------------------------------------------------------------
 # Global counters (optional)
 # ---------------------------------------------------------------------------
-counters = {
-    "total_requests": 0,
-    "json_requests": 0,
-    "json_correctly_formatted": 0,
-    "json_repair_succeeded": 0
-}
+counters = {"total_requests": 0, "json_requests": 0, "json_correctly_formatted": 0, "json_repair_succeeded": 0}
 
 
 def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
@@ -55,36 +44,20 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
                 0,
                 {
                     "role": "system",
-                    "content": (
-                        "You must respond in **valid JSON** that meets the following schema.\n\n"
-                        "Do not include extra keys. Output **only** the JSON object.\n\n"
-                        f"{schema_text}"
-                    ),
+                    "content": ("You must respond in **valid JSON** that meets the following schema.\n\n" "Do not include extra keys. Output **only** the JSON object.\n\n" f"{schema_text}"),
                 },
             )
 
         # Convert messages to a single text prompt
-        text_prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            chat_format=None
-        )
+        text_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, chat_format=None)
 
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
         tokens_in = model_inputs.input_ids.shape[1]  # Count how many tokens enter
 
         # Generate
-        generated_ids = model.generate(
-            **model_inputs,
-            max_new_tokens=max_tokens,
-            temperature=temperature
-        )
+        generated_ids = model.generate(**model_inputs, max_new_tokens=max_tokens, temperature=temperature)
         # Remove the prompt part so we only decode newly generated tokens
-        generated_ids = [
-            output_ids[len(input_ids):]
-            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
+        generated_ids = [output_ids[len(input_ids) :] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
         tokens_out = len(generated_ids[0])  # Number of generated tokens
 
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
@@ -95,13 +68,13 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
             try:
                 json.loads(response_text)
                 counters["json_correctly_formatted"] += 1
-            except:
+            except Exception:
                 try:
                     repaired_text = repair_json(response_text, ensure_ascii=False)
                     repaired_obj = json.loads(repaired_text)
                     response_text = json.dumps(repaired_obj, ensure_ascii=False)
                     counters["json_repair_succeeded"] += 1
-                except:
+                except Exception:
                     pass
 
         return response_text, tokens_in, tokens_out
@@ -145,21 +118,12 @@ def generate_data_batch(requests, temperature, max_tokens):
                 0,
                 {
                     "role": "system",
-                    "content": (
-                        "You must respond in **valid JSON** that meets the following schema.\n\n"
-                        "Do not include extra keys. Output **only** the JSON object.\n\n"
-                        f"{schema_text}"
-                    ),
+                    "content": ("You must respond in **valid JSON** that meets the following schema.\n\n" "Do not include extra keys. Output **only** the JSON object.\n\n" f"{schema_text}"),
                 },
             )
 
         # Convert messages to a single text prompt
-        prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            chat_format=None
-        )
+        prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, chat_format=None)
         text_prompts.append(prompt)
         meta_info.append((json_format, schema))
 
@@ -173,11 +137,7 @@ def generate_data_batch(requests, temperature, max_tokens):
     total_tokens_in = sum(tokens_in_list)
 
     # Generate in a single batch
-    generated = model.generate(
-        **model_inputs,
-        max_new_tokens=max_tokens,
-        temperature=temperature
-    )
+    generated = model.generate(**model_inputs, max_new_tokens=max_tokens, temperature=temperature)
 
     # For each request in the batch, slice off the original prompt
     outputs = []
@@ -202,13 +162,13 @@ def generate_data_batch(requests, temperature, max_tokens):
             try:
                 json.loads(text)
                 counters["json_correctly_formatted"] += 1
-            except:
+            except Exception:
                 try:
                     repaired_text = repair_json(text, ensure_ascii=False)
                     repaired_obj = json.loads(repaired_text)
                     text = json.dumps(repaired_obj, ensure_ascii=False)
                     counters["json_repair_succeeded"] += 1
-                except:
+                except Exception:
                     pass
 
         outputs.append(text)
@@ -236,13 +196,7 @@ def handler():
 
         start_time = time.time()
 
-        output, tokens_in, tokens_out = generate_data(
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            json_format=json_format,
-            schema=schema
-        )
+        output, tokens_in, tokens_out = generate_data(messages=messages, temperature=temperature, max_tokens=max_tokens, json_format=json_format, schema=schema)
 
         end_time = time.time()
         time_per_request = end_time - start_time
@@ -312,11 +266,7 @@ def handler_parallel():
         start_time = time.time()
 
         # Generate results in one batch
-        outputs, total_tokens_in, total_tokens_out = generate_data_batch(
-            requests_list,
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
+        outputs, total_tokens_in, total_tokens_out = generate_data_batch(requests_list, temperature=temperature, max_tokens=max_tokens)
 
         end_time = time.time()
         total_time = end_time - start_time
@@ -346,8 +296,8 @@ def handler_parallel():
                 "total_tokens_out": total_tokens_out,
                 "tokens_per_second": tokens_per_second,
                 "total_time": total_time,
-                "avg_time_per_request": avg_time_per_request
-            }
+                "avg_time_per_request": avg_time_per_request,
+            },
         }
 
     except ValueError as ve:

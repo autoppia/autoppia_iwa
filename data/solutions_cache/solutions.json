@@ -2530,13 +2530,13 @@
       }
     }
   },
-  "8fa74e0f-1e85-40ed-a970-d139f0236e9f": {
-    "maHiyLqtWg2vz2CF": {
-      "agent_id": "maHiyLqtWg2vz2CF",
+  "e024b2c0-7862-4606-8d5f-f772c1bc68c2": {
+    "Xw7N5DaM8Zpwt6rU": {
+      "agent_id": "Xw7N5DaM8Zpwt6rU",
       "agent_name": "Random-clicker",
-      "timestamp": 1740823611.274636,
+      "timestamp": 1740766881.1606634,
       "solution": {
-        "task_id": "8fa74e0f-1e85-40ed-a970-d139f0236e9f",
+        "task_id": "e024b2c0-7862-4606-8d5f-f772c1bc68c2",
         "actions": [
           {
             "type": "ClickAction",

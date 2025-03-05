@@ -1,6 +1,7 @@
-from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field
 from copy import deepcopy
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel, Field
 
 
 class LLMWebAnalysis(BaseModel):
@@ -34,9 +35,9 @@ class DomainAnalysis(BaseModel):
     ended_time: str
     total_time: float
     start_url: str
-    category:str = ""
-    features:List[str] = Field(default_factory=list, description="List of features")
-    urls:List[str] = Field(default_factory=list, description="List of urls")
+    category: str = ""
+    features: List[str] = Field(default_factory=list, description="List of features")
+    urls: List[str] = Field(default_factory=list, description="List of urls")
 
     def dump_excluding_page_analyses(self):
         dump = self.model_dump()
@@ -48,14 +49,12 @@ class DomainAnalysis(BaseModel):
         page_analyses = deepcopy(self.page_analyses)
 
         # Filter out pages except the one that should not be excluded
-        filtered_page_analyses = [
-            page for page in page_analyses if page.page_url == page_url_to_not_exclude
-        ]
+        filtered_page_analyses = [page for page in page_analyses if page.page_url == page_url_to_not_exclude]
 
         dump["page_analyses"] = filtered_page_analyses if filtered_page_analyses else None
         return dump
 
-    def get_page_analysis(self, url:str):
+    def get_page_analysis(self, url: str):
         for page_analysis in self.page_analyses:
             if page_analysis.page_url == url:
                 return page_analysis

@@ -1,7 +1,9 @@
-import os
 import json
-import matplotlib.pyplot as plt
+import os
 from datetime import datetime
+
+import matplotlib.pyplot as plt
+
 from .metrics import TimingMetrics, compute_statistics
 
 
@@ -13,11 +15,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = os.path.join(output_dir, f"stress_test_results_{timestamp}.json")
 
-    output_data = {
-        "timestamp": datetime.now().isoformat(),
-        "total_execution_time": timing_metrics.get_total_time(),
-        "agents": {}
-    }
+    output_data = {"timestamp": datetime.now().isoformat(), "total_execution_time": timing_metrics.get_total_time(), "agents": {}}
 
     for agent in agents:
         agent_scores = []
@@ -30,7 +28,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
                     "score": data["score"],
                     "solution_time": timing_metrics.solution_times.get(agent.id, {}).get(task_id, 0),
                     "evaluation_time": timing_metrics.evaluation_times.get(agent.id, {}).get(task_id, 0),
-                    "has_cached_solution": False  # Will be updated for browser-use agent later
+                    "has_cached_solution": False,  # Will be updated for browser-use agent later
                 }
 
                 # Add indicator if this is the browser-use agent with cached solution
@@ -47,7 +45,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
             "score_statistics": score_stats,
             "avg_solution_time": timing_metrics.get_avg_solution_time(agent.id),
             "avg_evaluation_time": timing_metrics.get_avg_evaluation_time(agent.id),
-            "tasks": agent_tasks
+            "tasks": agent_tasks,
         }
 
     with open(filename, 'w') as f:
@@ -140,8 +138,7 @@ def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str
 
     for bar, score in zip(bars1, avg_scores):
         height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2., height + 0.1,
-                 f'{score:.2f}', ha='center', va='bottom')
+        ax1.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{score:.2f}', ha='center', va='bottom')
 
     # 2) Average Solution Times
     bars2 = ax2.bar(agent_names, solution_times, color=['coral', 'khaki'])
@@ -150,8 +147,7 @@ def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str
 
     for bar, time_val in zip(bars2, solution_times):
         height = bar.get_height()
-        ax2.text(bar.get_x() + bar.get_width() / 2., height + 0.1,
-                 f'{time_val:.2f}s', ha='center', va='bottom')
+        ax2.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{time_val:.2f}s', ha='center', va='bottom')
 
     # 3) Average Evaluation Times
     bars3 = ax3.bar(agent_names, evaluation_times, color=['lightblue', 'lightgreen'])
@@ -160,8 +156,7 @@ def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str
 
     for bar, time_val in zip(bars3, evaluation_times):
         height = bar.get_height()
-        ax3.text(bar.get_x() + bar.get_width() / 2., height + 0.1,
-                 f'{time_val:.2f}s', ha='center', va='bottom')
+        ax3.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{time_val:.2f}s', ha='center', va='bottom')
 
     plt.tight_layout()
 
@@ -178,7 +173,6 @@ def plot_task_comparison(results, agents, tasks, output_dir: str) -> str:
     Plot each agent's score on each task (up to 10 tasks).
     Returns the path to the saved plot image.
     """
-    import numpy as np
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -201,15 +195,10 @@ def plot_task_comparison(results, agents, tasks, output_dir: str) -> str:
                 agent_scores.append(0)
 
         # Offset each agent's bars
-        bars = ax.bar(
-            [pos + (i * bar_width) for pos in x],
-            agent_scores,
-            width=bar_width,
-            label=agent.name
-        )
+        bars = ax.bar([pos + (i * bar_width) for pos in x], agent_scores, width=bar_width, label=agent.name)
         legend_handles.append(bars[0])
 
-    task_labels = [f"Task {i+1}" for i in range(len(selected_tasks))]
+    task_labels = [f"Task {i + 1}" for i in range(len(selected_tasks))]
     ax.set_xticks([pos + bar_width / 2 for pos in x])
     ax.set_xticklabels(task_labels, rotation=45, ha='right')
     ax.set_ylabel('Score')

@@ -1,4 +1,3 @@
-
 PHASE1_GENERATION_SYSTEM_PROMPT = """
 You are a Task Example Generator that creates realistic examples of tasks a Web Agent could perform on websites.
 Start by identifying the type of task and the core use case that a user may want to do in this website. 

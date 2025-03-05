@@ -1,10 +1,10 @@
 # actions.py
 import asyncio
 import json
-from loguru import logger
 from functools import wraps
 from typing import Optional, Union
 
+from loguru import logger
 from playwright.async_api import Page
 from pydantic import Field
 from typing_extensions import Annotated, Literal
@@ -139,13 +139,13 @@ class ScrollAction(BaseAction):
         if self.up:
             try:
                 await page.evaluate(f"window.scrollBy(0, -{self.value});")
-            except Exception as e:
+            except Exception:
                 # logger.error(e)
                 await page.keyboard.press("PageUp")
         elif self.down:
             try:
                 await page.evaluate(f"window.scrollBy(0, {self.value});")
-            except Exception as e:
+            except Exception:
                 # logger.error(e)
                 await page.keyboard.press("PageDown")
         else:
@@ -161,7 +161,7 @@ class ScrollAction(BaseAction):
                         await locator.first.scroll_into_view_if_needed()
                         await asyncio.sleep(0.5)
                         return
-                except Exception as e:
+                except Exception:
                     # logger.error(e)
                     continue
             raise ValueError(f"Could not scroll to: {self.value}")

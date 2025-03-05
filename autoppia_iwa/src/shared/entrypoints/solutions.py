@@ -2,12 +2,12 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional
+
 from pydantic import BaseModel, Field, RootModel
 
-from autoppia_iwa.src.execution.actions.base import BaseAction, Selector, SelectorType
+from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-import uuid
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class SolutionData(BaseModel):
     """Model for caching solution data"""
+
     agent_id: str
     agent_name: str
     timestamp: float = Field(default_factory=time.time)
@@ -23,6 +24,7 @@ class SolutionData(BaseModel):
 
 class TaskCache(RootModel):
     """Model for task cache entries"""
+
     root: Dict[str, SolutionData] = {}
 
     def __getitem__(self, key):
@@ -40,6 +42,7 @@ class TaskCache(RootModel):
 
 class SolutionsCache(RootModel):
     """Model for the entire solutions cache"""
+
     root: Dict[str, TaskCache] = {}
 
     def __getitem__(self, key):
@@ -101,10 +104,7 @@ class ConsolidatedSolutionCache:
                             solution_data = agent_data['solution']
 
                             # Create the TaskSolution object
-                            task_solution = TaskSolution(
-                                task_id=solution_data.get('task_id', task_id),
-                                web_agent_id=solution_data.get('web_agent_id')
-                            )
+                            task_solution = TaskSolution(task_id=solution_data.get('task_id', task_id), web_agent_id=solution_data.get('web_agent_id'))
 
                             # Handle actions - create the BaseAction objects
                             if 'actions' in solution_data and solution_data['actions']:
@@ -115,10 +115,7 @@ class ConsolidatedSolutionCache:
 
                             # Store in the cache
                             solutions_cache[task_id][agent_id] = SolutionData(
-                                agent_id=agent_data['agent_id'],
-                                agent_name=agent_data['agent_name'],
-                                timestamp=agent_data['timestamp'],
-                                solution=task_solution
+                                agent_id=agent_data['agent_id'], agent_name=agent_data['agent_name'], timestamp=agent_data['timestamp'], solution=task_solution
                             )
 
                 return solutions_cache
@@ -183,12 +180,7 @@ class ConsolidatedSolutionCache:
             cache = self._read_cache()
 
             # Create solution data using the Pydantic model
-            solution_data = SolutionData(
-                agent_id=agent_id,
-                agent_name=agent_name,
-                timestamp=time.time(),
-                solution=task_solution
-            )
+            solution_data = SolutionData(agent_id=agent_id, agent_name=agent_name, timestamp=time.time(), solution=task_solution)
 
             # Initialize task entry if needed
             task_id = task_solution.task_id
@@ -267,6 +259,7 @@ class ConsolidatedSolutionCache:
             return []
 
         return list(cache[task_id].keys())
+
 
 # No longer needed as we're using TaskSolution directly
 
