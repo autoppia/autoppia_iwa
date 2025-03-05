@@ -1,13 +1,16 @@
 import re
 from typing import Optional
-from pydantic import BaseModel
-from autoppia_iwa.src.demo_webs.projects.cinema_1.models import Movie
 
+from pydantic import BaseModel
+
+from autoppia_iwa.src.demo_webs.projects.cinema_1.models import Movie
 
 # ================ Event Classes with Nested Validation Criteria ================
 
+
 class Event(BaseModel):
     """Base event class for all event types"""
+
     type: str
     timestamp: int
     web_agent_id: int
@@ -16,7 +19,7 @@ class Event(BaseModel):
     class ValidationCriteria(BaseModel):
         pass
 
-    def validate(self) -> bool:
+    def validate_criteria(self) -> bool:
         """Check if this event meets the validation criteria"""
         # Base implementation just checks event type
         return self.type == self.__class__.__name__
@@ -25,15 +28,18 @@ class Event(BaseModel):
     def code(cls) -> str:
         """Return the source code of the class"""
         import inspect
+
         return inspect.getsource(cls)
 
 
 class FilmDetailEvent(Event):
     """Event triggered when a film detail page is viewed"""
+
     movie: Movie
 
     class ValidationCriteria(BaseModel):
         """Validation criteria for FilmDetailEvent"""
+
         name: Optional[str] = None
         genre: Optional[str] = None
         director: Optional[str] = None
@@ -43,9 +49,9 @@ class FilmDetailEvent(Event):
             title = "Film Detail Validation"
             description = "Validates that a film detail page was viewed with specific attributes"
 
-    def validate(self, criteria: ValidationCriteria) -> bool:
+    def validate_criteria(self, criteria: ValidationCriteria) -> bool:
         """Validate this FilmDetailEvent against the criteria"""
-        if not super().validate():
+        if not super().validate_criteria():
             return False
 
         # Check movie attributes (exact matches only)
@@ -70,10 +76,12 @@ class FilmDetailEvent(Event):
 
 class SearchEvent(Event):
     """Event triggered when a search is performed"""
+
     query: str
 
     class ValidationCriteria(Event.ValidationCriteria):
         """Validation criteria for SearchEvent"""
+
         query: Optional[str] = None
         match_type: str = "exact"  # Default to exact matching
 
@@ -102,11 +110,13 @@ class SearchEvent(Event):
 
 class RegistrationEvent(Event):
     """Event triggered when a user registration is completed"""
+
     # No additional validation needed, just check the event type
 
 
 class LoginEvent(Event):
     """Event triggered when a user logs in"""
+
     username: str
     # No additional validation needed, just check the event type
 
