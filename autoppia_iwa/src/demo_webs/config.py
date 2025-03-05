@@ -3,7 +3,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from modules.webs_demo.web_3_demo_django_jobs.events.events import EVENTS_ALLOWED as events_allowed_web_1, RELEVANT_DATA as relevant_data_web_1
+from modules.webs_demo.web_3_demo_django_jobs.events.events import EVENTS_ALLOWED as events_allowed_web_1
 from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 from typing import Optional
@@ -32,7 +32,7 @@ demo_web_projects = [
         frontend_url=get_frontend_url(index=0),
         backend_url=get_backend_url(index=0),
         events=events_allowed_web_1,
-        relevant_data=relevant_data_web_1,
+        relevant_data=[],
     )
     # ),
     # DemoWebProject(
@@ -58,7 +58,7 @@ async def initialize_test_demo_web_projects():
             frontend_url="https://www.autoppia.com",
             is_web_real=True,
             events=[],
-            relevant_data=relevant_data_web_1
+            relevant_data=[]
 
         )
     ]
