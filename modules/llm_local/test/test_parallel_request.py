@@ -122,11 +122,11 @@ def main():
     parser = argparse.ArgumentParser(description="Send an increasing number of sub-requests to /generate_parallel.")
     parser.add_argument("--url", type=str, default="http://127.0.0.1:6000/generate_parallel",
                         help="The /generate_parallel endpoint URL.")
-    parser.add_argument("--max_subrequests", type=int, default=5,
+    parser.add_argument("--max_subrequests", type=int, default=250,
                         help="Maximum number of sub-requests in the single request (incrementally).")
     parser.add_argument("--temperature", type=float, default=0.1,
                         help="Temperature for generation.")
-    parser.add_argument("--max_tokens", type=int, default=256,
+    parser.add_argument("--max_tokens", type=int, default=2000,
                         help="Max tokens to generate in the response.")
     args = parser.parse_args()
 
