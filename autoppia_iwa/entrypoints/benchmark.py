@@ -24,6 +24,14 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 from autoppia_iwa.src.web_voyager_test.utils import TaskData, load_jsonl_file
 
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(), logging.FileHandler("benchmark.log")],
+)
+logger = logging.getLogger("benchmark")
+
 
 @dataclass
 class BenchmarkConfig:
@@ -59,14 +67,6 @@ AGENTS: List[BaseAgent] = [
     # ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
-
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(), logging.FileHandler("benchmark.log")],
-)
-logger = logging.getLogger("benchmark")
 
 visualizer = SubnetVisualizer()
 
