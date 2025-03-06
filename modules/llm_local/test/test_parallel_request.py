@@ -37,9 +37,9 @@ base_user_content = (
 )
 
 
-def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
+def test_increasing_subrequests(url, start_subrequests, max_subrequests, temperature, max_tokens):
     """
-    For i in [1..max_subrequests]:
+    For i in [start_subrequests..max_subrequests] (stepping by 5):
       - We create an array of i sub-requests.
       - Each sub-request has 1 user message containing 'base_user_content'.
       - Send them all in ONE POST to /generate_parallel.
@@ -47,7 +47,8 @@ def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
     """
     headers = {"Content-Type": "application/json"}
 
-    for i in range(1, max_subrequests + 1):
+    # Step by 5, starting from start_subrequests up to max_subrequests (inclusive)
+    for i in range(start_subrequests, max_subrequests + 1, 5):
         # Build i sub-requests; each sub-request has a single user message
         subrequests = []
         for sub_id in range(1, i + 1):
@@ -115,23 +116,47 @@ def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
         outputs = response_json.get("outputs", [])
         print(f"  -> # of outputs returned:  {len(outputs)}")
         if outputs:
+            # Print the first 200 characters of the first output
             print(f"  -> Partial output[0]: {outputs[0][:200]} ...")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Send an increasing number of sub-requests to /generate_parallel.")
-    parser.add_argument("--url", type=str, default="http://127.0.0.1:6000/generate_parallel",
-                        help="The /generate_parallel endpoint URL.")
-    parser.add_argument("--max_subrequests", type=int, default=250,
-                        help="Maximum number of sub-requests in the single request (incrementally).")
-    parser.add_argument("--temperature", type=float, default=0.1,
-                        help="Temperature for generation.")
-    parser.add_argument("--max_tokens", type=int, default=2000,
-                        help="Max tokens to generate in the response.")
+    parser.add_argument(
+        "--url",
+        type=str,
+        default="http://127.0.0.1:6000/generate_parallel",
+        help="The /generate_parallel endpoint URL."
+    )
+    parser.add_argument(
+        "--start_subrequests",
+        type=int,
+        default=100,
+        help="Starting number of sub-requests."
+    )
+    parser.add_argument(
+        "--max_subrequests",
+        type=int,
+        default=250,
+        help="Maximum number of sub-requests in the single request (incrementally, stepping by 5)."
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.1,
+        help="Temperature for generation."
+    )
+    parser.add_argument(
+        "--max_tokens",
+        type=int,
+        default=2000,
+        help="Max tokens to generate in the response."
+    )
     args = parser.parse_args()
 
     test_increasing_subrequests(
         url=args.url,
+        start_subrequests=args.start_subrequests,
         max_subrequests=args.max_subrequests,
         temperature=args.temperature,
         max_tokens=args.max_tokens
