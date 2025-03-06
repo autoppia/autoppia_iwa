@@ -1,9 +1,7 @@
-import re
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 
-from autoppia_iwa.src.demo_webs.projects.cinema_1.models import Movie
 from autoppia_iwa.src.demo_webs.projects.events import Event
 
 # ================ Event Classes with Nested Validation Criteria ================
@@ -12,93 +10,91 @@ from autoppia_iwa.src.demo_webs.projects.events import Event
 class RegistrationEvent(Event):
     """Event triggered when a user registration is completed"""
 
+    username: str
+
+    class ValidationCriteria(BaseModel):
+        expected_username: Optional[str] = None
+
+    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+        """Validate if this registration event meets the criteria"""
+        if not criteria:
+            return True
+
+        if criteria.expected_username:
+            return self.username == criteria.expected_username
+
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: Dict[str, Any]) -> "RegistrationEvent":
+        """Parse a registration event from backend data"""
+        base_event = super().parse(backend_event)
+
+        # Extract username from data field
+        data = backend_event.get('data', {})
+        username = data.get('username', '')
+
+        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
+
 
 class LoginEvent(Event):
     """Event triggered when a user logs in"""
 
     username: str
 
-
-class LogoutEvent(Event):
-    """Event triggered when a user logs in"""
-
-    username: str
-
-
-class FilmDetailEvent(Event):
-    """Event triggered when a film detail page is viewed"""
-
-    movie: Movie
-
     class ValidationCriteria(BaseModel):
-        """Validation criteria for FilmDetailEvent"""
+        expected_username: Optional[str] = None
 
-        name: Optional[str] = None
-        genre: Optional[str] = None
-        director: Optional[str] = None
-        year: Optional[int] = None
+    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+        """Validate if this login event meets the criteria"""
+        if not criteria:
+            return True
 
-        class Config:
-            title = "Film Detail Validation"
-            description = "Validates that a film detail page was viewed with specific attributes"
-
-    def validate_criteria(self, criteria: ValidationCriteria) -> bool:
-        """Validate this FilmDetailEvent against the criteria"""
-        if not super().validate_criteria():
-            return False
-
-        # Check movie attributes (exact matches only)
-        if criteria.name and self.movie.name.lower() != criteria.name.lower():
-            return False
-
-        if criteria.genre:
-            # Handle genre being a M2M field
-            movie_genres = [g.name.lower() for g in self.movie.genres.all()]
-            if criteria.genre.lower() not in movie_genres:
-                return False
-
-        if criteria.director and self.movie.director and self.movie.director.lower() != criteria.director.lower():
-            return False
-
-        # Check year if specified (exact match only)
-        if criteria.year is not None and self.movie.year != criteria.year:
-            return False
+        if criteria.expected_username:
+            return self.username == criteria.expected_username
 
         return True
 
+    @classmethod
+    def parse(cls, backend_event: Dict[str, Any]) -> "LoginEvent":
+        """Parse a login event from backend data"""
+        base_event = super().parse(backend_event)
 
-class SearchEvent(Event):
-    """Event triggered when a search is performed"""
+        # Extract username from data field
+        data = backend_event.get('data', {})
+        username = data.get('username', '')
 
-    query: str
+        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
 
-    class ValidationCriteria(Event.ValidationCriteria):
-        """Validation criteria for SearchEvent"""
 
-        query: Optional[str] = None
-        match_type: str = "exact"  # Default to exact matching
+class LogoutEvent(Event):
+    """Event triggered when a user logs out"""
 
-        class Config:
-            title = "Search Validation"
-            description = "Validates that a search was performed with specific query"
+    username: str
 
-    def validate_criteria(self, criteria: ValidationCriteria) -> bool:
-        """Validate this SearchEvent against the criteria"""
-        if not super().validate_criteria():
-            return False
+    class ValidationCriteria(BaseModel):
+        expected_username: Optional[str] = None
 
-        if not criteria.query:
+    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+        """Validate if this logout event meets the criteria"""
+        if not criteria:
             return True
 
-        # Match query based on match_type
-        if criteria.match_type == "exact":
-            return self.query.lower() == criteria.query.lower()
-        elif criteria.match_type == "contains":
-            return criteria.query.lower() in self.query.lower()
-        elif criteria.match_type == "regex":
-            return bool(re.search(criteria.query, self.query))
+        if criteria.expected_username:
+            return self.username == criteria.expected_username
 
-        return False
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: Dict[str, Any]) -> "LogoutEvent":
+        """Parse a logout event from backend data"""
+        base_event = super().parse(backend_event)
+
+        # Extract username from data field
+        data = backend_event.get('data', {})
+        username = data.get('username', '')
+
+        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
 
 
 # ================ Available Events and Use Cases ================
@@ -106,6 +102,10 @@ EVENTS = [
     RegistrationEvent,
     LoginEvent,
     LogoutEvent,
-    FilmDetailEvent,
-    SearchEvent,
 ]
+
+BACKEND_EVENT_TYPES = {
+    'LOGIN': LoginEvent,
+    'LOGOUT': LogoutEvent,
+    'REGISTRATION': RegistrationEvent,
+}
