@@ -863,12 +863,106 @@ class ContactEvent(Event):
         )
 
 
+class FilterFilmEvent(Event):
+    """Event triggered when a user filters films by genre and/or year"""
+
+    genre_id: Optional[int] = None
+    genre_name: Optional[str] = None
+    year: Optional[int] = None
+    filters_applied: Dict[str, bool] = Field(default_factory=dict)
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating filter film events"""
+
+        genre_id: Optional[Union[int, CriterionValue]] = None
+        genre_name: Optional[Union[str, CriterionValue]] = None
+        year: Optional[Union[int, CriterionValue]] = None
+        has_genre_filter: Optional[bool] = None
+        has_year_filter: Optional[bool] = None
+
+    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+        """
+        Validate if this filter film event meets the criteria
+
+        Args:
+            criteria: Optional validation criteria to check against
+
+        Returns:
+            True if criteria is met or not provided, False otherwise
+        """
+        if not criteria:
+            return True
+
+        # Validate genre_id
+        if criteria.genre_id is not None:
+            if self.genre_id is None:
+                return False
+            if not validate_criterion(self.genre_id, criteria.genre_id):
+                return False
+
+        # Validate genre_name
+        if criteria.genre_name is not None:
+            if self.genre_name is None:
+                return False
+            if not validate_criterion(self.genre_name, criteria.genre_name):
+                return False
+
+        # Validate year
+        if criteria.year is not None:
+            if self.year is None:
+                return False
+            if not validate_criterion(self.year, criteria.year):
+                return False
+
+        # Validate has_genre_filter
+        if criteria.has_genre_filter is not None:
+            has_genre = self.filters_applied.get('genre', False)
+            if has_genre != criteria.has_genre_filter:
+                return False
+
+        # Validate has_year_filter
+        if criteria.has_year_filter is not None:
+            has_year = self.filters_applied.get('year', False)
+            if has_year != criteria.has_year_filter:
+                return False
+
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: Dict[str, Any]) -> "FilterFilmEvent":
+        """
+        Parse a filter film event from backend data
+
+        Args:
+            backend_event: Event data from the backend API
+
+        Returns:
+            FilterFilmEvent object populated with data from the backend event
+        """
+        base_event = super().parse(backend_event)
+
+        # Extract data
+        data = backend_event.get('data', {})
+        genre_data = data.get('genre', {})
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            genre_id=genre_data.get('id') if genre_data else None,
+            genre_name=genre_data.get('name') if genre_data else None,
+            year=data.get('year'),
+            filters_applied=data.get('filters_applied', {}),
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
 
 
-EVENTS = [RegistrationEvent, LoginEvent, LogoutEvent, FilmDetailEvent, SearchFilmEvent, AddFilmEvent, EditFilmEvent, DeleteFilmEvent, AddCommentEvent, ContactEvent, EditUserEvent]
+EVENTS = [RegistrationEvent, LoginEvent, LogoutEvent, FilmDetailEvent, SearchFilmEvent, AddFilmEvent, EditFilmEvent, DeleteFilmEvent, AddCommentEvent, ContactEvent, EditUserEvent, FilterFilmEvent]
 
 BACKEND_EVENT_TYPES = {
     'LOGIN': LoginEvent,
@@ -882,6 +976,7 @@ BACKEND_EVENT_TYPES = {
     'ADD_COMMENT': AddCommentEvent,
     "CONTACT": ContactEvent,
     'EDIT_USER': EditUserEvent,
+    'FILTER_FILM': FilterFilmEvent,
 }
 
 # =============================================================================
