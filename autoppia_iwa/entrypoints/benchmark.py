@@ -74,8 +74,8 @@ visualizer = SubnetVisualizer()
 def load_real_tasks() -> List[TaskData]:
     """Load real tasks, excluding impossible ones."""
     logger.info("Loading real tasks...")
-    original_tasks = load_jsonl_file(config.data_dir / "WebVoyager_data.jsonl")
-    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / "WebVoyagerImpossibleTasks.json"))
+    original_tasks = load_jsonl_file(config.data_dir / "web_voyager_tasks/web_voyager_data.jsonl")
+    impossible_tasks_ids = set(load_jsonl_file(config.data_dir / "web_voyager_tasks/web_voyager_impossible_tasks.json"))
     return [TaskData(**task) for task in original_tasks if task["id"] not in impossible_tasks_ids][: config.num_of_urls]
 
 
