@@ -585,20 +585,112 @@ class AddCommentEvent(Event):
 
 
 # =============================================================================
+#                     CONTACT
+# =============================================================================
+
+
+class ContactEvent(Event):
+    """Event triggered when a user submits a contact form"""
+
+    contact_id: int
+    name: str
+    email: str
+    subject: str
+    message: str
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating contact events"""
+
+        name: Optional[Union[str, CriterionValue]] = None
+        email: Optional[Union[str, CriterionValue]] = None
+        subject: Optional[Union[str, CriterionValue]] = None
+        message_contains: Optional[Union[str, CriterionValue]] = None
+
+    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+        """
+        Validate if this contact event meets the criteria
+
+        Args:
+            criteria: Optional validation criteria to check against
+
+        Returns:
+            True if criteria is met or not provided, False otherwise
+        """
+        if not criteria:
+            return True
+
+        # Validate name
+        if criteria.name is not None:
+            if not validate_criterion(self.name, criteria.name):
+                return False
+
+        # Validate email
+        if criteria.email is not None:
+            if not validate_criterion(self.email, criteria.email):
+                return False
+
+        # Validate subject
+        if criteria.subject is not None:
+            if not validate_criterion(self.subject, criteria.subject):
+                return False
+
+        # Validate message_contains
+        if criteria.message_contains is not None:
+            if isinstance(criteria.message_contains, str):
+                if criteria.message_contains.lower() not in self.message.lower():
+                    return False
+            else:
+                # Using the operator with default CONTAINS for message_contains
+                operator = criteria.message_contains.operator
+                value = criteria.message_contains.value
+
+                if operator == ComparisonOperator.CONTAINS:
+                    if value.lower() not in self.message.lower():
+                        return False
+                elif operator == ComparisonOperator.NOT_CONTAINS:
+                    if value.lower() in self.message.lower():
+                        return False
+                elif operator == ComparisonOperator.EQUALS:
+                    if value.lower() != self.message.lower():
+                        return False
+
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: Dict[str, Any]) -> "ContactEvent":
+        """
+        Parse a contact event from backend data
+
+        Args:
+            backend_event: Event data from the backend API
+
+        Returns:
+            ContactEvent object populated with data from the backend event
+        """
+        base_event = super().parse(backend_event)
+
+        # Extract data
+        data = backend_event.get('data', {})
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            contact_id=data.get('id', 0),
+            name=data.get('name', ''),
+            email=data.get('email', ''),
+            subject=data.get('subject', ''),
+            message=data.get('message', ''),
+        )
+
+
+# =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
 
-EVENTS = [
-    RegistrationEvent,
-    LoginEvent,
-    LogoutEvent,
-    FilmDetailEvent,
-    SearchFilmEvent,
-    AddFilmEvent,
-    EditFilmEvent,
-    DeleteFilmEvent,
-    AddCommentEvent,
-]
+
+EVENTS = [RegistrationEvent, LoginEvent, LogoutEvent, FilmDetailEvent, SearchFilmEvent, AddFilmEvent, EditFilmEvent, DeleteFilmEvent, AddCommentEvent, ContactEvent]
 
 BACKEND_EVENT_TYPES = {
     'LOGIN': LoginEvent,
@@ -610,6 +702,7 @@ BACKEND_EVENT_TYPES = {
     'EDIT_FILM': EditFilmEvent,
     'DELETE_FILM': DeleteFilmEvent,
     'ADD_COMMENT': AddCommentEvent,
+    "CONTACT": ContactEvent,
 }
 
 # =============================================================================
