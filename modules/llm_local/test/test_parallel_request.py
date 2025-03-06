@@ -216,7 +216,7 @@ def test_increasing_subrequests(url, start_subrequests, max_subrequests, tempera
     headers = {"Content-Type": "application/json"}
 
     # Step by 10, starting from start_subrequests up to max_subrequests (inclusive)
-    for i in range(start_subrequests, max_subrequests + 1, 5):
+    for i in range(start_subrequests, max_subrequests + 1, 1):
         # Build i sub-requests; each sub-request has a single user message
         subrequests = []
         for sub_id in range(1, i + 1):
