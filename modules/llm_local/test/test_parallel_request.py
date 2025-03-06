@@ -299,13 +299,13 @@ def main():
     parser.add_argument(
         "--start_subrequests",
         type=int,
-        default=100,
+        default=1,
         help="Starting number of sub-requests."
     )
     parser.add_argument(
         "--max_subrequests",
         type=int,
-        default=250,
+        default=100,
         help="Maximum number of sub-requests (stepping by 10)."
     )
     parser.add_argument(
