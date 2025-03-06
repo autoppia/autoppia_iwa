@@ -19,10 +19,10 @@ from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
+from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_jsonl_file
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.web_voyager_test.utils import TaskData, load_jsonl_file
 
 
 @dataclass

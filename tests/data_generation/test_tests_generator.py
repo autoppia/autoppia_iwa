@@ -4,11 +4,11 @@ from typing import List, Optional
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
+from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 # ============================================================
 # GLOBAL CONFIGURATION
@@ -67,7 +67,6 @@ async def generate_tasks_for_project(demo_project: WebProject) -> List[Task]:
             print(f"No valid cached tasks found for project '{demo_project.name}', generating new tasks...")
 
     config = TaskGenerationConfig(
-        save_web_analysis_in_db=True,
         save_task_in_db=False,
         num_of_urls=NUM_OF_URLS,
         random_urls=RANDOM_URLS,
@@ -94,7 +93,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.IsolatedAsyncioTestCase):
         web_project = await initialize_demo_webs_projects()
         tasks = await generate_tasks_for_project(web_project[0])
 
-        test_generator = TestGenerationPipeline(web_project=web_project[0], llm_service=self.llm_service)
+        test_generator = LocalTestGenerationPipeline(web_project=web_project[0], llm_service=self.llm_service)
         tasks_with_tests = await test_generator.add_tests_to_tasks(tasks=tasks)
 
         self.assertIsInstance(tasks_with_tests, list, "Tasks with tests should be a list.")

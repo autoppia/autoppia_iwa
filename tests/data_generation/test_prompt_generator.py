@@ -3,7 +3,7 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
+from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 START_URL = "http://localhost:8000/login"
 RELEVANT_DATA = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}

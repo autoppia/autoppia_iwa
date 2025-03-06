@@ -126,7 +126,7 @@ class FindInHtmlTest(BaseTaskTest):
         for script in soup(["script", "style"]):
             script.extract()
         # Get text
-        text = soup.get_text(separator=' ', strip=True)
+        text = soup.get_text(separator=" ", strip=True)
         # Remove extra whitespace
         text = re.sub(r'\s+', ' ', text).strip()
         return text
