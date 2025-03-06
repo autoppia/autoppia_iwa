@@ -10,14 +10,12 @@ from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
+from autoppia_iwa.src.demo_webs.utils import _load_web_analysis
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
-from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
 from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_real_tasks
 from autoppia_iwa.src.web_agents.base import BaseAgent
@@ -26,12 +24,11 @@ from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 
 @dataclass
-class BenchmarkConfig:
+class WebVoyagerConfig:
     """Configuration for the benchmark test."""
 
     use_cached_tasks: bool = False
     use_cached_solutions: bool = False
-    evaluate_real_tasks: bool = False
 
     m: int = 1  # Number of copies of each solution to evaluate
     prompts_per_url: int = 3
@@ -50,7 +47,7 @@ class BenchmarkConfig:
 
 
 # Initialize configuration & solution cache
-config = BenchmarkConfig()
+config = WebVoyagerConfig()
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
@@ -74,17 +71,8 @@ visualizer = SubnetVisualizer()
 @visualize_task(visualizer)
 async def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:
     """Generate tasks with caching support."""
-    if config.evaluate_real_tasks and tasks_data:
-        task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
-        return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
-
-    return await generate_tasks_for_project(
-        demo_project,
-        config.use_cached_tasks,
-        str(config.tasks_cache_dir),
-        config.prompts_per_url,
-        config.num_of_urls,
-    )
+    task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
+    return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
 
 
 @visualize_evaluation(visualizer)
@@ -186,25 +174,16 @@ async def main():
     timing_metrics = TimingMetrics()
     timing_metrics.start()
 
-    if not config.evaluate_real_tasks:
-        # web_projects = demo_web_projects
-        web_projects = await initialize_demo_webs_projects(demo_web_projects)
-        web_projects = [web_projects[0]]
-        for project in web_projects:
-            tasks = await generate_tasks(project)
+    tasks_data = load_real_tasks(config.num_of_urls)
+    web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
+
+    for td in tasks_data:
+        project = web_projects.get(td.id)
+        if project:
+            await _load_web_analysis(project)
+            tasks = await generate_tasks(project, td)
             if tasks:
                 await run_evaluation(project, tasks, timing_metrics)
-    else:
-        tasks_data = load_real_tasks(config.num_of_urls)
-        web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
-
-        for td in tasks_data:
-            project = web_projects.get(td.id)
-            if project:
-                await _load_web_analysis(project)
-                tasks = await generate_tasks(project, td)
-                if tasks:
-                    await run_evaluation(project, tasks, timing_metrics)
 
     logger.info("Evaluation complete!")
 

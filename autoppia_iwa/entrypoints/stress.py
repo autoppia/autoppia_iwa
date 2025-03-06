@@ -6,17 +6,17 @@ from typing import List, Optional
 
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
+from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
+from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
+from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 
 # Import the consolidated solution cache system
-from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
+from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 
 # Local imports (within the same "entrypoints" directory)
-from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
+from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution

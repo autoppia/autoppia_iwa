@@ -2,8 +2,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
+from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from autoppia_iwa.src.demo_webs.projects.events import Event
 
 # =============================================================================
 #                            USER EVENTS

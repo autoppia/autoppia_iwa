@@ -5,10 +5,10 @@ from typing import List
 
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.demo_webs.config import initialize_demo_webs_projects
-from autoppia_iwa.src.shared.entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.entrypoints.solutions import ConsolidatedSolutionCache
-from autoppia_iwa.src.shared.entrypoints.tasks import generate_tasks_for_project
+from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
+from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
+from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
+from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent

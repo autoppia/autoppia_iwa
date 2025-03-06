@@ -5,6 +5,8 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
+from autoppia_iwa.config.config import PROJECT_BASE_DIR
+
 
 class TaskData(BaseModel):
     """Data model for tasks."""
@@ -45,3 +47,12 @@ def load_jsonl_file(file_path: Path) -> List[Dict]:
         return []
 
     return tasks
+
+
+def load_real_tasks(num_of_urls: int) -> List[TaskData]:
+    """Load real tasks, excluding impossible ones."""
+    data_dir = PROJECT_BASE_DIR.parent / "data"
+    print("Loading real tasks...")
+    original_tasks = load_jsonl_file(data_dir / "web_voyager_tasks/web_voyager_data.jsonl")
+    impossible_tasks_ids = set(load_jsonl_file(data_dir / "web_voyager_tasks/web_voyager_impossible_tasks.json"))
+    return [TaskData(**task) for task in original_tasks if task["id"] not in impossible_tasks_ids][:num_of_urls]

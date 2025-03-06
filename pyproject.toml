@@ -15,7 +15,7 @@ exclude = ["tests*", "docs*", "data*"]  # Exclude non-package directories
 [tool.isort]
 profile = "black"
 line_length = 200
-known_third_party = ["PIL", "aiohttp", "bs4", "cinema_1", "dependency_injector", "distutils", "dotenv", "faker", "flask", "flask_cors", "httpx", "json_repair", "loguru", "matplotlib", "networkx", "openai", "playwright", "pydantic", "pymongo", "requests", "rich", "tiktoken", "torch", "transformers", "typing_extensions"]
+known_third_party = ["PIL", "aiohttp", "bs4", "dependency_injector", "distutils", "dotenv", "faker", "flask", "flask_cors", "httpx", "json_repair", "loguru", "matplotlib", "networkx", "openai", "playwright", "pydantic", "pymongo", "requests", "rich", "tiktoken", "torch", "transformers", "typing_extensions"]
 
 [tool.black]
 line-length = 200
