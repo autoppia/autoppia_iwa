@@ -59,7 +59,7 @@ class Event(BaseModel):
         return events
 
     @classmethod
-    def code(cls) -> str:
+    def get_source_code_of_class(cls) -> str:
         """Return the source code of the class"""
         import inspect
 
