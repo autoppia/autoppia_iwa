@@ -220,10 +220,10 @@ class SubnetVisualizer:
 
         if test_type == "FindInHtmlTest":
             # For URL tests, show the expected URL or path
-            if hasattr(test, "substring"):
-                description = f"Find in HTML next substring:: '{test.substring}'"
+            if hasattr(test, "content"):
+                description = f"Find in HTML next substring:: '{test.content}'"
 
-            attributes['substring'] = test.substring
+            attributes['content'] = test.content
 
         elif "HTML" in test_type or test_type == "JudgeBaseOnHTML" or test_type == "OpinionBasedHTMLTest":
             # For HTML opinion tests, show the success criteria
