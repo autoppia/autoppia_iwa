@@ -968,6 +968,7 @@ BACKEND_EVENT_TYPES = {
     'LOGIN': LoginEvent,
     'LOGOUT': LogoutEvent,
     'REGISTRATION': RegistrationEvent,
+    'EDIT_USER': EditUserEvent,
     'FILM_DETAIL': FilmDetailEvent,
     'SEARCH_FILM': SearchFilmEvent,
     'ADD_FILM': AddFilmEvent,
@@ -975,7 +976,6 @@ BACKEND_EVENT_TYPES = {
     'DELETE_FILM': DeleteFilmEvent,
     'ADD_COMMENT': AddCommentEvent,
     "CONTACT": ContactEvent,
-    'EDIT_USER': EditUserEvent,
     'FILTER_FILM': FilterFilmEvent,
 }
 
