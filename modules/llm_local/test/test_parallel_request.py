@@ -7,146 +7,118 @@ import argparse
 def build_messages(num_messages, sub_request_id=1):
     """
     Build a list of messages repeated `num_messages` times.
-    Each message is somewhat large so that we can push the token count up.
+    In this simplified version, we typically call build_messages(1).
     """
     base_user_content = (
         "You are a test analyzer for web automation testing. "
-        "Review the tests below and decide which ones to keep.\n\n"
-        "TASK CONTEXT:\n"
-        "- Task Prompt: example task prompt\n"
-        "- Success Criteria: example success critera\n"
-        "TESTS TO REVIEW:\n"
-        "example test\n\n"
-        "GUIDELINES:\n"
-        "1. Backend tests (CheckEventTest, CheckPageViewEventTest) are preferred over frontend tests.\n"
-        "2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful.\n"
-        "3. Avoid keeping tests that check the same thing in different ways.\n"
-        "4. Prioritize tests that directly verify the success criteria.\n"
-        "5. Aim to keep 1-3 high-quality tests in total.\n"
-        "6. Delete tests that make up parameters like making up event_names in CheckEventTest.\n"
-        "7. Judge Tests like JudgeBaseOnHTML or JudgeBaseOnScreenshot are fallback tests.\n\n"
-        "RESPOND WITH A JSON ARRAY of decisions, one for each test, like this:\n"
-        "[\n"
-        "  {\n"
-        "    \"index\": 0,\n"
-        "    \"keep\": true,\n"
-        "    \"reason\": \"High quality backend test that verifies core success criteria\"\n"
-        "  },\n"
-        "  {\n"
-        "    \"index\": 1,\n"
-        "    \"keep\": false,\n"
-        "    \"reason\": \"Redundant with test #0 which is more reliable\"\n"
-        "  }\n"
-        "]\n\n"
-        "Return ONLY the JSON array, no additional text."
+        "Review the tests below and decide which ones to keep. "
+        "Return ONLY a JSON array, no additional text."
     )
 
     messages = []
     for i in range(num_messages):
-        # For demonstration, we alternate "user" and "system" roles or just keep them all user.
-        # Here let's do a single system message plus repeated user messages to see how the LLM handles it.
-        # The first message might be a system message:
+        # First message can be system
         if i == 0:
             messages.append({
                 "role": "system",
-                "content": (
-                    f"You are Qwen, created by Alibaba Cloud. You are a helpful assistant. "
-                    f"(Sub-request {sub_request_id}, message #{i+1})"
-                )
+                "content": f"You are Qwen, created by Alibaba Cloud. "
+                           f"(Sub-request #{sub_request_id}, message #{i+1})"
             })
         else:
+            # In this simplified example, we won't usually get here if num_messages=1
             messages.append({
                 "role": "user",
-                "content": (
-                    base_user_content
-                    + f"\n\n(This is message #{i+1} out of {num_messages})"
-                )
+                "content": base_user_content
             })
     return messages
 
 
-def test_parallel_increasing_messages(
-    url, max_messages, temperature, max_tokens
-):
+def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
     """
-    For each i in [1..max_messages], sends exactly one sub-request with 'i' messages
-    to /generate_parallel and prints the returned stats (including tokens_in, tokens_out).
+    For i in [1..max_subrequests]:
+      - Build an array of i sub-requests (each sub-request is just 1 message).
+      - Send one request to /generate_parallel.
+      - Print the stats and partial output.
     """
     headers = {"Content-Type": "application/json"}
 
-    for i in range(1, max_messages + 1):
-        # Build the single sub-request containing i messages
-        single_request = {
-            "messages": build_messages(num_messages=i),
-            "json_format": False,
-            "schema": None
-        }
+    for i in range(1, max_subrequests + 1):
+        # Build i sub-requests, each with build_messages(1)
+        subrequests = []
+        for sub_request_id in range(1, i + 1):
+            subrequests.append({
+                "messages": build_messages(1, sub_request_id=sub_request_id),
+                "json_format": False,
+                "schema": None
+            })
 
         data = {
-            "requests": [single_request],  # Exactly one sub-request in the batch
+            "requests": subrequests,  # i sub-requests in one batch
             "temperature": temperature,
             "max_tokens": max_tokens
         }
 
-        print(f"\n--- Sending request with {i} messages ---")
+        print(f"\n--- Sending 1 request with {i} sub-requests ---")
         start_time = time.time()
         try:
             response = requests.post(url, headers=headers, json=data)
-            end_time = time.time()
         except Exception as e:
-            print(f"Request with {i} messages failed to complete: {e}")
-            break
-
+            print(f"Request with {i} sub-requests failed: {e}")
+            return
+        end_time = time.time()
         elapsed = end_time - start_time
 
-        # Try to parse the JSON
+        # Parse response
         try:
             response_json = response.json()
         except Exception as e:
-            print(f"Could not parse JSON for request with {i} messages: {e}")
-            break
+            print(f"Could not parse JSON for request with {i} sub-requests: {e}")
+            return
 
-        # Check if there's an error from the server
         if "error" in response_json:
-            print(f"Server returned error for {i} messages: {response_json['error']}")
-            break
+            print(f"Server returned error for request with {i} sub-requests: {response_json['error']}")
+            return
 
-        # Otherwise, read the stats
+        # Extract stats
         stats = response_json.get("stats", {})
-        total_tokens_in = stats.get("total_tokens_in", None)
-        total_tokens_out = stats.get("total_tokens_out", None)
-        tokens_per_second = stats.get("tokens_per_second", None)
-        total_time = stats.get("total_time", None)
-        avg_time_per_request = stats.get("avg_time_per_request", None)
+        total_tokens_in = stats.get("total_tokens_in")
+        total_tokens_out = stats.get("total_tokens_out")
+        tokens_per_second = stats.get("tokens_per_second")
+        total_time = stats.get("total_time")
+        avg_time_per_request = stats.get("avg_time_per_request")
 
         print(f"  -> Response time:          {elapsed:.2f} s")
         print(f"  -> total_tokens_in:        {total_tokens_in}")
         print(f"  -> total_tokens_out:       {total_tokens_out}")
-        print(f"  -> total_time (batch):     {total_time:.2f} s" if total_time else "")
-        print(f"  -> tokens_per_second:      {tokens_per_second:.2f}" if tokens_per_second else "")
-        print(f"  -> avg_time_per_request:   {avg_time_per_request:.2f}" if avg_time_per_request else "")
+        if total_time is not None:
+            print(f"  -> total_time (batch):     {total_time:.2f} s")
+        if tokens_per_second is not None:
+            print(f"  -> tokens_per_second:      {tokens_per_second:.2f}")
+        if avg_time_per_request is not None:
+            print(f"  -> avg_time_per_request:   {avg_time_per_request:.2f}")
 
-        # Optionally print the first 200 chars of the output to see if it makes sense
+        # Show partial output for the first sub-request
         outputs = response_json.get("outputs", [])
+        print(f"  -> # of outputs returned:  {len(outputs)}")
         if outputs:
             print(f"  -> Partial output[0]: {outputs[0][:200]} ...")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Test /generate_parallel with increasing number of messages.")
+    parser = argparse.ArgumentParser(description="Send a single request each time, with increasing sub-requests.")
     parser.add_argument("--url", type=str, default="http://127.0.0.1:6000/generate_parallel",
-                        help="URL endpoint for parallel generation.")
-    parser.add_argument("--max_messages", type=int, default=250,
-                        help="Max number of messages to test incrementally.")
+                        help="The /generate_parallel endpoint URL.")
+    parser.add_argument("--max_subrequests", type=int, default=5,
+                        help="How many sub-requests to test up to (from 1..max_subrequests).")
     parser.add_argument("--temperature", type=float, default=0.1,
-                        help="Temperature parameter for generation.")
+                        help="Temperature for generation.")
     parser.add_argument("--max_tokens", type=int, default=256,
                         help="Max tokens to generate.")
     args = parser.parse_args()
 
-    test_parallel_increasing_messages(
+    test_increasing_subrequests(
         url=args.url,
-        max_messages=args.max_messages,
+        max_subrequests=args.max_subrequests,
         temperature=args.temperature,
         max_tokens=args.max_tokens
     )
