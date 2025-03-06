@@ -1,16 +1,15 @@
-from typing import List, Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field, AnyUrl, field_validator
+from typing import Any, Dict, List, Optional
+
 from faker import Faker
+from pydantic import AnyUrl, BaseModel, Field, field_validator
 
 
 class Genre(BaseModel):
     id: Optional[int] = None
     name: str = Field(max_length=100)
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class Comment(BaseModel):
@@ -21,9 +20,7 @@ class Comment(BaseModel):
     created_at: Optional[datetime] = None
     avatar: Optional[str] = None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class Movie(BaseModel):
@@ -42,9 +39,7 @@ class Movie(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
     @field_validator('cast', mode='before')
     @classmethod
@@ -71,9 +66,7 @@ class UserProfile(BaseModel):
     website: Optional[AnyUrl] = None
     location: Optional[str] = Field(None, max_length=100)
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class User(BaseModel):
@@ -84,9 +77,7 @@ class User(BaseModel):
     last_name: Optional[str] = None
     profile: Optional[UserProfile] = None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class ContactMessage(BaseModel):
@@ -97,12 +88,10 @@ class ContactMessage(BaseModel):
     message: str
     created_at: Optional[datetime] = None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
-MODELS = [Genre,Comment,Movie,UserProfile,User,ContactMessage]
+MODELS = [Genre, Comment, Movie, UserProfile, User, ContactMessage]
 
 # ================ Data Generation Functions ================
 # Initialize Faker
@@ -110,10 +99,7 @@ faker = Faker()
 
 
 def generate_fake_genre() -> Genre:
-    return Genre(
-        id=faker.random_int(min=1, max=100),
-        name=faker.word().capitalize()
-    )
+    return Genre(id=faker.random_int(min=1, max=100), name=faker.word().capitalize())
 
 
 def generate_fake_movie() -> Movie:
@@ -130,7 +116,7 @@ def generate_fake_movie() -> Movie:
         rating=round(faker.random.uniform(1.0, 5.0), 1),
         created_at=faker.date_time_this_year(),
         updated_at=faker.date_time_this_month(),
-        genres=[generate_fake_genre() for _ in range(faker.random_int(min=1, max=3))]
+        genres=[generate_fake_genre() for _ in range(faker.random_int(min=1, max=3))],
     )
 
 
@@ -141,7 +127,7 @@ def generate_fake_comment(movie_id: Optional[int] = None) -> Comment:
         name=faker.name(),
         content=faker.text(),
         created_at=faker.date_time_this_year(),
-        avatar=f"gallery/avatars/{faker.file_name(extension='jpg')}" if faker.boolean() else None
+        avatar=f"gallery/avatars/{faker.file_name(extension='jpg')}" if faker.boolean() else None,
     )
 
 
@@ -153,30 +139,18 @@ def generate_fake_user_profile(user_id: Optional[int] = None) -> UserProfile:
         profile_pic=f"gallery/profiles/{faker.file_name(extension='jpg')}" if faker.boolean() else None,
         favorite_genres=[generate_fake_genre() for _ in range(faker.random_int(min=0, max=3))],
         website=faker.url() if faker.boolean() else None,
-        location=faker.city() if faker.boolean() else None
+        location=faker.city() if faker.boolean() else None,
     )
 
 
 def generate_fake_user() -> User:
     user_id = faker.random_int(min=1, max=100)
-    return User(
-        id=user_id,
-        username=faker.user_name(),
-        email=faker.email(),
-        first_name=faker.first_name(),
-        last_name=faker.last_name(),
-        profile=generate_fake_user_profile(user_id)
-    )
+    return User(id=user_id, username=faker.user_name(), email=faker.email(), first_name=faker.first_name(), last_name=faker.last_name(), profile=generate_fake_user_profile(user_id))
 
 
 def generate_fake_contact_message() -> ContactMessage:
     return ContactMessage(
-        id=faker.random_int(min=1, max=1000),
-        name=faker.name(),
-        email=faker.email(),
-        subject=faker.sentence(),
-        message=faker.text(max_nb_chars=200),
-        created_at=faker.date_time_this_year()
+        id=faker.random_int(min=1, max=1000), name=faker.name(), email=faker.email(), subject=faker.sentence(), message=faker.text(max_nb_chars=200), created_at=faker.date_time_this_year()
     )
 
 
@@ -193,5 +167,5 @@ def generate_fake_data(count: int = 5) -> Dict[str, List[Any]]:
         "movies": movies,
         "comments": [c for m in movies for c in m.comments],
         "users": [generate_fake_user() for _ in range(count)],
-        "contact_messages": [generate_fake_contact_message() for _ in range(count)]
+        "contact_messages": [generate_fake_contact_message() for _ in range(count)],
     }

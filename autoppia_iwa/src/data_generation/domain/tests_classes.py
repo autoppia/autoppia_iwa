@@ -11,10 +11,11 @@ from pydantic import BaseModel, Field, field_validator
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.projects.events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
+
+from .prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 
 
 class ITest(ABC):
@@ -126,7 +127,7 @@ class FindInHtmlTest(BaseTaskTest):
         for script in soup(["script", "style"]):
             script.extract()
         # Get text
-        text = soup.get_text(separator=' ', strip=True)
+        text = soup.get_text(separator=" ", strip=True)
         # Remove extra whitespace
         text = re.sub(r'\s+', ' ', text).strip()
         return text
@@ -185,6 +186,7 @@ class CheckEventTest(BaseTaskTest):
         except Exception as e:
             print(f"Invalid validation criteria: {e}")
             return False
+        from autoppia_iwa.src.demo_webs.projects.base_events import Event
 
         # Check if any event of the correct type matches our criteria
         for event in Event.parse_all(snapshot.backend_events):
@@ -210,14 +212,11 @@ class JudgeBaseOnHTML(BaseTaskTest):
         return self._analyze_htmls(action, html_before, html_after)
 
     def _analyze_htmls(self, action: str, html_before: str, html_after: str, llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
-        system_message = (
-            "You are a professional web page analyzer. Your task is to determine whether the given task was completed " "with the action given, by analyzing the HTML before and after the action."
-        )
         user_message = f"Current action: {action}\nHTML Before:\n{html_before}\n\nHTML After:\n{html_after}"
-        payload = [{"role": "system", "content": system_message}, {"role": "user", "content": user_message}]
+        payload = [{"role": "system", "content": OPINION_BASED_HTML_TEST_SYS_MSG}, {"role": "user", "content": user_message}]
 
         # load schema
-        schema_path = Path(PROJECT_BASE_DIR) / "config" / "schemas" / "eval_html_test.json"
+        schema_path = Path(PROJECT_BASE_DIR / "config/schemas/eval_html_test.json")
         json_schema = {}
         if schema_path.exists():
             with schema_path.open(encoding="utf-8") as f:
@@ -236,32 +235,23 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         if current_iteration == 0:
             return False
-        return self._analyze_screenshots(screenshot_before=browser_snapshots[current_iteration].screenshot_before, screenshot_after=browser_snapshots[current_iteration].screenshot_after)
+        return self._analyze_screenshots(prompt, browser_snapshots)
 
-    def _analyze_screenshots(self, screenshot_before: str, screenshot_after: str, llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
-        system_msg = "You are a professional web page analyzer..."
-        user_msg = f"Task: '{self.success_criteria}'"
+    def _analyze_screenshots(self, prompt: str, browser_snapshots: List[BrowserSnapshot], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
+        """Analyzes screenshots to determine success based on LLM evaluation."""
+        user_msg = f"Task: '{prompt}'\nSuccess Criteria: '{self.success_criteria}'"
+
+        screenshots_after = [snap.screenshot_after for snap in browser_snapshots[-4:]]
+        screenshot_content = [{"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot}"}} for screenshot in screenshots_after]
+
         payload = [
-            {"role": "system", "content": system_msg},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": user_msg},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{screenshot_before}"}},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{screenshot_after}"}},
-                ],
-            },
+            {"role": "system", "content": SCREENSHOT_TEST_SYSTEM_PROMPT},
+            {"role": "user", "content": [{"type": "text", "text": user_msg}, *screenshot_content]},
         ]
 
-        schema_path = Path(PROJECT_BASE_DIR) / "config" / "schemas" / "screenshot_test_schema.json"
-        json_schema = {}
-        if schema_path.exists():
-            with schema_path.open(encoding="utf-8") as f:
-                json_schema = json.load(f)
+        result_str = llm_service.predict(payload)
 
-        result_str = llm_service.predict(payload, json_format=True, schema=json_schema)
-        parsed = json.loads(result_str)
-        return parsed["result"]
+        return "SUCCESS" in result_str or "UNKNOWN" in result_str
 
 
 class WebProjectCheckEventTest(BaseTaskTest):

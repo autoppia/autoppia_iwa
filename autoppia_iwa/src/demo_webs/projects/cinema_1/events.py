@@ -2,8 +2,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
+from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from autoppia_iwa.src.demo_webs.projects.events import Event
 
 # =============================================================================
 #                            USER EVENTS
@@ -104,6 +104,184 @@ class LogoutEvent(Event):
         data = backend_event.get('data', {})
         username = data.get('username', '')
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
+
+
+class EditUserEvent(Event):
+    """Event triggered when a user edits their profile"""
+
+    user_id: Optional[int] = None
+    username: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: str
+    profile_id: Optional[int] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
+    has_profile_pic: bool = False
+    favorite_genres: List[str] = Field(default_factory=list)
+    previous_values: Dict[str, Any] = Field(default_factory=dict)
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating edit user events"""
+
+        username: Optional[Union[str, CriterionValue]] = None
+        email: Optional[Union[str, CriterionValue]] = None
+        name_contains: Optional[Union[str, CriterionValue]] = None  # For first or last name
+        location: Optional[Union[str, CriterionValue]] = None
+        bio_contains: Optional[Union[str, CriterionValue]] = None
+        has_profile_pic: Optional[Union[bool, CriterionValue]] = None
+        has_favorite_genre: Optional[Union[str, CriterionValue]] = None
+        has_website: Optional[Union[bool, CriterionValue]] = None
+        changed_field: Optional[Union[str, List[str], CriterionValue]] = None
+
+    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+        """
+        Validate if this edit user event meets the criteria
+
+        Args:
+            criteria: Optional validation criteria to check against
+
+        Returns:
+            True if criteria is met or not provided, False otherwise
+        """
+        if not criteria:
+            return True
+
+        # Validate username
+        if criteria.username is not None:
+            if not validate_criterion(self.username, criteria.username):
+                return False
+
+        # Validate email
+        if criteria.email is not None:
+            if not validate_criterion(self.email, criteria.email):
+                return False
+
+        # Validate name contains (check both first and last name)
+        if criteria.name_contains is not None:
+            full_name = f"{self.first_name or ''} {self.last_name or ''}".strip()
+            if isinstance(criteria.name_contains, str):
+                if criteria.name_contains.lower() not in full_name.lower():
+                    return False
+            else:
+                # Using operator
+                if criteria.name_contains.operator == ComparisonOperator.CONTAINS:
+                    if criteria.name_contains.value.lower() not in full_name.lower():
+                        return False
+                elif criteria.name_contains.operator == ComparisonOperator.EQUALS:
+                    if criteria.name_contains.value.lower() != full_name.lower():
+                        return False
+
+        # Validate location
+        if criteria.location is not None:
+            if self.location is None:
+                return False
+            if not validate_criterion(self.location, criteria.location):
+                return False
+
+        # Validate bio contains
+        if criteria.bio_contains is not None:
+            if self.bio is None:
+                return False
+            if isinstance(criteria.bio_contains, str):
+                if criteria.bio_contains.lower() not in self.bio.lower():
+                    return False
+            else:
+                # Using operator
+                if criteria.bio_contains.operator == ComparisonOperator.CONTAINS:
+                    if criteria.bio_contains.value.lower() not in self.bio.lower():
+                        return False
+
+        # Validate has_profile_pic
+        if criteria.has_profile_pic is not None:
+            if not validate_criterion(self.has_profile_pic, criteria.has_profile_pic):
+                return False
+
+        # Validate has_favorite_genre
+        if criteria.has_favorite_genre is not None:
+            if isinstance(criteria.has_favorite_genre, str):
+                if not any(criteria.has_favorite_genre.lower() in genre.lower() for genre in self.favorite_genres):
+                    return False
+            else:
+                # Using operator
+                if criteria.has_favorite_genre.operator == ComparisonOperator.CONTAINS:
+                    if not any(criteria.has_favorite_genre.value.lower() in genre.lower() for genre in self.favorite_genres):
+                        return False
+                elif criteria.has_favorite_genre.operator == ComparisonOperator.EQUALS:
+                    if not any(criteria.has_favorite_genre.value.lower() == genre.lower() for genre in self.favorite_genres):
+                        return False
+
+        # Validate has_website
+        if criteria.has_website is not None:
+            has_website = self.website is not None and self.website != ''
+            if not validate_criterion(has_website, criteria.has_website):
+                return False
+
+        # Validate changed_field
+        if criteria.changed_field is not None:
+            # Determine what fields were changed
+            changed_fields = []
+            for field, value in self.previous_values.items():
+                current_value = getattr(self, field, None)
+                if current_value != value:
+                    changed_fields.append(field)
+
+            if isinstance(criteria.changed_field, str):
+                if criteria.changed_field not in changed_fields:
+                    return False
+            elif isinstance(criteria.changed_field, list):
+                if not any(field in changed_fields for field in criteria.changed_field):
+                    return False
+            else:
+                # Using operator
+                if criteria.changed_field.operator == ComparisonOperator.IN_LIST:
+                    if not any(field in criteria.changed_field.value for field in changed_fields):
+                        return False
+                elif criteria.changed_field.operator == ComparisonOperator.EQUALS:
+                    if criteria.changed_field.value not in changed_fields:
+                        return False
+
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: Dict[str, Any]) -> "EditUserEvent":
+        """
+        Parse an edit user event from backend data
+
+        Args:
+            backend_event: Event data from the backend API
+
+        Returns:
+            EditUserEvent object populated with data from the backend event
+        """
+        base_event = super().parse(backend_event)
+
+        # Extract data
+        data = backend_event.get('data', {})
+
+        # Extract favorite genres as a list of strings
+        favorite_genres = []
+        if 'favorite_genres' in data and isinstance(data['favorite_genres'], list):
+            favorite_genres = [genre.get('name', '') for genre in data['favorite_genres'] if isinstance(genre, dict) and 'name' in genre]
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=data.get('username', ''),
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name', ''),
+            email=data.get('email', ''),
+            profile_id=data.get('profile_id'),
+            bio=data.get('bio'),
+            location=data.get('location'),
+            website=data.get('website'),
+            has_profile_pic=data.get('has_profile_pic', False),
+            favorite_genres=favorite_genres,
+            previous_values=data.get('previous_values', {}),
+        )
 
 
 # =============================================================================
@@ -685,17 +863,112 @@ class ContactEvent(Event):
         )
 
 
+class FilterFilmEvent(Event):
+    """Event triggered when a user filters films by genre and/or year"""
+
+    genre_id: Optional[int] = None
+    genre_name: Optional[str] = None
+    year: Optional[int] = None
+    filters_applied: Dict[str, bool] = Field(default_factory=dict)
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating filter film events"""
+
+        genre_id: Optional[Union[int, CriterionValue]] = None
+        genre_name: Optional[Union[str, CriterionValue]] = None
+        year: Optional[Union[int, CriterionValue]] = None
+        has_genre_filter: Optional[bool] = None
+        has_year_filter: Optional[bool] = None
+
+    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+        """
+        Validate if this filter film event meets the criteria
+
+        Args:
+            criteria: Optional validation criteria to check against
+
+        Returns:
+            True if criteria is met or not provided, False otherwise
+        """
+        if not criteria:
+            return True
+
+        # Validate genre_id
+        if criteria.genre_id is not None:
+            if self.genre_id is None:
+                return False
+            if not validate_criterion(self.genre_id, criteria.genre_id):
+                return False
+
+        # Validate genre_name
+        if criteria.genre_name is not None:
+            if self.genre_name is None:
+                return False
+            if not validate_criterion(self.genre_name, criteria.genre_name):
+                return False
+
+        # Validate year
+        if criteria.year is not None:
+            if self.year is None:
+                return False
+            if not validate_criterion(self.year, criteria.year):
+                return False
+
+        # Validate has_genre_filter
+        if criteria.has_genre_filter is not None:
+            has_genre = self.filters_applied.get('genre', False)
+            if has_genre != criteria.has_genre_filter:
+                return False
+
+        # Validate has_year_filter
+        if criteria.has_year_filter is not None:
+            has_year = self.filters_applied.get('year', False)
+            if has_year != criteria.has_year_filter:
+                return False
+
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: Dict[str, Any]) -> "FilterFilmEvent":
+        """
+        Parse a filter film event from backend data
+
+        Args:
+            backend_event: Event data from the backend API
+
+        Returns:
+            FilterFilmEvent object populated with data from the backend event
+        """
+        base_event = super().parse(backend_event)
+
+        # Extract data
+        data = backend_event.get('data', {})
+        genre_data = data.get('genre', {})
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            genre_id=genre_data.get('id') if genre_data else None,
+            genre_name=genre_data.get('name') if genre_data else None,
+            year=data.get('year'),
+            filters_applied=data.get('filters_applied', {}),
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
 
 
-EVENTS = [RegistrationEvent, LoginEvent, LogoutEvent, FilmDetailEvent, SearchFilmEvent, AddFilmEvent, EditFilmEvent, DeleteFilmEvent, AddCommentEvent, ContactEvent]
+EVENTS = [RegistrationEvent, LoginEvent, LogoutEvent, FilmDetailEvent, SearchFilmEvent, AddFilmEvent, EditFilmEvent, DeleteFilmEvent, AddCommentEvent, ContactEvent, EditUserEvent, FilterFilmEvent]
 
 BACKEND_EVENT_TYPES = {
     'LOGIN': LoginEvent,
     'LOGOUT': LogoutEvent,
     'REGISTRATION': RegistrationEvent,
+    'EDIT_USER': EditUserEvent,
     'FILM_DETAIL': FilmDetailEvent,
     'SEARCH_FILM': SearchFilmEvent,
     'ADD_FILM': AddFilmEvent,
@@ -703,6 +976,7 @@ BACKEND_EVENT_TYPES = {
     'DELETE_FILM': DeleteFilmEvent,
     'ADD_COMMENT': AddCommentEvent,
     "CONTACT": ContactEvent,
+    'FILTER_FILM': FilterFilmEvent,
 }
 
 # =============================================================================

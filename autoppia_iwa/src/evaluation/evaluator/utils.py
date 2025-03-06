@@ -201,13 +201,18 @@ def run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> Lis
     test_runner = TestRunner(task.tests)
     test_results_matrix: List[List[TestResult]] = []
     browser_snapshots = []
-
     for i, action_result in enumerate(execution_history):
         snapshot = action_result.browser_snapshot
         browser_snapshots.append(snapshot)
 
         # Run the test suite for the current action
-        test_results = test_runner.run_tests(prompt=task.prompt, snapshot=snapshot, browser_snapshots=browser_snapshots, current_action_index=i)
+        test_results = test_runner.run_tests(
+            prompt=task.prompt,
+            snapshot=snapshot,
+            browser_snapshots=browser_snapshots,
+            current_action_index=i,
+            total_iterations=len(execution_history),
+        )
         test_results_matrix.append(test_results)
 
     return test_results_matrix

@@ -25,3 +25,9 @@ benchmark.log
 results/*.png
 # Stress Tests result
 results/*.json
+
+# logs directory
+logs/*
+
+# Stress test logs
+stress_test.log

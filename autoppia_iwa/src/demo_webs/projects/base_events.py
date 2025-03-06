@@ -1,10 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from cinema_1.events import BACKEND_EVENT_TYPES as web_1_backend_types
 from pydantic import BaseModel
-
-ALL_BACKEND_EVENT_TYPES = web_1_backend_types
 
 
 class Event(BaseModel):
@@ -44,6 +41,11 @@ class Event(BaseModel):
         """Parse all backend events and return appropriate typed events"""
         events: List[Event] = []
         # TODO: If we have more types we should include here
+        # TODO: Moving (ALL_BACKEND_EVENT_TYPES) here to resolve circular import error
+        from autoppia_iwa.src.demo_webs.projects.cinema_1.events import BACKEND_EVENT_TYPES as web_1_backend_types
+
+        ALL_BACKEND_EVENT_TYPES = web_1_backend_types
+
         event_class_map = ALL_BACKEND_EVENT_TYPES
 
         for event_data in backend_events:
@@ -59,7 +61,7 @@ class Event(BaseModel):
         return events
 
     @classmethod
-    def code(cls) -> str:
+    def get_source_code_of_class(cls) -> str:
         """Return the source code of the class"""
         import inspect
 

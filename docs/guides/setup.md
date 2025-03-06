@@ -9,7 +9,7 @@ project dependencies.
 To ensure the proper functioning of the project, three essential components need to be running simultaneously:
 
 1. **run_local_llm.py**: Local model server (used if you don't want to use the Runpod serverless model). Check the
-   [Model Deployment Guide](modules/llm_local/setup.md): Step-by-step instructions for deploying the local model.
+   [Model Deployment Guide](../../modules/llm_local/setup.md): Step-by-step instructions for deploying the local model.
 
 2. **webApp/app.py** OR **app.py**: Main project's endpoints that handle the core functionality of the project.
 
@@ -263,7 +263,7 @@ python3 tests/test_tasks_generator/test_generate_task_prompts.py
 To test action generation functionality, execute:
 
 ```bash
-python3 tests/test_actions/test_actions_generation.py
+python3 tests/test_actions_generation/test_actions_generation.py
 ```
 
 ---
@@ -275,7 +275,7 @@ python3 tests/test_actions/test_actions_generation.py
 To test the execution and evaluation of a single task, use:
 
 ```bash
-python3 tests/task_execution_and_evaluation/test_execute_one_task.py
+python3 tests/task_execution_and_evaluation/test_generate_and_execute_actions.py
 ```
 
 #### **2. Complete Task Generation and Execution**
