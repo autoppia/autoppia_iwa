@@ -3,51 +3,64 @@ import json
 import time
 import argparse
 
-
-def build_messages(num_messages, sub_request_id=1):
-    """
-    Build a list of messages repeated `num_messages` times.
-    In this simplified version, we typically call build_messages(1).
-    """
-    base_user_content = (
-        "You are a test analyzer for web automation testing. "
-        "Review the tests below and decide which ones to keep. "
-        "Return ONLY a JSON array, no additional text."
-    )
-
-    messages = []
-    for i in range(num_messages):
-        # First message can be system
-        if i == 0:
-            messages.append({
-                "role": "system",
-                "content": f"You are Qwen, created by Alibaba Cloud. "
-                           f"(Sub-request #{sub_request_id}, message #{i+1})"
-            })
-        else:
-            # In this simplified example, we won't usually get here if num_messages=1
-            messages.append({
-                "role": "user",
-                "content": base_user_content
-            })
-    return messages
+# The big text you wanted each message to contain:
+base_user_content = (
+    "You are a test analyzer for web automation testing. "
+    "Review the tests below and decide which ones to keep.\n\n"
+    "TASK CONTEXT:\n"
+    "- Task Prompt: example task prompt\n"
+    "- Success Criteria: example success critera\n"
+    "TESTS TO REVIEW:\n"
+    "example test\n\n"
+    "GUIDELINES:\n"
+    "1. Backend tests (CheckEventTest, CheckPageViewEventTest) are preferred over frontend tests.\n"
+    "2. Intelligent judgment tests (JudgeBaseOnHTML, JudgeBaseOnScreenshot) are useful.\n"
+    "3. Avoid keeping tests that check the same thing in different ways.\n"
+    "4. Prioritize tests that directly verify the success criteria.\n"
+    "5. Aim to keep 1-3 high-quality tests in total.\n"
+    "6. Delete tests that make up parameters like making up event_names in CheckEventTest.\n"
+    "7. Judge Tests like JudgeBaseOnHTML or JudgeBaseOnScreenshot are fallback tests.\n\n"
+    "RESPOND WITH A JSON ARRAY of decisions, one for each test, like this:\n"
+    "[\n"
+    "  {\n"
+    "    \"index\": 0,\n"
+    "    \"keep\": true,\n"
+    "    \"reason\": \"High quality backend test that verifies core success criteria\"\n"
+    "  },\n"
+    "  {\n"
+    "    \"index\": 1,\n"
+    "    \"keep\": false,\n"
+    "    \"reason\": \"Redundant with test #0 which is more reliable\"\n"
+    "  }\n"
+    "]\n\n"
+    "Return ONLY the JSON array, no additional text."
+)
 
 
 def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
     """
     For i in [1..max_subrequests]:
-      - Build an array of i sub-requests (each sub-request is just 1 message).
-      - Send one request to /generate_parallel.
-      - Print the stats and partial output.
+      - We create an array of i sub-requests.
+      - Each sub-request has 1 user message containing 'base_user_content'.
+      - Send them all in ONE POST to /generate_parallel.
+      - Print the stats the server returns.
     """
     headers = {"Content-Type": "application/json"}
 
     for i in range(1, max_subrequests + 1):
-        # Build i sub-requests, each with build_messages(1)
+        # Build i sub-requests; each sub-request has a single user message
         subrequests = []
-        for sub_request_id in range(1, i + 1):
+        for sub_id in range(1, i + 1):
             subrequests.append({
-                "messages": build_messages(1, sub_request_id=sub_request_id),
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": (
+                            base_user_content
+                            + f"\n\n(This is sub-request #{sub_id} of {i} in this batch.)"
+                        )
+                    }
+                ],
                 "json_format": False,
                 "schema": None
             })
@@ -64,7 +77,7 @@ def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
             response = requests.post(url, headers=headers, json=data)
         except Exception as e:
             print(f"Request with {i} sub-requests failed: {e}")
-            return
+            break
         end_time = time.time()
         elapsed = end_time - start_time
 
@@ -73,11 +86,11 @@ def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
             response_json = response.json()
         except Exception as e:
             print(f"Could not parse JSON for request with {i} sub-requests: {e}")
-            return
+            break
 
         if "error" in response_json:
             print(f"Server returned error for request with {i} sub-requests: {response_json['error']}")
-            return
+            break
 
         # Extract stats
         stats = response_json.get("stats", {})
@@ -87,6 +100,7 @@ def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
         total_time = stats.get("total_time")
         avg_time_per_request = stats.get("avg_time_per_request")
 
+        # Print stats
         print(f"  -> Response time:          {elapsed:.2f} s")
         print(f"  -> total_tokens_in:        {total_tokens_in}")
         print(f"  -> total_tokens_out:       {total_tokens_out}")
@@ -97,7 +111,7 @@ def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
         if avg_time_per_request is not None:
             print(f"  -> avg_time_per_request:   {avg_time_per_request:.2f}")
 
-        # Show partial output for the first sub-request
+        # Show partial output for the first sub-request in the batch
         outputs = response_json.get("outputs", [])
         print(f"  -> # of outputs returned:  {len(outputs)}")
         if outputs:
@@ -105,15 +119,15 @@ def test_increasing_subrequests(url, max_subrequests, temperature, max_tokens):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Send a single request each time, with increasing sub-requests.")
+    parser = argparse.ArgumentParser(description="Send an increasing number of sub-requests to /generate_parallel.")
     parser.add_argument("--url", type=str, default="http://127.0.0.1:6000/generate_parallel",
                         help="The /generate_parallel endpoint URL.")
     parser.add_argument("--max_subrequests", type=int, default=5,
-                        help="How many sub-requests to test up to (from 1..max_subrequests).")
+                        help="Maximum number of sub-requests in the single request (incrementally).")
     parser.add_argument("--temperature", type=float, default=0.1,
                         help="Temperature for generation.")
     parser.add_argument("--max_tokens", type=int, default=256,
-                        help="Max tokens to generate.")
+                        help="Max tokens to generate in the response.")
     args = parser.parse_args()
 
     test_increasing_subrequests(
