@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 from pydantic import BaseModel, Field
 
@@ -13,8 +13,9 @@ class UseCase(BaseModel):
     description: str
     prompt_template: str
     prompt_examples: List[str]
-    event: Type  # The event type associated with this use case
-    test_examples: List[dict]
+    event: Type
+    event_source_code: str
+    examples: List[Tuple[str, dict]]
 
     def get_prompt(self, **kwargs) -> str:
         """

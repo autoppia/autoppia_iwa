@@ -18,7 +18,7 @@ class RegistrationEvent(Event):
     class ValidationCriteria(BaseModel):
         """Criteria for validating registration events"""
 
-        expected_username: Optional[Union[str, CriterionValue]] = None
+        username: Optional[Union[str, CriterionValue]] = None
 
     def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
@@ -26,10 +26,10 @@ class RegistrationEvent(Event):
         """
         if not criteria:
             return True
-        if criteria.expected_username is not None:
-            if not validate_criterion(self.username, criteria.expected_username):
-                return False
-        return True
+        if criteria.username is not None:
+            if validate_criterion(self.username, criteria.username):
+                return True
+        return False
 
     @classmethod
     def parse(cls, backend_event: Dict[str, Any]) -> "RegistrationEvent":
@@ -50,7 +50,7 @@ class LoginEvent(Event):
     class ValidationCriteria(BaseModel):
         """Criteria for validating login events"""
 
-        expected_username: Optional[Union[str, CriterionValue]] = None
+        username: Optional[Union[str, CriterionValue]] = None
 
     def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
@@ -58,8 +58,8 @@ class LoginEvent(Event):
         """
         if not criteria:
             return True
-        if criteria.expected_username is not None:
-            if not validate_criterion(self.username, criteria.expected_username):
+        if criteria.username is not None:
+            if not validate_criterion(self.username, criteria.username):
                 return False
         return True
 
@@ -82,7 +82,7 @@ class LogoutEvent(Event):
     class ValidationCriteria(BaseModel):
         """Criteria for validating logout events"""
 
-        expected_username: Optional[Union[str, CriterionValue]] = None
+        username: Optional[Union[str, CriterionValue]] = None
 
     def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
@@ -90,8 +90,8 @@ class LogoutEvent(Event):
         """
         if not criteria:
             return True
-        if criteria.expected_username is not None:
-            if not validate_criterion(self.username, criteria.expected_username):
+        if criteria.username is not None:
+            if not validate_criterion(self.username, criteria.username):
                 return False
         return True
 
@@ -985,12 +985,12 @@ BACKEND_EVENT_TYPES = {
 """
 # Example 1: Basic validation for a login event
 login_criteria = LoginEvent.ValidationCriteria(
-    expected_username="testuser"
+    username="testuser"
 )
 
 # Example 2: Advanced login validation with operators
 login_criteria_advanced = LoginEvent.ValidationCriteria(
-    expected_username=CriterionValue(
+    username=CriterionValue(
         value="testuser", 
         operator=ComparisonOperator.EQUALS
     )

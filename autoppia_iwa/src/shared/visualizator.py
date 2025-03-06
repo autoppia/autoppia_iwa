@@ -237,11 +237,11 @@ class SubnetVisualizer:
 
         elif "Event" in test_type or test_type == "CheckEventTest":
             # For event tests, show the event name
-            if hasattr(test, "event_type"):
-                description = f"Check backend event: '{test.event_type}'"
-            elif hasattr(test, "event_type"):
-                description = f"Check event type: '{test.event_type}'"
-            attributes['event_type'] = test.event_type if hasattr(test, "event_type") else test.event_type
+            if hasattr(test, "event_name"):
+                description = f"Check backend event: '{test.event_name}'"
+            elif hasattr(test, "event_name"):
+                description = f"Check event name: '{test.event_name}'"
+            attributes['event_name'] = test.event_name if hasattr(test, "event_name") else test.event_name
 
         # If no description was generated with the specific cases, try to extract common attributes
         if not description:

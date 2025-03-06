@@ -10,7 +10,7 @@ from autoppia_iwa.src.data_generation.domain.classes import Task
 
 # Your single test class of interest
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest
-from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 
 # Import the new prompt
 from autoppia_iwa.src.di_container import DIContainer
@@ -60,9 +60,10 @@ class GlobalTestGenerationPipeline:
                 # Instantiate and add tests to task
                 self._instantiate_tests(task, test_definitions)
 
-            except Exception as ex:
-                logger.error(f"Failed to generate tests for Task={task.id}: {str(ex)}")
-                logger.debug(f"Exception details: {type(ex).__name__}, {repr(ex)}")
+            except Exception as e:
+                raise e
+                logger.error(f"Failed to generate tests for Task={task.id}: {str(e)}")
+                logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
 
         return tasks
 
@@ -71,27 +72,24 @@ class GlobalTestGenerationPipeline:
         Build the LLM prompt and parse the response as a list of CheckEventTest definitions.
         """
         # 1) Extract relevant info
-        use_case = task.use_case
+        use_case: UseCase = task.use_case
         truncated_html = task.clean_html[: self.truncate_html_chars] if task.clean_html else ""
         screenshot_desc = task.screenshot_description or ""
         interactive_elements = task.interactive_elements or "[]"
-        event_code = ""
-        if hasattr(use_case.event, "code") and callable(use_case.event.code):
-            event_code = use_case.event.code() or ""
 
         # Convert test_examples to a JSON string for the prompt
-        use_case_test_examples_str = json.dumps(use_case.test_examples, indent=2)
+        examples = json.dumps(use_case.examples, indent=2)
 
         # 2) Prepare the LLM prompt
         llm_prompt = CHECK_EVENT_TEST_GENERATION_PROMPT.format(
             use_case_name=use_case.name,
             use_case_description=use_case.description,
             task_prompt=task.prompt,
-            use_case_test_examples=use_case_test_examples_str,
-            event_code=event_code,
+            examples=examples,
+            event_source_code=use_case.event_source_code,
             truncated_html=truncated_html,
             screenshot_desc=screenshot_desc,
-            interactive_elements=interactive_elements,
+            interactive_elements=str(interactive_elements),
         )
 
         # 3) Call the LLM with retries
@@ -102,10 +100,10 @@ class GlobalTestGenerationPipeline:
                     json_format=True,
                 )
                 # 4) Parse the JSON array of test defs
-                test_defs = self._parse_llm_response(response)
-                if test_defs:
-                    logger.info(f"Generated {len(test_defs)} CheckEventTest(s) for task {task.id} on attempt {attempt + 1}.")
-                    return test_defs
+                test_dicts = self._parse_llm_response(response)
+                if test_dicts:
+                    logger.info(f"Generated {len(test_dicts)} CheckEventTest(s) for task {task.id} on attempt {attempt + 1}.")
+                    return test_dicts
 
                 logger.warning(f"Attempt {attempt + 1}: Received empty or invalid test list for Task {task.id}. Retrying...")
                 time.sleep(self.retry_delay)
@@ -166,7 +164,7 @@ class GlobalTestGenerationPipeline:
 
     def _validate_test_list(self, test_list: List[Any]) -> List[Dict[str, Any]]:
         """
-        Ensure each item is a dict with "type" == "CheckEventTest".
+        Ensure each item is a dict with "event_name" == "CheckEventTest".
         """
         valid_tests = []
         for test_item in test_list:
