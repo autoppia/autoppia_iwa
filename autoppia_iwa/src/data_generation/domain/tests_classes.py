@@ -11,7 +11,6 @@ from pydantic import BaseModel, Field, field_validator
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.projects.events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
@@ -185,6 +184,7 @@ class CheckEventTest(BaseTaskTest):
         except Exception as e:
             print(f"Invalid validation criteria: {e}")
             return False
+        from autoppia_iwa.src.demo_webs.projects.base_events import Event
 
         # Check if any event of the correct type matches our criteria
         for event in Event.parse_all(snapshot.backend_events):
