@@ -6,7 +6,6 @@ from typing import Any, Dict, List
 from dependency_injector.wiring import Provide
 from loguru import logger
 
-from autoppia_iwa.src.data_generation.application.tests.logic.logic_function_generator import TestLogicGenerator
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -19,7 +18,7 @@ from autoppia_iwa.src.shared.web_utils import detect_interactive_elements
 from .prompts import TEST_GENERATION_PROMPT
 
 
-class TestGenerationPipeline:
+class LocalTestGenerationPipeline:
     """A pipeline that:
     1) Gathers context (HTML, screenshot info, etc.) for each Task.
     2) Uses LLM to generate appropriate tests in a single call.
@@ -37,7 +36,6 @@ class TestGenerationPipeline:
         self.web_project = web_project
         self.llm_service = llm_service
         self.truncate_html_chars = truncate_html_chars
-        self.logic_generator = TestLogicGenerator()
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 
@@ -62,7 +60,7 @@ class TestGenerationPipeline:
         self.test_class_extra_data = {
             "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very useful to check navigation or where the agent is.",
             "FindInHtmlTest": "Use this FindInHtmlTest test to check for strings that you expect to appear after the task is completed. very useful for tasks that trigger UI updates",
-            "CheckEventTest": "For CheckEventTest pls select event_name from this List of allowed event names: " + json.dumps(web_project.events),
+            "CheckEventTest": "For CheckEventTest pls select event_type from this List of allowed event names: " + json.dumps([event.__name__ for event in web_project.events]),
         }
 
     async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:

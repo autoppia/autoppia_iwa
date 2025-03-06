@@ -3,8 +3,8 @@ import os
 from datetime import datetime
 from typing import List, Optional
 
+from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.application.tests.test_generation_pipeline import TestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
@@ -76,7 +76,7 @@ async def generate_tasks_for_project(demo_project: WebProject, use_cached_tasks:
         else:
             print(f"No valid cached tasks found for '{demo_project.name}', generating new tasks...")
 
-    config = TaskGenerationConfig(save_web_analysis_in_db=True, save_task_in_db=False, prompts_per_url=prompts_per_url, num_of_urls=num_of_urls)
+    config = TaskGenerationConfig(save_task_in_db=False, prompts_per_url=prompts_per_url, num_of_urls=num_of_urls)
 
     print(f"Generating tasks for {demo_project.name}...")
     pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
@@ -96,7 +96,7 @@ async def add_tests_to_tasks(tasks: List[Task], demo_project: WebProject, task_c
     if missing_tests:
         print("Adding test cases to tasks...")
         llm_service = DIContainer.llm_service()
-        test_pipeline = TestGenerationPipeline(llm_service=llm_service, web_project=demo_project)
+        test_pipeline = LocalTestGenerationPipeline(llm_service=llm_service, web_project=demo_project)
         tasks_with_tests = await test_pipeline.add_tests_to_tasks(tasks)
 
         if tasks_with_tests:

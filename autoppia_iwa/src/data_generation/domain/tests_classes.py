@@ -1,16 +1,17 @@
 # file: data_generation/domain/tests_classes.py
-
 import json
 import re
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Literal  # <-- move the import here
+from typing import Dict, List, Literal
 
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, field_validator
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.projects.events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
@@ -73,34 +74,50 @@ class BaseTaskTest(BaseModel, ITest):
 
 
 class CheckUrlTest(BaseTaskTest):
-    # We define the 'type' field with a Pydantic Literal
+    """
+    Test that checks if the browser navigated to a specific URL with different matching options.
+    """
+
     type: Literal["CheckUrlTest"] = "CheckUrlTest"
     url: str
-    description: str = Field(default="Check URL")
+    match_type: Literal["exact", "contains", "regex"] = "contains"
+    description: str = Field(default="Check if browser navigated to URL")
 
     def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
-        return self.url in snapshot.current_url
+        """
+        Execute the test on the given snapshots with the specified matching strategy.
+        """
+        current_url = snapshot.current_url
+
+        if self.match_type == "exact":
+            return current_url == self.url
+        elif self.match_type == "contains":
+            return self.url in current_url
+        elif self.match_type == "regex":
+            return bool(re.search(self.url, current_url))
+
+        return False
 
 
 class FindInHtmlTest(BaseTaskTest):
     """
-    Test class to find a specific substring in the current HTML content.
-    This version performs direct substring matching rather than semantic similarity.
+    Test class to find content in the current HTML with different matching strategies.
     """
 
     type: Literal["FindInHtmlTest"] = "FindInHtmlTest"
-    substring: str = Field(..., description="substring to look for in the HTML")
+    content: str = Field(..., description="Content to look for in the HTML")
+    match_type: Literal["exact", "contains", "regex"] = "contains"
     description: str = Field(
-        default="Find substring in HTML using direct matching",
+        default="Find content in HTML using specified matching strategy",
         description="Description of the test",
     )
 
-    @field_validator('substring')
+    @field_validator('content')
     @classmethod
-    def validate_substring(cls, substring: str) -> str:
-        if not substring.strip():
-            raise ValueError("Substring cannot be empty or consist of only whitespace")
-        return substring.strip()
+    def validate_content(cls, content: str) -> str:
+        if not content.strip():
+            raise ValueError("Content cannot be empty or consist of only whitespace")
+        return content.strip()
 
     def extract_text_from_html(self, html: str) -> str:
         """Extract readable text content from HTML."""
@@ -116,32 +133,65 @@ class FindInHtmlTest(BaseTaskTest):
 
     def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
         """
-        Checks if the specified substring is present in the current snapshot's HTML.
-        Returns True if the substring is found, False otherwise.
+        Checks if the specified content is present in the current snapshot's HTML
+        using the specified matching strategy.
         """
-        case_sensitive = False
-        # Extract text from HTML
-        content = self.extract_text_from_html(snapshot.current_html)
-        # If case-insensitive matching is requested, convert content to lowercase
-        if not case_sensitive:
-            content = content.lower()
+        html = snapshot.current_html
 
-        # Apply case conversion if needed
-        search_substring = self.substring if case_sensitive else self.substring.lower()
+        if self.match_type == "exact":
+            return self.content == html
+        elif self.match_type == "contains":
+            # Extract text for contains match to avoid HTML tag issues
+            extracted_text = self.extract_text_from_html(html)
+            return self.content in extracted_text
+        elif self.match_type == "regex":
+            return bool(re.search(self.content, html))
 
-        if search_substring in content:
-            return True
-        else:
-            return False
+        return False
 
 
 class CheckEventTest(BaseTaskTest):
+    """
+    Test that checks if specific events were triggered based on event type and criteria.
+    """
+
     type: Literal["CheckEventTest"] = "CheckEventTest"
     event_name: str
-    description: str = Field(default="Check event")
+    event_criteria: Dict = Field(default_factory=dict)
+    description: str = Field(default="Check if specific event was triggered")
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
-        return any(event.event_type == self.event_name for event in snapshot.backend_events)
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+        """
+        Execute the test on the given snapshots by checking for specific events.
+        """
+        # This version requires the web_project parameter
+        # We'll need to adapt this for the current interface
+
+        # Assuming the snapshot contains backend_events and we can access the event classes
+        # from somewhere accessible in this context
+        events = web_project.events
+
+        # Get the event class matching event_name
+        event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_name), None)
+        if not event_class:
+            return False
+
+        # Get the validation criteria class from the event class
+        validation_model = event_class.ValidationCriteria
+
+        # Parse the criteria using the appropriate Pydantic model
+        try:
+            parsed_criteria = validation_model(**self.event_criteria)
+        except Exception as e:
+            print(f"Invalid validation criteria: {e}")
+            return False
+
+        # Check if any event of the correct type matches our criteria
+        for event in Event.parse_all(snapshot.backend_events):
+            if isinstance(event, event_class) and event.validate_criteria(parsed_criteria):
+                return True
+
+        return False
 
 
 class JudgeBaseOnHTML(BaseTaskTest):
@@ -164,12 +214,15 @@ class JudgeBaseOnHTML(BaseTaskTest):
             "You are a professional web page analyzer. Your task is to determine whether the given task was completed " "with the action given, by analyzing the HTML before and after the action."
         )
         user_message = f"Current action: {action}\nHTML Before:\n{html_before}\n\nHTML After:\n{html_after}"
-        payload = [{"role": "system", "content": system_message}, {"role": "user", "content": user_message}]  # load schema
+        payload = [{"role": "system", "content": system_message}, {"role": "user", "content": user_message}]
+
+        # load schema
         schema_path = Path(PROJECT_BASE_DIR) / "config" / "schemas" / "eval_html_test.json"
         json_schema = {}
         if schema_path.exists():
             with schema_path.open(encoding="utf-8") as f:
                 json_schema = json.load(f)
+
         result_str = llm_service.predict(payload, json_format=True, schema=json_schema)
         parsed = json.loads(result_str)
         return parsed["task_completed"]
@@ -199,11 +252,46 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
                 ],
             },
         ]
+
         schema_path = Path(PROJECT_BASE_DIR) / "config" / "schemas" / "screenshot_test_schema.json"
         json_schema = {}
         if schema_path.exists():
             with schema_path.open(encoding="utf-8") as f:
                 json_schema = json.load(f)
+
         result_str = llm_service.predict(payload, json_format=True, schema=json_schema)
         parsed = json.loads(result_str)
         return parsed["result"]
+
+
+class WebProjectCheckEventTest(BaseTaskTest):
+    """
+    Test that checks if specific events were triggered with access to WebProject
+    """
+
+    type: Literal["WebProjectCheckEventTest"] = "WebProjectCheckEventTest"
+    event_name: str
+    event_criteria: Dict = Field(default_factory=dict)
+    description: str = Field(default="Check if specific event was triggered (with WebProject)")
+
+    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+        """
+        Special version of execute_test that accepts web_project parameter
+        """
+        events = web_project.events
+        # Get the event class matching event_name
+        event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_name), None)
+        if not event_class:
+            return False
+        # Check if any event of the correct type matches our criteria
+        for event in snapshot.backend_events:
+            if isinstance(event, event_class) and event.matches_criteria(self.event_criteria):
+                return True
+        return False
+
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+        """
+        Fallback implementation when web_project is not available
+        """
+        print("Warning: WebProjectCheckEventTest requires web_project parameter")
+        return False

@@ -77,7 +77,7 @@ class FeedbackGenerator:
         test_score = FeedbackGenerator.calculate_score(passed_tests, total_tests)
 
         # Count critical failures
-        critical_failures = sum(1 for test in flattened_test_results if test.extra_data and 'event_name' in test.extra_data and not test.success)
+        critical_failures = sum(1 for test in flattened_test_results if test.extra_data and 'event_type' in test.extra_data and not test.success)
         critical_penalty = critical_failures * 2
 
         # ---------------------------

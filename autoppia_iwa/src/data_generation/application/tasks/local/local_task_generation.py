@@ -29,8 +29,34 @@ class LocalTaskGenerationPipeline:
         self.max_retries: int = 3  # Maximum number of retries for LLM calls
         self.retry_delay: float = 0.1  # Delay between retries in seconds
 
-    async def generate(self, page_url: str) -> List["Task"]:
+    async def generate(self, number_of_prompts_per_url: int = 3, max_urls=5, random_urls=True):
+        """Generate Local Tasks for a Web Project iterating all the urls"""
+        all_tasks = []
+
+        # Get the URLs to process based on parameters
+        urls = self.web_project.urls
+
+        # Apply random selection if requested
+        if random_urls and len(urls) > max_urls:
+            import random
+
+            urls = random.sample(urls, max_urls)
+
+        # Otherwise just take the first max_urls
+        elif len(urls) > max_urls:
+            urls = urls[:max_urls]
+
+        for url in urls:
+            logger.info(f"Generating local tasks for url {url}")
+            local_tasks = await self.generate_per_url(page_url=url, number_of_prompts_per_url=number_of_prompts_per_url)
+            all_tasks.extend(local_tasks)
+            logger.info(f"Generated {len(local_tasks)} local tasks")
+
+        return all_tasks  # Fixed the typo all_tasks2 -> all_tasks
+
+    async def generate_per_url(self, page_url: str, number_of_prompts_per_url: int = 15) -> List["Task"]:
         # Fetch the HTML and screenshot
+        self.number_of_prompts_per_url = number_of_prompts_per_url
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(page_url)
         interactive_elems = detect_interactive_elements(clean_html)
 
@@ -65,8 +91,7 @@ class LocalTaskGenerationPipeline:
         With retry mechanism for handling invalid JSON responses.
         """
         # Combine local prompts
-        number_of_prompts = 15
-        system_prompt = PHASE1_GENERATION_SYSTEM_PROMPT.replace("{number_of_prompts}", f"{number_of_prompts}")
+        system_prompt = PHASE1_GENERATION_SYSTEM_PROMPT.replace("{number_of_prompts_per_url}", f"{self.number_of_prompts_per_url}")
 
         # User message with truncated HTML + screenshot text + interactive elements
         user_msg = (

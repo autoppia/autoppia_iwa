@@ -22,3 +22,4 @@ pillow==11.1.0
 # transformers
 loguru==0.7.3
 aiohttp==3.11.12
+Faker

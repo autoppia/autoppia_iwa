@@ -37,7 +37,7 @@ def make_parallel_request(N=5):
                                     3. Avoid keeping tests that check for the same thing in different ways
                                     4. Prioritize tests that directly verify the success criteria
                                     5. Aim to keep 1-3 high-quality tests in total
-                                    6. Delete tests that make up parameters like making up event_names in CheckEventTest, or making up keywords in FindInHtmlTest.
+                                    6. Delete tests that make up parameters like making up event_types in CheckEventTest, or making up keywords in FindInHtmlTest.
                                     7. Judge Tests like JudgeBaseOnHTML or JudgeBaseOnScreenshot should be use if all the other tests do not validate completely the task or there are no more tests. This are fallback tests.
 
                                     RESPOND WITH A JSON ARRAY of decisions, one for each test, like this:

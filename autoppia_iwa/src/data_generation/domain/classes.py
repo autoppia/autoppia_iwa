@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 # Import your test classes:
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
+from autoppia_iwa.src.demo_webs.classes import UseCase
 
 
 class BrowserSpecification(BaseModel):
@@ -42,13 +43,12 @@ class Task(BaseModel):
     screenshot: Optional[str] = Field(default=None, description="Pil Image of the task environment or webpage encoded in base64 and stringify")
     screenshot_description: Optional[str] = Field(default=None, description="Textual description of the screenshot content and relevant elements")
     specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser configuration and requirements for task execution")
-
     tests: List[TestUnion] = Field(default_factory=list, description="Collection of validation tests that verify the task")
-
     milestones: Optional[List["Task"]] = Field(default=None, description="Ordered list of Subtasks that must be completed sequentially")
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     success_criteria: Optional[str] = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
     logic_function: Optional[dict] = Field(default=None, description="Boolean expression using T1..Tn notation to evaluate overall task success")
+    use_case: Optional[UseCase] = None
 
     class Config:
         extra = "allow"
@@ -117,10 +117,18 @@ class Task(BaseModel):
 
 
 class TaskGenerationConfig(BaseModel):
+    # Database saving options
     save_task_in_db: bool = False
-    save_web_analysis_in_db: bool = True
-    enable_crawl: bool = True
-    generate_milestones: bool = False
-    num_of_urls: int = None
-    random_urls: bool = True
-    prompts_per_url: int = 20
+
+    # URL handling
+    num_of_urls: int = 5  # Number of URLs to process
+    random_urls: bool = True  # Whether to randomly select URLs
+
+    # Task generation controls
+    generate_local_tasks: bool = False  # Generate page-specific tasks
+    generate_global_tasks: bool = True  # Generate global use case tasks
+
+    # Task quantity controls
+    prompts_per_url: int = 20  # Maximum tasks to return per URL
+    prompts_per_use_case: int = 5  # Number of task variations to generate per use case
+    final_task_limit: int = 50  # Total maximum tasks to return from the pipeline
