@@ -136,97 +136,54 @@ base_user_content = """data = {
         {
             "role": "user",
             "content": (
-                "Summarize the content and functionality of this HTML element:{'tag': 'header', 'attributes': {}, "
-                "'textContent': 'Home\\n\\nMenu\\n\\n\\n\\n\\nHome (current)\\n\\n\\nAbout Us\\n\\n\\nContact\\n"
-                "\\n\\nRegister\\n                            \\n\\nEmployee\\nEmployers\\n\\n\\n\\n\\nLogin', 'children': [{'tag': 'nav', "
-                "'attributes': {}, 'textContent': 'Home\\n\\nMenu\\n\\n\\n\\n\\nHome (current)\\n\\n\\nAbout Us\\n\\n\\nContact\\n"
-                "\\n\\nRegister\\n                            \\n\\nEmployee\\nEmployers\\n\\n\\n\\n\\nLogin', "
-                "'children': [{'tag': 'div', 'attributes': {}, 'textContent': 'Home\\n\\nMenu\\n\\n\\n\\n\\nHome (current)\\n\\n\\n"
-                "About Us\\n\\n\\nContact\\n\\n\\nRegister\\n                            \\n\\nEmployee\\nEmployers\\n\\n\\n\\n\\nLogin', "
-                "'children': [{'tag': 'a', 'attributes': {'href': '/'}, 'textContent': 'Home', 'children': [{'tag': 'img', "
-                "'attributes': {'src': '/static/img/itsourcecodes.jpg', 'alt': 'logo'}, 'textContent': '', 'children': [], "
-                "'id': None, 'element_id': 5, 'parent_element_id': 4, 'path': '//1/2/3/4/5', 'events_triggered': [], "
-                "'analysis': None}, {'tag': 'span', 'attributes': {}, 'textContent': 'Home', 'children': [], 'id': None, "
-                "'element_id': 6, 'parent_element_id': 4, 'path': '//1/2/3/4/6', 'events_triggered': [], 'analysis': None}], "
-                "'id': None, 'element_id': 4, 'parent_element_id': 3, 'path': '//1/2/3/4', 'events_triggered': [], "
-                "'analysis': None}, {'tag': 'button', 'attributes': {'type': 'button', 'aria-controls': 'navbarSupportedContent', "
-                "'aria-expanded': 'false', 'aria-label': 'Toggle navigation'}, 'textContent': 'Menu', 'children': [], 'id': None, "
-                "'element_id': 7, 'parent_element_id': 3, 'path': '//1/2/3/7', 'events_triggered': [], 'analysis': None}, "
-                "{'tag': 'div', 'attributes': {'id': 'navbarSupportedContent'}, 'textContent': 'Home (current)\\n\\n\\nAbout Us\\n\\n\\nContact\\n"
-                "\\n\\nRegister\\n                            \\n\\nEmployee\\nEmployers\\n\\n\\n\\n\\nLogin', 'children': "
-                "[{'tag': 'ul', 'attributes': {}, 'textContent': 'Home (current)\\n\\n\\nAbout Us\\n\\n\\nContact\\n\\n\\nRegister\\n"
-                "                            \\n\\nEmployee\\nEmployers\\n\\n\\n\\n\\nLogin', 'children': [{'tag': 'li', 'attributes': {}, "
-                "'textContent': 'Home (current)', 'children': [{'tag': 'a', 'attributes': {'href': '/'}, 'textContent': 'Home (current)', "
-                "'children': [{'tag': 'span', 'attributes': {}, 'textContent': '(current)', 'children': [], 'id': None, 'element_id': 12, "
-                "'parent_element_id': 11, 'path': '//1/2/3/8/9/10/11/12', 'events_triggered': [], 'analysis': None}], 'id': None, "
-                "'element_id': 11, 'parent_element_id': 10, 'path': '//1/2/3/8/9/10/11', 'events_triggered': [], 'analysis': None}], "
-                "'id': None, 'element_id': 10, 'parent_element_id': 9, 'path': '//1/2/3/8/9/10', 'events_triggered': [], 'analysis': None}, "
-                "{'tag': 'li', 'attributes': {}, 'textContent': 'About Us', 'children': [{'tag': 'a', 'attributes': {'href': '/about/'}, "
-                "'textContent': 'About Us', 'children': [], 'id': None, 'element_id': 14, 'parent_element_id': 13, 'path': '//1/2/3/8/9/13/14', "
-                "'events_triggered': [], 'analysis': None}], 'id': None, 'element_id': 13, 'parent_element_id': 9, "
-                "'path': '//1/2/3/8/9/13', 'events_triggered': [], 'analysis': None}, {'tag': 'li', 'attributes': {}, 'textContent': 'Contact', "
-                "'children': [{'tag': 'a', 'attributes': {'href': '/contact/'}, 'textContent': 'Contact', 'children': [], 'id': None, "
-                "'element_id': 16, 'parent_element_id': 15, 'path': '//1/2/3/8/9/15/16', 'events_triggered': [], 'analysis': None}], "
-                "'id': None, 'element_id': 15, 'parent_element_id': 9, 'path': '//1/2/3/8/9/15', 'events_triggered': [], 'analysis': None}, "
-                "{'tag': 'li', 'attributes': {}, 'textContent': 'Register\\n                            \\n\\nEmployee\\nEmployers', "
-                "'children': [{'tag': 'a', 'attributes': {\\"id\\": \\"pages\\", \\"href\\": \\"#\\", \\"aria-haspopup\\": \\"true\\", \\"aria-expanded\\": \\"false\\"}, "
-                "'textContent': 'Register', 'children': [], 'id': 'pages', 'element_id': 18, 'parent_element_id': 17, "
-                "'path': '//1/2/3/8/9/17/18', 'events_triggered': [], 'analysis': None}, {'tag': 'div', 'attributes': {\\"aria-labelledby\\": \\"pages\\"}, "
-                "'textContent': 'Employee\\nEmployers', 'children': [{'tag': 'a', 'attributes': {\\"href\\": \\"/employee/register\\"}, 'textContent': 'Employee', "
-                "'children': [], 'id': None, 'element_id': 20, 'parent_element_id': 19, 'path': '//1/2/3/8/9/17/19/20', 'events_triggered': [], "
-                "'analysis': None}, {'tag': 'a', 'attributes': {\\"href\\": \\"/employer/register\\"}, 'textContent': 'Employers', 'children': [], "
-                "'id': None, 'element_id': 21, 'parent_element_id': 19, 'path': '//1/2/3/8/9/17/19/21', 'events_triggered': [], 'analysis': None}], "
-                "'id': None, 'element_id': 19, 'parent_element_id': 17, 'path': '//1/2/3/8/9/17/19', 'events_triggered': [], 'analysis': None}], "
-                "'id': None, 'element_id': 17, 'parent_element_id': 9, 'path': '//1/2/3/8/9/17', 'events_triggered': [], 'analysis': None}, "
-                "{'tag': 'li', 'attributes': {}, 'textContent': 'Login', 'children': [{'tag': 'a', 'attributes': {'href': '/login'}, "
-                "'textContent': 'Login', 'children': [], 'id': None, 'element_id': 23, 'parent_element_id': 22, 'path': '//1/2/3/8/9/22/23', "
-                "'events_triggered': [], 'analysis': None}], 'id': None, 'element_id': 22, 'parent_element_id': 9, 'path': '//1/2/3/8/9/22', "
-                "'events_triggered': [], 'analysis': None}], 'id': None, 'element_id': 9, 'parent_element_id': 8, 'path': '//1/2/3/8/9', "
-                "'events_triggered': [], 'analysis': None}], 'id': 'navbarSupportedContent', 'element_id': 8, 'parent_element_id': 3, "
-                "'path': '//1/2/3/8', 'events_triggered': [], 'analysis': None}], 'id': None, 'element_id': 3, 'parent_element_id': 2, "
-                "'path': '//1/2/3', 'events_triggered': [], 'analysis': None}], 'id': None, 'element_id': 2, 'parent_element_id': 1, "
-                "'path': '//1/2', 'events_triggered': [], 'analysis': None}], 'id': None, 'element_id': 1, 'parent_element_id': None, "
-                "'path': '//1', 'events_triggered': [], 'analysis': None}Include the following fields for each element:- one_phrase_summary: "
-                "Provide a one-sentence summary of the element.- summary: Provide a brief description of the element's purpose and use.- "
-                "categories: Suggest some categories for this section as if it were part of a blog.- functionality: Describe all possible "
-                "functionalities in this section. List potential use cases for this section, including user interactions and typical behaviors.- "
-                "media_files_description: Describe what the images or videos might contain, individually.- key_words: Provide a list of key words "
-                "or phrases relevant to the element, focusing on what a user might search for in this section.- relevant_fields: List relevant fields "
-                "or attributes based on the element type:    For form fields, list their attributes (e.g., type, name, placeholder, required).    "
-                "For links, provide the href and target attributes.    For images, provide the src and alt attributes.- curiosities: Highlight any "
-                "remarkable aspects that make this section unique and important.- accessibility: Highlight any accessibility features or considerations "
-                "for this section.Do not add boilerplate or not useful information. Only add quality information that adds value and insights to the "
-                "understanding of the web.If something do not add value set it as nullONLY INCLUDE THIS FIELDS AND NOT THE ELEMENT ITSELFPlease provide "
-                "the JSON output in the format specified above."
+                "Summarize the content and functionality of this HTML element:{...} (example truncated)"
             )
         }
     ],
 }
 """
 
+# The mapping of total tokens_in => number of sub-requests to send in one batch.
+# We do NOT exceed these parallel counts to avoid running out of memory.
+parallel_map = {
+    1000: 37,
+    2000: 16,
+    3000: 12,
+    4000: 9,
+    5000: 7,
+    6000: 6,
+    7000: 5,
+    8000: 4,
+    9000: 3,
+    10000: 3,
+    20000: 2,
+    30000: 1,
+    37000: 1
+}
 
-def test_increasing_subrequests(url, start_subrequests, max_subrequests, temperature, max_tokens):
+
+def test_parallel_map(url, temperature, max_tokens):
     """
-    For i in [start_subrequests..max_subrequests] (stepping by 5 or 10):
-      - We create an array of i sub-requests.
-      - Each sub-request has 1 user message containing 'base_user_content'.
-      - Send them all in ONE POST to /generate_parallel.
-      - Print the stats the server returns.
+    For each (tokens_in -> subrequests) in parallel_map:
+      - Create subrequests of 'base_user_content'
+      - Post them all in ONE request to /generate_parallel
+      - Measure time, parse stats, and store them.
+      - Print a summary table at the end.
     """
     headers = {"Content-Type": "application/json"}
+    results = []
 
-    # Step by 10, starting from start_subrequests up to max_subrequests (inclusive)
-    for i in range(start_subrequests, max_subrequests + 1, 1):
-        # Build i sub-requests; each sub-request has a single user message
+    for tokens_in, sub_count in parallel_map.items():
+        # Build the sub_count subrequests, each with 1 user message
         subrequests = []
-        for sub_id in range(1, i + 1):
+        for sub_id in range(1, sub_count + 1):
             subrequests.append({
                 "messages": [
                     {
                         "role": "user",
                         "content": (
                             base_user_content
-                            + f"\n\n(This is sub-request #{sub_id} of {i} in this batch.)"
+                            + f"\n\n(This is sub-request #{sub_id} of {sub_count}, simulating ~{tokens_in} tokens in total.)"
                         )
                     }
                 ],
@@ -235,78 +192,68 @@ def test_increasing_subrequests(url, start_subrequests, max_subrequests, tempera
             })
 
         data = {
-            "requests": subrequests,  # i sub-requests in one batch
+            "requests": subrequests,
             "temperature": temperature,
             "max_tokens": max_tokens
         }
 
-        print(f"\n--- Sending 1 request with {i} sub-requests ---")
+        print(f"\n--- Testing {tokens_in} tokens_in with {sub_count} sub-requests in parallel ---")
         start_time = time.time()
         try:
             response = requests.post(url, headers=headers, json=data)
         except Exception as e:
-            print(f"Request with {i} sub-requests failed: {e}")
-            break
+            print(f"Request with {sub_count} sub-requests failed: {e}")
+            continue
         end_time = time.time()
         elapsed = end_time - start_time
 
-        # Parse response
+        # Attempt to parse response JSON:
         try:
             response_json = response.json()
         except Exception as e:
-            print(f"Could not parse JSON for request with {i} sub-requests: {e}")
-            break
+            print(f"Could not parse JSON for request with {sub_count} sub-requests: {e}")
+            continue
 
         if "error" in response_json:
-            print(f"Server returned error for request with {i} sub-requests: {response_json['error']}")
-            break
+            print(f"Server returned error: {response_json['error']}")
+            continue
 
-        # Extract stats
+        # We can also extract any server stats if provided:
         stats = response_json.get("stats", {})
         total_tokens_in = stats.get("total_tokens_in")
-        total_tokens_out = stats.get("total_tokens_out")
+        total_time = stats.get("total_time")  # server's measure (may differ from our measurement)
         tokens_per_second = stats.get("tokens_per_second")
-        total_time = stats.get("total_time")
-        avg_time_per_request = stats.get("avg_time_per_request")
+        # We'll rely on our own measured elapsed time for consistency
 
-        # Print stats
-        print(f"  -> Response time:          {elapsed:.2f} s")
-        print(f"  -> total_tokens_in:        {total_tokens_in}")
-        print(f"  -> total_tokens_out:       {total_tokens_out}")
-        if total_time is not None:
-            print(f"  -> total_time (batch):     {total_time:.2f} s")
-        if tokens_per_second is not None:
-            print(f"  -> tokens_per_second:      {tokens_per_second:.2f}")
-        if avg_time_per_request is not None:
-            print(f"  -> avg_time_per_request:   {avg_time_per_request:.2f}")
+        # The actual requests/second from our side:
+        requests_per_second = sub_count / elapsed
 
-        # Show partial output for the first sub-request in the batch
-        outputs = response_json.get("outputs", [])
-        print(f"  -> # of outputs returned:  {len(outputs)}")
-        if outputs:
-            # Print the first 200 characters of the first output
-            print(f"  -> Partial output[0]: {outputs[0][:200]} ...")
+        results.append({
+            "tokens_in": tokens_in,
+            "sub_count": sub_count,
+            "elapsed_time_s": elapsed,
+            "requests_per_second": requests_per_second,
+            "server_tokens_in": total_tokens_in,
+            "server_total_time": total_time,
+            "server_tokens_per_second": tokens_per_second
+        })
+
+    # Print a table of results
+    print("\n===== Summary Table =====")
+    print("tokens_in | sub_requests | elapsed_time_s | requests/s | server_total_tokens_in | server_total_time | server_tokens/s")
+    for r in results:
+        print(f"{r['tokens_in']:>9} | {r['sub_count']:>12} | {r['elapsed_time_s']:>14.2f} | "
+              f"{r['requests_per_second']:>10.2f} | {str(r['server_tokens_in']):>22} | "
+              f"{str(r['server_total_time']):>17} | {str(r['server_tokens_per_second']):>15}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Send an increasing number of sub-requests to /generate_parallel.")
+    parser = argparse.ArgumentParser(description="Send batch requests to /generate_parallel using parallel_map.")
     parser.add_argument(
         "--url",
         type=str,
         default="http://127.0.0.1:6000/generate_parallel",
         help="The /generate_parallel endpoint URL."
-    )
-    parser.add_argument(
-        "--start_subrequests",
-        type=int,
-        default=1,
-        help="Starting number of sub-requests."
-    )
-    parser.add_argument(
-        "--max_subrequests",
-        type=int,
-        default=100,
-        help="Maximum number of sub-requests (stepping by 10)."
     )
     parser.add_argument(
         "--temperature",
@@ -322,10 +269,8 @@ def main():
     )
     args = parser.parse_args()
 
-    test_increasing_subrequests(
+    test_parallel_map(
         url=args.url,
-        start_subrequests=args.start_subrequests,
-        max_subrequests=args.max_subrequests,
         temperature=args.temperature,
         max_tokens=args.max_tokens
     )
