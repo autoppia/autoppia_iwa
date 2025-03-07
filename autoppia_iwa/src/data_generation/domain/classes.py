@@ -57,7 +57,7 @@ class Task(BaseModel):
     @property
     def prompt_with_relevant_data(self) -> str:
         if self.relevant_data:
-            return f"{self.prompt}\nRelevant data: {self.relevant_data}"
+            return f"{self.prompt}\n Relevant data you may need: {self.relevant_data}"
         return self.prompt
 
     def model_dump(self, *args, **kwargs) -> dict:
@@ -150,5 +150,5 @@ class TaskGenerationConfig(BaseModel):
 
     # Task quantity controls
     prompts_per_url: int = 20  # Maximum tasks to return per URL
-    prompts_per_use_case: int = 5  # Number of task variations to generate per use case
+    prompts_per_use_case: int = 1  # Number of task variations to generate per use case
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline

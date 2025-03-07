@@ -1,2 +1,4 @@
 # ================ Relevant Data ================
-RELEVANT_DATA = {"User for Login": {"email": "admin@moviesapp.com", "password": "admin123"}, "User for Registration": {"email": "new-user@moviesapp.com", "password": "admin123"}}
+RELEVANT_DATA = {
+    "user_for_login": {"username": "test1234", "email": "test1234@gmail.com", "password": "test1234"},
+}
