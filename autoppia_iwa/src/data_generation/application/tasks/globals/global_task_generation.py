@@ -86,7 +86,7 @@ class GlobalTaskGenerationPipeline:
 
         tasks: List[Task] = []
         # TODO: QUITAR EL :1
-        for prompt_text in prompt_list[:1]:
+        for prompt_text in prompt_list:
             try:
                 task_obj = self._assemble_task(
                     web_project_id=self.web_project.id,

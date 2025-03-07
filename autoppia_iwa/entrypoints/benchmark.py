@@ -102,7 +102,7 @@ async def generate_solutions(agent: BaseAgent, tasks: List[Task], timing_metrics
     solutions = {}
     logger.info(f"\nAgent: {agent.name}")
 
-    for task in tasks[:1]:
+    for task in tasks:
         task_solution: Optional[TaskSolution] = None
 
         # Check if solution should be loaded from cache
@@ -159,7 +159,7 @@ async def evaluate_solutions(
     results = {}
     logger.info(f"\nEvaluating solutions for Agent: {agent.name}")
 
-    for task in tasks[:1]:
+    for task in tasks:
         logger.info(f"  Evaluating solution for Task {task.id}...")
         task_solution = solutions[task.id]
         eval_result = await evaluate_task_solution(demo_project, task, task_solution)
