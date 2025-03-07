@@ -39,7 +39,7 @@ def test_fixed_parallel_request(url, temperature, max_tokens_response, tokens_co
 
     # Build sub-requests
     subrequests = []
-    for sub_id in range(1, parallel_count + 1):
+    for sub_id in range(1, parallel_count):
         subrequests.append({
             "messages": [
                 {
