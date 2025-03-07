@@ -141,7 +141,7 @@ def main():
     #
     # Below is an example mapping. Adjust as needed:
     parallel_map = {
-        1000: 37,
+        # 1000: 37,
         2000: 16,
         3000: 12,
         4000: 9,
