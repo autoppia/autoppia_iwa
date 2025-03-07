@@ -58,6 +58,12 @@ class ConcurrentEvaluator(IEvaluator):
         """
         Evaluate a single task solution (actions + agent) for a given task.
         """
+
+        logger.info(f"Evaluating Single task solution for task {task.id}...")
+
+        logger.info("Reseting Project Environemnt & Database.")
+        await self.backend_demo_webs_service.reset_database()
+
         result = await self._evaluate_single_task_solution(task, task_solution)
 
         # Display final report for this single solution
@@ -65,7 +71,6 @@ class ConcurrentEvaluator(IEvaluator):
             display_single_evaluation_summary(result.stats, debug_mode=self.config.debug_mode)
             self.evaluation_stats.append(result.stats)
 
-        await self.backend_demo_webs_service.reset_database()
         await self.backend_demo_webs_service.close()
         return result
 
@@ -74,6 +79,9 @@ class ConcurrentEvaluator(IEvaluator):
         Evaluate multiple solutions for the same task, optionally grouping identical ones.
         """
         logger.info(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
+
+        logger.info("Reseting Project Environemnt & Database.")
+        await self.backend_demo_webs_service.reset_database()
 
         results = await self._group_and_evaluate_task_solutions(task, task_solutions)
 
@@ -91,7 +99,6 @@ class ConcurrentEvaluator(IEvaluator):
             errors=self.errors,
         )
 
-        await self.backend_demo_webs_service.reset_database()
         await self.backend_demo_webs_service.close()
         return results
 
@@ -99,6 +106,7 @@ class ConcurrentEvaluator(IEvaluator):
         """
         Internal logic to evaluate a single TaskSolution.
         """
+
         actions = task_solution.actions
         web_agent_id = task_solution.web_agent_id
         is_web_real = task.is_web_real
