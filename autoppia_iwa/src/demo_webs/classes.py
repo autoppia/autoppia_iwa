@@ -40,7 +40,8 @@ class WebProject(BaseModel):
     is_web_real: bool = False
     urls: List[str] = []
     domain_analysis: Optional[DomainAnalysis] = None
-    events: List[Type] = Field(default_factory=dict, description="Structured events information")
+    # events: List[Type] = Field(default_factory=dict, description="Structured events information")
+    events: List[Any] = Field(default_factory=dict, description="Structured events information")
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
     models: List[Any] = []
     use_cases: List[UseCase] = None

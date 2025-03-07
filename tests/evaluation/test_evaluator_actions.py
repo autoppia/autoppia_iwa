@@ -3,6 +3,7 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
+from autoppia_iwa.src.demo_webs.config import web_1_demo_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
@@ -23,7 +24,7 @@ class TestActionExecution(unittest.IsolatedAsyncioTestCase):
         self.app_bootstrap = AppBootstrap()
         self.task = self.create_task()
         self.actions_data = self.get_action_data()
-        self.web_project = (await initialize_demo_webs_projects())[0]
+        self.web_project = (await initialize_demo_webs_projects([web_1_demo_projects]))[0]
 
     def create_task(self):
         """Creates a Task instance with predefined test cases."""
@@ -31,8 +32,9 @@ class TestActionExecution(unittest.IsolatedAsyncioTestCase):
             "prompt": "Click on the 'Login' link in the header. Then fill the form with email: employee@employee.com and password: employee, and click on login.",
             "url": "http://localhost:8000/",
             "tests": [
-                {"type": "CheckEventTest", "event_name": "page_view"},
-                {"type": "FindInHtmlTest", "substring": "login"},
+                {"type": "JudgeBaseOnHTML", "success_criteria": "The login must be completed."},
+                # {"type": "FindInHtmlTest", "content": "login"},
+                {"type": "JudgeBaseOnScreenshot", "success_criteria": "The login must be completed."},
             ],
         }
         return Task(
