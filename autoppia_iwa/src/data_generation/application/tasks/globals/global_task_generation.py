@@ -85,7 +85,8 @@ class GlobalTaskGenerationPipeline:
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
 
         tasks: List[Task] = []
-        for prompt_text in prompt_list:
+        # TODO: QUITAR EL :1
+        for prompt_text in prompt_list[:1]:
             try:
                 task_obj = self._assemble_task(
                     web_project_id=self.web_project.id,

@@ -145,7 +145,7 @@ class ConcurrentEvaluator(IEvaluator):
             # If simulated, reset the DB first
             browser_setup_start = time.time()
             if not is_web_real:
-                await self.backend_demo_webs_service.reset_backend_events_db(web_agent_id)
+                await self.backend_demo_webs_service.reset_web_agent_events(web_agent_id)
 
             # Start browser usage
             browser_execution_start = time.time()
@@ -156,7 +156,7 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Run tests
             test_start_time = time.time()
-            test_results_matrix = run_tests(task, execution_history)
+            test_results_matrix = run_tests(self.web_project, task, execution_history)
             stats.test_execution_time = time.time() - test_start_time
 
             # Random clicker baseline

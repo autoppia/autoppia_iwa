@@ -75,7 +75,7 @@ class BackendDemoWebService:
 
         return []
 
-    async def reset_user_events(self, web_agent_id: str) -> bool:
+    async def reset_web_agent_events(self, web_agent_id: str) -> bool:
         """
         Resets events for a specific user/web_agent.
 
@@ -158,7 +158,7 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
-        endpoint = f"{self.base_url}admin/reset_db/"
+        endpoint = f"{self.base_url}management_admin/reset_db/"
 
         try:
             session = await self._get_session()
@@ -190,13 +190,12 @@ class BackendDemoWebService:
             logger.error(f"Failed to reset database: {e}")
             return False
 
-    async def send_event(self, event_type: str, description: str, data: Dict[str, Any], web_agent_id: str) -> bool:
+    async def send_event(self, event_name: str, data: Dict[str, Any], web_agent_id: str) -> bool:
         """
         Sends an event to the backend for a given web_agent_id.
 
         Args:
-            event_type (str): Type of the event (e.g., "page_view", "button_click")
-            description (str): Human-readable description of the event
+            event_name (str): Type of the event (e.g., "page_view", "button_click")
             data (Dict[str, Any]): Additional data related to the event
             web_agent_id (str): The ID of the web agent
 
@@ -204,8 +203,7 @@ class BackendDemoWebService:
             bool: True if the event was sent successfully, False otherwise.
         """
         payload = {
-            "event_type": event_type,
-            "description": description,
+            "event_name": event_name,
             "data": data,
             "web_agent_id": web_agent_id,
         }
@@ -220,8 +218,8 @@ class BackendDemoWebService:
                 return True
 
         except ClientError as e:
-            logger.error(f"Failed to send {event_type} event: {e}")
+            logger.error(f"Failed to send {event_name} event: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error while sending {event_type} event: {e}")
+            logger.error(f"Unexpected error while sending {event_name} event: {e}")
 
         return False

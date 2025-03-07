@@ -53,8 +53,7 @@ class BackendEvent(BaseModel):
     Enforces proper event-application relationships and provides rich metadata.
     """
 
-    event_type: str
-    description: str
+    event_name: str
     data: Optional[Dict[str, Any]] = None
     user_id: Optional[int] = None
     created_at: datetime = datetime.now()

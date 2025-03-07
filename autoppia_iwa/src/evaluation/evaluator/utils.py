@@ -186,7 +186,7 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 
 
-def run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
+def run_tests(web_project: WebProject, task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
     """
     Runs all task tests after each action, building a test results matrix.
 
@@ -207,6 +207,7 @@ def run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> Lis
 
         # Run the test suite for the current action
         test_results = test_runner.run_tests(
+            web_project=web_project,
             prompt=task.prompt,
             snapshot=snapshot,
             browser_snapshots=browser_snapshots,
