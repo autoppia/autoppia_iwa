@@ -65,6 +65,7 @@ class ConcurrentEvaluator(IEvaluator):
             display_single_evaluation_summary(result.stats, debug_mode=self.config.debug_mode)
             self.evaluation_stats.append(result.stats)
 
+        await self.backend_demo_webs_service.reset_database()
         await self.backend_demo_webs_service.close()
         return result
 
@@ -90,6 +91,7 @@ class ConcurrentEvaluator(IEvaluator):
             errors=self.errors,
         )
 
+        await self.backend_demo_webs_service.reset_database()
         await self.backend_demo_webs_service.close()
         return results
 
