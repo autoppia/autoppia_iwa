@@ -25,7 +25,7 @@ class ApifiedWebAgent(IWebAgent):
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
-                async with session.post(f"{self.base_url}/solve_task", json=task.nested_model_dump()) as response:
+                async with session.post(f"{self.base_url}/solve_task", json=task.clean_task()) as response:
                     response_json = await response.json()
 
                     # Extract data

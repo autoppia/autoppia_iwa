@@ -115,6 +115,26 @@ class Task(BaseModel):
         # # Create the Task object
         return cls(**data)
 
+    def clean_task(self) -> dict:
+        """
+        Create a minimal version of the task for serialization.
+        Removes all verbose fields including tests, milestones, use_case, HTML content, and other non-essential data.
+        """
+        # Start with a basic model dump but exclude many fields
+        cleaned = self.model_dump(
+            exclude={
+                "tests",  # Remove all tests
+                "clean_html",  # Also large
+                "milestones",  # Remove nested tasks completely
+                "use_case",  # Remove use case completely
+                "logic_function",  # Remove logic function
+                "interactive_elements",  # Remove interactive elements
+            }
+        )
+
+        # Remove any None values to make the output cleaner
+        return {k: v for k, v in cleaned.items() if v is not None}
+
 
 class TaskGenerationConfig(BaseModel):
     # Database saving options
