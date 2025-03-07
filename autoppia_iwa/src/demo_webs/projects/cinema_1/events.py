@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 
@@ -27,17 +28,16 @@ class RegistrationEvent(Event):
         if not criteria:
             return True
         if criteria.username is not None:
-            if validate_criterion(self.username, criteria.username):
-                return True
-        return False
+            return validate_criterion(self.username, criteria.username)
+        return True
 
     @classmethod
-    def parse(cls, backend_event: Dict[str, Any]) -> "RegistrationEvent":
+    def parse(cls, backend_event: BackendEvent) -> "RegistrationEvent":
         """
         Parse a registration event from backend data.
         """
-        base_event = super().parse(backend_event)
-        data = backend_event.get('data', {})
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
         username = data.get('username', '')
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
 
@@ -64,12 +64,12 @@ class LoginEvent(Event):
         return True
 
     @classmethod
-    def parse(cls, backend_event: Dict[str, Any]) -> "LoginEvent":
+    def parse(cls, backend_event: BackendEvent) -> "LoginEvent":
         """
         Parse a login event from backend data.
         """
-        base_event = super().parse(backend_event)
-        data = backend_event.get('data', {})
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
         username = data.get('username', '')
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
 

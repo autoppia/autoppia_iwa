@@ -17,6 +17,7 @@ USE_CASES = [
                 "Register with any username",
                 {
                     "type": "CheckEventTest",
+                    "username": "test12345",
                     "event_name": "RegistrationEvent",
                     "criteria": {},
                     "reasoning": "This test applies when the task requires a registration event without specifying a username.",
@@ -26,6 +27,7 @@ USE_CASES = [
                 "Register with a specific username",
                 {
                     "type": "CheckEventTest",
+                    "username": "test1234510",
                     "event_name": "RegistrationEvent",
                     "criteria": {"username": "<THE USERNAME SPECIFIED ON PROMPT IF SPECIFIED>"},
                     "reasoning": "This test applies when the task requires registration with a specific username provided in the prompt.",
@@ -35,6 +37,7 @@ USE_CASES = [
                 "Register with a specific email",
                 {
                     "type": "CheckEventTest",
+                    "username": "test123456",
                     "event_name": "RegistrationEvent",
                     "criteria": {"email": "<THE EMAIL SPECIFIED ON PROMPT IF SPECIFIED>"},
                     "reasoning": "This test applies when the task requires registration with a specific email provided in the prompt.",
@@ -44,6 +47,7 @@ USE_CASES = [
                 "Register with a specific password",
                 {
                     "type": "CheckEventTest",
+                    "username": "test123457",
                     "event_name": "RegistrationEvent",
                     "criteria": {"password": "<THE PASSWORD SPECIFIED ON PROMPT IF SPECIFIED>"},
                     "reasoning": "This test applies when the task requires registration with a specific password provided in the prompt.",
@@ -53,6 +57,7 @@ USE_CASES = [
                 "Register with a specific username and password",
                 {
                     "type": "CheckEventTest",
+                    "username": "test12348",
                     "event_name": "RegistrationEvent",
                     "criteria": {"username": "<THE USERNAME SPECIFIED ON PROMPT IF SPECIFIED>", "password": "<THE PASSWORD SPECIFIED ON PROMPT IF SPECIFIED>"},
                     "reasoning": "This test applies when the task requires registration with both a specific username and password provided in the prompt.",

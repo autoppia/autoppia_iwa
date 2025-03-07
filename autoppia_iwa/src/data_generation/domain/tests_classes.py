@@ -171,6 +171,8 @@ class CheckEventTest(BaseTaskTest):
 
         # Assuming the snapshot contains backend_events and we can access the event classes
         # from somewhere accessible in this context
+        if (current_iteration + 1) < len(browser_snapshots):
+            return False
         events = web_project.events
 
         # Get the event class matching event_name
