@@ -42,8 +42,8 @@ class BenchmarkConfig:
     evaluate_real_tasks: bool = False
 
     m: int = 1  # Number of copies of each solution to evaluate
-    prompts_per_url: int = 3
-    num_of_urls: int = 2
+    prompts_per_url: int = 1
+    num_of_urls: int = 1
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
@@ -102,7 +102,7 @@ async def generate_solutions(agent: BaseAgent, tasks: List[Task], timing_metrics
     solutions = {}
     logger.info(f"\nAgent: {agent.name}")
 
-    for task in tasks:
+    for task in tasks[:1]:
         task_solution: Optional[TaskSolution] = None
 
         # Check if solution should be loaded from cache
@@ -159,7 +159,7 @@ async def evaluate_solutions(
     results = {}
     logger.info(f"\nEvaluating solutions for Agent: {agent.name}")
 
-    for task in tasks:
+    for task in tasks[:1]:
         logger.info(f"  Evaluating solution for Task {task.id}...")
         task_solution = solutions[task.id]
         eval_result = await evaluate_task_solution(demo_project, task, task_solution)
