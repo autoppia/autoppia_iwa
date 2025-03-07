@@ -162,6 +162,7 @@ class ConcurrentEvaluator(IEvaluator):
             # Random clicker baseline
             random_start_time = time.time()
             random_clicker_passed, random_clicker_score = await get_random_clicker_performance(
+                web_project=self.web_project,
                 task=task,
                 config=self.config,
                 random_clicker_cache=self._random_clicker_cache,

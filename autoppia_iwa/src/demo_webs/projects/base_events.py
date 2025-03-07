@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
+
+from autoppia_iwa.src.demo_webs.classes import BackendEvent
 
 
 class Event(BaseModel):
@@ -9,7 +11,7 @@ class Event(BaseModel):
 
     event_name: str
     timestamp: int
-    web_agent_id: int
+    web_agent_id: str
     user_id: Optional[int] = None
 
     class ValidationCriteria(BaseModel):
@@ -20,12 +22,12 @@ class Event(BaseModel):
         return True
 
     @classmethod
-    def parse(cls, backend_event: Dict[str, Any]) -> "Event":
+    def parse(cls, backend_event: BackendEvent) -> "Event":
         """Base parse method for all events"""
         # Convert Django timestamp to Unix timestamp if needed
-        if isinstance(backend_event.get('timestamp'), str):
+        if isinstance(backend_event.timestamp, str):
             try:
-                dt = datetime.fromisoformat(backend_event.get('timestamp').replace('Z', '+00:00'))
+                dt = datetime.fromisoformat(backend_event.timestamp)
                 timestamp = int(dt.timestamp())
             except (ValueError, TypeError):
                 timestamp = int(datetime.now().timestamp())
@@ -33,11 +35,12 @@ class Event(BaseModel):
             timestamp = int(datetime.now().timestamp())
 
         # Extract user_id from user object if it exists
-        user_id = backend_event.get('user', None)
-        return cls(event_name=backend_event.get('event_name', ''), timestamp=timestamp, web_agent_id=backend_event.get('web_agent_id', 0), user_id=user_id)
+        user_id = backend_event.user_id or None
+        web_agent_id = backend_event.web_agent_id or None
+        return cls(event_name=backend_event.event_name, timestamp=timestamp, web_agent_id=web_agent_id, user_id=user_id)
 
     @staticmethod
-    def parse_all(backend_events: List[Dict[str, Any]]) -> List["Event"]:
+    def parse_all(backend_events: List[BackendEvent]) -> List["Event"]:
         """Parse all backend events and return appropriate typed events"""
         events: List[Event] = []
         # TODO: If we have more types we should include here
@@ -49,7 +52,7 @@ class Event(BaseModel):
         event_class_map = ALL_BACKEND_EVENT_TYPES
 
         for event_data in backend_events:
-            event_name = event_data.get('event_name', '')
+            event_name = event_data.event_name
             event_class = event_class_map.get(event_name, Event)
             try:
                 events.append(event_class.parse(event_data))

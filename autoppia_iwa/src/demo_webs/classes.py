@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 from pydantic import BaseModel, Field
@@ -56,9 +55,5 @@ class BackendEvent(BaseModel):
     event_name: str
     data: Optional[Dict[str, Any]] = None
     user_id: Optional[int] = None
-    created_at: datetime = datetime.now()
-
-    def model_dump(self, *args, **kwargs) -> Dict[str, Any]:
-        base_dump = super().model_dump(*args, **kwargs)
-        base_dump['created_at'] = self.created_at.isoformat()
-        return base_dump
+    web_agent_id: Optional[str] = None
+    timestamp: Optional[Any] = None
