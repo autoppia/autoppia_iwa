@@ -215,7 +215,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
         user_message = f"Current action: {action}\nHTML Before:\n{html_before}\n\nHTML After:\n{html_after}"
         payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
-        result_str = llm_service.predict(payload)
+        result_str = llm_service.predict(payload, json_format=True)
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         return match.group(1) == "true" if match else False
@@ -244,7 +244,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
             {"role": "user", "content": [{"type": "text", "text": user_msg}, *screenshot_content]},
         ]
 
-        result_str = llm_service.predict(payload)
+        result_str = llm_service.predict(payload, json_format=True)
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         return match.group(1) == "true" if match else False
