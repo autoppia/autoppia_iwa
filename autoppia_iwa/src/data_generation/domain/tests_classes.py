@@ -1,21 +1,19 @@
 # file: data_generation/domain/tests_classes.py
-import json
 import re
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import Dict, List, Literal
 
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, field_validator
 
-from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 
-from .prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
+from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
+from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
 
 
 class ITest(ABC):
@@ -212,19 +210,15 @@ class JudgeBaseOnHTML(BaseTaskTest):
         return self._analyze_htmls(action, html_before, html_after)
 
     def _analyze_htmls(self, action: str, html_before: str, html_after: str, llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
+        json_schema = HTMLBasedTestResponse.model_json_schema()
+        formatted_sys_msg = OPINION_BASED_HTML_TEST_SYS_MSG.format(json_schema=json_schema)
         user_message = f"Current action: {action}\nHTML Before:\n{html_before}\n\nHTML After:\n{html_after}"
-        payload = [{"role": "system", "content": OPINION_BASED_HTML_TEST_SYS_MSG}, {"role": "user", "content": user_message}]
+        payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
-        # load schema
-        schema_path = Path(PROJECT_BASE_DIR / "config/schemas/eval_html_test.json")
-        json_schema = {}
-        if schema_path.exists():
-            with schema_path.open(encoding="utf-8") as f:
-                json_schema = json.load(f)
+        result_str = llm_service.predict(payload)
+        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
-        result_str = llm_service.predict(payload, json_format=True, schema=json_schema)
-        parsed = json.loads(result_str)
-        return parsed["task_completed"]
+        return match.group(1) == "true" if match else False
 
 
 class JudgeBaseOnScreenshot(BaseTaskTest):
@@ -243,15 +237,17 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
 
         screenshots_after = [snap.screenshot_after for snap in browser_snapshots[-4:]]
         screenshot_content = [{"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot}"}} for screenshot in screenshots_after]
-
+        json_schema = ScreenshotTestResponse.model_json_schema()
+        formatted_sys_msg = SCREENSHOT_TEST_SYSTEM_PROMPT.format(json_schema=json_schema)
         payload = [
-            {"role": "system", "content": SCREENSHOT_TEST_SYSTEM_PROMPT},
+            {"role": "system", "content": formatted_sys_msg},
             {"role": "user", "content": [{"type": "text", "text": user_msg}, *screenshot_content]},
         ]
 
         result_str = llm_service.predict(payload)
+        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
-        return "SUCCESS" in result_str or "UNKNOWN" in result_str
+        return match.group(1) == "true" if match else False
 
 
 class WebProjectCheckEventTest(BaseTaskTest):

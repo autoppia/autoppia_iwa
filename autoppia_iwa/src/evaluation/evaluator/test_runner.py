@@ -35,7 +35,7 @@ class TestRunner:
 
         for test in self.tests:
             # Run all tests normally
-            if not isinstance(test, JudgeBaseOnScreenshot) or current_action_index < total_iterations - 1:
+            if not isinstance(test, JudgeBaseOnScreenshot):
                 result = self._execute_test(test, prompt, snapshot, browser_snapshots, current_action_index)
                 snapshot_results.append(result)
 
