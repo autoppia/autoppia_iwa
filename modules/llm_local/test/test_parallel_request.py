@@ -37,18 +37,6 @@ base_user_content = """data = {
                 "        \\"type\\": \\"string\\"\\n"
                 "      },\\n"
                 "      \\"description\\": \\"An array describing the potential functionalities and use cases of the element.\\"\\n"
-                "    },\\n"
-                "    \\"media_files_description\\": {\\n"
-                "      \\"type\\": [\\n"
-                "        \\"array\\",\\n"
-                "        \\"null\\"\\n"
-                "      ],\\n"
-                "      \\"items\\": {\\n"
-                "        \\"type\\": \\"object\\",\\n"
-                "        \\"properties\\": {\\n"
-                "          \\"tag\\": {\\n"
-                "            \\"type\\": \\"string\\"\\n"
-                "          },\\n"
                 "          \\"src\\": {\\n"
                 "            \\"type\\": \\"string\\"\\n"
                 "          },\\n"
@@ -120,7 +108,7 @@ parallel_map = {
     8000: 4,
     9000: 3,
     10000: 3,
-    20000: 2,
+    20000: 1,
     30000: 1,
     37000: 1
 }
