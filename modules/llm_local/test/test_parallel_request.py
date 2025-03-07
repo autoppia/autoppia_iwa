@@ -3,7 +3,7 @@ import json
 import time
 import argparse
 
-# Large message to be used in each sub-request:
+# Large message to be used in each sub-request (unit chunk = ~1000 tokens):
 base_user_content = """data = {
     "request_number": 381,
     "timestamp": 1740840474.1822062,
@@ -23,6 +23,13 @@ base_user_content = """data = {
                 "    \\"summary\\": {\\n"
                 "      \\"type\\": \\"string\\",\\n"
                 "      \\"description\\": \\"A brief description of the element's purpose and functionality.\\"\\n"
+                "    },\\n"
+                "    \\"categories\\": {\\n"
+                "      \\"type\\": \\"array\\",\\n"
+                "      \\"items\\": {\\n"
+                "        \\"type\\": \\"string\\"\\n"
+                "      },\\n"
+                "      \\"description\\": \\"An array of relevant categories for this element, focusing on its content and use.\\"\\n"
                 "    },\\n"
                 "    \\"functionality\\": {\\n"
                 "      \\"type\\": \\"array\\",\\n"
@@ -63,7 +70,11 @@ base_user_content = """data = {
                 "        \\"type\\": \\"string\\"\\n"
                 "      },\\n"
                 "      \\"description\\": \\"An array of key phrases or words relevant to the element for search purposes.\\"\\n"
-                "    },
+                "    },\\n"
+                "    \\"relevant_fields\\": {\\n"
+                "      \\"type\\": [\\n"
+                "        \\"array\\",\\n"
+                "        \\"null\\"\\n"
                 "    \\"accessibility\\": {\\n"
                 "      \\"type\\": [\\n"
                 "        \\"array\\",\\n"
@@ -90,16 +101,14 @@ base_user_content = """data = {
         },
         {
             "role": "user",
-            "content": (
-                "Summarize the content and functionality of this HTML element:{...} (example truncated)"
-            )
+            "content": "Summarize the content and functionality of this HTML element:{...} (example truncated)"
         }
     ],
 }
 """
 
-# The mapping of total tokens_in => number of sub-requests to send in one batch.
-# We do NOT exceed these parallel counts to avoid running out of memory.
+# The mapping: each 'tokens_in' means "repeat base_user_content enough times to reach ~this many tokens"
+# and then create 'sub_count' sub-requests in one single batch to /generate_parallel.
 parallel_map = {
     1000: 37,
     2000: 16,
@@ -117,29 +126,42 @@ parallel_map = {
 }
 
 
+def build_content_for_tokens_in(tokens_in):
+    """
+    Naive approach: For each 1000 tokens, we replicate base_user_content 1 time.
+    So 2000 tokens => 2 times; 3000 => 3 times, etc.
+    """
+    # This assumes tokens_in is a multiple of 1000 in parallel_map
+    repeat_count = tokens_in // 1000
+    return base_user_content * repeat_count
+
+
 def test_parallel_map(url, temperature, max_tokens):
     """
     For each (tokens_in -> subrequests) in parallel_map:
-      - Create subrequests of 'base_user_content'
-      - Post them all in ONE request to /generate_parallel
-      - Measure time, parse stats, and store them.
-      - Print a summary table at the end.
+      - build subrequests each with ~ tokens_in worth of content
+      - post them all in ONE request to /generate_parallel
+      - measure time, parse stats, store them
+      - print the summary table at the end
     """
     headers = {"Content-Type": "application/json"}
     results = []
 
     for tokens_in, sub_count in parallel_map.items():
-        # Build the sub_count subrequests, each with 1 user message
+        # Build the repeated content to target 'tokens_in' per sub-request
+        repeated_base = build_content_for_tokens_in(tokens_in)
+
         subrequests = []
         for sub_id in range(1, sub_count + 1):
+            content = (
+                repeated_base
+                + f"\n\n(This is sub-request #{sub_id} of {sub_count}, targeting ~{tokens_in} tokens.)"
+            )
             subrequests.append({
                 "messages": [
                     {
                         "role": "user",
-                        "content": (
-                            base_user_content
-                            + f"\n\n(This is sub-request #{sub_id} of {sub_count}, simulating ~{tokens_in} tokens in total.)"
-                        )
+                        "content": content
                     }
                 ],
                 "json_format": False,
@@ -176,11 +198,10 @@ def test_parallel_map(url, temperature, max_tokens):
         # We can also extract any server stats if provided:
         stats = response_json.get("stats", {})
         total_tokens_in = stats.get("total_tokens_in")
-        total_time = stats.get("total_time")  # server's measure (may differ from our measurement)
+        total_time = stats.get("total_time")
         tokens_per_second = stats.get("tokens_per_second")
-        # We'll rely on our own measured elapsed time for consistency
 
-        # The actual requests/second from our side:
+        # requests/s based on sub_count and our measured elapsed
         requests_per_second = sub_count / elapsed
 
         results.append({
@@ -188,7 +209,7 @@ def test_parallel_map(url, temperature, max_tokens):
             "sub_count": sub_count,
             "elapsed_time_s": elapsed,
             "requests_per_second": requests_per_second,
-            "server_tokens_in": total_tokens_in,
+            "server_total_tokens_in": total_tokens_in,
             "server_total_time": total_time,
             "server_tokens_per_second": tokens_per_second
         })
@@ -198,7 +219,7 @@ def test_parallel_map(url, temperature, max_tokens):
     print("tokens_in | sub_requests | elapsed_time_s | requests/s | server_total_tokens_in | server_total_time | server_tokens/s")
     for r in results:
         print(f"{r['tokens_in']:>9} | {r['sub_count']:>12} | {r['elapsed_time_s']:>14.2f} | "
-              f"{r['requests_per_second']:>10.2f} | {str(r['server_tokens_in']):>22} | "
+              f"{r['requests_per_second']:>10.2f} | {str(r['server_total_tokens_in']):>22} | "
               f"{str(r['server_total_time']):>17} | {str(r['server_tokens_per_second']):>15}")
 
 
