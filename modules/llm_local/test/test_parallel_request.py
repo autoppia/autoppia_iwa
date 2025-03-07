@@ -10,18 +10,7 @@ base_user_content = (
 
 # Updated parallel_map with 1600-tokens base user content:
 parallel_map = {
-    1600: 23,
-    3200: 12,
-    4800: 8,
-    6400: 6,
-    8000: 5,
-    9600: 4,
-    11200: 3,
-    12800: 3,
-    14400: 3,
-    16000: 2,
-    32000: 1,
-    40000: 1
+    1600: 40,
 }
 
 
