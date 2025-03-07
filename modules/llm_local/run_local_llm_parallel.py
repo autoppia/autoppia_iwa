@@ -20,7 +20,7 @@ lock = threading.Lock()  # << NEW
 # ---------------------------------------------------------------------------
 # The model name as per Qwen docs (Adjust if you prefer Qwen2-7B-Instruct, etc.)
 # ---------------------------------------------------------------------------
-MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct"
+MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
 # Load tokenizer & model
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
