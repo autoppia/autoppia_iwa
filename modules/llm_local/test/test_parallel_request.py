@@ -3,125 +3,35 @@ import json
 import time
 import argparse
 
-# Large message to be used in each sub-request (unit chunk = ~1000 tokens):
-base_user_content = """data = {
-    "request_number": 381,
-    "timestamp": 1740840474.1822062,
-    "messages": [
-        {
-            "role": "system",
-            "content": (
-                "You must respond in **valid JSON** that meets the following schema.\\n\\n"
-                "Do not include extra keys. Output **only** the JSON object.\\n\\n"
-                "{\\n"
-                "  \\"type\\": \\"object\\",\\n"
-                "  \\"properties\\": {\\n"
-                "    \\"one_phrase_summary\\": {\\n"
-                "      \\"type\\": \\"string\\",\\n"
-                "      \\"description\\": \\"A concise one-sentence summary of the element's purpose.\\"\\n"
-                "    },\\n"
-                "    \\"summary\\": {\\n"
-                "      \\"type\\": \\"string\\",\\n"
-                "      \\"description\\": \\"A brief description of the element's purpose and functionality.\\"\\n"
-                "    },\\n"
-                "    \\"categories\\": {\\n"
-                "      \\"type\\": \\"array\\",\\n"
-                "      \\"items\\": {\\n"
-                "        \\"type\\": \\"string\\"\\n"
-                "      },\\n"
-                "      \\"description\\": \\"An array of relevant categories for this element, focusing on its content and use.\\"\\n"
-                "    },\\n"
-                "    \\"functionality\\": {\\n"
-                "      \\"type\\": \\"array\\",\\n"
-                "      \\"items\\": {\\n"
-                "        \\"type\\": \\"string\\"\\n"
-                "      },\\n"
-                "      \\"description\\": \\"An array describing the potential functionalities and use cases of the element.\\"\\n"
-                "          \\"src\\": {\\n"
-                "            \\"type\\": \\"string\\"\\n"
-                "          },\\n"
-                "          \\"alt\\": {\\n"
-                "            \\"type\\": \\"string\\"\\n"
-                "          }\\n"
-                "        },\\n"
-                "        \\"required\\": [\\n"
-                "          \\"tag\\",\\n"
-                "          \\"src\\",\\n"
-                "          \\"alt\\"\\n"
-                "        ]\\n"
-                "      },\\n"
-                "      \\"description\\": \\"A detailed description of images or videos within the element, or null if none are present.\\"\\n"
-                "    },\\n"
-                "    \\"key_words\\": {\\n"
-                "      \\"type\\": \\"array\\",\\n"
-                "      \\"items\\": {\\n"
-                "        \\"type\\": \\"string\\"\\n"
-                "      },\\n"
-                "      \\"description\\": \\"An array of key phrases or words relevant to the element for search purposes.\\"\\n"
-                "    },\\n"
-                "    \\"relevant_fields\\": {\\n"
-                "      \\"type\\": [\\n"
-                "        \\"array\\",\\n"
-                "        \\"null\\"\\n"
-                "    \\"accessibility\\": {\\n"
-                "      \\"type\\": [\\n"
-                "        \\"array\\",\\n"
-                "        \\"null\\"\\n"
-                "      ],\\n"
-                "      \\"items\\": {\\n"
-                "        \\"type\\": \\"string\\"\\n"
-                "      },\\n"
-                "      \\"description\\": \\"Accessibility considerations for the element, or null if none exist.\\"\\n"
-                "    }\\n"
-                "}\\n"
-            )
-        },
-        {
-            "role": "system",
-            "content": (
-                "You are an expert JSON content reviewer tasked with analyzing the given RAW JSON/Unstructured\\n"
-                " segment of a webpage and providing a strictly valid JSON-formatted analysis.\\n\\n"
-                "Important Requirements:\\n"
-                "- Return only one JSON object (no arrays, no multiple objects).\\n"
-                "- Do not include code fences (```).\\n\\n"
-                "If the input cannot be summarized into a valid JSON object, return an empty JSON object: {}."
-            )
-        },
-        {
-            "role": "user",
-            "content": "Summarize the content and functionality of this HTML element:{...} (example truncated)"
-        }
-    ],
-}
-"""
+# The new base_user_content (~1600 tokens)
+base_user_content = (
+    """[{'content': 'You must respond with JSON that matches this schema: {'type': 'object', 'properties': {'task_completed': {'type': 'boolean', 'description': 'Indicates whether the task was successfully completed based on the HTML comparison.'}, 'reason': {'type': 'string', 'description': 'A brief explanation of why the task was determined to be completed or not.'}, 'changes_detected': {'type': 'array', 'items': {'type': 'string'}, 'description': 'List of significant changes detected in the HTML before and after the action.'}}, 'required': ['task_completed', 'reason', 'changes_detected']}', 'role': 'system'}, {'content': 'You are a professional web page analyzer. Your task is to determine whether the given task was completed  \nwith the action given, by analyzing the HTML before and after the action.', 'role': 'system'}, {'content': 'Current action: type='ClickAction' selector=Selector(type=<SelectorType.ATTRIBUTE_VALUE_SELECTOR: 'attributeValueSelector'>, attribute='href', value='/login', case_sensitive=False) x=None y=None\nHTML Before:\n<body>\n <header>\n  <nav>\n   <div>\n    <a href=\"/\">\n     <span>\n      Home\n     </span>\n    </a>\n    <button aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" data-toggle=\"collapse\" type=\"button\">\n     Menu\n    </button>\n    <div>\n     <ul>\n      <li>\n       <a href=\"/\">\n        Home\n        <span>\n         (current)\n        </span>\n       </a>\n      </li>\n      <li>\n       <a href=\"/about/\">\n        About Us\n       </a>\n      </li>\n      <li>\n       <a href=\"/contact/\">\n        Contact\n       </a>\n      </li>\n      <li>\n       <a aria-expanded=\"false\" aria-haspopup=\"true\" data-toggle=\"dropdown\" href=\"#\">\n        Register\n       </a>\n       <div aria-labelledby=\"pages\">\n        <a href=\"/employee/register\">\n         Employee\n        </a>\n        <a href=\"/employer/register\">\n         Employers\n        </a>\n       </div>\n      </li>\n      <li>\n       <a href=\"/login\">\n        Login\n       </a>\n      </li>\n     </ul>\n    </div>\n   </div>\n  </nav>\n </header>\n <div>\n  <section>\n   <div>\n    <div>\n     <div>\n      <div>\n       <h2>\n        Find a job that will fit to your expertise.\n       </h2>\n       <form action=\"/search\" method=\"get\">\n        <div>\n         <div>\n          <div>\n           <div>\n            <label for=\"profession\">\n             Position\n            </label>\n           </div>\n          </div>\n          <div>\n           <div>\n            <label for=\"location\">\n             Location\n            </label>\n           </div>\n          </div>\n          <div>\n           <button type=\"submit\">\n           </button>\n          </div>\n         </div>\n        </div>\n       </form>\n      </div>\n     </div>\n    </div>\n   </div>\n  </section>\n  <section>\n   <div>\n    <h3>\n     Featured jobs\n    </h3>\n   </div>\n  </section>\n  <section>\n   <div>\n    <h4>\n     Trending this month\n    </h4>\n   </div>\n  </section>\n  <section>\n   <div>\n    <div>\n     <div>\n      <p>\n       Start searching for your new job now!\n      </p>\n      <p>\n       <a href=\"/jobs\">\n        See our job offers\n       </a>\n      </p>\n     </div>\n    </div>\n   </div>\n  </section>\n </div>\n <footer>\n  <div>\n   <div>\n    <div>\n     <div>\n      <h4>\n       About Jobs\n      </h4>\n      <p>\n       A job, employment, work or occupation, is a person's role in society. More specifically, a job\n                        is an activity, often regular and often performed in exchange for payment. Many people have\n                        multiple jobs. A person can begin a job by becoming an employee, volunteering, starting a\n                        business, or becoming a parent.\n      </p>\n     </div>\n    </div>\n   </div>\n  </div>\n  <div>\n   <div>\n    <div>\n     <div>\n      <p>\n       Online Itsourcecode Portal Jobs System 2021\n      </p>\n     </div>\n    </div>\n   </div>\n  </div>\n </footer>\n</body>\n\n\nHTML After:\n<body>\n <header>\n  <nav>\n   <div>\n    <a href=\"/\">\n     <span>\n      Home\n     </span>\n    </a>\n    <button aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\" data-target=\"#navbarSupportedContent\" data-toggle=\"collapse\" type=\"button\">\n     Menu\n    </button>\n    <div>\n     <ul>\n      <li>\n       <a href=\"/\">\n        Home\n        <span>\n         (current)\n        </span>\n       </a>\n      </li>\n      <li>\n       <a href=\"/about/\">\n        About Us\n       </a>\n      </li>\n      <li>\n       <a href=\"/contact/\">\n        Contact\n       </a>\n      </li>\n      <li>\n       <a aria-expanded=\"false\" aria-haspopup=\"true\" data-toggle=\"dropdown\" href=\"#\">\n        Register\n       </a>\n       <div aria-labelledby=\"pages\">\n        <a href=\"/employee/register\">\n         Employee\n        </a>\n        <a href=\"/employer/register\">\n         Employers\n        </a>\n       </div>\n      </li>\n      <li>\n       <a href=\"/login\">\n        Login\n       </a>\n      </li>\n     </ul>\n    </div>\n   </div>\n  </nav>\n </header>\n <div>\n  <div>\n   <div>\n    <h3>\n     Login\n    </h3>\n    <p>\n     Already our have account?\n    </p>\n    <form action=\"\" method=\"post\">\n     <div>\n      <label for=\"id_email\">\n       Email\n      </label>\n     </div>\n     <div>\n      <label for=\"id_password\">\n       Password\n      </label>\n     </div>\n     <div>\n      <button type=\"submit\">\n       Log in\n      </button>\n     </div>\n    </form>\n   </div>\n  </div>\n </div>\n <footer>\n  <div>\n   <div>\n    <div>\n     <div>\n      <h4>\n       About Jobs\n      </h4>\n      <p>\n       A job, employment, work or occupation, is a person's role in society. More specifically, a job\n                        is an activity, often regular and often performed in exchange for payment. Many people have\n                        multiple jobs. A person can begin a job by becoming an employee, volunteering, starting a\n                        business, or becoming a parent.\n      </p>\n     </div>\n    </div>\n   </div>\n  </div>\n  <div>\n   <div>\n    <div>\n     <div>\n      <p>\n       Online Itsourcecode Portal Jobs System 2021\n      </p>\n     </div>\n    </div>\n   </div>\n  </div>\n </footer>\n</body>\n', 'role': 'user'}]"""
+)
 
-# The mapping: each 'tokens_in' means "repeat base_user_content enough times to reach ~this many tokens"
-# and then create 'sub_count' sub-requests in one single batch to /generate_parallel.
+# Updated parallel_map with 1600-tokens base user content:
 parallel_map = {
-    1000: 37,
-    2000: 16,
-    3000: 12,
-    4000: 9,
-    5000: 7,
-    6000: 6,
-    7000: 5,
-    8000: 4,
-    9000: 3,
-    10000: 3,
-    18000: 2,
-    30000: 1,
-    37000: 1
+    1600: 23,
+    3200: 12,
+    4800: 8,
+    6400: 6,
+    8000: 5,
+    9600: 4,
+    11200: 3,
+    12800: 3,
+    14400: 3,
+    16000: 2,
+    32000: 1,
+    40000: 1
 }
 
 
 def build_content_for_tokens_in(tokens_in):
     """
-    Naive approach: For each 1000 tokens, we replicate base_user_content 1 time.
-    So 2000 tokens => 2 times; 3000 => 3 times, etc.
+    Each base_user_content is ~1600 tokens.
+    So to get tokens_in, we do replicate_count = tokens_in // 1600
     """
-    # This assumes tokens_in is a multiple of 1000 in parallel_map
-    repeat_count = tokens_in // 1000
-    return base_user_content * repeat_count
+    replicate_count = tokens_in // 1600
+    return base_user_content * replicate_count
 
 
 def test_parallel_map(url, temperature, max_tokens):
@@ -130,13 +40,13 @@ def test_parallel_map(url, temperature, max_tokens):
       - build subrequests each with ~ tokens_in worth of content
       - post them all in ONE request to /generate_parallel
       - measure time, parse stats, store them
-      - print the summary table at the end
+      - print summary at the end
     """
     headers = {"Content-Type": "application/json"}
     results = []
 
     for tokens_in, sub_count in parallel_map.items():
-        # Build the repeated content to target 'tokens_in' per sub-request
+        # Build repeated content to approximate 'tokens_in' tokens per sub-request
         repeated_base = build_content_for_tokens_in(tokens_in)
 
         subrequests = []
@@ -183,13 +93,13 @@ def test_parallel_map(url, temperature, max_tokens):
             print(f"Server returned error: {response_json['error']}")
             continue
 
-        # We can also extract any server stats if provided:
+        # Extract possible server stats if provided
         stats = response_json.get("stats", {})
         total_tokens_in = stats.get("total_tokens_in")
         total_time = stats.get("total_time")
         tokens_per_second = stats.get("tokens_per_second")
 
-        # requests/s based on sub_count and our measured elapsed
+        # Calculate requests/s based on sub_count and elapsed time
         requests_per_second = sub_count / elapsed
 
         results.append({
@@ -202,7 +112,7 @@ def test_parallel_map(url, temperature, max_tokens):
             "server_tokens_per_second": tokens_per_second
         })
 
-    # Print a table of results
+    # Print a final table of results
     print("\n===== Summary Table =====")
     print("tokens_in | sub_requests | elapsed_time_s | requests/s | server_total_tokens_in | server_total_time | server_tokens/s")
     for r in results:
@@ -212,7 +122,7 @@ def test_parallel_map(url, temperature, max_tokens):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Send batch requests to /generate_parallel using parallel_map.")
+    parser = argparse.ArgumentParser(description="Send batch requests to /generate_parallel using parallel_map (1600-token base).")
     parser.add_argument(
         "--url",
         type=str,
