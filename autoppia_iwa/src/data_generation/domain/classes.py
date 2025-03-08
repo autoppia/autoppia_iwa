@@ -135,6 +135,12 @@ class Task(BaseModel):
         # Remove any None values to make the output cleaner
         return {k: v for k, v in cleaned.items() if v is not None}
 
+    def prepare_for_agent(self, web_agent_id: str):
+        for key, value in self.relevant_data.items():
+            if isinstance(value, str):
+                value = value.replace('<web_agent_id>', web_agent_id)
+        self.prompt = self.prompt.replace('<web_agent_id>', web_agent_id)
+
 
 class TaskGenerationConfig(BaseModel):
     # Database saving options

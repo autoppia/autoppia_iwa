@@ -14,6 +14,7 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 class RegistrationEvent(Event):
     """Event triggered when a user registration is completed"""
 
+    event_name: str = "REGISTRATION"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -21,7 +22,7 @@ class RegistrationEvent(Event):
 
         username: Optional[Union[str, CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this registration event meets the criteria.
         """
@@ -45,6 +46,7 @@ class RegistrationEvent(Event):
 class LoginEvent(Event):
     """Event triggered when a user logs in"""
 
+    event_name: str = "LOGIN"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -52,15 +54,14 @@ class LoginEvent(Event):
 
         username: Optional[Union[str, CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this login event meets the criteria.
         """
         if not criteria:
             return True
         if criteria.username is not None:
-            if not validate_criterion(self.username, criteria.username):
-                return False
+            return validate_criterion(self.username, criteria.username)
         return True
 
     @classmethod
@@ -77,6 +78,7 @@ class LoginEvent(Event):
 class LogoutEvent(Event):
     """Event triggered when a user logs out"""
 
+    event_name: str = "LOGOUT"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -84,7 +86,7 @@ class LogoutEvent(Event):
 
         username: Optional[Union[str, CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this logout event meets the criteria.
         """
@@ -108,6 +110,8 @@ class LogoutEvent(Event):
 
 class EditUserEvent(Event):
     """Event triggered when a user edits their profile"""
+
+    event_name: str = "EDIT_USER"
 
     user_id: Optional[int] = None
     username: str
@@ -135,7 +139,7 @@ class EditUserEvent(Event):
         has_website: Optional[Union[bool, CriterionValue]] = None
         changed_field: Optional[Union[str, List[str], CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this edit user event meets the criteria
 
@@ -292,6 +296,8 @@ class EditUserEvent(Event):
 class FilmDetailEvent(Event):
     """Event triggered when a film detail page is viewed"""
 
+    event_name: str = "FILM_DETAILS"
+
     movie_id: int
     movie_name: str
     movie_director: Optional[str] = None
@@ -318,7 +324,7 @@ class FilmDetailEvent(Event):
             title = "Film Detail Validation"
             description = "Validates that a film detail page was viewed with specific attributes"
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate this FilmDetailEvent against the criteria.
         """
@@ -389,6 +395,8 @@ class FilmDetailEvent(Event):
 class AddFilmEvent(Event):
     """Event triggered when a user adds a new film"""
 
+    event_name: str = "ADD_FILM"
+
     movie_id: int
     movie_name: str
     movie_director: Optional[str] = None
@@ -408,7 +416,7 @@ class AddFilmEvent(Event):
         rating: Optional[Union[float, CriterionValue]] = None
         duration: Optional[Union[int, CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this add film event meets the criteria.
         """
@@ -479,6 +487,8 @@ class AddFilmEvent(Event):
 class EditFilmEvent(Event):
     """Event triggered when a user edits an existing film"""
 
+    event_name: str = "EDIT_FILM"
+
     movie_id: int
     movie_name: str
     movie_director: Optional[str] = None
@@ -501,7 +511,7 @@ class EditFilmEvent(Event):
         rating: Optional[Union[float, CriterionValue]] = None
         changed_field: Optional[Union[str, CriterionValue]] = None  # Check if a specific field was changed
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this edit film event meets the criteria.
         """
@@ -589,6 +599,8 @@ class EditFilmEvent(Event):
 class DeleteFilmEvent(Event):
     """Event triggered when a user deletes a film"""
 
+    event_name: str = "DELETE_FILM"
+
     movie_id: int
     movie_name: str
     movie_director: Optional[str] = None
@@ -606,7 +618,7 @@ class DeleteFilmEvent(Event):
         director: Optional[Union[str, CriterionValue]] = None
         year: Optional[Union[int, CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this delete film event meets the criteria.
         """
@@ -671,6 +683,8 @@ class DeleteFilmEvent(Event):
 class SearchFilmEvent(Event):
     """Event triggered when a user searches for a film"""
 
+    event_name: str = "SEARCH_FILM"
+
     query: str
 
     class ValidationCriteria(BaseModel):
@@ -678,7 +692,7 @@ class SearchFilmEvent(Event):
 
         query: Optional[Union[str, CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this search event meets the criteria.
         """
@@ -704,6 +718,8 @@ class SearchFilmEvent(Event):
 class AddCommentEvent(Event):
     """Event triggered when a user adds a comment to a film"""
 
+    event_name: str = "ADD_COMMENT"
+
     comment_id: int
     commenter_name: str
     content: str
@@ -718,7 +734,7 @@ class AddCommentEvent(Event):
         movie_id: Optional[Union[int, CriterionValue]] = None
         movie_name: Optional[Union[str, CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this add comment event meets the criteria.
         """
@@ -770,6 +786,8 @@ class AddCommentEvent(Event):
 class ContactEvent(Event):
     """Event triggered when a user submits a contact form"""
 
+    event_name: str = "CONTACT"
+
     contact_id: int
     name: str
     email: str
@@ -784,7 +802,7 @@ class ContactEvent(Event):
         subject: Optional[Union[str, CriterionValue]] = None
         message_contains: Optional[Union[str, CriterionValue]] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this contact event meets the criteria
 
@@ -866,6 +884,8 @@ class ContactEvent(Event):
 class FilterFilmEvent(Event):
     """Event triggered when a user filters films by genre and/or year"""
 
+    event_name: str = "FILTER_FILM"
+
     genre_id: Optional[int] = None
     genre_name: Optional[str] = None
     year: Optional[int] = None
@@ -880,7 +900,7 @@ class FilterFilmEvent(Event):
         has_genre_filter: Optional[bool] = None
         has_year_filter: Optional[bool] = None
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
         """
         Validate if this filter film event meets the criteria
 

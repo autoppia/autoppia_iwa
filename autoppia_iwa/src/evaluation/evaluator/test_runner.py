@@ -38,14 +38,14 @@ class TestRunner:
         for test in self.tests:
             # Run all tests normally
             if not isinstance(test, JudgeBaseOnScreenshot) or current_action_index < total_iterations - 1:
-                result = self._execute_test(web_project, test, prompt, snapshot, browser_snapshots, current_action_index)
+                result = self._execute_test(web_project, test, prompt, snapshot, browser_snapshots, current_action_index, total_iterations)
                 snapshot_results.append(result)
 
         # Run JudgeBaseOnScreenshot only at the last iteration
         if current_action_index == total_iterations - 1:
             for test in self.tests:
                 if isinstance(test, JudgeBaseOnScreenshot):
-                    result = self._execute_test(web_project, test, prompt, snapshot, browser_snapshots, current_action_index)
+                    result = self._execute_test(web_project, test, prompt, snapshot, browser_snapshots, current_action_index, total_iterations)
                     snapshot_results.append(result)
 
         return snapshot_results
@@ -58,9 +58,12 @@ class TestRunner:
         snapshot: BrowserSnapshot,
         browser_snapshots: List[BrowserSnapshot],
         current_action_index: int,
+        total_iteratios: int,
     ) -> TestResult:
         """Helper function to execute a test and return a TestResult object."""
-        success = test.execute_test(web_project=web_project, current_iteration=current_action_index, prompt=prompt, snapshot=snapshot, browser_snapshots=browser_snapshots)
+        success = test.execute_test(
+            web_project=web_project, current_iteration=current_action_index, prompt=prompt, snapshot=snapshot, browser_snapshots=browser_snapshots, total_iteratios=total_iteratios
+        )
         return TestResult(
             success=success,
             extra_data={key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}},

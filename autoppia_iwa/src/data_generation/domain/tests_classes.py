@@ -21,7 +21,7 @@ from .prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PRO
 
 class ITest(ABC):
     @abstractmethod
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Abstract method to implement the specific logic for the test.
         """
@@ -36,10 +36,10 @@ class BaseTaskTest(BaseModel, ITest):
         extra = "allow"
         arbitrary_types_allowed = True
 
-    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
-        return self._execute_test(web_project, current_iteration, prompt, snapshot, browser_snapshots)
+    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
+        return self._execute_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iteratios)
 
-    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Must be overridden by subclasses.
         """
@@ -85,7 +85,7 @@ class CheckUrlTest(BaseTaskTest):
     match_type: Literal["exact", "contains", "regex"] = "contains"
     description: str = Field(default="Check if browser navigated to URL")
 
-    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Execute the test on the given snapshots with the specified matching strategy.
         """
@@ -133,7 +133,7 @@ class FindInHtmlTest(BaseTaskTest):
         text = re.sub(r'\s+', ' ', text).strip()
         return text
 
-    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Checks if the specified content is present in the current snapshot's HTML
         using the specified matching strategy.
@@ -162,7 +162,7 @@ class CheckEventTest(BaseTaskTest):
     event_criteria: Dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered")
 
-    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Execute the test on the given snapshots by checking for specific events.
         """
@@ -171,12 +171,12 @@ class CheckEventTest(BaseTaskTest):
 
         # Assuming the snapshot contains backend_events and we can access the event classes
         # from somewhere accessible in this context
-        if (current_iteration + 1) < len(browser_snapshots):
+        if (current_iteration + 1) < total_iteratios:
             return False
         events = web_project.events
 
         # Get the event class matching event_name
-        event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_name), None)
+        event_class = next((event_cls for event_cls in events if event_cls.get_event_type() == self.event_name), None)
         if not event_class:
             return False
 
@@ -203,7 +203,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
     success_criteria: str
     description: str = Field(default="Judge based on HTML changes")
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         from autoppia_iwa.src.shared.web_utils import clean_html
 
         if current_iteration == 0:
@@ -234,7 +234,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     success_criteria: str
     description: str = Field(default="Judge based on screenshot changes")
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         if current_iteration == 0:
             return False
         return self._analyze_screenshots(prompt, browser_snapshots)

@@ -2,6 +2,7 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import LoginEvent
+from .replace_functions import login_replace_func
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
@@ -12,6 +13,7 @@ USE_CASES = [
     #     prompt_examples=["Fill out the registration form and register", "Register a new user", "Create a new account"],
     #     event=RegistrationEvent,
     #     event_source_code=RegistrationEvent.get_source_code_of_class(),
+    #     replace_func=credentials_replace_func,
     #     examples=[
     #         (
     #             "Register with any username",
@@ -68,57 +70,50 @@ USE_CASES = [
     UseCase(
         name="User Login",
         description="The user fills out the login form and logs in successfully.",
-        prompt_template="Log in with credentials",
-        prompt_examples=[
-            "Log in with username test1234 and password test1234",
-            "Sign in using usernmae test1234 and password test1234",
-            "Access the account with credentials: test1234 / test1234",
-            "Enter the system using login: test1234 and password: test1234",
-            "Authenticate with username test1234 and password test1234",
-        ],
         event=LoginEvent,
         event_source_code=LoginEvent.get_source_code_of_class(),
+        replace_func=login_replace_func,
         examples=[
-            (
-                "Login for the following username",
-                {
+            {
+                "prompt": "Login for the following username:<username>  and password:<password>",
+                "test": {
                     "type": "CheckEventTest",
-                    "username": "test1234",
+                    "username": "<username>",
                     "event_name": "LOGIN",
-                    "criteria": {"username": "<THE USERNAME SPECIFIED ON PROMPT IF SPECIFIED>"},
+                    "criteria": {"username": "<username>"},
                     "reasoning": "This test applies when the task requires a login event.",
                 },
-            ),
-            (
-                "Login with a specific username",
-                {
+            },
+            {
+                "prompt": "Login with a specific username:<username>  and password:<password>",
+                "test": {
                     "type": "CheckEventTest",
-                    "username": "test1234",
+                    "username": "<username>",
                     "event_name": "LOGIN",
-                    "criteria": {"username": "<THE USERNAME SPECIFIED ON PROMPT IF SPECIFIED>"},
+                    "criteria": {"username": "<username>"},
                     "reasoning": "This test applies when the task requires a login event.",
                 },
-            ),
-            (
-                "Fill the Login Form with a specific username",
-                {
+            },
+            {
+                "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+                "test": {
                     "type": "CheckEventTest",
-                    "username": "test1234",
+                    "username": "<username>",
                     "event_name": "LOGIN",
-                    "criteria": {"username": "<THE USERNAME SPECIFIED ON PROMPT IF SPECIFIED>"},
+                    "criteria": {"username": "<username>"},
                     "reasoning": "This test applies when the task requires a login event.",
                 },
-            ),
-            (
-                "Sign in in te website",
-                {
+            },
+            {
+                "prompt": "Sign in to the website username:<username> and password:<password>",
+                "test": {
                     "type": "CheckEventTest",
-                    "username": "test1234",
+                    "username": "<username>",
                     "event_name": "LOGIN",
-                    "criteria": {"username": "<THE USERNAME SPECIFIED ON PROMPT IF SPECIFIED>"},
+                    "criteria": {"username": "<username>"},
                     "reasoning": "This test applies when the task requires a login event.",
                 },
-            ),
+            },
         ],
     )
     # UseCase(

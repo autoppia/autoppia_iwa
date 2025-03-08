@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from pydantic import BaseModel, Field
 
@@ -10,18 +10,19 @@ class UseCase(BaseModel):
 
     name: str
     description: str
-    prompt_template: str
-    prompt_examples: List[str]
+
     event: Type
     event_source_code: str
-    examples: List[Tuple[str, dict]]
+    examples: List[Dict]
+    replace_func: Optional[Callable[[str], str]] = Field(default=None, exclude=True)
 
-    def get_prompt(self, **kwargs) -> str:
-        """
-        Generate a concrete prompt by filling in the template
-        with the provided arguments
-        """
-        return self.prompt_template.format(**kwargs)
+    class Config:
+        arbitrary_types_allowed = True
+
+    def apply_replacements(self, text: str, *args, **kwargs) -> str:
+        if self.replace_func and isinstance(text, str):
+            return self.replace_func(text, *args, **kwargs)
+        return text
 
     def check_success(self, events: List[Any]) -> bool:
         """
@@ -29,6 +30,18 @@ class UseCase(BaseModel):
         """
         # Basic implementation - check if any event of the expected type exists
         return any(isinstance(event, self.event) for event in events)
+
+    def get_example_prompts_from_use_case(self) -> List[str]:
+        """
+        Extract all prompt strings from the examples
+        """
+        return [example["prompt"] for example in self.examples if "prompt" in example]
+
+    def get_example_prompts_str(self, separator="\n") -> str:
+        """
+        Get all example prompts as a single string with the specified separator
+        """
+        return separator.join(self.get_example_prompts_from_use_case())
 
 
 class WebProject(BaseModel):
