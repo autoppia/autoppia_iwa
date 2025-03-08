@@ -11,6 +11,7 @@ from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generat
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
@@ -97,13 +98,15 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
     return await evaluator.evaluate_single_task_solution(task, task_solution)
 
 
-async def generate_solutions(agent: BaseAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
+async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
     """Generate or load solutions for a given agent and tasks."""
     solutions = {}
     logger.info(f"\nAgent: {agent.name}")
-
+    backend_service = BackendDemoWebService(demo_project)
     for task in tasks:
         task_solution: Optional[TaskSolution] = None
+        # Restart db
+        await backend_service.reset_database()
 
         # Check if solution should be loaded from cache
         if config.use_cached_solutions and solution_cache.solution_exists(task.id, agent.id):
@@ -169,7 +172,7 @@ async def evaluate_solutions(
 
 async def run_evaluation(demo_project: WebProject, tasks: List[Task], timing_metrics: TimingMetrics):
     """Orchestrate solution generation and evaluation."""
-    all_solutions = {agent.id: await generate_solutions(agent, tasks, timing_metrics) for agent in AGENTS}
+    all_solutions = {agent.id: await generate_solutions(demo_project, agent, tasks, timing_metrics) for agent in AGENTS}
     results = {agent.id: await evaluate_solutions(agent, tasks, all_solutions[agent.id], demo_project) for agent in AGENTS}
 
     print_performance_statistics(results, AGENTS, timing_metrics)
@@ -185,7 +188,6 @@ async def main():
 
     timing_metrics = TimingMetrics()
     timing_metrics.start()
-
     if not config.evaluate_real_tasks:
         # web_projects = demo_web_projects
         web_projects = await initialize_demo_webs_projects(demo_web_projects)

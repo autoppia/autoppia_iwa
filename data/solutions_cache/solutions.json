@@ -14771,5 +14771,1457 @@
         "web_agent_id": "tm3VEKtlzpRDy9Ey"
       }
     }
+  },
+  "41065b64-ec68-4138-b5a4-e3b3b2dd73a2": {
+    "tm3VEKtlzpRDy9Ey": {
+      "agent_id": "tm3VEKtlzpRDy9Ey",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741378502.724303,
+      "solution": {
+        "task_id": "41065b64-ec68-4138-b5a4-e3b3b2dd73a2",
+        "actions": [],
+        "web_agent_id": "tm3VEKtlzpRDy9Ey"
+      }
+    }
+  },
+  "a5fc2a1f-66ef-476a-9f2e-f3b717e9eeb8": {
+    "tm3VEKtlzpRDy9Ey": {
+      "agent_id": "tm3VEKtlzpRDy9Ey",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741378571.1957674,
+      "solution": {
+        "task_id": "a5fc2a1f-66ef-476a-9f2e-f3b717e9eeb8",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/nav/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "tm3VEKtlzpRDy9Ey"
+      }
+    }
+  },
+  "3d7221e0-bb5a-45b2-959f-1486f26f9b68": {
+    "tm3VEKtlzpRDy9Ey": {
+      "agent_id": "tm3VEKtlzpRDy9Ey",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741378614.7904153,
+      "solution": {
+        "task_id": "3d7221e0-bb5a-45b2-959f-1486f26f9b68",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/nav/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": "Create an Account",
+            "up": false,
+            "down": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test123456"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test123456@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test123456"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test123456"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "tm3VEKtlzpRDy9Ey"
+      }
+    }
+  },
+  "a020c17c-deb3-4f88-b143-0accacbc370b": {
+    "tm3VEKtlzpRDy9Ey": {
+      "agent_id": "tm3VEKtlzpRDy9Ey",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741378654.4452431,
+      "solution": {
+        "task_id": "a020c17c-deb3-4f88-b143-0accacbc370b",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/nav/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test1234"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "tm3VEKtlzpRDy9Ey"
+      }
+    }
+  },
+  "6cead0d6-63c6-4a91-87ae-35ca012a99e4": {
+    "tm3VEKtlzpRDy9Ey": {
+      "agent_id": "tm3VEKtlzpRDy9Ey",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741378699.3988674,
+      "solution": {
+        "task_id": "6cead0d6-63c6-4a91-87ae-35ca012a99e4",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/nav/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test1234new"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234new@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234new"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234new"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "tm3VEKtlzpRDy9Ey"
+      }
+    }
+  },
+  "5aedade0-c70b-436d-816b-cc3a2f8aefc3": {
+    "tm3VEKtlzpRDy9Ey": {
+      "agent_id": "tm3VEKtlzpRDy9Ey",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741378755.811489,
+      "solution": {
+        "task_id": "5aedade0-c70b-436d-816b-cc3a2f8aefc3",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/nav/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test1234"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test1234"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "testuser1"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "testuser1@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "testuser1"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "testuser1"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "tm3VEKtlzpRDy9Ey"
+      }
+    }
+  },
+  "1fbefd36-aab5-4d63-8175-d2f29661a3a1": {
+    "tm3VEKtlzpRDy9Ey": {
+      "agent_id": "tm3VEKtlzpRDy9Ey",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741378838.7952378,
+      "solution": {
+        "task_id": "1fbefd36-aab5-4d63-8175-d2f29661a3a1",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/nav/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12349"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12349@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12349"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12349"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "tm3VEKtlzpRDy9Ey"
+      }
+    }
+  },
+  "c66d83ec-1edf-4bcb-ba26-df8a63713f14": {
+    "tm3VEKtlzpRDy9Ey": {
+      "agent_id": "tm3VEKtlzpRDy9Ey",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741378939.330543,
+      "solution": {
+        "task_id": "c66d83ec-1edf-4bcb-ba26-df8a63713f14",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/nav/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12345"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12346"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12347"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12348"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12349"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12349@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12349"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12349"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "test12350"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "test12350@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "test12350"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "test12350"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "tm3VEKtlzpRDy9Ey"
+      }
+    }
   }
 }
