@@ -57,6 +57,9 @@ class BackendDemoWebService:
         Returns:
             List[BackendEvent]: List of events from the backend or an empty list if any failure occurs.
         """
+        if self.web_project.is_web_real:
+            return []
+
         endpoint = f"{self.base_url}events/list/"
         headers = {"X-WebAgent-Id": web_agent_id}
 
@@ -85,6 +88,9 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
+        if self.web_project.is_web_real:
+            return False
+
         endpoint = f"{self.base_url}events/reset/"
         headers = {"X-WebAgent-Id": web_agent_id}
 
@@ -133,6 +139,9 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
+        if self.web_project.is_web_real:
+            return False
+
         endpoint = f"{self.base_url}events/reset/all/"
 
         try:
@@ -158,6 +167,9 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
+        if self.web_project.is_web_real:
+            return False
+
         endpoint = f"{self.base_url}management_admin/reset_db/"
 
         try:
@@ -202,6 +214,9 @@ class BackendDemoWebService:
         Returns:
             bool: True if the event was sent successfully, False otherwise.
         """
+        if self.web_project.is_web_real:
+            return False
+
         payload = {
             "event_name": event_name,
             "data": data,
