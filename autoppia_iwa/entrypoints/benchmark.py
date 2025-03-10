@@ -24,7 +24,6 @@ from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_real_tasks
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # Setup logging
 logging.basicConfig(
@@ -65,7 +64,7 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
 AGENTS: List[BaseAgent] = [
-    RandomClickerWebAgent(id="2", name="Random-clicker"),
+    # RandomClickerWebAgent(id="2", name="Random-clicker"),
     ApifiedWebAgent(id='1', name="Browser-Use", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
@@ -126,7 +125,7 @@ async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: 
             logger.info(f"  Generating new solution for Task {task.id}...")
             start_time = time.time()
             # CAPA DE MINER
-            task.prepare_for_agent(agent.id)
+            task = task.prepare_for_agent(agent.id)
             # Solve the task
             solution = await agent.solve_task(task)
             actions = solution.actions or []
@@ -197,7 +196,7 @@ async def main():
         for project in web_projects:
             tasks = await generate_tasks(project)
             if tasks:
-                await run_evaluation(project, tasks[:1], timing_metrics)
+                await run_evaluation(project, tasks, timing_metrics)
     else:
         tasks_data = load_real_tasks(config.num_of_urls)
         web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
@@ -208,7 +207,7 @@ async def main():
                 await _load_web_analysis(project)
                 tasks = await generate_tasks(project, td)
                 if tasks:
-                    await run_evaluation(project, tasks, timing_metrics)
+                    await run_evaluation(project, tasks[:1], timing_metrics)
 
     logger.info("Evaluation complete!")
 

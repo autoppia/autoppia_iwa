@@ -132,6 +132,10 @@ class BackendDemoWebService:
             logger.error(f"Unexpected error resetting events: {e}")
             return False
 
+        finally:
+            if session:
+                await session.close()
+
     async def reset_all_events(self) -> bool:
         """
         Resets all events in the system regardless of user/web_agent.
@@ -159,6 +163,9 @@ class BackendDemoWebService:
         except Exception as e:
             logger.error(f"Failed to reset all events: {e}")
             return False
+        finally:
+            if session:
+                await session.close()
 
     async def reset_database(self) -> bool:
         """
@@ -201,6 +208,9 @@ class BackendDemoWebService:
         except Exception as e:
             logger.error(f"Failed to reset database: {e}")
             return False
+        finally:
+            if session:
+                await session.close()
 
     async def send_event(self, event_name: str, data: Dict[str, Any], web_agent_id: str) -> bool:
         """
