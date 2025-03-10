@@ -1,9 +1,9 @@
-import datetime
 import logging
+from typing import Any, Dict, List, Optional
+
 import aiohttp
-from typing import List, Optional
-from urllib.parse import urlparse
 from aiohttp.client_exceptions import ClientError
+
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class BackendDemoWebService:
     Stores the web_project on initialization and uses its backend_url for API calls.
     """
 
-    def __init__(self, web_project:WebProject) -> None:
+    def __init__(self, web_project: WebProject) -> None:
         """
         Initialize a single aiohttp session holder and store the web_project.
 
@@ -23,7 +23,7 @@ class BackendDemoWebService:
             web_project: The web project containing the backend_url to use
         """
         self._session: Optional[aiohttp.ClientSession] = None
-        self.web_project:WebProject = web_project
+        self.web_project: WebProject = web_project
         self.base_url = web_project.backend_url
 
     async def _get_session(self) -> aiohttp.ClientSession:
@@ -57,7 +57,10 @@ class BackendDemoWebService:
         Returns:
             List[BackendEvent]: List of events from the backend or an empty list if any failure occurs.
         """
-        endpoint = f"{self.base_url}api/events/list/"
+        if self.web_project.is_web_real:
+            return []
+
+        endpoint = f"{self.base_url}events/list/"
         headers = {"X-WebAgent-Id": web_agent_id}
 
         try:
@@ -75,20 +78,20 @@ class BackendDemoWebService:
 
         return []
 
-    async def reset_backend_events_db(self, web_agent_id: str) -> bool:
+    async def reset_web_agent_events(self, web_agent_id: str) -> bool:
         """
-        Resets backend events for the given web_agent_id.
+        Resets events for a specific user/web_agent.
 
         Args:
             web_agent_id (str): Identifier for the web_agent.
 
         Returns:
             bool: True if reset was successful, False otherwise.
-
-        Raises:
-            RuntimeError: If the reset operation fails with an unhandled error condition.
         """
-        endpoint = f"{self.base_url}api/events/reset/"
+        if self.web_project.is_web_real:
+            return False
+
+        endpoint = f"{self.base_url}events/reset/"
         headers = {"X-WebAgent-Id": web_agent_id}
 
         try:
@@ -108,8 +111,7 @@ class BackendDemoWebService:
                 # Raise on status >= 400
                 response.raise_for_status()
 
-                # Additional logic if needed
-                if response.status == 204:
+                if response.status in (200, 204):
                     logger.info(f"Successfully reset events for web_agent '{web_agent_id}'.")
                     return True
                 else:
@@ -122,37 +124,116 @@ class BackendDemoWebService:
                 logger.info(f"Successfully reset events for web_agent '{web_agent_id}' despite error.")
                 return True
 
-            error_message = f"Failed to reset backend events for web_agent '{web_agent_id}': {e}"
+            error_message = f"Failed to reset events for web_agent '{web_agent_id}': {e}"
             logger.error(error_message)
-            raise RuntimeError(error_message) from e
+            return False
 
-        return False  # Added explicit return for clarity
+        except Exception as e:
+            logger.error(f"Unexpected error resetting events: {e}")
+            return False
 
-    async def send_page_view_event(self, url: str, web_agent_id: str) -> bool:
+        finally:
+            if session:
+                await session.close()
+
+    async def reset_all_events(self) -> bool:
         """
-        Sends a PageView event to the backend for a given web_agent_id.
+        Resets all events in the system regardless of user/web_agent.
+
+        Returns:
+            bool: True if reset was successful, False otherwise.
+        """
+        if self.web_project.is_web_real:
+            return False
+
+        endpoint = f"{self.base_url}events/reset/all/"
+
+        try:
+            session = await self._get_session()
+            async with session.delete(endpoint, timeout=10) as response:
+                response.raise_for_status()
+
+                if response.status in (200, 204):
+                    logger.info("Successfully reset all events.")
+                    return True
+                else:
+                    logger.warning(f"Reset all events operation completed with unexpected status: {response.status}")
+                    return False
+
+        except Exception as e:
+            logger.error(f"Failed to reset all events: {e}")
+            return False
+        finally:
+            if session:
+                await session.close()
+
+    async def reset_database(self) -> bool:
+        """
+        Resets the entire database (requires admin/superuser permissions).
+
+        Returns:
+            bool: True if reset was successful, False otherwise.
+        """
+        if self.web_project.is_web_real:
+            return False
+
+        endpoint = f"{self.base_url}management_admin/reset_db/"
+
+        try:
+            session = await self._get_session()
+            async with session.post(endpoint, timeout=30) as response:
+                response.raise_for_status()
+
+                try:
+                    response_json = await response.json()
+                    status = response_json.get("status")
+                    message = response_json.get("message", "")
+
+                    if status == "success":
+                        logger.info(f"Database reset initiated: {message}")
+                        return True
+                    else:
+                        logger.warning(f"Database reset failed: {message}")
+                        return False
+
+                except Exception:
+                    # If we can't parse JSON, check status code
+                    if response.status in (200, 202):
+                        logger.info("Database reset initiated successfully.")
+                        return True
+                    else:
+                        logger.warning(f"Database reset completed with unexpected status: {response.status}")
+                        return False
+
+        except Exception as e:
+            logger.error(f"Failed to reset database: {e}")
+            return False
+        finally:
+            if session:
+                await session.close()
+
+    async def send_event(self, event_name: str, data: Dict[str, Any], web_agent_id: str) -> bool:
+        """
+        Sends an event to the backend for a given web_agent_id.
 
         Args:
-            url (str): The current page URL viewed by the agent.
-            web_agent_id (str): The ID of the web agent.
+            event_name (str): Type of the event (e.g., "page_view", "button_click")
+            data (Dict[str, Any]): Additional data related to the event
+            web_agent_id (str): The ID of the web agent
 
         Returns:
             bool: True if the event was sent successfully, False otherwise.
         """
-        parsed_url = urlparse(url)
-        path_only = parsed_url.path
+        if self.web_project.is_web_real:
+            return False
 
         payload = {
-            "event_type": "page_view",
-            "description": "Page viewed",
-            "data": {
-                "url": path_only,
-                "timestamp": datetime.datetime.now().isoformat(),
-            },
+            "event_name": event_name,
+            "data": data,
             "web_agent_id": web_agent_id,
         }
 
-        endpoint = f"{self.base_url}api/events/add/"
+        endpoint = f"{self.base_url}events/add/"
         headers = {"X-WebAgent-Id": web_agent_id}
 
         try:
@@ -160,9 +241,10 @@ class BackendDemoWebService:
             async with session.post(endpoint, json=payload, headers=headers, timeout=10) as response:
                 response.raise_for_status()
                 return True
+
         except ClientError as e:
-            logger.error(f"Failed to send PageView event: {e}")
+            logger.error(f"Failed to send {event_name} event: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error while sending PageView event: {e}")
+            logger.error(f"Unexpected error while sending {event_name} event: {e}")
 
         return False

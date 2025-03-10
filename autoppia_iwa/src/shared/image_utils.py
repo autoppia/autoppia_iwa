@@ -1,5 +1,6 @@
 import base64
 import io
+
 from PIL import Image
 
 
@@ -67,7 +68,7 @@ def simple_ascii_art(image, width=80):
                     # Map brightness to ASCII character with bounds checking
                     char_idx = min(len(chars) - 1, max(0, int(brightness / 255 * (len(chars) - 1))))
                     line += chars[char_idx]
-                except:
+                except Exception:
                     # If any error, just add a safe character
                     line += "."
             print(line)

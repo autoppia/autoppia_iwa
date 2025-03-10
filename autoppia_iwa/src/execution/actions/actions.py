@@ -1,10 +1,10 @@
 # actions.py
 import asyncio
 import json
-from loguru import logger
 from functools import wraps
 from typing import Optional, Union
 
+from loguru import logger
 from playwright.async_api import Page
 from pydantic import Field
 from typing_extensions import Annotated, Literal
@@ -134,37 +134,64 @@ class ScrollAction(BaseAction):
     up: bool = False
     down: bool = False
 
+    async def _scroll_by_value(self, page: Page, value: int) -> None:
+        """Scroll the page by a fixed amount."""
+        try:
+            if self.up:
+                await page.evaluate(f"window.scrollBy(0, -{value});")
+            elif self.down:
+                await page.evaluate(f"window.scrollBy(0, {value});")
+        except Exception as e:
+            print(f"Failed to scroll by value {value}: {e}\n\n\n Retrying with fallback.")
+            fallback_value = "window.innerHeight"
+            if self.up:
+                await page.evaluate(f"window.scrollBy(0, -{fallback_value});")
+            elif self.down:
+                await page.evaluate(f"window.scrollBy(0, {fallback_value});")
+
+    @staticmethod
+    async def _scroll_to_text(page: Page, text: str) -> None:
+        """Scroll the page to a specific text element."""
+        locators = [
+            page.get_by_text(text, exact=False),
+            page.locator(f"text={text}"),
+            page.locator(f"//*[contains(text(), '{text}')]"),
+        ]
+        for locator in locators:
+            try:
+                if await locator.count() > 0 and await locator.first.is_visible():
+                    await locator.first.scroll_into_view_if_needed()
+                    await asyncio.sleep(0.5)  # Allow time for the scroll to complete
+                    return
+            except Exception as e:
+                print(f"Failed to scroll to text '{text}' with locator: {e}")
+                continue
+        raise ValueError(f"Could not scroll to text: {text}")
+
     @log_action("ScrollAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
-        if self.up:
+    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str) -> None:
+        """Execute the scroll action."""
+        try:
+            if self.value is None:
+                scroll_amount = "window.innerHeight"
+                if self.up:
+                    await page.evaluate(f"window.scrollBy(0, -{scroll_amount});")
+                elif self.down:
+                    await page.evaluate(f"window.scrollBy(0, {scroll_amount});")
+            elif isinstance(self.value, int):
+                await self._scroll_by_value(page, self.value)
+            elif isinstance(self.value, str):
+                if self.value.lower() in ["max", "bottom"]:
+                    await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                else:
+                    await self._scroll_to_text(page, self.value)
+        except (Exception, ValueError) as e:
+            print(f"ScrollAction failed: {e}. Falling back to keyboard scroll.")
             try:
-                await page.evaluate(f"window.scrollBy(0, -{self.value});")
-            except Exception as e:
-                # logger.error(e)
-                await page.keyboard.press("PageUp")
-        elif self.down:
-            try:
-                await page.evaluate(f"window.scrollBy(0, {self.value});")
-            except Exception as e:
-                # logger.error(e)
-                await page.keyboard.press("PageDown")
-        else:
-            # Attempt text-based scroll
-            locators = [
-                page.get_by_text(str(self.value), exact=False),
-                page.locator(f"text={self.value}"),
-                page.locator(f"//*[contains(text(), '{self.value}')]"),
-            ]
-            for locator in locators:
-                try:
-                    if await locator.count() > 0 and await locator.first.is_visible():
-                        await locator.first.scroll_into_view_if_needed()
-                        await asyncio.sleep(0.5)
-                        return
-                except Exception as e:
-                    # logger.error(e)
-                    continue
-            raise ValueError(f"Could not scroll to: {self.value}")
+                await page.keyboard.press("PageDown" if self.down else "PageUp")
+            except Exception as kb_error:
+                print(f"Keyboard scroll also failed: {kb_error}")
+                raise ValueError(f"ScrollAction completely failed: {e}") from kb_error
 
 
 class SubmitAction(BaseActionWithSelector):

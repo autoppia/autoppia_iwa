@@ -2,17 +2,19 @@ import argparse
 import gc
 import json
 import sys
+import threading  # << NEW
 import time  # For timing
-
-from json_repair import repair_json
 
 from flask import Flask, request
 from flask_cors import CORS
+from json_repair import repair_json
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+# A global lock to ensure only one request is processed at a time.
+lock = threading.Lock()  # << NEW
 
 # ---------------------------------------------------------------------------
 # The model name as per Qwen docs (Adjust if you prefer Qwen2-7B-Instruct, etc.)
@@ -21,22 +23,13 @@ MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
 # Load tokenizer & model
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    torch_dtype="auto",
-    device_map="auto"
-)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype="auto", device_map="auto")
 model.eval()
 
 # ---------------------------------------------------------------------------
 # Global counters (optional)
 # ---------------------------------------------------------------------------
-counters = {
-    "total_requests": 0,
-    "json_requests": 0,
-    "json_correctly_formatted": 0,
-    "json_repair_succeeded": 0
-}
+counters = {"total_requests": 0, "json_requests": 0, "json_correctly_formatted": 0, "json_repair_succeeded": 0}
 
 
 def generate_data(messages, temperature, max_tokens, json_format=False, schema=None):
@@ -55,36 +48,20 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
                 0,
                 {
                     "role": "system",
-                    "content": (
-                        "You must respond in **valid JSON** that meets the following schema.\n\n"
-                        "Do not include extra keys. Output **only** the JSON object.\n\n"
-                        f"{schema_text}"
-                    ),
+                    "content": ("You must respond in **valid JSON** that meets the following schema.\n\n" "Do not include extra keys. Output **only** the JSON object.\n\n" f"{schema_text}"),
                 },
             )
 
         # Convert messages to a single text prompt
-        text_prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            chat_format=None
-        )
+        text_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, chat_format=None)
 
         model_inputs = tokenizer([text_prompt], return_tensors="pt").to(model.device)
         tokens_in = model_inputs.input_ids.shape[1]  # Count how many tokens enter
 
         # Generate
-        generated_ids = model.generate(
-            **model_inputs,
-            max_new_tokens=max_tokens,
-            temperature=temperature
-        )
+        generated_ids = model.generate(**model_inputs, max_new_tokens=max_tokens, temperature=temperature)
         # Remove the prompt part so we only decode newly generated tokens
-        generated_ids = [
-            output_ids[len(input_ids):]
-            for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
+        generated_ids = [output_ids[len(input_ids) :] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)]
         tokens_out = len(generated_ids[0])  # Number of generated tokens
 
         response_text = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
@@ -95,13 +72,13 @@ def generate_data(messages, temperature, max_tokens, json_format=False, schema=N
             try:
                 json.loads(response_text)
                 counters["json_correctly_formatted"] += 1
-            except:
+            except Exception:
                 try:
                     repaired_text = repair_json(response_text, ensure_ascii=False)
                     repaired_obj = json.loads(repaired_text)
                     response_text = json.dumps(repaired_obj, ensure_ascii=False)
                     counters["json_repair_succeeded"] += 1
-                except:
+                except Exception:
                     pass
 
         return response_text, tokens_in, tokens_out
@@ -145,21 +122,12 @@ def generate_data_batch(requests, temperature, max_tokens):
                 0,
                 {
                     "role": "system",
-                    "content": (
-                        "You must respond in **valid JSON** that meets the following schema.\n\n"
-                        "Do not include extra keys. Output **only** the JSON object.\n\n"
-                        f"{schema_text}"
-                    ),
+                    "content": ("You must respond in **valid JSON** that meets the following schema.\n\n" "Do not include extra keys. Output **only** the JSON object.\n\n" f"{schema_text}"),
                 },
             )
 
         # Convert messages to a single text prompt
-        prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            chat_format=None
-        )
+        prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, chat_format=None)
         text_prompts.append(prompt)
         meta_info.append((json_format, schema))
 
@@ -167,17 +135,12 @@ def generate_data_batch(requests, temperature, max_tokens):
     model_inputs = tokenizer(text_prompts, return_tensors="pt", padding=True).to(model.device)
 
     # Count tokens_in for each request individually (sum them up)
-    # shape is [batch_size, seq_length], so each row is a request
     batch_size = model_inputs.input_ids.shape[0]
     tokens_in_list = [len(model_inputs.input_ids[i]) for i in range(batch_size)]
     total_tokens_in = sum(tokens_in_list)
 
     # Generate in a single batch
-    generated = model.generate(
-        **model_inputs,
-        max_new_tokens=max_tokens,
-        temperature=temperature
-    )
+    generated = model.generate(**model_inputs, max_new_tokens=max_tokens, temperature=temperature)
 
     # For each request in the batch, slice off the original prompt
     outputs = []
@@ -202,13 +165,13 @@ def generate_data_batch(requests, temperature, max_tokens):
             try:
                 json.loads(text)
                 counters["json_correctly_formatted"] += 1
-            except:
+            except Exception:
                 try:
                     repaired_text = repair_json(text, ensure_ascii=False)
                     repaired_obj = json.loads(repaired_text)
                     text = json.dumps(repaired_obj, ensure_ascii=False)
                     counters["json_repair_succeeded"] += 1
-                except:
+                except Exception:
                     pass
 
         outputs.append(text)
@@ -222,60 +185,56 @@ def handler():
     """
     Single-request endpoint: processes exactly one list-of-messages.
     """
-    counters["total_requests"] += 1
-    request_number = counters["total_requests"]
+    # Ensure only one request is processed at a time
+    with lock:  # << NEW
+        counters["total_requests"] += 1
+        request_number = counters["total_requests"]
 
-    try:
-        data = request.json or {}
+        try:
+            data = request.json or {}
 
-        messages = data.get("messages", [])
-        temperature = float(data.get("temperature", 0.1))
-        max_tokens = int(data.get("max_tokens", 256))
-        json_format = bool(data.get("json_format", False))
-        schema = data.get("schema", None)
+            messages = data.get("messages", [])
+            temperature = float(data.get("temperature", 0.1))
+            max_tokens = int(data.get("max_tokens", 256))
+            json_format = bool(data.get("json_format", False))
+            schema = data.get("schema", None)
 
-        start_time = time.time()
+            start_time = time.time()
 
-        output, tokens_in, tokens_out = generate_data(
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            json_format=json_format,
-            schema=schema
-        )
+            output, tokens_in, tokens_out = generate_data(messages=messages, temperature=temperature, max_tokens=max_tokens, json_format=json_format, schema=schema)
 
-        end_time = time.time()
-        time_per_request = end_time - start_time
-        tokens_per_second = tokens_out / time_per_request if time_per_request > 0 else 0
+            end_time = time.time()
+            time_per_request = end_time - start_time
+            tokens_per_second = tokens_out / time_per_request if time_per_request > 0 else 0
 
-        # Logging
-        print("[handler] Single-request stats:")
-        print(f"  Request number:       {request_number}")
-        print(f"  temperature:          {temperature}")
-        print(f"  max_tokens:           {max_tokens}")
-        print(f"  json_format:          {json_format}")
-        print(f"  total token input:    {tokens_in}")
-        print(f"  total token output:   {tokens_out}")
-        print(f"  tokens per second:    {tokens_per_second:.2f}")
-        print(f"  time per petition:    {time_per_request:.2f} s")
+            # Logging
+            print("[handler] Single-request stats:")
+            print(f"  Request number:       {request_number}")
+            print(f"  temperature:          {temperature}")
+            print(f"  max_tokens:           {max_tokens}")
+            print(f"  json_format:          {json_format}")
+            print(f"  total token input:    {tokens_in}")
+            print(f"  total token output:   {tokens_out}")
+            print(f"  tokens per second:    {tokens_per_second:.2f}")
+            print(f"  time per petition:    {time_per_request:.2f} s")
 
-        print(f"[handler] Final Answer:\n{output}")
+            print(f"[handler] Final Answer:\n{output}")
 
-        return {"output": output}
+            return {"output": output}
 
-    except ValueError as ve:
-        print("[handler] ValueError occurred:", ve, file=sys.stderr)
-        return {"error": str(ve)}, 400
-    except Exception as e:
-        print("[handler] Exception occurred:", e, file=sys.stderr)
-        return {"error": str(e)}, 500
-    finally:
-        print("\n=== Current Counter Stats ===")
-        print(f"Total requests answered: {counters['total_requests']}")
-        print(f"JSON requests: {counters['json_requests']}")
-        print(f"JSON originally valid: {counters['json_correctly_formatted']}")
-        print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
-        print("=================================")
+        except ValueError as ve:
+            print("[handler] ValueError occurred:", ve, file=sys.stderr)
+            return {"error": str(ve)}, 400
+        except Exception as e:
+            print("[handler] Exception occurred:", e, file=sys.stderr)
+            return {"error": str(e)}, 500
+        finally:
+            print("\n=== Current Counter Stats ===")
+            print(f"Total requests answered: {counters['total_requests']}")
+            print(f"JSON requests: {counters['json_requests']}")
+            print(f"JSON originally valid: {counters['json_correctly_formatted']}")
+            print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
+            print("=================================")
 
 
 @app.route("/generate_parallel", methods=["POST"])
@@ -294,75 +253,72 @@ def handler_parallel():
       "max_tokens": 1024
     }
     """
-    # Count as one "batch" request overall
-    counters["total_requests"] += 1
-    request_number = counters["total_requests"]
+    # Ensure only one request is processed at a time
+    with lock:  # << NEW
+        counters["total_requests"] += 1
+        request_number = counters["total_requests"]
 
-    try:
-        data = request.json or {}
-        requests_list = data.get("requests", [])
+        try:
+            data = request.json or {}
+            requests_list = data.get("requests", [])
 
-        # Fallback if no requests given
-        if not isinstance(requests_list, list) or len(requests_list) == 0:
-            return {"error": "No requests provided."}, 400
+            # Fallback if no requests given
+            if not isinstance(requests_list, list) or len(requests_list) == 0:
+                return {"error": "No requests provided."}, 400
 
-        temperature = float(data.get("temperature", 0.1))
-        max_tokens = int(data.get("max_tokens", 1024))
+            temperature = float(data.get("temperature", 0.1))
+            max_tokens = int(data.get("max_tokens", 1024))
 
-        start_time = time.time()
+            start_time = time.time()
 
-        # Generate results in one batch
-        outputs, total_tokens_in, total_tokens_out = generate_data_batch(
-            requests_list,
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
+            # Generate results in one batch
+            outputs, total_tokens_in, total_tokens_out = generate_data_batch(requests_list, temperature=temperature, max_tokens=max_tokens)
 
-        end_time = time.time()
-        total_time = end_time - start_time
+            end_time = time.time()
+            total_time = end_time - start_time
 
-        # Throughput: total tokens out per second
-        tokens_per_second = total_tokens_out / total_time if total_time > 0 else 0
-        # Average time per request
-        avg_time_per_request = total_time / len(requests_list) if len(requests_list) > 0 else 0
+            # Throughput: total tokens out per second
+            tokens_per_second = total_tokens_out / total_time if total_time > 0 else 0
+            # Average time per request
+            avg_time_per_request = total_time / len(requests_list) if len(requests_list) > 0 else 0
 
-        # Logging
-        print("[handler_parallel] Batch-request stats:")
-        print(f"  Batch Request number:     {request_number}")
-        print(f"  Number of sub-requests:   {len(requests_list)}")
-        print(f"  temperature (global):     {temperature}")
-        print(f"  max_tokens (global):      {max_tokens}")
-        print(f"  total token input (sum):  {total_tokens_in}")
-        print(f"  total token output (sum): {total_tokens_out}")
-        print(f"  total time:               {total_time:.2f} s")
-        print(f"  tokens per second:        {tokens_per_second:.2f}")
-        print(f"  avg time per sub-request: {avg_time_per_request:.2f} s")
+            # Logging
+            print("[handler_parallel] Batch-request stats:")
+            print(f"  Batch Request number:     {request_number}")
+            print(f"  Number of sub-requests:   {len(requests_list)}")
+            print(f"  temperature (global):     {temperature}")
+            print(f"  max_tokens (global):      {max_tokens}")
+            print(f"  total token input (sum):  {total_tokens_in}")
+            print(f"  total token output (sum): {total_tokens_out}")
+            print(f"  total time:               {total_time:.2f} s")
+            print(f"  tokens per second:        {tokens_per_second:.2f}")
+            print(f"  avg time per sub-request: {avg_time_per_request:.2f} s")
 
-        # Return a list of outputs
-        return {
-            "outputs": outputs,
-            "stats": {
-                "total_tokens_in": total_tokens_in,
-                "total_tokens_out": total_tokens_out,
-                "tokens_per_second": tokens_per_second,
-                "total_time": total_time,
-                "avg_time_per_request": avg_time_per_request
+            # Return a list of outputs
+            return {
+                "outputs": outputs,
+                "stats": {
+                    "total_tokens_in": total_tokens_in,
+                    "total_tokens_out": total_tokens_out,
+                    "tokens_per_second": tokens_per_second,
+                    "total_time": total_time,
+                    "avg_time_per_request": avg_time_per_request,
+                },
             }
-        }
 
-    except ValueError as ve:
-        print("[handler_parallel] ValueError occurred:", ve, file=sys.stderr)
-        return {"error": str(ve)}, 400
-    except Exception as e:
-        print("[handler_parallel] Exception occurred:", e, file=sys.stderr)
-        return {"error": str(e)}, 500
-    finally:
-        print("\n=== Current Counter Stats ===")
-        print(f"Total requests answered: {counters['total_requests']}")
-        print(f"JSON requests: {counters['json_requests']}")
-        print(f"JSON originally valid: {counters['json_correctly_formatted']}")
-        print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
-        print("=================================")
+        except ValueError as ve:
+            print("[handler_parallel] ValueError occurred:", ve, file=sys.stderr)
+            return {"error": str(ve)}, 400
+        except Exception as e:
+            print("[handler_parallel] Exception occurred:", e, file=sys.stderr)
+            return {"error": str(e)}, 500
+        finally:
+            print("\n=== Current Counter Stats ===")
+            print(f"Total requests answered: {counters['total_requests']}")
+            print(f"JSON requests: {counters['json_requests']}")
+            print(f"JSON originally valid: {counters['json_correctly_formatted']}")
+            print(f"JSON repaired successfully: {counters['json_repair_succeeded']}")
+            print("=================================")
 
 
 if __name__ == "__main__":
@@ -370,4 +326,6 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=6000, help="Port to run the service on")
     args = parser.parse_args()
 
-    app.run(host="0.0.0.0", port=args.port, debug=True, use_reloader=False)
+    # Run Flask so it only processes one request at a time
+    # by disabling threading.
+    app.run(host="0.0.0.0", port=args.port, debug=False, use_reloader=False, threaded=False)

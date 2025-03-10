@@ -10,9 +10,10 @@ load_dotenv()
 # ============================
 # LLM CONFIGURATION
 # ============================
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "serverless", "local", or "openai"
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "local" or "openai"
 LLM_THRESHOLD = 100
 LLM_CONTEXT_WINDOW = int(os.getenv("LLM_CONTEXT_WINDOW", 10000))
+
 LOCAL_MODEL_ENDPOINT = os.getenv("LOCAL_MODEL_ENDPOINT", "http://127.0.0.1:6000/generate")
 LOCAL_PARALLEL_MODEL_ENDPOINT = os.getenv("LOCAL_PARALLEL_MODEL_ENDPOINT", "http://127.0.0.1:6000/generate_parallel")
 
@@ -34,14 +35,6 @@ MONGODB_NAME = "workflow"
 ANALYSIS_COLLECTION = "web_analysis"
 TASKS_COLLECTION = "tasks"
 DOCUMENTS_DIR = "data/web_analysis_files"
-
-# ============================
-# Browser and Chrome Paths
-# ============================
-CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH", "/opt/chromedriver/chromedriver-linux64/chromedriver")
-CHROME_PATH = os.getenv("CHROME_PATH", "/opt/chrome/chrome-linux64/chrome")
-PROFILE_DIR = os.getenv("PROFILE_DIR", "~/.config/google-chrome/Profile 6")
-PROFILE = os.getenv("PROFILE", "Profile 6")
 
 # ============================
 # Application Configuration

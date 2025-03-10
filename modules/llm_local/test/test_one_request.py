@@ -1,5 +1,6 @@
-import requests
 import json
+
+import requests
 
 
 def make_request():
@@ -10,17 +11,11 @@ def make_request():
     # we send messages/temperature/max_tokens at the top level.
     data = {
         "messages": [
-            {
-                "role": "system",
-                "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
-            },
-            {
-                "role": "user",
-                "content": "Give me a short introduction to large language model."
-            }
+            {"role": "system", "content": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."},
+            {"role": "user", "content": "Give me a short introduction to large language model."},
         ],
         "temperature": 0.1,
-        "max_tokens": 256
+        "max_tokens": 256,
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))

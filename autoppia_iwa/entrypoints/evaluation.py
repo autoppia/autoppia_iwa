@@ -7,41 +7,28 @@ from typing import List
 import matplotlib.pyplot as plt
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.demo_webs.config import demo_web_projects, initialize_test_demo_web_projects
-from autoppia_iwa.src.data_generation.domain.classes import (
-    TaskGenerationConfig,
-    TasksGenerationOutput,
-)
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-
-from autoppia_iwa.src.evaluation.classes import EvaluationResult
-from autoppia_iwa.src.evaluation.evaluator.evaluator import (
-    ConcurrentEvaluator,
-    EvaluatorConfig,
-)
+from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
+from autoppia_iwa.src.demo_webs.config import demo_web_projects, test_demo_web_projects
+from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
+from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-
 
 # Bootstrap the application and its DI container.
 app = AppBootstrap()
 
 
 async def generate_tasks(num_tasks: int = 3):
-    test_projects = await initialize_test_demo_web_projects()
+    test_projects = test_demo_web_projects
+    test_projects = await initialize_demo_webs_projects(test_projects)
     web_project = test_projects[0]
-    config = TaskGenerationConfig(
-        save_task_in_db=False,
-        save_web_analysis_in_db=True,
-        enable_crawl=True,
-        generate_milestones=False,
-        global_tasks_to_generate=num_tasks,
-        local_tasks_to_generate_per_url=1,
-    )
+    config = TaskGenerationConfig(save_task_in_db=False)
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
-    tasks = await pipeline.generate()
+    tasks: List[Task] = await pipeline.generate()
     return tasks
 
 
@@ -51,17 +38,10 @@ async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
 
     for task in tasks:
         task_solution: TaskSolution = await agent.solve_task(task)
-        evaluator_input = TaskSolution(
-            task=task,
-            actions=task_solution.actions,
-            web_agent_id=agent.id
-        )
-        evaluator_config = EvaluatorConfig(
-            starting_url=task.url,
-            save_results_in_db=False
-        )
-        evaluator = ConcurrentEvaluator(evaluator_config)
-        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task(evaluator_input)
+        evaluator_input = TaskSolution(task_id=task.id, actions=task_solution.actions, web_agent_id=agent.id)
+        evaluator_config = EvaluatorConfig(save_results_in_db=False)
+        evaluator = ConcurrentEvaluator(project, evaluator_config)
+        evaluation_result: EvaluationResult = await evaluator.evaluate_single_task_solution(task, evaluator_input)
         score = evaluation_result.final_score
         results[agent.id]["global_scores"].append(score)
         results[agent.id]["projects"][project.name].append(score)
@@ -121,13 +101,7 @@ def plot_agent_results(results, agents):
     plt.title('Agent Performance')
     for bar, score in zip(bars, agent_avg_scores):
         yval = bar.get_height()
-        plt.text(
-            bar.get_x() + bar.get_width() / 2,
-            yval,
-            f'{score:.1f}',
-            ha='center',
-            va='bottom'
-        )
+        plt.text(bar.get_x() + bar.get_width() / 2, yval, f'{score:.1f}', ha='center', va='bottom')
     plt.savefig("output.png")
 
 
@@ -149,10 +123,7 @@ def judge_tasks_feasibility(tasks, results, agents):
     for agent in agents:
         agent_scores = results[agent.id]["global_scores"]
         judge_input += f"  {agent.name} => Scores: {agent_scores}\n"
-    judge_input += (
-        "\nPlease evaluate if these tasks were feasible, whether the tests seem valid, and "
-        "offer suggestions for improving task/test generation."
-    )
+    judge_input += "\nPlease evaluate if these tasks were feasible, whether the tests seem valid, and " "offer suggestions for improving task/test generation."
 
     app = AppBootstrap()
     llm_service = app.container.llm_service()
@@ -170,12 +141,9 @@ def judge_tasks_feasibility(tasks, results, agents):
 
 
 async def main():
-    tasks = generate_tasks(num_tasks=3)
+    tasks = await generate_tasks(num_tasks=1)
 
-    agents: List[BaseAgent] = [
-        RandomClickerWebAgent(),
-        ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)
-    ]
+    agents: List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
     results = {agent.id: {"global_scores": [], "projects": {}} for agent in agents}
 
     for demo_project in demo_web_projects:

@@ -1,15 +1,15 @@
 import argparse
-from PIL import Image
+
 import torch
-from transformers import CLIPProcessor, CLIPModel
+from PIL import Image
+from transformers import CLIPModel, CLIPProcessor
 
 
 def main():
     # 1. Parse command-line arguments
     parser = argparse.ArgumentParser(description="Use CLIP to classify screenshot content.")
     parser.add_argument("--filename", required=True, help="Path to the screenshot image file.")
-    parser.add_argument("--model_name", default="openai/clip-vit-large-patch14",
-                        help="Name of the CLIP-like model on the Hugging Face Hub.")
+    parser.add_argument("--model_name", default="openai/clip-vit-large-patch14", help="Name of the CLIP-like model on the Hugging Face Hub.")
     args = parser.parse_args()
 
     # 2. Load the specified CLIP model and processor
@@ -20,18 +20,10 @@ def main():
     image = Image.open(args.filename).convert("RGB")
 
     # 4. Define text labels for your use case
-    labels = [
-        "Login",
-        "Not login"
-    ]
+    labels = ["Login", "Not login"]
 
     # 5. Process inputs for CLIP
-    inputs = processor(
-        text=labels,
-        images=image,
-        return_tensors="pt",
-        padding=True
-    )
+    inputs = processor(text=labels, images=image, return_tensors="pt", padding=True)
 
     # 6. Forward pass: get similarity logits for image-text pairs
     with torch.no_grad():

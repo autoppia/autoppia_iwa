@@ -1,37 +1,41 @@
+# file: data_generation/domain/tests_classes.py
 import json
+import re
+import time
 from abc import ABC, abstractmethod
+from datetime import datetime, timezone
 from pathlib import Path
-from pydantic import BaseModel, Field, field_validator
+from typing import Dict, List, Literal, Type
+
+from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
+from pydantic import BaseModel, Field, ValidationError, field_validator
+
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from bs4 import BeautifulSoup
-import re
-from typing import List
+
+from ...shared.web_utils import generate_html_differences
+from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
+from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
 
 
 class ITest(ABC):
     @abstractmethod
-    def _execute_test(
+    async def _execute_test(
         self,
+        web_project: WebProject,
         current_iteration: int,
-        prompt:str,
+        prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
+        browser_snapshots: List[BrowserSnapshot],
+        total_iterations: int,
     ) -> bool:
         """
         Abstract method to implement the specific logic for the test.
-
-        Args:
-            current_iteration (int): The current iteration index.
-            task (Task): The task being tested.
-            snapshot (BrowserSnapshot): The browser snapshot for the current iteration.
-            browser_snapshots (List[BrowserSnapshot]): All available browser snapshots.
-
-        Returns:
-            bool: True if the test passes, otherwise False.
         """
 
 
@@ -39,128 +43,122 @@ class BaseTaskTest(BaseModel, ITest):
     """
     Base class for all task tests.
     """
+
     class Config:
+        extra = "allow"
         arbitrary_types_allowed = True
 
-    def execute_test(
+    async def execute_test(
         self,
+        web_project: WebProject,
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
+        browser_snapshots: List[BrowserSnapshot],
+        total_iterations: int,
     ) -> bool:
         """
-        Entry point for running the test. It calls the internal `_execute_test`.
+        Executes the test by delegating to the _execute_test method.
         """
-        return self._execute_test(current_iteration=current_iteration, prompt=prompt, snapshot=snapshot, browser_snapshots=browser_snapshots)
+        return await self._execute_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iterations)
 
-    def _execute_test(
+    async def _execute_test(
         self,
+        web_project: WebProject,
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
+        browser_snapshots: List[BrowserSnapshot],
+        total_iterations: int,
     ) -> bool:
         """
-        Placeholder method to be overridden by subclasses.
+        Must be overridden by subclasses.
         """
-        raise NotImplementedError("Subclasses must implement this method.")
+        raise NotImplementedError("Method not implemented")
 
     def serialize(self) -> dict:
         """
-        Serialize a BaseTaskTest object to a dictionary suitable for JSON storage.
-
-        Returns:
-            dict: A serialized representation of the test
+        Serialize a BaseTaskTest (or subclass) to a dict, ensuring 'type' is included.
         """
-        # Get basic model data
         serialized = self.model_dump()
-
-        # Ensure type is included for proper deserialization
-        if not "type" in serialized:
+        if "type" not in serialized:
             serialized["type"] = self.__class__.__name__
-
         return serialized
 
     @classmethod
     def deserialize(cls, data: dict) -> "BaseTaskTest":
         """
-        Deserialize a dictionary into a BaseTaskTest or its subclass instance.
-
-        Args:
-            data (dict): Serialized test data
-
-        Returns:
-            BaseTaskTest: A reconstructed test object of the appropriate subclass
+        A fallback manual approach if needed,
+        in case you do not rely on the 'Union[...]' approach in your Task model.
         """
-        # Get test type
-        test_type = data.get("type")
-
-        # Import all test classes dynamically to avoid circular imports
-        # This approach assumes all test classes are defined in the same module
-        test_classes = {
+        test_type = data.get("type", "")
+        test_classes: Dict[str, Type[BaseTaskTest]] = {
             "CheckUrlTest": CheckUrlTest,
             "FindInHtmlTest": FindInHtmlTest,
             "CheckEventTest": CheckEventTest,
-            "CheckPageViewEventTest": CheckPageViewEventTest,
             "JudgeBaseOnHTML": JudgeBaseOnHTML,
             "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
-            # Add any additional test classes here
         }
-
-        # Get the appropriate class based on type
         target_class = test_classes.get(test_type, cls)
-
-        # Create and return the instance
         try:
             return target_class.model_validate(data)
-        except Exception as e:
-            # Fallback if validation fails
-            return target_class(**data)
+        except ValidationError as e:
+            raise ValueError(f"Failed to deserialize data: {e}") from e
 
 
 class CheckUrlTest(BaseTaskTest):
     """
-    Test class to verify the current browser URL matches a specified target URL.
+    Test that checks if the browser navigated to a specific URL with different matching options.
     """
-    type: str = "CheckUrlTest"
-    url: str
-    description: str = Field(
-        default="Check URL",
-        description="Description of the test",
-    )
 
-    def _execute_test(
+    type: Literal["CheckUrlTest"] = "CheckUrlTest"
+    url: str
+    match_type: Literal["exact", "contains", "regex"] = "contains"
+    description: str = Field(default="Check if browser navigated to URL")
+
+    async def _execute_test(
         self,
+        web_project: WebProject,
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
+        browser_snapshots: List[BrowserSnapshot],
+        total_iterations: int,
     ) -> bool:
         """
-        Compares the current snapshot URL to the expected `url`.
+        Execute the test on the given snapshots with the specified matching strategy.
         """
-        return self.url in snapshot.current_url
+        current_url = snapshot.current_url
+
+        if self.match_type == "exact":
+            return current_url == self.url
+        elif self.match_type == "contains":
+            return self.url in current_url
+        elif self.match_type == "regex":
+            return bool(re.search(self.url, current_url))
+
+        return False
 
 
 class FindInHtmlTest(BaseTaskTest):
     """
-    Test class to find a specific substring in the current HTML content.
-    This version performs direct substring matching rather than semantic similarity.
+    Test class to find content in the current HTML with different matching strategies.
     """
-    type: str = "FindInHtmlTest"
-    substring: str = Field(..., description="substring to look for in the HTML")
+
+    type: Literal["FindInHtmlTest"] = "FindInHtmlTest"
+    content: str = Field(..., description="Content to look for in the HTML")
+    match_type: Literal["exact", "contains", "regex"] = "contains"
     description: str = Field(
-        default="Find substring in HTML using direct matching",
+        default="Find content in HTML using specified matching strategy",
         description="Description of the test",
     )
 
-    @field_validator('substring')
+    @field_validator('content')
     @classmethod
-    def validate_substring(cls, substring: str) -> str:
-        if not substring.strip():
-            raise ValueError("Substring cannot be empty or consist of only whitespace")
-        return substring.strip()
+    def validate_content(cls, content: str) -> str:
+        if not content.strip():
+            raise ValueError("Content cannot be empty or consist of only whitespace")
+        return content.strip()
 
     def extract_text_from_html(self, html: str) -> str:
         """Extract readable text content from HTML."""
@@ -169,195 +167,212 @@ class FindInHtmlTest(BaseTaskTest):
         for script in soup(["script", "style"]):
             script.extract()
         # Get text
-        text = soup.get_text(separator=' ', strip=True)
-        # Remove extra whitespace
-        text = re.sub(r'\s+', ' ', text).strip()
-        return text
+        text = soup.get_text(separator=" ", strip=True)
+        return re.sub(r'\s+', ' ', text).strip()
 
-    def execute_test(
+    async def _execute_test(
         self,
+        web_project: WebProject,
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
+        browser_snapshots: List[BrowserSnapshot],
+        total_iterations: int,
     ) -> bool:
         """
-        Checks if the specified substring is present in the current snapshot's HTML.
-        Returns True if the substring is found, False otherwise.
+        Checks if the specified content is present in the current snapshot's HTML
+        using the specified matching strategy.
         """
-        case_sensitive = False
-        # Extract text from HTML
-        content = self.extract_text_from_html(snapshot.current_html)
-        # If case-insensitive matching is requested, convert content to lowercase
-        if not case_sensitive:
-            content = content.lower()
+        html = snapshot.current_html
 
-        # Apply case conversion if needed
-        search_substring = self.substring if case_sensitive else self.substring.lower()
+        if self.match_type == "exact":
+            return self.content == html
+        elif self.match_type == "contains":
+            # Extract text for contains match to avoid HTML tag issues
+            extracted_text = self.extract_text_from_html(html)
+            return self.content in extracted_text
+        elif self.match_type == "regex":
+            return bool(re.search(self.content, html))
 
-        if search_substring in content:
-            return True
-        else:
-            return False
+        return False
 
 
 class CheckEventTest(BaseTaskTest):
     """
-    Test class to verify if a specific backend event was emitted.
+    Test that checks if specific events were triggered based on event type and criteria.
     """
-    type: str = "CheckEventTest"
-    event_name: str = Field(..., description="Name of the expected backend event")
-    description: str = Field(
-        default="Check event",
-        description="Description of the test",
-    )
 
-    def _execute_test(
+    type: Literal["CheckEventTest"] = "CheckEventTest"
+    event_name: str
+    event_criteria: Dict = Field(default_factory=dict)
+    description: str = Field(default="Check if specific event was triggered")
+
+    async def _execute_test(
         self,
+        web_project: WebProject,
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
+        browser_snapshots: List[BrowserSnapshot],
+        total_iterations: int,
     ) -> bool:
         """
-        Checks for the presence of the specified event name in the current snapshot's backend events.
+        Execute the test on the given snapshots by checking for specific events.
         """
-        return any(event.event_type == self.event_name for event in snapshot.backend_events)
+        if (current_iteration + 1) < total_iterations:
+            return False
+        events = web_project.events
 
+        # Get the event class matching event_name
+        event_class = next((event_cls for event_cls in events if event_cls.get_event_type() == self.event_name), None)
+        if not event_class:
+            return False
 
-class CheckPageViewEventTest(BaseTaskTest):
-    """
-    Test class to verify if a specific page view event was logged in the backend.
-    """
-    type: str = "CheckPageViewEventTest"
-    page_view_url: str = Field(..., description="The URL expected to trigger a page view event")
-    description: str = Field(
-        default="Check page view event",
-        description="Description of the test",
-    )
+        # Get the validation criteria class from the event class
+        validation_model = event_class.ValidationCriteria
 
-    def _execute_test(
-        self,
-        current_iteration: int,
-        prompt: str,
-        snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
-    ) -> bool:
-        """
-        Looks for a page view event that has 'url' matching `page_view_url`.
-        """
-        events = snapshot.backend_events
-        return self.page_view_url in [event.data.get("url", "") for event in events if event.data]
+        # Parse the criteria using the appropriate Pydantic model
+        try:
+            parsed_criteria = validation_model(**self.event_criteria)
+        except ValidationError as e:
+            print(f"Invalid validation criteria: {e}")
+            return False
+
+        # Check if any event of the correct type matches our criteria
+        for event in Event.parse_all(snapshot.backend_events):
+            if isinstance(event, event_class) and event.validate_criteria(parsed_criteria):
+                return True
+
+        return False
 
 
 class JudgeBaseOnHTML(BaseTaskTest):
-    """
-    Test class to generate an opinion based on changes in HTML before and after an action.
-    """
-    type: str = "JudgeBaseOnHTML"
-    success_criteria: str = Field(..., description="What should the LLM look for to verify success of the task.")
-    description: str = Field(
-        default="Judge based on HTML changes",
-        description="Description of the test",
-    )
+    type: Literal["JudgeBaseOnHTML"] = "JudgeBaseOnHTML"
+    success_criteria: str
+    description: str = Field(default="Judge based on HTML changes")
 
-    class Config:
-        arbitrary_types_allowed = True
-
-    def __init__(self, **data):
-        super().__init__(**data)
-
-    def _execute_test(
+    async def _execute_test(
         self,
+        web_project: WebProject,
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
+        browser_snapshots: List[BrowserSnapshot],
+        total_iterations: int,
     ) -> bool:
-        """
-        Retrieves the HTML before this iteration and compares it to the current iteration's HTML.
-        Uses an LLM to determine if the task was successfully completed.
-        """
-        from autoppia_iwa.src.shared.web_utils import clean_html
-        # Guard for current_iteration - 1
-        if current_iteration == 0:
-            return False  # Or handle differently if needed
-        html_before = clean_html(browser_snapshots[current_iteration - 1].current_html)
-        html_after = clean_html(snapshot.current_html)
-        action = str(snapshot.action)
-        return self._analyze_htmls(action, html_before, html_after)
+        if current_iteration != total_iterations - 1:
+            return False
 
-    def _analyze_htmls(self, action: str, html_before: str, html_after: str, llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
-        system_message = (
-            "You are a professional web page analyzer. Your task is to determine whether the given task was completed "
-            "with the action given, by analyzing the HTML before and after the action."
-        )
-        user_message = f"Current action: {action}\nHTML Before:\n{html_before}\n\nHTML After:\n{html_after}"
-        payload = [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": user_message}
-        ]
-        schema_path = Path(PROJECT_BASE_DIR) / "config" / "schemas" / "eval_html_test.json"
-        with schema_path.open(encoding="utf-8") as f:
-            json_schema = json.load(f)
-        result = llm_service.predict(payload, json_format=True, schema=json_schema)
-        parsed_result = json.loads(result)
-        return parsed_result["task_completed"]
+        all_htmls = self._collect_all_htmls(browser_snapshots)
+        if not all_htmls:
+            return False
+
+        differences = generate_html_differences(all_htmls)
+        if not differences:
+            return False
+
+        return await self._analyze_htmls(prompt, differences)
+
+    @staticmethod
+    def _collect_all_htmls(browser_snapshots: List[BrowserSnapshot]) -> List[str]:
+        """
+        Collects all HTMLs in order from the browser snapshots.
+        """
+        if not browser_snapshots:
+            return []
+
+        all_htmls = [browser_snapshots[0].prev_html, browser_snapshots[0].current_html]
+        for snap in browser_snapshots[1:]:
+            all_htmls.append(snap.current_html)
+        return all_htmls
+
+    async def _analyze_htmls(self, task_prompt: str, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
+        """
+        Analyzes HTML changes using an LLM to determine success.
+        """
+        json_schema = HTMLBasedTestResponse.model_json_schema()
+        formatted_sys_msg = OPINION_BASED_HTML_TEST_SYS_MSG.format(json_schema=json_schema)
+        user_message = f"Task: {task_prompt}\n\nHTML differences:\n{' '.join(differences)}"
+        payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
+
+        start_time = time.perf_counter()
+        result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
+        end_time = time.perf_counter()
+        duration = round(end_time - start_time, 3)
+        save_usage_record(task_prompt, result, duration, self.type)
+        try:
+            result_str = result.choices[0].message.content
+        except Exception:
+            result_str = result
+        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
+
+        return match.group(1).lower() == "true" if match else False
 
 
 class JudgeBaseOnScreenshot(BaseTaskTest):
-    """
-    Test class to generate an opinion based on screenshots before and after an action.
-    """
-    type: str = "JudgeBaseOnScreenshot"
-    success_criteria: str = Field(..., description="What should the LLM look for to verify success of the task.")
-    description: str = Field(
-        default="Judge based on screenshot changes",
-        description="Description of the test",
-    )
+    type: Literal["JudgeBaseOnScreenshot"] = "JudgeBaseOnScreenshot"
+    success_criteria: str
+    description: str = Field(default="Judge based on screenshot changes")
 
-    class Config:
-        arbitrary_types_allowed = True
-
-    def _execute_test(
+    async def _execute_test(
         self,
+        web_project: WebProject,
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot]
+        browser_snapshots: List[BrowserSnapshot],
+        total_iterations: int,
+    ) -> bool:
+        if current_iteration != total_iterations - 1:
+            return False
+        return await self._analyze_screenshots(prompt, browser_snapshots)
+
+    async def _analyze_screenshots(
+        self,
+        prompt: str,
+        browser_snapshots: List[BrowserSnapshot],
+        llm_service: ILLM = Provide[DIContainer.llm_service],
     ) -> bool:
         """
-        Compares screenshots from the previous iteration and the current iteration to see
-        if the task was successfully completed based on visual changes.
+        Analyzes screenshots to determine success based on LLM evaluation.
         """
-        if current_iteration == 0:
-            return False  # Or raise an exception if a "previous" screenshot is required
-        return self._analyze_screenshots(
-            screenshot_before=browser_snapshots[current_iteration].screenshot_before,
-            screenshot_after=browser_snapshots[current_iteration].screenshot_after,
-        )
+        user_msg = f"Task: '{prompt}'\nSuccess Criteria: '{self.success_criteria}'"
 
-    def _analyze_screenshots(self, screenshot_before: str, screenshot_after: str, llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
-        system_message = (
-            "You are a professional web page analyzer. Your task is to determine whether the given task was completed "
-            "by analyzing the screenshots before and after the action. Your response must be a JSON object with a single "
-            "key 'result' containing either `true` or `false`."
-        )
-        user_message = f"Task: '{self.success_criteria}'"
+        screenshots_after = [snap.screenshot_after for snap in browser_snapshots[-4:]]
+        screenshot_content = [{"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot}"}} for screenshot in screenshots_after]
+        json_schema = ScreenshotTestResponse.model_json_schema()
+        formatted_sys_msg = SCREENSHOT_TEST_SYSTEM_PROMPT.format(json_schema=json_schema)
         payload = [
-            {"role": "system", "content": system_message},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": user_message},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{screenshot_before}"}},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{screenshot_after}"}}
-                ],
-            },
+            {"role": "system", "content": formatted_sys_msg},
+            {"role": "user", "content": [{"type": "text", "text": user_msg}, *screenshot_content]},
         ]
-        schema_path = Path(PROJECT_BASE_DIR) / "config" / "schemas" / "screenshot_test_schema.json"
-        with schema_path.open(encoding="utf-8") as f:
-            json_schema = json.load(f)
-        result = llm_service.predict(payload, json_format=True, schema=json_schema)
-        parsed_result = json.loads(result)
-        return parsed_result["result"]
+        start_time = time.perf_counter()
+        result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
+        end_time = time.perf_counter()
+        duration = round(end_time - start_time, 4)
+
+        save_usage_record(prompt, result, duration, self.type)
+        try:
+            result_str = result.choices[0].message.content
+        except Exception:
+            result_str = result
+        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
+
+        return match.group(1).lower() == "true" if match else False
+
+
+def save_usage_record(prompt, response, time_taken, test_type, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs"):
+    """Saves token usage and execution time to log file."""
+    input_tokens = response.usage.prompt_tokens
+    output_tokens = response.usage.completion_tokens
+
+    log_entry = {
+        "test_type": test_type,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "task": prompt,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "duration_seconds": time_taken,
+    }
+    with log_file.open("a") as log_file:
+        log_file.write(json.dumps(log_entry) + "\n")
