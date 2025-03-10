@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 from autoppia_iwa.src.llms.infrastructure.ui_parser_service import UIParserService
 
 
-async def get_html_and_screenshot(page_url: str) -> Tuple[str, str, Image, str]:
+async def get_html_and_screenshot(page_url: str) -> Tuple[str, str, Image.Image, str]:
     """
     Navigates to page_url using Playwright in headless mode, extracts & cleans HTML,
     captures a screenshot, and uses UIParserService to generate a textual summary
@@ -17,27 +17,35 @@ async def get_html_and_screenshot(page_url: str) -> Tuple[str, str, Image, str]:
     """
     screenshot_description = ""
     cleaned_html = ""
-    async with async_playwright() as p:
-        browser_type = p.chromium
-        browser = await browser_type.launch(headless=True)
-        context = await browser.new_context()
-        page = await context.new_page()
-        await page.goto(page_url, timeout=60000)
-        # 1) Extract raw HTML, clean it
-        raw_html = await page.content()
-        cleaned_html = clean_html(raw_html)
-        # 2) Take screenshot in memory
-        screenshot_bytes = await page.screenshot()
-        await context.close()
-        await browser.close()
-    # 3) Summarize screenshot using UIParserService
+    raw_html = ""
+
     try:
-        screenshot = Image.open(BytesIO(screenshot_bytes)).convert("RGB")
-        ui_parser = UIParserService()
-        screenshot_description = ui_parser.summarize_image(screenshot)
+        async with async_playwright() as p:
+            browser_type = p.chromium
+            browser = await browser_type.launch(headless=True)
+            context = await browser.new_context()
+            page = await context.new_page()
+            await page.goto(page_url, timeout=60000)
+
+            # Extract raw HTML and clean it
+            raw_html = await page.content()
+            cleaned_html = clean_html(raw_html)
+
+            # Capture screenshot in memory
+            screenshot_bytes = await page.screenshot()
+            screenshot = Image.open(BytesIO(screenshot_bytes)).convert("RGB")
+
+            # Generate textual summary of the screenshot
+            ui_parser = UIParserService()
+            screenshot_description = ui_parser.summarize_image(screenshot)
+
+            await context.close()
+            await browser.close()
+
     except Exception as e:
-        print(f"Screenshot parse error: {e}")
-        screenshot_description = ""
+        print(f"Error during HTML extraction or screenshot processing: {e}")
+        return raw_html, cleaned_html, None, screenshot_description
+
     return raw_html, cleaned_html, screenshot, screenshot_description
 
 
