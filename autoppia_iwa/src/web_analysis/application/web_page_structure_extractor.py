@@ -1,11 +1,9 @@
 from dataclasses import fields
-from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
-from autoppia_iwa.config.config import CHROME_PATH, CHROMEDRIVER_PATH, PROFILE_DIR
 from autoppia_iwa.src.web_analysis.domain.classes import Element
 
 
@@ -51,7 +49,7 @@ class WebPageStructureExtractor:
         self,
         source: Union[str, BeautifulSoup],
         allowed_tags: Optional[List[str]] = None,
-    ) -> tuple[List[Element], str]:
+    ) -> Tuple[List["Element"], str]:
         """
         Extract structured data from a web page or BeautifulSoup object asynchronously.
         """
@@ -59,32 +57,17 @@ class WebPageStructureExtractor:
 
         if isinstance(source, str):
             # Ensure the URL is well-formed
-            if not source.startswith("http://") and not source.startswith("https://"):
-                source = "http://" + source
-
-            if not Path(CHROMEDRIVER_PATH).exists():
-                raise RuntimeError("ChromeDriver path is not valid or not set")
+            if not source.startswith(("http://", "https://")):
+                source = f"http://{source}"
 
             async with async_playwright() as p:
-                launch_options = {"headless": True}
-                if CHROME_PATH and Path(CHROME_PATH).exists():
-                    launch_options["executable_path"] = str(CHROME_PATH)
-
-                if PROFILE_DIR and Path(PROFILE_DIR).exists():
-                    launch_options["user_data_dir"] = str(PROFILE_DIR)
-                    context = await p.chromium.launch_persistent_context(**launch_options)
-                    page = await context.new_page()
-                    await page.goto(source)
-                    await page.wait_for_load_state("networkidle")
-                    html_source = await page.content()
-                    await context.close()
-                else:
-                    browser = await p.chromium.launch(**launch_options)
+                browser = await p.chromium.launch(headless=True)
+                try:
                     context = await browser.new_context()
                     page = await context.new_page()
-                    await page.goto(source)
-                    await page.wait_for_load_state("networkidle")
+                    await page.goto(source, wait_until="networkidle")
                     html_source = await page.content()
+                finally:
                     await browser.close()
 
             soup = BeautifulSoup(html_source, "html.parser")
