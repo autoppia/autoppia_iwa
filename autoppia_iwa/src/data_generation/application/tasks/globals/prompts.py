@@ -9,7 +9,6 @@ and you are in charge or generating variants of prompts for that use case.
 ## Use Case Information
 - Name: {use_case_name}
 - Description: {use_case_description}
-- Prompt Template: {prompt_template}
 
 ##Examples:
 {prompt_examples}

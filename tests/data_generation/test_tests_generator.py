@@ -8,6 +8,7 @@ from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generat
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import web_1_demo_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 # ============================================================
@@ -88,9 +89,9 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.IsolatedAsyncioTestCase):
         self.app_bootstrap = AppBootstrap()
         self.llm_service = self.app_bootstrap.container.llm_service()
 
-    async def _generate_tests_for_web_project(self, url: str) -> List[Task]:
+    async def _generate_tests_for_web_project(self) -> List[Task]:
         """Helper method to generate tasks and test cases."""
-        web_project = await initialize_demo_webs_projects()
+        web_project = await initialize_demo_webs_projects([web_1_demo_projects])
         tasks = await generate_tasks_for_project(web_project[0])
 
         test_generator = LocalTestGenerationPipeline(web_project=web_project[0], llm_service=self.llm_service)
@@ -102,7 +103,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.IsolatedAsyncioTestCase):
 
     async def test_task_test_generation_for_local_web(self) -> None:
         """Test generating task-based tests for a local web application."""
-        tasks_with_tests = await self._generate_tests_for_web_project(url="http://localhost:8000/")
+        tasks_with_tests = await self._generate_tests_for_web_project()
         self.assertTrue(tasks_with_tests, "No tasks generated for local web.")
 
         # for debugging

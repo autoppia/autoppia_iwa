@@ -18,13 +18,13 @@ class ILLM(ABC):
     """Minimal interface for LLM models with two methods."""
 
     @abstractmethod
-    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
         """
         Synchronous inference call.
         """
 
     @abstractmethod
-    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
         """
         Asynchronous inference call.
         """

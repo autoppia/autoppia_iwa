@@ -60,7 +60,11 @@ class LocalTestGenerationPipeline:
         self.test_class_extra_data = {
             "CheckUrlTest": "Use this CheckUrlTest test for changes in the url. Very useful to check navigation or where the agent is.",
             "FindInHtmlTest": "Use this FindInHtmlTest test to check for strings that you expect to appear after the task is completed. very useful for tasks that trigger UI updates",
-            "CheckEventTest": "For CheckEventTest pls select event_type from this List of allowed event names: " + json.dumps([event.__name__ for event in web_project.events]),
+            "CheckEventTest": "For CheckEventTest pls select event_name from this List of allowed event names: " + json.dumps([event.__name__ for event in web_project.events]),
+            "JudgeBaseOnHTML": "Use this JudgeBaseOnHTML test to evaluate whether a task was successfully completed based on HTML changes before and after an action. "
+            "Best for verifying interactions that modify page structure.",
+            "JudgeBaseOnScreenshot": "Use this JudgeBaseOnScreenshot test to evaluate whether a task was successfully completed based on screenshot comparisons. "
+            "Best for visual verification tasks where UI changes occur but HTML modifications might be minimal.",
         }
 
     async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:

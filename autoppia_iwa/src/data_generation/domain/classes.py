@@ -135,6 +135,32 @@ class Task(BaseModel):
         # Remove any None values to make the output cleaner
         return {k: v for k, v in cleaned.items() if v is not None}
 
+    def prepare_for_agent(self, web_agent_id: str) -> "Task":
+        """
+        Creates and returns a copy of the task with web_agent_id replacements applied.
+        The original task remains unmodified.
+
+        Args:
+            web_agent_id: The web agent ID to replace placeholders with
+
+        Returns:
+            A new Task instance with replacements applied
+        """
+        # Create a deep copy of the current task
+        import copy
+
+        task_copy = copy.deepcopy(self)
+
+        # Update relevant_data in the copy
+        for key, value in task_copy.relevant_data.items():
+            if isinstance(value, str):
+                task_copy.relevant_data[key] = value.replace('<web_agent_id>', web_agent_id)
+
+        # Update prompt in the copy
+        task_copy.prompt = task_copy.prompt.replace('<web_agent_id>', web_agent_id)
+
+        return task_copy
+
 
 class TaskGenerationConfig(BaseModel):
     # Database saving options

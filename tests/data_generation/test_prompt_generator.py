@@ -3,6 +3,7 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.demo_webs.config import web_1_demo_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 START_URL = "http://localhost:8000/login"
@@ -21,14 +22,14 @@ class TestTaskPromptGenerator(unittest.IsolatedAsyncioTestCase):
         """Test the generation of prompts for a URL."""
         try:
             # Initialize demo web project and set relevant data
-            web_project = await initialize_demo_webs_projects()
+            web_project = await initialize_demo_webs_projects([web_1_demo_projects])
             web_project[0].relevant_data = RELEVANT_DATA
 
             # Create task generator
             generator = LocalTaskGenerationPipeline(web_project[0], llm_service=self.llm_service)
 
             # Generate tasks
-            tasks = await generator.generate(START_URL)
+            tasks = await generator.generate_per_url(START_URL)
 
             # Assertions
             self.assertIsNotNone(tasks, "Tasks should not be None.")

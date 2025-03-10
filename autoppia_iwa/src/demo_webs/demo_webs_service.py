@@ -57,6 +57,9 @@ class BackendDemoWebService:
         Returns:
             List[BackendEvent]: List of events from the backend or an empty list if any failure occurs.
         """
+        if self.web_project.is_web_real:
+            return []
+
         endpoint = f"{self.base_url}events/list/"
         headers = {"X-WebAgent-Id": web_agent_id}
 
@@ -75,7 +78,7 @@ class BackendDemoWebService:
 
         return []
 
-    async def reset_user_events(self, web_agent_id: str) -> bool:
+    async def reset_web_agent_events(self, web_agent_id: str) -> bool:
         """
         Resets events for a specific user/web_agent.
 
@@ -85,6 +88,9 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
+        if self.web_project.is_web_real:
+            return False
+
         endpoint = f"{self.base_url}events/reset/"
         headers = {"X-WebAgent-Id": web_agent_id}
 
@@ -126,6 +132,10 @@ class BackendDemoWebService:
             logger.error(f"Unexpected error resetting events: {e}")
             return False
 
+        finally:
+            if session:
+                await session.close()
+
     async def reset_all_events(self) -> bool:
         """
         Resets all events in the system regardless of user/web_agent.
@@ -133,6 +143,9 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
+        if self.web_project.is_web_real:
+            return False
+
         endpoint = f"{self.base_url}events/reset/all/"
 
         try:
@@ -150,6 +163,9 @@ class BackendDemoWebService:
         except Exception as e:
             logger.error(f"Failed to reset all events: {e}")
             return False
+        finally:
+            if session:
+                await session.close()
 
     async def reset_database(self) -> bool:
         """
@@ -158,7 +174,10 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
-        endpoint = f"{self.base_url}admin/reset_db/"
+        if self.web_project.is_web_real:
+            return False
+
+        endpoint = f"{self.base_url}management_admin/reset_db/"
 
         try:
             session = await self._get_session()
@@ -189,23 +208,27 @@ class BackendDemoWebService:
         except Exception as e:
             logger.error(f"Failed to reset database: {e}")
             return False
+        finally:
+            if session:
+                await session.close()
 
-    async def send_event(self, event_type: str, description: str, data: Dict[str, Any], web_agent_id: str) -> bool:
+    async def send_event(self, event_name: str, data: Dict[str, Any], web_agent_id: str) -> bool:
         """
         Sends an event to the backend for a given web_agent_id.
 
         Args:
-            event_type (str): Type of the event (e.g., "page_view", "button_click")
-            description (str): Human-readable description of the event
+            event_name (str): Type of the event (e.g., "page_view", "button_click")
             data (Dict[str, Any]): Additional data related to the event
             web_agent_id (str): The ID of the web agent
 
         Returns:
             bool: True if the event was sent successfully, False otherwise.
         """
+        if self.web_project.is_web_real:
+            return False
+
         payload = {
-            "event_type": event_type,
-            "description": description,
+            "event_name": event_name,
             "data": data,
             "web_agent_id": web_agent_id,
         }
@@ -220,8 +243,8 @@ class BackendDemoWebService:
                 return True
 
         except ClientError as e:
-            logger.error(f"Failed to send {event_type} event: {e}")
+            logger.error(f"Failed to send {event_name} event: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error while sending {event_type} event: {e}")
+            logger.error(f"Unexpected error while sending {event_name} event: {e}")
 
         return False

@@ -27,11 +27,8 @@ from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 class WebVoyagerConfig:
     """Configuration for the benchmark test."""
 
-    use_cached_tasks: bool = False
     use_cached_solutions: bool = False
 
-    m: int = 1  # Number of copies of each solution to evaluate
-    prompts_per_url: int = 3
     num_of_urls: int = 2
 
     # Paths

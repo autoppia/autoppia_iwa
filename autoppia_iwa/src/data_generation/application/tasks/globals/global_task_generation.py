@@ -66,13 +66,11 @@ class GlobalTaskGenerationPipeline:
         random_instances_str = await self._gather_random_instances(use_case, num_prompts)
 
         # 2) Build the LLM prompt using a template
-        prompt_examples_str = "\n".join(use_case.prompt_examples)
-
+        prompt_examples = use_case.get_example_prompts_str()
         llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
             use_case_name=use_case.name,
             use_case_description=use_case.description,
-            prompt_template=use_case.prompt_template,
-            prompt_examples=prompt_examples_str,
+            prompt_examples=prompt_examples,
             random_generated_instances_str=random_instances_str,
         )
 
@@ -85,12 +83,14 @@ class GlobalTaskGenerationPipeline:
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
 
         tasks: List[Task] = []
+        # TODO: QUITAR EL :1
         for prompt_text in prompt_list:
             try:
+                replaced_prompt = use_case.apply_replacements(prompt_text)
                 task_obj = self._assemble_task(
                     web_project_id=self.web_project.id,
                     url=url,
-                    prompt=prompt_text,
+                    prompt=replaced_prompt,
                     html=html,
                     clean_html=clean_html,
                     screenshot=screenshot,
