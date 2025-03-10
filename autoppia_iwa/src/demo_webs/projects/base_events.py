@@ -78,8 +78,3 @@ class Event(BaseModel):
         import inspect
 
         return inspect.getsource(cls)
-
-    @classmethod
-    def get_event_type(cls) -> str:
-        # Si la clase tiene definido event_type, se usa; sino, se deriva del nombre quitando "Event"
-        return getattr(cls, "event_type", cls.__name__.replace("Event", "").upper())

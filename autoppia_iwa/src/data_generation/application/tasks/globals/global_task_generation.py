@@ -58,21 +58,14 @@ class GlobalTaskGenerationPipeline:
         logger.info(f"Total generated tasks across all use cases: {len(all_tasks)}")
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, num_prompts: int = 5) -> List[Task]:
+    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5) -> List[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
         """
-        # 1) Gather random model instances to inject into the prompt (if applicable)
-        random_instances_str = await self._gather_random_instances(use_case, num_prompts)
 
         # 2) Build the LLM prompt using a template
         prompt_examples = use_case.get_example_prompts_str()
-        llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
-            use_case_name=use_case.name,
-            use_case_description=use_case.description,
-            prompt_examples=prompt_examples,
-            random_generated_instances_str=random_instances_str,
-        )
+        llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(use_case_name=use_case.name, use_case_description=use_case.description, prompt_examples=prompt_examples, number_of_prompts=number_of_prompts)
 
         # 3) Call the LLM (with retry logic) and parse the list of strings result
         prompt_list = await self._call_llm_with_retry(llm_prompt)
@@ -105,30 +98,6 @@ class GlobalTaskGenerationPipeline:
         # Shuffle them if you wish, for variety
         random.shuffle(tasks)
         return tasks
-
-    async def _gather_random_instances(self, use_case: UseCase, num_prompts: int) -> str:
-        """
-        Example method to generate random instance data from your domain models,
-        then return them as a JSON string for the LLM to reference.
-        """
-        if hasattr(self.web_project, "random_generation_function") and self.web_project.random_generation_function and getattr(use_case, "event", None) is not None:
-            try:
-                model_class = use_case.event
-                generated_list = []
-                for _ in range(num_prompts):
-                    instance = self.web_project.random_generation_function(model_class)
-                    # Convert to dict if possible
-                    if hasattr(instance, "model_dump"):
-                        instance_data = instance.model_dump()
-                    elif hasattr(instance, "dict"):
-                        instance_data = instance.dict()
-                    else:
-                        instance_data = {k: getattr(instance, k) for k in dir(instance) if not k.startswith("_") and not callable(getattr(instance, k))}
-                    generated_list.append(instance_data)
-                return "Random Generated Instances:\n" + json.dumps(generated_list, indent=2)
-            except Exception as ex:
-                logger.warning(f"Failed to gather random instances: {str(ex)}")
-        return "No random instances available."
 
     async def _call_llm_with_retry(self, llm_prompt: str) -> List[str]:
         """

@@ -221,26 +221,23 @@ class CheckEventTest(BaseTaskTest):
         """
         if (current_iteration + 1) < total_iterations:
             return False
-        events = web_project.events
 
-        # Get the event class matching event_name
-        event_class = next((event_cls for event_cls in events if event_cls.get_event_type() == self.event_name), None)
-        if not event_class:
-            return False
+        parsed_events: List[Event] = Event.parse_all(snapshot.backend_events)
+        valid_events: List[Event] = []
+        for event in parsed_events:
+            if event.event_name == self.event_name:
+                valid_events.append(event)
 
-        # Get the validation criteria class from the event class
-        validation_model = event_class.ValidationCriteria
+        for event in valid_events:
+            validation_model = event.ValidationCriteria
 
-        # Parse the criteria using the appropriate Pydantic model
-        try:
-            parsed_criteria = validation_model(**self.event_criteria)
-        except ValidationError as e:
-            print(f"Invalid validation criteria: {e}")
-            return False
+            try:
+                parsed_criteria = validation_model(**self.event_criteria)
+            except ValidationError as e:
+                print(f"Invalid validation criteria: {e}")
+                return False
 
-        # Check if any event of the correct type matches our criteria
-        for event in Event.parse_all(snapshot.backend_events):
-            if isinstance(event, event_class) and event.validate_criteria(parsed_criteria):
+            if event.validate_criteria(parsed_criteria):
                 return True
 
         return False

@@ -57,7 +57,6 @@ class WebProject(BaseModel):
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
     models: List[Any] = []
     use_cases: List[UseCase] = None
-    random_generation_function: Callable[[Any], Any] = None
 
 
 class BackendEvent(BaseModel):

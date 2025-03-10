@@ -704,14 +704,14 @@ class SearchFilmEvent(Event):
         return True
 
     @classmethod
-    def parse(cls, backend_event: Dict[str, Any]) -> "SearchFilmEvent":
+    def parse(cls, backend_event: BackendEvent) -> "SearchFilmEvent":
         """
         Parse a search film event from backend data.
         """
-        base_event = super().parse(backend_event)
-        query = backend_event.get('search_query', '')
-        if not query and 'data' in backend_event:
-            query = backend_event.get('data', {}).get('query', '')
+
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        query = data.get('query')
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, query=query)
 
 

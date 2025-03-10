@@ -47,8 +47,11 @@ These are example tests that demonstrate proper validation. Use them as inspirat
 ```json
 {{
   "type": "CheckEventTest",
-  "event_name": "NameOfEventClass",
+  "event_name": "NAME_OF_EVENT",
   "event_criteria": {{ ... }},
   "reasoning": "Clear explanation of why this test is necessary."
-}}
+}}```
+
+IMPORTANT: Return ONLY the raw JSON object without markdown code blocks or any other formatting.
+
 """

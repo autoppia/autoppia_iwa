@@ -13,11 +13,9 @@ and you are in charge or generating variants of prompts for that use case.
 ##Examples:
 {prompt_examples}
 
-## Random Generated Instances (information you may use to inspire yourself when creating the prompt):
-{random_generated_instances_str}
 
 ## Response Format
-The response should be a list of strings, each string being a prompt:
+The response should be a list with lenght {number_of_prompts} of strings, each string being a prompt:
 [
   "Search for a Movie called 'Interestellar'",
   "Submit the contact form with my information"
