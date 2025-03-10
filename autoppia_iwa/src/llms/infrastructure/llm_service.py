@@ -36,27 +36,27 @@ class OpenAIService(ILLM):
             payload["messages"] = messages
         return payload
 
-    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
         """
         Synchronous prediction using OpenAI's API.
         """
         try:
             payload = self._prepare_payload(messages, json_format, schema)
             response = self.sync_client.chat.completions.create(**payload)
-            if self.config.return_raw:
+            if return_raw:
                 return response
             return response.choices[0].message.content
         except Exception as e:
             raise RuntimeError(f"OpenAI Sync Error: {e}")
 
-    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
         """
         Asynchronous prediction using OpenAI's API.
         """
         try:
             payload = self._prepare_payload(messages, json_format, schema)
             response = await self.async_client.chat.completions.create(**payload)
-            if self.config.return_raw:
+            if return_raw:
                 return response
             return response.choices[0].message.content
         except Exception as e:
@@ -92,7 +92,7 @@ class LocalLLMService(ILLM):
             payload["schema"] = schema
         return payload
 
-    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
         """
         Synchronous prediction using the local LLM endpoint.
         """
@@ -105,7 +105,7 @@ class LocalLLMService(ILLM):
         except httpx.HTTPError as e:
             raise RuntimeError(f"Local LLM Sync Error: {e}")
 
-    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
         """
         Asynchronous prediction using the local LLM endpoint.
         """

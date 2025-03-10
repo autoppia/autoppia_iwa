@@ -25,7 +25,7 @@ from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
 
 class ITest(ABC):
     @abstractmethod
-    def _execute_test(
+    async def _execute_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -48,7 +48,7 @@ class BaseTaskTest(BaseModel, ITest):
         extra = "allow"
         arbitrary_types_allowed = True
 
-    def execute_test(
+    async def execute_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -60,9 +60,9 @@ class BaseTaskTest(BaseModel, ITest):
         """
         Executes the test by delegating to the _execute_test method.
         """
-        return self._execute_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iterations)
+        return await self._execute_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iterations)
 
-    def _execute_test(
+    async def _execute_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -116,7 +116,7 @@ class CheckUrlTest(BaseTaskTest):
     match_type: Literal["exact", "contains", "regex"] = "contains"
     description: str = Field(default="Check if browser navigated to URL")
 
-    def _execute_test(
+    async def _execute_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -170,7 +170,7 @@ class FindInHtmlTest(BaseTaskTest):
         text = soup.get_text(separator=" ", strip=True)
         return re.sub(r'\s+', ' ', text).strip()
 
-    def _execute_test(
+    async def _execute_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -207,7 +207,7 @@ class CheckEventTest(BaseTaskTest):
     event_criteria: Dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered")
 
-    def _execute_test(
+    async def _execute_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -296,7 +296,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
         payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
         start_time = time.perf_counter()
-        result = await llm_service.async_predict(payload, json_format=True)
+        result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
         end_time = time.perf_counter()
         duration = round(end_time - start_time, 3)
         if LLM_RETURN_RAW_RESPONSE:
@@ -347,7 +347,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
             {"role": "user", "content": [{"type": "text", "text": user_msg}, *screenshot_content]},
         ]
         start_time = time.perf_counter()
-        result = await llm_service.async_predict(payload, json_format=True)
+        result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
         end_time = time.perf_counter()
         duration = round(end_time - start_time, 4)
 

@@ -23,17 +23,9 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4-32k-0613")
 OPENAI_MAX_TOKENS = int(os.getenv("LLM_CONTEXT_WINDOW", 2000))
 OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", 0.8))
 
-LLM_RETURN_RAW_RESPONSE = bool(strtobool(os.getenv("LLM_RETURN_RAW_RESPONSE", "False")))
-
-if LLM_RETURN_RAW_RESPONSE:
-    print("[WARNING] 'LLM_RETURN_RAW_RESPONSE' is enabled. This feature is experimental and may cause unexpected behavior. " "If this was unintentional, set it to 'False'.")
-
 # Validate critical environment variables
 if LLM_PROVIDER == "openai" and not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.")
-
-if LLM_PROVIDER != "openai" and LLM_RETURN_RAW_RESPONSE:
-    raise ValueError("'LLM_RETURN_RAW_RESPONSE' can only be used with OpenAI. Please disable it.")
 
 # ==================================
 # Database and File Configuration

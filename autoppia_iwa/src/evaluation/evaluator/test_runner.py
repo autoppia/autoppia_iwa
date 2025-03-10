@@ -1,4 +1,3 @@
-import asyncio
 from typing import List
 
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
@@ -36,24 +35,14 @@ class TestRunner:
         """
         snapshot_results = []  # Store results for this snapshot
         for test in self.tests:
-            if asyncio.iscoroutinefunction(test.execute_test):
-                success = await test.execute_test(
-                    web_project=web_project,
-                    current_iteration=current_action_index,
-                    prompt=prompt,
-                    snapshot=snapshot,
-                    browser_snapshots=browser_snapshots,
-                    total_iterations=total_iterations,
-                )
-            else:
-                success = test.execute_test(
-                    web_project=web_project,
-                    current_iteration=current_action_index,
-                    prompt=prompt,
-                    snapshot=snapshot,
-                    browser_snapshots=browser_snapshots,
-                    total_iterations=total_iterations,
-                )
+            success = await test.execute_test(
+                web_project=web_project,
+                current_iteration=current_action_index,
+                prompt=prompt,
+                snapshot=snapshot,
+                browser_snapshots=browser_snapshots,
+                total_iterations=total_iterations,
+            )
 
             # Create TestResult instance with extra_data
             test_result = TestResult(
