@@ -47,7 +47,6 @@ class Task(BaseModel):
     milestones: Optional[List["Task"]] = Field(default=None, description="Ordered list of Subtasks that must be completed sequentially")
     relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     success_criteria: Optional[str] = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
-    logic_function: Optional[dict] = Field(default=None, description="Boolean expression using T1..Tn notation to evaluate overall task success")
     use_case: Optional[UseCase] = None
 
     class Config:
@@ -127,7 +126,6 @@ class Task(BaseModel):
                 "clean_html",  # Also large
                 "milestones",  # Remove nested tasks completely
                 "use_case",  # Remove use case completely
-                "logic_function",  # Remove logic function
                 "interactive_elements",  # Remove interactive elements
             }
         )
