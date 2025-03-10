@@ -13,6 +13,7 @@ from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 
+from ...shared.web_utils import generate_html_differences
 from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
 
@@ -259,34 +260,48 @@ class JudgeBaseOnHTML(BaseTaskTest):
         browser_snapshots: List[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
-        from autoppia_iwa.src.shared.web_utils import clean_html
+        pass
 
         if current_iteration != total_iterations - 1:
             return False
-        html_before = clean_html(browser_snapshots[current_iteration - 1].current_html)
-        html_after = clean_html(snapshot.current_html)
-        action = str(snapshot.action)
-        return await self._analyze_htmls(action, html_before, html_after)
 
-    async def _analyze_htmls(
-        self,
-        action: str,
-        html_before: str,
-        html_after: str,
-        llm_service: ILLM = Provide[DIContainer.llm_service],
-    ) -> bool:
+        all_htmls = self._collect_all_htmls(browser_snapshots)
+        if not all_htmls:
+            return False
+
+        differences = generate_html_differences(all_htmls)
+        if not differences:
+            return False
+
+        return await self._analyze_htmls(str(snapshot.action), differences)
+
+    @staticmethod
+    def _collect_all_htmls(browser_snapshots: List[BrowserSnapshot]) -> List[str]:
+        """
+        Collects all HTMLs in order from the browser snapshots.
+        """
+        if not browser_snapshots:
+            return []
+
+        all_htmls = [browser_snapshots[0].prev_html, browser_snapshots[0].current_html]
+        for snap in browser_snapshots[1:]:
+            all_htmls.append(snap.current_html)
+        return all_htmls
+
+    @staticmethod
+    async def _analyze_htmls(action: str, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
         """
         Analyzes HTML changes using an LLM to determine success.
         """
         json_schema = HTMLBasedTestResponse.model_json_schema()
         formatted_sys_msg = OPINION_BASED_HTML_TEST_SYS_MSG.format(json_schema=json_schema)
-        user_message = f"Current action: {action}\nHTML Before:\n{html_before}\n\nHTML After:\n{html_after}"
+        user_message = f"Current action: {action}\n\nHTML differences:\n{" ".join(differences)}"
         payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
         result_str = await llm_service.async_predict(payload, json_format=True)
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
-        return match.group(1) == "true" if match else False
+        return match.group(1).lower() == "true" if match else False
 
 
 class JudgeBaseOnScreenshot(BaseTaskTest):
@@ -330,4 +345,4 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         result_str = await llm_service.async_predict(payload, json_format=True)
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
-        return match.group(1) == "true" if match else False
+        return match.group(1).lower() == "true" if match else False

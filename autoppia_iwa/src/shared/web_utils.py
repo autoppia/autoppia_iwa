@@ -1,5 +1,6 @@
+import difflib
 from io import BytesIO
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 from bs4 import BeautifulSoup, Comment
 from PIL import Image
@@ -196,3 +197,22 @@ def detect_interactive_elements(cleaned_html: str) -> Dict[str, Any]:
         if link_text:
             summary["links"].append(link_text)
     return summary
+
+
+def generate_html_differences(html_list: List[str]) -> List[str]:
+    """Generate a list of initial HTML followed by diffs between consecutive HTMLs."""
+    if not html_list:
+        return []
+
+    diffs = [html_list[0]]
+    prev_html = html_list[0]
+
+    for current_html in html_list[1:]:
+        prev_lines = prev_html.splitlines(keepends=True)
+        current_lines = current_html.splitlines(keepends=True)
+        diff_generator = difflib.unified_diff(prev_lines, current_lines, lineterm='')
+        diff_str = ''.join(diff_generator)
+        diffs.append(diff_str)
+        prev_html = current_html
+
+    return diffs
