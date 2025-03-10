@@ -207,7 +207,7 @@ async def main():
                 await _load_web_analysis(project)
                 tasks = await generate_tasks(project, td)
                 if tasks:
-                    await run_evaluation(project, tasks[:1], timing_metrics)
+                    await run_evaluation(project, tasks[:5], timing_metrics)
 
     logger.info("Evaluation complete!")
 
