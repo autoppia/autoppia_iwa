@@ -156,7 +156,7 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Run tests
             test_start_time = time.time()
-            test_results_matrix = run_tests(self.web_project, task, execution_history)
+            test_results_matrix = await run_tests(self.web_project, task, execution_history)
             stats.test_execution_time = time.time() - test_start_time
 
             # Random clicker baseline

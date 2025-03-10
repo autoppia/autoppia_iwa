@@ -250,7 +250,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
     success_criteria: str
     description: str = Field(default="Judge based on HTML changes")
 
-    def _execute_test(
+    async def _execute_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -261,14 +261,14 @@ class JudgeBaseOnHTML(BaseTaskTest):
     ) -> bool:
         from autoppia_iwa.src.shared.web_utils import clean_html
 
-        if current_iteration == 0:
+        if current_iteration != total_iterations - 1:
             return False
         html_before = clean_html(browser_snapshots[current_iteration - 1].current_html)
         html_after = clean_html(snapshot.current_html)
         action = str(snapshot.action)
-        return self._analyze_htmls(action, html_before, html_after)
+        return await self._analyze_htmls(action, html_before, html_after)
 
-    def _analyze_htmls(
+    async def _analyze_htmls(
         self,
         action: str,
         html_before: str,
@@ -283,7 +283,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
         user_message = f"Current action: {action}\nHTML Before:\n{html_before}\n\nHTML After:\n{html_after}"
         payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
-        result_str = llm_service.predict(payload, json_format=True)
+        result_str = await llm_service.async_predict(payload, json_format=True)
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         return match.group(1) == "true" if match else False
@@ -294,7 +294,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     success_criteria: str
     description: str = Field(default="Judge based on screenshot changes")
 
-    def _execute_test(
+    async def _execute_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -303,11 +303,11 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         browser_snapshots: List[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
-        if current_iteration == 0:
+        if current_iteration != total_iterations - 1:
             return False
-        return self._analyze_screenshots(prompt, browser_snapshots)
+        return await self._analyze_screenshots(prompt, browser_snapshots)
 
-    def _analyze_screenshots(
+    async def _analyze_screenshots(
         self,
         prompt: str,
         browser_snapshots: List[BrowserSnapshot],
@@ -327,7 +327,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
             {"role": "user", "content": [{"type": "text", "text": user_msg}, *screenshot_content]},
         ]
 
-        result_str = llm_service.predict(payload, json_format=True)
+        result_str = await llm_service.async_predict(payload, json_format=True)
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         return match.group(1) == "true" if match else False

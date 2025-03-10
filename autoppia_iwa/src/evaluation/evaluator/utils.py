@@ -186,7 +186,7 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 
 
-def run_tests(web_project: WebProject, task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
+async def run_tests(web_project: WebProject, task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
     """
     Runs all task tests after each action, building a test results matrix.
 
@@ -207,7 +207,7 @@ def run_tests(web_project: WebProject, task: Task, execution_history: List[Actio
         browser_snapshots.append(snapshot)
 
         # Run the test suite for the current action
-        test_results = test_runner.run_tests(
+        test_results = await test_runner.run_tests(
             web_project=web_project,
             prompt=task.prompt,
             snapshot=snapshot,
@@ -336,7 +336,7 @@ async def get_random_clicker_performance(
     random_execution_history, _ = await evaluate_in_browser_func(task, random_web_agent_id, random_actions, task.is_web_real)
 
     # Run tests
-    random_test_results = run_tests(web_project, task, random_execution_history)
+    random_test_results = await run_tests(web_project, task, random_execution_history)
 
     passed_tests: List[int] = []
     random_score = 0.0
