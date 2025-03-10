@@ -1,12 +1,17 @@
 # file: data_generation/domain/tests_classes.py
+import json
 import re
+import time
 from abc import ABC, abstractmethod
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Dict, List, Literal, Type
 
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
+from autoppia_iwa.config.config import LLM_RETURN_RAW_RESPONSE, PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
@@ -260,8 +265,6 @@ class JudgeBaseOnHTML(BaseTaskTest):
         browser_snapshots: List[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
-        pass
-
         if current_iteration != total_iterations - 1:
             return False
 
@@ -273,7 +276,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
         if not differences:
             return False
 
-        return await self._analyze_htmls(str(snapshot.action), differences)
+        return await self._analyze_htmls(prompt, differences)
 
     @staticmethod
     def _collect_all_htmls(browser_snapshots: List[BrowserSnapshot]) -> List[str]:
@@ -288,17 +291,24 @@ class JudgeBaseOnHTML(BaseTaskTest):
             all_htmls.append(snap.current_html)
         return all_htmls
 
-    @staticmethod
-    async def _analyze_htmls(action: str, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
+    async def _analyze_htmls(self, task_prompt: str, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
         """
         Analyzes HTML changes using an LLM to determine success.
         """
         json_schema = HTMLBasedTestResponse.model_json_schema()
         formatted_sys_msg = OPINION_BASED_HTML_TEST_SYS_MSG.format(json_schema=json_schema)
-        user_message = f"Current action: {action}\n\nHTML differences:\n{" ".join(differences)}"
+        user_message = f"Task: {task_prompt}\n\nHTML differences:\n{' '.join(differences)}"
         payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
-        result_str = await llm_service.async_predict(payload, json_format=True)
+        start_time = time.perf_counter()
+        result = await llm_service.async_predict(payload, json_format=True)
+        end_time = time.perf_counter()
+        duration = round(end_time - start_time, 3)
+        if LLM_RETURN_RAW_RESPONSE:
+            save_usage_record(task_prompt, result, duration, self.type)
+            result_str = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+        else:
+            result_str = result
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         return match.group(1).lower() == "true" if match else False
@@ -341,8 +351,33 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
             {"role": "system", "content": formatted_sys_msg},
             {"role": "user", "content": [{"type": "text", "text": user_msg}, *screenshot_content]},
         ]
+        start_time = time.perf_counter()
+        result = await llm_service.async_predict(payload, json_format=True)
+        end_time = time.perf_counter()
+        duration = round(end_time - start_time, 4)
 
-        result_str = await llm_service.async_predict(payload, json_format=True)
+        if LLM_RETURN_RAW_RESPONSE:
+            save_usage_record(prompt, result, duration, self.type)
+            result_str = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+        else:
+            result_str = result
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         return match.group(1).lower() == "true" if match else False
+
+
+def save_usage_record(prompt, response, time_taken, test_type, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs"):
+    """Saves token usage and execution time to log file."""
+    input_tokens = response.get("usage", {}).get("prompt_tokens", 0)
+    output_tokens = response.get("usage", {}).get("completion_tokens", 0)
+
+    log_entry = {
+        "test_type": test_type,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "task": prompt,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "duration_seconds": time_taken,
+    }
+    with log_file.open("a") as log_file:
+        log_file.write(json.dumps(log_entry) + "\n")
