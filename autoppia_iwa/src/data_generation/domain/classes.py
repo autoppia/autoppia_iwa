@@ -57,7 +57,7 @@ class Task(BaseModel):
     @property
     def prompt_with_relevant_data(self) -> str:
         if self.relevant_data:
-            return f"{self.prompt}\nRelevant data: {self.relevant_data}"
+            return f"{self.prompt}\n Relevant data you may need: {self.relevant_data}"
         return self.prompt
 
     def model_dump(self, *args, **kwargs) -> dict:
@@ -115,6 +115,32 @@ class Task(BaseModel):
         # # Create the Task object
         return cls(**data)
 
+    def clean_task(self) -> dict:
+        """
+        Create a minimal version of the task for serialization.
+        Removes all verbose fields including tests, milestones, use_case, HTML content, and other non-essential data.
+        """
+        # Start with a basic model dump but exclude many fields
+        cleaned = self.model_dump(
+            exclude={
+                "tests",  # Remove all tests
+                "clean_html",  # Also large
+                "milestones",  # Remove nested tasks completely
+                "use_case",  # Remove use case completely
+                "logic_function",  # Remove logic function
+                "interactive_elements",  # Remove interactive elements
+            }
+        )
+
+        # Remove any None values to make the output cleaner
+        return {k: v for k, v in cleaned.items() if v is not None}
+
+    def prepare_for_agent(self, web_agent_id: str):
+        for key, value in self.relevant_data.items():
+            if isinstance(value, str):
+                value = value.replace('<web_agent_id>', web_agent_id)
+        self.prompt = self.prompt.replace('<web_agent_id>', web_agent_id)
+
 
 class TaskGenerationConfig(BaseModel):
     # Database saving options
@@ -130,5 +156,5 @@ class TaskGenerationConfig(BaseModel):
 
     # Task quantity controls
     prompts_per_url: int = 20  # Maximum tasks to return per URL
-    prompts_per_use_case: int = 5  # Number of task variations to generate per use case
+    prompts_per_use_case: int = 1  # Number of task variations to generate per use case
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline

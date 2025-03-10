@@ -11,6 +11,7 @@ from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generat
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
@@ -20,6 +21,7 @@ from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolu
 from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
 from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_real_tasks
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
@@ -42,8 +44,8 @@ class BenchmarkConfig:
     evaluate_real_tasks: bool = False
 
     m: int = 1  # Number of copies of each solution to evaluate
-    prompts_per_url: int = 3
-    num_of_urls: int = 2
+    prompts_per_url: int = 1
+    num_of_urls: int = 1
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
@@ -63,8 +65,8 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
 AGENTS: List[BaseAgent] = [
-    RandomClickerWebAgent(name="Random-clicker"),
-    # ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
+    RandomClickerWebAgent(id="2", name="Random-clicker"),
+    ApifiedWebAgent(id='1', name="Browser-Use", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
@@ -97,13 +99,15 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
     return await evaluator.evaluate_single_task_solution(task, task_solution)
 
 
-async def generate_solutions(agent: BaseAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
+async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
     """Generate or load solutions for a given agent and tasks."""
     solutions = {}
     logger.info(f"\nAgent: {agent.name}")
-
+    backend_service = BackendDemoWebService(demo_project)
     for task in tasks:
         task_solution: Optional[TaskSolution] = None
+        # Restart db
+        await backend_service.reset_database()
 
         # Check if solution should be loaded from cache
         if config.use_cached_solutions and solution_cache.solution_exists(task.id, agent.id):
@@ -121,7 +125,8 @@ async def generate_solutions(agent: BaseAgent, tasks: List[Task], timing_metrics
         if task_solution is None:
             logger.info(f"  Generating new solution for Task {task.id}...")
             start_time = time.time()
-
+            # CAPA DE MINER
+            task.prepare_for_agent(agent.id)
             # Solve the task
             solution = await agent.solve_task(task)
             actions = solution.actions or []
@@ -169,7 +174,7 @@ async def evaluate_solutions(
 
 async def run_evaluation(demo_project: WebProject, tasks: List[Task], timing_metrics: TimingMetrics):
     """Orchestrate solution generation and evaluation."""
-    all_solutions = {agent.id: await generate_solutions(agent, tasks, timing_metrics) for agent in AGENTS}
+    all_solutions = {agent.id: await generate_solutions(demo_project, agent, tasks, timing_metrics) for agent in AGENTS}
     results = {agent.id: await evaluate_solutions(agent, tasks, all_solutions[agent.id], demo_project) for agent in AGENTS}
 
     print_performance_statistics(results, AGENTS, timing_metrics)
@@ -185,7 +190,6 @@ async def main():
 
     timing_metrics = TimingMetrics()
     timing_metrics.start()
-
     if not config.evaluate_real_tasks:
         # web_projects = demo_web_projects
         web_projects = await initialize_demo_webs_projects(demo_web_projects)
@@ -193,7 +197,7 @@ async def main():
         for project in web_projects:
             tasks = await generate_tasks(project)
             if tasks:
-                await run_evaluation(project, tasks, timing_metrics)
+                await run_evaluation(project, tasks[:1], timing_metrics)
     else:
         tasks_data = load_real_tasks(config.num_of_urls)
         web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}

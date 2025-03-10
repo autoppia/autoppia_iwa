@@ -186,7 +186,7 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 
 
-def run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
+def run_tests(web_project: WebProject, task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
     """
     Runs all task tests after each action, building a test results matrix.
 
@@ -207,6 +207,7 @@ def run_tests(task: Task, execution_history: List[ActionExecutionResult]) -> Lis
 
         # Run the test suite for the current action
         test_results = test_runner.run_tests(
+            web_project=web_project,
             prompt=task.prompt,
             snapshot=snapshot,
             browser_snapshots=browser_snapshots,
@@ -274,7 +275,7 @@ async def monitor_browser(web_project: WebProject, task_url: str, page: Page, we
     async def _handle_frame_navigation(web_project, url, task_url, web_agent_id):
         try:
             backend_demo_web_service = BackendDemoWebService(web_project)
-            await backend_demo_web_service.send_page_view_event(url, web_agent_id)
+            # await backend_demo_web_service.send_event(url, web_agent_id)
             await backend_demo_web_service.close()
         except Exception as e:
             logger.error(f"Error handling frame navigation: {e}")
@@ -288,6 +289,7 @@ async def monitor_browser(web_project: WebProject, task_url: str, page: Page, we
 
 
 async def get_random_clicker_performance(
+    web_project: WebProject,
     task: Task,
     config: EvaluatorConfig,
     random_clicker_cache: Dict[str, Tuple[List[int], float]],
@@ -326,14 +328,14 @@ async def get_random_clicker_performance(
     random_web_agent_id = f"random-clicker-{task.id}"
 
     # Reset backend if needed
-    if not task.is_web_real:
-        await backend_demo_webs_service.reset_backend_events_db(random_web_agent_id)
+    # if not task.is_web_real:
+    #     await backend_demo_webs_service.reset_all_events(random_web_agent_id)
 
     # Execute random clicker actions in browser
     random_execution_history, _ = await evaluate_in_browser_func(task, random_web_agent_id, random_actions, task.is_web_real)
 
     # Run tests
-    random_test_results = run_tests(task, random_execution_history)
+    random_test_results = run_tests(web_project, task, random_execution_history)
 
     passed_tests: List[int] = []
     random_score = 0.0

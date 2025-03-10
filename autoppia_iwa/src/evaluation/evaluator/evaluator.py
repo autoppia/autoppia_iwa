@@ -58,6 +58,12 @@ class ConcurrentEvaluator(IEvaluator):
         """
         Evaluate a single task solution (actions + agent) for a given task.
         """
+
+        logger.info(f"Evaluating Single task solution for task {task.id}...")
+
+        logger.info("Reseting Project Environemnt & Database.")
+        await self.backend_demo_webs_service.reset_database()
+
         result = await self._evaluate_single_task_solution(task, task_solution)
 
         # Display final report for this single solution
@@ -73,6 +79,9 @@ class ConcurrentEvaluator(IEvaluator):
         Evaluate multiple solutions for the same task, optionally grouping identical ones.
         """
         logger.info(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
+
+        logger.info("Reseting Project Environemnt & Database.")
+        await self.backend_demo_webs_service.reset_database()
 
         results = await self._group_and_evaluate_task_solutions(task, task_solutions)
 
@@ -97,6 +106,7 @@ class ConcurrentEvaluator(IEvaluator):
         """
         Internal logic to evaluate a single TaskSolution.
         """
+
         actions = task_solution.actions
         web_agent_id = task_solution.web_agent_id
         is_web_real = task.is_web_real
@@ -135,7 +145,7 @@ class ConcurrentEvaluator(IEvaluator):
             # If simulated, reset the DB first
             browser_setup_start = time.time()
             if not is_web_real:
-                await self.backend_demo_webs_service.reset_backend_events_db(web_agent_id)
+                await self.backend_demo_webs_service.reset_web_agent_events(web_agent_id)
 
             # Start browser usage
             browser_execution_start = time.time()
@@ -146,12 +156,13 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Run tests
             test_start_time = time.time()
-            test_results_matrix = run_tests(task, execution_history)
+            test_results_matrix = run_tests(self.web_project, task, execution_history)
             stats.test_execution_time = time.time() - test_start_time
 
             # Random clicker baseline
             random_start_time = time.time()
             random_clicker_passed, random_clicker_score = await get_random_clicker_performance(
+                web_project=self.web_project,
                 task=task,
                 config=self.config,
                 random_clicker_cache=self._random_clicker_cache,

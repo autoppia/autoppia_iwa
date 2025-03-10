@@ -28,8 +28,8 @@ class IWebAgent(ABC):
 
 
 class BaseAgent(IWebAgent):
-    def __init__(self, name=None):
-        self.id = self.generate_random_web_agent_id()
+    def __init__(self, id: str = None, name: str = None):
+        self.id = id or self.generate_random_web_agent_id()
         self.name = name if name is not None else f"Agent {self.id}"
 
     def generate_random_web_agent_id(self, length=16):

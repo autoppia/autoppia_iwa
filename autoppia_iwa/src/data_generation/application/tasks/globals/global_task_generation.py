@@ -2,7 +2,7 @@ import asyncio
 import json
 import random
 import re
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from dependency_injector.wiring import Provide
 from loguru import logger
@@ -66,13 +66,11 @@ class GlobalTaskGenerationPipeline:
         random_instances_str = await self._gather_random_instances(use_case, num_prompts)
 
         # 2) Build the LLM prompt using a template
-        prompt_examples_str = "\n".join(use_case.prompt_examples)
-
+        prompt_examples = use_case.get_example_prompts_str()
         llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
             use_case_name=use_case.name,
             use_case_description=use_case.description,
-            prompt_template=use_case.prompt_template,
-            prompt_examples=prompt_examples_str,
+            prompt_examples=prompt_examples,
             random_generated_instances_str=random_instances_str,
         )
 
@@ -85,10 +83,20 @@ class GlobalTaskGenerationPipeline:
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
 
         tasks: List[Task] = []
+        # TODO: QUITAR EL :1
         for prompt_text in prompt_list:
             try:
+                replaced_prompt = use_case.apply_replacements(prompt_text)
                 task_obj = self._assemble_task(
-                    web_project_id=self.web_project.id, url=url, prompt=prompt_text, html=html, clean_html=clean_html, screenshot=screenshot, screenshot_desc=screenshot_desc, use_case=use_case
+                    web_project_id=self.web_project.id,
+                    url=url,
+                    prompt=replaced_prompt,
+                    html=html,
+                    clean_html=clean_html,
+                    screenshot=screenshot,
+                    screenshot_desc=screenshot_desc,
+                    use_case=use_case,
+                    relevant_data=self.web_project.relevant_data,
                 )
                 tasks.append(task_obj)
             except Exception as ex:
@@ -196,7 +204,9 @@ class GlobalTaskGenerationPipeline:
             return []
 
     @staticmethod
-    def _assemble_task(web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: Optional[Image.Image], screenshot_desc: str, use_case: UseCase) -> Task:
+    def _assemble_task(
+        web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: Optional[Image.Image], screenshot_desc: str, use_case: UseCase, relevant_data: Dict[str, Any]
+    ) -> Task:
         """
         Assembles a final Task object from the prompt string and loaded page info.
         """
@@ -210,6 +220,6 @@ class GlobalTaskGenerationPipeline:
             screenshot_description=screenshot_desc,
             screenshot=str(transform_image_into_base64(screenshot)) if screenshot else "",
             specifications=BrowserSpecification(),
-            relevant_data={},
+            relevant_data=relevant_data,
             use_case=use_case,
         )

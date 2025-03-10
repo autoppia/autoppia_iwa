@@ -8,6 +8,7 @@ from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, field_validator
 
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
@@ -18,7 +19,7 @@ from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
 
 class ITest(ABC):
     @abstractmethod
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Abstract method to implement the specific logic for the test.
         """
@@ -33,14 +34,14 @@ class BaseTaskTest(BaseModel, ITest):
         extra = "allow"
         arbitrary_types_allowed = True
 
-    def execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
-        return self._execute_test(current_iteration, prompt, snapshot, browser_snapshots)
+    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
+        return self._execute_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iteratios)
 
-    @abstractmethod
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Must be overridden by subclasses.
         """
+        raise Exception("Method Not implemented")
 
     def serialize(self) -> dict:
         """
@@ -82,7 +83,7 @@ class CheckUrlTest(BaseTaskTest):
     match_type: Literal["exact", "contains", "regex"] = "contains"
     description: str = Field(default="Check if browser navigated to URL")
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Execute the test on the given snapshots with the specified matching strategy.
         """
@@ -130,7 +131,7 @@ class FindInHtmlTest(BaseTaskTest):
         text = re.sub(r'\s+', ' ', text).strip()
         return text
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Checks if the specified content is present in the current snapshot's HTML
         using the specified matching strategy.
@@ -159,7 +160,7 @@ class CheckEventTest(BaseTaskTest):
     event_criteria: Dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered")
 
-    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         """
         Execute the test on the given snapshots by checking for specific events.
         """
@@ -168,10 +169,12 @@ class CheckEventTest(BaseTaskTest):
 
         # Assuming the snapshot contains backend_events and we can access the event classes
         # from somewhere accessible in this context
+        if (current_iteration + 1) < total_iteratios:
+            return False
         events = web_project.events
 
         # Get the event class matching event_name
-        event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_name), None)
+        event_class = next((event_cls for event_cls in events if event_cls.get_event_type() == self.event_name), None)
         if not event_class:
             return False
 
@@ -184,7 +187,6 @@ class CheckEventTest(BaseTaskTest):
         except Exception as e:
             print(f"Invalid validation criteria: {e}")
             return False
-        from autoppia_iwa.src.demo_webs.projects.base_events import Event
 
         # Check if any event of the correct type matches our criteria
         for event in Event.parse_all(snapshot.backend_events):
@@ -199,7 +201,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
     success_criteria: str
     description: str = Field(default="Judge based on HTML changes")
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         from autoppia_iwa.src.shared.web_utils import clean_html
 
         if current_iteration == 0:
@@ -226,7 +228,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     success_criteria: str
     description: str = Field(default="Judge based on screenshot changes")
 
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
+    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot], total_iteratios: int) -> bool:
         if current_iteration == 0:
             return False
         return self._analyze_screenshots(prompt, browser_snapshots)
@@ -248,36 +250,3 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         return match.group(1) == "true" if match else False
-
-
-class WebProjectCheckEventTest(BaseTaskTest):
-    """
-    Test that checks if specific events were triggered with access to WebProject
-    """
-
-    type: Literal["WebProjectCheckEventTest"] = "WebProjectCheckEventTest"
-    event_name: str
-    event_criteria: Dict = Field(default_factory=dict)
-    description: str = Field(default="Check if specific event was triggered (with WebProject)")
-
-    def execute_test(self, web_project: WebProject, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
-        """
-        Special version of execute_test that accepts web_project parameter
-        """
-        events = web_project.events
-        # Get the event class matching event_name
-        event_class = next((event_cls for event_cls in events if event_cls.__name__ == self.event_name), None)
-        if not event_class:
-            return False
-        # Check if any event of the correct type matches our criteria
-        for event in snapshot.backend_events:
-            if isinstance(event, event_class) and event.matches_criteria(self.event_criteria):
-                return True
-        return False
-
-    def _execute_test(self, current_iteration: int, prompt: str, snapshot: BrowserSnapshot, browser_snapshots: List[BrowserSnapshot]) -> bool:
-        """
-        Fallback implementation when web_project is not available
-        """
-        print("Warning: WebProjectCheckEventTest requires web_project parameter")
-        return False
