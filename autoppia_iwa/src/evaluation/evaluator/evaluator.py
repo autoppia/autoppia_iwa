@@ -354,7 +354,6 @@ class ConcurrentEvaluator(IEvaluator):
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
 
-                monitor_task = None
                 # NOT NECESSARY FOR NOW
                 # if not is_web_real:
                 # Start monitoring the browser
@@ -398,10 +397,10 @@ class ConcurrentEvaluator(IEvaluator):
                             break
 
                 finally:
-                    if not is_web_real and monitor_task:
-                        monitor_task.cancel()
-                        await asyncio.gather(monitor_task, return_exceptions=True)
-
+                    #     if not is_web_real and monitor_task:
+                    #         monitor_task.cancel()
+                    #         await asyncio.gather(monitor_task, return_exceptions=True)
+                    pass
                 return action_results, action_execution_times
 
             except Exception as e:
