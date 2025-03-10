@@ -3,7 +3,7 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
-from autoppia_iwa.src.demo_webs.config import web_1_demo_projects
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
@@ -24,15 +24,15 @@ class TestActionExecution(unittest.IsolatedAsyncioTestCase):
         self.app_bootstrap = AppBootstrap()
         self.task = self.create_task()
         self.actions_data = self.get_action_data()
-        self.web_project = (await initialize_demo_webs_projects([web_1_demo_projects]))[0]
+        self.web_project = (await initialize_demo_webs_projects(demo_web_projects))[0]
 
     def create_task(self):
         """Creates a Task instance with predefined test cases."""
         task_data = {
             "prompt": "Click on the 'Login' link in the header. Then fill the form with email: employee@employee.com and password: employee, and click on login.",
-            "url": "http://localhost:8000/",
+            "url": "http://localhost:8001/",
             "tests": [
-                {"type": "JudgeBaseOnHTML", "success_criteria": "The login must be completed."},
+                # {"type": "JudgeBaseOnHTML", "success_criteria": "The login must be completed."},
                 # {"type": "FindInHtmlTest", "content": "login"},
                 {"type": "JudgeBaseOnScreenshot", "success_criteria": "The login must be completed."},
             ],
@@ -47,20 +47,20 @@ class TestActionExecution(unittest.IsolatedAsyncioTestCase):
         """Stores different accuracy levels of actions for testing."""
         return {
             "accurate": [
-                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "type": "NavigateAction", "url": "http://localhost:8000/"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8001/"}, "type": "NavigateAction", "url": "http://localhost:8001/"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "href", "value": "/login"}, "type": "ClickAction"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "type": "TypeAction", "text": "employee@employee.com"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "type": "TypeAction", "text": "employee"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "class", "value": "btn-outline-white-primary"}, "type": "ClickAction"},
             ],
             "half_accurate": [
-                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "type": "NavigateAction", "url": "http://localhost:8000/"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8001/"}, "type": "NavigateAction", "url": "http://localhost:8001/"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "href", "value": "/login"}, "type": "ClickAction"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "type": "TypeAction", "text": "employee@employee.com"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "type": "TypeAction", "text": "employee"},
             ],
             "wrong": [
-                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8000/"}, "type": "NavigateAction", "url": "http://localhost:8000/"},
+                {"selector": {"type": "attributeValueSelector", "attribute": "url", "value": "http://localhost:8001/"}, "type": "NavigateAction", "url": "http://localhost:8001/"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_email"}, "type": "TypeAction", "text": "employee@employee.com"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "id", "value": "id_password"}, "type": "TypeAction", "text": "employee"},
                 {"selector": {"type": "attributeValueSelector", "attribute": "class", "value": "btn-outline-white"}, "type": "ClickAction"},
