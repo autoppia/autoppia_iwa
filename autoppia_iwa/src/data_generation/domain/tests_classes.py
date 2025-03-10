@@ -219,11 +219,6 @@ class CheckEventTest(BaseTaskTest):
         """
         Execute the test on the given snapshots by checking for specific events.
         """
-        # This version requires the web_project parameter
-        # We'll need to adapt this for the current interface
-
-        # Assuming the snapshot contains backend_events and we can access the event classes
-        # from somewhere accessible in this context
         if (current_iteration + 1) < total_iterations:
             return False
         events = web_project.events
