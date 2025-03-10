@@ -20,10 +20,10 @@ before and after the action.
 
 ### **Evaluation Guidelines:**
 1. **Do NOT assume missing details** – Evaluate based only on the provided HTML snapshots.
-2. **Check for meaningful changes** – Verify whether the expected modifications occurred based on the action.
-3. **Consider success criteria** – The action is successful if it leads to an expected and relevant HTML change.
+2. **Check for meaningful changes** – Verify whether the expected modifications occurred based on the prompt given.
+3. **Consider success criteria** – The task is successful if it leads to an expected and relevant HTML change.
 4. **If no relevant change is detected**, the task should be marked as unsuccessful.
-5. **If a change exists but does not align with the action's purpose**, also mark it unsuccessful.
+5. **If a change exists but does not align with the task's purpose**, also mark it unsuccessful.
 
 ### **Your Response Format (JSON)**
 Here is the json schema: \n{json_schema}\n\n
