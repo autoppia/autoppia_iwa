@@ -71,7 +71,6 @@ class ConcurrentEvaluator(IEvaluator):
             display_single_evaluation_summary(result.stats, debug_mode=self.config.debug_mode)
             self.evaluation_stats.append(result.stats)
 
-        await self.backend_demo_webs_service.close()
         return result
 
     async def evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
@@ -99,7 +98,6 @@ class ConcurrentEvaluator(IEvaluator):
             errors=self.errors,
         )
 
-        await self.backend_demo_webs_service.close()
         return results
 
     async def _evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution) -> EvaluationResult:
@@ -144,8 +142,6 @@ class ConcurrentEvaluator(IEvaluator):
         try:
             # If simulated, reset the DB first
             browser_setup_start = time.time()
-            if not is_web_real:
-                await self.backend_demo_webs_service.reset_web_agent_events(web_agent_id)
 
             # Start browser usage
             browser_execution_start = time.time()
