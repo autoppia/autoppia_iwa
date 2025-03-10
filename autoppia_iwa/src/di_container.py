@@ -5,6 +5,7 @@ from autoppia_iwa.config.config import (
     ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
     LLM_PROVIDER,
+    LLM_RETURN_RAW_RESPONSE,
     LOCAL_MODEL_ENDPOINT,
     LOCAL_PARALLEL_MODEL_ENDPOINT,
     MONGODB_NAME,
@@ -64,6 +65,7 @@ class DIContainer(containers.DeclarativeContainer):
             model=OPENAI_MODEL if LLM_PROVIDER == "openai" else "local",
             temperature=OPENAI_TEMPERATURE,
             max_tokens=OPENAI_MAX_TOKENS,
+            return_raw=LLM_RETURN_RAW_RESPONSE,
         )
 
         return LLMFactory.create_llm(

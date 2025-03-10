@@ -12,6 +12,7 @@ class LLMConfig:
     model: str = "gpt-3.5-turbo"
     temperature: float = 0.7
     max_tokens: int = 2048
+    return_raw: bool = False
 
 
 class ILLM(ABC):

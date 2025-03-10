@@ -10,9 +10,10 @@ load_dotenv()
 # ============================
 # LLM CONFIGURATION
 # ============================
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "serverless", "local", or "openai"
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "local" or "openai"
 LLM_THRESHOLD = 100
 LLM_CONTEXT_WINDOW = int(os.getenv("LLM_CONTEXT_WINDOW", 10000))
+
 LOCAL_MODEL_ENDPOINT = os.getenv("LOCAL_MODEL_ENDPOINT", "http://127.0.0.1:6000/generate")
 LOCAL_PARALLEL_MODEL_ENDPOINT = os.getenv("LOCAL_PARALLEL_MODEL_ENDPOINT", "http://127.0.0.1:6000/generate_parallel")
 
@@ -22,9 +23,17 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4-32k-0613")
 OPENAI_MAX_TOKENS = int(os.getenv("LLM_CONTEXT_WINDOW", 2000))
 OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", 0.8))
 
+LLM_RETURN_RAW_RESPONSE = bool(strtobool(os.getenv("LLM_RETURN_RAW_RESPONSE", "False")))
+
+if LLM_RETURN_RAW_RESPONSE:
+    print("[WARNING] 'LLM_RETURN_RAW_RESPONSE' is enabled. This feature is experimental and may cause unexpected behavior. " "If this was unintentional, set it to 'False'.")
+
 # Validate critical environment variables
 if LLM_PROVIDER == "openai" and not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.")
+
+if LLM_PROVIDER != "openai" and LLM_RETURN_RAW_RESPONSE:
+    raise ValueError("'LLM_RETURN_RAW_RESPONSE' can only be used with OpenAI. Please disable it.")
 
 # ==================================
 # Database and File Configuration
@@ -34,14 +43,6 @@ MONGODB_NAME = "workflow"
 ANALYSIS_COLLECTION = "web_analysis"
 TASKS_COLLECTION = "tasks"
 DOCUMENTS_DIR = "data/web_analysis_files"
-
-# ============================
-# Browser and Chrome Paths
-# ============================
-CHROMEDRIVER_PATH = os.getenv("CHROMEDRIVER_PATH", "/opt/chromedriver/chromedriver-linux64/chromedriver")
-CHROME_PATH = os.getenv("CHROME_PATH", "/opt/chrome/chrome-linux64/chrome")
-PROFILE_DIR = os.getenv("PROFILE_DIR", "~/.config/google-chrome/Profile 6")
-PROFILE = os.getenv("PROFILE", "Profile 6")
 
 # ============================
 # Application Configuration

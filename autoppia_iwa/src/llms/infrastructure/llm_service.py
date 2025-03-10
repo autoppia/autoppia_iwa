@@ -1,14 +1,11 @@
 # llm_service.py
 
-import time
 from typing import Dict, List, Optional
 
 import httpx
 from openai import AsyncOpenAI, OpenAI
 
 from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
-
-# In llms.py
 
 
 class OpenAIService(ILLM):
@@ -22,46 +19,45 @@ class OpenAIService(ILLM):
         self.sync_client = OpenAI(api_key=api_key)
         self.async_client = AsyncOpenAI(api_key=api_key)
 
-    def _prepare_json_schema(self, schema: Dict) -> Dict:
+    def _prepare_payload(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> Dict:
         """
-        Prepares the JSON schema for OpenAI's format requirements.
+        Prepares the payload for OpenAI API requests.
         """
-        return {"type": "object", "properties": {"schema": {"type": "string", "enum": ["JSON_SCHEMA"]}, "response": schema}, "required": ["schema", "response"]}
+        payload = {
+            "model": self.config.model,
+            "messages": messages,
+            "max_tokens": self.config.max_tokens,
+            "temperature": self.config.temperature,
+        }
+        if json_format and schema:
+            payload["response_format"] = {"type": "json_object"}
+            # Add system message for JSON structure
+            messages.insert(0, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
+            payload["messages"] = messages
+        return payload
 
     def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+        """
+        Synchronous prediction using OpenAI's API.
+        """
         try:
-            params = {
-                "model": self.config.model,
-                "messages": messages,
-                "max_tokens": self.config.max_tokens,
-                "temperature": self.config.temperature,
-            }
-            if json_format and schema:
-                params["response_format"] = {"type": "json_object"}
-                # Add system message for JSON structure
-                messages.insert(0, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
-                params["messages"] = messages
-
-            response = self.sync_client.chat.completions.create(**params)
+            payload = self._prepare_payload(messages, json_format, schema)
+            response = self.sync_client.chat.completions.create(**payload)
+            if self.config.return_raw:
+                return response
             return response.choices[0].message.content
         except Exception as e:
             raise RuntimeError(f"OpenAI Sync Error: {e}")
 
     async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+        """
+        Asynchronous prediction using OpenAI's API.
+        """
         try:
-            params = {
-                "model": self.config.model,
-                "messages": messages,
-                "max_tokens": self.config.max_tokens,
-                "temperature": self.config.temperature,
-            }
-            if json_format and schema:
-                params["response_format"] = {"type": "json_object"}
-                # Add system message for JSON structure
-                messages.insert(0, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
-                params["messages"] = messages
-
-            response = await self.async_client.chat.completions.create(**params)
+            payload = self._prepare_payload(messages, json_format, schema)
+            response = await self.async_client.chat.completions.create(**payload)
+            if self.config.return_raw:
+                return response
             return response.choices[0].message.content
         except Exception as e:
             raise RuntimeError(f"OpenAI Async Error: {e}")
@@ -73,65 +69,54 @@ class LocalLLMService(ILLM):
     Uses HTTPX for sync and async calls.
     """
 
-    def __init__(self, config: LLMConfig, endpoint_url: str, parallel_endpoint_url: Optional[str] = None):
+    def __init__(self, config: LLMConfig, endpoint_url: str):
         """
         :param config: LLMConfig object with model details, max_tokens, temperature, etc.
         :param endpoint_url: The HTTP endpoint for single-request generation (e.g. /generate).
-        :param parallel_endpoint_url: (Optional) The HTTP endpoint for batch generation (e.g. /generate_parallel).
         """
         self.config = config
         self.endpoint_url = endpoint_url
 
-    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
-        start_time = time.time()
-        try:
-            with httpx.Client(timeout=120.0) as client:
-                payload = {
-                    "messages": messages,
-                    "temperature": self.config.temperature,
-                    "max_tokens": self.config.max_tokens,
-                }
-                if json_format:
-                    payload["json_format"] = True
-                if schema:
-                    payload["schema"] = schema
+    def _prepare_payload(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> Dict:
+        """
+        Prepares the payload for local LLM API requests.
+        """
+        payload = {
+            "messages": messages,
+            "temperature": self.config.temperature,
+            "max_tokens": self.config.max_tokens,
+        }
+        if json_format:
+            payload["json_format"] = True
+        if schema:
+            payload["schema"] = schema
+        return payload
 
+    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
+        """
+        Synchronous prediction using the local LLM endpoint.
+        """
+        try:
+            with httpx.Client(timeout=180.0) as client:
+                payload = self._prepare_payload(messages, json_format, schema)
                 response = client.post(self.endpoint_url, json=payload)
                 response.raise_for_status()
-                output = response.json().get("output", "")
-                return output
+                return response.json().get("output", "")
         except httpx.HTTPError as e:
             raise RuntimeError(f"Local LLM Sync Error: {e}")
-        finally:
-            elapsed_time = time.time() - start_time
-            print(f"Sync request took {elapsed_time:.2f} seconds.")
 
     async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> str:
         """
-        Asynchronously sends a single request to the local LLM endpoint "/generate".
+        Asynchronous prediction using the local LLM endpoint.
         """
-        # start_time = time.time()
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            try:
-                payload = {
-                    "messages": messages,
-                    "temperature": self.config.temperature,
-                    "max_tokens": self.config.max_tokens,
-                }
-                if json_format:
-                    payload["json_format"] = True
-                if schema:
-                    payload["schema"] = schema
-
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                payload = self._prepare_payload(messages, json_format, schema)
                 response = await client.post(self.endpoint_url, json=payload)
                 response.raise_for_status()
-                output = response.json().get("output", "")
-                return output
-            except httpx.HTTPError as e:
-                raise RuntimeError(f"Local LLM Async Error: {e}")
-            # finally:
-            #     elapsed_time = time.time() - start_time
-            # print(f"Async request took {elapsed_time:.2f} seconds.")
+                return response.json().get("output", "")
+        except httpx.HTTPError as e:
+            raise RuntimeError(f"Local LLM Async Error: {e}")
 
 
 class LLMFactory:
