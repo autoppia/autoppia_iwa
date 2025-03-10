@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from autoppia_iwa.config.config import LLM_RETURN_RAW_RESPONSE, PROJECT_BASE_DIR
+from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
@@ -299,10 +299,10 @@ class JudgeBaseOnHTML(BaseTaskTest):
         result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
         end_time = time.perf_counter()
         duration = round(end_time - start_time, 3)
-        if LLM_RETURN_RAW_RESPONSE:
-            save_usage_record(task_prompt, result, duration, self.type)
-            result_str = result.get("choices", [{}])[0].get("message", {}).get("content", "")
-        else:
+        save_usage_record(task_prompt, result, duration, self.type)
+        try:
+            result_str = result.choices[0].message.content
+        except Exception:
             result_str = result
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
@@ -351,10 +351,10 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         end_time = time.perf_counter()
         duration = round(end_time - start_time, 4)
 
-        if LLM_RETURN_RAW_RESPONSE:
-            save_usage_record(prompt, result, duration, self.type)
-            result_str = result.get("choices", [{}])[0].get("message", {}).get("content", "")
-        else:
+        save_usage_record(prompt, result, duration, self.type)
+        try:
+            result_str = result.choices[0].message.content
+        except Exception:
             result_str = result
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
@@ -363,8 +363,8 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
 
 def save_usage_record(prompt, response, time_taken, test_type, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs"):
     """Saves token usage and execution time to log file."""
-    input_tokens = response.get("usage", {}).get("prompt_tokens", 0)
-    output_tokens = response.get("usage", {}).get("completion_tokens", 0)
+    input_tokens = response.usage.prompt_tokens
+    output_tokens = response.usage.completion_tokens
 
     log_entry = {
         "test_type": test_type,
