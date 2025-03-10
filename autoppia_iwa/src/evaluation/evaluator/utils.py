@@ -191,6 +191,7 @@ def run_tests(web_project: WebProject, task: Task, execution_history: List[Actio
     Runs all task tests after each action, building a test results matrix.
 
     Args:
+        web_project: The web project being tested.
         task (Task): The task being evaluated (contains the list of tests).
         execution_history (List[ActionExecutionResult]): History of all executed actions.
 

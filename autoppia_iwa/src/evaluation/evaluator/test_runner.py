@@ -24,6 +24,7 @@ class TestRunner:
         Run all tests for a single snapshot (after a single action).
 
         Args:
+            web_project: The web project being tested.
             prompt: The task prompt.
             snapshot: The current browser snapshot.
             browser_snapshots: All browser snapshots up to the current one.
@@ -58,11 +59,11 @@ class TestRunner:
         snapshot: BrowserSnapshot,
         browser_snapshots: List[BrowserSnapshot],
         current_action_index: int,
-        total_iteratios: int,
+        total_iterations: int,
     ) -> TestResult:
         """Helper function to execute a test and return a TestResult object."""
         success = test.execute_test(
-            web_project=web_project, current_iteration=current_action_index, prompt=prompt, snapshot=snapshot, browser_snapshots=browser_snapshots, total_iteratios=total_iteratios
+            web_project=web_project, current_iteration=current_action_index, prompt=prompt, snapshot=snapshot, browser_snapshots=browser_snapshots, total_iterations=total_iterations
         )
         return TestResult(
             success=success,
