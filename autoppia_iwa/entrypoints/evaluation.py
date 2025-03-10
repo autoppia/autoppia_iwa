@@ -26,12 +26,7 @@ async def generate_tasks(num_tasks: int = 3):
     test_projects = test_demo_web_projects
     test_projects = await initialize_demo_webs_projects(test_projects)
     web_project = test_projects[0]
-    config = TaskGenerationConfig(
-        save_task_in_db=False,
-        save_web_analysis_in_db=True,
-        enable_crawl=True,
-        generate_milestones=False,
-    )
+    config = TaskGenerationConfig(save_task_in_db=False)
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
     tasks: List[Task] = await pipeline.generate()
     return tasks
