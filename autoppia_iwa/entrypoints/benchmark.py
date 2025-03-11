@@ -21,9 +21,9 @@ from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolu
 from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
 from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_real_tasks
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # Setup logging
 logging.basicConfig(
@@ -64,8 +64,8 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
 AGENTS: List[BaseAgent] = [
-    # RandomClickerWebAgent(id="2", name="Random-clicker"),
-    ApifiedWebAgent(id='1', name="Browser-Use", host="127.0.0.1", port=5000, timeout=120),
+    RandomClickerWebAgent(id="2", name="Random-clicker"),
+    # ApifiedWebAgent(id='1', name="Browser-Use", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
@@ -103,53 +103,56 @@ async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: 
     solutions = {}
     logger.info(f"\nAgent: {agent.name}")
     backend_service = BackendDemoWebService(demo_project)
-    for task in tasks:
-        task_solution: Optional[TaskSolution] = None
-        # Restart db
-        await backend_service.reset_database()
+    try:
+        for task in tasks:
+            task_solution: Optional[TaskSolution] = None
+            # Restart db
+            await backend_service.reset_database()
 
-        # Check if solution should be loaded from cache
-        if config.use_cached_solutions and solution_cache.solution_exists(task.id, agent.id):
-            logger.info(f"  Loading cached solution for Task {task.id}...")
-            try:
-                task_solution = await solution_cache.load_solution(task.id, agent.id)
-                if task_solution:
-                    logger.info(f"    Successfully loaded cached solution with {len(task_solution.actions)} actions")
-                else:
-                    logger.warning(f"    Failed to load cached solution for {task.id}, will generate new one")
-            except Exception as e:
-                logger.error(f"    Error loading cached solution: {str(e)}")
+            # Check if solution should be loaded from cache
+            if config.use_cached_solutions and solution_cache.solution_exists(task.id, agent.id):
+                logger.info(f"  Loading cached solution for Task {task.id}...")
+                try:
+                    task_solution = await solution_cache.load_solution(task.id, agent.id)
+                    if task_solution:
+                        logger.info(f"    Successfully loaded cached solution with {len(task_solution.actions)} actions")
+                    else:
+                        logger.warning(f"    Failed to load cached solution for {task.id}, will generate new one")
+                except Exception as e:
+                    logger.error(f"    Error loading cached solution: {str(e)}")
 
-        # Generate new solution if needed
-        if task_solution is None:
-            logger.info(f"  Generating new solution for Task {task.id}...")
-            start_time = time.time()
-            # CAPA DE MINER
-            task = task.prepare_for_agent(agent.id)
-            # Solve the task
-            solution = await agent.solve_task(task)
-            actions = solution.actions or []
-            task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
+            # Generate new solution if needed
+            if task_solution is None:
+                logger.info(f"  Generating new solution for Task {task.id}...")
+                start_time = time.time()
+                # CAPA DE MINER
+                task = task.prepare_for_agent(agent.id)
+                # Solve the task
+                solution = await agent.solve_task(task)
+                actions = solution.actions or []
+                task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
 
-            # Measure solution time
-            end_time = time.time()
-            solution_time = end_time - start_time
-            timing_metrics.record_solution_time(agent.id, task.id, solution_time)
-            logger.info(f"    Solution generated in {solution_time:.2f} seconds with {len(actions)} actions")
+                # Measure solution time
+                end_time = time.time()
+                solution_time = end_time - start_time
+                timing_metrics.record_solution_time(agent.id, task.id, solution_time)
+                logger.info(f"    Solution generated in {solution_time:.2f} seconds with {len(actions)} actions")
 
-            # Cache the solution for future use
-            try:
-                success = solution_cache.save_solution(task_solution=task_solution, agent_id=agent.id, agent_name=agent.name)
-                if success:
-                    logger.info("Solution cached successfully for future runs")
-                else:
-                    logger.warning("Failed to cache solution")
-            except Exception as e:
-                logger.error(f"Error caching solution: {str(e)}")
+                # Cache the solution for future use
+                try:
+                    success = solution_cache.save_solution(task_solution=task_solution, agent_id=agent.id, agent_name=agent.name)
+                    if success:
+                        logger.info("Solution cached successfully for future runs")
+                    else:
+                        logger.warning("Failed to cache solution")
+                except Exception as e:
+                    logger.error(f"Error caching solution: {str(e)}")
 
-        # Store solution for evaluation phase
-        solutions[task.id] = task_solution
-
+            # Store solution for evaluation phase
+            solutions[task.id] = task_solution
+    finally:
+        if backend_service:
+            await backend_service.close()
     return solutions
 
 
