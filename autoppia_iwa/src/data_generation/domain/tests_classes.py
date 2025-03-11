@@ -9,6 +9,7 @@ from typing import Dict, List, Literal, Type
 
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
+from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
@@ -17,8 +18,8 @@ from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
+from autoppia_iwa.src.shared.web_utils import generate_html_differences
 
-from ...shared.web_utils import generate_html_differences
 from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
 
@@ -358,10 +359,24 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         return match.group(1).lower() == "true" if match else False
 
 
-def save_usage_record(prompt, response, time_taken, test_type, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs"):
+def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):
     """Saves token usage and execution time to log file."""
+    from autoppia_iwa.src.shared.pricings import pricing_dict
+
     input_tokens = response.usage.prompt_tokens
     output_tokens = response.usage.completion_tokens
+    model_name = response.model
+
+    if model_name not in pricing_dict:
+        print(f"[WARNING] Model '{model_name}' not found in pricing dictionary")
+
+    input_cost_per_token = pricing_dict[model_name]["input"]
+    output_cost_per_token = pricing_dict[model_name]["output"]
+
+    # Calculate costs
+    input_cost = input_tokens * input_cost_per_token
+    output_cost = output_tokens * output_cost_per_token
+    total_cost = input_cost + output_cost
 
     log_entry = {
         "test_type": test_type,
@@ -369,7 +384,15 @@ def save_usage_record(prompt, response, time_taken, test_type, log_file: Path = 
         "task": prompt,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
+        "input_cost": input_cost,
+        "output_cost": output_cost,
+        "total_cost": total_cost,
         "duration_seconds": time_taken,
+        "model": model_name,
     }
-    with log_file.open("a") as log_file:
-        log_file.write(json.dumps(log_entry) + "\n")
+
+    try:
+        with log_file.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+    except IOError as e:
+        print(f"[ERROR] Failed to write to log file: {e}")
