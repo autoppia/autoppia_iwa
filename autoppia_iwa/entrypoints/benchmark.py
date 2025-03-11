@@ -45,7 +45,7 @@ class BenchmarkConfig:
     m: int = 1  # Number of copies of each solution to evaluate
     prompts_per_url: int = 1
     num_of_urls: int = 1
-
+    prompt_per_use_case: int = 1
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
@@ -79,13 +79,7 @@ async def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData
         task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
         return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
 
-    return await generate_tasks_for_project(
-        demo_project,
-        config.use_cached_tasks,
-        str(config.tasks_cache_dir),
-        config.prompts_per_url,
-        config.num_of_urls,
-    )
+    return await generate_tasks_for_project(demo_project, config.use_cached_tasks, str(config.tasks_cache_dir), config.prompts_per_url, config.num_of_urls, config.prompt_per_use_case)
 
 
 @visualize_evaluation(visualizer)
