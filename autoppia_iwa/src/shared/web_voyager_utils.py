@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 from pathlib import Path
@@ -56,3 +57,8 @@ def load_real_tasks(num_of_urls: int) -> List[TaskData]:
     original_tasks = load_jsonl_file(data_dir / "web_voyager_tasks/web_voyager_data.jsonl")
     impossible_tasks_ids = set(load_jsonl_file(data_dir / "web_voyager_tasks/web_voyager_impossible_tasks.json"))
     return [TaskData(**task) for task in original_tasks if task["id"] not in impossible_tasks_ids][:num_of_urls]
+
+
+def generate_hash(input_string: str) -> str:
+    """Generate a SHA-256 hash of the input string."""
+    return hashlib.sha256(input_string.encode('utf-8')).hexdigest()

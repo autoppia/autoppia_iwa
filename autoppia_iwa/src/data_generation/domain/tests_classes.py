@@ -297,14 +297,16 @@ class JudgeBaseOnHTML(BaseTaskTest):
         result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
         end_time = time.perf_counter()
         duration = round(end_time - start_time, 3)
-        save_usage_record(task_prompt, result, duration, self.type)
         try:
             result_str = result.choices[0].message.content
         except Exception:
             result_str = result
-        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
-        return match.group(1).lower() == "true" if match else False
+        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
+        final_result = match.group(1).lower() == "true" if match else False
+        save_usage_record(task_prompt, result, duration, self.type, final_result=final_result)
+
+        return final_result
 
 
 class JudgeBaseOnScreenshot(BaseTaskTest):
@@ -348,18 +350,20 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
         end_time = time.perf_counter()
         duration = round(end_time - start_time, 4)
-
-        save_usage_record(prompt, result, duration, self.type)
         try:
             result_str = result.choices[0].message.content
         except Exception:
             result_str = result
+
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
-        return match.group(1).lower() == "true" if match else False
+        final_result = match.group(1).lower() == "true" if match else False
+        save_usage_record(prompt, result, duration, self.type, final_result=final_result)
+
+        return final_result
 
 
-def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):
+def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, final_result: bool, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):
     """Saves token usage and execution time to log file."""
     from autoppia_iwa.src.shared.pricings import pricing_dict
 
@@ -380,6 +384,7 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
 
     log_entry = {
         "test_type": test_type,
+        "final_test_result": final_result,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "task": prompt,
         "input_tokens": input_tokens,
