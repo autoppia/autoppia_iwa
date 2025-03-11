@@ -139,14 +139,6 @@ class Task(BaseModel):
         # Remove any None values to make the output cleaner
         return {k: v for k, v in cleaned.items() if v is not None}
 
-    def prepare_for_feedback(self) -> "Task":
-        copied_task = copy.deepcopy(self)
-        copied_task.use_case = None
-        copied_task.milestones = None
-        copied_task.interactive_elements = None
-
-        return 
-
     def prepare_for_agent(self, web_agent_id: str) -> "Task":
         """
         Creates and returns a copy of the task with web_agent_id replacements applied.
