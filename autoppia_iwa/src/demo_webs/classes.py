@@ -1,7 +1,8 @@
 from typing import Any, Callable, Dict, List, Optional, Type
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
+from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
@@ -11,7 +12,7 @@ class UseCase(BaseModel):
     name: str
     description: str
 
-    event: Type
+    event: Type[Event]
     event_source_code: str
     examples: List[Dict]
     replace_func: Optional[Callable[[str], str]] = Field(default=None, exclude=True)
@@ -42,6 +43,36 @@ class UseCase(BaseModel):
         Get all example prompts as a single string with the specified separator
         """
         return separator.join(self.get_example_prompts_from_use_case())
+
+    def serialize(self) -> dict:
+        """Serialize a UseCase object to a dictionary."""
+        serialized = self.model_dump()
+        serialized["event"] = self.event.__name__
+        if "event_source_code" in serialized:
+            serialized["event_source_code"] = True
+        return serialized
+
+    @classmethod
+    def deserialize(cls, data: dict) -> 'UseCase':
+        """Deserialize a dictionary to a UseCase object."""
+        from autoppia_iwa.src.demo_webs.projects.base_events import EventRegistry
+
+        try:
+            event_class_name = data.get("event")
+            if not event_class_name:
+                raise ValueError("Event class name is missing in the data")
+
+            event_class = EventRegistry.get_event_class(event_class_name)
+
+            data["event"] = event_class
+            if "event_source_code" in data:
+                data["event_source_code"] = event_class.get_source_code_of_class()
+
+            return cls(**data)
+        except KeyError as e:
+            raise ValueError(f"Event class '{event_class_name}' not found in the registry") from e
+        except ValidationError as e:
+            raise ValueError(f"Invalid data for UseCase deserialization: {e}") from e
 
 
 class WebProject(BaseModel):

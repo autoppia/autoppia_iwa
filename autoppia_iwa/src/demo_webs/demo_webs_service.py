@@ -47,6 +47,11 @@ class BackendDemoWebService:
             except Exception as e:
                 logger.error(f"Error closing session: {e}")
 
+    def __del__(self):
+        """Warn if the session was not closed."""
+        if self._session and not self._session.closed:
+            print("Warning: Unclosed ClientSession detected. Please call `close()` explicitly.")
+
     async def get_backend_events(self, web_agent_id: str) -> List[BackendEvent]:
         """
         Fetch recent events from the backend for the specified web_agent_id.

@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import time
 from dataclasses import dataclass
@@ -17,10 +18,12 @@ from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
-from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_real_tasks
-from autoppia_iwa.src.web_agents.base import BaseAgent
+from autoppia_iwa.src.shared.web_voyager_utils import TaskData, generate_hash, load_real_tasks
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+
+# from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 
 @dataclass
@@ -48,9 +51,9 @@ config = WebVoyagerConfig()
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
-AGENTS: List[BaseAgent] = [
-    RandomClickerWebAgent(name="Random-clicker"),
-    # ApifiedWebAgent(name="Browser-Use", host="localhost", port=9000, timeout=120),
+AGENTS: List[IWebAgent] = [
+    # RandomClickerWebAgent(name="Random-clicker"),
+    ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=120),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
@@ -79,10 +82,39 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
         web_project=web_project,
         config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20),
     )
-    return await evaluator.evaluate_single_task_solution(task, task_solution)
+    result = await evaluator.evaluate_single_task_solution(task, task_solution)
+
+    if result is not None and result.feedback:
+        evaluation_feedback = result.feedback.model_dump()
+        evaluation_feedback.pop("execution_history", None)
+
+        log_file = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"
+
+        if not log_file.exists():
+            raise FileNotFoundError(f"the log file {log_file} does not exist")
+
+        task_prompt_hash = generate_hash(task.prompt)
+
+        updated_entries = []
+        with log_file.open("r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    entry = json.loads(line.strip())
+                    if generate_hash(entry.get("task")) == task_prompt_hash:
+                        entry["evaluation_feedback"] = evaluation_feedback
+                    updated_entries.append(entry)
+                except json.JSONDecodeError:
+                    print(f"Warning: Skipping invalid JSON line in {log_file}")
+                    continue
+
+        with log_file.open("w", encoding="utf-8") as f:
+            for entry in updated_entries:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    return result
 
 
-async def generate_solutions(agent: BaseAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
+async def generate_solutions(agent: IWebAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
     """Generate or load solutions for a given agent and tasks."""
     solutions = {}
     logger.info(f"\nAgent: {agent.name}")
@@ -135,7 +167,7 @@ async def generate_solutions(agent: BaseAgent, tasks: List[Task], timing_metrics
 
 
 async def evaluate_solutions(
-    agent: BaseAgent,
+    agent: IWebAgent,
     tasks: List[Task],
     solutions: Dict[str, TaskSolution],
     demo_project: WebProject,

@@ -58,47 +58,54 @@ class ConcurrentEvaluator(IEvaluator):
         """
         Evaluate a single task solution (actions + agent) for a given task.
         """
+        try:
+            logger.info(f"Evaluating Single task solution for task {task.id}...")
 
-        logger.info(f"Evaluating Single task solution for task {task.id}...")
+            logger.info("Resetting Project Environment & Database.")
+            await self.backend_demo_webs_service.reset_database()
 
-        logger.info("Resetting Project Environment & Database.")
-        await self.backend_demo_webs_service.reset_database()
+            result = await self._evaluate_single_task_solution(task, task_solution)
 
-        result = await self._evaluate_single_task_solution(task, task_solution)
+            # Display final report for this single solution
+            if result.stats:
+                display_single_evaluation_summary(result.stats, debug_mode=self.config.debug_mode)
+                self.evaluation_stats.append(result.stats)
 
-        # Display final report for this single solution
-        if result.stats:
-            display_single_evaluation_summary(result.stats, debug_mode=self.config.debug_mode)
-            self.evaluation_stats.append(result.stats)
-
-        return result
+            return result
+        finally:
+            if self.backend_demo_webs_service:
+                await self.backend_demo_webs_service.close()
 
     async def evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         """
         Evaluate multiple solutions for the same task, optionally grouping identical ones.
         """
-        logger.info(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
+        try:
+            logger.info(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
 
-        logger.info("Resetting Project Environment & Database.")
-        await self.backend_demo_webs_service.reset_database()
+            logger.info("Resetting Project Environment & Database.")
+            await self.backend_demo_webs_service.reset_database()
 
-        results = await self._group_and_evaluate_task_solutions(task, task_solutions)
+            results = await self._group_and_evaluate_task_solutions(task, task_solutions)
 
-        # Save stats
-        for r in results:
-            if r.stats:
-                self.evaluation_stats.append(r.stats)
+            # Save stats
+            for r in results:
+                if r.stats:
+                    self.evaluation_stats.append(r.stats)
 
-        # Display final report after all evaluations for this task
-        display_batch_evaluation_summary(
-            task_id=task.id,
-            evaluation_stats=self.evaluation_stats,
-            debug_mode=self.config.debug_mode,
-            action_type_timing=self.action_type_timing,
-            errors=self.errors,
-        )
+            # Display final report after all evaluations for this task
+            display_batch_evaluation_summary(
+                task_id=task.id,
+                evaluation_stats=self.evaluation_stats,
+                debug_mode=self.config.debug_mode,
+                action_type_timing=self.action_type_timing,
+                errors=self.errors,
+            )
 
-        return results
+            return results
+        finally:
+            if self.backend_demo_webs_service:
+                await self.backend_demo_webs_service.close()
 
     async def _evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution) -> EvaluationResult:
         """
