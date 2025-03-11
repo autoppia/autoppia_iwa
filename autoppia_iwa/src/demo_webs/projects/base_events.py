@@ -1,9 +1,7 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional, Type
 
 from pydantic import BaseModel
-
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
 
 
 class Event(BaseModel):
@@ -13,6 +11,11 @@ class Event(BaseModel):
     timestamp: int
     web_agent_id: str
     user_id: Optional[int] = None
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically register subclasses in the ActionRegistry."""
+        super().__init_subclass__(**kwargs)
+        EventRegistry.register(cls)
 
     class ValidationCriteria(BaseModel):
         pass
@@ -31,7 +34,7 @@ class Event(BaseModel):
         return True
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "Event":
+    def parse(cls, backend_event: "BackendEvent") -> "Event":
         """Base parse method for all events"""
         # Convert Django timestamp to Unix timestamp if needed
         if isinstance(backend_event.timestamp, str):
@@ -49,7 +52,7 @@ class Event(BaseModel):
         return cls(event_name=backend_event.event_name, timestamp=timestamp, web_agent_id=web_agent_id, user_id=user_id)
 
     @staticmethod
-    def parse_all(backend_events: List[BackendEvent]) -> List["Event"]:
+    def parse_all(backend_events: List["BackendEvent"]) -> List["Event"]:
         """Parse all backend events and return appropriate typed events"""
         events: List[Event] = []
         # TODO: If we have more types we should include here
@@ -78,3 +81,24 @@ class Event(BaseModel):
         import inspect
 
         return inspect.getsource(cls)
+
+
+# Registry class for Event subclasses
+class EventRegistry:
+    """Registry for storing and managing Event subclasses."""
+
+    _registry: Dict[str, Type[Event]] = {}
+
+    @classmethod
+    def register(cls, event_class: Type[Event]) -> None:
+        """Register an Event subclass."""
+        if not issubclass(event_class, Event):
+            raise ValueError(f"{event_class.__name__} is not a subclass of Event")
+        cls._registry[event_class.__name__] = event_class
+
+    @classmethod
+    def get_event_class(cls, event_name: str) -> Type[Event]:
+        """Retrieve an Event subclass by its name."""
+        if event_name not in cls._registry:
+            raise ValueError(f"Event class '{event_name}' is not registered")
+        return cls._registry[event_name]

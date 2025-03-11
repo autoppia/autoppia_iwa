@@ -83,6 +83,8 @@ class Task(BaseModel):
         # If you have sub-tasks in milestones
         if self.milestones:
             serialized["milestones"] = [m.serialize() for m in self.milestones]
+        if self.use_case:
+            serialized["use_case"] = self.use_case.serialize()
         return serialized
 
     @classmethod
@@ -111,6 +113,9 @@ class Task(BaseModel):
 
         # if "description" in task_data and not task_data.get("prompt"):
         #     task_data["prompt"] = task_data.pop("description")
+
+        if "use_case" in data:
+            data["use_case"] = UseCase.deserialize(data["use_case"])
 
         # # Create the Task object
         return cls(**data)
