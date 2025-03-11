@@ -85,6 +85,8 @@ class Task(BaseModel):
             serialized["milestones"] = [m.serialize() for m in self.milestones]
         if self.use_case:
             serialized["use_case"] = self.use_case.serialize()
+        serialized.pop("html", None)
+        serialized.pop("clean_html", None)
         return serialized
 
     @classmethod
