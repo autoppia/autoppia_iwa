@@ -397,6 +397,7 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
     }
 
     try:
+        log_file.parent.mkdir(parents=True, exist_ok=True)
         with log_file.open("a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
     except IOError as e:
