@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
+from loguru import logger
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import Event
@@ -26,6 +27,8 @@ class RegistrationEvent(Event):
         """
         Validate if this registration event meets the criteria.
         """
+        logger.info("Esto es el validatation criteria del REGISTRATION {criteria}")
+        logger.info("Este es el username")
         if not criteria:
             return True
         if criteria.username is not None:

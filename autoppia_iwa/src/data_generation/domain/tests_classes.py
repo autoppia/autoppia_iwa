@@ -19,6 +19,7 @@ from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.web_utils import generate_html_differences
+from loguru import logger
 
 from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
@@ -61,6 +62,8 @@ class BaseTaskTest(BaseModel, ITest):
         """
         Executes the test by delegating to the _execute_test method.
         """
+        # TODO: QUITAR
+        logger.info(f"I am gonna execute check _execute_test...")
         return await self._execute_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iterations)
 
     async def _execute_test(
@@ -222,7 +225,8 @@ class CheckEventTest(BaseTaskTest):
         """
         if (current_iteration + 1) < total_iterations:
             return False
-
+        # TODO: QUITAR
+        logger.info(f"ESTOY EVALUANDO EL TEST PARA  LOS EVENTOS {snapshot.backend_events}...")
         parsed_events: List[Event] = Event.parse_all(snapshot.backend_events)
         valid_events: List[Event] = []
         for event in parsed_events:
@@ -231,9 +235,13 @@ class CheckEventTest(BaseTaskTest):
 
         for event in valid_events:
             validation_model = event.ValidationCriteria
+            # TODO: QUITAR
+            logger.info(f"Esto es el event que tenemos que evaluar {event}...")
 
             try:
                 parsed_criteria = validation_model(**self.event_criteria)
+                # TODO: QUITAR
+                logger.info(f"Esto es parsed_critera {parsed_criteria}...")
             except ValidationError as e:
                 print(f"Invalid validation criteria: {e}")
                 return False

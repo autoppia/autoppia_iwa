@@ -127,8 +127,9 @@ class ConcurrentEvaluator(IEvaluator):
         for action in actions:
             stats.action_types[action.type] = stats.action_types.get(action.type, 0) + 1
 
-        # If no actions, return an immediate error
-        if not actions:
+        # TODO: QUITAR If no actions, return an immediate error
+        if not actions or str(web_agent_id) not in ['102']:
+
             stats.had_errors = True
             stats.error_message = "No actions provided"
             stats.total_time = time.time() - stats.start_time
@@ -145,7 +146,7 @@ class ConcurrentEvaluator(IEvaluator):
                 evaluation_time=0.1,
                 stats=stats,
             )
-
+        logger.info(f"I am going to evaluate task solution {task_solution} solutions for task {task.id}...")
         try:
             # If simulated, reset the DB first
             browser_setup_start = time.time()
