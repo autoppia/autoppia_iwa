@@ -8,7 +8,6 @@ from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
@@ -22,21 +21,13 @@ logger = logging.getLogger("stress_test")
 # Configuration for the stress test
 # -----------------------------------------------------------------------------
 USE_CACHED_TASKS = False  # Set to True to use cached tasks from JSON file
-USE_CACHED_SOLUTIONS = False  # Set to True to use cached solutions when available
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
-SOLUTIONS_CACHE_DIR = "data/solutions_cache"  # Directory to store solution cache files
-OUTPUT_DIR = "results"  # Directory to store test results
 M = 1  # Number of copies of each solution to evaluate
 PROMPTS_PER_URL = 15
 NUM_OF_URLS = 10
 
 # Create output/cache directories if needed
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(TASKS_CACHE_DIR, exist_ok=True)
-os.makedirs(SOLUTIONS_CACHE_DIR, exist_ok=True)
-
-# Initialize the solution cache manager (single file for all solutions)
-solution_cache = ConsolidatedSolutionCache(SOLUTIONS_CACHE_DIR)
 
 # -----------------------------------------------------------------------------
 # Define the agents for the stress test
