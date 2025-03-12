@@ -7,7 +7,7 @@ from rich.table import Table
 from autoppia_iwa.src.shared.web_voyager_utils import load_jsonl_file
 
 # Constants
-SRC_PATH = Path("../../autoppia_iwa/judge_tests_usage_logs.jsonl")
+SRC_PATH = Path("autoppia_iwa/judge_tests_usage_logs.jsonl")
 
 
 def calculate_metrics_by_test_type(data: List[Dict[str, Any]]) -> Dict[str, Dict[str, float]]:
