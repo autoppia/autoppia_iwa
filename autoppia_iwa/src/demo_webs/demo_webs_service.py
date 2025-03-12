@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Any, Dict, List, Optional
 
 import aiohttp
@@ -179,6 +180,7 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
+        start_time = time.time()
         if self.web_project.is_web_real:
             return False
 
@@ -195,10 +197,10 @@ class BackendDemoWebService:
                     message = response_json.get("message", "")
 
                     if status == "success":
-                        logger.info(f"Database reset initiated: {message}")
+                        logger.info(f"Database reset initiated: {message}. Lasted: {time.time() - start_time}")
                         return True
                     else:
-                        logger.warning(f"Database reset failed: {message}")
+                        logger.warning(f"Database reset failed: {message} Lasted: {time.time() - start_time}")
                         return False
 
                 except Exception:
