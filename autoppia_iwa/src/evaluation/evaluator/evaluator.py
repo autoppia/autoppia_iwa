@@ -1,6 +1,7 @@
 # concurrent_evaluator.py
 import asyncio
 import time
+import traceback
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
@@ -225,7 +226,7 @@ class ConcurrentEvaluator(IEvaluator):
             stats.error_message = str(e)
             stats.total_time = time.time() - stats.start_time
             logger.error(f"Error evaluating task solution: {e}")
-
+            traceback.print_exc()
             return EvaluationResult(
                 web_agent_id=web_agent_id,
                 final_score=0,
