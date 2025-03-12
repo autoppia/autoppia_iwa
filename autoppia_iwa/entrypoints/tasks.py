@@ -5,6 +5,7 @@ from typing import List
 
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
@@ -60,17 +61,23 @@ async def main():
     # Container to store results: { agent_id: { task_id: {"score": ...} } }
 
     # Load or create demo web projects
-    demo_web_projects = await initialize_demo_webs_projects()
-    if not demo_web_projects:
+    web_projects = await initialize_demo_webs_projects(demo_web_projects)
+    if not web_projects:
         logger.error("No demo web projects available.")
         return
 
     # Use the first project for demonstration
-    demo_project = demo_web_projects[0]
+    demo_project = web_projects[0]
     logger.info(f"Using project: {demo_project.name}")
 
     # Generate or load tasks for the project
-    tasks = await generate_tasks_for_project(demo_project, use_cached_tasks=USE_CACHED_TASKS, task_cache_dir=TASKS_CACHE_DIR, prompts_per_url=PROMPTS_PER_URL, num_of_urls=NUM_OF_URLS)
+    tasks = await generate_tasks_for_project(
+        demo_project,
+        use_cached_tasks=USE_CACHED_TASKS,
+        task_cache_dir=TASKS_CACHE_DIR,
+        prompts_per_url=PROMPTS_PER_URL,
+        num_of_urls=NUM_OF_URLS,
+    )
 
     if not tasks:
         logger.error("No tasks available.")
