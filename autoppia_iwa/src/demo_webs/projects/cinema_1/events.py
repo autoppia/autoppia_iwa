@@ -27,8 +27,9 @@ class RegistrationEvent(Event):
         """
         Validate if this registration event meets the criteria.
         """
-        logger.info("Esto es el validatation criteria del REGISTRATION {criteria}")
-        logger.info("Este es el username")
+        # TODO:QUITAr
+        logger.info(f"Esto es el validatation criteria del REGISTRATION {criteria}")
+        logger.info(f"Este es el username {self.username}")
         if not criteria:
             return True
         if criteria.username is not None:
