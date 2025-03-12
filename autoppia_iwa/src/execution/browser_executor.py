@@ -115,8 +115,8 @@ class PlaywrightBrowserExecutor:
                 backend_events=backend_events,
                 timestamp=datetime.now(),
                 current_url=snapshot_after["url"],
-                screenshot_before=snapshot_before["screenshot"],
-                screenshot_after=snapshot_after["screenshot"],
+                screenshot_before="snapshot_before[screenshot]",
+                screenshot_after="snapshot_after[screenshot]",
             )
 
             return ActionExecutionResult(
