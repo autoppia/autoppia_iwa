@@ -53,7 +53,7 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Define agents
 AGENTS: List[IWebAgent] = [
     # RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=120),
+    ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=150),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
