@@ -9,6 +9,7 @@ from typing import Dict, List, Literal, Type
 
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
+from loguru import logger
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -18,7 +19,7 @@ from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.web_utils import generate_html_differences
+from autoppia_iwa.src.shared.web_utils import clean_html, generate_html_differences
 
 from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
@@ -235,7 +236,7 @@ class CheckEventTest(BaseTaskTest):
             try:
                 parsed_criteria = validation_model(**self.event_criteria)
             except ValidationError as e:
-                print(f"Invalid validation criteria: {e}")
+                logger.error(f"Invalid validation criteria: {e}")
                 return False
 
             if event.validate_criteria(parsed_criteria):
@@ -263,10 +264,12 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
         all_htmls = self._collect_all_htmls(browser_snapshots)
         if not all_htmls:
+            logger.warning("No HTML content found in browser snapshots.")
             return False
 
         differences = generate_html_differences(all_htmls)
         if not differences:
+            logger.info("No significant HTML differences detected.")
             return False
 
         return await self._analyze_htmls(prompt, differences)
@@ -274,15 +277,24 @@ class JudgeBaseOnHTML(BaseTaskTest):
     @staticmethod
     def _collect_all_htmls(browser_snapshots: List[BrowserSnapshot]) -> List[str]:
         """
-        Collects all HTMLs in order from the browser snapshots.
+        Collects all HTMLs in order from the browser snapshots and cleans them.
+        Returns a list of cleaned HTML strings.
         """
         if not browser_snapshots:
+            logger.warning("No browser snapshots provided.")
             return []
 
-        all_htmls = [browser_snapshots[0].prev_html, browser_snapshots[0].current_html]
-        for snap in browser_snapshots[1:]:
-            all_htmls.append(snap.current_html)
-        return all_htmls
+        all_htmls = [html for snap in browser_snapshots for html in ([snap.prev_html, snap.current_html] if snap == browser_snapshots[0] else [snap.current_html])]
+
+        cleaned_htmls = []
+        for html in all_htmls:
+            try:
+                cleaned_html = clean_html(html)
+                cleaned_htmls.append(cleaned_html)
+            except Exception as e:
+                logger.warning(f"Failed to clean HTML: {e}")
+
+        return cleaned_htmls
 
     async def _analyze_htmls(self, task_prompt: str, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
         """
@@ -294,7 +306,13 @@ class JudgeBaseOnHTML(BaseTaskTest):
         payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
         start_time = time.perf_counter()
-        result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
+
+        try:
+            result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
+        except Exception as e:
+            logger.error(f"LLM service failed to predict: {e}")
+            return False
+
         end_time = time.perf_counter()
         duration = round(end_time - start_time, 3)
         try:
