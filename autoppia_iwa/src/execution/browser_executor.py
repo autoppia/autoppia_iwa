@@ -85,9 +85,10 @@ class PlaywrightBrowserExecutor:
             """Helper function to capture browser state."""
             try:
                 html = await self.page.content()
-                screenshot = base64.b64encode(await self.page.screenshot(type="png", full_page=True)).decode("utf-8")
+                screenshot = await self.page.screenshot(type="jpeg", full_page=False, quality=85)
+                encoded_screenshot = base64.b64encode(screenshot).decode("utf-8")
                 current_url = self.page.url
-                return {"html": html, "screenshot": screenshot, "url": current_url}
+                return {"html": html, "screenshot": encoded_screenshot, "url": current_url}
             except Exception as e:
                 # Gracefully handle any errors during snapshot
                 return {"html": "", "screenshot": "", "url": "", "error": str(e)}

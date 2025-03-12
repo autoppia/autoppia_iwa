@@ -200,6 +200,7 @@ async def run_tests(web_project: WebProject, task: Task, execution_history: List
                                 each column to a test, indicating pass/fail results.
     """
     test_runner = TestRunner(task.tests)
+    total_iterations = len(execution_history)
     test_results_matrix: List[List[TestResult]] = []
     browser_snapshots = []
     for i, action_result in enumerate(execution_history):
@@ -213,7 +214,7 @@ async def run_tests(web_project: WebProject, task: Task, execution_history: List
             snapshot=snapshot,
             browser_snapshots=browser_snapshots,
             current_action_index=i,
-            total_iterations=len(execution_history),
+            total_iterations=total_iterations,
         )
         test_results_matrix.append(test_results)
 
