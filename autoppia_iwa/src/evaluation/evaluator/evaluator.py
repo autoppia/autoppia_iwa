@@ -129,7 +129,7 @@ class ConcurrentEvaluator(IEvaluator):
             stats.action_types[action.type] = stats.action_types.get(action.type, 0) + 1
 
         # TODO: QUITAR If no actions, return an immediate error
-        if not actions or str(web_agent_id) not in ['102', '104']:
+        if not actions or str(web_agent_id) not in ['102']:
 
             stats.had_errors = True
             stats.error_message = "No actions provided"
