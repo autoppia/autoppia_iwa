@@ -110,8 +110,8 @@ class PlaywrightBrowserExecutor:
             browser_snapshot = BrowserSnapshot(
                 iteration=iteration,
                 action=action,
-                prev_html=snapshot_before["html"],
-                current_html=snapshot_after["html"],
+                prev_html="snapshot_before['html']",
+                current_html='snapshot_after["html"]',
                 backend_events=backend_events,
                 timestamp=datetime.now(),
                 current_url=snapshot_after["url"],
