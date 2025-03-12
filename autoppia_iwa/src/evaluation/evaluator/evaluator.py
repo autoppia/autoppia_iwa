@@ -232,7 +232,7 @@ class ConcurrentEvaluator(IEvaluator):
             stats.had_errors = True
             stats.error_message = str(e)
             stats.total_time = time.time() - stats.start_time
-            logger.error(f"Error evaluating task solution: {e}")
+            # logger.error(f"Error evaluating task solution: {e}")
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,
