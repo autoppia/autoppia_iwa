@@ -180,8 +180,10 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
+        logger.info("Starting Reset Database")
         start_time = time.time()
         if self.web_project.is_web_real:
+            logger.info("Not resetting DB as its real website")
             return False
 
         endpoint = f"{self.base_url}management_admin/reset_db/"
