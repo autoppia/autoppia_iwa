@@ -9,30 +9,33 @@ import matplotlib.pyplot as plt
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
-from autoppia_iwa.src.demo_webs.config import demo_web_projects, test_demo_web_projects
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.base import BaseAgent
+from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
-# Bootstrap the application and its DI container.
 app = AppBootstrap()
+LLM_SERVICE = app.container.llm_service()
+
+DEMO_WEB_PROJECT = [demo_web_projects[0]]
+
+NUM_OF_URLS = 1
+NUM_OF_PROMPTS = 2
 
 
-async def generate_tasks(num_tasks: int = 3):
-    test_projects = test_demo_web_projects
-    test_projects = await initialize_demo_webs_projects(test_projects)
+async def generate_tasks():
+    test_projects = await initialize_demo_webs_projects(DEMO_WEB_PROJECT)
     web_project = test_projects[0]
-    config = TaskGenerationConfig(save_task_in_db=False)
+    config = TaskGenerationConfig(save_task_in_db=False, num_of_urls=NUM_OF_URLS, prompts_per_url=NUM_OF_PROMPTS)
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
     tasks: List[Task] = await pipeline.generate()
     return tasks
 
 
-async def evaluate_project_for_agent(agent: BaseAgent, project, tasks, results):
+async def evaluate_project_for_agent(agent: IWebAgent, project, tasks, results):
     if project.name not in results[agent.id]["projects"]:
         results[agent.id]["projects"][project.name] = []
 
@@ -57,14 +60,7 @@ def compute_statistics(scores: List[float]) -> dict:
             "max": max(scores),
             "stdev": statistics.stdev(scores) if len(scores) > 1 else 0.0,
         }
-    return {
-        "count": 0,
-        "mean": None,
-        "median": None,
-        "min": None,
-        "max": None,
-        "stdev": None,
-    }
+    return {"count": 0, "mean": None, "median": None, "min": None, "max": None, "stdev": None}
 
 
 def print_performance_statistics(results, agents):
@@ -125,28 +121,21 @@ def judge_tasks_feasibility(tasks, results, agents):
         judge_input += f"  {agent.name} => Scores: {agent_scores}\n"
     judge_input += "\nPlease evaluate if these tasks were feasible, whether the tests seem valid, and " "offer suggestions for improving task/test generation."
 
-    app = AppBootstrap()
-    llm_service = app.container.llm_service()
-
-    judge_response = llm_service.make_request(
-        message_payload=[{"role": "user", "content": judge_input}],
-        chat_completion_kwargs={
-            "temperature": 0.5,
-            "top_k": 40,
-            "model": "03-mini",
-        },
-    )
+    judge_response = LLM_SERVICE.predict(messages=[{"role": "user", "content": judge_input}])
     print("\n----- LLM Feasibility Assessment -----")
     print(judge_response)
 
 
 async def main():
-    tasks = await generate_tasks(num_tasks=1)
+    tasks = await generate_tasks()
 
-    agents: List[BaseAgent] = [RandomClickerWebAgent(), ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080)]
+    agents: List[IWebAgent] = [
+        RandomClickerWebAgent(),
+        # ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080),
+    ]
     results = {agent.id: {"global_scores": [], "projects": {}} for agent in agents}
 
-    for demo_project in demo_web_projects:
+    for demo_project in DEMO_WEB_PROJECT:
         for agent in agents:
             await evaluate_project_for_agent(agent, demo_project, tasks, results)
 
