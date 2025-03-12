@@ -149,10 +149,18 @@ class SubnetVisualizer:
             scores_table.add_column("Type", style="yellow", justify="right", width=25)
             scores_table.add_column("Value", style="cyan", width=10)
 
-            # Extract available scores
-            raw_score = evaluation_result.raw_score if hasattr(evaluation_result, "raw_score") else 0.0
-            random_score = evaluation_result.random_clicker_score if hasattr(evaluation_result, "random_clicker_score") else 0.0
-            final_score = evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
+            self.console.print(f"{evaluation_result}")
+
+            if isinstance(evaluation_result, dict):
+                # Si es un diccionario, accedemos con la notación de diccionario
+                raw_score = evaluation_result.get("raw_score", 0.0)
+                random_score = evaluation_result.get("random_clicker_score", 0.0)
+                final_score = evaluation_result.get("final_score", 0.0)
+            else:
+                # Si es un objeto, accedemos con la notación de atributos
+                raw_score = evaluation_result.raw_score if hasattr(evaluation_result, "raw_score") else 0.0
+                random_score = evaluation_result.random_clicker_score if hasattr(evaluation_result, "random_clicker_score") else 0.0
+                final_score = evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
 
             scores_table.add_row("Raw Score:", f"{raw_score:.4f}")
             scores_table.add_row("Random Clicker Score:", f"{random_score:.4f}")

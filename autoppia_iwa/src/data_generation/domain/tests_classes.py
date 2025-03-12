@@ -223,6 +223,8 @@ class CheckEventTest(BaseTaskTest):
         """
         Execute the test on the given snapshots by checking for specific events.
         """
+
+        logger.info(f"CUURENT_ITERATION{current_iteration + 1}, TOTAL_ITERATON:{total_iterations}  ")
         if (current_iteration + 1) < total_iterations:
             return False
         # TODO: QUITAR
