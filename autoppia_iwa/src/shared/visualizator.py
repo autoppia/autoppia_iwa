@@ -149,6 +149,8 @@ class SubnetVisualizer:
             scores_table.add_column("Type", style="yellow", justify="right", width=25)
             scores_table.add_column("Value", style="cyan", width=10)
 
+            self.console.print(f"{evaluation_result}")
+
             # Extract available scores
             raw_score = evaluation_result.raw_score if hasattr(evaluation_result, "raw_score") else 0.0
             random_score = evaluation_result.random_clicker_score if hasattr(evaluation_result, "random_clicker_score") else 0.0
