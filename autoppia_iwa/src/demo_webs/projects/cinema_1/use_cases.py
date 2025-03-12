@@ -120,51 +120,51 @@ USE_CASES = [
     #         {"type": "CheckEventTest", "event_name": "FilmDetailEvent", "criteria": {}, "code": FilmDetailEvent.get_source_code_of_class()},
     #     ],
     # ),
-    UseCase(
-        name="Search Film",
-        description="The user searches for a film using a query.",
-        event=SearchFilmEvent,
-        event_source_code=SearchFilmEvent.get_source_code_of_class(),
-        examples=[
-            {
-                "prompt": "Search for the movie 'Pulp Fiction'",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "SEARCH_FILM",
-                    "criteria": {"query": "Pulp Fiction"},
-                    "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'.",
-                },
-            },
-            {
-                "prompt": "Find a movie called 'Forrest Gump'",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "SEARCH_FILM",
-                    "criteria": {"query": "Forrest Gump"},
-                    "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'.",
-                },
-            },
-            {
-                "prompt": "Search for 'Goodfellas' in the movie database",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "SEARCH_FILM",
-                    "criteria": {"query": "Goodfellas"},
-                    "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'.",
-                },
-            },
-            {
-                "prompt": "Look up the movie 'Interestellar'",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "SEARCH_FILM",
-                    "criteria": {"query": "Interestellar"},
-                    "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'.",
-                },
-            },
-        ],
-    ),
     # UseCase(
+    #     name="Search Film",
+    #     description="The user searches for a film using a query.",
+    #     event=SearchFilmEvent,
+    #     event_source_code=SearchFilmEvent.get_source_code_of_class(),
+    #     examples=[
+    #         {
+    #             "prompt": "Search for the movie 'Pulp Fiction'",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "SEARCH_FILM",
+    #                 "criteria": {"query": "Pulp Fiction"},
+    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Find a movie called 'Forrest Gump'",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "SEARCH_FILM",
+    #                 "criteria": {"query": "Forrest Gump"},
+    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Search for 'Goodfellas' in the movie database",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "SEARCH_FILM",
+    #                 "criteria": {"query": "Goodfellas"},
+    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Look up the movie 'Interestellar'",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "SEARCH_FILM",
+    #                 "criteria": {"query": "Interestellar"},
+    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'.",
+    #             },
+    #         },
+    #     ],
+    # ),
+    # # UseCase(
     #     name="Add Film",
     #     description="The user adds a new film to the system.",
     #     event=AddFilmEvent,
