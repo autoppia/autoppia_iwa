@@ -1,4 +1,3 @@
-import logging
 import time
 from typing import Any, Dict, List, Optional
 
@@ -6,8 +5,7 @@ import aiohttp
 from aiohttp.client_exceptions import ClientError
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 class BackendDemoWebService:
