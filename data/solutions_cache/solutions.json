@@ -8051,5 +8051,362 @@
         "web_agent_id": "2"
       }
     }
+  },
+  "1a1647ee-5fed-4c81-9739-b2da9df808c7": {
+    "OmPr4Oo4zzVWSy5U": {
+      "agent_id": "OmPr4Oo4zzVWSy5U",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741774267.0499501,
+      "solution": {
+        "task_id": "1a1647ee-5fed-4c81-9739-b2da9df808c7",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[7]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "OmPr4Oo4zzVWSy5U"
+      }
+    }
+  },
+  "37866374-f54e-4c63-8301-1abf074d2520": {
+    "OmPr4Oo4zzVWSy5U": {
+      "agent_id": "OmPr4Oo4zzVWSy5U",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741774352.7015948,
+      "solution": {
+        "task_id": "37866374-f54e-4c63-8301-1abf074d2520",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna with zucchini"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "OmPr4Oo4zzVWSy5U"
+      }
+    }
+  },
+  "08216f2d-4c35-4567-a1c4-84e4e86a4693": {
+    "OmPr4Oo4zzVWSy5U": {
+      "agent_id": "OmPr4Oo4zzVWSy5U",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741774492.1405256,
+      "solution": {
+        "task_id": "08216f2d-4c35-4567-a1c4-84e4e86a4693",
+        "actions": [],
+        "web_agent_id": "OmPr4Oo4zzVWSy5U"
+      }
+    }
+  },
+  "4e11fabb-cdb0-4b5a-aed3-1617bb5df510": {
+    "OmPr4Oo4zzVWSy5U": {
+      "agent_id": "OmPr4Oo4zzVWSy5U",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741774590.022288,
+      "solution": {
+        "task_id": "4e11fabb-cdb0-4b5a-aed3-1617bb5df510",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "Baked Salmon recipe under 30 minutes"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[3]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[4]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/article/div[2]/div[3]/div[2]/div/figure/div/div/img",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "NavigateAction",
+            "url": "https://www.google.com/search?q=Baked Salmon recipe 4 stars or higher under 30 minutes on Allrecipes&udm=14",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/div[3]/div/div[12]/div/div/div[2]/div[2]/div/div/div[4]/div/div/div/div/div/span/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "OmPr4Oo4zzVWSy5U"
+      }
+    }
+  },
+  "583a5965-fc57-4d7a-8d0b-82a42934df8b": {
+    "OmPr4Oo4zzVWSy5U": {
+      "agent_id": "OmPr4Oo4zzVWSy5U",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741774738.7831056,
+      "solution": {
+        "task_id": "583a5965-fc57-4d7a-8d0b-82a42934df8b",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "popular pasta sauce"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[9]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "NavigateAction",
+            "url": "",
+            "go_back": true,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "pasta sauce with more than 1000 reviews and above 4 stars"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "OmPr4Oo4zzVWSy5U"
+      }
+    }
   }
 }

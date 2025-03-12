@@ -32,7 +32,7 @@ class WebVoyagerConfig:
 
     use_cached_solutions: bool = False
 
-    num_of_urls: int = 1
+    num_of_urls: int = 5
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
