@@ -29,9 +29,9 @@ class RegistrationEvent(Event):
         """
         # TODO:QUITAr
         logger.info(f"Esto es el validatation criteria del REGISTRATION {criteria}")
-        logger.info(f"Este es el username {self.username}")
         if not criteria:
             return True
+        logger.info(f"Este es el username {self.username}, Is criteria == to username {self.username==criteria.username}")
         if criteria.username is not None:
             return validate_criterion(self.username, criteria.username)
         return True

@@ -94,13 +94,14 @@ class ConcurrentEvaluator(IEvaluator):
                     self.evaluation_stats.append(r.stats)
 
             # Display final report after all evaluations for this task
-            display_batch_evaluation_summary(
-                task_id=task.id,
-                evaluation_stats=self.evaluation_stats,
-                debug_mode=self.config.debug_mode,
-                action_type_timing=self.action_type_timing,
-                errors=self.errors,
-            )
+            # TODO: DESCOMENTAR
+            # display_batch_evaluation_summary(
+            #     task_id=task.id,
+            #     evaluation_stats=self.evaluation_stats,
+            #     debug_mode=self.config.debug_mode,
+            #     action_type_timing=self.action_type_timing,
+            #     errors=self.errors,
+            # )
 
             return results
         finally:
@@ -161,6 +162,8 @@ class ConcurrentEvaluator(IEvaluator):
             # Run tests
             test_start_time = time.time()
             test_results_matrix = await run_tests(self.web_project, task, execution_history)
+            logger.info(f" Test Result Matrix --> {test_results_matrix} ")
+
             stats.test_execution_time = time.time() - test_start_time
 
             # Random clicker baseline

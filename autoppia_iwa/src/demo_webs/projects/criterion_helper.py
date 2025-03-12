@@ -42,6 +42,7 @@ def validate_criterion(actual_value: Any, criterion: Union[Any, CriterionValue])
     Returns:
         True if the criterion is met, False otherwise
     """
+
     # If criterion is a simple value, use default comparison
     if not isinstance(criterion, CriterionValue):
         if isinstance(actual_value, str) and isinstance(criterion, str):
