@@ -40,7 +40,7 @@ class SubnetVisualizer:
 
         # Table of configured tests
         if hasattr(task, "tests") and task.tests:
-            tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
+            tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE, expand=True)
             tests_table.add_column("Test #", style="dim", width=6)
             tests_table.add_column("Type", style="cyan", width=22)
             tests_table.add_column("Description", style="yellow")
@@ -80,7 +80,7 @@ class SubnetVisualizer:
 
         # 2. Table of executed actions (shown first now)
         if actions:
-            actions_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            actions_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD, expand=True)
             actions_table.add_column("#", style="dim", width=4)
             actions_table.add_column("Type", style="cyan", width=18)
             actions_table.add_column("Details", style="green")
@@ -98,7 +98,7 @@ class SubnetVisualizer:
 
         # 3. Table of configured tests with their results (now shown after the actions)
         if hasattr(task, "tests") and task.tests and test_results_matrix and len(test_results_matrix) > 0:
-            tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
+            tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE, expand=True)
             tests_table.add_column("Test #", style="dim", width=6)
             tests_table.add_column("Type", style="cyan", width=22)
             tests_table.add_column("Description", style="yellow")
@@ -136,7 +136,7 @@ class SubnetVisualizer:
 
         # 4. Show scores
         if evaluation_result:
-            scores_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            scores_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD, expand=True)
             scores_table.add_column("Type", style="yellow", justify="right", width=25)
             scores_table.add_column("Value", style="cyan", width=10)
 
@@ -279,7 +279,7 @@ class SubnetVisualizer:
         self.console.print(Align.center("[bold white on blue]PERFORMANCE SUMMARY[/bold white on blue]"))
         self.console.print("=" * 80 + "\n")
 
-        summary_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+        summary_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD, expand=True)
         summary_table.add_column("Agent", style="cyan")
         summary_table.add_column("Tasks", style="dim")
         summary_table.add_column("Average Score", style="green")
@@ -301,7 +301,7 @@ class SubnetVisualizer:
 
             self.console.print(f"\n[bold cyan]Project Details - Agent: {agent.id}[/bold cyan]")
 
-            project_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD)
+            project_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD, expand=True)
             project_table.add_column("Project", style="magenta")
             project_table.add_column("Tasks", style="dim")
             project_table.add_column("Average Score", style="green")
