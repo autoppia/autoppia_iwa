@@ -284,13 +284,14 @@ class JudgeBaseOnHTML(BaseTaskTest):
             logger.warning("No browser snapshots provided.")
             return []
 
-        all_htmls = [html for snap in browser_snapshots for html in ([snap.prev_html, snap.current_html] if snap == browser_snapshots[0] else [snap.current_html])]
+        all_htmls = [html for snap in browser_snapshots for html in ([snap.prev_html, snap.current_html] if snap == browser_snapshots[0] else [snap.current_html]) if html]
 
         cleaned_htmls = []
         for html in all_htmls:
             try:
                 cleaned_html = clean_html(html)
-                cleaned_htmls.append(cleaned_html)
+                if cleaned_html:
+                    cleaned_htmls.append(cleaned_html)
             except Exception as e:
                 logger.warning(f"Failed to clean HTML: {e}")
 
