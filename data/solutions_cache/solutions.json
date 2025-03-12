@@ -7823,5 +7823,67 @@
         "web_agent_id": "1"
       }
     }
+  },
+  "60c37897-cd5a-453f-8bfc-ef9ede429df6": {
+    "PNTy2U1nllc7EQCs": {
+      "agent_id": "PNTy2U1nllc7EQCs",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741774146.2379704,
+      "solution": {
+        "task_id": "60c37897-cd5a-453f-8bfc-ef9ede429df6",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[7]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "PNTy2U1nllc7EQCs"
+      }
+    }
   }
 }
