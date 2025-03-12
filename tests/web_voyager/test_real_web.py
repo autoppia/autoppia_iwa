@@ -94,13 +94,14 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
             raise FileNotFoundError(f"the log file {log_file} does not exist")
 
         task_prompt_hash = generate_hash(task.prompt)
-
+        total_iterations = len(result.execution_history)
         updated_entries = []
         with log_file.open("r", encoding="utf-8") as f:
             for line in f:
                 try:
                     entry = json.loads(line.strip())
-                    if generate_hash(entry.get("task")) == task_prompt_hash:
+                    entry_iterations = entry["total_iteration"]
+                    if generate_hash(entry.get("task")) == task_prompt_hash and total_iterations == entry_iterations:
                         entry["evaluation_feedback"] = evaluation_feedback
                     updated_entries.append(entry)
                 except json.JSONDecodeError:
