@@ -272,7 +272,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
             logger.info("No significant HTML differences detected.")
             return False
 
-        return await self._analyze_htmls(prompt, differences)
+        return await self._analyze_htmls(prompt, total_iterations, differences)
 
     @staticmethod
     def _collect_all_htmls(browser_snapshots: List[BrowserSnapshot]) -> List[str]:
@@ -297,7 +297,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
         return cleaned_htmls
 
-    async def _analyze_htmls(self, task_prompt: str, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
+    async def _analyze_htmls(self, task_prompt: str, total_iteration: int, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
         """
         Analyzes HTML changes using an LLM to determine success.
         """
@@ -323,7 +323,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
         final_result = match.group(1).lower() == "true" if match else False
-        save_usage_record(task_prompt, result, duration, self.type, final_result=final_result)
+        save_usage_record(task_prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
 
         return final_result
 
@@ -349,6 +349,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     async def _analyze_screenshots(
         self,
         prompt: str,
+        total_iteration: int,
         browser_snapshots: List[BrowserSnapshot],
         llm_service: ILLM = Provide[DIContainer.llm_service],
     ) -> bool:
@@ -377,12 +378,12 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         final_result = match.group(1).lower() == "true" if match else False
-        save_usage_record(prompt, result, duration, self.type, final_result=final_result)
+        save_usage_record(prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
 
         return final_result
 
 
-def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, final_result: bool, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):
+def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, final_result: bool, total_iteration, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):
     """Saves token usage and execution time to log file."""
     from autoppia_iwa.src.shared.pricings import pricing_dict
 
@@ -413,6 +414,7 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
         "total_cost": total_cost,
         "duration_seconds": time_taken,
         "model": model_name,
+        "total_iteration": total_iteration,
     }
 
     try:
