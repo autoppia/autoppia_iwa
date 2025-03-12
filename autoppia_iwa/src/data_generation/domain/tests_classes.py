@@ -247,6 +247,8 @@ class CheckEventTest(BaseTaskTest):
                 return False
 
             if event.validate_criteria(parsed_criteria):
+                # TODO: QUITAR
+                logger.info(f"--->>>>>>>> ES TRUE JODER ES TRUE ...")
                 return True
 
         return False
