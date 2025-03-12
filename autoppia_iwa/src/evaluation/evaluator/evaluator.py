@@ -221,7 +221,7 @@ class ConcurrentEvaluator(IEvaluator):
                 raw_score=raw_score,
                 random_clicker_score=random_clicker_score,
                 test_results_matrix=test_results_matrix,
-                feedback=feedback,
+                feedback=None,
                 execution_history=execution_history,
                 random_clicker_passed_tests_indexes=random_clicker_passed,
                 evaluation_time=stats.total_time,
