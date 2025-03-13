@@ -5,7 +5,7 @@ from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.config import web_1_demo_projects
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 # ============================================================
@@ -43,7 +43,7 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
         """
         try:
             # Initialize demo web projects
-            web_projects: List[WebProject] = await initialize_demo_webs_projects([web_1_demo_projects])
+            web_projects: List[WebProject] = await initialize_demo_webs_projects(demo_web_projects)
             self.assertGreater(len(web_projects), 0, "No demo web projects were initialized.")
 
             # Create task generation configuration
