@@ -130,7 +130,7 @@ class ConcurrentEvaluator(IEvaluator):
         # === IMPORTANTE ===
         # AQUÍ tienes la lógica que fuerza a "No actions provided" si no es web_agent_id=102.
         # Ajusta si necesitas que se evalúen todos.
-        if not actions or str(web_agent_id) not in ['102']:
+        if not actions or str(web_agent_id) not in ['234']:
             stats.had_errors = True
             stats.error_message = "No actions provided"
             stats.total_time = time.time() - stats.start_time
