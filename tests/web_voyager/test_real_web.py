@@ -33,7 +33,7 @@ class WebVoyagerConfig:
 
     use_cached_solutions: bool = False
 
-    num_of_urls: int = 1
+    num_of_urls: int = 5
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
@@ -69,7 +69,7 @@ async def generate_tasks(tasks_data: TaskData) -> List[Task]:
     """Generate tasks with caching support."""
     success_criteria = tasks_data.ques
     tests = [JudgeBaseOnScreenshot(success_criteria=success_criteria), JudgeBaseOnHTML(success_criteria=success_criteria)]
-    return Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True, tests=tests)
+    return [Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True, tests=tests)]
 
 
 @visualize_evaluation(visualizer)
