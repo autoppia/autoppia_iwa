@@ -272,6 +272,9 @@ class ConcurrentEvaluator(IEvaluator):
                 unique_hash = hash_actions(solution.actions) + f"_{idx}"
                 grouped_indices[unique_hash].append(idx)
 
+        for key, g_indices in grouped_indices.items():
+            logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
+
         semaphore = asyncio.Semaphore(self.config.chunk_size)
         tasks = []
 
