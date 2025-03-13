@@ -8408,5 +8408,700 @@
         "web_agent_id": "OmPr4Oo4zzVWSy5U"
       }
     }
+  },
+  "1635684f-b3ed-4472-9448-ba999ac0fc19": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741854437.9252164,
+      "solution": {
+        "task_id": "1635684f-b3ed-4472-9448-ba999ac0fc19",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[4]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "NavigateAction",
+            "url": "",
+            "go_back": true,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "924ea536-5c46-42b2-a144-ede63112fb3d": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741854527.530921,
+      "solution": {
+        "task_id": "924ea536-5c46-42b2-a144-ede63112fb3d",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna zucchini"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/recipe/236878/debbies-vegetable-lasagna/",
+            "go_back": false,
+            "go_forward": false
+          }
+        ],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "d3af517d-067f-4359-9f6f-8e836650e836": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741854652.2465038,
+      "solution": {
+        "task_id": "d3af517d-067f-4359-9f6f-8e836650e836",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna under 600 calories prep time under 1 hour"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna recipe"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[2]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "lasagna recipes"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[3]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "fdc98ae1-403b-4431-9307-b24791891333": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741854767.616916,
+      "solution": {
+        "task_id": "fdc98ae1-403b-4431-9307-b24791891333",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "Baked Salmon recipe under 30 minutes 4 stars"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "Baked Salmon recipe quick and easy"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": "Baked Salmon 3,318 Ratings",
+            "up": false,
+            "down": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[7]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "e141cc0a-e2c7-4a5e-a7d4-345f408abf58": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741854913.725925,
+      "solution": {
+        "task_id": "e141cc0a-e2c7-4a5e-a7d4-345f408abf58",
+        "actions": [],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "d92f4687-ae3f-4855-96f7-ec6b66048799": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741855034.7312357,
+      "solution": {
+        "task_id": "d92f4687-ae3f-4855-96f7-ec6b66048799",
+        "actions": [],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "389c45fa-7e74-42aa-9fc2-9aa91219d953": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741855097.4181874,
+      "solution": {
+        "task_id": "389c45fa-7e74-42aa-9fc2-9aa91219d953",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "Beef Wellington"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "7c8dcf45-0c38-4939-b7ea-3bd749369e63": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741855241.4637442,
+      "solution": {
+        "task_id": "7c8dcf45-0c38-4939-b7ea-3bd749369e63",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "vegetarian lasagna"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a[7]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": 300,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 600,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 600,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 800,
+            "up": true,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 800,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "NavigateAction",
+            "url": "",
+            "go_back": true,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": 600,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 400,
+            "up": true,
+            "down": false
+          }
+        ],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "b9ff0a26-221e-4f32-a3ec-26d9fa383371": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741855362.579296,
+      "solution": {
+        "task_id": "b9ff0a26-221e-4f32-a3ec-26d9fa383371",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "most popular recipes of the 1960s"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": 200,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/article/div[2]/div[3]/div[2]/div/div[2]/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
+  },
+  "27b10e18-a3d1-4cad-8785-9c9a39a1eef6": {
+    "e4vqrBiuRjz81esB": {
+      "agent_id": "e4vqrBiuRjz81esB",
+      "agent_name": "Browser-Use",
+      "timestamp": 1741855463.8289478,
+      "solution": {
+        "task_id": "27b10e18-a3d1-4cad-8785-9c9a39a1eef6",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "https://www.allrecipes.com/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "chocolate cupcake recipe"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/header/div/div[3]/ul/li/div/form/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/a/div/div/div/img",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "ScrollAction",
+            "value": 300,
+            "up": false,
+            "down": true
+          },
+          {
+            "type": "ScrollAction",
+            "value": "Chocolate Cupcakes",
+            "up": false,
+            "down": false
+          },
+          {
+            "type": "ScrollAction",
+            "value": 300,
+            "up": false,
+            "down": true
+          }
+        ],
+        "web_agent_id": "e4vqrBiuRjz81esB"
+      }
+    }
   }
 }
