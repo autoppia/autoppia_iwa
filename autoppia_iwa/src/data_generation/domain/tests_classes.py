@@ -360,7 +360,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         user_msg = f"Task: '{prompt}'\nSuccess Criteria: '{self.success_criteria}'"
 
         screenshots_after = [snap.screenshot_after for snap in browser_snapshots[-4:]]
-        screenshot_content = [{"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot}"}} for screenshot in screenshots_after]
+        screenshot_content = [{"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{screenshot}"}} for screenshot in screenshots_after]
         json_schema = ScreenshotTestResponse.model_json_schema()
         formatted_sys_msg = SCREENSHOT_TEST_SYSTEM_PROMPT.format(json_schema=json_schema)
         payload = [
