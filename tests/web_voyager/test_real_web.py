@@ -8,8 +8,8 @@ from typing import Dict, List, Optional
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.utils import _load_web_analysis
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
@@ -32,7 +32,7 @@ class WebVoyagerConfig:
 
     use_cached_solutions: bool = False
 
-    num_of_urls: int = 5
+    num_of_urls: int = 1
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
@@ -69,10 +69,13 @@ visualizer = SubnetVisualizer()
 
 
 @visualize_task(visualizer)
-async def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:
+async def generate_tasks(demo_project: WebProject, tasks_data: TaskData) -> List[Task]:
     """Generate tasks with caching support."""
-    task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
-    return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
+    success_criteria = tasks_data.ques
+    tests = [JudgeBaseOnScreenshot(success_criteria=success_criteria), JudgeBaseOnHTML(success_criteria=success_criteria)]
+    task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True, tests=tests)
+    # return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
+    return [task]
 
 
 @visualize_evaluation(visualizer)
