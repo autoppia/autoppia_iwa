@@ -59,7 +59,8 @@ AGENTS: List[IWebAgent] = [
 ]
 
 # Setup logging
-logger.add("real_web_evaluation.log", rotation="10 MB", level="DEBUG", format="{time} | {level} | {message}", colorize=True)
+logger.remove()
+logger.add("real_web_evaluation.log", rotation="10 MB", level="DEBUG", format="{time} | {level: <8} | {message}", colorize=True)
 visualizer = SubnetVisualizer()
 
 
