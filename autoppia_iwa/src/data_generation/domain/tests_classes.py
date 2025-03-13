@@ -304,7 +304,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
         """
         json_schema = HTMLBasedTestResponse.model_json_schema()
         formatted_sys_msg = OPINION_BASED_HTML_TEST_SYS_MSG.format(json_schema=json_schema)
-        user_message = f"Task: {task_prompt}\n\nHTML differences:\n{' '.join(differences)}"
+        user_message = f"Task: {task_prompt}\n\nHTML differences:\n{' '.join(differences[:-4])}"
         payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
         start_time = time.perf_counter()
