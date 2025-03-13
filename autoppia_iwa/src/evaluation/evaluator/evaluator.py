@@ -326,8 +326,6 @@ class ConcurrentEvaluator(IEvaluator):
         """
         async with semaphore:
             rep_index = group_indices[0]
-            bt.logging.info(f"group_indices {group_indices}")
-            bt.logging.info(f"task_solutions {task_solutions}")
             representative = task_solutions[rep_index]
 
             try:
