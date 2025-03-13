@@ -172,9 +172,14 @@ class BackendDemoWebService:
             if session:
                 await session.close()
 
-    async def reset_database(self) -> bool:
+    async def reset_database(self, override_url: Optional[str] = None) -> bool:
         """
         Resets the entire database (requires admin/superuser permissions).
+
+        Args:
+            override_url (Optional[str]): If provided, use this full endpoint URL
+                (e.g., 'http://localhost:5435/management_admin/reset_db/')
+                instead of self.base_url.
 
         Returns:
             bool: True if reset was successful, False otherwise.
@@ -182,7 +187,8 @@ class BackendDemoWebService:
         if self.web_project.is_web_real:
             return False
 
-        endpoint = f"{self.base_url}management_admin/reset_db/"
+        # If user supplies an explicit endpoint, use that; else use the default
+        endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
 
         try:
             session = await self._get_session()
