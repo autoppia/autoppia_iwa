@@ -298,6 +298,8 @@ class ConcurrentEvaluator(IEvaluator):
         self.total_evaluation_time += elapsed
         self.evaluation_count += len(final_results)
 
+        for i, result in enumerate(final_results):
+            logger.info(f"FINAL RESULT CHECK: index={i}, web_agent_id={result.web_agent_id}, score={result.final_score}")
         return final_results
 
     async def _evaluate_group_with_semaphore(self, task: Task, group: List[TaskSolution], semaphore: asyncio.Semaphore) -> List[EvaluationResult]:
