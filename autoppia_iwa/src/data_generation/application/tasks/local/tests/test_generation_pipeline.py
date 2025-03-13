@@ -42,8 +42,8 @@ class LocalTestGenerationPipeline:
         # Real webs dont have backend tests
         if web_project.is_web_real:
             self.test_class_map = {
-                "CheckUrlTest": CheckUrlTest,
-                "FindInHtmlTest": FindInHtmlTest,
+                # "CheckUrlTest": CheckUrlTest,
+                # "FindInHtmlTest": FindInHtmlTest,
                 "JudgeBaseOnHTML": JudgeBaseOnHTML,
                 "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
             }

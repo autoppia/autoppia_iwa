@@ -344,7 +344,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     ) -> bool:
         if current_iteration != total_iterations - 1:
             return False
-        return await self._analyze_screenshots(prompt, browser_snapshots)
+        return await self._analyze_screenshots(prompt, total_iterations, browser_snapshots)
 
     async def _analyze_screenshots(
         self,
@@ -389,6 +389,7 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
 
     input_tokens = response.usage.prompt_tokens
     output_tokens = response.usage.completion_tokens
+    total_tokens = response.usage.total_tokens
     model_name = response.model
 
     if model_name not in pricing_dict:
@@ -409,6 +410,7 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
         "task": prompt,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
+        "total_tokens": total_tokens,
         "input_cost": input_cost,
         "output_cost": output_cost,
         "total_cost": total_cost,
