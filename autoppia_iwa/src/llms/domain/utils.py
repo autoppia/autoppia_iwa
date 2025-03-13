@@ -1,7 +1,6 @@
 import tiktoken
 
 
-# TODO: REVISAR SI PODEMOS QUITAR ESTA DEPNDENCIA
 class OpenAIUtilsMixin:
     @staticmethod
     def num_tokens_from_string(string: str, model="gpt-3.5-turbo-0613", disallowed_special=True) -> int:

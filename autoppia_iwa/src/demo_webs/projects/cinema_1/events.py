@@ -27,11 +27,8 @@ class RegistrationEvent(Event):
         """
         Validate if this registration event meets the criteria.
         """
-        # TODO:QUITAr
-        logger.info(f"Esto es el validatation criteria del REGISTRATION {criteria}")
         if not criteria:
             return True
-        logger.info(f"Este es el username {self.username}, Is criteria == to username {self.username==criteria.username}")
         if criteria.username is not None:
             return validate_criterion(self.username, criteria.username)
         return True
@@ -62,10 +59,8 @@ class LoginEvent(Event):
         """
         Validate if this login event meets the criteria.
         """
-        logger.info(f"Esto es el validatation criteria del LOGIN {criteria}")
         if not criteria:
             return True
-        logger.info(f"Este es el username {self.username}, Is criteria == to username {self.username==criteria.username}")
         if criteria.username is not None:
             return validate_criterion(self.username, criteria.username)
         return True
