@@ -149,8 +149,6 @@ class SubnetVisualizer:
             scores_table.add_column("Type", style="yellow", justify="right", width=25)
             scores_table.add_column("Value", style="cyan", width=10)
 
-            self.console.print(f"{evaluation_result}")
-
             if isinstance(evaluation_result, dict):
                 # Si es un diccionario, accedemos con la notación de diccionario
                 raw_score = evaluation_result.get("raw_score", 0.0)
