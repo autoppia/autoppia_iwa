@@ -15,7 +15,6 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStat
 
 # Import all needed helpers from evaluation_helper.py
 from autoppia_iwa.src.evaluation.evaluator.utils import (
-    display_batch_evaluation_summary,
     display_single_evaluation_summary,
     generate_feedback,
     get_random_clicker_performance,
@@ -221,7 +220,7 @@ class ConcurrentEvaluator(IEvaluator):
                 raw_score=raw_score,
                 random_clicker_score=random_clicker_score,
                 test_results_matrix=test_results_matrix,
-                feedback=None,
+                feedback=feedback,
                 execution_history=execution_history,
                 random_clicker_passed_tests_indexes=random_clicker_passed,
                 evaluation_time=stats.total_time,
