@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple, Optional
 
 from loguru import logger
 from playwright.async_api import async_playwright
-
+import bittensor as bt
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
@@ -328,6 +328,8 @@ class ConcurrentEvaluator(IEvaluator):
         """
         async with semaphore:
             rep_index = group_indices[0]
+            bt.logging.info(f"group_indices {group_indices}")
+            bt.logging.info(f"task_solutions {task_solutions}")
             representative = task_solutions[rep_index]
 
             try:
