@@ -76,7 +76,6 @@ class GlobalTaskGenerationPipeline:
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
 
         tasks: List[Task] = []
-        # TODO: QUITAR EL :1
         for prompt_text in prompt_list:
             try:
                 replaced_prompt = use_case.apply_replacements(prompt_text)
