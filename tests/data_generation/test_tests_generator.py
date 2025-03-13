@@ -8,7 +8,7 @@ from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generat
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.config import web_1_demo_projects
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 # ============================================================
@@ -91,7 +91,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.IsolatedAsyncioTestCase):
 
     async def _generate_tests_for_web_project(self) -> List[Task]:
         """Helper method to generate tasks and test cases."""
-        web_project = await initialize_demo_webs_projects([web_1_demo_projects])
+        web_project = await initialize_demo_webs_projects(demo_web_projects)
         tasks = await generate_tasks_for_project(web_project[0])
 
         test_generator = LocalTestGenerationPipeline(web_project=web_project[0], llm_service=self.llm_service)
