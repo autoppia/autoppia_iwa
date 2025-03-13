@@ -141,6 +141,8 @@ class SubnetVisualizer:
             self.console.print("\n")
             self.console.print(tests_panel)
         else:
+            self.console.print(f"DEBUG: task.tests = {task.tests}")
+            self.console.print(f"DEBUG: test_results_matrix = {test_results_matrix}")
             self.console.print("\n[yellow]No configured tests or available results[/yellow]")
 
         # 4. Show scores
