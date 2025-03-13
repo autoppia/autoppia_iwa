@@ -163,11 +163,6 @@ class ConcurrentEvaluator(IEvaluator):
             # Correr los tests
             test_start_time = time.time()
             test_results_matrix = await run_tests(self.web_project, task, execution_history)
-            logger.info(f"TASK PROMPT --> {task.prompt}")
-            logger.info(f"Test Result Matrix --> {test_results_matrix}")
-            for test_result in test_results_matrix:
-                for test_result_list in test_result:
-                    logger.info(f"Test success? --> {test_result_list.success}")
 
             stats.test_execution_time = time.time() - test_start_time
 
