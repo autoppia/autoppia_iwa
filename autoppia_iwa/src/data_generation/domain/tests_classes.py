@@ -19,7 +19,7 @@ from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.web_utils import clean_html, generate_html_differences_with_xmldiff
+from autoppia_iwa.src.shared.web_utils import clean_html, generate_html_differences
 
 from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
@@ -267,8 +267,8 @@ class JudgeBaseOnHTML(BaseTaskTest):
             logger.warning("No HTML content found in browser snapshots.")
             return False
 
-        # differences = generate_html_differences(all_htmls)
-        differences = generate_html_differences_with_xmldiff(all_htmls)
+        differences = generate_html_differences(all_htmls)
+        # differences = generate_html_differences_with_xmldiff(all_htmls)
         if not differences:
             logger.info("No significant HTML differences detected.")
             return False
