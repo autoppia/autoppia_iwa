@@ -1,5 +1,6 @@
 # concurrent_evaluator.py
 import asyncio
+import random
 import time
 import traceback
 from collections import defaultdict
@@ -259,8 +260,12 @@ class ConcurrentEvaluator(IEvaluator):
                 unique_hash = hash_actions(solution.actions) + f"_{i}"
                 grouped_tasks[unique_hash].append(solution)
 
+        # Shuffle grouped tasks for random evaluation order
+        grouped_task_list = list(grouped_tasks.values())
+        random.shuffle(grouped_task_list)
+
         semaphore = asyncio.Semaphore(self.config.chunk_size)
-        tasks = [self._evaluate_group_with_semaphore(task, group, semaphore) for group in grouped_tasks.values()]
+        tasks = [self._evaluate_group_with_semaphore(task, group, semaphore) for group in grouped_task_list]
 
         # If large, log minimal progress in background
         if len(tasks) > 5 and self.config.verbose_logging:
