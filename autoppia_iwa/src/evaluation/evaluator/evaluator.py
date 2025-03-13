@@ -395,7 +395,7 @@ class ConcurrentEvaluator(IEvaluator):
                 page = await context.new_page()
 
                 browser_executor = PlaywrightBrowserExecutor(BrowserSpecification(), page, self.backend_demo_webs_service)
-
+                bt.logging.info(f"------------>>> ACTIONS: {actions}")
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
                     try:
