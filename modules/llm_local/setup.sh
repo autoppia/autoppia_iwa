@@ -11,7 +11,7 @@ echo "Installing project dependencies from local_llm_requirements.txt..."
 pip install -r autoppia_iwa_module/modules/llm_local/requirements.txt
 
 # NOTE - VERSION 12.6
-pip3 install torch==2.4.1 
+pip3 install torch==2.4.1
 
 echo "Installing and configuring PM2 service..."
 sudo apt install -y npm

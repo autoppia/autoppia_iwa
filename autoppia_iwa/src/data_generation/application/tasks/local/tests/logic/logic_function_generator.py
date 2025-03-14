@@ -38,7 +38,7 @@ class TestLogicGenerator:
         Available Tests:
         {tests_summary}
 
-        Generate a minimal but precise logic expression that confirms ALL success criteria 
+        Generate a minimal but precise logic expression that confirms ALL success criteria
         are met. Consider:
         1. Order requirements (if any steps must happen in sequence)
         2. Timing constraints (if something must happen within X steps)

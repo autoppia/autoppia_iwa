@@ -1,6 +1,5 @@
 # file: data_generation/domain/classes.py
 
-import copy
 import uuid
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 

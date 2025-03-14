@@ -67,4 +67,3 @@ We use the following pre-commit hooks (configured in `.pre-commit-config.yaml`):
    ```
 
 Thank you for your contribution! 🚀
-

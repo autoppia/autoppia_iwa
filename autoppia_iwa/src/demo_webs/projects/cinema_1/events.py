@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
-from loguru import logger
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import Event
@@ -1012,7 +1011,7 @@ login_criteria = LoginEvent.ValidationCriteria(
 # Example 2: Advanced login validation with operators
 login_criteria_advanced = LoginEvent.ValidationCriteria(
     username=CriterionValue(
-        value="testuser", 
+        value="testuser",
         operator=ComparisonOperator.EQUALS
     )
 )

@@ -3,7 +3,7 @@ prompts.py
 """
 GLOBAL_TASK_GENERATION_PROMPT = """
 We are creating synthetic prompts for a specific web project and we have manually created a list of Use Cases that represent this web project functionality.
-You are going to receive information of this web project and a specific usecase 
+You are going to receive information of this web project and a specific usecase
 and you are in charge or generating variants of prompts for that use case.
 
 ## Use Case Information

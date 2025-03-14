@@ -162,14 +162,14 @@ sudo apt install -y python3.11 python3.11-venv python3-pip
 
 ## **Step 4: Set Up the Environment File (Only if You Don't Have One Already)**
 
-1. **Create the `.env` File**:  
+1. **Create the `.env` File**:
    If you don't have a `.env` file in your project directory, create one by running:
 
    ```bash
    touch .env
    ```
 
-2. **Add the Required Environment Variables**:  
+2. **Add the Required Environment Variables**:
    Copy and paste the following into your `.env` file only if the .env is not existing, customizing values where
    necessary.
 
@@ -191,7 +191,7 @@ sudo apt install -y python3.11 python3.11-venv python3-pip
     MONGODB_URL="mongodb://localhost:27017"
    ```
 
-3. **Verify Environment Variables**:  
+3. **Verify Environment Variables**:
    To ensure all environment variables are correctly set, use:
    ```bash
    cat .env
@@ -236,7 +236,7 @@ Run the Flask application:
 python3 app.py
 ```
 
-By default, Flask will run the application at `http://127.0.0.1:5000/`.  
+By default, Flask will run the application at `http://127.0.0.1:5000/`.
 You can interact with it using a browser, **Postman**, or **cURL**.
 
 ---

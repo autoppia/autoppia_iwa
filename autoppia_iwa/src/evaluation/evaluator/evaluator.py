@@ -3,7 +3,7 @@ import asyncio
 import random
 import time
 from collections import defaultdict
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 from loguru import logger
 from playwright.async_api import async_playwright
@@ -16,7 +16,6 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStat
 
 # Import all needed helpers from evaluation_helper.py
 from autoppia_iwa.src.evaluation.evaluator.utils import (
-    display_batch_evaluation_summary,
     display_single_evaluation_summary,
     generate_feedback,
     get_random_clicker_performance,
@@ -266,11 +265,11 @@ class ConcurrentEvaluator(IEvaluator):
             logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
 
         # Shuffle grouped tasks for random evaluation order
-        grouped_task_list = list(grouped_tasks.values())
+        grouped_task_list = list(grouped_indices.values())
         random.shuffle(grouped_task_list)
 
         semaphore = asyncio.Semaphore(self.config.chunk_size)
-        tasks = [self._evaluate_group_with_semaphore(task, group, semaphore) for group in grouped_task_list]
+        tasks = [self._evaluate_group_with_semaphore(task, task_solutions, group_indices, final_results, semaphore) for group_indices in grouped_task_list]
 
         # If large, log minimal progress in background
         if len(tasks) > 5 and self.config.verbose_logging:
