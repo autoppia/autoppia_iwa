@@ -363,12 +363,13 @@ def visualize_evaluation(visualizer):
     """Decorator to visualize an agent's evaluation."""
 
     def decorator(func):
-        async def wrapper(web_project, task, task_solution, *args, **kwargs):
+        async def wrapper(web_project, task, task_solution, validator_id, *args, **kwargs):
             result = await func(web_project, task, task_solution, *args, **kwargs)
             # Changed from show_agent_evaluation to show_full_evaluation
             visualizer.show_full_evaluation(
                 agent_id=task_solution.web_agent_id,
                 task=task,
+                validator_id=validator_id,
                 actions=task_solution.actions,
                 test_results_matrix=result.test_results_matrix if hasattr(result, "test_results_matrix") else [],
                 evaluation_result=result,
