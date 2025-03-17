@@ -58,7 +58,7 @@ class SubnetVisualizer:
     def show_full_evaluation(
         self,
         agent_id,
-        # validator_id,
+        validator_id,
         task,
         actions,
         test_results_matrix,
@@ -78,8 +78,7 @@ class SubnetVisualizer:
             feedback: Optional additional feedback
         """
         self.console.print("\n" + "=" * 80)
-        # self.console.print(f"\n[bold white on blue]COMPLETE EVALUATION - AGENT: {agent_id}, VALIDATOR:{validator_id}[/bold white on blue]\n")
-        self.console.print(f"\n[bold white on blue]COMPLETE EVALUATION - AGENT: {agent_id}\n")
+        self.console.print(f"\n[bold white on blue]COMPLETE EVALUATION - AGENT: {agent_id}, VALIDATOR:{validator_id}[/bold white on blue]\n")
 
         # 1. Show task details
         task_id = task.id if hasattr(task, "id") else "Unknown"
@@ -453,8 +452,7 @@ def test_visualization():
     evaluation_result = EvaluationResult()
 
     # Call the visualization function
-    # visualizer.show_full_evaluation(agent_id=agent_id, validator_id='test', task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
-    visualizer.show_full_evaluation(agent_id=agent_id, task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
+    visualizer.show_full_evaluation(agent_id=agent_id, validator_id='test', task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
 
 
 # Run the test function if needed:
