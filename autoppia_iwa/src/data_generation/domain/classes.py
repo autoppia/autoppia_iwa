@@ -1,6 +1,5 @@
 # file: data_generation/domain/classes.py
 
-import copy
 import uuid
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
@@ -85,6 +84,8 @@ class Task(BaseModel):
             serialized["milestones"] = [m.serialize() for m in self.milestones]
         if self.use_case:
             serialized["use_case"] = self.use_case.serialize()
+        serialized.pop("html", None)
+        serialized.pop("clean_html", None)
         return serialized
 
     @classmethod
@@ -129,6 +130,7 @@ class Task(BaseModel):
         cleaned = self.model_dump(
             exclude={
                 "tests",  # Remove all tests
+                "html",  # HTml content of the page
                 "clean_html",  # Also large
                 "milestones",  # Remove nested tasks completely
                 "use_case",  # Remove use case completely

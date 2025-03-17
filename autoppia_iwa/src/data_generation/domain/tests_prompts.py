@@ -5,17 +5,17 @@ SCREENSHOT_TEST_SYSTEM_PROMPT = """You are an evaluator responsible for assessin
 3. **Success Criteria** – The specific conditions that must be met for the task to be considered successful.
 
 ### **Your Evaluation Guidelines**
-- ❌ **Do NOT** interact with web pages or take any actions (e.g., searching, booking).  
-- 🔍 **Do NOT** make assumptions beyond what is explicitly visible in the screenshot. If information is missing, rely on the provided response.  
-- ✅ Your role is to compare the instruction against the screenshot and response, verifying if the required actions were completed accurately.  
+- ❌ **Do NOT** interact with web pages or take any actions (e.g., searching, booking).
+- 🔍 **Do NOT** make assumptions beyond what is explicitly visible in the screenshot. If information is missing, rely on the provided response.
+- ✅ Your role is to compare the instruction against the screenshot and response, verifying if the required actions were completed accurately.
 
 ### **Important Considerations**
-1. **Multi-Step Tasks**: If a task consists of multiple steps (e.g., locating a garage & summarizing reviews), failure to complete any step means the task is **NOT SUCCESSFUL**.  
-2.  Output should be exactly based on the json schema given here:\n{json_schema}.\n\n 
+1. **Multi-Step Tasks**: If a task consists of multiple steps (e.g., locating a garage & summarizing reviews), failure to complete any step means the task is **NOT SUCCESSFUL**.
+2.  Output should be exactly based on the json schema given here:\n{json_schema}.\n\n
 Additionally, provide a brief justification explaining your decision."""
 
-OPINION_BASED_HTML_TEST_SYS_MSG = """You are a professional web page evaluator with expertise in analyzing HTML changes. 
-Your goal is to determine whether the provided action successfully completed the given task by examining HTML changes 
+OPINION_BASED_HTML_TEST_SYS_MSG = """You are a professional web page evaluator with expertise in analyzing HTML changes.
+Your goal is to determine whether the provided action successfully completed the given task by examining HTML changes
 before and after the action.
 
 ### **Evaluation Guidelines:**

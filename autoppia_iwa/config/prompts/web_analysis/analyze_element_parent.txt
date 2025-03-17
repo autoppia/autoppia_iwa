@@ -1,5 +1,5 @@
 Summarize the content and functionality of this HTML element:
-${element_without_children} 
+${element_without_children}
 
 Include the following fields for each element:
 - one_phrase_summary: Provide a one-sentence summary of the element.
@@ -17,7 +17,7 @@ Include the following fields for each element:
 
 Additionally, consider the analyses of the children elements to inform your summaries here you have: ${children_analysis}
 
-Do not add boilerplate or not usefull information. Only add quality information that adds value and insights to the understanding of the web. 
+Do not add boilerplate or not usefull information. Only add quality information that adds value and insights to the understanding of the web.
 If something do not add value set it as null
 ONLY INCLUDE THIS FIELDS AND NOT THE ELEMENT ITSELF
 Please provide the JSON output in the format specified above.

@@ -1,20 +1,21 @@
 # concurrent_evaluator.py
-
 import asyncio
+import random
 import time
 from collections import defaultdict
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 from loguru import logger
 from playwright.async_api import async_playwright
-import bittensor as bt
+
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
+
+# Import all needed helpers from evaluation_helper.py
 from autoppia_iwa.src.evaluation.evaluator.utils import (
-    display_batch_evaluation_summary,
     display_single_evaluation_summary,
     generate_feedback,
     get_random_clicker_performance,
@@ -39,12 +40,12 @@ class ConcurrentEvaluator(IEvaluator):
         self.web_project = web_project
         self.backend_demo_webs_service = BackendDemoWebService(web_project=web_project)
 
-        # Estadísticas de ejecución y errores
+        # Statistics collection
         self.evaluation_stats: List[EvaluationStats] = []
         self.action_type_timing = defaultdict(list)
         self.errors: List[str] = []
 
-        # Configurar logs
+        # Configure logs minimally if not verbose
         if not self.config.verbose_logging:
             logger.remove()
             logger.add(
@@ -55,7 +56,7 @@ class ConcurrentEvaluator(IEvaluator):
 
     async def evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution) -> EvaluationResult:
         """
-        Evalúa una única solución (TaskSolution) y devuelve su EvaluationResult.
+        Evaluate a single task solution (actions + agent) for a given task.
         """
         try:
             logger.info(f"Evaluating Single task solution for task {task.id}...")
@@ -65,7 +66,7 @@ class ConcurrentEvaluator(IEvaluator):
 
             result = await self._evaluate_single_task_solution(task, task_solution)
 
-            # Mostrar reporte
+            # Display final report for this single solution
             if result.stats:
                 display_single_evaluation_summary(result.stats, debug_mode=self.config.debug_mode)
                 self.evaluation_stats.append(result.stats)
@@ -77,8 +78,7 @@ class ConcurrentEvaluator(IEvaluator):
 
     async def evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         """
-        Evalúa múltiples soluciones para la misma tarea, en paralelo/grupos.
-        Retorna la lista final en el mismo orden que 'task_solutions'.
+        Evaluate multiple solutions for the same task, optionally grouping identical ones.
         """
         try:
             logger.info(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
@@ -86,10 +86,9 @@ class ConcurrentEvaluator(IEvaluator):
             logger.info("Resetting Project Environment & Database.")
             await self.backend_demo_webs_service.reset_database()
 
-            # Evaluación en grupos (para no re-ejecutar exactamente la misma secuencia de acciones)
             results = await self._group_and_evaluate_task_solutions(task, task_solutions)
 
-            # Guardar stats
+            # Save stats
             for r in results:
                 if r and r.stats:  # puede haber None si algo falla
                     self.evaluation_stats.append(r.stats)
@@ -110,8 +109,9 @@ class ConcurrentEvaluator(IEvaluator):
 
     async def _evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution) -> EvaluationResult:
         """
-        Lógica interna para evaluar una única TaskSolution (acciones, tests, score...).
+        Internal logic to evaluate a single TaskSolution.
         """
+
         actions = task_solution.actions
         web_agent_id = task_solution.web_agent_id
         is_web_real = task.is_web_real
@@ -123,13 +123,11 @@ class ConcurrentEvaluator(IEvaluator):
             start_time=time.time(),
         )
 
-        # Contabilizar tipos de acción
+        # Count action types
         for action in actions:
             stats.action_types[action.type] = stats.action_types.get(action.type, 0) + 1
 
-        # === IMPORTANTE ===
-        # AQUÍ tienes la lógica que fuerza a "No actions provided" si no es web_agent_id=102.
-        # Ajusta si necesitas que se evalúen todos.
+        # If no actions, return an immediate error
         if not actions:
             stats.had_errors = True
             stats.error_message = "No actions provided"
@@ -150,23 +148,22 @@ class ConcurrentEvaluator(IEvaluator):
 
         logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
         try:
+            # If simulated, reset the DB first
             browser_setup_start = time.time()
 
-            # Iniciamos browser
+            # Start browser usage
             browser_execution_start = time.time()
             stats.browser_setup_time = browser_execution_start - browser_setup_start
 
-            # Ejecutar acciones en navegador
             execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
             stats.action_execution_times = action_execution_times
 
-            # Correr los tests
+            # Run tests
             test_start_time = time.time()
             test_results_matrix = await run_tests(self.web_project, task, execution_history)
-
             stats.test_execution_time = time.time() - test_start_time
 
-            # Random clicker
+            # Random clicker baseline
             random_start_time = time.time()
             random_clicker_passed, random_clicker_score = await get_random_clicker_performance(
                 web_project=self.web_project,
@@ -179,7 +176,7 @@ class ConcurrentEvaluator(IEvaluator):
             stats.random_clicker_time = time.time() - random_start_time
             stats.random_clicker_score = random_clicker_score
 
-            # Calcular raw_score (# tests pasados / total)
+            # Calculate raw score (# tests passed / total tests)
             raw_score = 0.0
             tests_passed_count = 0
             num_tests = 0
@@ -189,7 +186,6 @@ class ConcurrentEvaluator(IEvaluator):
                 stats.total_tests = num_tests
 
                 for test_index in range(num_tests):
-                    # Si en alguna fila de ese test_index sale success=True, lo contamos como passed
                     if any(row[test_index].success for row in test_results_matrix):
                         tests_passed_count += 1
 
@@ -199,7 +195,7 @@ class ConcurrentEvaluator(IEvaluator):
             stats.tests_passed = tests_passed_count
             stats.raw_score = raw_score
 
-            # Ajustar final_score vs random_clicker
+            # Adjust final score relative to random clicker
             final_score = raw_score
             if self.config.normalize_score_with_random_clicker and num_tests > 0:
                 final_score = max(0, raw_score - random_clicker_score)
@@ -209,12 +205,12 @@ class ConcurrentEvaluator(IEvaluator):
             stats.final_score = final_score
             stats.total_time = time.time() - stats.start_time
 
-            # Generar feedback (opcional)
+            # Generate feedback
             feedback = generate_feedback(task, execution_history, test_results_matrix)
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,
-                final_score=1 if final_score >= 0.25 else final_score,  # ejemplo de threshold
+                final_score=1 if final_score >= 0.25 else final_score,
                 raw_score=raw_score,
                 random_clicker_score=random_clicker_score,
                 test_results_matrix=test_results_matrix,
@@ -243,11 +239,9 @@ class ConcurrentEvaluator(IEvaluator):
                 stats=stats,
             )
 
-    async def _group_and_evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[Optional[EvaluationResult]]:
+    async def _group_and_evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
         """
-        Agrupa soluciones idénticas por un hash de sus acciones.
-        Evalúa solo 1 vez por grupo y clona el resultado.
-        Devuelve la lista de resultados en el **mismo orden** que task_solutions.
+        Groups identical solutions by hashing their actions, evaluates them, and clones results.
         """
         start_time = time.time()
         # Creamos un array final de resultados alineado con la lista original
@@ -270,24 +264,22 @@ class ConcurrentEvaluator(IEvaluator):
         for key, g_indices in grouped_indices.items():
             logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
 
+        # Shuffle grouped tasks for random evaluation order
+        grouped_task_list = list(grouped_indices.values())
+        random.shuffle(grouped_task_list)
+
         semaphore = asyncio.Semaphore(self.config.chunk_size)
-        tasks = []
+        tasks = [self._evaluate_group_with_semaphore(task, task_solutions, group_indices, final_results, semaphore) for group_indices in grouped_task_list]
 
-        # Preparamos las corutinas de evaluación (una por grupo)
-        for group_indices in grouped_indices.values():
-            # group_indices es una lista de índices en task_solutions
-            tasks.append(self._evaluate_group_with_semaphore(task, task_solutions, group_indices, final_results, semaphore))
-
-        # Opcional: mostrar progreso si la lista es grande
+        # If large, log minimal progress in background
         if len(tasks) > 5 and self.config.verbose_logging:
             progress_tracker = asyncio.create_task(log_progress(len(tasks), interval=10))
         else:
             progress_tracker = None
 
-        # Ejecutar en paralelo
         raw_results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # Cancelar tracker de progreso
+        # Cancel progress tracker if used
         if progress_tracker:
             progress_tracker.cancel()
             try:
@@ -295,7 +287,7 @@ class ConcurrentEvaluator(IEvaluator):
             except asyncio.CancelledError:
                 pass
 
-        # Manejar excepciones
+        final_results: List[EvaluationResult] = []
         for item in raw_results:
             if isinstance(item, Exception):
                 self.errors.append(str(item))
@@ -306,7 +298,6 @@ class ConcurrentEvaluator(IEvaluator):
         elapsed = time.time() - start_time
         self.total_evaluation_time += elapsed
 
-        # Devolvemos final_results, donde final_results[i] coincide con task_solutions[i]
         return final_results
 
     async def _evaluate_group_with_semaphore(
@@ -318,11 +309,7 @@ class ConcurrentEvaluator(IEvaluator):
         semaphore: asyncio.Semaphore,
     ) -> None:
         """
-        Evalúa un grupo de solutions (mismo hash de acciones) con semáforo para limitar concurrencia.
-        - Toma la solution "representante" (primer índice).
-        - Evalúa.
-        - Clona el resultado para las demás.
-        - Rellena `final_results[idx]` para cada índice en 'group_indices'.
+        Evaluates a group of identical solutions (all share the same actions).
         """
         async with semaphore:
             rep_index = group_indices[0]
@@ -374,7 +361,7 @@ class ConcurrentEvaluator(IEvaluator):
 
     async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], is_web_real: bool) -> Tuple[List[ActionExecutionResult], List[float]]:
         """
-        Ejecuta todas las acciones en un contexto Playwright y retorna historia + tiempos.
+        Executes all actions in a Playwright browser context and returns the results + times.
         """
         action_execution_times: List[float] = []
         action_results: List[ActionExecutionResult] = []

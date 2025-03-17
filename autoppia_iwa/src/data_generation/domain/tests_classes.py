@@ -9,6 +9,7 @@ from typing import Dict, List, Literal, Type
 
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
+from loguru import logger
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -18,8 +19,7 @@ from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.web_utils import generate_html_differences
-from loguru import logger
+from autoppia_iwa.src.shared.web_utils import clean_html, generate_html_differences
 
 from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
@@ -264,38 +264,57 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
         all_htmls = self._collect_all_htmls(browser_snapshots)
         if not all_htmls:
+            logger.warning("No HTML content found in browser snapshots.")
             return False
 
         differences = generate_html_differences(all_htmls)
+        # differences = generate_html_differences_with_xmldiff(all_htmls)
         if not differences:
+            logger.info("No significant HTML differences detected.")
             return False
 
-        return await self._analyze_htmls(prompt, differences)
+        return await self._analyze_htmls(prompt, total_iterations, differences)
 
     @staticmethod
     def _collect_all_htmls(browser_snapshots: List[BrowserSnapshot]) -> List[str]:
         """
-        Collects all HTMLs in order from the browser snapshots.
+        Collects all HTMLs in order from the browser snapshots and cleans them.
+        Returns a list of cleaned HTML strings.
         """
         if not browser_snapshots:
+            logger.warning("No browser snapshots provided.")
             return []
 
-        all_htmls = [browser_snapshots[0].prev_html, browser_snapshots[0].current_html]
-        for snap in browser_snapshots[1:]:
-            all_htmls.append(snap.current_html)
-        return all_htmls
+        all_htmls = [html for snap in browser_snapshots for html in ([snap.prev_html, snap.current_html] if snap == browser_snapshots[0] else [snap.current_html]) if html]
 
-    async def _analyze_htmls(self, task_prompt: str, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
+        cleaned_htmls = []
+        for html in all_htmls:
+            try:
+                cleaned_html = clean_html(html)
+                if cleaned_html:
+                    cleaned_htmls.append(cleaned_html)
+            except Exception as e:
+                logger.warning(f"Failed to clean HTML: {e}")
+
+        return cleaned_htmls
+
+    async def _analyze_htmls(self, task_prompt: str, total_iteration: int, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
         """
         Analyzes HTML changes using an LLM to determine success.
         """
         json_schema = HTMLBasedTestResponse.model_json_schema()
         formatted_sys_msg = OPINION_BASED_HTML_TEST_SYS_MSG.format(json_schema=json_schema)
-        user_message = f"Task: {task_prompt}\n\nHTML differences:\n{' '.join(differences)}"
+        user_message = f"Task: {task_prompt}\n\nHTML differences:\n{' '.join(differences[:-3])}"
         payload = [{"role": "system", "content": formatted_sys_msg}, {"role": "user", "content": user_message}]
 
         start_time = time.perf_counter()
-        result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
+
+        try:
+            result = await llm_service.async_predict(payload, json_format=True, return_raw=True)
+        except Exception as e:
+            logger.error(f"LLM service failed to predict: {e}")
+            return False
+
         end_time = time.perf_counter()
         duration = round(end_time - start_time, 3)
         try:
@@ -305,7 +324,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
         final_result = match.group(1).lower() == "true" if match else False
-        save_usage_record(task_prompt, result, duration, self.type, final_result=final_result)
+        save_usage_record(task_prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
 
         return final_result
 
@@ -326,11 +345,12 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     ) -> bool:
         if current_iteration != total_iterations - 1:
             return False
-        return await self._analyze_screenshots(prompt, browser_snapshots)
+        return await self._analyze_screenshots(prompt, total_iterations, browser_snapshots)
 
     async def _analyze_screenshots(
         self,
         prompt: str,
+        total_iteration: int,
         browser_snapshots: List[BrowserSnapshot],
         llm_service: ILLM = Provide[DIContainer.llm_service],
     ) -> bool:
@@ -340,7 +360,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         user_msg = f"Task: '{prompt}'\nSuccess Criteria: '{self.success_criteria}'"
 
         screenshots_after = [snap.screenshot_after for snap in browser_snapshots[-4:]]
-        screenshot_content = [{"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot}"}} for screenshot in screenshots_after]
+        screenshot_content = [{"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{screenshot}"}} for screenshot in screenshots_after]
         json_schema = ScreenshotTestResponse.model_json_schema()
         formatted_sys_msg = SCREENSHOT_TEST_SYSTEM_PROMPT.format(json_schema=json_schema)
         payload = [
@@ -359,17 +379,18 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
 
         final_result = match.group(1).lower() == "true" if match else False
-        save_usage_record(prompt, result, duration, self.type, final_result=final_result)
+        save_usage_record(prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
 
         return final_result
 
 
-def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, final_result: bool, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):
+def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, final_result: bool, total_iteration, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):
     """Saves token usage and execution time to log file."""
     from autoppia_iwa.src.shared.pricings import pricing_dict
 
     input_tokens = response.usage.prompt_tokens
     output_tokens = response.usage.completion_tokens
+    total_tokens = response.usage.total_tokens
     model_name = response.model
 
     if model_name not in pricing_dict:
@@ -390,14 +411,17 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
         "task": prompt,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
+        "total_tokens": total_tokens,
         "input_cost": input_cost,
         "output_cost": output_cost,
         "total_cost": total_cost,
         "duration_seconds": time_taken,
         "model": model_name,
+        "total_iteration": total_iteration,
     }
 
     try:
+        log_file.parent.mkdir(parents=True, exist_ok=True)
         with log_file.open("a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
     except IOError as e:

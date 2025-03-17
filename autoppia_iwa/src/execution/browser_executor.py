@@ -1,9 +1,8 @@
-import asyncio
 import base64
 from datetime import datetime
 from typing import List, Optional
 
-from playwright.async_api import Page, async_playwright
+from playwright.async_api import Page
 
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
@@ -26,46 +25,6 @@ class PlaywrightBrowserExecutor:
         self.action_execution_results: List[ActionExecutionResult] = []
         self.backend_demo_webs_service: BackendDemoWebService = backend_demo_webs_service
 
-    def execute_actions(self, actions: List[BaseAction], web_agent_id: str) -> List[ActionExecutionResult]:
-        """
-        Executes a list of actions synchronously using asyncio.
-
-        Args:
-            actions: List of actions to execute.
-            web_agent_id: Identifier for the web agent.
-
-        Returns:
-            List[ActionExecutionResult]: List of execution results for each action.
-        """
-        loop = asyncio.new_event_loop()
-        try:
-            asyncio.set_event_loop(loop)
-            result = loop.run_until_complete(self.execute_actions_standalone(actions, web_agent_id))
-        finally:
-            asyncio.set_event_loop(None)
-            loop.close()
-        return result
-
-    async def execute_actions_standalone(self, actions: List[BaseAction], web_agent_id: str, is_web_real: bool = False) -> List[ActionExecutionResult]:
-        """
-        Executes a list of actions asynchronously.
-
-        Args:
-            actions: List of actions to execute.
-            web_agent_id: Identifier for the web agent.
-
-        Returns:
-            List[ActionExecutionResult]: List of execution results for each action.
-        """
-        await self._initialize_playwright(web_agent_id)
-        execution_results = []
-
-        for iteration, action in enumerate(actions, start=1):
-            execution_result = await self.execute_single_action(action, web_agent_id, iteration, is_web_real=is_web_real)
-            execution_results.append(execution_result)
-
-        return execution_results
-
     async def execute_single_action(self, action: BaseAction, web_agent_id: str, iteration: int, is_web_real: bool) -> ActionExecutionResult:
         """
         Executes a single action and records results, including browser snapshots.
@@ -81,20 +40,9 @@ class PlaywrightBrowserExecutor:
         if not self.page:
             raise RuntimeError("Playwright page is not initialized.")
 
-        async def capture_snapshot() -> dict:
-            """Helper function to capture browser state."""
-            try:
-                html = await self.page.content()
-                screenshot = base64.b64encode(await self.page.screenshot(type="png", full_page=True)).decode("utf-8")
-                current_url = self.page.url
-                return {"html": html, "screenshot": screenshot, "url": current_url}
-            except Exception as e:
-                # Gracefully handle any errors during snapshot
-                return {"html": "", "screenshot": "", "url": "", "error": str(e)}
-
         try:
             # Capture state before action execution
-            snapshot_before = await capture_snapshot()
+            snapshot_before = await self._capture_snapshot()
             start_time = datetime.now()
 
             # Execute the action
@@ -104,19 +52,19 @@ class PlaywrightBrowserExecutor:
             # Capture backend events and updated browser state
             backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             await self.page.wait_for_load_state("domcontentloaded")
-            snapshot_after = await capture_snapshot()
+            snapshot_after = await self._capture_snapshot()
 
             # Create a detailed browser snapshot
             browser_snapshot = BrowserSnapshot(
                 iteration=iteration,
                 action=action,
-                prev_html="snapshot_before['html']",
-                current_html='snapshot_after["html"]',
+                prev_html=snapshot_before['html'],
+                current_html=snapshot_after["html"],
                 backend_events=backend_events,
                 timestamp=datetime.now(),
                 current_url=snapshot_after["url"],
-                screenshot_before="snapshot_before[screenshot]",
-                screenshot_after="snapshot_after[screenshot]",
+                screenshot_before=snapshot_before["screenshot"],
+                screenshot_after=snapshot_after["screenshot"],
             )
 
             return ActionExecutionResult(
@@ -129,7 +77,7 @@ class PlaywrightBrowserExecutor:
 
         except Exception as e:
             backend_events = await self._get_backend_events(web_agent_id, is_web_real)
-            snapshot_error = await capture_snapshot()
+            snapshot_error = await self._capture_snapshot()
 
             # Create error snapshot
             browser_snapshot = BrowserSnapshot(
@@ -153,22 +101,17 @@ class PlaywrightBrowserExecutor:
                 browser_snapshot=browser_snapshot,
             )
 
-    async def _initialize_playwright(self, web_agent_id: str):
-        """
-        Initializes the Playwright browser and page if not already initialized.
-
-        Args:
-            web_agent_id: Identifier for the web agent.
-        """
-        if self.page:
-            return
-
-        async with async_playwright() as playwright:
-            browser = await playwright.chromium.launch(headless=True)
-            context = await browser.new_context(extra_http_headers={"X-WebAgent-Id": web_agent_id})
-            context.set_default_timeout(5000)
-            self.page = await context.new_page()
-            await self.page.set_viewport_size({"width": self.browser_config.viewport_width, "height": self.browser_config.viewport_height})
+    async def _capture_snapshot(self) -> dict:
+        """Helper function to capture browser state."""
+        try:
+            html = await self.page.content()
+            screenshot = await self.page.screenshot(type="jpeg", full_page=False, quality=85)
+            encoded_screenshot = base64.b64encode(screenshot).decode("utf-8")
+            current_url = self.page.url
+            return {"html": html, "screenshot": encoded_screenshot, "url": current_url}
+        except Exception as e:
+            # Gracefully handle any errors during snapshot
+            return {"html": "", "screenshot": "", "url": "", "error": str(e)}
 
     async def _get_backend_events(self, web_agent_id: str, is_web_real: bool) -> List[BackendEvent]:
         if not is_web_real:

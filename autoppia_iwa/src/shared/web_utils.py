@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Tuple
 from bs4 import BeautifulSoup, Comment
 from PIL import Image
 from playwright.async_api import async_playwright
+from xmldiff import main
 
 from autoppia_iwa.src.llms.infrastructure.ui_parser_service import UIParserService
 
@@ -220,7 +221,28 @@ def generate_html_differences(html_list: List[str]) -> List[str]:
         current_lines = current_html.splitlines(keepends=True)
         diff_generator = difflib.unified_diff(prev_lines, current_lines, lineterm='')
         diff_str = ''.join(diff_generator)
-        diffs.append(diff_str)
+        if diff_str:
+            diffs.append(diff_str)
+        prev_html = current_html
+
+    return diffs
+
+
+def generate_html_differences_with_xmldiff(html_list: List[str]) -> List[str]:
+    """Generate a list of initial HTML followed by diffs between consecutive HTMLs using xmldiff."""
+    if not html_list:
+        return []
+
+    diffs = [html_list[0]]
+    prev_html = html_list[0]
+
+    for current_html in html_list[1:]:
+        differences = main.diff_texts(prev_html, current_html)
+
+        diff_str = "\n".join([str(diff) for diff in differences])
+        if diff_str:
+            diffs.append(diff_str)
+
         prev_html = current_html
 
     return diffs

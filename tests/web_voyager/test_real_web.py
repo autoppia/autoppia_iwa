@@ -1,15 +1,16 @@
 import asyncio
 import json
-import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from loguru import logger
+
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.utils import _load_web_analysis
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
@@ -32,7 +33,7 @@ class WebVoyagerConfig:
 
     use_cached_solutions: bool = False
 
-    num_of_urls: int = 2
+    num_of_urls: int = 10
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
@@ -53,26 +54,22 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Define agents
 AGENTS: List[IWebAgent] = [
     # RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=120),
+    ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=150),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(), logging.FileHandler("benchmark.log")],
-)
-logger = logging.getLogger("benchmark")
-
+logger.remove()
+logger.add("real_web_evaluation.log", rotation="10 MB", level="DEBUG", format="{time} | {level: <8} | {message}", colorize=True)
 visualizer = SubnetVisualizer()
 
 
 @visualize_task(visualizer)
-async def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:
+async def generate_tasks(tasks_data: TaskData) -> List[Task]:
     """Generate tasks with caching support."""
-    task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
-    return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
+    success_criteria = tasks_data.ques
+    tests = [JudgeBaseOnScreenshot(success_criteria=success_criteria), JudgeBaseOnHTML(success_criteria=success_criteria)]
+    return [Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True, tests=tests)]
 
 
 @visualize_evaluation(visualizer)
@@ -94,17 +91,18 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
             raise FileNotFoundError(f"the log file {log_file} does not exist")
 
         task_prompt_hash = generate_hash(task.prompt)
-
+        total_iterations = len(result.execution_history)
         updated_entries = []
         with log_file.open("r", encoding="utf-8") as f:
             for line in f:
                 try:
                     entry = json.loads(line.strip())
-                    if generate_hash(entry.get("task")) == task_prompt_hash:
+                    entry_iterations = entry["total_iteration"]
+                    if generate_hash(entry.get("task")) == task_prompt_hash and total_iterations == entry_iterations:
                         entry["evaluation_feedback"] = evaluation_feedback
                     updated_entries.append(entry)
                 except json.JSONDecodeError:
-                    print(f"Warning: Skipping invalid JSON line in {log_file}")
+                    logger.warning(f"Skipping invalid JSON line in {log_file}")
                     continue
 
         with log_file.open("w", encoding="utf-8") as f:
@@ -210,7 +208,7 @@ async def main():
         project = web_projects.get(td.id)
         if project:
             await _load_web_analysis(project)
-            tasks = await generate_tasks(project, td)
+            tasks = await generate_tasks(td)
             if tasks:
                 await run_evaluation(project, tasks, timing_metrics)
 

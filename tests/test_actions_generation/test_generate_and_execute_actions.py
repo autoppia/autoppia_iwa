@@ -4,7 +4,7 @@ import unittest
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
-from autoppia_iwa.src.demo_webs.config import web_1_demo_projects
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
@@ -69,7 +69,7 @@ class TestActionGenerationAndEvaluation(unittest.TestCase):
             print(f"{idx}: {action}")
 
         # Evaluate the actions
-        web_project = self.loop.run_until_complete(initialize_demo_webs_projects([web_1_demo_projects]))
+        web_project = self.loop.run_until_complete(initialize_demo_webs_projects(demo_web_projects))
         web_project[0].relevant_data = ({"authorization": {"email": "employee@employee.com", "password": "employee"}},)
 
         task_solution = TaskSolution(actions=task_solution.actions, web_agent_id=self.web_agent_id)
