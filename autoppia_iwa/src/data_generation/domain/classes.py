@@ -130,6 +130,7 @@ class Task(BaseModel):
         cleaned = self.model_dump(
             exclude={
                 "tests",  # Remove all tests
+                "html",  # HTml content of the page
                 "clean_html",  # Also large
                 "milestones",  # Remove nested tasks completely
                 "use_case",  # Remove use case completely
