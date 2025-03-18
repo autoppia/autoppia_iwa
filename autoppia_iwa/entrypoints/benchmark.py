@@ -82,7 +82,7 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 
 
 @visualize_evaluation(visualizer)
-async def evaluate_task_solution(web_project: WebProject, task: Task, task_solution: TaskSolution, validator_id="benchmark") -> EvaluationResult:
+async def evaluate_task_solution(web_project: WebProject, task: Task, task_solution: TaskSolution, validator_id) -> EvaluationResult:
     """Evaluate a task solution."""
     evaluator = ConcurrentEvaluator(
         web_project=web_project,
@@ -162,7 +162,7 @@ async def evaluate_solutions(
     for task in tasks:
         logger.info(f"  Evaluating solution for Task {task.id}...")
         task_solution = solutions[task.id]
-        eval_result = await evaluate_task_solution(demo_project, task, task_solution)
+        eval_result = await evaluate_task_solution(demo_project, task, task_solution, "benchmark")
         results[task.id] = {"score": eval_result.final_score, "evaluation_result": eval_result}
     return results
 
