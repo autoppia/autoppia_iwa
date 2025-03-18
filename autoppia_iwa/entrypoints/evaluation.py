@@ -12,9 +12,9 @@ from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 app = AppBootstrap()
 LLM_SERVICE = app.container.llm_service()
@@ -129,8 +129,8 @@ async def main():
     tasks = await generate_tasks()
 
     agents: list[IWebAgent] = [
-        RandomClickerWebAgent(),
-        # ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080),
+        # RandomClickerWebAgent(),
+        ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=11111),
     ]
     results = {agent.id: {"global_scores": [], "projects": {}} for agent in agents}
 

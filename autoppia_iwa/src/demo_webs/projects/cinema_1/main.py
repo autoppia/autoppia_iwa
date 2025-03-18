@@ -7,8 +7,8 @@ from .relevant_data import RELEVANT_DATA
 from .urls import URLS
 from .use_cases import USE_CASES
 
-FRONTEND_PORT_INDEX = 0
-BACKEND_PORT_INDEX = 0
+FRONTEND_PORT_INDEX = 1
+BACKEND_PORT_INDEX = 1
 cinema_project = WebProject(
     id="cinema",
     name="Autoppia Cinema",
