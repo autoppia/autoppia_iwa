@@ -61,9 +61,9 @@ class GlobalTestGenerationPipeline:
                 self._instantiate_tests(task, test_definitions)
 
             except Exception as e:
-                raise e
                 logger.error(f"Failed to generate tests for Task={task.id}: {e!s}")
                 logger.debug(f"Exception details: {type(e).__name__}, {e!r}")
+                raise e
 
         return tasks
 

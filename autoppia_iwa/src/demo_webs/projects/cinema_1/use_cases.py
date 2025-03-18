@@ -108,7 +108,8 @@ USE_CASES = [
     #     name="User Logout",
     #     description="The user logs out of the platform.",
     #     event=LogoutEvent,
-    #     test_examples=[
+    #     event_source_code=LogoutEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "LogoutEvent", "criteria": {}, "code": LogoutEvent.get_source_code_of_class()},
     #     ],
     # ),
@@ -116,7 +117,8 @@ USE_CASES = [
     #     name="Film Detail View",
     #     description="The user views the details page of a film.",
     #     event=FilmDetailEvent,
-    #     test_examples=[
+    #     event_source_code=FilmDetailEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "FilmDetailEvent", "criteria": {}, "code": FilmDetailEvent.get_source_code_of_class()},
     #     ],
     # ),
@@ -164,11 +166,12 @@ USE_CASES = [
             },
         ],
     ),
-    # # UseCase(
+    # UseCase(
     #     name="Add Film",
     #     description="The user adds a new film to the system.",
     #     event=AddFilmEvent,
-    #     test_examples=[
+    #     event_source_code=AddFilmEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "AddFilmEvent", "criteria": {}, "code": AddFilmEvent.get_source_code_of_class()},
     #     ],
     # ),
@@ -176,7 +179,8 @@ USE_CASES = [
     #     name="Edit Film",
     #     description="The user edits the details of an existing film.",
     #     event=EditFilmEvent,
-    #     test_examples=[
+    #     event_source_code=EditFilmEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "EditFilmEvent", "criteria": {}, "code": EditFilmEvent.get_source_code_of_class()},
     #     ],
     # ),
@@ -184,7 +188,8 @@ USE_CASES = [
     #     name="Delete Film",
     #     description="The user deletes a film from the system.",
     #     event=DeleteFilmEvent,
-    #     test_examples=[
+    #     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "DeleteFilmEvent", "criteria": {}, "code": DeleteFilmEvent.get_source_code_of_class()},
     #     ],
     # ),
@@ -192,7 +197,8 @@ USE_CASES = [
     #     name="Add Comment",
     #     description="The user adds a comment to a film.",
     #     event=AddCommentEvent,
-    #     test_examples=[
+    #     event_source_code=AddCommentEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "AddCommentEvent", "criteria": {}, "code": AddCommentEvent.get_source_code_of_class()},
     #     ],
     # ),
@@ -200,7 +206,8 @@ USE_CASES = [
     #     name="Contact Form Submission",
     #     description="The user submits a contact form.",
     #     event=ContactEvent,
-    #     test_examples=[
+    #     event_source_code=ContactEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "ContactEvent", "criteria": {}, "code": ContactEvent.get_source_code_of_class()},
     #     ],
     # ),
@@ -208,7 +215,8 @@ USE_CASES = [
     #     name="Edit User Profile",
     #     description="The user edits their profile details.",
     #     event=EditUserEvent,
-    #     test_examples=[
+    #     event_source_code=EditFilmEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "EditUserEvent", "criteria": {}, "code": EditUserEvent.get_source_code_of_class()},
     #     ],
     # ),
@@ -216,7 +224,8 @@ USE_CASES = [
     #     name="Filter Films",
     #     description="The user applies filters to search for films by genre and/or year.",
     #     event=FilterFilmEvent,
-    #     test_examples=[
+    #     event_source_code=FilterFilmEvent.get_source_code_of_class(),
+    #     examples=[
     #         {"type": "CheckEventTest", "event_name": "FilterFilmEvent", "criteria": {}, "code": FilterFilmEvent.get_source_code_of_class()},
     #     ],
     # ),
