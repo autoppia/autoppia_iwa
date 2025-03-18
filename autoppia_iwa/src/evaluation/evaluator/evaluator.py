@@ -287,7 +287,6 @@ class ConcurrentEvaluator(IEvaluator):
             except asyncio.CancelledError:
                 pass
 
-        final_results: List[EvaluationResult] = []
         for item in raw_results:
             if isinstance(item, Exception):
                 self.errors.append(str(item))
