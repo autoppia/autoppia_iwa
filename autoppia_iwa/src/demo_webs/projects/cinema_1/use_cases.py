@@ -2,6 +2,7 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import FilterFilmEvent
+from .replace_functions import filter_film_replace_func
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
@@ -256,6 +257,7 @@ USE_CASES = [
         description="The user applies filters to search for films by genre and/or year.",
         event=FilterFilmEvent,
         event_source_code=FilterFilmEvent.get_source_code_of_class(),
+        replace_func=filter_film_replace_func,
         examples=[
             {
                 "prompt": "Filter movies released in the year <year>",
