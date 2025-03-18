@@ -258,9 +258,58 @@ USE_CASES = [
         event_source_code=FilterFilmEvent.get_source_code_of_class(),
         examples=[
             {
-                "type": "CheckEventTest",
-                "event_name": "FilterFilmEvent",
-                "criteria": {},
+                "prompt": "Filter movies released in the year <year>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILTER_FILM",
+                    "criteria": {"year": "<year>", "has_year_filter": True},
+                    "reasoning": "This test applies when the task requires filtering movies by a specific release year.",
+                },
+            },
+            {
+                "prompt": "Find action movies",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILTER_FILM",
+                    "criteria": {"genre_name": "Action", "has_genre_filter": True},
+                    "reasoning": "This test applies when the task requires filtering movies by the 'Action' genre.",
+                },
+            },
+            {
+                "prompt": "Search for films from the year <year> in the genre <genre>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILTER_FILM",
+                    "criteria": {"year": "<year>", "genre_name": "<genre>", "has_year_filter": True, "has_genre_filter": True},
+                    "reasoning": "This test applies when the task requires filtering movies by both year and genre.",
+                },
+            },
+            {
+                "prompt": "Show movies from <year>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILTER_FILM",
+                    "criteria": {"year": "<year>", "has_year_filter": True},
+                    "reasoning": "This test ensures that filtering by year correctly applies the given criteria.",
+                },
+            },
+            {
+                "prompt": "Show only <genre> movies",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILTER_FILM",
+                    "criteria": {"genre_name": "<genre>", "has_genre_filter": True},
+                    "reasoning": "This test verifies that filtering by genre works as expected.",
+                },
+            },
+            {
+                "prompt": "Show details for the movie <movie_name>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILTER_FILM",
+                    "criteria": {"genre_name": "<movie_name>"},
+                    "reasoning": "This test ensures that accessing a movie's details works correctly.",
+                },
             },
         ],
     ),
