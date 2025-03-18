@@ -2,7 +2,6 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, RootModel
 
@@ -25,7 +24,7 @@ class SolutionData(BaseModel):
 class TaskCache(RootModel):
     """Model for task cache entries"""
 
-    root: Dict[str, SolutionData] = {}
+    root: dict[str, SolutionData] = {}
 
     def __getitem__(self, key):
         return self.root[key]
@@ -43,7 +42,7 @@ class TaskCache(RootModel):
 class SolutionsCache(RootModel):
     """Model for the entire solutions cache"""
 
-    root: Dict[str, TaskCache] = {}
+    root: dict[str, TaskCache] = {}
 
     def __getitem__(self, key):
         return self.root[key]
@@ -88,7 +87,7 @@ class ConsolidatedSolutionCache:
             if not self.cache_file.exists():
                 return SolutionsCache()
 
-            with open(self.cache_file, 'r') as f:
+            with open(self.cache_file) as f:
                 data = json.load(f)
 
                 # Deserialize the solutions
@@ -100,22 +99,22 @@ class ConsolidatedSolutionCache:
 
                     for agent_id, agent_data in task_data.items():
                         # Create a TaskSolution from the serialized data
-                        if 'solution' in agent_data:
-                            solution_data = agent_data['solution']
+                        if "solution" in agent_data:
+                            solution_data = agent_data["solution"]
 
                             # Create the TaskSolution object
-                            task_solution = TaskSolution(task_id=solution_data.get('task_id', task_id), web_agent_id=solution_data.get('web_agent_id'))
+                            task_solution = TaskSolution(task_id=solution_data.get("task_id", task_id), web_agent_id=solution_data.get("web_agent_id"))
 
                             # Handle actions - create the BaseAction objects
-                            if 'actions' in solution_data and solution_data['actions']:
-                                for action_data in solution_data['actions']:
+                            if solution_data.get("actions"):
+                                for action_data in solution_data["actions"]:
                                     action = BaseAction.create_action(action_data)
                                     if action:
                                         task_solution.actions.append(action)
 
                             # Store in the cache
                             solutions_cache[task_id][agent_id] = SolutionData(
-                                agent_id=agent_data['agent_id'], agent_name=agent_data['agent_name'], timestamp=agent_data['timestamp'], solution=task_solution
+                                agent_id=agent_data["agent_id"], agent_name=agent_data["agent_name"], timestamp=agent_data["timestamp"], solution=task_solution
                             )
 
                 return solutions_cache
@@ -125,7 +124,7 @@ class ConsolidatedSolutionCache:
             return SolutionsCache()
 
         except Exception as e:
-            logger.error(f"Error reading solutions file: {str(e)}")
+            logger.error(f"Error reading solutions file: {e!s}")
             return SolutionsCache()
 
     def _write_cache(self, data: SolutionsCache) -> None:
@@ -141,16 +140,16 @@ class ConsolidatedSolutionCache:
             # Process each task and agent solution to use nested_model_dump for TaskSolution
             for task_id, task_cache in serialized_data.items():
                 for agent_id, solution_data in task_cache.items():
-                    if 'solution' in solution_data:
+                    if "solution" in solution_data:
                         # Replace the solution with its nested_model_dump version
                         solution_obj = data[task_id][agent_id].solution
-                        solution_data['solution'] = solution_obj.nested_model_dump()
+                        solution_data["solution"] = solution_obj.nested_model_dump()
 
-            with open(self.cache_file, 'w') as f:
+            with open(self.cache_file, "w") as f:
                 json.dump(serialized_data, f, indent=2)
 
         except Exception as e:
-            logger.error(f"Error writing to solutions file: {str(e)}")
+            logger.error(f"Error writing to solutions file: {e!s}")
             raise
 
     def solution_exists(self, task_id: str, agent_id: str) -> bool:
@@ -196,10 +195,10 @@ class ConsolidatedSolutionCache:
             return True
 
         except Exception as e:
-            logger.error(f"Error saving solution to cache: {str(e)}")
+            logger.error(f"Error saving solution to cache: {e!s}")
             return False
 
-    async def load_solution(self, task_id: str, agent_id: str) -> Optional[TaskSolution]:
+    async def load_solution(self, task_id: str, agent_id: str) -> TaskSolution | None:
         """
         Load a solution from the cache.
         Args:
@@ -217,7 +216,7 @@ class ConsolidatedSolutionCache:
             return solution_data.solution
 
         except Exception as e:
-            logger.error(f"Error loading solution from cache: {str(e)}")
+            logger.error(f"Error loading solution from cache: {e!s}")
             return None
 
     # Serialization is handled by TaskSolution.nested_model_dump()
@@ -234,10 +233,10 @@ class ConsolidatedSolutionCache:
             return True
 
         except Exception as e:
-            logger.error(f"Error clearing solution cache: {str(e)}")
+            logger.error(f"Error clearing solution cache: {e!s}")
             return False
 
-    def get_all_task_ids(self) -> List[str]:
+    def get_all_task_ids(self) -> list[str]:
         """
         Get all task IDs in the cache.
         Returns:
@@ -246,7 +245,7 @@ class ConsolidatedSolutionCache:
         cache = self._read_cache()
         return list(cache.keys())
 
-    def get_all_agent_ids_for_task(self, task_id: str) -> List[str]:
+    def get_all_agent_ids_for_task(self, task_id: str) -> list[str]:
         """
         Get all agent IDs for a specific task.
         Args:

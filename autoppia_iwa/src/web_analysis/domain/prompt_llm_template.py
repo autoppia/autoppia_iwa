@@ -5,7 +5,7 @@ from pathlib import Path
 
 # TODO: CHECK IF IT IS USEFUL AND PROBABLY WE HAVE TO MOVE IT TO LLM MODULE
 class PromptLLMTemplate:
-    def __init__(self, template: str, variables: list = None, values: dict = None, schema: dict = None):
+    def __init__(self, template: str, variables: list | None = None, values: dict | None = None, schema: dict | None = None):
         """
         Initializes the PromptLLMTemplate.
 
@@ -27,7 +27,7 @@ class PromptLLMTemplate:
             self.current_prompt = self.replace(self.values)
             self.replaced = True
 
-    def replace(self, values: dict = None) -> str:
+    def replace(self, values: dict | None = None) -> str:
         if values is None:
             return self.current_prompt
 
@@ -57,7 +57,7 @@ class PromptLLMTemplate:
         return cleaned_prompt
 
     @classmethod
-    def get_instance_from_file(cls, file_path: str, schema_path: str, values: dict = None):
+    def get_instance_from_file(cls, file_path: str, schema_path: str, values: dict | None = None):
         """Create an instance of PromptLLMTemplate from a file."""
         schema = None
         base_dir = Path(__file__).resolve().parents[3]
@@ -73,8 +73,8 @@ class PromptLLMTemplate:
 
             return cls(system_prompt_text, values=values, schema=schema)
         except FileNotFoundError as e:
-            raise FileNotFoundError(f"File not found: {e.filename}")
+            raise FileNotFoundError(f"File not found: {e.filename}") from e
         except json.JSONDecodeError as e:
-            raise Exception(f"Error parsing JSON schema: {e.msg}")
+            raise Exception(f"Error parsing JSON schema: {e.msg}") from e
         except Exception as e:
-            raise Exception(f"An error occurred: {e}")
+            raise Exception(f"An error occurred: {e}") from e

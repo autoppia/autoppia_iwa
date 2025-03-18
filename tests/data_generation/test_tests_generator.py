@@ -1,6 +1,5 @@
 import json
 import unittest
-from typing import List, Optional
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -26,7 +25,7 @@ RANDOM_URLS: bool = False
 # ============================================================
 
 
-async def load_tasks_from_json() -> Optional[List[Task]]:
+async def load_tasks_from_json() -> list[Task] | None:
     """
     Loads tasks from a project-specific JSON file if available and valid.
     """
@@ -46,7 +45,7 @@ async def load_tasks_from_json() -> Optional[List[Task]]:
 # ============================================================
 
 
-async def generate_tasks_for_project(demo_project: WebProject) -> List[Task]:
+async def generate_tasks_for_project(demo_project: WebProject) -> list[Task]:
     """
     Generates tasks for the given demo project.
     If USE_CACHED_TASKS is True, attempts to load from the project-specific cache first.
@@ -89,7 +88,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.IsolatedAsyncioTestCase):
         self.app_bootstrap = AppBootstrap()
         self.llm_service = self.app_bootstrap.container.llm_service()
 
-    async def _generate_tests_for_web_project(self) -> List[Task]:
+    async def _generate_tests_for_web_project(self) -> list[Task]:
         """Helper method to generate tasks and test cases."""
         web_project = await initialize_demo_webs_projects(demo_web_projects)
         tasks = await generate_tasks_for_project(web_project[0])

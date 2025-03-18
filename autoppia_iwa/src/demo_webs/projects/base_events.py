@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Type
+from typing import ClassVar
 
 from pydantic import BaseModel
 
@@ -10,7 +10,7 @@ class Event(BaseModel):
     event_name: str
     timestamp: int
     web_agent_id: str
-    user_id: Optional[int] = None
+    user_id: int | None = None
 
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses in the ActionRegistry."""
@@ -20,16 +20,16 @@ class Event(BaseModel):
     class ValidationCriteria(BaseModel):
         pass
 
-    def validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if criteria and hasattr(criteria, "model_fields"):
             for field_name in criteria.model_fields:
                 field_value = getattr(criteria, field_name)
                 if isinstance(field_value, str):
-                    replaced_value = field_value.replace('<web_agent_id>', self.web_agent_id)
+                    replaced_value = field_value.replace("<web_agent_id>", self.web_agent_id)
                     setattr(criteria, field_name, replaced_value)
         return self._validate_criteria(criteria)
 
-    def _validate_criteria(self, criteria: Optional[ValidationCriteria] = None) -> bool:
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """Check if this event meets the validation criteria"""
         return True
 
@@ -52,9 +52,9 @@ class Event(BaseModel):
         return cls(event_name=backend_event.event_name, timestamp=timestamp, web_agent_id=web_agent_id, user_id=user_id)
 
     @staticmethod
-    def parse_all(backend_events: List["BackendEvent"]) -> List["Event"]:
+    def parse_all(backend_events: list["BackendEvent"]) -> list["Event"]:
         """Parse all backend events and return appropriate typed events"""
-        events: List[Event] = []
+        events: list[Event] = []
         # TODO: If we have more types we should include here
         # TODO: Moving (ALL_BACKEND_EVENT_TYPES) here to resolve circular import error
         from autoppia_iwa.src.demo_webs.projects.cinema_1.events import BACKEND_EVENT_TYPES as web_1_backend_types
@@ -87,17 +87,17 @@ class Event(BaseModel):
 class EventRegistry:
     """Registry for storing and managing Event subclasses."""
 
-    _registry: Dict[str, Type[Event]] = {}
+    _registry: ClassVar[dict[str, type[Event]]] = {}
 
     @classmethod
-    def register(cls, event_class: Type[Event]) -> None:
+    def register(cls, event_class: type[Event]) -> None:
         """Register an Event subclass."""
         if not issubclass(event_class, Event):
             raise ValueError(f"{event_class.__name__} is not a subclass of Event")
         cls._registry[event_class.__name__] = event_class
 
     @classmethod
-    def get_event_class(cls, event_name: str) -> Type[Event]:
+    def get_event_class(cls, event_name: str) -> type[Event]:
         """Retrieve an Event subclass by its name."""
         if event_name not in cls._registry:
             raise ValueError(f"Event class '{event_name}' is not registered")

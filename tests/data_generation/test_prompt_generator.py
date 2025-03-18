@@ -7,7 +7,7 @@ from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 START_URL = "http://localhost:8000/login"
-RELEVANT_DATA = {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}}
+RELEVANT_DATA = {"authorization": {"email": "employee@employee.com", "password": "employee"}}
 
 
 class TestTaskPromptGenerator(unittest.IsolatedAsyncioTestCase):

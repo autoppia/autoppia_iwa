@@ -1,6 +1,7 @@
+import contextlib
 import difflib
 from io import BytesIO
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from bs4 import BeautifulSoup, Comment
 from PIL import Image
@@ -10,7 +11,7 @@ from xmldiff import main
 from autoppia_iwa.src.llms.infrastructure.ui_parser_service import UIParserService
 
 
-async def get_html_and_screenshot(page_url: str) -> Tuple[str, str, Image.Image, str]:
+async def get_html_and_screenshot(page_url: str) -> tuple[str, str, Image.Image, str]:
     """
     Navigates to page_url using Playwright in headless mode, extracts & cleans HTML,
     captures a screenshot, and uses UIParserService to generate a textual summary
@@ -101,20 +102,16 @@ def clean_html(html_content: str) -> str:
     # Remove scripts, styles, metas, links, noscript
     try:
         for tag in soup(["script", "style", "noscript", "meta", "link"]):
-            try:
+            with contextlib.suppress(Exception):
                 tag.decompose()
-            except Exception:
-                pass
     except Exception:
         pass
 
     # Remove HTML comments
     try:
         for comment in soup.find_all(string=lambda t: isinstance(t, Comment)):
-            try:
+            with contextlib.suppress(Exception):
                 comment.extract()
-            except Exception:
-                pass
     except Exception:
         pass
 
@@ -128,24 +125,18 @@ def clean_html(html_content: str) -> str:
                     except Exception:
                         style_lc = ""
                     if "display: none" in style_lc or "visibility: hidden" in style_lc:
-                        try:
+                        with contextlib.suppress(Exception):
                             tag.decompose()
-                        except Exception:
-                            pass
                         continue
                 if tag.has_attr("hidden"):
-                    try:
+                    with contextlib.suppress(Exception):
                         tag.decompose()
-                    except Exception:
-                        pass
                     continue
                 # Remove inline event handlers and style/id/class attributes
                 for attr in list(tag.attrs):
                     if attr.startswith("on") or attr in ["class", "id", "style"]:
-                        try:
+                        with contextlib.suppress(Exception):
                             del tag[attr]
-                        except Exception:
-                            pass
             except Exception:
                 pass
     except Exception:
@@ -170,7 +161,7 @@ def clean_html(html_content: str) -> str:
         return ""
 
 
-def detect_interactive_elements(cleaned_html: str) -> Dict[str, Any]:
+def detect_interactive_elements(cleaned_html: str) -> dict[str, Any]:
     """
     Inspects the cleaned HTML to find possible interactive elements:
       - forms (with their inputs)
@@ -208,7 +199,7 @@ def detect_interactive_elements(cleaned_html: str) -> Dict[str, Any]:
     return summary
 
 
-def generate_html_differences(html_list: List[str]) -> List[str]:
+def generate_html_differences(html_list: list[str]) -> list[str]:
     """Generate a list of initial HTML followed by diffs between consecutive HTMLs."""
     if not html_list:
         return []
@@ -219,8 +210,8 @@ def generate_html_differences(html_list: List[str]) -> List[str]:
     for current_html in html_list[1:]:
         prev_lines = prev_html.splitlines(keepends=True)
         current_lines = current_html.splitlines(keepends=True)
-        diff_generator = difflib.unified_diff(prev_lines, current_lines, lineterm='')
-        diff_str = ''.join(diff_generator)
+        diff_generator = difflib.unified_diff(prev_lines, current_lines, lineterm="")
+        diff_str = "".join(diff_generator)
         if diff_str:
             diffs.append(diff_str)
         prev_html = current_html
@@ -228,7 +219,7 @@ def generate_html_differences(html_list: List[str]) -> List[str]:
     return diffs
 
 
-def generate_html_differences_with_xmldiff(html_list: List[str]) -> List[str]:
+def generate_html_differences_with_xmldiff(html_list: list[str]) -> list[str]:
     """Generate a list of initial HTML followed by diffs between consecutive HTMLs using xmldiff."""
     if not html_list:
         return []

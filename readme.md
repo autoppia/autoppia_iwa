@@ -145,4 +145,5 @@ visit [Autoppia Web Agents Subnet (Bittensor)](https://github.com/autoppia/autop
 © 2024 Autoppia. All rights reserved.
 
 ---
-*Built with ❤️ by the Autoppia Team*
+
+_Built with ❤️ by the Autoppia Team_

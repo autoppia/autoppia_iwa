@@ -57,8 +57,8 @@ We use the following pre-commit hooks (configured in `.pre-commit-config.yaml`):
    git commit -m "Your descriptive commit message"
    ```
 
-    - `pre-commit` will run automatically before the commit.
-    - Fix any issues before committing again if necessary.
+   - `pre-commit` will run automatically before the commit.
+   - Fix any issues before committing again if necessary.
 
 4. **Push your branch and create a pull request**
 

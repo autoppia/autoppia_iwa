@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[3]))
-from typing import List, Optional
 
 from dependency_injector.wiring import Provide
 
@@ -26,7 +25,7 @@ def get_backend_url(index: int, symetric=True):
         return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}"
 
 
-async def initialize_demo_webs_projects(demo_web_projects: List[WebProject]):
+async def initialize_demo_webs_projects(demo_web_projects: list[WebProject]):
     for demo_web_project in demo_web_projects:
         await _load_web_analysis(demo_web_project)
     return demo_web_projects
@@ -34,7 +33,7 @@ async def initialize_demo_webs_projects(demo_web_projects: List[WebProject]):
 
 async def _run_web_analysis(
     demo_web_project: WebProject, llm_service: ILLM = Provide[DIContainer.llm_service], web_analysis_repository: BaseMongoRepository = Provide[DIContainer.analysis_repository]
-) -> Optional[DomainAnalysis]:
+) -> DomainAnalysis | None:
     """
     Executes the web analysis pipeline to gather information from the target page.
     """

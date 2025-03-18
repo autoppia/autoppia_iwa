@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.evaluation.classes import EvaluationResult
@@ -31,7 +30,7 @@ class IEvaluator(ABC):
         """
 
     @abstractmethod
-    async def evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
+    async def evaluate_task_solutions(self, task: Task, task_solutions: list[TaskSolution]) -> list[EvaluationResult]:
         """
         Evaluates multiple task solutions for a single task and returns a list of evaluation results.
 

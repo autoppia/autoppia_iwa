@@ -2,7 +2,6 @@
 
 import asyncio
 import statistics
-from typing import List
 
 import matplotlib.pyplot as plt
 
@@ -31,7 +30,7 @@ async def generate_tasks():
     web_project = test_projects[0]
     config = TaskGenerationConfig(save_task_in_db=False, num_of_urls=NUM_OF_URLS, prompts_per_url=NUM_OF_PROMPTS)
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
-    tasks: List[Task] = await pipeline.generate()
+    tasks: list[Task] = await pipeline.generate()
     return tasks
 
 
@@ -50,7 +49,7 @@ async def evaluate_project_for_agent(agent: IWebAgent, project, tasks, results):
         results[agent.id]["projects"][project.name].append(score)
 
 
-def compute_statistics(scores: List[float]) -> dict:
+def compute_statistics(scores: list[float]) -> dict:
     if scores:
         return {
             "count": len(scores),
@@ -91,13 +90,13 @@ def plot_agent_results(results, agents):
         agent_avg_scores.append(avg_score)
 
     plt.figure(figsize=(8, 6))
-    bars = plt.bar(agent_names, agent_avg_scores, color='skyblue')
+    bars = plt.bar(agent_names, agent_avg_scores, color="skyblue")
     plt.ylim(0, 10)
-    plt.ylabel('Score')
-    plt.title('Agent Performance')
-    for bar, score in zip(bars, agent_avg_scores):
+    plt.ylabel("Score")
+    plt.title("Agent Performance")
+    for bar, score in zip(bars, agent_avg_scores, strict=False):
         yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2, yval, f'{score:.1f}', ha='center', va='bottom')
+        plt.text(bar.get_x() + bar.get_width() / 2, yval, f"{score:.1f}", ha="center", va="bottom")
     plt.savefig("output.png")
 
 
@@ -119,7 +118,7 @@ def judge_tasks_feasibility(tasks, results, agents):
     for agent in agents:
         agent_scores = results[agent.id]["global_scores"]
         judge_input += f"  {agent.name} => Scores: {agent_scores}\n"
-    judge_input += "\nPlease evaluate if these tasks were feasible, whether the tests seem valid, and " "offer suggestions for improving task/test generation."
+    judge_input += "\nPlease evaluate if these tasks were feasible, whether the tests seem valid, and offer suggestions for improving task/test generation."
 
     judge_response = LLM_SERVICE.predict(messages=[{"role": "user", "content": judge_input}])
     print("\n----- LLM Feasibility Assessment -----")
@@ -129,7 +128,7 @@ def judge_tasks_feasibility(tasks, results, agents):
 async def main():
     tasks = await generate_tasks()
 
-    agents: List[IWebAgent] = [
+    agents: list[IWebAgent] = [
         RandomClickerWebAgent(),
         # ApifiedWebAgent(name="Autoppia-agent", host="localhost", port=8080),
     ]

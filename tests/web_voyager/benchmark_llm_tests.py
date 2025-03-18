@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from rich.console import Console
 from rich.table import Table
@@ -10,7 +10,7 @@ from autoppia_iwa.src.shared.web_voyager_utils import load_jsonl_file
 SRC_PATH = Path("autoppia_iwa/judge_tests_usage_logs.jsonl")
 
 
-def calculate_metrics_by_test_type(data: List[Dict[str, Any]]) -> Dict[str, Dict[str, float]]:
+def calculate_metrics_by_test_type(data: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
     """
     Calculates metrics grouped by test type and final test result.
 
@@ -50,7 +50,7 @@ def calculate_metrics_by_test_type(data: List[Dict[str, Any]]) -> Dict[str, Dict
             metrics["failed_tasks"] += 1
 
     # Calculate averages for each test type
-    for test_type, metrics in metrics_by_test_type.items():
+    for _, metrics in metrics_by_test_type.items():
         total_tasks = metrics["total_tasks"]
         metrics["avg_cost"] = metrics["total_cost"] / total_tasks if total_tasks > 0 else 0
         metrics["avg_duration"] = metrics["total_duration"] / total_tasks if total_tasks > 0 else 0
@@ -60,7 +60,7 @@ def calculate_metrics_by_test_type(data: List[Dict[str, Any]]) -> Dict[str, Dict
     return metrics_by_test_type
 
 
-def display_metrics_by_test_type(metrics_by_test_type: Dict[str, Dict[str, float]]):
+def display_metrics_by_test_type(metrics_by_test_type: dict[str, dict[str, float]]):
     """
     Displays metrics grouped by test type in a rich table.
 

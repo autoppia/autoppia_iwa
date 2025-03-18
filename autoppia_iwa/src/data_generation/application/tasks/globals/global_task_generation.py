@@ -2,7 +2,7 @@ import asyncio
 import json
 import random
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from dependency_injector.wiring import Provide
 from loguru import logger
@@ -33,12 +33,12 @@ class GlobalTaskGenerationPipeline:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 
-    async def generate(self, prompts_per_use_case: int = 5) -> List[Task]:
+    async def generate(self, prompts_per_use_case: int = 5) -> list[Task]:
         """
         Generate tasks for all use cases in the web project.
         """
         logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each.")
-        all_tasks: List[Task] = []
+        all_tasks: list[Task] = []
 
         # If there are no use cases, just return empty
         if not self.web_project.use_cases:
@@ -52,13 +52,13 @@ class GlobalTaskGenerationPipeline:
                 all_tasks.extend(tasks_for_use_case)
                 logger.info(f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}'")
             except Exception as e:
-                logger.error(f"Error generating tasks for {use_case.name}: {str(e)}")
+                logger.error(f"Error generating tasks for {use_case.name}: {e!s}")
                 continue
 
         logger.info(f"Total generated tasks across all use cases: {len(all_tasks)}")
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5) -> List[Task]:
+    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
         """
@@ -75,7 +75,7 @@ class GlobalTaskGenerationPipeline:
         url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
 
-        tasks: List[Task] = []
+        tasks: list[Task] = []
         for prompt_text in prompt_list:
             try:
                 replaced_prompt = use_case.apply_replacements(prompt_text)
@@ -92,13 +92,13 @@ class GlobalTaskGenerationPipeline:
                 )
                 tasks.append(task_obj)
             except Exception as ex:
-                logger.error(f"Could not assemble Task for prompt '{prompt_text}': {str(ex)}")
+                logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
 
         # Shuffle them if you wish, for variety
         random.shuffle(tasks)
         return tasks
 
-    async def _call_llm_with_retry(self, llm_prompt: str) -> List[str]:
+    async def _call_llm_with_retry(self, llm_prompt: str) -> list[str]:
         """
         Calls the LLM with the given prompt, parsing the response as a list of strings with retry.
         Returns a list of prompt strings.
@@ -118,14 +118,14 @@ class GlobalTaskGenerationPipeline:
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))
             except Exception as e:
-                logger.error(f"Error on LLM call attempt {attempt + 1}: {str(e)}")
+                logger.error(f"Error on LLM call attempt {attempt + 1}: {e!s}")
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))
 
         logger.error(f"All {self.max_retries} attempts to parse LLM response have failed.")
         return []
 
-    async def _parse_llm_response(self, resp_text: str) -> List[str]:
+    async def _parse_llm_response(self, resp_text: str) -> list[str]:
         """
         Helper method to parse the LLM response as a list of strings.
         """
@@ -133,14 +133,14 @@ class GlobalTaskGenerationPipeline:
             # Clean up possible Markdown code blocks like ```json ... ```
             cleaned_text = resp_text
             if resp_text.strip().startswith("'```") or resp_text.strip().startswith("```"):
-                code_block_pattern = r'```(?:json)?\n([\s\S]*?)\n```'
+                code_block_pattern = r"```(?:json)?\n([\s\S]*?)\n```"
                 matches = re.search(code_block_pattern, resp_text)
                 if matches:
                     cleaned_text = matches.group(1)
                 else:
-                    lines = resp_text.strip().split('\n')
+                    lines = resp_text.strip().split("\n")
                     if lines[0].startswith("'```") or lines[0].startswith("```"):
-                        cleaned_text = '\n'.join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
+                        cleaned_text = "\n".join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
 
             # Now parse the cleaned JSON
             data = json.loads(cleaned_text)
@@ -168,12 +168,12 @@ class GlobalTaskGenerationPipeline:
             return []
 
         except Exception as e:
-            logger.error(f"Unexpected error parsing LLM response: {str(e)}")
+            logger.error(f"Unexpected error parsing LLM response: {e!s}")
             return []
 
     @staticmethod
     def _assemble_task(
-        web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: Optional[Image.Image], screenshot_desc: str, use_case: UseCase, relevant_data: Dict[str, Any]
+        web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: Image.Image | None, screenshot_desc: str, use_case: UseCase, relevant_data: dict[str, Any]
     ) -> Task:
         """
         Assembles a final Task object from the prompt string and loaded page info.

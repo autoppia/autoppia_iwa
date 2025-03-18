@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass, field, fields
-from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -20,15 +19,15 @@ class EventTriggered:
 @dataclass
 class Element:
     tag: str
-    attributes: Dict[str, str]
+    attributes: dict[str, str]
     textContent: str
-    children: List["Element"] = field(default_factory=list)
-    id: Optional[str] = None
-    element_id: Optional[int] = None
-    parent_element_id: Optional[int] = None
-    path: Optional[str] = None
-    events_triggered: List[EventTriggered] = field(default_factory=list)
-    analysis: Optional[str] = None
+    children: list["Element"] = field(default_factory=list)
+    id: str | None = None
+    element_id: int | None = None
+    parent_element_id: int | None = None
+    path: str | None = None
+    events_triggered: list[EventTriggered] = field(default_factory=list)
+    analysis: str | None = None
 
     def to_dict(self):
         field_names = [f.name for f in fields(self)]
@@ -48,7 +47,7 @@ class Element:
         children_size = OpenAIUtilsMixin.num_tokens_from_string(json.dumps(element_dict.get("children", [])))
         return element_size + children_size
 
-    def analyze(self, max_tokens, analyze_element_function, analyze_parent_function) -> Dict:
+    def analyze(self, max_tokens, analyze_element_function, analyze_parent_function) -> dict:
         tokens = self.calculate_element_size()
         result = {"tag": self.tag, "size": tokens, "analysis": None, "children": []}
 

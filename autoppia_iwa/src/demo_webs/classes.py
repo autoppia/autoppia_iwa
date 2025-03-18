@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Optional, Type
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -12,10 +13,10 @@ class UseCase(BaseModel):
     name: str
     description: str
 
-    event: Type[Event]
+    event: type[Event]
     event_source_code: str
-    examples: List[Dict]
-    replace_func: Optional[Callable[[str], str]] = Field(default=None, exclude=True)
+    examples: list[dict]
+    replace_func: Callable[[str], str] | None = Field(default=None, exclude=True)
 
     class Config:
         arbitrary_types_allowed = True
@@ -25,14 +26,14 @@ class UseCase(BaseModel):
             return self.replace_func(text, *args, **kwargs)
         return text
 
-    def check_success(self, events: List[Any]) -> bool:
+    def check_success(self, events: list[Any]) -> bool:
         """
         Check if the use case was successful based on the events that occurred
         """
         # Basic implementation - check if any event of the expected type exists
         return any(isinstance(event, self.event) for event in events)
 
-    def get_example_prompts_from_use_case(self) -> List[str]:
+    def get_example_prompts_from_use_case(self) -> list[str]:
         """
         Extract all prompt strings from the examples
         """
@@ -53,7 +54,7 @@ class UseCase(BaseModel):
         return serialized
 
     @classmethod
-    def deserialize(cls, data: dict) -> 'UseCase':
+    def deserialize(cls, data: dict) -> "UseCase":
         """Deserialize a dictionary to a UseCase object."""
         from autoppia_iwa.src.demo_webs.projects.base_events import EventRegistry
 
@@ -81,13 +82,13 @@ class WebProject(BaseModel):
     backend_url: str = Field(..., description="URL of the backend server")
     frontend_url: str = Field(..., description="URL of the frontend application")
     is_web_real: bool = False
-    urls: List[str] = []
-    domain_analysis: Optional[DomainAnalysis] = None
-    events: List[Type] = Field(default_factory=dict, description="Structured events information")
+    urls: list[str] = []
+    domain_analysis: DomainAnalysis | None = None
+    events: list[type] = Field(default_factory=dict, description="Structured events information")
     # events: List[Any] = Field(default_factory=dict, description="Structured events information")
-    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
-    models: List[Any] = []
-    use_cases: List[UseCase] = None
+    relevant_data: dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
+    models: list[Any] = []
+    use_cases: list[UseCase] = None
 
 
 class BackendEvent(BaseModel):
@@ -97,7 +98,7 @@ class BackendEvent(BaseModel):
     """
 
     event_name: str
-    data: Optional[Dict[str, Any]] = None
-    user_id: Optional[int] = None
-    web_agent_id: Optional[str] = None
-    timestamp: Optional[Any] = None
+    data: dict[str, Any] | None = None
+    user_id: int | None = None
+    web_agent_id: str | None = None
+    timestamp: Any | None = None

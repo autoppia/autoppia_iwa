@@ -3,7 +3,6 @@ import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from loguru import logger
 
@@ -52,7 +51,7 @@ config = WebVoyagerConfig()
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
-AGENTS: List[IWebAgent] = [
+AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(name="Random-clicker"),
     ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=150),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
@@ -65,7 +64,7 @@ visualizer = SubnetVisualizer()
 
 
 @visualize_task(visualizer)
-async def generate_tasks(tasks_data: TaskData) -> List[Task]:
+async def generate_tasks(tasks_data: TaskData) -> list[Task]:
     """Generate tasks with caching support."""
     success_criteria = tasks_data.ques
     tests = [JudgeBaseOnScreenshot(success_criteria=success_criteria), JudgeBaseOnHTML(success_criteria=success_criteria)]
@@ -112,13 +111,13 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
     return result
 
 
-async def generate_solutions(agent: IWebAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
+async def generate_solutions(agent: IWebAgent, tasks: list[Task], timing_metrics: TimingMetrics) -> dict[str, TaskSolution]:
     """Generate or load solutions for a given agent and tasks."""
     solutions = {}
     logger.info(f"\nAgent: {agent.name}")
 
     for task in tasks:
-        task_solution: Optional[TaskSolution] = None
+        task_solution: TaskSolution | None = None
 
         # Check if solution should be loaded from cache
         if config.use_cached_solutions and solution_cache.solution_exists(task.id, agent.id):
@@ -130,7 +129,7 @@ async def generate_solutions(agent: IWebAgent, tasks: List[Task], timing_metrics
                 else:
                     logger.warning(f"    Failed to load cached solution for {task.id}, will generate new one")
             except Exception as e:
-                logger.error(f"    Error loading cached solution: {str(e)}")
+                logger.error(f"    Error loading cached solution: {e!s}")
 
         # Generate new solution if needed
         if task_solution is None:
@@ -156,7 +155,7 @@ async def generate_solutions(agent: IWebAgent, tasks: List[Task], timing_metrics
                 else:
                     logger.warning("Failed to cache solution")
             except Exception as e:
-                logger.error(f"Error caching solution: {str(e)}")
+                logger.error(f"Error caching solution: {e!s}")
 
         # Store solution for evaluation phase
         solutions[task.id] = task_solution
@@ -166,10 +165,10 @@ async def generate_solutions(agent: IWebAgent, tasks: List[Task], timing_metrics
 
 async def evaluate_solutions(
     agent: IWebAgent,
-    tasks: List[Task],
-    solutions: Dict[str, TaskSolution],
+    tasks: list[Task],
+    solutions: dict[str, TaskSolution],
     demo_project: WebProject,
-) -> Dict[str, Dict]:
+) -> dict[str, dict]:
     """Evaluate task solutions."""
     results = {}
     logger.info(f"\nEvaluating solutions for Agent: {agent.name}")
@@ -182,7 +181,7 @@ async def evaluate_solutions(
     return results
 
 
-async def run_evaluation(demo_project: WebProject, tasks: List[Task], timing_metrics: TimingMetrics):
+async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics):
     """Orchestrate solution generation and evaluation."""
     all_solutions = {agent.id: await generate_solutions(agent, tasks, timing_metrics) for agent in AGENTS}
     results = {agent.id: await evaluate_solutions(agent, tasks, all_solutions[agent.id], demo_project) for agent in AGENTS}

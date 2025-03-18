@@ -1,6 +1,6 @@
 import copy
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from dependency_injector.wiring import Provide
 
@@ -48,7 +48,7 @@ class WebLLMAnalyzer:
         )
         return self._analyze_prompt_template(template=template)
 
-    def analyze_element_parent(self, element: Element, children_analysis: List) -> LLMWebAnalysis:
+    def analyze_element_parent(self, element: Element, children_analysis: list) -> LLMWebAnalysis:
         element_without_children = copy.deepcopy(element)
         del element_without_children.children
 
@@ -78,14 +78,14 @@ class WebLLMAnalyzer:
         )
         return self._analyze_prompt_template(template=template)
 
-    def _analyze_prompt_template(self, template: PromptLLMTemplate) -> Optional[LLMWebAnalysis]:
+    def _analyze_prompt_template(self, template: PromptLLMTemplate) -> LLMWebAnalysis | None:
         prompt = PromptLLMTemplate.clean_prompt(template.current_prompt)
         json_schema = template.get_schema()
         llm_message = self._create_llm_message(prompt)
 
-        analysis: Optional[LLMWebAnalysis] = None
+        analysis: LLMWebAnalysis | None = None
         tries = 3
-        for i in range(tries):
+        for _i in range(tries):
             try:
                 response: str = self.llm_service.predict(llm_message, json_format=True, schema=json_schema)
                 json_result = self._parse_json_response(response)
@@ -101,16 +101,16 @@ class WebLLMAnalyzer:
         return analysis
 
     @staticmethod
-    def _create_llm_message(prompt: str, system_instructions: str = CONVERT_RESPONSE_TO_JSON_PROMPT) -> List[Dict[str, str]]:
+    def _create_llm_message(prompt: str, system_instructions: str = CONVERT_RESPONSE_TO_JSON_PROMPT) -> list[dict[str, str]]:
         return [
             {"role": "system", "content": system_instructions.strip()},
             {"role": "user", "content": prompt.strip()},
         ]
 
     @staticmethod
-    def _parse_json_response(response: str) -> Dict[Any, Any]:
+    def _parse_json_response(response: str) -> dict[Any, Any]:
         """Parses a JSON response from the LLM."""
         try:
             return json.loads(response)
         except json.JSONDecodeError as e:
-            raise ValueError(f"Failed to parse JSON response: {e}")
+            raise ValueError(f"Failed to parse JSON response: {e}") from e

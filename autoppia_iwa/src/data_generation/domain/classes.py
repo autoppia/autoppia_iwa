@@ -1,7 +1,7 @@
 # file: data_generation/domain/classes.py
 
 import uuid
-from typing import Annotated, Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -23,7 +23,7 @@ class BrowserSpecification(BaseModel):
 
 
 # The union of test classes for polymorphic deserialization
-TestUnion = Annotated[Union[CheckUrlTest, FindInHtmlTest, CheckEventTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot], Field(discriminator="type")]
+TestUnion = Annotated[CheckUrlTest | FindInHtmlTest | CheckEventTest | JudgeBaseOnHTML | JudgeBaseOnScreenshot, Field(discriminator="type")]
 
 
 class Task(BaseModel):
@@ -34,20 +34,20 @@ class Task(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the task")
     scope: Literal["global", "local"] = Field(default="local", description="Task scope: 'global' for system-wide tasks, 'local' for specific context tasks")
     is_web_real: bool = Field(default=False, description="Indicates if the task operates on a real web environment versus simulation")
-    web_project_id: Optional[str] = Field(default=None, description="Web project ID")
+    web_project_id: str | None = Field(default=None, description="Web project ID")
     url: str = Field(..., description="Target URL where the task will be executed")
     prompt: str = Field(..., description="Natural language description of the task objectives and requirements")
     html: str = Field(default_factory=str, description="Complete HTML content of the target page")
     clean_html: str = Field(default_factory=str, description="Optimized HTML content with reduced overhead for processing")
-    interactive_elements: Optional[str] = Field(default=None, description="Mapping of interactive elements found in the HTML content, including buttons, forms, etc.")
-    screenshot: Optional[str] = Field(default=None, description="Pil Image of the task environment or webpage encoded in base64 and stringify")
-    screenshot_description: Optional[str] = Field(default=None, description="Textual description of the screenshot content and relevant elements")
+    interactive_elements: str | None = Field(default=None, description="Mapping of interactive elements found in the HTML content, including buttons, forms, etc.")
+    screenshot: str | None = Field(default=None, description="Pil Image of the task environment or webpage encoded in base64 and stringify")
+    screenshot_description: str | None = Field(default=None, description="Textual description of the screenshot content and relevant elements")
     specifications: BrowserSpecification = Field(default_factory=BrowserSpecification, description="Browser configuration and requirements for task execution")
-    tests: List[TestUnion] = Field(default_factory=list, description="Collection of validation tests that verify the task")
-    milestones: Optional[List["Task"]] = Field(default=None, description="Ordered list of Subtasks that must be completed sequentially")
-    relevant_data: Dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
-    success_criteria: Optional[str] = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
-    use_case: Optional[UseCase] = None
+    tests: list[TestUnion] = Field(default_factory=list, description="Collection of validation tests that verify the task")
+    milestones: list["Task"] | None = Field(default=None, description="Ordered list of Subtasks that must be completed sequentially")
+    relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
+    success_criteria: str | None = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
+    use_case: UseCase | None = None
 
     class Config:
         extra = "allow"
@@ -66,7 +66,7 @@ class Task(BaseModel):
             dump["screenshot"] = "None"
         return dump
 
-    def nested_model_dump(self, *args, **kwargs) -> Dict[str, Any]:
+    def nested_model_dump(self, *args, **kwargs) -> dict[str, Any]:
         base_dump = self.model_dump(*args, **kwargs)
         # If you want to ensure tests are fully serialized
         base_dump["tests"] = [test.model_dump() for test in self.tests]
@@ -160,10 +160,10 @@ class Task(BaseModel):
         # Update relevant_data in the copy
         for key, value in task_copy.relevant_data.items():
             if isinstance(value, str):
-                task_copy.relevant_data[key] = value.replace('<web_agent_id>', web_agent_id)
+                task_copy.relevant_data[key] = value.replace("<web_agent_id>", web_agent_id)
 
         # Update prompt in the copy
-        task_copy.prompt = task_copy.prompt.replace('<web_agent_id>', web_agent_id)
+        task_copy.prompt = task_copy.prompt.replace("<web_agent_id>", web_agent_id)
 
         return task_copy
 

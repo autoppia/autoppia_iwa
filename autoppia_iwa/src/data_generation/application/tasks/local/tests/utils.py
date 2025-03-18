@@ -1,8 +1,8 @@
 import re
-from typing import Any, Dict
+from typing import Any
 
 
-def normalize_test_config(test_config: Dict[str, Any]) -> Dict[str, Any]:
+def normalize_test_config(test_config: dict[str, Any]) -> dict[str, Any]:
     """
     Converts LLM-produced test_config (with nested 'fields') into a flattened structure.
     """

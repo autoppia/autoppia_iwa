@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -9,7 +9,7 @@ class TestResult(BaseModel):
     """Represents the evaluation result of a single test."""
 
     success: bool  # True if the test passed, False otherwise
-    extra_data: Optional[dict] = None  # Additional data related to the test
+    extra_data: dict | None = None  # Additional data related to the test
 
 
 class Feedback(BaseModel):
@@ -22,8 +22,8 @@ class Feedback(BaseModel):
     total_execution_time: float  # Total time taken for execution
     time_penalty: float  # Penalty points for exceeding expected time
     critical_test_penalty: int  # Penalty points for failing critical tests
-    test_results: List[TestResult]  # Detailed test results
-    execution_history: List[ActionExecutionResult]  # Detailed execution logs
+    test_results: list[TestResult]  # Detailed test results
+    execution_history: list[ActionExecutionResult]  # Detailed execution logs
 
     def to_text(self) -> str:
         """Generates a human-readable textual summary."""
@@ -55,13 +55,13 @@ class EvaluationStats(BaseModel):
     web_agent_id: str
     task_id: str
     action_count: int
-    action_types: Dict[str, int] = Field(default_factory=dict)
+    action_types: dict[str, int] = Field(default_factory=dict)
 
     # Timing stats
     start_time: float
     total_time: float = 0
     browser_setup_time: float = 0
-    action_execution_times: List[float] = Field(default_factory=list)
+    action_execution_times: list[float] = Field(default_factory=list)
     test_execution_time: float = 0
     random_clicker_time: float = 0
 
@@ -76,7 +76,7 @@ class EvaluationStats(BaseModel):
     had_errors: bool = False
     error_message: str = ""
 
-    def get_summary_dict(self) -> Dict[str, Any]:
+    def get_summary_dict(self) -> dict[str, Any]:
         """Get a dictionary of summary statistics"""
         action_time = sum(self.action_execution_times) if self.action_execution_times else 0
         return {
@@ -98,15 +98,15 @@ class EvaluationResult(BaseModel):
     """Encapsulates the output of a task evaluation."""
 
     final_score: float = 0
-    test_results_matrix: List[List[TestResult]]  # List of test evaluation results
-    execution_history: List[ActionExecutionResult]  # History of all actions executed
-    feedback: Optional[Feedback] = None  # Feedback generated during the evaluation
-    web_agent_id: Optional[str] = None
+    test_results_matrix: list[list[TestResult]]  # List of test evaluation results
+    execution_history: list[ActionExecutionResult]  # History of all actions executed
+    feedback: Feedback | None = None  # Feedback generated during the evaluation
+    web_agent_id: str | None = None
     raw_score: float = 0.0
     random_clicker_score: float = 0.0
-    random_clicker_passed_tests_indexes: List[int] = Field(default_factory=list)
+    random_clicker_passed_tests_indexes: list[int] = Field(default_factory=list)
     evaluation_time: float = 0.0  # Time taken to evaluate this solution
-    stats: Optional[EvaluationStats] = None
+    stats: EvaluationStats | None = None
 
     def model_dump(self, *args, **kwargs):
         base_dump = super().model_dump(*args, **kwargs)

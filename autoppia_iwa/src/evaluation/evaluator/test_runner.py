@@ -1,5 +1,3 @@
-from typing import List
-
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.evaluation.classes import TestResult
@@ -7,7 +5,7 @@ from autoppia_iwa.src.execution.classes import BrowserSnapshot
 
 
 class TestRunner:
-    def __init__(self, tests: List[BaseTaskTest]):
+    def __init__(self, tests: list[BaseTaskTest]):
         self.tests = tests
 
     async def run_tests(
@@ -15,10 +13,10 @@ class TestRunner:
         web_project: WebProject,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         current_action_index: int,
         total_iterations: int,
-    ) -> List[TestResult]:
+    ) -> list[TestResult]:
         """
         Run all tests for a single snapshot (after a single action).
 

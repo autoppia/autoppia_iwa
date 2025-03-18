@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime
-from typing import List, Optional
 
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
@@ -18,7 +17,7 @@ def get_cache_filename(project: WebProject, task_cache_dir: str) -> str:
     return os.path.join(task_cache_dir, f"{safe_name}_tasks.json")
 
 
-async def save_tasks_to_json(tasks: List[Task], project: WebProject, task_cache_dir: str) -> bool:
+async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_dir: str) -> bool:
     """
     Save tasks to a project-specific JSON file.
     """
@@ -26,17 +25,17 @@ async def save_tasks_to_json(tasks: List[Task], project: WebProject, task_cache_
     try:
         cache_data = {"project_id": project.id, "project_name": project.name, "timestamp": datetime.now().isoformat(), "tasks": [task.serialize() for task in tasks]}
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             json.dump(cache_data, f, indent=2)
 
         print(f"Tasks for project '{project.name}' saved to {filename}")
         return True
     except Exception as e:
-        print(f"Error saving tasks to {filename}: {str(e)}")
+        print(f"Error saving tasks to {filename}: {e!s}")
         return False
 
 
-async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> Optional[List[Task]]:
+async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list[Task] | None:
     """
     Load tasks from a project-specific JSON file if it exists.
     """
@@ -46,7 +45,7 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> Opti
         return None
 
     try:
-        with open(filename, 'r') as f:
+        with open(filename) as f:
             cache_data = json.load(f)
 
         # Verify this cache belongs to the correct project
@@ -60,11 +59,11 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> Opti
         print(f"Loaded {len(tasks)} tasks for project '{project.name}' from {filename}")
         return tasks
     except Exception as e:
-        print(f"Error loading tasks from {filename}: {str(e)}")
+        print(f"Error loading tasks from {filename}: {e!s}")
         return None
 
 
-async def generate_tasks_for_project(demo_project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_url: int, num_of_urls: int, prompts_per_use_case: int = 1) -> List[Task]:
+async def generate_tasks_for_project(demo_project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_url: int, num_of_urls: int, prompts_per_use_case: int = 1) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
     """
@@ -88,11 +87,11 @@ async def generate_tasks_for_project(demo_project: WebProject, use_cached_tasks:
     return tasks
 
 
-async def add_tests_to_tasks(tasks: List[Task], demo_project: WebProject, task_cache_dir: str) -> List[Task]:
+async def add_tests_to_tasks(tasks: list[Task], demo_project: WebProject, task_cache_dir: str) -> list[Task]:
     """
     Ensure each Task has test cases; if not present, generate them.
     """
-    missing_tests = any(not getattr(t, 'tests', None) for t in tasks)
+    missing_tests = any(not getattr(t, "tests", None) for t in tasks)
     if missing_tests:
         print("Adding test cases to tasks...")
         llm_service = DIContainer.llm_service()

@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from typing import Any, Dict, List
+from typing import Any
 
 from dependency_injector.wiring import Provide
 from loguru import logger
@@ -41,7 +41,7 @@ class GlobalTestGenerationPipeline:
         self.retry_delay = retry_delay
         self.truncate_html_chars = truncate_html_chars
 
-    async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:
+    async def add_tests_to_tasks(self, tasks: list[Task]) -> list[Task]:
         """
         Main function. For each task that has a use_case, generate CheckEventTest objects via LLM.
         """
@@ -62,12 +62,12 @@ class GlobalTestGenerationPipeline:
 
             except Exception as e:
                 raise e
-                logger.error(f"Failed to generate tests for Task={task.id}: {str(e)}")
-                logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
+                logger.error(f"Failed to generate tests for Task={task.id}: {e!s}")
+                logger.debug(f"Exception details: {type(e).__name__}, {e!r}")
 
         return tasks
 
-    async def _generate_check_event_tests(self, task: Task) -> List[Dict[str, Any]]:
+    async def _generate_check_event_tests(self, task: Task) -> list[dict[str, Any]]:
         """
         Build the LLM prompt and parse the response as a list of CheckEventTest definitions.
         """
@@ -108,14 +108,14 @@ class GlobalTestGenerationPipeline:
                 logger.warning(f"Attempt {attempt + 1}: Received empty or invalid test list for Task {task.id}. Retrying...")
                 time.sleep(self.retry_delay)
             except Exception as e:
-                logger.warning(f"Attempt {attempt + 1} failed for Task {task.id}: {str(e)}. Retrying...")
+                logger.warning(f"Attempt {attempt + 1} failed for Task {task.id}: {e!s}. Retrying...")
                 time.sleep(self.retry_delay)
 
         # If we reach here, all attempts failed
         logger.error(f"All {self.max_retries} attempts to generate tests for Task {task.id} have failed.")
         return []
 
-    def _parse_llm_response(self, response: Any) -> List[Dict[str, Any]]:
+    def _parse_llm_response(self, response: Any) -> list[dict[str, Any]]:
         """
         Parse the LLM response as a JSON array of "CheckEventTest" definitions.
         Return a list of dictionaries if successful, otherwise an empty list.
@@ -162,7 +162,7 @@ class GlobalTestGenerationPipeline:
         logger.warning(f"Unexpected type for LLM response: {type(response)}")
         return []
 
-    def _validate_test_list(self, test_list: List[Any]) -> List[Dict[str, Any]]:
+    def _validate_test_list(self, test_list: list[Any]) -> list[dict[str, Any]]:
         """
         Ensure each item is a dict with "event_name" == "CheckEventTest".
         """
@@ -174,7 +174,7 @@ class GlobalTestGenerationPipeline:
                 valid_tests.append(test_item)
         return valid_tests
 
-    def _instantiate_tests(self, task: Task, test_definitions: List[Dict[str, Any]]) -> None:
+    def _instantiate_tests(self, task: Task, test_definitions: list[dict[str, Any]]) -> None:
         """
         Create CheckEventTest objects from the validated definitions and add them to the Task.
         """
@@ -185,4 +185,4 @@ class GlobalTestGenerationPipeline:
                 task.tests.append(check_event_test)
                 logger.debug(f"Added CheckEventTest to Task {task.id}: {check_event_test.event_name}")
             except Exception as e:
-                logger.error(f"Failed to instantiate CheckEventTest for Task {task.id}: {str(e)}")
+                logger.error(f"Failed to instantiate CheckEventTest for Task {task.id}: {e!s}")

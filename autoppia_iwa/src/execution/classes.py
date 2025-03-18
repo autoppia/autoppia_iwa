@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
@@ -19,8 +18,8 @@ class BrowserSnapshot(BaseModel):
     current_html: str = Field(..., description="HTML content after actions were executed")
     screenshot_before: str = Field(..., description="Base64-encoded screenshot before actions")
     screenshot_after: str = Field(..., description="Base64-encoded screenshot after actions")
-    backend_events: List[BackendEvent] = Field(..., description="List of backend events after execution")
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Timestamp of the snapshot")
+    backend_events: list[BackendEvent] = Field(..., description="List of backend events after execution")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Timestamp of the snapshot")
     current_url: str = Field(..., description="Current URL of the browser")
 
     def model_dump(self, *args, **kwargs):
@@ -40,8 +39,8 @@ class ActionExecutionResult(BaseModel):
     action: BaseAction = Field(..., description="The action that was executed")
     action_event: str = Field(..., description="Type of the action event (e.g., 'click', 'navigate', 'type')")
     successfully_executed: bool = Field(..., description="Indicates whether the action was executed successfully")
-    error: Optional[str] = Field(None, description="Details of the error if the action failed")
-    execution_time: Optional[float] = Field(None, description="Time taken to execute the action, in seconds")
+    error: str | None = Field(None, description="Details of the error if the action failed")
+    execution_time: float | None = Field(None, description="Time taken to execute the action, in seconds")
     browser_snapshot: BrowserSnapshot = Field(..., description="Snapshot of the browser state after execution")
 
     def model_dump(self, *args, **kwargs):

@@ -1,5 +1,4 @@
 import unittest
-from typing import List
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
@@ -43,7 +42,7 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
         """
         try:
             # Initialize demo web projects
-            web_projects: List[WebProject] = await initialize_demo_webs_projects(demo_web_projects)
+            web_projects: list[WebProject] = await initialize_demo_webs_projects(demo_web_projects)
             self.assertGreater(len(web_projects), 0, "No demo web projects were initialized.")
 
             # Create task generation configuration
@@ -62,7 +61,7 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
                 llm_service=self.llm_service,
                 synthetic_task_repository=self.task_repo,
             )
-            task_output: List[Task] = await task_generator.generate()
+            task_output: list[Task] = await task_generator.generate()
 
             # Validate the output
             self.assertIsNotNone(task_output, "Task generation pipeline returned None.")

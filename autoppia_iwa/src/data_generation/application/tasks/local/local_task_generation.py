@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import random
-from typing import Any, Dict, List
+from typing import Any
 
 from dependency_injector.wiring import Provide
 from PIL import Image
@@ -54,7 +54,7 @@ class LocalTaskGenerationPipeline:
 
         return all_tasks  # Fixed the typo all_tasks2 -> all_tasks
 
-    async def generate_per_url(self, page_url: str, number_of_prompts_per_url: int = 15) -> List["Task"]:
+    async def generate_per_url(self, page_url: str, number_of_prompts_per_url: int = 15) -> list["Task"]:
         # Fetch the HTML and screenshot
         self.number_of_prompts_per_url = number_of_prompts_per_url
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(page_url)
@@ -85,7 +85,7 @@ class LocalTaskGenerationPipeline:
 
         return shuffle_tasks(final_tasks)
 
-    async def _phase1_generate_draft_tasks(self, current_url: str, html_text: str, screenshot_text: str, interactive_elems: Dict) -> List[dict]:
+    async def _phase1_generate_draft_tasks(self, current_url: str, html_text: str, screenshot_text: str, interactive_elems: dict) -> list[dict]:
         """
         Phase 1: Generate a draft list of tasks based on the system prompt + user context.
         With retry mechanism for handling invalid JSON responses.
@@ -94,12 +94,7 @@ class LocalTaskGenerationPipeline:
         system_prompt = PHASE1_GENERATION_SYSTEM_PROMPT.replace("{number_of_prompts_per_url}", f"{self.number_of_prompts_per_url}")
 
         # User message with truncated HTML + screenshot text + interactive elements
-        user_msg = (
-            f"Current url:\n{current_url}\n\n"
-            f"clean_html:\n{html_text[:1500]}\n\n"
-            f"screenshot_description:\n{screenshot_text}\n\n"
-            f"interactive_elements:\n{json.dumps(interactive_elems, indent=2)}"
-        )
+        user_msg = f"Current url:\n{current_url}\n\nclean_html:\n{html_text[:1500]}\n\nscreenshot_description:\n{screenshot_text}\n\ninteractive_elements:\n{json.dumps(interactive_elems, indent=2)}"
 
         # Implement retry logic
         for attempt in range(self.max_retries):
@@ -122,7 +117,7 @@ class LocalTaskGenerationPipeline:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))  # Exponential backoff
 
             except Exception as e:
-                logger.error(f"Attempt {attempt + 1}: Error during LLM prediction: {str(e)}")
+                logger.error(f"Attempt {attempt + 1}: Error during LLM prediction: {e!s}")
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (attempt + 1))
 
@@ -130,7 +125,7 @@ class LocalTaskGenerationPipeline:
         logger.error(f"All {self.max_retries} attempts failed for {current_url}")
         return []
 
-    async def _parse_llm_response(self, resp_text: str) -> List[dict]:
+    async def _parse_llm_response(self, resp_text: str) -> list[dict]:
         """Helper method to parse and validate the LLM response."""
         try:
             # Clean up response text if it's wrapped in Markdown code blocks
@@ -140,17 +135,17 @@ class LocalTaskGenerationPipeline:
                 # Extract content between markdown code blocks
                 import re
 
-                code_block_pattern = r'```(?:json)?\n([\s\S]*?)\n```'
+                code_block_pattern = r"```(?:json)?\n([\s\S]*?)\n```"
                 matches = re.search(code_block_pattern, resp_text)
                 if matches:
                     cleaned_text = matches.group(1)
                 else:
                     # If regex doesn't match but we know it starts with backticks,
                     # try a simpler approach
-                    lines = resp_text.strip().split('\n')
+                    lines = resp_text.strip().split("\n")
                     if lines[0].startswith("'```") or lines[0].startswith("```"):
                         # Remove first and last lines if they contain backticks
-                        cleaned_text = '\n'.join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
+                        cleaned_text = "\n".join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
 
             # Now try to parse the cleaned JSON
             data = json.loads(cleaned_text)
@@ -165,10 +160,10 @@ class LocalTaskGenerationPipeline:
             # Handle different possible JSON structures
             if isinstance(data, dict):
                 # If there's a 'tasks' or 'result' key containing the actual list
-                if 'tasks' in data and isinstance(data['tasks'], list):
-                    data = data['tasks']
-                elif 'result' in data and isinstance(data['result'], list):
-                    data = data['result']
+                if "tasks" in data and isinstance(data["tasks"], list):
+                    data = data["tasks"]
+                elif "result" in data and isinstance(data["result"], list):
+                    data = data["result"]
                 # Or if it has the JSON schema structure
                 elif data.get("type") == "array" and "items" in data:
                     data = data["items"]
@@ -206,7 +201,7 @@ class LocalTaskGenerationPipeline:
                 # Try to extract just the JSON part using a more aggressive approach
                 import re
 
-                json_pattern = r'\[\s*\{.*?\}\s*\]'
+                json_pattern = r"\[\s*\{.*?\}\s*\]"
                 matches = re.search(json_pattern, resp_text, re.DOTALL)
                 if matches:
                     extracted_json = matches.group(0)
@@ -220,7 +215,7 @@ class LocalTaskGenerationPipeline:
                 pass
             return []
         except Exception as e:
-            logger.error(f"Unexpected error parsing LLM response: {str(e)}")
+            logger.error(f"Unexpected error parsing LLM response: {e!s}")
             return []
 
     @staticmethod

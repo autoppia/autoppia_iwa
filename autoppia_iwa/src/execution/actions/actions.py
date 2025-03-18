@@ -2,12 +2,11 @@
 import asyncio
 import json
 from functools import wraps
-from typing import Optional, Union
+from typing import Annotated, Literal
 
 from loguru import logger
 from playwright.async_api import Page
 from pydantic import Field
-from typing_extensions import Annotated, Literal
 
 # Use your new combined base classes
 from autoppia_iwa.src.execution.actions.base import BaseAction, BaseActionWithSelector
@@ -21,7 +20,7 @@ def log_action(action_name: str):
 
     def decorator(func):
         @wraps(func)
-        async def wrapper(self, page: Optional[Page], backend_service, web_agent_id: str):
+        async def wrapper(self, page: Page | None, backend_service, web_agent_id: str):
             action_logger.debug(f"Executing {action_name} with data: {self.model_dump()}")
             try:
                 return await func(self, page, backend_service, web_agent_id)
@@ -43,11 +42,11 @@ def log_action(action_name: str):
 
 class ClickAction(BaseActionWithSelector):
     type: Literal["ClickAction"] = "ClickAction"
-    x: Optional[int] = None
-    y: Optional[int] = None
+    x: int | None = None
+    y: int | None = None
 
     @log_action("ClickAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         if self.selector:
             selector_str = self.validate_selector()
             await page.click(selector_str)
@@ -61,19 +60,19 @@ class DoubleClickAction(BaseActionWithSelector):
     type: Literal["DoubleClickAction"] = "DoubleClickAction"
 
     @log_action("DoubleClickAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         selector_str = self.validate_selector()
         await page.dblclick(selector_str)
 
 
 class NavigateAction(BaseAction):
     type: Literal["NavigateAction"] = "NavigateAction"
-    url: Optional[str] = ""
+    url: str | None = ""
     go_back: bool = False
     go_forward: bool = False
 
     @log_action("NavigateAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         if self.go_back:
             await page.go_back()
         elif self.go_forward:
@@ -89,7 +88,7 @@ class TypeAction(BaseActionWithSelector):
     text: str
 
     @log_action("TypeAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         sel_str = self.validate_selector()
         await page.fill(sel_str, self.text)
 
@@ -99,7 +98,7 @@ class SelectAction(BaseActionWithSelector):
     value: str
 
     @log_action("SelectAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         sel_str = self.validate_selector()
         await page.select_option(sel_str, self.value)
 
@@ -108,17 +107,17 @@ class HoverAction(BaseActionWithSelector):
     type: Literal["HoverAction"] = "HoverAction"
 
     @log_action("HoverAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         sel_str = self.validate_selector()
         await page.hover(sel_str)
 
 
 class WaitAction(BaseActionWithSelector):
     type: Literal["WaitAction"] = "WaitAction"
-    time_seconds: Optional[float] = None
+    time_seconds: float | None = None
 
     @log_action("WaitAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         if self.selector:
             sel_str = self.validate_selector()
             await page.wait_for_selector(sel_str, timeout=self.time_seconds * 1000 if self.time_seconds else None)
@@ -130,7 +129,7 @@ class WaitAction(BaseActionWithSelector):
 
 class ScrollAction(BaseAction):
     type: Literal["ScrollAction"] = "ScrollAction"
-    value: Optional[Union[str, int]] = None
+    value: str | int | None = None
     up: bool = False
     down: bool = False
 
@@ -169,7 +168,7 @@ class ScrollAction(BaseAction):
         raise ValueError(f"Could not scroll to text: {text}")
 
     @log_action("ScrollAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str) -> None:
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str) -> None:
         """Execute the scroll action."""
         try:
             if self.value is None:
@@ -198,7 +197,7 @@ class SubmitAction(BaseActionWithSelector):
     type: Literal["SubmitAction"] = "SubmitAction"
 
     @log_action("SubmitAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         sel_str = self.validate_selector()
         await page.locator(sel_str).press("Enter")
 
@@ -208,7 +207,7 @@ class AssertAction(BaseAction):
     text_to_assert: str
 
     @log_action("AssertAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         content = await page.content()
         if self.text_to_assert not in content:
             raise AssertionError(f"'{self.text_to_assert}' not found in page source.")
@@ -220,7 +219,7 @@ class DragAndDropAction(BaseAction):
     target_selector: str = Field(..., alias="targetSelector")
 
     @log_action("DragAndDropAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         await page.drag_and_drop(self.source_selector, self.target_selector)
 
 
@@ -229,7 +228,7 @@ class ScreenshotAction(BaseAction):
     file_path: str
 
     @log_action("ScreenshotAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         await page.screenshot(path=self.file_path)
 
 
@@ -238,7 +237,7 @@ class SendKeysIWAAction(BaseAction):
     keys: str
 
     @log_action("SendKeysIWAAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         await page.keyboard.press(self.keys)
 
 
@@ -246,12 +245,11 @@ class GetDropDownOptions(BaseActionWithSelector):
     type: Literal["GetDropDownOptions"] = "GetDropDownOptions"
 
     @log_action("GetDropDownOptions")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         xpath = self.validate_selector()
         all_options = []
-        frame_index = 0
 
-        for frame in page.frames:
+        for i, frame in enumerate(page.frames):
             try:
                 options = await frame.evaluate(
                     """
@@ -273,15 +271,14 @@ class GetDropDownOptions(BaseActionWithSelector):
                     xpath,
                 )
                 if options:
-                    action_logger.debug(f"Found dropdown in frame {frame_index}")
+                    action_logger.debug(f"Found dropdown in frame {i}")
                     formatted = []
                     for opt in options["options"]:
                         encoded_text = json.dumps(opt["text"])
-                        formatted.append(f'{opt["index"]}: text={encoded_text}')
+                        formatted.append(f"{opt['index']}: text={encoded_text}")
                     all_options.extend(formatted)
             except Exception as e:
-                action_logger.debug(f"Frame {frame_index} evaluate error: {str(e)}")
-            frame_index += 1
+                action_logger.debug(f"Frame {i} evaluate error: {e!s}")
 
         if all_options:
             msg = "\n".join(all_options) + "\nUse the exact string in SelectDropDownOption"
@@ -295,12 +292,11 @@ class SelectDropDownOption(BaseActionWithSelector):
     text: str
 
     @log_action("SelectDropDownOption")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         xpath = self.validate_selector()
-        frame_index = 0
         found = False
 
-        for frame in page.frames:
+        for i, frame in enumerate(page.frames):
             try:
                 dropdown_info = await frame.evaluate(
                     """
@@ -328,12 +324,11 @@ class SelectDropDownOption(BaseActionWithSelector):
                 )
                 if dropdown_info.get("found"):
                     selected = await frame.locator(xpath).nth(0).select_option(label=self.text, timeout=1000)
-                    action_logger.info(f"Selected '{self.text}' => {selected} in frame {frame_index}")
+                    action_logger.info(f"Selected '{self.text}' => {selected} in frame {i}")
                     found = True
                     break
             except Exception as e:
-                action_logger.debug(f"Frame {frame_index} attempt failed: {e}")
-            frame_index += 1
+                action_logger.debug(f"Frame {i} attempt failed: {e}")
 
         if not found:
             action_logger.info(f"Could not select option '{self.text}' in any frame")
@@ -343,7 +338,7 @@ class UndefinedAction(BaseAction):
     type: Literal["UndefinedAction"] = "UndefinedAction"
 
     @log_action("UndefinedAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         pass
 
 
@@ -351,7 +346,7 @@ class IdleAction(BaseAction):
     type: Literal["IdleAction"] = "IdleAction"
 
     @log_action("IdleAction")
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         pass
 
 
@@ -360,25 +355,23 @@ class IdleAction(BaseAction):
 # -------------------------------------------------------------------
 
 AllActionsUnion = Annotated[
-    Union[
-        ClickAction,
-        DoubleClickAction,
-        NavigateAction,
-        TypeAction,
-        SelectAction,
-        HoverAction,
-        WaitAction,
-        ScrollAction,
-        SubmitAction,
-        AssertAction,
-        DragAndDropAction,
-        ScreenshotAction,
-        SendKeysIWAAction,
-        GetDropDownOptions,
-        SelectDropDownOption,
-        UndefinedAction,
-        IdleAction,
-    ],
+    ClickAction
+    | DoubleClickAction
+    | NavigateAction
+    | TypeAction
+    | SelectAction
+    | HoverAction
+    | WaitAction
+    | ScrollAction
+    | SubmitAction
+    | AssertAction
+    | DragAndDropAction
+    | ScreenshotAction
+    | SendKeysIWAAction
+    | GetDropDownOptions
+    | SelectDropDownOption
+    | UndefinedAction
+    | IdleAction,
     Field(discriminator="type"),
 ]
 

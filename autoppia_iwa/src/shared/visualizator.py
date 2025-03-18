@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 from rich import box
 from rich.align import Align
@@ -19,7 +18,7 @@ class SubnetVisualizer:
     5. Scores
     """
 
-    def __init__(self, log_directory: Optional[str] = None):
+    def __init__(self, log_directory: str | None = None):
         self.console = Console()
         if log_directory:
             os.makedirs(log_directory, exist_ok=True)
@@ -119,7 +118,7 @@ class SubnetVisualizer:
                     test_passed = False
                     for action_idx in range(len(test_results_matrix)):
                         if isinstance(test_results_matrix[action_idx][idx], dict):
-                            if test_results_matrix[action_idx][idx]['success']:
+                            if test_results_matrix[action_idx][idx]["success"]:
                                 test_passed = True
                                 break
                         else:
@@ -233,14 +232,14 @@ class SubnetVisualizer:
                 description = f"Check navigation to URL: '{test.expected_url}'"
             elif hasattr(test, "url_pattern"):
                 description = f"Check URL pattern: '{test.url_pattern}'"
-            attributes['url'] = test.url if hasattr(test, "url") else test.expected_url if hasattr(test, "expected_url") else test.url_pattern
+            attributes["url"] = test.url if hasattr(test, "url") else test.expected_url if hasattr(test, "expected_url") else test.url_pattern
 
         if test_type == "FindInHtmlTest":
             # For URL tests, show the expected URL or path
             if hasattr(test, "content"):
                 description = f"Find in HTML next substring:: '{test.content}'"
 
-            attributes['content'] = test.content
+            attributes["content"] = test.content
 
         elif "HTML" in test_type or test_type == "JudgeBaseOnHTML" or test_type == "OpinionBasedHTMLTest":
             # For HTML opinion tests, show the success criteria
@@ -256,9 +255,7 @@ class SubnetVisualizer:
             # For event tests, show the event name
             if hasattr(test, "event_name"):
                 description = f"Check backend event: '{test.event_name}'"
-            elif hasattr(test, "event_name"):
-                description = f"Check event name: '{test.event_name}'"
-            attributes['event_name'] = test.event_name if hasattr(test, "event_name") else test.event_name
+                attributes["event_name"] = test.event_name
 
         # If no description was generated with the specific cases, try to extract common attributes
         if not description:
@@ -280,11 +277,7 @@ class SubnetVisualizer:
                             attr_value = attr_value[:27] + "..."
                         all_attrs.append(f"{attr_name}='{attr_value}'")
 
-                if all_attrs:
-                    description = ", ".join(all_attrs)
-                else:
-                    # If no attributes were found, use the test type
-                    description = f"Test type {test_type}"
+                description = ", ".join(all_attrs) if all_attrs else f"Test type {test_type}"
 
         return description, str(attributes)
 
@@ -438,11 +431,11 @@ def test_visualization():
     visualizer = SubnetVisualizer()
 
     # Example data
-    task = Task(id='41b0f865-d1f1-47bb-8ab7-9572dea9ca4a', prompt="Navigate to the 'About Us' page.", tests=[CheckUrlTest(type='CheckUrlTest', url='/about/', description='Check URL')])
+    task = Task(id="41b0f865-d1f1-47bb-8ab7-9572dea9ca4a", prompt="Navigate to the 'About Us' page.", tests=[CheckUrlTest(type="CheckUrlTest", url="/about/", description="Check URL")])
 
     agent_id = "browser-agent-1"
 
-    actions = [ClickAction(type='ClickAction', x=1711, y=978)]
+    actions = [ClickAction(type="ClickAction", x=1711, y=978)]
 
     # Create a simulated test results matrix
     test_result = TestResult(success=False, message="URL does not match /about/")
@@ -452,7 +445,7 @@ def test_visualization():
     evaluation_result = EvaluationResult()
 
     # Call the visualization function
-    visualizer.show_full_evaluation(agent_id=agent_id, validator_id='test', task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
+    visualizer.show_full_evaluation(agent_id=agent_id, validator_id="test", task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
 
 
 # Run the test function if needed:

@@ -1,6 +1,5 @@
 import random
 from datetime import datetime
-from typing import List
 
 from dependency_injector.wiring import Provide
 from loguru import logger
@@ -35,7 +34,7 @@ class TaskGenerationPipeline:
         self.local_test_pipeline = LocalTestGenerationPipeline(web_project=web_project)
         self.global_test_pipeline = GlobalTestGenerationPipeline(web_project=web_project)
 
-    async def generate(self) -> List[Task]:
+    async def generate(self) -> list[Task]:
         """
         Main method to generate tasks for the web project.
         Delegates URL handling to the specific pipelines.

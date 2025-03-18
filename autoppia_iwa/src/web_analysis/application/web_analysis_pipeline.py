@@ -1,6 +1,5 @@
 import time
 from datetime import datetime
-from typing import List, Optional
 from urllib.parse import urlparse
 
 from dependency_injector.wiring import Provide
@@ -35,7 +34,7 @@ class WebAnalysisPipeline:
         self.page_structure_extractor = WebPageStructureExtractor()
         self.llm_analyzer = WebLLMAnalyzer(llm_service=self.llm_service)
 
-        self.page_analyses: List[SinglePageAnalysis] = []
+        self.page_analyses: list[SinglePageAnalysis] = []
 
     async def analyze(
         self,
@@ -78,7 +77,7 @@ class WebAnalysisPipeline:
 
         return self.analysis_result
 
-    def _get_analysis_from_cache(self) -> Optional[DomainAnalysis]:
+    def _get_analysis_from_cache(self) -> DomainAnalysis | None:
         """
         Check if analysis results already exist in the database.
 
@@ -115,7 +114,7 @@ class WebAnalysisPipeline:
             start_url=self.start_url,
         )
 
-    def _get_urls_to_analyze(self, enable_crawl) -> List[str]:
+    def _get_urls_to_analyze(self, enable_crawl) -> list[str]:
         """
         Crawl and retrieve URLs to analyze from the starting domain.
 

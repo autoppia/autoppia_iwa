@@ -1,5 +1,3 @@
-from typing import List
-
 from autoppia_iwa.src.evaluation.classes import Feedback, TestResult
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
@@ -20,7 +18,7 @@ class FeedbackGenerator:
         return max(0, (extra_time / 5.0) * 0.5)
 
     @staticmethod
-    def flatten_test_results_matrix(test_results_matrix: List[List['TestResult']]) -> List['TestResult']:
+    def flatten_test_results_matrix(test_results_matrix: list[list["TestResult"]]) -> list["TestResult"]:
         """
         Flatten a matrix of test results into a single list.
 
@@ -36,10 +34,10 @@ class FeedbackGenerator:
     @staticmethod
     def generate_feedback(
         task_prompt: str,
-        execution_history: List['ActionExecutionResult'],
-        test_results_matrix: List[List['TestResult']],
+        execution_history: list["ActionExecutionResult"],
+        test_results_matrix: list[list["TestResult"]],
         expected_time: float = 50.0,
-    ) -> 'Feedback':
+    ) -> "Feedback":
         """
         Generates structured feedback for the task evaluation.
         Args:
@@ -77,7 +75,7 @@ class FeedbackGenerator:
         test_score = FeedbackGenerator.calculate_score(passed_tests, total_tests)
 
         # Count critical failures
-        critical_failures = sum(1 for test in flattened_test_results if test.extra_data and 'event_name' in test.extra_data and not test.success)
+        critical_failures = sum(1 for test in flattened_test_results if test.extra_data and "event_name" in test.extra_data and not test.success)
         critical_penalty = critical_failures * 2
 
         # ---------------------------

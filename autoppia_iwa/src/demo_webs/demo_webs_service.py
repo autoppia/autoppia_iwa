@@ -1,5 +1,5 @@
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 from aiohttp.client_exceptions import ClientError
@@ -21,7 +21,7 @@ class BackendDemoWebService:
         Args:
             web_project: The web project containing the backend_url to use
         """
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
         self.web_project: WebProject = web_project
         self.base_url = web_project.backend_url
 
@@ -51,7 +51,7 @@ class BackendDemoWebService:
         if self._session and not self._session.closed:
             print("Warning: Unclosed ClientSession detected. Please call `close()` explicitly.")
 
-    async def get_backend_events(self, web_agent_id: str) -> List[BackendEvent]:
+    async def get_backend_events(self, web_agent_id: str) -> list[BackendEvent]:
         """
         Fetch recent events from the backend for the specified web_agent_id.
 
@@ -171,7 +171,7 @@ class BackendDemoWebService:
             if session:
                 await session.close()
 
-    async def reset_database(self, override_url: Optional[str] = None) -> bool:
+    async def reset_database(self, override_url: str | None = None) -> bool:
         """
         Resets the entire database (requires admin/superuser permissions).
 
@@ -225,7 +225,7 @@ class BackendDemoWebService:
             if session:
                 await session.close()
 
-    async def send_event(self, event_name: str, data: Dict[str, Any], web_agent_id: str) -> bool:
+    async def send_event(self, event_name: str, data: dict[str, Any], web_agent_id: str) -> bool:
         """
         Sends an event to the backend for a given web_agent_id.
 

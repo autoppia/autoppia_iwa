@@ -20,7 +20,7 @@ class TestConcurrentTaskExecution(unittest.TestCase):
             "prompt": "Click on the 'Login' link in the header, fill credentials, and login.",
             "url": "http://localhost:8000/",
             "tests": [{"type": "CheckEventTest", "event_name": "login"}, {"type": "FindInHtmlTest", "substring": "login"}],
-            "relevant_data": {"authorization": {'email': 'employee@employee.com', 'password': 'employee'}},
+            "relevant_data": {"authorization": {"email": "employee@employee.com", "password": "employee"}},
         }
         task1_data["tests"] = [BaseTaskTest.deserialize(test) for test in task1_data["tests"]]
         cls.task1_json = Task(**task1_data).model_dump()

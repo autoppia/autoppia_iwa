@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import BaseModel, RootModel
 
 ###############################################################################
@@ -11,10 +9,10 @@ class DraftTask(BaseModel):
     """Schema for the output of Phase 1 draft tasks."""
 
     prompt: str
-    success_criteria: Optional[str] = None
+    success_criteria: str | None = None
 
 
-class DraftTaskList(RootModel[List[DraftTask]]):
+class DraftTaskList(RootModel[list[DraftTask]]):
     """A container for a list of draft tasks."""
 
     # Access items via self.root (a List[DraftTask])
@@ -25,10 +23,10 @@ class FilterTask(BaseModel):
 
     decision: str  # "keep" or "discard"
     prompt: str
-    success_criteria: Optional[str] = None
+    success_criteria: str | None = None
 
 
-class FilterTaskList(RootModel[List[FilterTask]]):
+class FilterTaskList(RootModel[list[FilterTask]]):
     """A container for a list of filtered tasks."""
 
     # Access items via self.root (a List[FilterTask])

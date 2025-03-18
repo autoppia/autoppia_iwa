@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -7,22 +7,22 @@ from pydantic import BaseModel, Field
 class LLMWebAnalysis(BaseModel):
     one_phrase_summary: str
     summary: str
-    categories: List[str]
-    functionality: List[str]
-    media_files_description: Optional[Union[str, List[Dict[str, Any]], List[str]]] = None
-    key_words: List[str]
-    relevant_fields: Optional[List[Union[str, Dict[str, Union[str, Any]]]]] = None
-    curiosities: Optional[str] = None
-    accessibility: Optional[Union[str, List[str]]] = None
-    user_experience: Optional[str] = None
-    advertisements: Optional[str] = None
-    seo_considerations: Optional[str] = None
-    additional_notes: Optional[str] = None
+    categories: list[str]
+    functionality: list[str]
+    media_files_description: str | list[dict[str, Any]] | list[str] | None = None
+    key_words: list[str]
+    relevant_fields: list[str | dict[str, str | Any]] | None = None
+    curiosities: str | None = None
+    accessibility: str | list[str] | None = None
+    user_experience: str | None = None
+    advertisements: str | None = None
+    seo_considerations: str | None = None
+    additional_notes: str | None = None
 
 
 class SinglePageAnalysis(BaseModel):
     page_url: str
-    elements_analysis_result: List[Dict]
+    elements_analysis_result: list[dict]
     web_summary: LLMWebAnalysis
     html_source: str
 
@@ -30,14 +30,14 @@ class SinglePageAnalysis(BaseModel):
 class DomainAnalysis(BaseModel):
     domain: str
     status: str
-    page_analyses: List[SinglePageAnalysis]
+    page_analyses: list[SinglePageAnalysis]
     started_time: str
     ended_time: str
     total_time: float
     start_url: str
     category: str = ""
-    features: List[str] = Field(default_factory=list, description="List of features")
-    urls: List[str] = Field(default_factory=list, description="List of urls")
+    features: list[str] = Field(default_factory=list, description="List of features")
+    urls: list[str] = Field(default_factory=list, description="List of urls")
 
     def dump_excluding_page_analyses(self):
         dump = self.model_dump()

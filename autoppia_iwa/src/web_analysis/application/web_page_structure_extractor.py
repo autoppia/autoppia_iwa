@@ -1,5 +1,5 @@
 from dataclasses import fields
-from typing import List, Optional, Tuple, Union
+from typing import ClassVar
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
@@ -12,7 +12,7 @@ class WebPageStructureExtractor:
     A web page structure extractor that extracts structured data from web pages.
     """
 
-    ALLOWED_HTML_TAGS = [
+    ALLOWED_HTML_TAGS: ClassVar[list[str]] = [
         "header",
         "nav",
         "main",
@@ -47,9 +47,9 @@ class WebPageStructureExtractor:
 
     async def get_elements(
         self,
-        source: Union[str, BeautifulSoup],
-        allowed_tags: Optional[List[str]] = None,
-    ) -> Tuple[List["Element"], str]:
+        source: str | BeautifulSoup,
+        allowed_tags: list[str] | None = None,
+    ) -> tuple[list["Element"], str]:
         """
         Extract structured data from a web page or BeautifulSoup object asynchronously.
         """
@@ -114,11 +114,11 @@ class WebPageStructureExtractor:
     def __convert_soup_element_to_element(
         self,
         soup_element,
-        allowed_tags: List[str],
-        parent_id: Optional[int],
+        allowed_tags: list[str],
+        parent_id: int | None,
         base_path: str,
         current_id: int,
-    ) -> tuple[Optional[Element], int]:
+    ) -> tuple[Element | None, int]:
         """
         Recursively extract the hierarchy of an HTML element.
         """

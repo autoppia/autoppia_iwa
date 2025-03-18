@@ -28,11 +28,11 @@ class IWebAgent(ABC):
 
 
 class BaseAgent(IWebAgent):
-    def __init__(self, id: str = None, name: str = None):
+    def __init__(self, id: str | None = None, name: str | None = None):
         self.id = id or self.generate_random_web_agent_id()
         self.name = name if name is not None else f"Agent {self.id}"
 
     def generate_random_web_agent_id(self, length=16):
         """Generates a random alphanumeric string for the web_agent ID."""
         letters_and_digits = string.ascii_letters + string.digits
-        return ''.join(random.choice(letters_and_digits) for _ in range(length))
+        return "".join(random.choice(letters_and_digits) for _ in range(length))

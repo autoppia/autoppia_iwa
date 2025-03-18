@@ -2,7 +2,6 @@
 import asyncio
 import hashlib
 from collections import defaultdict
-from typing import Dict, List, Tuple
 
 from loguru import logger
 from playwright.async_api import Page
@@ -39,9 +38,9 @@ def display_single_evaluation_summary(stats: EvaluationStats, debug_mode: bool =
     logger.info(f"Evaluation Results for Agent: {stats.web_agent_id}")
     logger.info(f"{'-' * 60}")
     logger.info(f"Task: {stats.task_id}")
-    logger.info(f"Score: {stats.final_score:.2f} " f"(Raw: {stats.raw_score:.2f}, Random: {stats.random_clicker_score:.2f})")
+    logger.info(f"Score: {stats.final_score:.2f} (Raw: {stats.raw_score:.2f}, Random: {stats.random_clicker_score:.2f})")
     logger.info(f"Tests Passed: {stats.tests_passed}/{stats.total_tests}")
-    logger.info(f"Actions: {stats.action_count} " f"({', '.join(f'{k}: {v}' for k, v in stats.action_types.items())})")
+    logger.info(f"Actions: {stats.action_count} ({', '.join(f'{k}: {v}' for k, v in stats.action_types.items())})")
     logger.info(f"{'-' * 40}")
 
     total_time = stats.total_time
@@ -70,10 +69,10 @@ def display_single_evaluation_summary(stats: EvaluationStats, debug_mode: bool =
 
 def display_batch_evaluation_summary(
     task_id: str,
-    evaluation_stats: List[EvaluationStats],
+    evaluation_stats: list[EvaluationStats],
     debug_mode: bool,
-    action_type_timing: Dict[str, List[float]],
-    errors: List[str],
+    action_type_timing: dict[str, list[float]],
+    errors: list[str],
 ):
     """
     Displays a concise summary of all evaluations for a single task (batch of solutions).
@@ -102,13 +101,13 @@ def display_batch_evaluation_summary(
     agent_groups = defaultdict(list)
     for stat in task_stats:
         agent_id = stat.web_agent_id
-        agent_type = agent_id.split('-')[0] if '-' in agent_id else agent_id
+        agent_type = agent_id.split("-")[0] if "-" in agent_id else agent_id
         agent_groups[agent_type].append(stat)
 
     logger.info(f"\n{'=' * 80}")
     logger.info(f"EVALUATION SUMMARY FOR TASK: {task_id}")
     logger.info(f"{'=' * 80}")
-    logger.info(f"Total Agents: {total_agents}, " f"Success Rate: {successful_agents}/{total_agents} " f"({successful_agents / total_agents * 100:.1f}%)")
+    logger.info(f"Total Agents: {total_agents}, Success Rate: {successful_agents}/{total_agents} ({successful_agents / total_agents * 100:.1f}%)")
     logger.info(f"Average Score: {avg_score:.4f}, Average Time: {avg_time:.2f}s")
 
     # Per-agent-type summaries
@@ -128,7 +127,7 @@ def display_batch_evaluation_summary(
         if all_action_times:
             avg_action_time = sum(all_action_times) / len(all_action_times)
             max_action_time = max(all_action_times)
-            logger.info(f"Actions: {sum(s.action_count for s in stats_list)}, " f"Avg Time: {avg_action_time:.3f}s, Max: {max_action_time:.3f}s")
+            logger.info(f"Actions: {sum(s.action_count for s in stats_list)}, Avg Time: {avg_action_time:.3f}s, Max: {max_action_time:.3f}s")
 
         # Test results
         total_tests = stats_list[0].total_tests if stats_list else 0
@@ -167,7 +166,7 @@ def display_batch_evaluation_summary(
                 avg_t = sum(times) / len(times)
                 max_t = max(times)
                 min_t = min(times)
-                logger.info(f"{a_type}: {len(times)} actions, {avg_t:.3f}s avg " f"({min_t:.3f}s - {max_t:.3f}s)")
+                logger.info(f"{a_type}: {len(times)} actions, {avg_t:.3f}s avg ({min_t:.3f}s - {max_t:.3f}s)")
 
     # Display errors if any
     if errors:
@@ -186,7 +185,7 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 
 
-async def run_tests(web_project: WebProject, task: Task, execution_history: List[ActionExecutionResult]) -> List[List[TestResult]]:
+async def run_tests(web_project: WebProject, task: Task, execution_history: list[ActionExecutionResult]) -> list[list[TestResult]]:
     """
     Runs all task tests after each action, building a test results matrix.
 
@@ -201,7 +200,7 @@ async def run_tests(web_project: WebProject, task: Task, execution_history: List
     """
     test_runner = TestRunner(task.tests)
     total_iterations = len(execution_history)
-    test_results_matrix: List[List[TestResult]] = []
+    test_results_matrix: list[list[TestResult]] = []
     browser_snapshots = []
     for i, action_result in enumerate(execution_history):
         snapshot = action_result.browser_snapshot
@@ -221,7 +220,7 @@ async def run_tests(web_project: WebProject, task: Task, execution_history: List
     return test_results_matrix
 
 
-def generate_feedback(task: Task, execution_history: List[ActionExecutionResult], test_results_matrix: List[List[TestResult]]) -> Feedback:
+def generate_feedback(task: Task, execution_history: list[ActionExecutionResult], test_results_matrix: list[list[TestResult]]) -> Feedback:
     """
     Generates feedback based on the given test results.
 
@@ -253,7 +252,7 @@ async def log_progress(total_groups: int, interval: int = 10):
         while True:
             await asyncio.sleep(interval)
             completed = sum(1 for t in asyncio.all_tasks() if t.done() and "evaluate_group_with_semaphore" in str(t))
-            logger.info(f"Progress: {completed}/{total_groups} groups " f"({completed / total_groups * 100:.0f}%)")
+            logger.info(f"Progress: {completed}/{total_groups} groups ({completed / total_groups * 100:.0f}%)")
     except asyncio.CancelledError:
         pass
 
@@ -270,19 +269,19 @@ async def monitor_browser(web_project: WebProject, task_url: str, page: Page, we
         monitor_interval (float): Interval in seconds to check page status
     """
 
-    def on_frame_navigated(frame):
-        if frame.url:
-            asyncio.create_task(_handle_frame_navigation(web_project, frame.url, task_url, web_agent_id))
+    # def on_frame_navigated(frame):
+    #     if frame.url:
+    #         asyncio.create_task(_handle_frame_navigation(web_project, frame.url, task_url, web_agent_id))
 
-    async def _handle_frame_navigation(web_project, url, task_url, web_agent_id):
-        try:
-            backend_demo_web_service = BackendDemoWebService(web_project)
-            # await backend_demo_web_service.send_event(url, web_agent_id)
-            await backend_demo_web_service.close()
-        except Exception as e:
-            logger.error(f"Error handling frame navigation: {e}")
+    # async def _handle_frame_navigation(web_project, url, task_url, web_agent_id):
+    #     try:
+    #         backend_demo_web_service = BackendDemoWebService(web_project)
+    #         # await backend_demo_web_service.send_event(url, web_agent_id)
+    #         await backend_demo_web_service.close()
+    #     except Exception as e:
+    #         logger.error(f"Error handling frame navigation: {e}")
 
-    page.on("framenavigated", on_frame_navigated)
+    # page.on("framenavigated", on_frame_navigated)
     try:
         while not page.is_closed():
             await asyncio.sleep(monitor_interval)
@@ -294,10 +293,10 @@ async def get_random_clicker_performance(
     web_project: WebProject,
     task: Task,
     config: EvaluatorConfig,
-    random_clicker_cache: Dict[str, Tuple[List[int], float]],
+    random_clicker_cache: dict[str, tuple[list[int], float]],
     backend_demo_webs_service: BackendDemoWebService,
     evaluate_in_browser_func,
-) -> Tuple[List[int], float]:
+) -> tuple[list[int], float]:
     """
     Returns the random clicker baseline performance (passing test indices, and score),
     either from cache or by computing it.
@@ -339,7 +338,7 @@ async def get_random_clicker_performance(
     # Run tests
     random_test_results = await run_tests(web_project, task, random_execution_history)
 
-    passed_tests: List[int] = []
+    passed_tests: list[int] = []
     random_score = 0.0
     if random_test_results and len(random_test_results[0]) > 0:
         num_tests = len(random_test_results[0])
@@ -360,7 +359,7 @@ async def get_random_clicker_performance(
     return passed_tests, random_score
 
 
-def hash_actions(actions: List[BaseAction]) -> str:
+def hash_actions(actions: list[BaseAction]) -> str:
     """
     Hash a list of actions so we can identify identical solutions by comparing their hash.
 
@@ -391,7 +390,7 @@ def initialize_test_results_matrix(task: Task, num_actions: int):
         List[List[TestResult]]: A matrix of test results
     """
     # Determine the number of rows in the matrix
-    num_rows = 1 if not num_actions else num_actions
+    num_rows = num_actions if num_actions else 1
 
     test_results_matrix = []
     for _ in range(num_rows):

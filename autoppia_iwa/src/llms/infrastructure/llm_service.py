@@ -1,6 +1,5 @@
 # llm_service.py
 
-from typing import Dict, List, Optional
 
 import httpx
 from openai import AsyncOpenAI, OpenAI
@@ -19,7 +18,7 @@ class OpenAIService(ILLM):
         self.sync_client = OpenAI(api_key=api_key)
         self.async_client = AsyncOpenAI(api_key=api_key)
 
-    def _prepare_payload(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> Dict:
+    def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None) -> dict:
         """
         Prepares the payload for OpenAI API requests.
         """
@@ -36,7 +35,7 @@ class OpenAIService(ILLM):
             payload["messages"] = messages
         return payload
 
-    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
+    def predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
         """
         Synchronous prediction using OpenAI's API.
         """
@@ -47,9 +46,9 @@ class OpenAIService(ILLM):
                 return response
             return response.choices[0].message.content
         except Exception as e:
-            raise RuntimeError(f"OpenAI Sync Error: {e}")
+            raise RuntimeError(f"OpenAI Sync Error: {e}") from e
 
-    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
+    async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
         """
         Asynchronous prediction using OpenAI's API.
         """
@@ -60,7 +59,7 @@ class OpenAIService(ILLM):
                 return response
             return response.choices[0].message.content
         except Exception as e:
-            raise RuntimeError(f"OpenAI Async Error: {e}")
+            raise RuntimeError(f"OpenAI Async Error: {e}") from e
 
 
 class LocalLLMService(ILLM):
@@ -77,7 +76,7 @@ class LocalLLMService(ILLM):
         self.config = config
         self.endpoint_url = endpoint_url
 
-    def _prepare_payload(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None) -> Dict:
+    def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None) -> dict:
         """
         Prepares the payload for local LLM API requests.
         """
@@ -92,7 +91,7 @@ class LocalLLMService(ILLM):
             payload["schema"] = schema
         return payload
 
-    def predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
+    def predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
         """
         Synchronous prediction using the local LLM endpoint.
         """
@@ -103,9 +102,9 @@ class LocalLLMService(ILLM):
                 response.raise_for_status()
                 return response.json().get("output", "")
         except httpx.HTTPError as e:
-            raise RuntimeError(f"Local LLM Sync Error: {e}")
+            raise RuntimeError(f"Local LLM Sync Error: {e}") from e
 
-    async def async_predict(self, messages: List[Dict[str, str]], json_format: bool = False, schema: Optional[Dict] = None, return_raw: bool = False) -> str:
+    async def async_predict(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None, return_raw: bool = False) -> str:
         """
         Asynchronous prediction using the local LLM endpoint.
         """
@@ -116,7 +115,7 @@ class LocalLLMService(ILLM):
                 response.raise_for_status()
                 return response.json().get("output", "")
         except httpx.HTTPError as e:
-            raise RuntimeError(f"Local LLM Async Error: {e}")
+            raise RuntimeError(f"Local LLM Async Error: {e}") from e
 
 
 class LLMFactory:

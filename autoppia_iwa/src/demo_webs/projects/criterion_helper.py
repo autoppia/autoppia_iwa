@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Union
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -31,7 +31,7 @@ class CriterionValue(BaseModel):
 # ================ Helper Methods for Criterion Validation ================
 
 
-def validate_criterion(actual_value: Any, criterion: Union[Any, CriterionValue]) -> bool:
+def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bool:
     """
     Validate a single criterion against an actual value
 

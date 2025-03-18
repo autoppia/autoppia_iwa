@@ -3,7 +3,6 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -63,9 +62,9 @@ config = BenchmarkConfig()
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
-AGENTS: List[BaseAgent] = [
+AGENTS: list[BaseAgent] = [
     # RandomClickerWebAgent(id="2", name="Random-clicker"),
-    ApifiedWebAgent(id='1', name="Browser-Use", host="127.0.0.1", port=11111, timeout=120),
+    ApifiedWebAgent(id="1", name="Browser-Use", host="127.0.0.1", port=11111, timeout=120),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
@@ -73,7 +72,7 @@ visualizer = SubnetVisualizer()
 
 
 @visualize_task(visualizer)
-async def generate_tasks(demo_project: WebProject, tasks_data: Optional[TaskData] = None) -> List[Task]:
+async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
     """Generate tasks with caching support."""
     if config.evaluate_real_tasks and tasks_data:
         task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
@@ -92,14 +91,14 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
     return await evaluator.evaluate_single_task_solution(task, task_solution)
 
 
-async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: List[Task], timing_metrics: TimingMetrics) -> Dict[str, TaskSolution]:
+async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: list[Task], timing_metrics: TimingMetrics) -> dict[str, TaskSolution]:
     """Generate or load solutions for a given agent and tasks."""
     solutions = {}
     logger.info(f"\nAgent: {agent.name}")
     backend_service = BackendDemoWebService(demo_project)
     try:
         for task in tasks:
-            task_solution: Optional[TaskSolution] = None
+            task_solution: TaskSolution | None = None
             # Restart db
             await backend_service.reset_database()
 
@@ -113,7 +112,7 @@ async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: 
                     else:
                         logger.warning(f"    Failed to load cached solution for {task.id}, will generate new one")
                 except Exception as e:
-                    logger.error(f"    Error loading cached solution: {str(e)}")
+                    logger.error(f"    Error loading cached solution: {e!s}")
 
             # Generate new solution if needed
             if task_solution is None:
@@ -140,7 +139,7 @@ async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: 
                     else:
                         logger.warning("Failed to cache solution")
                 except Exception as e:
-                    logger.error(f"Error caching solution: {str(e)}")
+                    logger.error(f"Error caching solution: {e!s}")
 
             # Store solution for evaluation phase
             solutions[task.id] = task_solution
@@ -152,10 +151,10 @@ async def generate_solutions(demo_project: WebProject, agent: BaseAgent, tasks: 
 
 async def evaluate_solutions(
     agent: BaseAgent,
-    tasks: List[Task],
-    solutions: Dict[str, TaskSolution],
+    tasks: list[Task],
+    solutions: dict[str, TaskSolution],
     demo_project: WebProject,
-) -> Dict[str, Dict]:
+) -> dict[str, dict]:
     """Evaluate task solutions."""
     results = {}
     logger.info(f"\nEvaluating solutions for Agent: {agent.name}")
@@ -168,7 +167,7 @@ async def evaluate_solutions(
     return results
 
 
-async def run_evaluation(demo_project: WebProject, tasks: List[Task], timing_metrics: TimingMetrics):
+async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics):
     """Orchestrate solution generation and evaluation."""
     all_solutions = {agent.id: await generate_solutions(demo_project, agent, tasks, timing_metrics) for agent in AGENTS}
     results = {agent.id: await evaluate_solutions(agent, tasks, all_solutions[agent.id], demo_project) for agent in AGENTS}

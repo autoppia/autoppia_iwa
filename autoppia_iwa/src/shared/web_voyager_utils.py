@@ -2,7 +2,6 @@ import hashlib
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List
 
 from pydantic import BaseModel
 
@@ -23,7 +22,7 @@ def setup_logging() -> None:
     logging.basicConfig(format="[%(levelname)s]: %(message)s", level=logging.INFO, handlers=[logging.StreamHandler()])
 
 
-def load_jsonl_file(file_path: Path) -> List[Dict]:
+def load_jsonl_file(file_path: Path) -> list[dict]:
     """Load tasks from a JSONL file."""
     if not file_path.exists():
         logging.warning(f"File {file_path} not found.")
@@ -50,7 +49,7 @@ def load_jsonl_file(file_path: Path) -> List[Dict]:
     return tasks
 
 
-def load_real_tasks(num_of_urls: int) -> List[TaskData]:
+def load_real_tasks(num_of_urls: int) -> list[TaskData]:
     """Load real tasks, excluding impossible ones."""
     data_dir = PROJECT_BASE_DIR.parent / "data"
     print("Loading real tasks...")
@@ -61,4 +60,4 @@ def load_real_tasks(num_of_urls: int) -> List[TaskData]:
 
 def generate_hash(input_string: str) -> str:
     """Generate a SHA-256 hash of the input string."""
-    return hashlib.sha256(input_string.encode('utf-8')).hexdigest()
+    return hashlib.sha256(input_string.encode("utf-8")).hexdigest()

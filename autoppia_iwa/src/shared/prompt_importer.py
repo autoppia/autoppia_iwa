@@ -13,7 +13,7 @@ class PromptImporter:
     def _load_prompt(self) -> str:
         if not os.path.exists(self.prompt_file_path):
             raise FileNotFoundError(f"Prompt file not found: {self.prompt_file_path}")
-        with open(self.prompt_file_path, 'r', encoding='utf-8') as file:
+        with open(self.prompt_file_path, encoding="utf-8") as file:
             return file.read()
 
     def get_prompt(self) -> str:

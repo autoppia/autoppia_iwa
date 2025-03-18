@@ -1,6 +1,5 @@
 import base64
 from datetime import datetime
-from typing import List, Optional
 
 from playwright.async_api import Page
 
@@ -12,7 +11,7 @@ from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSna
 
 
 class PlaywrightBrowserExecutor:
-    def __init__(self, browser_config: BrowserSpecification, page: Optional[Page] = None, backend_demo_webs_service: BackendDemoWebService = None):
+    def __init__(self, browser_config: BrowserSpecification, page: Page | None = None, backend_demo_webs_service: BackendDemoWebService = None):
         """
         Initializes the PlaywrightBrowserExecutor with a backend service and an optional Playwright page.
 
@@ -21,8 +20,8 @@ class PlaywrightBrowserExecutor:
             page: Optional Playwright page object.
         """
         self.browser_config = browser_config
-        self.page: Optional[Page] = page
-        self.action_execution_results: List[ActionExecutionResult] = []
+        self.page: Page | None = page
+        self.action_execution_results: list[ActionExecutionResult] = []
         self.backend_demo_webs_service: BackendDemoWebService = backend_demo_webs_service
 
     async def execute_single_action(self, action: BaseAction, web_agent_id: str, iteration: int, is_web_real: bool) -> ActionExecutionResult:
@@ -58,7 +57,7 @@ class PlaywrightBrowserExecutor:
             browser_snapshot = BrowserSnapshot(
                 iteration=iteration,
                 action=action,
-                prev_html=snapshot_before['html'],
+                prev_html=snapshot_before["html"],
                 current_html=snapshot_after["html"],
                 backend_events=backend_events,
                 timestamp=datetime.now(),
@@ -113,7 +112,7 @@ class PlaywrightBrowserExecutor:
             # Gracefully handle any errors during snapshot
             return {"html": "", "screenshot": "", "url": "", "error": str(e)}
 
-    async def _get_backend_events(self, web_agent_id: str, is_web_real: bool) -> List[BackendEvent]:
+    async def _get_backend_events(self, web_agent_id: str, is_web_real: bool) -> list[BackendEvent]:
         if not is_web_real:
             return await self.backend_demo_webs_service.get_backend_events(web_agent_id)
         return []

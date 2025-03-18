@@ -74,7 +74,7 @@ class TestWebAnalysisPipelineWithCache(unittest.TestCase):
                             "tag": "div",
                             "size": 4606,
                             "analysis": {
-                                "one_phrase_summary": "A registration form for creating a new account with options for first name, last name, " "email, password, confirm password, and gender.",
+                                "one_phrase_summary": "A registration form for creating a new account with options for first name, last name, email, password, confirm password, and gender.",
                                 "summary": "This section contains a registration form that allows users to create a new account by providing "
                                 "personal information such as their first name, last name, email address, password, confirm password, "
                                 "and gender. The form also includes a password-based authentication option and a 'Register' button to "
@@ -166,7 +166,7 @@ class TestWebAnalysisPipelineWithCache(unittest.TestCase):
                         },
                     ],
                     "web_summary": {
-                        "one_phrase_summary": "The website provides a platform for job seekers and employers to connect, with features for" " job registration, account creation, and navigation.",
+                        "one_phrase_summary": "The website provides a platform for job seekers and employers to connect, with features for job registration, account creation, and navigation.",
                         "summary": "The analyzed web page is a job portal system that allows job seekers to search for and register jobs, and"
                         " employers to post job listings. It includes a registration form for users to create new accounts and provides"
                         " navigation links to different sections of the site.",

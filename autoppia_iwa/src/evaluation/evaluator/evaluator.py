@@ -1,9 +1,9 @@
 # concurrent_evaluator.py
 import asyncio
+import contextlib
 import random
 import time
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
 
 from loguru import logger
 from playwright.async_api import async_playwright
@@ -34,16 +34,16 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 class ConcurrentEvaluator(IEvaluator):
     def __init__(self, web_project: WebProject, config: EvaluatorConfig):
         self.config = config
-        self._random_clicker_cache: Dict[str, Tuple[List[int], float]] = {}
+        self._random_clicker_cache: dict[str, tuple[list[int], float]] = {}
         self.total_evaluation_time = 0.0
         self.evaluation_count = 0
         self.web_project = web_project
         self.backend_demo_webs_service = BackendDemoWebService(web_project=web_project)
 
         # Statistics collection
-        self.evaluation_stats: List[EvaluationStats] = []
+        self.evaluation_stats: list[EvaluationStats] = []
         self.action_type_timing = defaultdict(list)
-        self.errors: List[str] = []
+        self.errors: list[str] = []
 
         # Configure logs minimally if not verbose
         if not self.config.verbose_logging:
@@ -76,7 +76,7 @@ class ConcurrentEvaluator(IEvaluator):
             if self.backend_demo_webs_service:
                 await self.backend_demo_webs_service.close()
 
-    async def evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
+    async def evaluate_task_solutions(self, task: Task, task_solutions: list[TaskSolution]) -> list[EvaluationResult]:
         """
         Evaluate multiple solutions for the same task, optionally grouping identical ones.
         """
@@ -239,13 +239,13 @@ class ConcurrentEvaluator(IEvaluator):
                 stats=stats,
             )
 
-    async def _group_and_evaluate_task_solutions(self, task: Task, task_solutions: List[TaskSolution]) -> List[EvaluationResult]:
+    async def _group_and_evaluate_task_solutions(self, task: Task, task_solutions: list[TaskSolution]) -> list[EvaluationResult]:
         """
         Groups identical solutions by hashing their actions, evaluates them, and clones results.
         """
         start_time = time.time()
         # Creamos un array final de resultados alineado con la lista original
-        final_results: List[Optional[EvaluationResult]] = [None] * len(task_solutions)
+        final_results: list[EvaluationResult | None] = [None] * len(task_solutions)
 
         # Agrupar según hash de acciones
         grouped_indices = defaultdict(list)
@@ -272,22 +272,17 @@ class ConcurrentEvaluator(IEvaluator):
         tasks = [self._evaluate_group_with_semaphore(task, task_solutions, group_indices, final_results, semaphore) for group_indices in grouped_task_list]
 
         # If large, log minimal progress in background
-        if len(tasks) > 5 and self.config.verbose_logging:
-            progress_tracker = asyncio.create_task(log_progress(len(tasks), interval=10))
-        else:
-            progress_tracker = None
+        progress_tracker = asyncio.create_task(log_progress(len(tasks), interval=10)) if len(tasks) > 5 and self.config.verbose_logging else None
 
         raw_results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Cancel progress tracker if used
         if progress_tracker:
             progress_tracker.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await progress_tracker
-            except asyncio.CancelledError:
-                pass
 
-        final_results: List[EvaluationResult] = []
+        final_results: list[EvaluationResult] = []
         for item in raw_results:
             if isinstance(item, Exception):
                 self.errors.append(str(item))
@@ -303,9 +298,9 @@ class ConcurrentEvaluator(IEvaluator):
     async def _evaluate_group_with_semaphore(
         self,
         task: Task,
-        task_solutions: List[TaskSolution],
-        group_indices: List[int],
-        final_results: List[Optional[EvaluationResult]],
+        task_solutions: list[TaskSolution],
+        group_indices: list[int],
+        final_results: list[EvaluationResult | None],
         semaphore: asyncio.Semaphore,
     ) -> None:
         """
@@ -359,12 +354,12 @@ class ConcurrentEvaluator(IEvaluator):
                     )
                     final_results[idx] = error_result
 
-    async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: List[BaseAction], is_web_real: bool) -> Tuple[List[ActionExecutionResult], List[float]]:
+    async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: list[BaseAction], is_web_real: bool) -> tuple[list[ActionExecutionResult], list[float]]:
         """
         Executes all actions in a Playwright browser context and returns the results + times.
         """
-        action_execution_times: List[float] = []
-        action_results: List[ActionExecutionResult] = []
+        action_execution_times: list[float] = []
+        action_results: list[ActionExecutionResult] = []
 
         async with async_playwright() as playwright:
             browser, context = None, None

@@ -1,7 +1,7 @@
 # base.py
 import logging
 from enum import Enum
-from typing import Dict, Optional, Type
+from typing import ClassVar, Optional
 
 from playwright.async_api import Page
 from pydantic import BaseModel, Field
@@ -22,7 +22,7 @@ class SelectorType(str, Enum):
 
 class Selector(BaseModel):
     type: SelectorType
-    attribute: Optional[str] = None
+    attribute: str | None = None
     value: str
     case_sensitive: bool = False
 
@@ -76,17 +76,17 @@ class Selector(BaseModel):
 class ActionRegistry:
     """Registry to store and retrieve action subclasses."""
 
-    _registry: Dict[str, Type["BaseAction"]] = {}
+    _registry: ClassVar[dict[str, type["BaseAction"]]] = {}
 
     @classmethod
-    def register(cls, action_type: str, action_class: Type["BaseAction"]):
+    def register(cls, action_type: str, action_class: type["BaseAction"]):
         """Register an action class with a simplified key."""
         # Register with a lowercase version of action_type without "Action"
         action_key = action_type.replace("Action", "").lower()
         cls._registry[action_key] = action_class
 
     @classmethod
-    def get(cls, action_type: str) -> Type["BaseAction"]:
+    def get(cls, action_type: str) -> type["BaseAction"]:
         """Retrieve an action class by its simplified key."""
         action_key = action_type.replace("Action", "").lower()
         if action_key not in cls._registry:
@@ -115,12 +115,12 @@ class BaseAction(BaseModel):
         if hasattr(cls, "type") and cls.type:
             ActionRegistry.register(cls.type, cls)
 
-    async def execute(self, page: Optional[Page], backend_service, web_agent_id: str):
+    async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         """Each subclass must implement its own `execute` logic."""
         raise NotImplementedError("Execute method must be implemented by subclasses.")
 
     @classmethod
-    def create_action(cls, action_data: Dict) -> Optional["BaseAction"]:
+    def create_action(cls, action_data: dict) -> Optional["BaseAction"]:
         """
         Create an action instance from action_data.
 
@@ -159,13 +159,13 @@ class BaseAction(BaseModel):
             action_class = ActionRegistry.get(action_type)
             return action_class(**new_action_data)
         except ValueError as ve:
-            logger.error(f"Failed to create action of type '{action_type}': {str(ve)}")
+            logger.error(f"Failed to create action of type '{action_type}': {ve!s}")
         except Exception as e:
-            logger.error(f"Error creating action of type '{action_type}': {str(e)}")
+            logger.error(f"Error creating action of type '{action_type}': {e!s}")
 
 
 class BaseActionWithSelector(BaseAction):
-    selector: Optional[Selector] = None
+    selector: Selector | None = None
 
     def validate_selector(self) -> str:
         if not self.selector:

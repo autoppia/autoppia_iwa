@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from dependency_injector.wiring import Provide
 from loguru import logger
@@ -22,7 +22,7 @@ class TestLogicGenerator:
     def __init__(self, llm_service: ILLM = Provide[DIContainer.llm_service]):
         self.llm_service = llm_service
 
-    async def generate_logic(self, task: Task, tests: List[BaseTaskTest]) -> Dict[str, Any]:
+    async def generate_logic(self, task: Task, tests: list[BaseTaskTest]) -> dict[str, Any]:
         """
         Generate a logic expression for the given task and tests.
         Returns a JSON structure that can be evaluated against the results matrix.
@@ -63,7 +63,7 @@ class TestLogicGenerator:
             # Fallback to simple AND of all tests
             return {"type": "operation", "operator": "AND", "conditions": [{"type": "test", "test_id": i + 1} for i in range(len(tests))]}
 
-    def _get_logic_schema(self) -> Dict[str, Any]:
+    def _get_logic_schema(self) -> dict[str, Any]:
         """Define the JSON schema for logic expressions."""
         return {
             "type": "object",
@@ -94,7 +94,7 @@ class TestLogicGenerator:
             "required": ["type", "operator", "conditions"],
         }
 
-    def _validate_logic_expression(self, expr: Dict[str, Any]) -> Dict[str, Any]:
+    def _validate_logic_expression(self, expr: dict[str, Any]) -> dict[str, Any]:
         """Validate the structure of the logic expression."""
         valid_operators = {"AND", "OR", "SEQUENCE", "EXISTS", "ALL"}
 

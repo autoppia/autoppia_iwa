@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from typing import Any, Dict, List
+from typing import Any
 
 from dependency_injector.wiring import Provide
 from loguru import logger
@@ -65,7 +65,7 @@ class LocalTestGenerationPipeline:
             "JudgeBaseOnScreenshot": "Use this JudgeBaseOnScreenshot test to evaluate whether a task was successfully completed based on screenshot comparisons. Best for visual verification tasks where UI changes occur but HTML modifications might be minimal.",
         }
 
-    async def add_tests_to_tasks(self, tasks: List[Task]) -> List[Task]:
+    async def add_tests_to_tasks(self, tasks: list[Task]) -> list[Task]:
         """
         Main pipeline function that adds appropriate tests to each task
         """
@@ -89,13 +89,13 @@ class LocalTestGenerationPipeline:
                     # )
                     # logger.info(f"Generated logic function for task {task.id}")
             except Exception as e:
-                logger.error(f"Failed to generate tests for task={task.id}: {str(e)}")
-                logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
+                logger.error(f"Failed to generate tests for task={task.id}: {e!s}")
+                logger.debug(f"Exception details: {type(e).__name__}, {e!r}")
                 raise e
 
         return tasks
 
-    async def _generate_tests(self, task: Task) -> List[Dict[str, Any]]:
+    async def _generate_tests(self, task: Task) -> list[dict[str, Any]]:
         """
         Generate test definitions for all test classes in a single LLM call
         with retry logic for handling JSON parsing errors
@@ -110,9 +110,9 @@ class LocalTestGenerationPipeline:
         test_class_schemas = {}
         for test_class_name, test_class in self.test_class_map.items():
             try:
-                if hasattr(test_class, 'model_json_schema'):
+                if hasattr(test_class, "model_json_schema"):
                     test_class_schemas[test_class_name] = json.dumps(test_class.model_json_schema(), indent=2)
-                elif hasattr(test_class, 'schema'):
+                elif hasattr(test_class, "schema"):
                     test_class_schemas[test_class_name] = json.dumps(test_class.schema(), indent=2)
                 else:
                     # Create a basic schema for non-pydantic classes
@@ -173,24 +173,24 @@ class LocalTestGenerationPipeline:
                 last_error = e
 
                 if retry_count < self.max_retries:
-                    logger.warning(f"Attempt {retry_count} failed: {str(e)}. Retrying in {self.retry_delay} seconds...")
+                    logger.warning(f"Attempt {retry_count} failed: {e!s}. Retrying in {self.retry_delay} seconds...")
                     # Add an emphasis on proper JSON format in the retry
                     system_prompt += "\n\nIMPORTANT: Return ONLY a valid JSON array of test objects. Each test must have a 'type' field matching one of the provided test classes."
                     time.sleep(self.retry_delay)
                 else:
-                    logger.error(f"All {self.max_retries} attempts failed. Last error: {str(e)}")
+                    logger.error(f"All {self.max_retries} attempts failed. Last error: {e!s}")
                     logger.debug(f"Last response received: {last_response}")
 
         # All retries failed
         if last_error:
-            logger.error(f"Failed to generate tests after {self.max_retries} attempts: {str(last_error)}")
-            logger.debug(f"Exception details: {type(last_error).__name__}, {repr(last_error)}")
+            logger.error(f"Failed to generate tests after {self.max_retries} attempts: {last_error!s}")
+            logger.debug(f"Exception details: {type(last_error).__name__}, {last_error!r}")
         else:
             logger.error(f"Failed to generate valid tests after {self.max_retries} attempts")
 
         return []
 
-    def _parse_llm_response(self, response: Any) -> List[Dict[str, Any]]:
+    def _parse_llm_response(self, response: Any) -> list[dict[str, Any]]:
         """
         Parse and validate the LLM response, extracting valid test definitions
         """
@@ -207,7 +207,7 @@ class LocalTestGenerationPipeline:
                 response_data = json.loads(response.strip())
             except json.JSONDecodeError:
                 # If that fails, try to extract a JSON array using regex
-                json_array_pattern = r'\[\s*{.*}\s*\]'
+                json_array_pattern = r"\[\s*{.*}\s*\]"
                 matches = re.search(json_array_pattern, response, re.DOTALL)
 
                 if matches:
@@ -216,8 +216,8 @@ class LocalTestGenerationPipeline:
                         response_data = json.loads(potential_json)
                     except json.JSONDecodeError:
                         # If regex extraction fails, try manual search for array brackets
-                        start_idx = response.find('[')
-                        end_idx = response.rfind(']')
+                        start_idx = response.find("[")
+                        end_idx = response.rfind("]")
 
                         if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
                             try:
@@ -232,14 +232,14 @@ class LocalTestGenerationPipeline:
         # If it's a dict, it might be wrapped incorrectly
         elif isinstance(response, dict):
             # Check if there's a field that contains the array
-            for key, value in response.items():
+            for _key, value in response.items():
                 if isinstance(value, list) and value and isinstance(value[0], dict):
                     response_data = value
                     break
 
             if response_data is None:
                 # Just use the dict itself if it has a 'type' field (single test case)
-                if 'type' in response and response['type'] in self.test_class_map:
+                if "type" in response and response["type"] in self.test_class_map:
                     return [response]
                 logger.warning(f"Response is a dict but doesn't contain a test array: {response}")
                 return []
@@ -266,7 +266,7 @@ class LocalTestGenerationPipeline:
 
         return all_tests
 
-    async def _instantiate_tests(self, task: Task, valid_tests: List[Dict[str, Any]]) -> None:
+    async def _instantiate_tests(self, task: Task, valid_tests: list[dict[str, Any]]) -> None:
         """
         Instantiate test objects and add them to the task
         """
@@ -292,5 +292,5 @@ class LocalTestGenerationPipeline:
                 task.tests.append(test_instance)
                 logger.info(f"Added {test_type} to task {task.id}")
             except Exception as e:
-                logger.error(f"Failed to instantiate test {test_def}: {str(e)}")
-                logger.debug(f"Exception details: {type(e).__name__}, {repr(e)}")
+                logger.error(f"Failed to instantiate test {test_def}: {e!s}")
+                logger.debug(f"Exception details: {type(e).__name__}, {e!r}")

@@ -2,7 +2,6 @@ import asyncio
 import logging
 import os
 import time
-from typing import List, Optional
 
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -23,7 +22,7 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler(), logging.FileHandler("stress_test.log")])
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[logging.StreamHandler(), logging.FileHandler("stress_test.log")])
 logger = logging.getLogger("stress_test")
 
 # -----------------------------------------------------------------------------
@@ -49,7 +48,7 @@ solution_cache = ConsolidatedSolutionCache(SOLUTIONS_CACHE_DIR)
 # -----------------------------------------------------------------------------
 # Define the agents for the stress test
 # -----------------------------------------------------------------------------
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="browser-use", host="localhost", port=9000)]
+AGENTS: list[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="browser-use", host="localhost", port=9000)]
 
 # Identifier for the browser-use agent
 BROWSER_USE_AGENT_ID = "ApifiedWebAgent-browser-use"
@@ -97,7 +96,7 @@ async def main():
         logger.info(f"\nAgent: {agent.name}")
 
         for task in tasks:
-            task_solution: Optional[TaskSolution] = None
+            task_solution: TaskSolution | None = None
 
             # Check if solution should be loaded from cache
             if USE_CACHED_SOLUTIONS and solution_cache.solution_exists(task.id, agent.id):
@@ -110,7 +109,7 @@ async def main():
                     else:
                         logger.warning(f"    Failed to load cached solution for {task.id}, will generate new one")
                 except Exception as e:
-                    logger.error(f"    Error loading cached solution: {str(e)}")
+                    logger.error(f"    Error loading cached solution: {e!s}")
 
             # Generate new solution if needed
             if task_solution is None:
@@ -137,7 +136,7 @@ async def main():
                     else:
                         logger.warning("Failed to cache solution")
                 except Exception as e:
-                    logger.error(f"Error caching solution: {str(e)}")
+                    logger.error(f"Error caching solution: {e!s}")
 
             # Store solution for evaluation phase
             all_solutions[agent.id][task.id] = task_solution

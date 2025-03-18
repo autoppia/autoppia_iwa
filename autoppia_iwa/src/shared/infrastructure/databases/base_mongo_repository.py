@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pymongo import MongoClient
 
@@ -20,7 +20,7 @@ class BaseMongoRepository:
         self.collection = mongo_client[db_name][collection_name]
 
     # SAVE (CREATE/INSERT)
-    def save(self, data: Dict) -> Any:
+    def save(self, data: dict) -> Any:
         """
         Insert a new document into the collection.
 
@@ -34,7 +34,7 @@ class BaseMongoRepository:
         return result
 
     # UPDATE
-    def update(self, query: Dict, update_data: Dict) -> Any:
+    def update(self, query: dict, update_data: dict) -> Any:
         """
         Update documents matching a query.
 
@@ -49,7 +49,7 @@ class BaseMongoRepository:
         return result
 
     # FIND_ONE
-    def find_one(self, query: Dict) -> Any:
+    def find_one(self, query: dict) -> Any:
         """
         Find a single document matching a query.
 
@@ -62,7 +62,7 @@ class BaseMongoRepository:
         return self.collection.find_one(query)
 
     # FIND_MANY
-    def find_many(self, query: Optional[Dict] = None, limit: int = 0) -> List[Any]:
+    def find_many(self, query: dict | None = None, limit: int = 0) -> list[Any]:
         """
         Find multiple documents matching a query.
 
@@ -76,7 +76,7 @@ class BaseMongoRepository:
         query = query or {}
         return list(self.collection.find(query).limit(limit))
 
-    def delete(self, query: Dict) -> Any:
+    def delete(self, query: dict) -> Any:
         """
         Delete documents matching a query.
 
@@ -90,7 +90,7 @@ class BaseMongoRepository:
         return result.deleted_count
 
     # COUNT
-    def count(self, query: Optional[Dict] = None) -> int:
+    def count(self, query: dict | None = None) -> int:
         """
         Count the number of documents matching a query.
 
@@ -104,7 +104,7 @@ class BaseMongoRepository:
         return self.collection.count_documents(query)
 
     # EXISTS
-    def exists(self, query: Dict) -> bool:
+    def exists(self, query: dict) -> bool:
         """
         Check if any document matches the given query.
 

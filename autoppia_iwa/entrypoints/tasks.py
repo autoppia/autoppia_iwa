@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-from typing import List
 
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -14,7 +13,7 @@ from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler(), logging.FileHandler("stress_test.log")])
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[logging.StreamHandler(), logging.FileHandler("stress_test.log")])
 logger = logging.getLogger("stress_test")
 
 # -----------------------------------------------------------------------------
@@ -32,7 +31,7 @@ os.makedirs(TASKS_CACHE_DIR, exist_ok=True)
 # -----------------------------------------------------------------------------
 # Define the agents for the stress test
 # -----------------------------------------------------------------------------
-AGENTS: List[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="browser-use", host="localhost", port=9000)]
+AGENTS: list[BaseAgent] = [RandomClickerWebAgent(name="Random-clicker"), ApifiedWebAgent(name="browser-use", host="localhost", port=9000)]
 
 # Identifier for the browser-use agent
 BROWSER_USE_AGENT_ID = "ApifiedWebAgent-browser-use"

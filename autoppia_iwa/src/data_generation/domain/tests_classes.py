@@ -3,9 +3,9 @@ import json
 import re
 import time
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Literal, Type
+from typing import Literal
 
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide
@@ -33,7 +33,7 @@ class ITest(ABC):
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
         """
@@ -56,7 +56,7 @@ class BaseTaskTest(BaseModel, ITest):
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
         """
@@ -71,7 +71,7 @@ class BaseTaskTest(BaseModel, ITest):
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
         """
@@ -95,7 +95,7 @@ class BaseTaskTest(BaseModel, ITest):
         in case you do not rely on the 'Union[...]' approach in your Task model.
         """
         test_type = data.get("type", "")
-        test_classes: Dict[str, Type[BaseTaskTest]] = {
+        test_classes: dict[str, type[BaseTaskTest]] = {
             "CheckUrlTest": CheckUrlTest,
             "FindInHtmlTest": FindInHtmlTest,
             "CheckEventTest": CheckEventTest,
@@ -125,7 +125,7 @@ class CheckUrlTest(BaseTaskTest):
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
         """
@@ -156,7 +156,7 @@ class FindInHtmlTest(BaseTaskTest):
         description="Description of the test",
     )
 
-    @field_validator('content')
+    @field_validator("content")
     @classmethod
     def validate_content(cls, content: str) -> str:
         if not content.strip():
@@ -165,13 +165,13 @@ class FindInHtmlTest(BaseTaskTest):
 
     def extract_text_from_html(self, html: str) -> str:
         """Extract readable text content from HTML."""
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
         # Remove script and style elements
         for script in soup(["script", "style"]):
             script.extract()
         # Get text
         text = soup.get_text(separator=" ", strip=True)
-        return re.sub(r'\s+', ' ', text).strip()
+        return re.sub(r"\s+", " ", text).strip()
 
     async def _execute_test(
         self,
@@ -179,7 +179,7 @@ class FindInHtmlTest(BaseTaskTest):
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
         """
@@ -207,7 +207,7 @@ class CheckEventTest(BaseTaskTest):
 
     type: Literal["CheckEventTest"] = "CheckEventTest"
     event_name: str
-    event_criteria: Dict = Field(default_factory=dict)
+    event_criteria: dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered")
 
     async def _execute_test(
@@ -216,7 +216,7 @@ class CheckEventTest(BaseTaskTest):
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
         """
@@ -225,8 +225,8 @@ class CheckEventTest(BaseTaskTest):
 
         if (current_iteration + 1) < total_iterations:
             return False
-        parsed_events: List[Event] = Event.parse_all(snapshot.backend_events)
-        valid_events: List[Event] = []
+        parsed_events: list[Event] = Event.parse_all(snapshot.backend_events)
+        valid_events: list[Event] = []
         for event in parsed_events:
             if event.event_name == self.event_name:
                 valid_events.append(event)
@@ -256,7 +256,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
         if current_iteration != total_iterations - 1:
@@ -276,7 +276,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
         return await self._analyze_htmls(prompt, total_iterations, differences)
 
     @staticmethod
-    def _collect_all_htmls(browser_snapshots: List[BrowserSnapshot]) -> List[str]:
+    def _collect_all_htmls(browser_snapshots: list[BrowserSnapshot]) -> list[str]:
         """
         Collects all HTMLs in order from the browser snapshots and cleans them.
         Returns a list of cleaned HTML strings.
@@ -298,7 +298,7 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
         return cleaned_htmls
 
-    async def _analyze_htmls(self, task_prompt: str, total_iteration: int, differences: List[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
+    async def _analyze_htmls(self, task_prompt: str, total_iteration: int, differences: list[str], llm_service: ILLM = Provide[DIContainer.llm_service]) -> bool:
         """
         Analyzes HTML changes using an LLM to determine success.
         """
@@ -340,7 +340,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         current_iteration: int,
         prompt: str,
         snapshot: BrowserSnapshot,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
     ) -> bool:
         if current_iteration != total_iterations - 1:
@@ -351,7 +351,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         self,
         prompt: str,
         total_iteration: int,
-        browser_snapshots: List[BrowserSnapshot],
+        browser_snapshots: list[BrowserSnapshot],
         llm_service: ILLM = Provide[DIContainer.llm_service],
     ) -> bool:
         """
@@ -407,7 +407,7 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
     log_entry = {
         "test_type": test_type,
         "final_test_result": final_result,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "task": prompt,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
@@ -424,5 +424,5 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
         log_file.parent.mkdir(parents=True, exist_ok=True)
         with log_file.open("a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
-    except IOError as e:
+    except OSError as e:
         print(f"[ERROR] Failed to write to log file: {e}")

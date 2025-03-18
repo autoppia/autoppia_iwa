@@ -1,6 +1,5 @@
 import json
 import unittest
-from typing import List, Optional
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -22,7 +21,7 @@ USE_CACHED_TASKS = True
 NUMBER_OF_TASKS = 1
 
 
-def load_tasks_from_json() -> Optional[List[Task]]:
+def load_tasks_from_json() -> list[Task] | None:
     """
     Loads tasks from a project-specific JSON file if available and valid.
     """
@@ -42,7 +41,7 @@ def load_tasks_from_json() -> Optional[List[Task]]:
 # ============================================================
 
 
-async def generate_tasks_for_project(demo_project: WebProject) -> List[Task]:
+async def generate_tasks_for_project(demo_project: WebProject) -> list[Task]:
     """
     Generates tasks for the given demo project.
     If USE_CACHED_TASKS is True, attempts to load from the project-specific cache first.
@@ -103,7 +102,7 @@ class TestActionsGeneration(unittest.IsolatedAsyncioTestCase):
             # Debugging output (optional)
             print(f"Generated {len(task_solution.actions)} actions:")
             for idx, action in enumerate(task_solution.actions, start=1):
-                print(f"{idx}: {repr(action)}")
+                print(f"{idx}: {action!r}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 import statistics
 import time
-from typing import Dict, List
 
 
 class TimingMetrics:
@@ -10,8 +9,8 @@ class TimingMetrics:
         self.start_time = None
         self.end_time = None
         # Structure: {agent_id: {task_id: float}} for solution & evaluation times
-        self.solution_times: Dict[str, Dict[str, float]] = {}
-        self.evaluation_times: Dict[str, Dict[str, float]] = {}
+        self.solution_times: dict[str, dict[str, float]] = {}
+        self.evaluation_times: dict[str, dict[str, float]] = {}
 
     def start(self):
         """Start the overall timing."""
@@ -50,7 +49,7 @@ class TimingMetrics:
         return statistics.mean(times) if times else 0.0
 
 
-def compute_statistics(values: List[float]) -> dict:
+def compute_statistics(values: list[float]) -> dict:
     """
     Compute basic statistics for a list of numeric values.
 

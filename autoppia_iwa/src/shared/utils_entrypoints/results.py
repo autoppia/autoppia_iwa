@@ -48,7 +48,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
             "tasks": agent_tasks,
         }
 
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         json.dump(output_data, f, indent=2)
 
     print(f"\nDetailed results saved to '{filename}'")
@@ -70,7 +70,7 @@ def print_performance_statistics(results, agents, timing_metrics: TimingMetrics)
 
         agent_scores = []
         if agent.id in results:
-            for task_id, data in results[agent.id].items():
+            for _task_id, data in results[agent.id].items():
                 agent_scores.append(data["score"])
 
         stats = compute_statistics(agent_scores)
@@ -92,11 +92,10 @@ def print_performance_statistics(results, agents, timing_metrics: TimingMetrics)
         print(f"  Average evaluation time: {avg_evaluation:.2f} seconds")
 
         # Print caching info for browser-use agent
-        if agent.name == "browser-use":
+        if agent.name == "browser-use" and agent.id in results:
             # Count tasks with solutions
-            if agent.id in results:
-                num_tasks = len(results[agent.id])
-                print(f"  Number of tasks with browser-use solutions cached: {num_tasks}")
+            num_tasks = len(results[agent.id])
+            print(f"  Number of tasks with browser-use solutions cached: {num_tasks}")
 
 
 def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> str:
@@ -131,32 +130,32 @@ def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
 
     # 1) Average Scores
-    bars1 = ax1.bar(agent_names, avg_scores, color=['skyblue', 'lightgreen'])
+    bars1 = ax1.bar(agent_names, avg_scores, color=["skyblue", "lightgreen"])
     ax1.set_ylim(0, 10)
-    ax1.set_ylabel('Average Score')
-    ax1.set_title('Agent Performance: Average Scores')
+    ax1.set_ylabel("Average Score")
+    ax1.set_title("Agent Performance: Average Scores")
 
-    for bar, score in zip(bars1, avg_scores):
+    for bar, score in zip(bars1, avg_scores, strict=False):
         height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{score:.2f}', ha='center', va='bottom')
+        ax1.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f"{score:.2f}", ha="center", va="bottom")
 
     # 2) Average Solution Times
-    bars2 = ax2.bar(agent_names, solution_times, color=['coral', 'khaki'])
-    ax2.set_ylabel('Average Solution Time (seconds)')
-    ax2.set_title('Agent Performance: Solution Times')
+    bars2 = ax2.bar(agent_names, solution_times, color=["coral", "khaki"])
+    ax2.set_ylabel("Average Solution Time (seconds)")
+    ax2.set_title("Agent Performance: Solution Times")
 
-    for bar, time_val in zip(bars2, solution_times):
+    for bar, time_val in zip(bars2, solution_times, strict=False):
         height = bar.get_height()
-        ax2.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{time_val:.2f}s', ha='center', va='bottom')
+        ax2.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f"{time_val:.2f}s", ha="center", va="bottom")
 
     # 3) Average Evaluation Times
-    bars3 = ax3.bar(agent_names, evaluation_times, color=['lightblue', 'lightgreen'])
-    ax3.set_ylabel('Average Evaluation Time (seconds)')
-    ax3.set_title('Agent Performance: Evaluation Times')
+    bars3 = ax3.bar(agent_names, evaluation_times, color=["lightblue", "lightgreen"])
+    ax3.set_ylabel("Average Evaluation Time (seconds)")
+    ax3.set_title("Agent Performance: Evaluation Times")
 
-    for bar, time_val in zip(bars3, evaluation_times):
+    for bar, time_val in zip(bars3, evaluation_times, strict=False):
         height = bar.get_height()
-        ax3.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f'{time_val:.2f}s', ha='center', va='bottom')
+        ax3.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f"{time_val:.2f}s", ha="center", va="bottom")
 
     plt.tight_layout()
 
@@ -200,9 +199,9 @@ def plot_task_comparison(results, agents, tasks, output_dir: str) -> str:
 
     task_labels = [f"Task {i + 1}" for i in range(len(selected_tasks))]
     ax.set_xticks([pos + bar_width / 2 for pos in x])
-    ax.set_xticklabels(task_labels, rotation=45, ha='right')
-    ax.set_ylabel('Score')
-    ax.set_title('Agent Performance by Task')
+    ax.set_xticklabels(task_labels, rotation=45, ha="right")
+    ax.set_ylabel("Score")
+    ax.set_title("Agent Performance by Task")
     ax.set_ylim(0, 10)
     ax.legend(handles=legend_handles, labels=[agent.name for agent in agents])
 

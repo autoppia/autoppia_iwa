@@ -1,92 +1,92 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from faker import Faker
 from pydantic import AnyUrl, BaseModel, Field, field_validator
 
 
 class Genre(BaseModel):
-    id: Optional[int] = None
+    id: int | None = None
     name: str = Field(max_length=100)
 
     model_config = {"from_attributes": True}
 
 
 class Comment(BaseModel):
-    id: Optional[int] = None
+    id: int | None = None
     movie_id: int
     name: str = Field(max_length=100)
     content: str
-    created_at: Optional[datetime] = None
-    avatar: Optional[str] = None
+    created_at: datetime | None = None
+    avatar: str | None = None
 
     model_config = {"from_attributes": True}
 
 
 class Movie(BaseModel):
-    id: Optional[int] = None
+    id: int | None = None
     name: str = Field(max_length=250)
     desc: str
     year: int = Field(ge=1900, le=2100)
     img: str
-    director: Optional[str] = Field(None, max_length=250)
-    cast: Optional[str] = None
-    duration: Optional[int] = Field(None, description="Duration in minutes")
-    trailer_url: Optional[AnyUrl] = None
+    director: str | None = Field(None, max_length=250)
+    cast: str | None = None
+    duration: int | None = Field(None, description="Duration in minutes")
+    trailer_url: AnyUrl | None = None
     rating: float = Field(0.0, ge=0.0, le=5.0, description="Rating between 0 and 5")
-    genres: List[Genre] = []
-    comments: List[Comment] = []
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    genres: list[Genre] = []
+    comments: list[Comment] = []
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
-    @field_validator('cast', mode='before')
+    @field_validator("cast", mode="before")
     @classmethod
     def cast_to_list(cls, v):
         if not v:
             return []
-        return [actor.strip() for actor in v.split(',') if actor.strip()]
+        return [actor.strip() for actor in v.split(",") if actor.strip()]
 
     def get_genre_list(self) -> str:
         return ", ".join([g.name for g in self.genres])
 
-    def get_cast_list(self) -> List[str]:
+    def get_cast_list(self) -> list[str]:
         if not self.cast:
             return []
-        return [actor.strip() for actor in self.cast.split(',') if actor.strip()]
+        return [actor.strip() for actor in self.cast.split(",") if actor.strip()]
 
 
 class UserProfile(BaseModel):
-    id: Optional[int] = None
+    id: int | None = None
     user_id: int
-    bio: Optional[str] = Field(None, max_length=500)
-    profile_pic: Optional[str] = None
-    favorite_genres: List[Genre] = []
-    website: Optional[AnyUrl] = None
-    location: Optional[str] = Field(None, max_length=100)
+    bio: str | None = Field(None, max_length=500)
+    profile_pic: str | None = None
+    favorite_genres: list[Genre] = []
+    website: AnyUrl | None = None
+    location: str | None = Field(None, max_length=100)
 
     model_config = {"from_attributes": True}
 
 
 class User(BaseModel):
-    id: Optional[int] = None
+    id: int | None = None
     username: str
     email: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    profile: Optional[UserProfile] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    profile: UserProfile | None = None
 
     model_config = {"from_attributes": True}
 
 
 class ContactMessage(BaseModel):
-    id: Optional[int] = None
+    id: int | None = None
     name: str = Field(max_length=100)
     email: str
     subject: str = Field(max_length=200)
     message: str
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -120,7 +120,7 @@ def generate_fake_movie() -> Movie:
     )
 
 
-def generate_fake_comment(movie_id: Optional[int] = None) -> Comment:
+def generate_fake_comment(movie_id: int | None = None) -> Comment:
     return Comment(
         id=faker.random_int(min=1, max=1000),
         movie_id=movie_id or faker.random_int(min=1, max=100),
@@ -131,7 +131,7 @@ def generate_fake_comment(movie_id: Optional[int] = None) -> Comment:
     )
 
 
-def generate_fake_user_profile(user_id: Optional[int] = None) -> UserProfile:
+def generate_fake_user_profile(user_id: int | None = None) -> UserProfile:
     return UserProfile(
         id=faker.random_int(min=1, max=1000),
         user_id=user_id or faker.random_int(min=1, max=100),
@@ -154,7 +154,7 @@ def generate_fake_contact_message() -> ContactMessage:
     )
 
 
-def generate_fake_data(count: int = 5) -> Dict[str, List[Any]]:
+def generate_fake_data(count: int = 5) -> dict[str, list[Any]]:
     """Generate fake data for all models"""
     movies = [generate_fake_movie() for _ in range(count)]
 
