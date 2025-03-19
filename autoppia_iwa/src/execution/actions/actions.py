@@ -248,43 +248,54 @@ class GetDropDownOptions(BaseActionWithSelector):
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         xpath = self.validate_selector()
         all_options = []
+        found_dropdown = False
 
         for i, frame in enumerate(page.frames):
             try:
                 options = await frame.evaluate(
                     """
-                    (xp) => {
-                        const select = document.evaluate(xp, document, null,
-                            XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                        if (!select) return null;
-                        return {
-                            options: Array.from(select.options).map(opt => ({
-                                text: opt.text,
-                                value: opt.value,
-                                index: opt.index
-                            })),
-                            id: select.id,
-                            name: select.name
-                        };
+                    (xpath) => {
+                        try {
+                            const select = document.evaluate(xpath, document, null,
+                                XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                            if (!select) return null;
+                            return {
+                                options: Array.from(select.options).map(opt => ({
+                                    text: opt.text.trim(),
+                                    value: opt.value,
+                                    index: opt.index
+                                })),
+                                id: select.id || null,
+                                name: select.name || null
+                            };
+                        } catch (e) {
+                            return { error: e.toString() };
+                        }
                     }
                     """,
                     xpath,
                 )
-                if options:
-                    action_logger.debug(f"Found dropdown in frame {i}")
-                    formatted = []
-                    for opt in options["options"]:
-                        encoded_text = json.dumps(opt["text"])
-                        formatted.append(f"{opt['index']}: text={encoded_text}")
-                    all_options.extend(formatted)
+
+                if options and "error" not in options:
+                    found_dropdown = True
+                    action_logger.debug(f"Dropdown found in frame {i} (ID: {options.get('id')}, Name: {options.get('name')})")
+
+                    formatted_options = [f"{opt['index']}: text={json.dumps(opt['text'])}" for opt in options["options"]]
+                    all_options.extend(formatted_options)
+
+                    # Stop searching after finding the first dropdown with options
+                    break
+                elif "error" in options:
+                    action_logger.debug(f"Frame {i} evaluation error: {options['error']}")
+
             except Exception as e:
                 action_logger.debug(f"Frame {i} evaluate error: {e!s}")
 
-        if all_options:
+        if found_dropdown:
             msg = "\n".join(all_options) + "\nUse the exact string in SelectDropDownOption"
             action_logger.info(msg)
         else:
-            action_logger.info("No options found in any frame for dropdown")
+            action_logger.warning("No dropdown options found in any frame.")
 
 
 class SelectDropDownOption(BaseActionWithSelector):
@@ -300,28 +311,34 @@ class SelectDropDownOption(BaseActionWithSelector):
             try:
                 dropdown_info = await frame.evaluate(
                     """
-                    (xp) => {
-                        const select = document.evaluate(xp, document, null,
-                            XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                        if (!select) return { found: false, error: 'No select found' };
-                        if (select.tagName.toLowerCase() !== 'select') {
+                    (xpath) => {
+                        try {
+                            const select = document.evaluate(xpath, document, null,
+                                XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                            if (!select) return null;
+                            if (select.tagName.toLowerCase() !== 'select') {
+                                return {
+                                    error: `Found element but it's a ${select.tagName}, not a SELECT`,
+                                    found: false
+                                };
+                            }
                             return {
-                                found: false,
-                                error: `Element is ${select.tagName}, not SELECT`
+                                id: select.id,
+                                name: select.name,
+                                found: true,
+                                tagName: select.tagName,
+                                optionCount: select.options.length,
+                                currentValue: select.value,
+                                availableOptions: Array.from(select.options).map(o => o.text.trim())
                             };
+                        } catch (e) {
+                            return { error: e.toString(), found: false };
                         }
-                        return {
-                            found: true,
-                            id: select.id,
-                            name: select.name,
-                            optionCount: select.options.length,
-                            currentValue: select.value,
-                            availableOptions: Array.from(select.options).map(o => o.text.trim())
-                        };
                     }
                     """,
                     xpath,
                 )
+
                 if dropdown_info.get("found"):
                     selected = await frame.locator(xpath).nth(0).select_option(label=self.text, timeout=1000)
                     action_logger.info(f"Selected '{self.text}' => {selected} in frame {i}")
