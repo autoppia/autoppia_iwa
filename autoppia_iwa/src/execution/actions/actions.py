@@ -242,7 +242,7 @@ class SendKeysIWAAction(BaseAction):
 
 
 class GetDropDownOptions(BaseActionWithSelector):
-    type: Literal["GetDropDownOptions"] = "GetDropDownOptions"
+    type: Literal["GetDropDownOptionsAction"] = "GetDropDownOptionsAction"
 
     @log_action("GetDropDownOptions")
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
@@ -288,7 +288,7 @@ class GetDropDownOptions(BaseActionWithSelector):
 
 
 class SelectDropDownOption(BaseActionWithSelector):
-    type: Literal["SelectDropDownOption"] = "SelectDropDownOption"
+    type: Literal["SelectDropDownOptionAction"] = "SelectDropDownOptionAction"
     text: str
 
     @log_action("SelectDropDownOption")
