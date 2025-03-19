@@ -1,8 +1,8 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import FilmDetailEvent
-from .replace_functions import view_film_detail_replace_func
+from .events import AddFilmEvent, EditFilmEvent, FilmDetailEvent
+from .replace_functions import add_film_replace_func, edit_film_replace_func, view_film_detail_replace_func
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
@@ -224,106 +224,150 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    # UseCase(
-    #     name="Add Film",
-    #     description="The user adds a new film to the system.",
-    #     event=AddFilmEvent,
-    #     event_source_code=AddFilmEvent.get_source_code_of_class(),
-    #     examples=[
-    #         {
-    #             "type": "CheckEventTest",
-    #             "event_name": "AddFilmEvent",
-    #             "criteria": {},
-    #         },
-    #     ],
-    # ),
-    # UseCase(
-    #     name="Edit Film Details",
-    #     description="The user edits an existing film's details, such as name, director, year, genres, rating, or cast.",
-    #     event=EditFilmEvent,
-    #     event_source_code=EditFilmEvent.get_source_code_of_class(),
-    #     examples=[
-    #         {
-    #             "prompt": "Update the movie name to <new_movie_name>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "EDIT_FILM",
-    #                 "criteria": {"name": "<new_movie_name>", "changed_field": "movie_name"},
-    #                 "reasoning": "This test ensures that updating the movie name is correctly registered.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Change the director of <movie_name> to <new_director>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "EDIT_FILM",
-    #                 "criteria": {"name": "<movie_name>", "director": "<new_director>",
-    #                              "changed_field": "movie_director"},
-    #                 "reasoning": "This test ensures that changing the movie director is correctly recorded.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Modify the release year of <movie_name> to <new_year>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "EDIT_FILM",
-    #                 "criteria": {"name": "<movie_name>", "year": "<new_year>", "changed_field": "movie_year"},
-    #                 "reasoning": "This test ensures that modifying the release year is properly tracked.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Update the genres of <movie_name> to include <new_genre>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "EDIT_FILM",
-    #                 "criteria": {"name": "<movie_name>", "genre": "<new_genre>", "changed_field": "movie_genres"},
-    #                 "reasoning": "This test ensures that adding a new genre to the movie is correctly reflected.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Set the rating of <movie_name> to <new_rating>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "EDIT_FILM",
-    #                 "criteria": {"name": "<movie_name>", "rating": "<new_rating>", "changed_field": "movie_rating"},
-    #                 "reasoning": "This test ensures that updating the movie rating is correctly applied.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Modify the movie duration of <movie_name> to <new_duration> minutes",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "EDIT_FILM",
-    #                 "criteria": {"name": "<movie_name>", "changed_field": "movie_duration"},
-    #                 "reasoning": "This test ensures that changing the movie duration is recorded.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Change the cast of <movie_name> to include <new_cast>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "EDIT_FILM",
-    #                 "criteria": {"name": "<movie_name>", "changed_field": "movie_cast"},
-    #                 "reasoning": "This test ensures that updating the cast list is correctly captured.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Edit multiple fields of <movie_name>: change director to <new_director>, update year to <new_year>, and set rating to <new_rating>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "EDIT_FILM",
-    #                 "criteria": {
-    #                     "name": "<movie_name>",
-    #                     "director": "<new_director>",
-    #                     "year": "<new_year>",
-    #                     "rating": "<new_rating>",
-    #                     "changed_field": ["movie_director", "movie_year", "movie_rating"],
-    #                 },
-    #                 "reasoning": "This test ensures that multiple changes are recorded correctly in a single edit event.",
-    #             },
-    #         },
-    #     ],
-    # ),
+    UseCase(
+        name="Add Film",
+        description="The user adds a new film to the system, specifying details such as name, director, year, genres, rating, duration, and cast.",
+        event=AddFilmEvent,
+        event_source_code=AddFilmEvent.get_source_code_of_class(),
+        replace_func=add_film_replace_func,
+        examples=[
+            {
+                "prompt": "Add a new film called <movie_name>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_FILM",
+                    "criteria": {"name": "<movie_name>"},
+                    "reasoning": "This test ensures that when a user adds a film, the correct movie name is captured in the event.",
+                },
+            },
+            {
+                "prompt": "Add the movie <movie_name> directed by <director>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_FILM",
+                    "criteria": {"name": "<movie_name>", "director": "<director>"},
+                    "reasoning": "This test validates that when a user specifies a director while adding a film, the event correctly captures the movie name and director.",
+                },
+            },
+            {
+                "prompt": "Add the film <movie_name> released in <year>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_FILM",
+                    "criteria": {"name": "<movie_name>", "year": "<year>"},
+                    "reasoning": "This test checks if the event records the movie name and release year correctly when a user provides them.",
+                },
+            },
+            {
+                "prompt": "Add a movie named <movie_name> with a rating of <rating>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_FILM",
+                    "criteria": {"name": "<movie_name>", "rating": "<rating>"},
+                    "reasoning": "This test ensures that when a user specifies a rating for a movie, the event correctly records the rating information.",
+                },
+            },
+            {
+                "prompt": "Add the movie <movie_name> with the genre <genre>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_FILM",
+                    "criteria": {"name": "<movie_name>", "genre": "<genre>"},
+                    "reasoning": "This test validates that when a user specifies a genre while adding a movie, the event includes the genre information.",
+                },
+            },
+            {
+                "prompt": "Add the movie <movie_name> with a duration of <duration> minutes",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_FILM",
+                    "criteria": {"name": "<movie_name>", "duration": "<duration>"},
+                    "reasoning": "This test ensures that when a user provides a duration while adding a movie, the event correctly logs the duration information.",
+                },
+            },
+            {
+                "prompt": "Add a movie <movie_name> starring <cast>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_FILM",
+                    "criteria": {"name": "<movie_name>", "cast": "<cast>"},
+                    "reasoning": "This test ensures that when a user specifies the cast while adding a movie, the event captures and records the cast details.",
+                },
+            },
+        ],
+    ),
+    UseCase(
+        name="Edit Film",
+        description="The user edits an existing film in the system, updating details such as name, director, year, genres, rating, duration, and cast.",
+        event=EditFilmEvent,
+        event_source_code=EditFilmEvent.get_source_code_of_class(),
+        replace_func=edit_film_replace_func,
+        examples=[
+            {
+                "prompt": "Change the name of the movie with ID <movie_id> to <new_movie_name>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "EDIT_FILM",
+                    "criteria": {"movie_id": "<movie_id>", "name": "<new_movie_name>", "changed_field": "name"},
+                    "reasoning": "This test ensures that when a user updates a movie's name, the event correctly captures the change.",
+                },
+            },
+            {
+                "prompt": "Update the director of the film with ID <movie_id> to <new_director>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "EDIT_FILM",
+                    "criteria": {"movie_id": "<movie_id>", "director": "<new_director>", "changed_field": "director"},
+                    "reasoning": "This test verifies that when a user modifies the director of a film, the event properly records the update.",
+                },
+            },
+            {
+                "prompt": "Modify the release year of the movie with ID <movie_id> to <new_year>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "EDIT_FILM",
+                    "criteria": {"movie_id": "<movie_id>", "year": "<new_year>", "changed_field": "year"},
+                    "reasoning": "This test checks if the event accurately reflects a change in the release year of a film.",
+                },
+            },
+            {
+                "prompt": "Change the rating of the film with ID <movie_id> to <new_rating>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "EDIT_FILM",
+                    "criteria": {"movie_id": "<movie_id>", "rating": "<new_rating>", "changed_field": "rating"},
+                    "reasoning": "This test ensures that updating a film's rating is correctly captured in the event.",
+                },
+            },
+            {
+                "prompt": "Update the genre of the movie with ID <movie_id> to <new_genre>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "EDIT_FILM",
+                    "criteria": {"movie_id": "<movie_id>", "genre": "<new_genre>", "changed_field": "genre"},
+                    "reasoning": "This test validates that changes to a film's genre are reflected accurately in the event.",
+                },
+            },
+            {
+                "prompt": "Edit the duration of the film with ID <movie_id> to <new_duration> minutes",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "EDIT_FILM",
+                    "criteria": {"movie_id": "<movie_id>", "duration": "<new_duration>", "changed_field": "duration"},
+                    "reasoning": "This test checks if the event correctly records changes to the film duration.",
+                },
+            },
+            {
+                "prompt": "Update the cast of the movie with ID <movie_id> to <new_cast>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "EDIT_FILM",
+                    "criteria": {"movie_id": "<movie_id>", "cast": "<new_cast>", "changed_field": "cast"},
+                    "reasoning": "This test ensures that modifications to a film's cast are properly recorded.",
+                },
+            },
+        ],
+    ),
     # UseCase(
     #     name="Delete Film",
     #     description="The user deletes a film from the system.",
