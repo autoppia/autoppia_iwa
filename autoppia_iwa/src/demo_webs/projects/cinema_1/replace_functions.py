@@ -30,7 +30,7 @@ def filter_film_replace_func(text: str) -> str:
         return text
 
     replacements = {
-        "<year>": "2021",
+        "<year>": "2001",
         "<genre>": "Action",
         "<movie_name>": "The Lord of the Rings: The Fellowship of the Ring",
     }
