@@ -1,15 +1,15 @@
 {
   "project_id": "cinema",
   "project_name": "Autoppia Cinema",
-  "timestamp": "2025-03-19T20:17:31.807376",
+  "timestamp": "2025-03-19T20:26:03.098598",
   "tasks": [
     {
-      "id": "75bfe76c-b717-4adb-ba6c-3b9a1012270c",
+      "id": "5afcd1e1-32f4-4c0c-abea-66b2bc268078",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Complete the signup process by providing username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, and password:password123",
+      "prompt": "Complete the registration process using username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, and password:password123",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -32,7 +32,7 @@
             "username": "newuser<web_agent_id>"
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test verifies that the Web Agent successfully completed the registration process by ensuring a registration event was triggered with the specified username 'newuser<web_agent_id>'. This confirms the user account was created as instructed in the task prompt."
+          "reasoning": "This test ensures that the registration event is triggered with the specific username format required by the task, confirming that the registration process is completed using the correct username."
         }
       ],
       "milestones": null,
@@ -102,12 +102,12 @@
       }
     },
     {
-      "id": "68f7fb8d-4d92-4225-8a13-3c34dd178313",
+      "id": "c25d92f3-1a16-445c-a5a0-2f2986dd1e93",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Enter the login credentials with username:user<web_agent_id> and password:password123 to access the account",
+      "prompt": "Enter the website using the login form with username:user<web_agent_id> and password:password123",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -130,7 +130,7 @@
             "username": "user<web_agent_id>"
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test validates that the login event was triggered with the correct username as specified in the task prompt, confirming the agent successfully logged in with the provided credentials."
+          "reasoning": "This test is necessary to verify that the agent successfully logs into the website using the specified username format. The correct triggering of a LOGIN event with the expected username confirms the task's completion."
         }
       ],
       "milestones": null,
@@ -199,12 +199,12 @@
       }
     },
     {
-      "id": "181eac49-bea5-4163-9669-183da2a0df1d",
+      "id": "463964d5-fac2-4482-a6cc-ae9a3ec686dc",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Find the film titled 'Inception' in the database",
+      "prompt": "Look for a film titled 'The Matrix'",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -224,10 +224,10 @@
           "type": "CheckEventTest",
           "event_name": "SEARCH_FILM",
           "event_criteria": {
-            "query": "Inception"
+            "query": "The Matrix"
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test is necessary to verify that the Web Agent correctly searches for the specific film title 'Inception' as required by the task prompt."
+          "reasoning": "This test applies when the task requires searching for a specific film title 'The Matrix'. It verifies that the search event is triggered with the correct query."
         }
       ],
       "milestones": null,

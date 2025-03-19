@@ -13,7 +13,7 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
-from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
@@ -153,38 +153,48 @@ async def generate_solution_for_task(demo_project: WebProject, agent: BaseAgent,
 
 async def run_evaluation(demo_project: WebProject, tasks: List[Task], timing_metrics: TimingMetrics):
     """
-    Orchestrate the solution generation for each (Task, Agent) pair,
-    then evaluate ALL tasks at once via the ConcurrentEvaluator's
-    `evaluate_all_tasks_solutions(...)` method.
-    """
-    from collections import defaultdict
+    For each Task:
+      - Generate solutions from ALL Agents
+      - Pass them to the ConcurrentEvaluator in a single call:
+         evaluator.evaluate_task_solutions(task, solutions_for_this_task)
 
-    # Dictionary mapping: task_id -> list of TaskSolution (one solution per Agent)
-    solutions_by_task: Dict[str, List[TaskSolution]] = defaultdict(list)
-    task_solutions = []
+    Then collect results in a structure for final reporting and plotting.
+    """
+    final_results: Dict[str, Dict[str, Dict]] = {}
+
+    # Create a single evaluator to handle all tasks in this project
     evaluator = ConcurrentEvaluator(
         web_project=demo_project,
         config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20),
     )
-    # 1) Generate solutions for each Task and Agent
-    for task in tasks:
-        for agent in AGENTS:
-            task_solution = await generate_solution_for_task(demo_project, agent, task, timing_metrics)
-            solutions_by_task[task.id].append(task_solution)
-            task_solutions.append(task_solution)
-        evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
-        print(evaluation_results)
-    final_results: Dict[str, Dict[str, Dict]] = {}
 
-    # for task_id, eval_results in evaluation_results.items():
-    #     for eval_result in eval_results:
-    #         agent_id = eval_result.web_agent_id
-    #         if agent_id not in final_results:
-    #             final_results[agent_id] = {}
-    #         final_results[agent_id][task_id] = {
-    #             "score": eval_result.final_score,
-    #             "evaluation_result": eval_result
-    #         }
+    # Evaluate each task (with all agent solutions)
+    for task in tasks:
+        logger.info(f"\n=== Processing Task {task.id} ===")
+
+        # 1) Generate solutions for this Task from ALL agents
+        solutions_for_this_task: List[TaskSolution] = []
+        for agent in AGENTS:
+            sol = await generate_solution_for_task(demo_project, agent, task, timing_metrics)
+            solutions_for_this_task.append(sol)
+
+        # 2) Evaluate these solutions in a single call
+        logger.info(f"Evaluating {len(solutions_for_this_task)} solutions for Task {task.id}...")
+        evaluation_results: List[EvaluationResult] = await evaluator.evaluate_task_solutions(task, solutions_for_this_task)
+
+        # (Optional) Print a quick summary in the console/logs
+        for eval_result in evaluation_results:
+            logger.info(
+                f"  -> Agent {eval_result.web_agent_id} | Score = {eval_result.final_score:.2f} "
+                f"(Raw: {eval_result.raw_score:.2f}, Tests Passed: {eval_result.stats.tests_passed}/{eval_result.stats.total_tests})"
+            )
+
+        # 3) Store the results in a dict for final stats/plots
+        for eval_result in evaluation_results:
+            agent_id = eval_result.web_agent_id
+            if agent_id not in final_results:
+                final_results[agent_id] = {}
+            final_results[agent_id][task.id] = {"score": eval_result.final_score, "evaluation_result": eval_result}
 
     # 4) Print and plot results
     print_performance_statistics(final_results, AGENTS, timing_metrics)
@@ -204,7 +214,7 @@ async def main():
     if not config.evaluate_real_tasks:
         # Load/Initialize demo projects
         web_projects = await initialize_demo_webs_projects(demo_web_projects)
-        # For simplicity, only take the first one (or any subset you need)
+        # For simplicity, only take the first project (or however many you want)
         web_projects = [web_projects[0]]
 
         for project in web_projects:
