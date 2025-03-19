@@ -1,8 +1,8 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import FilterFilmEvent
-from .replace_functions import filter_film_replace_func
+from .events import FilmDetailEvent
+from .replace_functions import view_film_detail_replace_func
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
@@ -117,19 +117,69 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    # UseCase(
-    #     name="Film Detail View",
-    #     description="The user views the details page of a film.",
-    #     event=FilmDetailEvent,
-    #     event_source_code=FilmDetailEvent.get_source_code_of_class(),
-    #     examples=[
-    #         {
-    #             "type": "CheckEventTest",
-    #             "event_name": "FilmDetailEvent",
-    #             "criteria": {},
-    #         }
-    #     ],
-    # ),
+    UseCase(
+        name="View Film Details",
+        description="The user views the details of a specific movie, including information such as the director, year, genres, rating, duration, and cast.",
+        event=FilmDetailEvent,
+        event_source_code=FilmDetailEvent.get_source_code_of_class(),
+        replace_func=view_film_detail_replace_func,
+        examples=[
+            {
+                "prompt": "Show details for the movie <movie_name>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILM_DETAILS",
+                    "criteria": {"name": "<movie_name>"},
+                    "reasoning": "This test ensures that when the user requests details for a specific movie, the correct movie name is captured in the event.",
+                },
+            },
+            {
+                "prompt": "Show details for the movie <movie_name> directed by <director>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILM_DETAILS",
+                    "criteria": {"name": "<movie_name>", "director": "<director>"},
+                    "reasoning": "This test ensures that when a user requests movie details with a director's name, the event captures the correct movie and director information.",
+                },
+            },
+            {
+                "prompt": "Show information about the movie <movie_name> released in <year>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILM_DETAILS",
+                    "criteria": {"name": "<movie_name>", "year": "<year>"},
+                    "reasoning": "This test validates that the event correctly records the movie's name and release year when viewing film details.",
+                },
+            },
+            {
+                "prompt": "Give me details on <movie_name> including its rating",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILM_DETAILS",
+                    "criteria": {"name": "<movie_name>", "rating": True},
+                    "reasoning": "This test ensures that when a user specifically requests movie details including the rating, the event captures and records the rating information.",
+                },
+            },
+            {
+                "prompt": "I want to see details of <movie_name> and its genre",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILM_DETAILS",
+                    "criteria": {"name": "<movie_name>", "genre": True},
+                    "reasoning": "This test checks if the movie genre is correctly included when a user asks for movie details including genre information.",
+                },
+            },
+            {
+                "prompt": "What is the duration of <movie_name>?",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILM_DETAILS",
+                    "criteria": {"name": "<movie_name>", "duration": True},
+                    "reasoning": "This test ensures that when a user requests the duration of a movie, the event logs the duration field correctly.",
+                },
+            },
+        ],
+    ),
     # UseCase(
     #     name="Search Film",
     #     description="The user searches for a film using a query.",
@@ -326,67 +376,67 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    UseCase(
-        name="Filter Films",
-        description="The user applies filters to search for films by genre and/or year.",
-        event=FilterFilmEvent,
-        event_source_code=FilterFilmEvent.get_source_code_of_class(),
-        replace_func=filter_film_replace_func,
-        examples=[
-            {
-                "prompt": "Filter movies released in the year <year>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"year": "<year>", "has_year_filter": True},
-                    "reasoning": "This test applies when the task requires filtering movies by a specific release year.",
-                },
-            },
-            {
-                "prompt": "Find action movies",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"genre_name": "Action", "has_genre_filter": True},
-                    "reasoning": "This test applies when the task requires filtering movies by the 'Action' genre.",
-                },
-            },
-            {
-                "prompt": "Search for films from the year <year> in the genre <genre>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"year": "<year>", "genre_name": "<genre>", "has_year_filter": True, "has_genre_filter": True},
-                    "reasoning": "This test applies when the task requires filtering movies by both year and genre.",
-                },
-            },
-            {
-                "prompt": "Show movies from <year>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"year": "<year>", "has_year_filter": True},
-                    "reasoning": "This test ensures that filtering by year correctly applies the given criteria.",
-                },
-            },
-            {
-                "prompt": "Show only <genre> movies",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"genre_name": "<genre>", "has_genre_filter": True},
-                    "reasoning": "This test verifies that filtering by genre works as expected.",
-                },
-            },
-            {
-                "prompt": "Show details for the movie <movie_name>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"genre_name": "<movie_name>"},
-                    "reasoning": "This test ensures that accessing a movie's details works correctly.",
-                },
-            },
-        ],
-    ),
+    # UseCase(
+    #     name="Filter Films",
+    #     description="The user applies filters to search for films by genre and/or year.",
+    #     event=FilterFilmEvent,
+    #     event_source_code=FilterFilmEvent.get_source_code_of_class(),
+    #     replace_func=filter_film_replace_func,
+    #     examples=[
+    #         {
+    #             "prompt": "Filter movies released in the year <year>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"year": "<year>", "has_year_filter": True},
+    #                 "reasoning": "This test applies when the task requires filtering movies by a specific release year.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Find action movies",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"genre_name": "Action", "has_genre_filter": True},
+    #                 "reasoning": "This test applies when the task requires filtering movies by the 'Action' genre.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Search for films from the year <year> in the genre <genre>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"year": "<year>", "genre_name": "<genre>", "has_year_filter": True, "has_genre_filter": True},
+    #                 "reasoning": "This test applies when the task requires filtering movies by both year and genre.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Show movies from <year>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"year": "<year>", "has_year_filter": True},
+    #                 "reasoning": "This test ensures that filtering by year correctly applies the given criteria.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Show only <genre> movies",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"genre_name": "<genre>", "has_genre_filter": True},
+    #                 "reasoning": "This test verifies that filtering by genre works as expected.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Show details for the movie <movie_name>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"genre_name": "<movie_name>"},
+    #                 "reasoning": "This test ensures that accessing a movie's details works correctly.",
+    #             },
+    #         },
+    #     ],
+    # ),
 ]
