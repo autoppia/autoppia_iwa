@@ -12,8 +12,6 @@ repos:
     hooks:
       - id: ruff
         args: [ "--fix", "--line-length", "200" ]
-        exclude: ^modules/.*
 
       - id: ruff-format
         args: [ "--line-length", "200" ]
-        exclude: ^modules/.*
