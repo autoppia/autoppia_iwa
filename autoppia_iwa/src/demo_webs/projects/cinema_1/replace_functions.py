@@ -102,3 +102,60 @@ def add_film_replace_func(prompt: str) -> str:
             prompt = prompt.replace(placeholder, replacement)
 
     return prompt
+
+
+def add_comment_replace_func(text: str) -> str:
+    """Replace placeholders for comment content, commenter name, and movie name with specific values."""
+    if not isinstance(text, str):
+        return text
+
+    replacements = {
+        "<comment>": "This movie was amazing! Highly recommended.",
+        "<commenter_name>": "MovieFan123",
+        "<movie_name>": "Inception",
+    }
+
+    for placeholder, value in replacements.items():
+        text = text.replace(placeholder, value)
+
+    return text
+
+
+def contact_replace_func(text: str) -> str:
+    """Replace placeholders for contact form fields with specific values."""
+    if not isinstance(text, str):
+        return text
+
+    replacements = {
+        "<name>": "John Doe",
+        "<email>": "johndoe@example.com",
+        "<subject>": "Inquiry about services",
+        "<message>": "I would like more details about your offerings. Please get back to me soon.",
+    }
+
+    for placeholder, value in replacements.items():
+        text = text.replace(placeholder, value)
+
+    return text
+
+
+def edit_user_replace_func(text: str) -> str:
+    """Replace placeholders for user profile fields with test values."""
+    if not isinstance(text, str):
+        return text
+
+    replacements = {
+        "<username>": "new_username",
+        "<email>": "newemail@example.com",
+        "<first_name>": "Alice",
+        "<last_name>": "Smith",
+        "<bio>": "Passionate about movies and music.",
+        "<location>": "New York",
+        "<website>": "https://aliceblog.com",
+        "<favorite_genre>": "Science Fiction",
+    }
+
+    for placeholder, value in replacements.items():
+        text = text.replace(placeholder, value)
+
+    return text
