@@ -1,4 +1,5 @@
 import os
+from functools import wraps
 
 from rich import box
 from rich.align import Align
@@ -338,6 +339,7 @@ def visualize_task(visualizer):
     """Decorator to visualize a task and its tests."""
 
     def decorator(func):
+        @wraps(func)
         async def wrapper(*args, **kwargs):
             result = await func(*args, **kwargs)
             if isinstance(result, list):
@@ -356,6 +358,7 @@ def visualize_evaluation(visualizer):
     """Decorator to visualize an agent's evaluation."""
 
     def decorator(func):
+        @wraps(func)
         async def wrapper(web_project, task, task_solution, validator_id, *args, **kwargs):
             result = await func(web_project, task, task_solution, validator_id, *args, **kwargs)
             # Changed from show_agent_evaluation to show_full_evaluation
@@ -379,6 +382,7 @@ def visualize_summary(visualizer):
     """Decorator to visualize the final summary."""
 
     def decorator(func):
+        @wraps(func)
         def wrapper(results, agents, *args, **kwargs):
             func(results, agents, *args, **kwargs)
             visualizer.print_summary(results, agents)
