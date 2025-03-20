@@ -1,109 +1,109 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import RegistrationEvent
-from .replace_functions import register_replace_func
+from .events import LoginEvent
+from .replace_functions import login_replace_func
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
-    UseCase(
-        name="User Registration",
-        description="The user fills out the registration form and successfully creates a new account.",
-        event=RegistrationEvent,
-        event_source_code=RegistrationEvent.get_source_code_of_class(),
-        replace_func=register_replace_func,
-        examples=[
-            {
-                "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "username": "<username>",
-                    "event_name": "REGISTRATION",
-                    "criteria": {"username": "<username>"},
-                    "reasoning": "This test applies when the task requires a registration event with a specific username.",
-                },
-            },
-            {
-                "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "username": "<username>",
-                    "event_name": "REGISTRATION",
-                    "criteria": {"username": "<username>"},
-                    "reasoning": "This test applies when the task requires registration with a specific username.",
-                },
-            },
-            {
-                "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "username": "<username>",
-                    "event_name": "REGISTRATION",
-                    "criteria": {"username": "<username>", "email": "<email>"},
-                    "reasoning": "This test applies when the task requires registration with both username and email specified.",
-                },
-            },
-            {
-                "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "username": "<username>",
-                    "event_name": "REGISTRATION",
-                    "criteria": {"username": "<username>"},
-                    "reasoning": "This test applies when the task requires registration with a specific username.",
-                },
-            },
-        ],
-    ),
     # UseCase(
-    #     name="User Login",
-    #     description="The user fills out the login form and logs in successfully.",
-    #     event=LoginEvent,
-    #     event_source_code=LoginEvent.get_source_code_of_class(),
-    #     replace_func=login_replace_func,
+    #     name="User Registration",
+    #     description="The user fills out the registration form and successfully creates a new account.",
+    #     event=RegistrationEvent,
+    #     event_source_code=RegistrationEvent.get_source_code_of_class(),
+    #     replace_func=register_replace_func,
     #     examples=[
     #         {
-    #             "prompt": "Login for the following username:<username>  and password:<password>",
+    #             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "username": "<username>",
-    #                 "event_name": "LOGIN",
+    #                 "event_name": "REGISTRATION",
     #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a login event.",
+    #                 "reasoning": "This test applies when the task requires a registration event with a specific username.",
     #             },
     #         },
     #         {
-    #             "prompt": "Login with a specific username:<username>  and password:<password>",
+    #             "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "username": "<username>",
-    #                 "event_name": "LOGIN",
+    #                 "event_name": "REGISTRATION",
     #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a login event.",
+    #                 "reasoning": "This test applies when the task requires registration with a specific username.",
     #             },
     #         },
     #         {
-    #             "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+    #             "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "username": "<username>",
-    #                 "event_name": "LOGIN",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a login event.",
+    #                 "event_name": "REGISTRATION",
+    #                 "criteria": {"username": "<username>", "email": "<email>"},
+    #                 "reasoning": "This test applies when the task requires registration with both username and email specified.",
     #             },
     #         },
     #         {
-    #             "prompt": "Sign in to the website username:<username> and password:<password>",
+    #             "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "username": "<username>",
-    #                 "event_name": "LOGIN",
+    #                 "event_name": "REGISTRATION",
     #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a login event.",
+    #                 "reasoning": "This test applies when the task requires registration with a specific username.",
     #             },
     #         },
     #     ],
     # ),
+    UseCase(
+        name="User Login",
+        description="The user fills out the login form and logs in successfully.",
+        event=LoginEvent,
+        event_source_code=LoginEvent.get_source_code_of_class(),
+        replace_func=login_replace_func,
+        examples=[
+            {
+                "prompt": "Login for the following username:<username>  and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "LOGIN",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a login event.",
+                },
+            },
+            {
+                "prompt": "Login with a specific username:<username>  and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "LOGIN",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a login event.",
+                },
+            },
+            {
+                "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "LOGIN",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a login event.",
+                },
+            },
+            {
+                "prompt": "Sign in to the website username:<username> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "LOGIN",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a login event.",
+                },
+            },
+        ],
+    ),
     # UseCase(
     #     name="User Logout",
     #     description="The user logs out of the platform.",

@@ -30,7 +30,7 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 LOG_FILE = "benchmark.log"
 
 logger.remove()
-logger.add(LOG_FILE, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
+logger.add(LOG_FILE, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}", colorize=True)
 logger.add("sys.stderr", level="INFO", format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}", colorize=True)
 
 
