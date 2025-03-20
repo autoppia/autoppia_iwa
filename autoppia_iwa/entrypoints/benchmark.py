@@ -64,7 +64,8 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Define agents
 AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(id="2", name="Random-clicker"),
-    ApifiedWebAgent(id="1", name="Browser-Use", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="Trick-Agent", host="127.0.0.1", port=9000, timeout=120),
+    # ApifiedWebAgent(id="1", name="Browser-Use", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
@@ -89,7 +90,7 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 
 
 @visualize_list_of_evaluations(visualizer)
-async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id="test"):
+async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
     evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
 
     evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
@@ -161,14 +162,14 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
 
         # 2) Evaluate these solutions in a single call
         logger.info(f"Evaluating {len(solutions_for_this_task)} solutions for Task {task.id}...")
-        evaluation_results: list[EvaluationResult] = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task)
+        evaluation_results: list[EvaluationResult] = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task, "test_visualizer")
 
-        # (Optional) Print a quick summary in the console/logs
-        for eval_result in evaluation_results:
-            logger.info(
-                f"  -> Agent {eval_result.web_agent_id} | Score = {eval_result.final_score:.2f} "
-                f"(Raw: {eval_result.raw_score:.2f}, Tests Passed: {eval_result.stats.tests_passed}/{eval_result.stats.total_tests})"
-            )
+        # # (Optional) Print a quick summary in the console/logs
+        # for eval_result in evaluation_results:
+        #     logger.info(
+        #         f"  -> Agent {eval_result.web_agent_id} | Score = {eval_result.final_score:.2f} "
+        #         f"(Raw: {eval_result.raw_score:.2f}, Tests Passed: {eval_result.stats.tests_passed}/{eval_result.stats.total_tests})"
+        #     )
 
         # 3) Store the results in a dict for final stats/plots
         for eval_result in evaluation_results:
