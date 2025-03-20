@@ -184,6 +184,32 @@ class SubnetVisualizer:
         # Final separator
         self.console.print("\n" + "=" * 80)
 
+    def show_list_of_evaluations(self, task, task_solutions, validator_id):
+        """
+        Displays evaluations for multiple task solutions.
+
+        Args:
+            task: The evaluated task
+            task_solutions: List of TaskSolution objects to evaluate
+            validator_id: The ID of the validator performing the evaluation
+        """
+        self.console.print("\n" + "=" * 100)
+        self.console.print(f"[bold white on blue]MULTIPLE EVALUATIONS FOR TASK: {task.id}[/bold white on blue]\n")
+
+        for sol in task_solutions:
+            self.show_full_evaluation(
+                agent_id=sol.web_agent_id,
+                validator_id=validator_id,
+                task=task,
+                actions=sol.actions,
+                test_results_matrix=sol.evaluation_result.test_results_matrix if hasattr(sol.evaluation_result, "test_results_matrix") else [],
+                evaluation_result=sol.evaluation_result if hasattr(sol, "evaluation_result") else None,
+                feedback=sol.evaluation_result.feedback if hasattr(sol.evaluation_result, "feedback") else None,
+            )
+
+        self.console.print("\n" + "=" * 100)
+        self.console.print("[bold green]All evaluations completed![/bold green]")
+
     def _format_action_details(self, action):
         """
         Formats the details of a single action for display in a readable manner.
@@ -378,6 +404,22 @@ def visualize_evaluation(visualizer):
     return decorator
 
 
+def visualize_list_of_evaluations(visualizer):
+    """Decorator to visualize multiple agents' evaluations for a given task."""
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(web_project, task, task_solutions, validator_id, *args, **kwargs):
+            evaluation_results = await func(web_project, task, task_solutions, *args, **kwargs)
+            visualizer.show_list_of_evaluations(task, evaluation_results, validator_id)
+
+            return evaluation_results
+
+        return wrapper
+
+    return decorator
+
+
 def visualize_summary(visualizer):
     """Decorator to visualize the final summary."""
 
@@ -452,5 +494,65 @@ def test_visualization():
     visualizer.show_full_evaluation(agent_id=agent_id, validator_id="test", task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
 
 
-# Run the test function if needed:
-# test_visualization()
+def test_multiple_evaluations():
+    # Simplified classes for this example
+    class Task:
+        def __init__(self, id, prompt, tests):
+            self.id = id
+            self.prompt = prompt
+            self.tests = tests
+
+    class CheckUrlTest:
+        def __init__(self, type, url, description):
+            self.type = type
+            self.url = url
+            self.description = description
+
+    class ClickAction:
+        def __init__(self, type, x, y, selector=None):
+            self.type = type
+            self.x = x
+            self.y = y
+            self.selector = selector
+
+        def __str__(self):
+            return f"ClickAction(x={self.x}, y={self.y})"
+
+        def model_dump(self):
+            return {"type": self.type, "x": self.x, "y": self.y, "selector": self.selector}
+
+    class TestResult:
+        def __init__(self, success, message):
+            self.success = success
+            self.message = message
+
+    class EvaluationResult:
+        def __init__(self, raw_score=0.0, random_clicker_score=0.0, final_score=0.0):
+            self.raw_score = raw_score
+            self.random_clicker_score = random_clicker_score
+            self.final_score = final_score
+
+    class TaskSolution:
+        def __init__(self, web_agent_id, actions, evaluation_result):
+            self.web_agent_id = web_agent_id
+            self.actions = actions
+            self.evaluation_result = evaluation_result
+
+    visualizer = SubnetVisualizer()
+
+    # Example task
+    task = Task(id="41b0f865-d1f1-47bb-8ab7-9572dea9ca4a", prompt="Navigate to the 'About Us' page.", tests=[CheckUrlTest(type="CheckUrlTest", url="/about/", description="Check URL")])
+
+    # Example solutions
+    task_solutions = [
+        TaskSolution(web_agent_id="browser-agent-1", actions=[ClickAction(type="ClickAction", x=1711, y=978)], evaluation_result=EvaluationResult(raw_score=0.5, final_score=0.7)),
+        TaskSolution(web_agent_id="browser-agent-2", actions=[ClickAction(type="ClickAction", x=1000, y=500)], evaluation_result=EvaluationResult(raw_score=0.2, final_score=0.3)),
+    ]
+
+    # Call the visualization function
+    visualizer.show_list_of_evaluations(task=task, task_solutions=task_solutions, validator_id="test-validator")
+
+
+if __name__ == "__main__":
+    # test_visualization()
+    test_multiple_evaluations()
