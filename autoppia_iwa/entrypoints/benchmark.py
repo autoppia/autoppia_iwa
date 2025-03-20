@@ -19,7 +19,7 @@ from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
-from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_task
+from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_list_of_evaluations, visualize_task
 from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_real_tasks
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
@@ -88,6 +88,15 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
     )
 
 
+@visualize_list_of_evaluations(visualizer)
+async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id="test"):
+    evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
+
+    evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
+
+    return evaluation_results
+
+
 async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent, task: Task, timing_metrics: TimingMetrics) -> TaskSolution | None:
     """
     Generate (or load from cache) the solution for ONE Task with ONE Agent.
@@ -138,7 +147,6 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
 
     Then collect results in a structure for final reporting and plotting.
     """
-    evaluator = ConcurrentEvaluator(web_project=demo_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
     final_results = {}
 
     # Evaluate each task (with all agent solutions)
@@ -153,7 +161,7 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
 
         # 2) Evaluate these solutions in a single call
         logger.info(f"Evaluating {len(solutions_for_this_task)} solutions for Task {task.id}...")
-        evaluation_results: list[EvaluationResult] = await evaluator.evaluate_task_solutions(task, solutions_for_this_task)
+        evaluation_results: list[EvaluationResult] = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task)
 
         # (Optional) Print a quick summary in the console/logs
         for eval_result in evaluation_results:
