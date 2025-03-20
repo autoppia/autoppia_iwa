@@ -184,7 +184,7 @@ class SubnetVisualizer:
         # Final separator
         self.console.print("\n" + "=" * 80)
 
-    def show_list_of_evaluations(self, task, task_solutions, validator_id):
+    def show_list_of_evaluations(self, task, task_solutions, evaluation_results, validator_id):
         """
         Displays evaluations for multiple task solutions.
 
@@ -196,15 +196,15 @@ class SubnetVisualizer:
         self.console.print("\n" + "=" * 100)
         self.console.print(f"[bold white on blue]MULTIPLE EVALUATIONS FOR TASK: {task.id}[/bold white on blue]\n")
 
-        for sol in task_solutions:
+        for sol, evaluation_result in zip(task_solutions, evaluation_results, strict=False):
             self.show_full_evaluation(
                 agent_id=sol.web_agent_id,
                 validator_id=validator_id,
                 task=task,
                 actions=sol.actions,
-                test_results_matrix=sol.evaluation_result.test_results_matrix if hasattr(sol.evaluation_result, "test_results_matrix") else [],
-                evaluation_result=sol.evaluation_result if hasattr(sol, "evaluation_result") else None,
-                feedback=sol.evaluation_result.feedback if hasattr(sol.evaluation_result, "feedback") else None,
+                test_results_matrix=evaluation_result.test_results_matrix if hasattr(evaluation_result, "test_results_matrix") else [],
+                evaluation_result=evaluation_result if evaluation_result else None,
+                feedback=evaluation_result.feedback if hasattr(evaluation_result, "feedback") else None,
             )
 
         self.console.print("\n" + "=" * 100)
@@ -410,7 +410,7 @@ def visualize_list_of_evaluations(visualizer):
         @wraps(func)
         async def wrapper(web_project, task, task_solutions, validator_id, *args, **kwargs):
             evaluation_results = await func(web_project, task, task_solutions, validator_id, *args, **kwargs)
-            visualizer.show_list_of_evaluations(task, evaluation_results, validator_id)
+            visualizer.show_list_of_evaluations(task, task_solutions, evaluation_results, validator_id)
 
             return evaluation_results
 
