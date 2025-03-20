@@ -484,7 +484,8 @@ class EditFilmEvent(Event):
         director: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
-        changed_field: str | CriterionValue | None = None  # Check if a specific field was changed
+        # Check if a specific field was changed
+        changed_field: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
@@ -678,7 +679,6 @@ class AddCommentEvent(Event):
 
     event_name: str = "ADD_COMMENT"
 
-    comment_id: int
     commenter_name: str
     content: str
     movie_id: int
@@ -710,12 +710,12 @@ class AddCommentEvent(Event):
         return not (criteria.movie_name is not None and not validate_criterion(self.movie_name, criteria.movie_name))
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "AddCommentEvent":
+    def parse(cls, backend_event: BackendEvent) -> "AddCommentEvent":
         """
         Parse an add comment event from backend data.
         """
-        base_event = super().parse(backend_event)
-        data = backend_event.get("data", {})
+        base_event = Event.parse(backend_event)
+        data = base_event.get("data", {})
         movie_data = data.get("movie", {})
         return cls(
             event_name=base_event.event_name,
@@ -740,7 +740,6 @@ class ContactEvent(Event):
 
     event_name: str = "CONTACT"
 
-    contact_id: int
     name: str
     email: str
     subject: str
@@ -752,56 +751,29 @@ class ContactEvent(Event):
         name: str | CriterionValue | None = None
         email: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
-        message_contains: str | CriterionValue | None = None
+        message: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
         Validate if this contact event meets the criteria
-
-        Args:
-            criteria: Optional validation criteria to check against
-
-        Returns:
-            True if criteria is met or not provided, False otherwise
         """
         if not criteria:
             return True
 
-        # Validate name
+        # Validate all fields using the centralized validate_criterion function
         if criteria.name is not None and not validate_criterion(self.name, criteria.name):
             return False
 
-        # Validate email
         if criteria.email is not None and not validate_criterion(self.email, criteria.email):
             return False
 
-        # Validate subject
         if criteria.subject is not None and not validate_criterion(self.subject, criteria.subject):
             return False
 
-        # Validate message_contains
-        if criteria.message_contains is not None:
-            if isinstance(criteria.message_contains, str):
-                if criteria.message_contains.lower() not in self.message.lower():
-                    return False
-            else:
-                # Using the operator with default CONTAINS for message_contains
-                operator = criteria.message_contains.operator
-                value = criteria.message_contains.value
-
-                if operator == ComparisonOperator.CONTAINS:
-                    if value.lower() not in self.message.lower():
-                        return False
-                elif operator == ComparisonOperator.NOT_CONTAINS:
-                    if value.lower() in self.message.lower():
-                        return False
-                elif operator == ComparisonOperator.EQUALS and value.lower() != self.message.lower():
-                    return False
-
-        return True
+        return not (criteria.message is not None and not validate_criterion(self.message, criteria.message))
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "ContactEvent":
+    def parse(cls, backend_event: BackendEvent) -> "ContactEvent":
         """
         Parse a contact event from backend data
 
@@ -811,17 +783,16 @@ class ContactEvent(Event):
         Returns:
             ContactEvent object populated with data from the backend event
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
 
         # Extract data
-        data = backend_event.get("data", {})
+        data = backend_event.data
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            contact_id=data.get("id", 0),
             name=data.get("name", ""),
             email=data.get("email", ""),
             subject=data.get("subject", ""),

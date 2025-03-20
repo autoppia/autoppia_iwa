@@ -40,7 +40,14 @@ These are example tests that demonstrate proper validation. Use them as inspirat
 
 #### **Interactive Elements** (JSON array)
 {interactive_elements}
-
+###  OPERATORS AVAILABLE FOR event_criteria :
+- **equals**: Field must exactly match the value (this is the default when using simple value format)
+- **not_equals**: Field must not match the value
+- **contains**: Field must contain the value (for string fields)
+- **not_contains**: Field must not contain the value (for string fields)
+- **greater_than**, **less_than**, **greater_equal**, **less_equal**: Numeric comparisons
+- **in_list**: Value must be one of several options (specify value as an array)
+- **not_in_list**: Value must not be any of the listed option
 ---
 
 ## **Test Generation Instructions**

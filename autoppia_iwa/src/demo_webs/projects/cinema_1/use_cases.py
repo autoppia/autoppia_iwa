@@ -1,8 +1,7 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import AddCommentEvent, ContactEvent, EditUserEvent
-from .replace_functions import add_comment_replace_func, contact_replace_func, edit_user_replace_func
+from .events import ContactEvent
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
@@ -381,141 +380,161 @@ USE_CASES = [
     #         },
     #     ],
     # ),
+    # UseCase(
+    #     name="Add Comment",
+    #     description="The user adds a comment to a movie.",
+    #     event=AddCommentEvent,
+    #     event_source_code=AddCommentEvent.get_source_code_of_class(),
+    #     replace_func=add_comment_replace_func,
+    #     examples=[
+    #         {
+    #             "prompt": "Add a comment: '<comment>' to the movie <movie_name>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
+    #                 "reasoning": "This test verifies that the comment content and movie name match the expected values.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Comment '<comment>' on <movie_name>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
+    #                 "reasoning": "This test ensures that the comment event is recorded correctly for the specified movie.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Leave a review: '<comment>' for <movie_name>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
+    #                 "reasoning": "This test checks if leaving a review correctly triggers the AddCommentEvent.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Post a comment '<comment>' under <movie_name>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
+    #                 "reasoning": "This test ensures that the action of posting a comment is captured correctly.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Write a comment '<comment>' on the film <movie_name>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
+    #                 "reasoning": "This test confirms that adding a comment to a film logs the correct event.",
+    #             },
+    #         },
+    #     ],
+    # ),
     UseCase(
-        name="Add Comment",
-        description="The user adds a comment to a movie.",
-        event=AddCommentEvent,
-        event_source_code=AddCommentEvent.get_source_code_of_class(),
-        replace_func=add_comment_replace_func,
-        examples=[
-            {
-                "prompt": "Add a comment: '<comment>' to the movie <movie_name>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
-                    "reasoning": "This test verifies that the comment content and movie name match the expected values.",
-                },
-            },
-            {
-                "prompt": "Comment '<comment>' on <movie_name>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
-                    "reasoning": "This test ensures that the comment event is recorded correctly for the specified movie.",
-                },
-            },
-            {
-                "prompt": "Leave a review: '<comment>' for <movie_name>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
-                    "reasoning": "This test checks if leaving a review correctly triggers the AddCommentEvent.",
-                },
-            },
-            {
-                "prompt": "Post a comment '<comment>' under <movie_name>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
-                    "reasoning": "This test ensures that the action of posting a comment is captured correctly.",
-                },
-            },
-            {
-                "prompt": "Write a comment '<comment>' on the film <movie_name>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "<comment>", "movie_name": "<movie_name>"},
-                    "reasoning": "This test confirms that adding a comment to a film logs the correct event.",
-                },
-            },
-        ],
-    ),
-    UseCase(
-        name="Submit Contact Form",
-        description="The user fills out and submits a contact form.",
+        name="Send Contact Form",
+        description="The user navigates to the contact form page, fills out fields, and submits the form successfully.",
         event=ContactEvent,
         event_source_code=ContactEvent.get_source_code_of_class(),
-        replace_func=contact_replace_func,
         examples=[
             {
-                "prompt": "Submit a contact form with the name <name>, email <email>, subject <subject>, and message <message>",
+                "prompt": "Send a contact form with the subject 'Test Subject'",
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "CONTACT",
-                    "criteria": {"name": "<name>", "email": "<email>", "subject": "<subject>", "message_contains": "<message>"},
-                    "reasoning": "This test ensures that a user submitting a contact form is recorded correctly with the expected values.",
+                    "event_criteria": {"subject": "Test Subject"},
+                    "description": "Verify that the contact form was submitted with the specified subject.",
                 },
             },
             {
-                "prompt": "Send a message through the contact form with subject '<subject>'",
+                "prompt": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "CONTACT",
-                    "criteria": {"subject": "<subject>"},
-                    "reasoning": "This test ensures that the contact form submission correctly captures the provided subject.",
+                    "event_criteria": {"message": {"value": "Hello, I would like information about your services", "operator": "contains"}},
+                    "description": "Verify that the contact form was submitted with the specific message content.",
                 },
             },
+            # Example 3: Check for specific email
             {
-                "prompt": "Reach out using the contact form with the message '<message>'",
+                "prompt": "Complete the contact form using the email address 'test@example.com'",
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "CONTACT",
-                    "criteria": {"message_contains": "<message>"},
-                    "reasoning": "This test checks that the contact event properly records the submitted message.",
+                    "event_criteria": {"email": "test@example.com"},
+                    "description": "Verify that the contact form was submitted from the specified email address.",
+                },
+            },
+            # Example 4: Check for both subject and message
+            {
+                "prompt": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "CONTACT",
+                    "event_criteria": {"subject": "Partnership Inquiry", "message": {"value": "potential collaboration", "operator": "contains"}},
+                    "description": "Verify that the contact form was submitted with both the specified subject and message content.",
+                },
+            },
+            # Example 5: Complete form with all fields
+            {
+                "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "CONTACT",
+                    "event_criteria": {"name": "John Smith", "email": "john@example.com", "subject": "Feedback", "message": {"value": "Great website, I love the design", "operator": "contains"}},
+                    "description": "Verify that the contact form was submitted with all fields matching the specified values.",
                 },
             },
         ],
-    ),
-    UseCase(
-        name="Edit User Profile",
-        description="The user updates their profile details such as name, email, bio, location, or favorite genres.",
-        event=EditUserEvent,
-        event_source_code=EditUserEvent.get_source_code_of_class(),
-        replace_func=edit_user_replace_func,
-        examples=[
-            {
-                "prompt": "Change the username to <username> and update the email to <email>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "EDIT_USER",
-                    "criteria": {"username": "<username>", "email": "<email>", "changed_field": ["username", "email"]},
-                    "reasoning": "Ensures that the username and email fields were correctly updated in the user profile.",
-                },
-            },
-            {
-                "prompt": "Update the bio to '<bio>'",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "EDIT_USER",
-                    "criteria": {"bio_contains": "<bio>", "changed_field": "bio"},
-                    "reasoning": "Ensures that the updated bio contains the expected text.",
-                },
-            },
-            {
-                "prompt": "Add a new favorite genre '<favorite_genre>'",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "EDIT_USER",
-                    "criteria": {"has_favorite_genre": "<favorite_genre>", "changed_field": "favorite_genres"},
-                    "reasoning": "Ensures that the updated profile includes the specified favorite genre.",
-                },
-            },
-            {
-                "prompt": "Set the location to '<location>' and add a profile picture",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "EDIT_USER",
-                    "criteria": {"location": "<location>", "has_profile_pic": True, "changed_field": ["location", "has_profile_pic"]},
-                    "reasoning": "Ensures that the user's location was updated and they have a profile picture.",
-                },
-            },
-        ],
-    ),
+    )
+    # UseCase(
+    #     name="Edit User Profile",
+    #     description="The user updates their profile details such as name, email, bio, location, or favorite genres.",
+    #     event=EditUserEvent,
+    #     event_source_code=EditUserEvent.get_source_code_of_class(),
+    #     replace_func=edit_user_replace_func,
+    #     examples=[
+    #         {
+    #             "prompt": "Change the username to <username> and update the email to <email>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "EDIT_USER",
+    #                 "criteria": {"username": "<username>", "email": "<email>", "changed_field": ["username", "email"]},
+    #                 "reasoning": "Ensures that the username and email fields were correctly updated in the user profile.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Update the bio to '<bio>'",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "EDIT_USER",
+    #                 "criteria": {"bio_contains": "<bio>", "changed_field": "bio"},
+    #                 "reasoning": "Ensures that the updated bio contains the expected text.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Add a new favorite genre '<favorite_genre>'",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "EDIT_USER",
+    #                 "criteria": {"has_favorite_genre": "<favorite_genre>", "changed_field": "favorite_genres"},
+    #                 "reasoning": "Ensures that the updated profile includes the specified favorite genre.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Set the location to '<location>' and add a profile picture",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "EDIT_USER",
+    #                 "criteria": {"location": "<location>", "has_profile_pic": True, "changed_field": ["location", "has_profile_pic"]},
+    #                 "reasoning": "Ensures that the user's location was updated and they have a profile picture.",
+    #             },
+    #         },
+    #     ],
+    # ),
     # UseCase(
     #     name="Filter Films",
     #     description="The user applies filters to search for films by genre and/or year.",

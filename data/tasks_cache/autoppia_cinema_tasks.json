@@ -1,15 +1,15 @@
 {
   "project_id": "cinema",
   "project_name": "Autoppia Cinema",
-  "timestamp": "2025-03-17T11:08:11.861157",
+  "timestamp": "2025-03-20T21:14:05.731063",
   "tasks": [
     {
-      "id": "f1f37122-1704-4b32-8b3b-9f763741b8c9",
+      "id": "cafdd678-df9c-4991-841f-86d3ca25da36",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Complete the registration process using username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, and password:password123",
+      "prompt": "Fill out the contact form and include 'Customer Inquiry' as the subject",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -27,12 +27,12 @@
       "tests": [
         {
           "type": "CheckEventTest",
-          "event_name": "REGISTRATION",
+          "event_name": "CONTACT",
           "event_criteria": {
-            "username": "newuser<web_agent_id>"
+            "subject": "Customer Inquiry"
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test verifies that the registration event was triggered successfully with the specified username."
+          "reasoning": "This test is necessary to verify that the contact form was submitted with 'Customer Inquiry' as the subject, which is the specific requirement outlined in the task prompt. Ensuring that the subject is correctly set verifies that the task has been completed as intended."
         }
       ],
       "milestones": null,
@@ -44,70 +44,32 @@
       },
       "success_criteria": null,
       "use_case": {
-        "name": "User Registration",
-        "description": "The user fills out the registration form and successfully creates a new account.",
-        "event": "RegistrationEvent",
+        "name": "Submit Contact Form With Subject",
+        "description": "The user submits a contact form with a specific subject.",
+        "event": "ContactEvent",
         "event_source_code": true,
         "examples": [
           {
-            "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+            "prompt": "Send a contact form with the subject 'Test Subject'",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
-              "event_name": "REGISTRATION",
-              "criteria": {
-                "username": "<username>"
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "subject": "Test Subject"
               },
-              "reasoning": "This test applies when the task requires a registration event with a specific username."
-            }
-          },
-          {
-            "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
-            "test": {
-              "type": "CheckEventTest",
-              "username": "<username>",
-              "event_name": "REGISTRATION",
-              "criteria": {
-                "username": "<username>"
-              },
-              "reasoning": "This test applies when the task requires registration with a specific username."
-            }
-          },
-          {
-            "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
-            "test": {
-              "type": "CheckEventTest",
-              "username": "<username>",
-              "event_name": "REGISTRATION",
-              "criteria": {
-                "username": "<username>",
-                "email": "<email>"
-              },
-              "reasoning": "This test applies when the task requires registration with both username and email specified."
-            }
-          },
-          {
-            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-            "test": {
-              "type": "CheckEventTest",
-              "username": "<username>",
-              "event_name": "REGISTRATION",
-              "criteria": {
-                "username": "<username>"
-              },
-              "reasoning": "This test applies when the task requires registration with a specific username."
+              "description": "Verify that the contact form was submitted with the specified subject."
             }
           }
         ]
       }
     },
     {
-      "id": "a506ca4d-32c2-412f-9e26-b23800904ad5",
+      "id": "671995a8-4ab5-4283-ac8b-78961c45f20c",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Access the user account using username:user<web_agent_id> and password:password123",
+      "prompt": "Complete the contact form and add 'Hi, I am interested in learning more about your offerings' in the message section",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -125,12 +87,15 @@
       "tests": [
         {
           "type": "CheckEventTest",
-          "event_name": "LOGIN",
+          "event_name": "CONTACT",
           "event_criteria": {
-            "username": "user<web_agent_id>"
+            "message": {
+              "value": "Hi, I am interested in learning more about your offerings",
+              "operator": "contains"
+            }
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test is necessary to validate that the user successfully logged in with the correct username."
+          "reasoning": "This test is necessary to verify that the contact form submission includes the specific message content as requested in the task prompt. This ensures that the Web Agent successfully completed the task by entering the correct message into the form."
         }
       ],
       "milestones": null,
@@ -142,69 +107,35 @@
       },
       "success_criteria": null,
       "use_case": {
-        "name": "User Login",
-        "description": "The user fills out the login form and logs in successfully.",
-        "event": "LoginEvent",
+        "name": "Submit Contact Form With Message Content",
+        "description": "The user submits a contact form with specific content in the message.",
+        "event": "ContactEvent",
         "event_source_code": true,
         "examples": [
           {
-            "prompt": "Login for the following username:<username>  and password:<password>",
+            "prompt": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
-              "event_name": "LOGIN",
-              "criteria": {
-                "username": "<username>"
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "message": {
+                  "value": "Hello, I would like information about your services",
+                  "operator": "contains"
+                }
               },
-              "reasoning": "This test applies when the task requires a login event."
-            }
-          },
-          {
-            "prompt": "Login with a specific username:<username>  and password:<password>",
-            "test": {
-              "type": "CheckEventTest",
-              "username": "<username>",
-              "event_name": "LOGIN",
-              "criteria": {
-                "username": "<username>"
-              },
-              "reasoning": "This test applies when the task requires a login event."
-            }
-          },
-          {
-            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
-            "test": {
-              "type": "CheckEventTest",
-              "username": "<username>",
-              "event_name": "LOGIN",
-              "criteria": {
-                "username": "<username>"
-              },
-              "reasoning": "This test applies when the task requires a login event."
-            }
-          },
-          {
-            "prompt": "Sign in to the website username:<username> and password:<password>",
-            "test": {
-              "type": "CheckEventTest",
-              "username": "<username>",
-              "event_name": "LOGIN",
-              "criteria": {
-                "username": "<username>"
-              },
-              "reasoning": "This test applies when the task requires a login event."
+              "description": "Verify that the contact form was submitted with the specific message content."
             }
           }
         ]
       }
     },
     {
-      "id": "05269075-171e-41ea-b7d4-6f953d1f74c4",
+      "id": "f0f9c5fa-2bb3-43d5-88b6-e099e391202f",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Search for the film 'Inception'",
+      "prompt": "Fill out the contact form using the email 'user123@domain.com'",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -222,12 +153,12 @@
       "tests": [
         {
           "type": "CheckEventTest",
-          "event_name": "SEARCH_FILM",
+          "event_name": "CONTACT",
           "event_criteria": {
-            "query": "Inception"
+            "email": "user123@domain.com"
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test is necessary to validate that the web agent successfully searched for the film 'Inception' as specified in the task prompt."
+          "reasoning": "This test checks that the contact form was submitted using the specific email address 'user123@domain.com', as required by the task. It ensures that the web agent correctly filled out and submitted the form with the specified email, which is the primary objective of the task."
         }
       ],
       "milestones": null,
@@ -239,53 +170,210 @@
       },
       "success_criteria": null,
       "use_case": {
-        "name": "Search Film",
-        "description": "The user searches for a film using a query.",
-        "event": "SearchFilmEvent",
+        "name": "Submit Contact Form From Specific Email",
+        "description": "The user submits a contact form from a specific email address.",
+        "event": "ContactEvent",
         "event_source_code": true,
         "examples": [
           {
-            "prompt": "Search for the movie 'Pulp Fiction'",
+            "prompt": "Complete the contact form using the email address 'test@example.com'",
             "test": {
               "type": "CheckEventTest",
-              "event_name": "SEARCH_FILM",
-              "criteria": {
-                "query": "Pulp Fiction"
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "email": "test@example.com"
               },
-              "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'."
+              "description": "Verify that the contact form was submitted from the specified email address."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "df618ada-925c-41b7-a3b5-b8eee8102c74",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Fill out the contact form with the subject 'Product Feedback' and ensure the message mentions 'improvement suggestions'.",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "CONTACT",
+          "event_criteria": {
+            "subject": "Product Feedback",
+            "message": {
+              "value": "improvement suggestions",
+              "operator": "contains"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test is necessary to verify that the contact form was submitted with the specific subject 'Product Feedback' and that the message includes the phrase 'improvement suggestions', as required by the task prompt. These criteria ensure that both the subject and message content are correctly captured and validated in the contact event."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "Submit Contact Form With Subject and Message",
+        "description": "The user submits a contact form with both a specific subject and message content.",
+        "event": "ContactEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "subject": "Partnership Inquiry",
+                "message": {
+                  "value": "potential collaboration",
+                  "operator": "contains"
+                }
+              },
+              "description": "Verify that the contact form was submitted with both the specified subject and message content."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "2d862d2c-8baa-45f9-bf8d-97c67e6717f0",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Navigate to the contact form, enter 'Jane Doe' in the name field, use 'jane.doe@example.com' for the email, and send a message saying 'Looking forward to hearing from you about your products.'",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "CONTACT",
+          "event_criteria": {
+            "name": "Jane Doe",
+            "email": "jane.doe@example.com",
+            "message": {
+              "value": "Looking forward to hearing from you about your products.",
+              "operator": "contains"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test verifies that the contact form was successfully submitted with the specified name, email, and message content. These fields are critical to ensure that the correct information was entered and submitted through the form."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "Send Contact Form",
+        "description": "The user navigates to the contact form page, fills out fields, and submits the form successfully.",
+        "event": "ContactEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Send a contact form with the subject 'Test Subject'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "subject": "Test Subject"
+              },
+              "description": "Verify that the contact form was submitted with the specified subject."
             }
           },
           {
-            "prompt": "Find a movie called 'Forrest Gump'",
+            "prompt": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
             "test": {
               "type": "CheckEventTest",
-              "event_name": "SEARCH_FILM",
-              "criteria": {
-                "query": "Forrest Gump"
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "message": {
+                  "value": "Hello, I would like information about your services",
+                  "operator": "contains"
+                }
               },
-              "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'."
+              "description": "Verify that the contact form was submitted with the specific message content."
             }
           },
           {
-            "prompt": "Search for 'Goodfellas' in the movie database",
+            "prompt": "Complete the contact form using the email address 'test@example.com'",
             "test": {
               "type": "CheckEventTest",
-              "event_name": "SEARCH_FILM",
-              "criteria": {
-                "query": "Goodfellas"
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "email": "test@example.com"
               },
-              "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'."
+              "description": "Verify that the contact form was submitted from the specified email address."
             }
           },
           {
-            "prompt": "Look up the movie 'Interestellar'",
+            "prompt": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
             "test": {
               "type": "CheckEventTest",
-              "event_name": "SEARCH_FILM",
-              "criteria": {
-                "query": "Interestellar"
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "subject": "Partnership Inquiry",
+                "message": {
+                  "value": "potential collaboration",
+                  "operator": "contains"
+                }
               },
-              "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'."
+              "description": "Verify that the contact form was submitted with both the specified subject and message content."
+            }
+          },
+          {
+            "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "CONTACT",
+              "event_criteria": {
+                "name": "John Smith",
+                "email": "john@example.com",
+                "subject": "Feedback",
+                "message": {
+                  "value": "Great website, I love the design",
+                  "operator": "contains"
+                }
+              },
+              "description": "Verify that the contact form was submitted with all fields matching the specified values."
             }
           }
         ]
