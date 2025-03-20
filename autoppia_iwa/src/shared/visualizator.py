@@ -387,7 +387,6 @@ def visualize_evaluation(visualizer):
         @wraps(func)
         async def wrapper(web_project, task, task_solution, validator_id, *args, **kwargs):
             result = await func(web_project, task, task_solution, validator_id, *args, **kwargs)
-            # Changed from show_agent_evaluation to show_full_evaluation
             visualizer.show_full_evaluation(
                 agent_id=task_solution.web_agent_id,
                 task=task,
@@ -410,7 +409,7 @@ def visualize_list_of_evaluations(visualizer):
     def decorator(func):
         @wraps(func)
         async def wrapper(web_project, task, task_solutions, validator_id, *args, **kwargs):
-            evaluation_results = await func(web_project, task, task_solutions, *args, **kwargs)
+            evaluation_results = await func(web_project, task, task_solutions, validator_id, *args, **kwargs)
             visualizer.show_list_of_evaluations(task, evaluation_results, validator_id)
 
             return evaluation_results
