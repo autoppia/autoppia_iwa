@@ -1,8 +1,9 @@
 import asyncio
-import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
+
+from loguru import logger
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -24,13 +25,12 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(), logging.FileHandler("benchmark.log")],
-)
-logger = logging.getLogger("benchmark")
+# Setup Loguru
+LOG_FILE = "benchmark.log"
+
+logger.remove()
+logger.add(LOG_FILE, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
+logger.add("sys.stderr", level="INFO", format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}", colorize=True)
 
 
 @dataclass
