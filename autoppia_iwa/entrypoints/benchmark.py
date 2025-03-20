@@ -1,5 +1,6 @@
 import asyncio
 import time
+import traceback
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -91,11 +92,14 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 
 @visualize_list_of_evaluations(visualizer)
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
-    evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
+    try:
+        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
 
-    evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
+        evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
 
-    return evaluation_results
+        return evaluation_results
+    except Exception:
+        traceback.print_exc()
 
 
 async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent, task: Task, timing_metrics: TimingMetrics) -> TaskSolution | None:
@@ -164,12 +168,12 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
         logger.info(f"Evaluating {len(solutions_for_this_task)} solutions for Task {task.id}...")
         evaluation_results: list[EvaluationResult] = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task, "test_visualizer")
 
-        # # (Optional) Print a quick summary in the console/logs
-        # for eval_result in evaluation_results:
-        #     logger.info(
-        #         f"  -> Agent {eval_result.web_agent_id} | Score = {eval_result.final_score:.2f} "
-        #         f"(Raw: {eval_result.raw_score:.2f}, Tests Passed: {eval_result.stats.tests_passed}/{eval_result.stats.total_tests})"
-        #     )
+        # (Optional) Print a quick summary in the console/logs
+        for eval_result in evaluation_results:
+            logger.info(
+                f"  -> Agent {eval_result.web_agent_id} | Score = {eval_result.final_score:.2f} "
+                f"(Raw: {eval_result.raw_score:.2f}, Tests Passed: {eval_result.stats.tests_passed}/{eval_result.stats.total_tests})"
+            )
 
         # 3) Store the results in a dict for final stats/plots
         for eval_result in evaluation_results:
