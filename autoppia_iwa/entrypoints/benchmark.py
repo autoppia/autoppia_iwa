@@ -95,7 +95,6 @@ async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent,
     """
     logger.info(f"---\nGenerating solution for Agent: {agent.name} | Task: {task.id}")
     backend_service = BackendDemoWebService(demo_project)
-    task_solution: TaskSolution | None = None
 
     try:
         # (Optional) Reset DB
