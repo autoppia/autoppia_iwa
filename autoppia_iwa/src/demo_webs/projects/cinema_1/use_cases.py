@@ -1,60 +1,60 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import FilterFilmEvent
-from .replace_functions import filter_film_replace_func
+from .events import RegistrationEvent
+from .replace_functions import register_replace_func
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
-    # UseCase(
-    #     name="User Registration",
-    #     description="The user fills out the registration form and successfully creates a new account.",
-    #     event=RegistrationEvent,
-    #     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    #     replace_func=register_replace_func,
-    #     examples=[
-    #         {
-    #             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "REGISTRATION",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a registration event with a specific username.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "REGISTRATION",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires registration with a specific username.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "REGISTRATION",
-    #                 "criteria": {"username": "<username>", "email": "<email>"},
-    #                 "reasoning": "This test applies when the task requires registration with both username and email specified.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "REGISTRATION",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires registration with a specific username.",
-    #             },
-    #         },
-    #     ],
-    # ),
+    UseCase(
+        name="User Registration",
+        description="The user fills out the registration form and successfully creates a new account.",
+        event=RegistrationEvent,
+        event_source_code=RegistrationEvent.get_source_code_of_class(),
+        replace_func=register_replace_func,
+        examples=[
+            {
+                "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "REGISTRATION",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a registration event with a specific username.",
+                },
+            },
+            {
+                "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "REGISTRATION",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires registration with a specific username.",
+                },
+            },
+            {
+                "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "REGISTRATION",
+                    "criteria": {"username": "<username>", "email": "<email>"},
+                    "reasoning": "This test applies when the task requires registration with both username and email specified.",
+                },
+            },
+            {
+                "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "REGISTRATION",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires registration with a specific username.",
+                },
+            },
+        ],
+    ),
     # UseCase(
     #     name="User Login",
     #     description="The user fills out the login form and logs in successfully.",
@@ -420,67 +420,67 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    UseCase(
-        name="Filter Films",
-        description="The user applies filters to search for films by genre and/or year.",
-        event=FilterFilmEvent,
-        event_source_code=FilterFilmEvent.get_source_code_of_class(),
-        replace_func=filter_film_replace_func,
-        examples=[
-            {
-                "prompt": "Filter movies released in the year <year>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"year": "<year>", "has_year_filter": True},
-                    "reasoning": "This test applies when the task requires filtering movies by a specific release year.",
-                },
-            },
-            {
-                "prompt": "Find action movies",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"genre_name": "Action", "has_genre_filter": True},
-                    "reasoning": "This test applies when the task requires filtering movies by the 'Action' genre.",
-                },
-            },
-            {
-                "prompt": "Search for films from the year <year> in the genre <genre>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"year": "<year>", "genre_name": "<genre>", "has_year_filter": True, "has_genre_filter": True},
-                    "reasoning": "This test applies when the task requires filtering movies by both year and genre.",
-                },
-            },
-            {
-                "prompt": "Show movies from <year>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"year": "<year>", "has_year_filter": True},
-                    "reasoning": "This test ensures that filtering by year correctly applies the given criteria.",
-                },
-            },
-            {
-                "prompt": "Show only <genre> movies",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"genre_name": "<genre>", "has_genre_filter": True},
-                    "reasoning": "This test verifies that filtering by genre works as expected.",
-                },
-            },
-            {
-                "prompt": "Show details for the movie <movie_name>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILTER_FILM",
-                    "criteria": {"genre_name": "<movie_name>"},
-                    "reasoning": "This test ensures that accessing a movie's details works correctly.",
-                },
-            },
-        ],
-    ),
+    # UseCase(
+    #     name="Filter Films",
+    #     description="The user applies filters to search for films by genre and/or year.",
+    #     event=FilterFilmEvent,
+    #     event_source_code=FilterFilmEvent.get_source_code_of_class(),
+    #     replace_func=filter_film_replace_func,
+    #     examples=[
+    #         {
+    #             "prompt": "Filter movies released in the year <year>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"year": "<year>", "has_year_filter": True},
+    #                 "reasoning": "This test applies when the task requires filtering movies by a specific release year.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Find action movies",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"genre_name": "Action", "has_genre_filter": True},
+    #                 "reasoning": "This test applies when the task requires filtering movies by the 'Action' genre.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Search for films from the year <year> in the genre <genre>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"year": "<year>", "genre_name": "<genre>", "has_year_filter": True, "has_genre_filter": True},
+    #                 "reasoning": "This test applies when the task requires filtering movies by both year and genre.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Show movies from <year>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"year": "<year>", "has_year_filter": True},
+    #                 "reasoning": "This test ensures that filtering by year correctly applies the given criteria.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Show only <genre> movies",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"genre_name": "<genre>", "has_genre_filter": True},
+    #                 "reasoning": "This test verifies that filtering by genre works as expected.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Show details for the movie <movie_name>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILTER_FILM",
+    #                 "criteria": {"genre_name": "<movie_name>"},
+    #                 "reasoning": "This test ensures that accessing a movie's details works correctly.",
+    #             },
+    #         },
+    #     ],
+    # ),
 ]
