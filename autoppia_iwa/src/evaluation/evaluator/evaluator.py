@@ -90,7 +90,7 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Save stats
             for r in results:
-                if r and r.stats:  # puede haber None si algo falla
+                if r and r.stats:
                     self.evaluation_stats.append(r.stats)
 
             # (Opcional) Reporte final
@@ -244,10 +244,10 @@ class ConcurrentEvaluator(IEvaluator):
         Groups identical solutions by hashing their actions, evaluates them, and clones results.
         """
         start_time = time.time()
-        # Creamos un array final de resultados alineado con la lista original
+        # We create a final array of results aligned with the original list
         final_results: list[EvaluationResult | None] = [None] * len(task_solutions)
 
-        # Agrupar según hash de acciones
+        # Group according to HASH of actions
         grouped_indices = defaultdict(list)
         if self.config.enable_grouping_tasks:
             for idx, solution in enumerate(task_solutions):
@@ -256,7 +256,6 @@ class ConcurrentEvaluator(IEvaluator):
             if self.config.verbose_logging:
                 logger.info(f"Grouped {len(task_solutions)} solutions into {len(grouped_indices)} groups")
         else:
-            # Cada solución se trata como única
             for idx, solution in enumerate(task_solutions):
                 unique_hash = hash_actions(solution.actions) + f"_{idx}"
                 grouped_indices[unique_hash].append(idx)
@@ -282,13 +281,11 @@ class ConcurrentEvaluator(IEvaluator):
             with contextlib.suppress(asyncio.CancelledError):
                 await progress_tracker
 
-        final_results: list[EvaluationResult] = []
         for item in raw_results:
             if isinstance(item, Exception):
                 self.errors.append(str(item))
                 if self.config.verbose_logging:
                     logger.error(f"Evaluation error: {item}")
-            # cada _evaluate_group_with_semaphore rellena final_results directamente
 
         elapsed = time.time() - start_time
         self.total_evaluation_time += elapsed
@@ -313,7 +310,7 @@ class ConcurrentEvaluator(IEvaluator):
             try:
                 rep_result = await self._evaluate_single_task_solution(task, representative)
 
-                # Para cada índice en el grupo, clonamos el rep_result
+                # For each index in the group, we clone the rep_result
                 for idx in group_indices:
                     sol = task_solutions[idx]
                     cloned = rep_result.model_copy(deep=True)
@@ -329,7 +326,7 @@ class ConcurrentEvaluator(IEvaluator):
             except Exception as e:
                 logger.error(f"Error evaluating group actions: {e}")
                 self.errors.append(str(e))
-                # Devolver error en final_results para cada solution
+                # Return error in final_results for each solution
                 for idx in group_indices:
                     sol = task_solutions[idx]
                     error_stats = EvaluationStats(
@@ -380,7 +377,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                         self.action_type_timing[action.type].append(elapsed)
 
-                        # Pausa opcional entre acciones
+                        # Optional pause between actions
                         if i < len(actions) - 1 and self.config.task_delay_in_seconds > 0:
                             await asyncio.sleep(self.config.task_delay_in_seconds)
 
@@ -389,7 +386,6 @@ class ConcurrentEvaluator(IEvaluator):
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
 
-                        # Insertar placeholder si se desea
                         break
 
                 return action_results, action_execution_times
