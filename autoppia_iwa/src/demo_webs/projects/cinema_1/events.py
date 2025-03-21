@@ -895,6 +895,64 @@ class FilterFilmEvent(Event):
         )
 
 
+class CompositeEvent(Event):
+    """Event triggered when a user performs multiple actions in sequence"""
+
+    event_name: str = "COMPOSITE_EVENT"
+    events: list[Event] = Field(default_factory=list)
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating composite events"""
+
+        event_criteria: list[dict[str, Any]] = []
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        """
+        Validate if this composite event meets the criteria for all sub-events.
+
+        Args:
+            criteria: Optional validation criteria for each event
+
+        Returns:
+            True if all criteria are met, False otherwise
+        """
+        if not criteria or not criteria.event_criteria:
+            return True
+
+        if len(self.events) != len(criteria.event_criteria):
+            return False  # Ensure criteria match the number of events
+
+        return all(event._validate_criteria(event.__class__.ValidationCriteria(**event_criteria)) for event, event_criteria in zip(self.events, criteria.event_criteria, strict=False))
+
+    @classmethod
+    def parse(cls, backend_event: dict[str, Any]) -> "CompositeEvent":
+        """
+        Parse a composite event from backend data
+
+        Args:
+            backend_event: Event data from the backend API
+
+        Returns:
+            CompositeEvent object populated with data from the backend event
+        """
+        base_event = super().parse(backend_event)
+        event_data = backend_event.get("events", [])
+
+        parsed_events = []
+        for event_dict in event_data:
+            event_class = BACKEND_EVENT_TYPES.get(event_dict.get("event_name"))  # Dynamically get event class
+            if event_class:
+                parsed_events.append(event_class.parse(event_dict))
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            events=parsed_events,
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
