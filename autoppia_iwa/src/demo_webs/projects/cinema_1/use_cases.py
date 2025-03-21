@@ -1,7 +1,7 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import CompositeEvent
+from .events import AddCommentEvent
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
@@ -377,86 +377,86 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    # UseCase(
-    #     name="Add Comment",
-    #     description="The user adds a comment to a movie.",
-    #     event=AddCommentEvent,
-    #     event_source_code=AddCommentEvent.get_source_code_of_class(),
-    #     examples=[
-    #         {
-    #             "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "criteria": {"content_contains": "Amazing cinematography! The visuals were stunning.", "movie_name": "Inception"},
-    #                 "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "criteria": {"content_contains": "The character development was weak, but the action scenes were top-notch.", "movie_name": "Mad Max: Fury Road"},
-    #                 "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "criteria": {"content_contains": "A thought-provoking masterpiece that keeps you guessing.", "movie_name": "The Prestige"},
-    #                 "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "criteria": {"content_contains": "I didn't expect that plot twist! Totally mind-blowing.", "movie_name": "Fight Club"},
-    #                 "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Write a comment 'Not a fan of horror movies, but this one kept me at the edge of my seat!' on the film The Conjuring",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "criteria": {"content_contains": "Not a fan of horror movies, but this one kept me at the edge of my seat!", "movie_name": "The Conjuring"},
-    #                 "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "criteria": {"content_contains": "The soundtrack was mesmerizing and added so much depth to the story.", "movie_name": "Interstellar"},
-    #                 "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "criteria": {"content_contains": "Too much CGI ruined the realism of the film.", "movie_name": "Jurassic World"},
-    #                 "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "criteria": {"content_contains": "Loved the chemistry between the lead actors. Perfect casting!", "movie_name": "La La Land"},
-    #                 "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
-    #             },
-    #         },
-    #     ],
-    # ),
+    UseCase(
+        name="Add Comment",
+        description="The user adds a comment to a movie.",
+        event=AddCommentEvent,
+        event_source_code=AddCommentEvent.get_source_code_of_class(),
+        examples=[
+            {
+                "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "criteria": {"content_contains": "Amazing cinematography! The visuals were stunning.", "movie_name": "Inception"},
+                    "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
+                },
+            },
+            {
+                "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "criteria": {"content_contains": "The character development was weak, but the action scenes were top-notch.", "movie_name": "Mad Max: Fury Road"},
+                    "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
+                },
+            },
+            {
+                "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "criteria": {"content_contains": "A thought-provoking masterpiece that keeps you guessing.", "movie_name": "The Prestige"},
+                    "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
+                },
+            },
+            {
+                "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "criteria": {"content_contains": "I didn't expect that plot twist! Totally mind-blowing.", "movie_name": "Fight Club"},
+                    "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
+                },
+            },
+            {
+                "prompt": "Write a comment 'Not a fan of horror movies, but this one kept me at the edge of my seat!' on the film The Conjuring",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "criteria": {"content_contains": "Not a fan of horror movies, but this one kept me at the edge of my seat!", "movie_name": "The Conjuring"},
+                    "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
+                },
+            },
+            {
+                "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "criteria": {"content_contains": "The soundtrack was mesmerizing and added so much depth to the story.", "movie_name": "Interstellar"},
+                    "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
+                },
+            },
+            {
+                "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "criteria": {"content_contains": "Too much CGI ruined the realism of the film.", "movie_name": "Jurassic World"},
+                    "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
+                },
+            },
+            {
+                "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "criteria": {"content_contains": "Loved the chemistry between the lead actors. Perfect casting!", "movie_name": "La La Land"},
+                    "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
+                },
+            },
+        ],
+    ),
     # UseCase(
     #     name="Send Contact Form",
     #     description="The user navigates to the contact form page, fills out fields, and submits the form successfully.",
@@ -651,32 +651,33 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    UseCase(
-        name="Filter and View Movie",
-        description="User filters movies by genre and year, then views details of a selected movie.",
-        event=CompositeEvent,
-        event_source_code=CompositeEvent.get_source_code_of_class(),
-        examples=[
-            {
-                "prompt": "Find Action movies from 2020, then view details of 'Inception'.",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "COMPOSITE_EVENT",
-                    "criteria": {
-                        "event_criteria": [
-                            {
-                                "event_name": "FILTER_FILM",
-                                "genre_name": "Action",
-                                "year": 2020,
-                                "has_genre_filter": True,
-                                "has_year_filter": True,
-                            },
-                            {"event_name": "FILM_DETAILS", "movie_name": "Inception"},
-                        ]
-                    },
-                    "reasoning": "This test ensures that filtering by genre and year happens before viewing a specific movie.",
-                },
-            }
-        ],
-    )
+    # TODO: No sensible, Need to come-up with a new approach
+    # UseCase(
+    #     name="Filter and View Movie",
+    #     description="User filters movies by genre and year, then views details of a selected movie.",
+    #     event=CompositeEvent,
+    #     event_source_code=CompositeEvent.get_source_code_of_class(),
+    #     examples=[
+    #         {
+    #             "prompt": "Find Action movies from 2020, then view details of 'Inception'.",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "COMPOSITE_EVENT",
+    #                 "criteria": {
+    #                     "event_criteria": [
+    #                         {
+    #                             "event_name": "FILTER_FILM",
+    #                             "genre_name": "Action",
+    #                             "year": 2020,
+    #                             "has_genre_filter": True,
+    #                             "has_year_filter": True,
+    #                         },
+    #                         {"event_name": "FILM_DETAILS", "movie_name": "Inception"},
+    #                     ]
+    #                 },
+    #                 "reasoning": "This test ensures that filtering by genre and year happens before viewing a specific movie.",
+    #             },
+    #         }
+    #     ],
+    # )
 ]
