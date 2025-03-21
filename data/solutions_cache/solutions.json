@@ -12094,5 +12094,174 @@
         "web_agent_id": "1"
       }
     }
+  },
+  "51461945-0dbd-4687-bd47-8980c53013b0": {
+    "1": {
+      "agent_id": "1",
+      "agent_name": "Browser-Use",
+      "timestamp": 1742574691.1957471,
+      "solution": {
+        "task_id": "51461945-0dbd-4687-bd47-8980c53013b0",
+        "actions": [],
+        "web_agent_id": "1"
+      }
+    }
+  },
+  "78dbbbf4-3075-488f-b103-e7bbf763bdd6": {
+    "1": {
+      "agent_id": "1",
+      "agent_name": "Browser-Use",
+      "timestamp": 1742574695.497395,
+      "solution": {
+        "task_id": "78dbbbf4-3075-488f-b103-e7bbf763bdd6",
+        "actions": [],
+        "web_agent_id": "1"
+      }
+    }
+  },
+  "d12730ce-1796-414d-a593-278853e78e4e": {
+    "1": {
+      "agent_id": "1",
+      "agent_name": "Browser-Use",
+      "timestamp": 1742574699.82283,
+      "solution": {
+        "task_id": "d12730ce-1796-414d-a593-278853e78e4e",
+        "actions": [],
+        "web_agent_id": "1"
+      }
+    }
+  },
+  "21b14452-26f4-4295-a505-f37c31f3fb0d": {
+    "1": {
+      "agent_id": "1",
+      "agent_name": "Browser-Use",
+      "timestamp": 1742574885.9108667,
+      "solution": {
+        "task_id": "21b14452-26f4-4295-a505-f37c31f3fb0d",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/nav/div/div/div/a[2]",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "newuser1"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/input",
+              "case_sensitive": false
+            },
+            "text": "newuser1@gmail.com"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/input",
+              "case_sensitive": false
+            },
+            "text": "password123"
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/input",
+              "case_sensitive": false
+            },
+            "text": "password123"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "1"
+      }
+    }
+  },
+  "740c63d6-fd70-4a4a-b314-98cefd71b1ae": {
+    "1": {
+      "agent_id": "1",
+      "agent_name": "Browser-Use",
+      "timestamp": 1742574978.5679173,
+      "solution": {
+        "task_id": "740c63d6-fd70-4a4a-b314-98cefd71b1ae",
+        "actions": [],
+        "web_agent_id": "1"
+      }
+    }
+  },
+  "3778d62b-d7ea-49d3-94c2-4592894c77a4": {
+    "1": {
+      "agent_id": "1",
+      "agent_name": "Browser-Use",
+      "timestamp": 1742575000.497788,
+      "solution": {
+        "task_id": "3778d62b-d7ea-49d3-94c2-4592894c77a4",
+        "actions": [
+          {
+            "type": "NavigateAction",
+            "url": "http://localhost:8000/",
+            "go_back": false,
+            "go_forward": false
+          },
+          {
+            "type": "TypeAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/form/div/input",
+              "case_sensitive": false
+            },
+            "text": "The Shawshank Redemption"
+          },
+          {
+            "type": "ClickAction",
+            "selector": {
+              "type": "xpathSelector",
+              "attribute": null,
+              "value": "html/body/main/div/div/div/div/form/div/div/button",
+              "case_sensitive": false
+            },
+            "x": null,
+            "y": null
+          }
+        ],
+        "web_agent_id": "1"
+      }
+    }
   }
 }
