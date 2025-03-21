@@ -15,7 +15,6 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
@@ -222,6 +221,7 @@ class CheckEventTest(BaseTaskTest):
         """
         Execute the test on the given snapshots by checking for specific events.
         """
+        from autoppia_iwa.src.demo_webs.projects.base_events import Event
 
         if (current_iteration + 1) < total_iterations:
             return False

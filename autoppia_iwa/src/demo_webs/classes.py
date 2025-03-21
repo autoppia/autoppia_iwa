@@ -58,8 +58,9 @@ class UseCase(BaseModel):
         """Deserialize a dictionary to a UseCase object."""
         from autoppia_iwa.src.demo_webs.projects.base_events import EventRegistry
 
+        event_class_name = data.get("event")
+
         try:
-            event_class_name = data.get("event")
             if not event_class_name:
                 raise ValueError("Event class name is missing in the data")
 
@@ -85,7 +86,6 @@ class WebProject(BaseModel):
     urls: list[str] = []
     domain_analysis: DomainAnalysis | None = None
     events: list[type] = Field(default_factory=dict, description="Structured events information")
-    # events: List[Any] = Field(default_factory=dict, description="Structured events information")
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
     models: list[Any] = []
     use_cases: list[UseCase] = None
