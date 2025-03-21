@@ -722,7 +722,6 @@ class AddCommentEvent(Event):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            comment_id=data.get("comment_id", 0),
             commenter_name=data.get("name", ""),
             content=data.get("content", ""),
             movie_id=movie_data.get("id", 0),
