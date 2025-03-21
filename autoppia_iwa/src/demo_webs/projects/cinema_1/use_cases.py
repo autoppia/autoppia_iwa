@@ -1,108 +1,109 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
+from autoppia_iwa.src.demo_webs.projects.cinema_1.replace_functions import login_replace_func, register_replace_func
 
-from .events import AddCommentEvent
+from .events import LoginEvent, RegistrationEvent, SearchFilmEvent
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
-    # UseCase(
-    #     name="User Registration",
-    #     description="The user fills out the registration form and successfully creates a new account.",
-    #     event=RegistrationEvent,
-    #     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    #     replace_func=register_replace_func,
-    #     examples=[
-    #         {
-    #             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "REGISTRATION",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a registration event with a specific username.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "REGISTRATION",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires registration with a specific username.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "REGISTRATION",
-    #                 "criteria": {"username": "<username>", "email": "<email>"},
-    #                 "reasoning": "This test applies when the task requires registration with both username and email specified.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "REGISTRATION",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires registration with a specific username.",
-    #             },
-    #         },
-    #     ],
-    # ),
-    # UseCase(
-    #     name="User Login",
-    #     description="The user fills out the login form and logs in successfully.",
-    #     event=LoginEvent,
-    #     event_source_code=LoginEvent.get_source_code_of_class(),
-    #     replace_func=login_replace_func,
-    #     examples=[
-    #         {
-    #             "prompt": "Login for the following username:<username>  and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "LOGIN",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a login event.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Login with a specific username:<username>  and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "LOGIN",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a login event.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "LOGIN",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a login event.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Sign in to the website username:<username> and password:<password>",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "username": "<username>",
-    #                 "event_name": "LOGIN",
-    #                 "criteria": {"username": "<username>"},
-    #                 "reasoning": "This test applies when the task requires a login event.",
-    #             },
-    #         },
-    #     ],
-    # ),
+    UseCase(
+        name="User Registration",
+        description="The user fills out the registration form and successfully creates a new account.",
+        event=RegistrationEvent,
+        event_source_code=RegistrationEvent.get_source_code_of_class(),
+        replace_func=register_replace_func,
+        examples=[
+            {
+                "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "REGISTRATION",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a registration event with a specific username.",
+                },
+            },
+            {
+                "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "REGISTRATION",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires registration with a specific username.",
+                },
+            },
+            {
+                "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "REGISTRATION",
+                    "criteria": {"username": "<username>", "email": "<email>"},
+                    "reasoning": "This test applies when the task requires registration with both username and email specified.",
+                },
+            },
+            {
+                "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "REGISTRATION",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires registration with a specific username.",
+                },
+            },
+        ],
+    ),
+    UseCase(
+        name="User Login",
+        description="The user fills out the login form and logs in successfully.",
+        event=LoginEvent,
+        event_source_code=LoginEvent.get_source_code_of_class(),
+        replace_func=login_replace_func,
+        examples=[
+            {
+                "prompt": "Login for the following username:<username>  and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "LOGIN",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a login event.",
+                },
+            },
+            {
+                "prompt": "Login with a specific username:<username>  and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "LOGIN",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a login event.",
+                },
+            },
+            {
+                "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "LOGIN",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a login event.",
+                },
+            },
+            {
+                "prompt": "Sign in to the website username:<username> and password:<password>",
+                "test": {
+                    "type": "CheckEventTest",
+                    "username": "<username>",
+                    "event_name": "LOGIN",
+                    "criteria": {"username": "<username>"},
+                    "reasoning": "This test applies when the task requires a login event.",
+                },
+            },
+        ],
+    ),
     # UseCase(
     #     name="User Logout",
     #     description="The user logs out of the platform.",
@@ -178,50 +179,50 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    # UseCase(
-    #     name="Search Film",
-    #     description="The user searches for a film using a query.",
-    #     event=SearchFilmEvent,
-    #     event_source_code=SearchFilmEvent.get_source_code_of_class(),
-    #     examples=[
-    #         {
-    #             "prompt": "Search for the movie 'Pulp Fiction'",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "SEARCH_FILM",
-    #                 "criteria": {"query": "Pulp Fiction"},
-    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Find a movie called 'Forrest Gump'",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "SEARCH_FILM",
-    #                 "criteria": {"query": "Forrest Gump"},
-    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Search for 'Goodfellas' in the movie database",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "SEARCH_FILM",
-    #                 "criteria": {"query": "Goodfellas"},
-    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Look up the movie 'Interestellar'",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "SEARCH_FILM",
-    #                 "criteria": {"query": "Interestellar"},
-    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'.",
-    #             },
-    #         },
-    #     ],
-    # ),
+    UseCase(
+        name="Search Film",
+        description="The user searches for a film using a query.",
+        event=SearchFilmEvent,
+        event_source_code=SearchFilmEvent.get_source_code_of_class(),
+        examples=[
+            {
+                "prompt": "Search for the movie 'Pulp Fiction'",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "SEARCH_FILM",
+                    "criteria": {"query": "Pulp Fiction"},
+                    "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'.",
+                },
+            },
+            {
+                "prompt": "Find a movie called 'Forrest Gump'",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "SEARCH_FILM",
+                    "criteria": {"query": "Forrest Gump"},
+                    "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'.",
+                },
+            },
+            {
+                "prompt": "Search for 'Goodfellas' in the movie database",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "SEARCH_FILM",
+                    "criteria": {"query": "Goodfellas"},
+                    "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'.",
+                },
+            },
+            {
+                "prompt": "Look up the movie 'Interestellar'",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "SEARCH_FILM",
+                    "criteria": {"query": "Interestellar"},
+                    "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'.",
+                },
+            },
+        ],
+    ),
     # UseCase(
     #     name="Add Film",
     #     description="The user adds a new film to the system, specifying details such as name, director, year, genres, rating, duration, and cast.",
@@ -377,86 +378,86 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    UseCase(
-        name="Add Comment",
-        description="The user adds a comment to a movie.",
-        event=AddCommentEvent,
-        event_source_code=AddCommentEvent.get_source_code_of_class(),
-        examples=[
-            {
-                "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "Amazing cinematography! The visuals were stunning.", "movie_name": "Inception"},
-                    "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
-                },
-            },
-            {
-                "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "The character development was weak, but the action scenes were top-notch.", "movie_name": "Mad Max: Fury Road"},
-                    "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
-                },
-            },
-            {
-                "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "A thought-provoking masterpiece that keeps you guessing.", "movie_name": "The Prestige"},
-                    "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
-                },
-            },
-            {
-                "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "I didn't expect that plot twist! Totally mind-blowing.", "movie_name": "Fight Club"},
-                    "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
-                },
-            },
-            {
-                "prompt": "Write a comment 'Not a fan of horror movies, but this one kept me at the edge of my seat!' on the film The Conjuring",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "Not a fan of horror movies, but this one kept me at the edge of my seat!", "movie_name": "The Conjuring"},
-                    "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
-                },
-            },
-            {
-                "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "The soundtrack was mesmerizing and added so much depth to the story.", "movie_name": "Interstellar"},
-                    "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
-                },
-            },
-            {
-                "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "Too much CGI ruined the realism of the film.", "movie_name": "Jurassic World"},
-                    "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
-                },
-            },
-            {
-                "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "criteria": {"content_contains": "Loved the chemistry between the lead actors. Perfect casting!", "movie_name": "La La Land"},
-                    "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
-                },
-            },
-        ],
-    ),
+    # UseCase(
+    #     name="Add Comment",
+    #     description="The user adds a comment to a movie.",
+    #     event=AddCommentEvent,
+    #     event_source_code=AddCommentEvent.get_source_code_of_class(),
+    #     examples=[
+    #         {
+    #             "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "Amazing cinematography! The visuals were stunning.", "movie_name": "Inception"},
+    #                 "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "The character development was weak, but the action scenes were top-notch.", "movie_name": "Mad Max: Fury Road"},
+    #                 "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "A thought-provoking masterpiece that keeps you guessing.", "movie_name": "The Prestige"},
+    #                 "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "I didn't expect that plot twist! Totally mind-blowing.", "movie_name": "Fight Club"},
+    #                 "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Write a comment 'Not a fan of horror movies, but this one kept me at the edge of my seat!' on the film The Conjuring",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "Not a fan of horror movies, but this one kept me at the edge of my seat!", "movie_name": "The Conjuring"},
+    #                 "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "The soundtrack was mesmerizing and added so much depth to the story.", "movie_name": "Interstellar"},
+    #                 "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "Too much CGI ruined the realism of the film.", "movie_name": "Jurassic World"},
+    #                 "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "ADD_COMMENT",
+    #                 "criteria": {"content_contains": "Loved the chemistry between the lead actors. Perfect casting!", "movie_name": "La La Land"},
+    #                 "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
+    #             },
+    #         },
+    #     ],
+    # ),
     # UseCase(
     #     name="Send Contact Form",
     #     description="The user navigates to the contact form page, fills out fields, and submits the form successfully.",
