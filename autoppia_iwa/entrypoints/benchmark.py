@@ -167,13 +167,6 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
         logger.info(f"Evaluating {len(solutions_for_this_task)} solutions for Task {task.id}...")
         evaluation_results: list[EvaluationResult] = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task, "test_visualizer")
 
-        # (Optional) Print a quick summary in the console/logs
-        for eval_result in evaluation_results:
-            logger.info(
-                f"  -> Agent {eval_result.web_agent_id} | Score = {eval_result.final_score:.2f} "
-                f"(Raw: {eval_result.raw_score:.2f}, Tests Passed: {eval_result.stats.tests_passed}/{eval_result.stats.total_tests})"
-            )
-
         # 3) Store the results in a dict for final stats/plots
         for eval_result in evaluation_results:
             agent_id = eval_result.web_agent_id
