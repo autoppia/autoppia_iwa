@@ -1,5 +1,3 @@
-# prompts.py
-
 CHECK_EVENT_TEST_GENERATION_PROMPT = """
 You are an AI assistant designed to generate tests that validate whether a Web Agent has successfully completed a given task.
 
@@ -40,8 +38,30 @@ These are example tests that demonstrate proper validation. Use them as inspirat
 
 #### **Interactive Elements** (JSON array)
 {interactive_elements}
-###  OPERATORS AVAILABLE FOR event_criteria :
-- **equals**: Field must exactly match the value (this is the default when using simple value format)
+
+### IMPORTANT: CRITERIA STRUCTURE FORMAT
+Each field in event_criteria can follow either of these structures:
+1. Simple structure (uses "equals" operator by default):
+   ```json
+   "fieldName": {{
+     "value": "expectedValue"
+   }}
+   ```
+
+2. Full structure with explicit operator:
+   ```json
+   "fieldName": {{
+     "value": "expectedValue",
+     "operator": "equals"
+   }}
+   ```
+
+- If you omit the "operator" property, the system will use "equals" as the default
+- When "operator" is included, it must be a simple string like "equals", "contains", etc.
+- DO NOT include angle brackets, enums, or special formatting for the operator value
+
+###  OPERATORS AVAILABLE FOR event_criteria:
+- **equals**: Field must exactly match the value (this is the default when operator is omitted)
 - **not_equals**: Field must not match the value
 - **contains**: Field must contain the value (for string fields)
 - **not_contains**: Field must not contain the value (for string fields)
@@ -58,10 +78,25 @@ These are example tests that demonstrate proper validation. Use them as inspirat
 {{
   "type": "CheckEventTest",
   "event_name": "NAME_OF_EVENT",
-  "event_criteria": {{ ... }},
+  "event_criteria": {{
+    "fieldName1": {{
+      "value": "expectedValue1",
+      "operator": "equals"
+    }},
+    "fieldName2": {{
+      "value": "expectedValue2"
+    }}
+  }},
   "reasoning": "Clear explanation of why this test is necessary."
-}}```
+}}
+```
+
+EXAMPLES OF CORRECT OPERATOR USAGE:
+- "operator": "equals"     ✓ CORRECT
+- "operator": "contains"   ✓ CORRECT
+- Omitting operator (uses "equals" by default)  ✓ CORRECT
+- "operator": <ComparisonOperator.EQUALS: 'equals'>   ✗ INCORRECT
+- "operator": ComparisonOperator.EQUALS               ✗ INCORRECT
 
 IMPORTANT: Return ONLY the raw JSON object without markdown code blocks or any other formatting.
-
 """

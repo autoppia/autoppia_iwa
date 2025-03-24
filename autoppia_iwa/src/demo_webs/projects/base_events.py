@@ -24,9 +24,16 @@ class Event(BaseModel):
         if criteria and hasattr(criteria, "model_fields"):
             for field_name in criteria.model_fields:
                 field_value = getattr(criteria, field_name)
-                if isinstance(field_value, str):
+                print(f"Before: {field_value}. self_web_agent_id:{self.web_agent_id}")
+
+                if hasattr(field_value, "value"):
+                    if isinstance(field_value.value, str):
+                        replaced_value = field_value.value.replace("<web_agent_id>", self.web_agent_id)
+                        field_value.value = replaced_value
+                elif isinstance(field_value, str):
                     replaced_value = field_value.replace("<web_agent_id>", self.web_agent_id)
                     setattr(criteria, field_name, replaced_value)
+
         return self._validate_criteria(criteria)
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:

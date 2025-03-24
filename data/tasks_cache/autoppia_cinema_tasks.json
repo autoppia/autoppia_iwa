@@ -1,15 +1,15 @@
 {
   "project_id": "cinema",
   "project_name": "Autoppia Cinema",
-  "timestamp": "2025-03-21T17:34:23.961172",
+  "timestamp": "2025-03-24T20:59:58.635077",
   "tasks": [
     {
-      "id": "21b14452-26f4-4295-a505-f37c31f3fb0d",
+      "id": "0b486850-b908-47bf-9aaf-40f924dc4d8d",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Complete the sign-up process using username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, and password:password123",
+      "prompt": "Sign up by entering username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, and password:password123",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -29,10 +29,12 @@
           "type": "CheckEventTest",
           "event_name": "REGISTRATION",
           "event_criteria": {
-            "username": "newuser<web_agent_id>"
+            "username": {
+              "value": "newuser<web_agent_id>"
+            }
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test ensures that a registration event is triggered with the specified username, verifying that the sign-up process was completed as per the task prompt requirements."
+          "reasoning": "This test checks that a registration event is triggered with the exact username provided in the task prompt, ensuring that the user registration process was completed as specified."
         }
       ],
       "milestones": null,
@@ -53,10 +55,11 @@
             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
               "event_name": "REGISTRATION",
-              "criteria": {
-                "username": "<username>"
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
               },
               "reasoning": "This test applies when the task requires a registration event with a specific username."
             }
@@ -65,10 +68,12 @@
             "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
               "event_name": "REGISTRATION",
-              "criteria": {
-                "username": "<username>"
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
               },
               "reasoning": "This test applies when the task requires registration with a specific username."
             }
@@ -77,11 +82,14 @@
             "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
               "event_name": "REGISTRATION",
-              "criteria": {
-                "username": "<username>",
-                "email": "<email>"
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                },
+                "email": {
+                  "value": "<email>"
+                }
               },
               "reasoning": "This test applies when the task requires registration with both username and email specified."
             }
@@ -90,10 +98,12 @@
             "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
               "event_name": "REGISTRATION",
-              "criteria": {
-                "username": "<username>"
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
               },
               "reasoning": "This test applies when the task requires registration with a specific username."
             }
@@ -102,12 +112,552 @@
       }
     },
     {
-      "id": "740c63d6-fd70-4a4a-b314-98cefd71b1ae",
+      "id": "33e2efee-c5b2-4c2a-8ed0-e695054c2cbb",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Access your account by entering username:user<web_agent_id> and password:password123",
+      "prompt": "Start registration using username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, and password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "REGISTRATION",
+          "event_criteria": {
+            "username": {
+              "value": "newuser<web_agent_id>"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test validates that a registration event was triggered with the specified username, indicating that the registration process was completed successfully with the correct user data."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Registration",
+        "description": "The user fills out the registration form and successfully creates a new account.",
+        "event": "RegistrationEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a registration event with a specific username."
+            }
+          },
+          {
+            "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          },
+          {
+            "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                },
+                "email": {
+                  "value": "<email>"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with both username and email specified."
+            }
+          },
+          {
+            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "966db111-b8a0-47ff-b392-14f68d29d596",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Create an account by filling in username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "REGISTRATION",
+          "event_criteria": {
+            "username": {
+              "value": "newuser<web_agent_id>"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test ensures that the registration event is triggered with the correct username, as specified in the task prompt, confirming that the account creation process was successfully completed with the expected username format."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Registration",
+        "description": "The user fills out the registration form and successfully creates a new account.",
+        "event": "RegistrationEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a registration event with a specific username."
+            }
+          },
+          {
+            "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          },
+          {
+            "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                },
+                "email": {
+                  "value": "<email>"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with both username and email specified."
+            }
+          },
+          {
+            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "0838a39d-7b06-4464-97c1-36513959c8cf",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Initiate account creation with username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "REGISTRATION",
+          "event_criteria": {
+            "username": {
+              "value": "newuser<web_agent_id>"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test verifies that a registration event was successfully completed with the specific username 'newuser<web_agent_id>'. This ensures that the account creation task was executed correctly with the expected username format."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Registration",
+        "description": "The user fills out the registration form and successfully creates a new account.",
+        "event": "RegistrationEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a registration event with a specific username."
+            }
+          },
+          {
+            "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          },
+          {
+            "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                },
+                "email": {
+                  "value": "<email>"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with both username and email specified."
+            }
+          },
+          {
+            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "22a84e03-38f6-4b6d-9045-5c261e1723f7",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Complete the sign-up form with username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "REGISTRATION",
+          "event_criteria": {
+            "username": {
+              "value": "newuser<web_agent_id>"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test verifies that the registration event was triggered with the specific username 'newuser<web_agent_id>', indicating that the sign-up form was completed correctly with the given username."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Registration",
+        "description": "The user fills out the registration form and successfully creates a new account.",
+        "event": "RegistrationEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a registration event with a specific username."
+            }
+          },
+          {
+            "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          },
+          {
+            "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                },
+                "email": {
+                  "value": "<email>"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with both username and email specified."
+            }
+          },
+          {
+            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "70ab2553-8a07-4b3a-880e-e9a1adb055ad",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Register using the details: username:newuser<web_agent_id>, email:newuser<web_agent_id>@gmail.com, password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "REGISTRATION",
+          "event_criteria": {
+            "username": {
+              "value": "newuser<web_agent_id>"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test verifies that the registration event has been triggered with the specified username, indicating that the user account was successfully created with the provided details."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Registration",
+        "description": "The user fills out the registration form and successfully creates a new account.",
+        "event": "RegistrationEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a registration event with a specific username."
+            }
+          },
+          {
+            "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          },
+          {
+            "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                },
+                "email": {
+                  "value": "<email>"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with both username and email specified."
+            }
+          },
+          {
+            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "REGISTRATION",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires registration with a specific username."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "c4ab4f4d-29c4-4911-95e1-05cc3358a95f",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Initiate session by filling in username:user<web_agent_id> and password:password123 on the login page",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -127,10 +677,12 @@
           "type": "CheckEventTest",
           "event_name": "LOGIN",
           "event_criteria": {
-            "username": "equals:user<web_agent_id>"
+            "username": {
+              "value": "user<web_agent_id>"
+            }
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test ensures that the user login event is triggered with the correct username 'user<web_agent_id>', as specified in the task prompt. This validation confirms that the login process was completed successfully with the provided credentials."
+          "reasoning": "This test is necessary to ensure that the Web Agent successfully initiates a session by logging in with the specified username and password, as stated in the task prompt. The username must match 'user<web_agent_id>' to validate that the correct credentials were used for login."
         }
       ],
       "milestones": null,
@@ -148,37 +700,42 @@
         "event_source_code": true,
         "examples": [
           {
-            "prompt": "Login for the following username:<username>  and password:<password>",
+            "prompt": "Login for the following username:<username> and password:<password>",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
               "event_name": "LOGIN",
-              "criteria": {
-                "username": "<username>"
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
               },
               "reasoning": "This test applies when the task requires a login event."
             }
           },
           {
-            "prompt": "Login with a specific username:<username>  and password:<password>",
+            "prompt": "Login with a specific username:<username> and password:<password>",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
               "event_name": "LOGIN",
-              "criteria": {
-                "username": "<username>"
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
               },
-              "reasoning": "This test applies when the task requires a login event."
+              "reasoning": "This test applies when the task requires a login event with username containing a specific value."
             }
           },
           {
             "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
               "event_name": "LOGIN",
-              "criteria": {
-                "username": "<username>"
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
               },
               "reasoning": "This test applies when the task requires a login event."
             }
@@ -187,10 +744,11 @@
             "prompt": "Sign in to the website username:<username> and password:<password>",
             "test": {
               "type": "CheckEventTest",
-              "username": "<username>",
               "event_name": "LOGIN",
-              "criteria": {
-                "username": "<username>"
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
               },
               "reasoning": "This test applies when the task requires a login event."
             }
@@ -199,12 +757,541 @@
       }
     },
     {
-      "id": "3778d62b-d7ea-49d3-94c2-4592894c77a4",
+      "id": "d2236b78-11f8-46b9-b4c5-dfa7ea45651b",
       "scope": "global",
       "is_web_real": false,
       "web_project_id": "cinema",
       "url": "http://localhost:8000/",
-      "prompt": "Find a film titled 'The Shawshank Redemption'",
+      "prompt": "Access your dashboard by logging in with username:user<web_agent_id> and password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "LOGIN",
+          "event_criteria": {
+            "username": {
+              "value": "user<web_agent_id>"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test checks if the login event was triggered with the correct username as specified in the task prompt. It validates that the web agent successfully logged in using the provided credentials."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Login",
+        "description": "The user fills out the login form and logs in successfully.",
+        "event": "LoginEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Login for the following username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Login with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event with username containing a specific value."
+            }
+          },
+          {
+            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Sign in to the website username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "8650d5f3-cfad-4a11-a7f2-4adf5062e3b6",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Log into your account by entering username:user<web_agent_id> and password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "LOGIN",
+          "event_criteria": {
+            "username": {
+              "value": "user<web_agent_id>",
+              "operator": "equals"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test verifies that a login event occurs with the exact username format 'user<web_agent_id>' as specified in the task prompt. It ensures the agent successfully logs into the account with the correct credentials."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Login",
+        "description": "The user fills out the login form and logs in successfully.",
+        "event": "LoginEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Login for the following username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Login with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event with username containing a specific value."
+            }
+          },
+          {
+            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Sign in to the website username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "a1ed78e8-c3f9-4c93-8753-9b5bbe18fce2",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Authenticate using the login form with username:user<web_agent_id> and password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "LOGIN",
+          "event_criteria": {
+            "username": {
+              "value": "user<web_agent_id>",
+              "operator": "equals"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test checks if a login event was triggered with the correct username based on the task prompt, validating that the agent has successfully logged in with the specified credentials."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Login",
+        "description": "The user fills out the login form and logs in successfully.",
+        "event": "LoginEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Login for the following username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Login with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event with username containing a specific value."
+            }
+          },
+          {
+            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Sign in to the website username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "dbcc08eb-aad1-46c1-8eef-ec4a1a3aade0",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Complete the login process using username:user<web_agent_id> and password:password123",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "LOGIN",
+          "event_criteria": {
+            "username": {
+              "value": "user<web_agent_id>",
+              "operator": "equals"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test is necessary to confirm that the agent successfully completed the login process using the specified username format 'user<web_agent_id>'. The test checks for a LOGIN event with the exact username to ensure the task was completed as required."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Login",
+        "description": "The user fills out the login form and logs in successfully.",
+        "event": "LoginEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Login for the following username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Login with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event with username containing a specific value."
+            }
+          },
+          {
+            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Sign in to the website username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "59484898-492a-4300-ac8f-25b5ea471e69",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Enter your credentials with username:user<web_agent_id> and password:password123 to access your account",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "LOGIN",
+          "event_criteria": {
+            "username": {
+              "value": "user<web_agent_id>",
+              "operator": "equals"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test checks that the login event was triggered with the correct username as specified in the task prompt. It ensures that the user successfully logged in with the given credentials."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "User Login",
+        "description": "The user fills out the login form and logs in successfully.",
+        "event": "LoginEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Login for the following username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Login with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>",
+                  "operator": "contains"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event with username containing a specific value."
+            }
+          },
+          {
+            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          },
+          {
+            "prompt": "Sign in to the website username:<username> and password:<password>",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "LOGIN",
+              "event_criteria": {
+                "username": {
+                  "value": "<username>"
+                }
+              },
+              "reasoning": "This test applies when the task requires a login event."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "f44781c8-9a40-49c9-9b1f-bc966b287187",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Find the film titled 'The Matrix'",
       "interactive_elements": null,
       "screenshot": "None",
       "screenshot_description": "",
@@ -224,10 +1311,13 @@
           "type": "CheckEventTest",
           "event_name": "SEARCH_FILM",
           "event_criteria": {
-            "query": "The Shawshank Redemption"
+            "query": {
+              "value": "The Matrix",
+              "operator": "equals"
+            }
           },
           "description": "Check if specific event was triggered",
-          "reasoning": "This test validates that the task of searching for the specific film 'The Shawshank Redemption' has been completed by checking if the search query matches the film title."
+          "reasoning": "This test is necessary to ensure that the Web Agent correctly searches for the film titled 'The Matrix' as specified in the task prompt. The specific query should be validated to confirm the agent's action aligns with the task requirements."
         }
       ],
       "milestones": null,
@@ -249,8 +1339,10 @@
             "test": {
               "type": "CheckEventTest",
               "event_name": "SEARCH_FILM",
-              "criteria": {
-                "query": "Pulp Fiction"
+              "event_criteria": {
+                "query": {
+                  "value": "Pulp Fiction"
+                }
               },
               "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'."
             }
@@ -260,8 +1352,11 @@
             "test": {
               "type": "CheckEventTest",
               "event_name": "SEARCH_FILM",
-              "criteria": {
-                "query": "Forrest Gump"
+              "event_criteria": {
+                "query": {
+                  "value": "Forrest Gump",
+                  "operator": "equals"
+                }
               },
               "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'."
             }
@@ -271,8 +1366,11 @@
             "test": {
               "type": "CheckEventTest",
               "event_name": "SEARCH_FILM",
-              "criteria": {
-                "query": "Goodfellas"
+              "event_criteria": {
+                "query": {
+                  "value": "Goodfellas",
+                  "operator": "equals"
+                }
               },
               "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'."
             }
@@ -282,8 +1380,539 @@
             "test": {
               "type": "CheckEventTest",
               "event_name": "SEARCH_FILM",
-              "criteria": {
-                "query": "Interestellar"
+              "event_criteria": {
+                "query": {
+                  "value": "Interestellar"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "2a5d1ef8-7e20-47c0-81e7-83ee91ca2cc4",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Locate a film named 'Inception'",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "SEARCH_FILM",
+          "event_criteria": {
+            "query": {
+              "value": "Inception",
+              "operator": "equals"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test checks if the agent has performed the correct action of searching for the film titled 'Inception', which is the main goal of the task prompt. The criteria ensure that the search query exactly matches the specified film title."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "Search Film",
+        "description": "The user searches for a film using a query.",
+        "event": "SearchFilmEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Search for the movie 'Pulp Fiction'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Pulp Fiction"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'."
+            }
+          },
+          {
+            "prompt": "Find a movie called 'Forrest Gump'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Forrest Gump",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'."
+            }
+          },
+          {
+            "prompt": "Search for 'Goodfellas' in the movie database",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Goodfellas",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'."
+            }
+          },
+          {
+            "prompt": "Look up the movie 'Interestellar'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Interestellar"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "d2d30520-f988-4c43-bd37-bc96f85478c2",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Find information on the movie 'The Shawshank Redemption'",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "SEARCH_FILM",
+          "event_criteria": {
+            "query": {
+              "value": "The Shawshank Redemption",
+              "operator": "equals"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test is necessary to ensure that the agent correctly searches for the specific film 'The Shawshank Redemption' as requested in the task prompt. The test checks if the search query matches the exact title of the movie, validating that the search was executed correctly."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "Search Film",
+        "description": "The user searches for a film using a query.",
+        "event": "SearchFilmEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Search for the movie 'Pulp Fiction'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Pulp Fiction"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'."
+            }
+          },
+          {
+            "prompt": "Find a movie called 'Forrest Gump'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Forrest Gump",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'."
+            }
+          },
+          {
+            "prompt": "Search for 'Goodfellas' in the movie database",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Goodfellas",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'."
+            }
+          },
+          {
+            "prompt": "Look up the movie 'Interestellar'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Interestellar"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "ece8ec7d-f785-4f62-9e9d-14dfeea58801",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Search for the movie 'Titanic'",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "SEARCH_FILM",
+          "event_criteria": {
+            "query": {
+              "value": "Titanic",
+              "operator": "equals"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test checks whether the task to search for the movie 'Titanic' has been successfully completed by ensuring the search query matches exactly 'Titanic'. This is essential to validate that the web agent can accurately perform searches for specific film titles as per the user's request."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "Search Film",
+        "description": "The user searches for a film using a query.",
+        "event": "SearchFilmEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Search for the movie 'Pulp Fiction'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Pulp Fiction"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'."
+            }
+          },
+          {
+            "prompt": "Find a movie called 'Forrest Gump'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Forrest Gump",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'."
+            }
+          },
+          {
+            "prompt": "Search for 'Goodfellas' in the movie database",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Goodfellas",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'."
+            }
+          },
+          {
+            "prompt": "Look up the movie 'Interestellar'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Interestellar"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "1cf3874c-5ab4-40d3-a69c-cb7ed90ce407",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Search the database for 'Jurassic Park'",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "SEARCH_FILM",
+          "event_criteria": {
+            "query": {
+              "value": "Jurassic Park"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test is necessary to validate that the web agent has correctly performed a search in the database for the film titled 'Jurassic Park', matching the specific query provided in the task prompt."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "Search Film",
+        "description": "The user searches for a film using a query.",
+        "event": "SearchFilmEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Search for the movie 'Pulp Fiction'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Pulp Fiction"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'."
+            }
+          },
+          {
+            "prompt": "Find a movie called 'Forrest Gump'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Forrest Gump",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'."
+            }
+          },
+          {
+            "prompt": "Search for 'Goodfellas' in the movie database",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Goodfellas",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'."
+            }
+          },
+          {
+            "prompt": "Look up the movie 'Interestellar'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Interestellar"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "aa75f0d7-86f1-4fba-8191-ecee48d45bd7",
+      "scope": "global",
+      "is_web_real": false,
+      "web_project_id": "cinema",
+      "url": "http://localhost:8000/",
+      "prompt": "Look up 'The Godfather' in the movie listings",
+      "interactive_elements": null,
+      "screenshot": "None",
+      "screenshot_description": "",
+      "specifications": {
+        "viewport_width": 1920,
+        "viewport_height": 1080,
+        "screen_width": 1920,
+        "screen_height": 1080,
+        "device_pixel_ratio": 1.0,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "browser_x": 0,
+        "browser_y": 0
+      },
+      "tests": [
+        {
+          "type": "CheckEventTest",
+          "event_name": "SEARCH_FILM",
+          "event_criteria": {
+            "query": {
+              "value": "The Godfather",
+              "operator": "equals"
+            }
+          },
+          "description": "Check if specific event was triggered",
+          "reasoning": "This test is necessary to verify that the web agent has correctly executed a search for the specific film title 'The Godfather', as required by the task prompt. The validation ensures that the search query exactly matches the intended movie title, confirming successful task completion."
+        }
+      ],
+      "milestones": null,
+      "relevant_data": {
+        "user_for_login": {
+          "username": "user<web_agent_id>",
+          "password": "password123"
+        }
+      },
+      "success_criteria": null,
+      "use_case": {
+        "name": "Search Film",
+        "description": "The user searches for a film using a query.",
+        "event": "SearchFilmEvent",
+        "event_source_code": true,
+        "examples": [
+          {
+            "prompt": "Search for the movie 'Pulp Fiction'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Pulp Fiction"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'."
+            }
+          },
+          {
+            "prompt": "Find a movie called 'Forrest Gump'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Forrest Gump",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'."
+            }
+          },
+          {
+            "prompt": "Search for 'Goodfellas' in the movie database",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Goodfellas",
+                  "operator": "equals"
+                }
+              },
+              "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'."
+            }
+          },
+          {
+            "prompt": "Look up the movie 'Interestellar'",
+            "test": {
+              "type": "CheckEventTest",
+              "event_name": "SEARCH_FILM",
+              "event_criteria": {
+                "query": {
+                  "value": "Interestellar"
+                }
               },
               "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'."
             }
