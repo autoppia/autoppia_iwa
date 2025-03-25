@@ -164,12 +164,12 @@ FILM_DETAIL_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Show details for the movie Interstellar directed by Christopher Nolan",
-            "prompt_for_task_generation": "Show details for the movie Interstellar directed by Christopher Nolan",
+            "prompt": "Show details for the movie Interestellar directed by Christopher Nolan",
+            "prompt_for_task_generation": "Show details for the movie Interestellar directed by Christopher Nolan",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"name": {"value": "Interstellar"}, "director": {"value": "Christopher Nolan"}},
+                "event_criteria": {"name": {"value": "Interestellar"}, "director": {"value": "Christopher Nolan"}},
                 "reasoning": "Checks that when a user requests movie details with a director's name, both are captured.",
             },
         },
@@ -361,12 +361,12 @@ EDIT_FILM_USE_CASE = UseCase(
     event_source_code=EditFilmEvent.get_source_code_of_class(),
     examples=[
         {
-            "prompt": "Change the name of the movie with ID 101 to Interstellar",
-            "prompt_for_task_generation": "Change the name of the movie with ID 101 to Interstellar",
+            "prompt": "Change the name of the movie with ID 101 to Interestellar",
+            "prompt_for_task_generation": "Change the name of the movie with ID 101 to Interestellar",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
-                "event_criteria": {"movie_id": {"value": 101}, "name": {"value": "Interstellar"}},
+                "event_criteria": {"movie_id": {"value": 101}, "name": {"value": "Interestellar"}},
                 "reasoning": "Ensures the correct movie ID and new name are captured.",
             },
         },
@@ -783,10 +783,11 @@ ADD_COMMENT_USE_CASE = UseCase(
     description="The user adds a comment to a movie.",
     event=AddCommentEvent,
     event_source_code=AddCommentEvent.get_source_code_of_class(),
+    replace_func=replace_film_func,
     examples=[
         {
-            "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
-            "prompt_for_task_generation": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
+            "prompt": "Search the movie:<movie> and add a comment: 'Amazing cinematography! The visuals were stunning.'",
+            "prompt_for_task_generation": "Search the movie:<movie> and  add a comment: 'Amazing cinematography! The visuals were stunning.' ",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_COMMENT",
@@ -797,98 +798,98 @@ ADD_COMMENT_USE_CASE = UseCase(
                 "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
             },
         },
-        {
-            "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
-            "prompt_for_task_generation": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
-                "event_criteria": {
-                    "content": {"value": "The character development was weak, but the action scenes were top-notch."},
-                    "movie_name": {"value": "Mad Max: Fury Road"},
-                },
-                "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
-            },
-        },
-        {
-            "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
-            "prompt_for_task_generation": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
-                "event_criteria": {
-                    "content": {"value": "A thought-provoking masterpiece that keeps you guessing."},
-                    "movie_name": {"value": "The Prestige"},
-                },
-                "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
-            },
-        },
-        {
-            "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
-            "prompt_for_task_generation": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
-                "event_criteria": {
-                    "content": {"value": "I didn't expect that plot twist! Totally mind-blowing."},
-                    "movie_name": {"value": "Fight Club"},
-                },
-                "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
-            },
-        },
-        {
-            "prompt": "Write a comment which contains word 'character' on the film The Conjuring",
-            "prompt_for_task_generation": "Write a comment which contains word 'character' on the film The Conjuring",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
-                "event_criteria": {
-                    "content": {"value": "Not a fan of horror movies, but this one kept me at the edge of my seat!"},
-                    "movie_name": {"value": "The Conjuring"},
-                },
-                "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
-            },
-        },
-        {
-            "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar. Commenter Name could not be 'John'",
-            "prompt_for_task_generation": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar. Commenter Name could not be 'John'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
-                "event_criteria": {
-                    "content": {"value": "The soundtrack was mesmerizing and added so much depth to the story."},
-                    "commenter_name": {"value": "John", "operator": "not_equals"},
-                    "movie_name": {"value": "Interstellar"},
-                },
-                "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
-            },
-        },
-        {
-            "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
-            "prompt_for_task_generation": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
-                "event_criteria": {
-                    "content": {"value": "Too much CGI ruined the realism of the film."},
-                    "movie_name": {"value": "Jurassic World"},
-                },
-                "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
-            },
-        },
-        {
-            "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
-            "prompt_for_task_generation": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
-                "event_criteria": {
-                    "content": {"value": "Loved the chemistry between the lead actors. Perfect casting!"},
-                    "movie_name": {"value": "La La Land"},
-                },
-                "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
-            },
-        },
+        #     {
+        #         "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
+        #         "prompt_for_task_generation": "Comment 'The character development was weak, but the action scenes were top-notch.' on <movie>",
+        #         "test": {
+        #             "type": "CheckEventTest",
+        #             "event_name": "ADD_COMMENT",
+        #             "event_criteria": {
+        #                 "content": {"value": "The character development was weak, but the action scenes were top-notch."},
+        #                 "movie_name": {"value": "Mad Max: Fury Road"},
+        #             },
+        #             "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
+        #         },
+        #     },
+        #     {
+        #         "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
+        #         "prompt_for_task_generation": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for <movie>",
+        #         "test": {
+        #             "type": "CheckEventTest",
+        #             "event_name": "ADD_COMMENT",
+        #             "event_criteria": {
+        #                 "content": {"value": "A thought-provoking masterpiece that keeps you guessing."},
+        #                 "movie_name": {"value": "The Prestige"},
+        #             },
+        #             "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
+        #         },
+        #     },
+        #     {
+        #         "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
+        #         "prompt_for_task_generation": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under <movie>",
+        #         "test": {
+        #             "type": "CheckEventTest",
+        #             "event_name": "ADD_COMMENT",
+        #             "event_criteria": {
+        #                 "content": {"value": "I didn't expect that plot twist! Totally mind-blowing."},
+        #                 "movie_name": {"value": "Fight Club"},
+        #             },
+        #             "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
+        #         },
+        #     },
+        #     {
+        #         "prompt": "Write a comment which contains word 'character' on the film The Conjuring",
+        #         "prompt_for_task_generation": "Write a comment which contains word 'character' on the film <movie>",
+        #         "test": {
+        #             "type": "CheckEventTest",
+        #             "event_name": "ADD_COMMENT",
+        #             "event_criteria": {
+        #                 "content": {"value": "Not a fan of horror movies, but this one kept me at the edge of my seat!"},
+        #                 "movie_name": {"value": "The Conjuring"},
+        #             },
+        #             "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
+        #         },
+        #     },
+        #     {
+        #         "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interestellar. Commenter Name could not be 'John'",
+        #         "prompt_for_task_generation": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for <movie>. Commenter Name could not be 'John'",
+        #         "test": {
+        #             "type": "CheckEventTest",
+        #             "event_name": "ADD_COMMENT",
+        #             "event_criteria": {
+        #                 "content": {"value": "The soundtrack was mesmerizing and added so much depth to the story."},
+        #                 "commenter_name": {"value": "John", "operator": "not_equals"},
+        #                 "movie_name": {"value": "Interestellar"},
+        #             },
+        #             "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
+        #         },
+        #     },
+        #     {
+        #         "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
+        #         "prompt_for_task_generation": "Post a comment 'Too much CGI ruined the realism of the film.' under  <movie>",
+        #         "test": {
+        #             "type": "CheckEventTest",
+        #             "event_name": "ADD_COMMENT",
+        #             "event_criteria": {
+        #                 "content": {"value": "Too much CGI ruined the realism of the film."},
+        #                 "movie_name": {"value": "Jurassic World"},
+        #             },
+        #             "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
+        #         },
+        #     },
+        #     {
+        #         "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
+        #         "prompt_for_task_generation": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film  <movie>",
+        #         "test": {
+        #             "type": "CheckEventTest",
+        #             "event_name": "ADD_COMMENT",
+        #             "event_criteria": {
+        #                 "content": {"value": "Loved the chemistry between the lead actors. Perfect casting!"},
+        #                 "movie_name": {"value": "La La Land"},
+        #             },
+        #             "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
+        #         },
+        #     },
     ],
 )
 
@@ -907,11 +908,11 @@ ALL_USE_CASES = [
     # LOGIN_USE_CASE,
     # LOGOUT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
-    SEARCH_FILM_USE_CASE_1,
+    # SEARCH_FILM_USE_CASE_1,
     # ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
     # DELETE_FILM_USE_CASE,
-    # ADD_COMMENT_USE_CASE,
+    ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,
     # FILTER_FILM_USE_CASE,

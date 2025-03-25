@@ -108,7 +108,7 @@ MOVIES_DATA = [
         "genres": ["Biography", "Crime", "Drama"],
     },
     {
-        "name": "Interstellar",
+        "name": "Interestellar",
         "desc": "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
         "year": 2014,
         "director": "Christopher Nolan",

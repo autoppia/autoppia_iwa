@@ -720,7 +720,7 @@ class AddCommentEvent(Event):
         Parse an add comment event from backend data.
         """
         base_event = Event.parse(backend_event)
-        data = base_event.get("data", {})
+        data = backend_event.data
         movie_data = data.get("movie", {})
         return cls(
             event_name=base_event.event_name,

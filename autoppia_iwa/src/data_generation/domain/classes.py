@@ -145,10 +145,8 @@ class Task(BaseModel):
         """
         Creates and returns a copy of the task with web_agent_id replacements applied.
         The original task remains unmodified.
-
         Args:
             web_agent_id: The web agent ID to replace placeholders with
-
         Returns:
             A new Task instance with replacements applied
         """
@@ -161,9 +159,20 @@ class Task(BaseModel):
         for key, value in task_copy.relevant_data.items():
             if isinstance(value, str):
                 task_copy.relevant_data[key] = value.replace("<web_agent_id>", web_agent_id)
+            elif isinstance(value, dict):
+                # Si el valor es un diccionario, procesamos sus elementos
+                for sub_key, sub_value in value.items():
+                    if isinstance(sub_value, str):
+                        value[sub_key] = sub_value.replace("<web_agent_id>", web_agent_id)
+            elif isinstance(value, list):
+                # Si el valor es una lista, procesamos sus elementos
+                for i, item in enumerate(value):
+                    if isinstance(item, str):
+                        value[i] = item.replace("<web_agent_id>", web_agent_id)
 
         # Update prompt in the copy
-        task_copy.prompt = task_copy.prompt.replace("<web_agent_id>", web_agent_id)
+        if isinstance(task_copy.prompt, str):
+            task_copy.prompt = task_copy.prompt.replace("<web_agent_id>", web_agent_id)
 
         return task_copy
 
