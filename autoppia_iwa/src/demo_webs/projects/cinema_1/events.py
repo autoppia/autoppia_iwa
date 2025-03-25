@@ -692,7 +692,7 @@ class AddCommentEvent(Event):
     class ValidationCriteria(BaseModel):
         """Criteria for validating add comment events"""
 
-        content_contains: str | CriterionValue | None = None
+        content: str | CriterionValue | None = None
         commenter_name: str | CriterionValue | None = None
         movie_id: int | CriterionValue | None = None
         movie_name: str | CriterionValue | None = None
@@ -703,9 +703,9 @@ class AddCommentEvent(Event):
         """
         if not criteria:
             return True
-        if criteria.content_contains is not None and not validate_criterion(
+        if criteria.content is not None and not validate_criterion(
             self.content,
-            CriterionValue(value=criteria.content_contains.value if isinstance(criteria.content_contains, CriterionValue) else criteria.content_contains, operator=ComparisonOperator.CONTAINS),
+            CriterionValue(value=criteria.content.value if isinstance(criteria.content, CriterionValue) else criteria.content, operator=ComparisonOperator.CONTAINS),
         ):
             return False
         if criteria.commenter_name is not None and not validate_criterion(self.commenter_name, criteria.commenter_name):
