@@ -1,101 +1,100 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
-from autoppia_iwa.src.demo_webs.projects.cinema_1.replace_functions import login_replace_func, register_replace_func
 
-from .events import LoginEvent, RegistrationEvent, SearchFilmEvent
+from .events import FilmDetailEvent
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
-    UseCase(
-        name="User Registration",
-        description="The user fills out the registration form and successfully creates a new account.",
-        event=RegistrationEvent,
-        event_source_code=RegistrationEvent.get_source_code_of_class(),
-        replace_func=register_replace_func,
-        examples=[
-            {
-                "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "REGISTRATION",
-                    "event_criteria": {"username": {"value": "<username>"}},
-                    "reasoning": "This test applies when the task requires a registration event with a specific username.",
-                },
-            },
-            {
-                "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "REGISTRATION",
-                    "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
-                    "reasoning": "This test applies when the task requires registration with a specific username.",
-                },
-            },
-            {
-                "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "REGISTRATION",
-                    "event_criteria": {"username": {"value": "<username>"}, "email": {"value": "<email>"}},
-                    "reasoning": "This test applies when the task requires registration with both username and email specified.",
-                },
-            },
-            {
-                "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "REGISTRATION",
-                    "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
-                    "reasoning": "This test applies when the task requires registration with a specific username.",
-                },
-            },
-        ],
-    ),
-    UseCase(
-        name="User Login",
-        description="The user fills out the login form and logs in successfully.",
-        event=LoginEvent,
-        event_source_code=LoginEvent.get_source_code_of_class(),
-        replace_func=login_replace_func,
-        examples=[
-            {
-                "prompt": "Login for the following username:<username> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "LOGIN",
-                    "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
-                    "reasoning": "This test applies when the task requires a login event.",
-                },
-            },
-            {
-                "prompt": "Login with a specific username:<username> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "LOGIN",
-                    "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
-                    "reasoning": "This test applies when the task requires a login event with username containing a specific value.",
-                },
-            },
-            {
-                "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "LOGIN",
-                    "event_criteria": {"username": {"value": "<username>"}},
-                    "reasoning": "This test applies when the task requires a login event.",
-                },
-            },
-            {
-                "prompt": "Sign in to the website username:<username> and password:<password>",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "LOGIN",
-                    "event_criteria": {"username": {"value": "<username>"}},
-                    "reasoning": "This test applies when the task requires a login event.",
-                },
-            },
-        ],
-    ),
+    # UseCase(
+    #     name="User Registration",
+    #     description="The user fills out the registration form and successfully creates a new account.",
+    #     event=RegistrationEvent,
+    #     event_source_code=RegistrationEvent.get_source_code_of_class(),
+    #     replace_func=register_replace_func,
+    #     examples=[
+    #         {
+    #             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "REGISTRATION",
+    #                 "event_criteria": {"username": {"value": "<username>"}},
+    #                 "reasoning": "This test applies when the task requires a registration event with a specific username.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "REGISTRATION",
+    #                 "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
+    #                 "reasoning": "This test applies when the task requires registration with a specific username.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "REGISTRATION",
+    #                 "event_criteria": {"username": {"value": "<username>"}, "email": {"value": "<email>"}},
+    #                 "reasoning": "This test applies when the task requires registration with both username and email specified.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "REGISTRATION",
+    #                 "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
+    #                 "reasoning": "This test applies when the task requires registration with a specific username.",
+    #             },
+    #         },
+    #     ],
+    # ),
+    # UseCase(
+    #     name="User Login",
+    #     description="The user fills out the login form and logs in successfully.",
+    #     event=LoginEvent,
+    #     event_source_code=LoginEvent.get_source_code_of_class(),
+    #     replace_func=login_replace_func,
+    #     examples=[
+    #         {
+    #             "prompt": "Login for the following username:<username> and password:<password>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "LOGIN",
+    #                 "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
+    #                 "reasoning": "This test applies when the task requires a login event.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Login with a specific username:<username> and password:<password>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "LOGIN",
+    #                 "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
+    #                 "reasoning": "This test applies when the task requires a login event with username containing a specific value.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "LOGIN",
+    #                 "event_criteria": {"username": {"value": "<username>"}},
+    #                 "reasoning": "This test applies when the task requires a login event.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Sign in to the website username:<username> and password:<password>",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "LOGIN",
+    #                 "event_criteria": {"username": {"value": "<username>"}},
+    #                 "reasoning": "This test applies when the task requires a login event.",
+    #             },
+    #         },
+    #     ],
+    # ),
     # # UseCase(
     #     name="User Logout",
     #     description="The user logs out of the platform.",
@@ -109,112 +108,112 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    # UseCase(
-    #     name="View Film Details",
-    #     description="The user views the details of a specific movie, including information such as the director, year, genres, rating, duration, and cast.",
-    #     event=FilmDetailEvent,
-    #     event_source_code=FilmDetailEvent.get_source_code_of_class(),
-    #     examples=[
-    #         {
-    #             "prompt": "Show details for the movie The Matrix",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "FILM_DETAILS",
-    #                 "event_criteria": {"name": "The Matrix"},
-    #                 "reasoning": "This test ensures that when the user requests details for a specific movie, the correct movie name is captured in the event.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Show details for the movie Interstellar directed by Christopher Nolan",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "FILM_DETAILS",
-    #                 "event_criteria": {"name": "Interstellar", "director": "Christopher Nolan"},
-    #                 "reasoning": "This test ensures that when a user requests movie details with a director's name, the event captures the correct movie and director information.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Show information about the movie Parasite released in 2019",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "FILM_DETAILS",
-    #                 "event_criteria": {"name": "Parasite", "year": 2019},
-    #                 "reasoning": "This test validates that the event correctly records the movie's name and release year when viewing film details.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Give me details on The Godfather including its rating",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "FILM_DETAILS",
-    #                 "event_criteria": {"name": "The Godfather", "rating": "9.2"},
-    #                 "reasoning": "This test ensures that when a user specifically requests movie details including the rating, the event captures and records the rating information.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "I want to see details of Blade Runner 2049 and its genre",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "FILM_DETAILS",
-    #                 "event_criteria": {"name": "Blade Runner 2049", "genre": "Sci-Fi"},
-    #                 "reasoning": "This test checks if the movie genre is correctly included when a user asks for movie details including genre information.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "What is the duration of Fight Club?",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "FILM_DETAILS",
-    #                 "event_criteria": {"name": "Fight Club", "duration": "139 min"},
-    #                 "reasoning": "This test ensures that when a user requests the duration of a movie, the event logs the duration field correctly.",
-    #             },
-    #         },
-    #     ],
-    # ),
     UseCase(
-        name="Search Film",
-        description="The user searches for a film using a query.",
-        event=SearchFilmEvent,
-        event_source_code=SearchFilmEvent.get_source_code_of_class(),
+        name="View Film Details",
+        description="The user views the details of a specific movie, including information such as the director, year, genres, rating, duration, and cast.",
+        event=FilmDetailEvent,
+        event_source_code=FilmDetailEvent.get_source_code_of_class(),
         examples=[
             {
-                "prompt": "Search for the movie 'Pulp Fiction'",
+                "prompt": "Show details for the movie The Matrix",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "SEARCH_FILM",
-                    "event_criteria": {"query": {"value": "Pulp Fiction"}},
-                    "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'.",
+                    "event_name": "FILM_DETAILS",
+                    "event_criteria": {"name": "The Matrix"},
+                    "reasoning": "This test ensures that when the user requests details for a specific movie, the correct movie name is captured in the event.",
                 },
             },
             {
-                "prompt": "Find a movie called 'Forrest Gump'",
+                "prompt": "Show details for the movie Interstellar directed by Christopher Nolan",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "SEARCH_FILM",
-                    "event_criteria": {"query": {"value": "Forrest Gump", "operator": "equals"}},
-                    "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'.",
+                    "event_name": "FILM_DETAILS",
+                    "event_criteria": {"name": "Interstellar", "director": "Christopher Nolan"},
+                    "reasoning": "This test ensures that when a user requests movie details with a director's name, the event captures the correct movie and director information.",
                 },
             },
             {
-                "prompt": "Search for 'Goodfellas' in the movie database",
+                "prompt": "Show information about the movie Parasite released in 2019",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "SEARCH_FILM",
-                    "event_criteria": {"query": {"value": "Goodfellas", "operator": "equals"}},
-                    "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'.",
+                    "event_name": "FILM_DETAILS",
+                    "event_criteria": {"name": "Parasite", "year": 2019},
+                    "reasoning": "This test validates that the event correctly records the movie's name and release year when viewing film details.",
                 },
             },
             {
-                "prompt": "Look up the movie 'Interestellar'",
+                "prompt": "Give me details on The Godfather including its rating",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "SEARCH_FILM",
-                    "event_criteria": {"query": {"value": "Interestellar"}},
-                    "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'.",
+                    "event_name": "FILM_DETAILS",
+                    "event_criteria": {"name": "The Godfather", "rating": "9.2"},
+                    "reasoning": "This test ensures that when a user specifically requests movie details including the rating, the event captures and records the rating information.",
+                },
+            },
+            {
+                "prompt": "I want to see details of Blade Runner 2049 and its genre",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILM_DETAILS",
+                    "event_criteria": {"name": "Blade Runner 2049", "genre": "Sci-Fi"},
+                    "reasoning": "This test checks if the movie genre is correctly included when a user asks for movie details including genre information.",
+                },
+            },
+            {
+                "prompt": "What is the duration of Fight Club?",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "FILM_DETAILS",
+                    "event_criteria": {"name": "Fight Club", "duration": "139 min"},
+                    "reasoning": "This test ensures that when a user requests the duration of a movie, the event logs the duration field correctly.",
                 },
             },
         ],
     ),
+    # UseCase(
+    #     name="Search Film",
+    #     description="The user searches for a film using a query.",
+    #     event=SearchFilmEvent,
+    #     event_source_code=SearchFilmEvent.get_source_code_of_class(),
+    #     examples=[
+    #         {
+    #             "prompt": "Search for the movie 'Pulp Fiction'",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "SEARCH_FILM",
+    #                 "event_criteria": {"query": {"value": "Pulp Fiction"}},
+    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Find a movie called 'Forrest Gump'",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "SEARCH_FILM",
+    #                 "event_criteria": {"query": {"value": "Forrest Gump", "operator": "equals"}},
+    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Search for 'Goodfellas' in the movie database",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "SEARCH_FILM",
+    #                 "event_criteria": {"query": {"value": "Goodfellas", "operator": "equals"}},
+    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Look up the movie 'Interestellar'",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "SEARCH_FILM",
+    #                 "event_criteria": {"query": {"value": "Interestellar"}},
+    #                 "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'.",
+    #             },
+    #         },
+    #     ],
+    # ),
     # # UseCase(
     #     name="Add Film",
     #     description="The user adds a new film to the system, specifying details such as name, director, year, genres, rating, duration, and cast.",
