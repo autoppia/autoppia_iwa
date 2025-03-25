@@ -221,15 +221,6 @@ USE_CASES = [
     #     event_source_code=AddFilmEvent.get_source_code_of_class(),
     #     examples=[
     #         {
-    #             "prompt": "Add a new film called Inception",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": {"value": "Inception"}},
-    #                 "reasoning": "This test ensures that when a user adds a film, the correct movie name is captured in the event.",
-    #             },
-    #         },
-    #         {
     #             "prompt": "Add the movie The Grand Budapest Hotel directed by Wes Anderson",
     #             "test": {
     #                 "type": "CheckEventTest",
@@ -248,11 +239,11 @@ USE_CASES = [
     #             },
     #         },
     #         {
-    #             "prompt": "Add a movie named Mad Max: Fury Road with a rating of 8.1",
+    #             "prompt": "Add a movie named Mad Max: Fury Road with a rating of 4.1",
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": {"value": "Mad Max: Fury Road"}, "rating": {"value": 8.1}},
+    #                 "event_criteria": {"name": {"value": "Mad Max: Fury Road"}, "rating": {"value": 4.1}},
     #                 "reasoning": "This test ensures that when a user specifies a rating for a movie, the event correctly records the rating information.",
     #             },
     #         },
