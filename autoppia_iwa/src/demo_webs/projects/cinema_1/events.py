@@ -37,7 +37,7 @@ class RegistrationEvent(Event):
         """
         Parse a registration event from backend data.
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = backend_event.data
         username = data.get("username", "")
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
@@ -69,7 +69,7 @@ class LoginEvent(Event):
         """
         Parse a login event from backend data.
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = backend_event.data
         username = data.get("username", "")
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
@@ -99,7 +99,7 @@ class LogoutEvent(Event):
         """
         Parse a logout event from backend data.
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = backend_event.data
         username = data.get("username", "")
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
@@ -248,7 +248,7 @@ class EditUserEvent(Event):
         Returns:
             EditUserEvent object populated with data from the backend event
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
 
         # Extract data
         data = backend_event.data
@@ -353,7 +353,7 @@ class FilmDetailEvent(Event):
         """
         Parse a film detail event from backend data.
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
@@ -438,7 +438,7 @@ class AddFilmEvent(Event):
         """
         Parse an add film event from backend data.
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
@@ -542,7 +542,7 @@ class EditFilmEvent(Event):
         """
         Parse an edit film event from backend data.
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
@@ -622,7 +622,7 @@ class DeleteFilmEvent(Event):
         """
         Parse a delete film event from backend data.
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
@@ -673,7 +673,7 @@ class SearchFilmEvent(Event):
         Parse a search film event from backend data.
         """
 
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = backend_event.data
         query = data.get("query")
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, query=query)
@@ -719,7 +719,7 @@ class AddCommentEvent(Event):
         """
         Parse an add comment event from backend data.
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
         data = base_event.get("data", {})
         movie_data = data.get("movie", {})
         return cls(
@@ -787,7 +787,7 @@ class ContactEvent(Event):
         Returns:
             ContactEvent object populated with data from the backend event
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
 
         # Extract data
         data = backend_event.data
@@ -882,7 +882,7 @@ class FilterFilmEvent(Event):
         Returns:
             FilterFilmEvent object populated with data from the backend event
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
 
         # Extract data
         data = backend_event.data
@@ -941,7 +941,7 @@ class FilterFilmEvent(Event):
 #         Returns:
 #             CompositeEvent object populated with data from the backend event
 #         """
-#         base_event = super().parse(backend_event)
+#         base_event = Event.parse(backend_event)
 #         event_data = backend_event.get("events", [])
 #
 #         parsed_events = []
