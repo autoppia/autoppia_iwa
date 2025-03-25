@@ -1,7 +1,7 @@
 # Assuming these are imported from your events module
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import FilmDetailEvent
+from .events import AddCommentEvent
 
 # Create the use cases directly using the UseCase constructor
 USE_CASES = [
@@ -108,68 +108,68 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    UseCase(
-        name="View Film Details",
-        description="The user views the details of a specific movie, including information such as the director, year, genres, rating, duration, and cast.",
-        event=FilmDetailEvent,
-        event_source_code=FilmDetailEvent.get_source_code_of_class(),
-        examples=[
-            {
-                "prompt": "Show details for the movie The Matrix",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "The Matrix"}},
-                    "reasoning": "This test ensures that when the user requests details for a specific movie, the correct movie name is captured in the event.",
-                },
-            },
-            {
-                "prompt": "Show details for the movie Interstellar directed by Christopher Nolan",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "Interstellar"}, "director": {"value": "Christopher Nolan"}},
-                    "reasoning": "This test ensures that when a user requests movie details with a director's name, the event captures the correct movie and director information.",
-                },
-            },
-            {
-                "prompt": "Show information about the movie The Dark Knight released in 2008",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "The Dark Knight"}, "year": {"value": 2008}},
-                    "reasoning": "This test validates that the event correctly records the movie's name and release year when viewing film details.",
-                },
-            },
-            {
-                "prompt": "Give me details on The Godfather including its rating",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "The Godfather"}, "rating": {"value": "1.0", "operator": "greater_than"}},
-                    "reasoning": "This test ensures that when a user specifically requests movie details including the rating, the event captures and records the rating information.",
-                },
-            },
-            {
-                "prompt": "I want to see details of The Matrix and its genre",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "The Matrix"}, "genre": {"value": "Sci-Fi"}},
-                    "reasoning": "This test checks if the movie genre is correctly included when a user asks for movie details including genre information.",
-                },
-            },
-            {
-                "prompt": "What is the duration of Goodfellas?",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "Goodfellas"}, "duration": {"value": "146 min"}},
-                    "reasoning": "This test ensures that when a user requests the duration of a movie, the event logs the duration field correctly.",
-                },
-            },
-        ],
-    ),
+    # UseCase(
+    #     name="View Film Details",
+    #     description="The user views the details of a specific movie, including information such as the director, year, genres, rating, duration, and cast.",
+    #     event=FilmDetailEvent,
+    #     event_source_code=FilmDetailEvent.get_source_code_of_class(),
+    #     examples=[
+    #         {
+    #             "prompt": "Show details for the movie The Matrix",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILM_DETAIL",
+    #                 "event_criteria": {"name": {"value": "The Matrix"}},
+    #                 "reasoning": "This test ensures that when the user requests details for a specific movie, the correct movie name is captured in the event.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Show details for the movie Interstellar directed by Christopher Nolan",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILM_DETAIL",
+    #                 "event_criteria": {"name": {"value": "Interstellar"}, "director": {"value": "Christopher Nolan"}},
+    #                 "reasoning": "This test ensures that when a user requests movie details with a director's name, the event captures the correct movie and director information.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Show information about the movie The Dark Knight released in 2008",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILM_DETAIL",
+    #                 "event_criteria": {"name": {"value": "The Dark Knight"}, "year": {"value": 2008}},
+    #                 "reasoning": "This test validates that the event correctly records the movie's name and release year when viewing film details.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "Give me details on The Godfather including its rating",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILM_DETAIL",
+    #                 "event_criteria": {"name": {"value": "The Godfather"}, "rating": {"value": "1.0", "operator": "greater_than"}},
+    #                 "reasoning": "This test ensures that when a user specifically requests movie details including the rating, the event captures and records the rating information.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "I want to see details of The Matrix and its genre",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILM_DETAIL",
+    #                 "event_criteria": {"name": {"value": "The Matrix"}, "genre": {"value": "Sci-Fi"}},
+    #                 "reasoning": "This test checks if the movie genre is correctly included when a user asks for movie details including genre information.",
+    #             },
+    #         },
+    #         {
+    #             "prompt": "What is the duration of Goodfellas?",
+    #             "test": {
+    #                 "type": "CheckEventTest",
+    #                 "event_name": "FILM_DETAIL",
+    #                 "event_criteria": {"name": {"value": "Goodfellas"}, "duration": {"value": "146 min"}},
+    #                 "reasoning": "This test ensures that when a user requests the duration of a movie, the event logs the duration field correctly.",
+    #             },
+    #         },
+    #     ],
+    # ),
     # UseCase(
     #     name="Search Film",
     #     description="The user searches for a film using a query.",
@@ -360,95 +360,95 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    # UseCase(
-    #     name="Add Comment",
-    #     description="The user adds a comment to a movie.",
-    #     event=AddCommentEvent,
-    #     event_source_code=AddCommentEvent.get_source_code_of_class(),
-    #     examples=[
-    #         {
-    #             "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": {"value": "Amazing cinematography! The visuals were stunning."}, "movie_name": {"value": "Inception"}},
-    #                 "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {
-    #                     "content_contains": {"value": "The character development was weak, but the action scenes were top-notch."},
-    #                     "movie_name": {"value": "Mad Max: Fury Road"},
-    #                 },
-    #                 "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": {"value": "A thought-provoking masterpiece that keeps you guessing."}, "movie_name": {"value": "The Prestige"}},
-    #                 "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": {"value": "I didn't expect that plot twist! Totally mind-blowing."}, "movie_name": {"value": "Fight Club"}},
-    #                 "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Write a comment 'Not a fan of horror movies, but this one kept me at the edge of my seat!' on the film The Conjuring",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {
-    #                     "content_contains": {"value": "Not a fan of horror movies, but this one kept me at the edge of my seat!"},
-    #                     "movie_name": {"value": "The Conjuring"},
-    #                 },
-    #                 "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {
-    #                     "content_contains": {"value": "The soundtrack was mesmerizing and added so much depth to the story."},
-    #                     "movie_name": {"value": "Interstellar"},
-    #                 },
-    #                 "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": {"value": "Too much CGI ruined the realism of the film."}, "movie_name": {"value": "Jurassic World"}},
-    #                 "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
-    #             },
-    #         },
-    #         {
-    #             "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
-    #             "test": {
-    #                 "type": "CheckEventTest",
-    #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": {"value": "Loved the chemistry between the lead actors. Perfect casting!"}, "movie_name": {"value": "La La Land"}},
-    #                 "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
-    #             },
-    #         },
-    #     ],
-    # ),
+    UseCase(
+        name="Add Comment",
+        description="The user adds a comment to a movie.",
+        event=AddCommentEvent,
+        event_source_code=AddCommentEvent.get_source_code_of_class(),
+        examples=[
+            {
+                "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "event_criteria": {"content_contains": {"value": "Amazing cinematography! The visuals were stunning."}, "movie_name": {"value": "Inception"}},
+                    "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
+                },
+            },
+            {
+                "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "event_criteria": {
+                        "content_contains": {"value": "The character development was weak, but the action scenes were top-notch."},
+                        "movie_name": {"value": "Mad Max: Fury Road"},
+                    },
+                    "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
+                },
+            },
+            {
+                "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "event_criteria": {"content_contains": {"value": "A thought-provoking masterpiece that keeps you guessing."}, "movie_name": {"value": "The Prestige"}},
+                    "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
+                },
+            },
+            {
+                "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "event_criteria": {"content_contains": {"value": "I didn't expect that plot twist! Totally mind-blowing."}, "movie_name": {"value": "Fight Club"}},
+                    "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
+                },
+            },
+            {
+                "prompt": "Write a comment 'Not a fan of horror movies, but this one kept me at the edge of my seat!' on the film The Conjuring",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "event_criteria": {
+                        "content_contains": {"value": "Not a fan of horror movies, but this one kept me at the edge of my seat!"},
+                        "movie_name": {"value": "The Conjuring"},
+                    },
+                    "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
+                },
+            },
+            {
+                "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "event_criteria": {
+                        "content_contains": {"value": "The soundtrack was mesmerizing and added so much depth to the story."},
+                        "movie_name": {"value": "Interstellar"},
+                    },
+                    "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
+                },
+            },
+            {
+                "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "event_criteria": {"content_contains": {"value": "Too much CGI ruined the realism of the film."}, "movie_name": {"value": "Jurassic World"}},
+                    "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
+                },
+            },
+            {
+                "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": "ADD_COMMENT",
+                    "event_criteria": {"content_contains": {"value": "Loved the chemistry between the lead actors. Perfect casting!"}, "movie_name": {"value": "La La Land"}},
+                    "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
+                },
+            },
+        ],
+    ),
     # UseCase(
     #     name="Send Contact Form",
     #     description="The user navigates to the contact form page, fills out fields, and submits the form successfully.",
