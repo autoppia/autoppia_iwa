@@ -1,7 +1,6 @@
 # concurrent_evaluator.py
 import asyncio
 import contextlib
-import random
 import time
 from collections import defaultdict
 
@@ -265,7 +264,7 @@ class ConcurrentEvaluator(IEvaluator):
 
         # Shuffle grouped tasks for random evaluation order
         grouped_task_list = list(grouped_indices.values())
-        random.shuffle(grouped_task_list)
+        # random.shuffle(grouped_task_list)
 
         semaphore = asyncio.Semaphore(self.config.chunk_size)
         tasks = [self._evaluate_group_with_semaphore(task, task_solutions, group_indices, final_results, semaphore) for group_indices in grouped_task_list]

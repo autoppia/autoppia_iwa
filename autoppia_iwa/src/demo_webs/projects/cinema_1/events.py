@@ -660,7 +660,12 @@ class SearchFilmEvent(Event):
         """
         if not criteria:
             return True
-        return not (criteria.query is not None and not validate_criterion(self.query, criteria.query))
+
+        if criteria.query is not None:
+            result = validate_criterion(self.query, criteria.query)
+            return result
+
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SearchFilmEvent":

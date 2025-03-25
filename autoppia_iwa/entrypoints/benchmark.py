@@ -44,7 +44,7 @@ class BenchmarkConfig:
     m: int = 1  # Number of copies of each solution to evaluate
     prompts_per_url: int = 1
     num_of_urls: int = 1
-    prompt_per_use_case: int = 1
+    prompt_per_use_case: int = 6
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
@@ -64,9 +64,9 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Define agents
 AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(id="2", name="Random-clicker"),
-    # ApifiedWebAgent(id="1", name="Trick-Agent", host="127.0.0.1", port=8005, timeout=120),
-    ApifiedWebAgent(id="1", name="Browser-Use", host="127.0.0.1", port=8005, timeout=120),
-    # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
+    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="3", name="Agent3", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()

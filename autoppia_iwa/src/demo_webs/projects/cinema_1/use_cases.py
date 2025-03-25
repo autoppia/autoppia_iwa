@@ -17,9 +17,8 @@ USE_CASES = [
                 "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
                 "test": {
                     "type": "CheckEventTest",
-                    "username": "<username>",
                     "event_name": "REGISTRATION",
-                    "criteria": {"username": "<username>"},
+                    "event_criteria": {"username": {"value": "<username>"}},
                     "reasoning": "This test applies when the task requires a registration event with a specific username.",
                 },
             },
@@ -27,9 +26,8 @@ USE_CASES = [
                 "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
                 "test": {
                     "type": "CheckEventTest",
-                    "username": "<username>",
                     "event_name": "REGISTRATION",
-                    "criteria": {"username": "<username>"},
+                    "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
                     "reasoning": "This test applies when the task requires registration with a specific username.",
                 },
             },
@@ -37,9 +35,8 @@ USE_CASES = [
                 "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
                 "test": {
                     "type": "CheckEventTest",
-                    "username": "<username>",
                     "event_name": "REGISTRATION",
-                    "criteria": {"username": "<username>", "email": "<email>"},
+                    "event_criteria": {"username": {"value": "<username>"}, "email": {"value": "<email>"}},
                     "reasoning": "This test applies when the task requires registration with both username and email specified.",
                 },
             },
@@ -47,9 +44,8 @@ USE_CASES = [
                 "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
                 "test": {
                     "type": "CheckEventTest",
-                    "username": "<username>",
                     "event_name": "REGISTRATION",
-                    "criteria": {"username": "<username>"},
+                    "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
                     "reasoning": "This test applies when the task requires registration with a specific username.",
                 },
             },
@@ -63,32 +59,29 @@ USE_CASES = [
         replace_func=login_replace_func,
         examples=[
             {
-                "prompt": "Login for the following username:<username>  and password:<password>",
+                "prompt": "Login for the following username:<username> and password:<password>",
                 "test": {
                     "type": "CheckEventTest",
-                    "username": "<username>",
                     "event_name": "LOGIN",
-                    "criteria": {"username": "<username>"},
+                    "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
                     "reasoning": "This test applies when the task requires a login event.",
                 },
             },
             {
-                "prompt": "Login with a specific username:<username>  and password:<password>",
+                "prompt": "Login with a specific username:<username> and password:<password>",
                 "test": {
                     "type": "CheckEventTest",
-                    "username": "<username>",
                     "event_name": "LOGIN",
-                    "criteria": {"username": "<username>"},
-                    "reasoning": "This test applies when the task requires a login event.",
+                    "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
+                    "reasoning": "This test applies when the task requires a login event with username containing a specific value.",
                 },
             },
             {
                 "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
                 "test": {
                     "type": "CheckEventTest",
-                    "username": "<username>",
                     "event_name": "LOGIN",
-                    "criteria": {"username": "<username>"},
+                    "event_criteria": {"username": {"value": "<username>"}},
                     "reasoning": "This test applies when the task requires a login event.",
                 },
             },
@@ -96,15 +89,14 @@ USE_CASES = [
                 "prompt": "Sign in to the website username:<username> and password:<password>",
                 "test": {
                     "type": "CheckEventTest",
-                    "username": "<username>",
                     "event_name": "LOGIN",
-                    "criteria": {"username": "<username>"},
+                    "event_criteria": {"username": {"value": "<username>"}},
                     "reasoning": "This test applies when the task requires a login event.",
                 },
             },
         ],
     ),
-    # UseCase(
+    # # UseCase(
     #     name="User Logout",
     #     description="The user logs out of the platform.",
     #     event=LogoutEvent,
@@ -190,7 +182,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "SEARCH_FILM",
-                    "criteria": {"query": "Pulp Fiction"},
+                    "event_criteria": {"query": {"value": "Pulp Fiction"}},
                     "reasoning": "This test applies when the task requires searching for a specific film title 'Pulp Fiction'.",
                 },
             },
@@ -199,7 +191,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "SEARCH_FILM",
-                    "criteria": {"query": "Forrest Gump"},
+                    "event_criteria": {"query": {"value": "Forrest Gump", "operator": "equals"}},
                     "reasoning": "This test applies when the task requires searching for a specific film title 'Forrest Gump'.",
                 },
             },
@@ -208,7 +200,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "SEARCH_FILM",
-                    "criteria": {"query": "Goodfellas"},
+                    "event_criteria": {"query": {"value": "Goodfellas", "operator": "equals"}},
                     "reasoning": "This test applies when the task requires searching for a specific film title 'Goodfellas'.",
                 },
             },
@@ -217,13 +209,13 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "SEARCH_FILM",
-                    "criteria": {"query": "Interestellar"},
+                    "event_criteria": {"query": {"value": "Interestellar"}},
                     "reasoning": "This test applies when the task requires searching for a specific film title 'Interestellar'.",
                 },
             },
         ],
     ),
-    # UseCase(
+    # # UseCase(
     #     name="Add Film",
     #     description="The user adds a new film to the system, specifying details such as name, director, year, genres, rating, duration, and cast.",
     #     event=AddFilmEvent,
