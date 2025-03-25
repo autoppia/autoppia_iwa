@@ -133,11 +133,11 @@ USE_CASES = [
                 },
             },
             {
-                "prompt": "Show information about the movie Parasite released in 2019",
+                "prompt": "Show information about the movie The Dark Knight released in 2008",
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "Parasite"}, "year": {"value": 2019}},
+                    "event_criteria": {"name": {"value": "The Dark Knight"}, "year": {"value": 2008}},
                     "reasoning": "This test validates that the event correctly records the movie's name and release year when viewing film details.",
                 },
             },
@@ -146,25 +146,25 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "The Godfather"}, "rating": {"value": "9.2"}},
+                    "event_criteria": {"name": {"value": "The Godfather"}, "rating": {"value": "1.0", "operator": "greater_than"}},
                     "reasoning": "This test ensures that when a user specifically requests movie details including the rating, the event captures and records the rating information.",
                 },
             },
             {
-                "prompt": "I want to see details of Blade Runner 2049 and its genre",
+                "prompt": "I want to see details of The Matrix and its genre",
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "Blade Runner 2049"}, "genre": {"value": "Sci-Fi"}},
+                    "event_criteria": {"name": {"value": "The Matrix"}, "genre": {"value": "Sci-Fi"}},
                     "reasoning": "This test checks if the movie genre is correctly included when a user asks for movie details including genre information.",
                 },
             },
             {
-                "prompt": "What is the duration of Fight Club?",
+                "prompt": "What is the duration of Goodfellas?",
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAIL",
-                    "event_criteria": {"name": {"value": "Fight Club"}, "duration": {"value": "139 min"}},
+                    "event_criteria": {"name": {"value": "Goodfellas"}, "duration": {"value": "146 min"}},
                     "reasoning": "This test ensures that when a user requests the duration of a movie, the event logs the duration field correctly.",
                 },
             },
