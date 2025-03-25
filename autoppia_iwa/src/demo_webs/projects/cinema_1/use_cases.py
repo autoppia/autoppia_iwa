@@ -119,7 +119,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAILS",
-                    "event_criteria": {"name": "The Matrix"},
+                    "event_criteria": {"name": {"value": "The Matrix"}},
                     "reasoning": "This test ensures that when the user requests details for a specific movie, the correct movie name is captured in the event.",
                 },
             },
@@ -128,7 +128,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAILS",
-                    "event_criteria": {"name": "Interstellar", "director": "Christopher Nolan"},
+                    "event_criteria": {"name": {"value": "Interstellar"}, "director": {"value": "Christopher Nolan"}},
                     "reasoning": "This test ensures that when a user requests movie details with a director's name, the event captures the correct movie and director information.",
                 },
             },
@@ -137,7 +137,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAILS",
-                    "event_criteria": {"name": "Parasite", "year": 2019},
+                    "event_criteria": {"name": {"value": "Parasite"}, "year": {"value": 2019}},
                     "reasoning": "This test validates that the event correctly records the movie's name and release year when viewing film details.",
                 },
             },
@@ -146,7 +146,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAILS",
-                    "event_criteria": {"name": "The Godfather", "rating": "9.2"},
+                    "event_criteria": {"name": {"value": "The Godfather"}, "rating": {"value": "9.2"}},
                     "reasoning": "This test ensures that when a user specifically requests movie details including the rating, the event captures and records the rating information.",
                 },
             },
@@ -155,7 +155,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAILS",
-                    "event_criteria": {"name": "Blade Runner 2049", "genre": "Sci-Fi"},
+                    "event_criteria": {"name": {"value": "Blade Runner 2049"}, "genre": {"value": "Sci-Fi"}},
                     "reasoning": "This test checks if the movie genre is correctly included when a user asks for movie details including genre information.",
                 },
             },
@@ -164,7 +164,7 @@ USE_CASES = [
                 "test": {
                     "type": "CheckEventTest",
                     "event_name": "FILM_DETAILS",
-                    "event_criteria": {"name": "Fight Club", "duration": "139 min"},
+                    "event_criteria": {"name": {"value": "Fight Club"}, "duration": {"value": "139 min"}},
                     "reasoning": "This test ensures that when a user requests the duration of a movie, the event logs the duration field correctly.",
                 },
             },
@@ -214,7 +214,7 @@ USE_CASES = [
     #         },
     #     ],
     # ),
-    # # UseCase(
+    # UseCase(
     #     name="Add Film",
     #     description="The user adds a new film to the system, specifying details such as name, director, year, genres, rating, duration, and cast.",
     #     event=AddFilmEvent,
@@ -225,7 +225,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": "Inception"},
+    #                 "event_criteria": {"name": {"value": "Inception"}},
     #                 "reasoning": "This test ensures that when a user adds a film, the correct movie name is captured in the event.",
     #             },
     #         },
@@ -234,7 +234,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": "The Grand Budapest Hotel", "director": "Wes Anderson"},
+    #                 "event_criteria": {"name": {"value": "The Grand Budapest Hotel"}, "director": {"value": "Wes Anderson"}},
     #                 "reasoning": "This test validates that when a user specifies a director while adding a film, the event correctly captures the movie name and director.",
     #             },
     #         },
@@ -243,7 +243,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": "Whiplash", "year": 2014},
+    #                 "event_criteria": {"name": {"value": "Whiplash"}, "year": {"value": 2014}},
     #                 "reasoning": "This test checks if the event records the movie name and release year correctly when a user provides them.",
     #             },
     #         },
@@ -252,7 +252,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": "Mad Max: Fury Road", "rating": 8.1},
+    #                 "event_criteria": {"name": {"value": "Mad Max: Fury Road"}, "rating": {"value": 8.1}},
     #                 "reasoning": "This test ensures that when a user specifies a rating for a movie, the event correctly records the rating information.",
     #             },
     #         },
@@ -261,7 +261,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": "Spirited Away", "genre": ["Animation", "Fantasy"]},
+    #                 "event_criteria": {"name": {"value": "Spirited Away"}, "genre": {"value": ["Animation", "Fantasy"]}},
     #                 "reasoning": "This test validates that when a user specifies genres while adding a movie, the event includes the genre information.",
     #             },
     #         },
@@ -270,7 +270,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": "Django Unchained", "duration": 165},
+    #                 "event_criteria": {"name": {"value": "Django Unchained"}, "duration": {"value": 165}},
     #                 "reasoning": "This test ensures that when a user provides a duration while adding a movie, the event correctly logs the duration information.",
     #             },
     #         },
@@ -279,7 +279,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_FILM",
-    #                 "event_criteria": {"name": "The Dark Knight", "cast": ["Christian Bale", "Heath Ledger", "Aaron Eckhart"]},
+    #                 "event_criteria": {"name": {"value": "The Dark Knight"}, "cast": {"value": ["Christian Bale", "Heath Ledger", "Aaron Eckhart"]}},
     #                 "reasoning": "This test ensures that when a user specifies the cast while adding a movie, the event captures and records the cast details.",
     #             },
     #         },
@@ -296,8 +296,8 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_FILM",
-    #                 "event_criteria": {"movie_id": 101, "name": "Interstellar", "changed_field": "movie_name"},
-    #                 "reasoning": "This test ensures that when a user edits a movie name, the event correctly captures the movie ID and new name while tracking the changed field.",
+    #                 "event_criteria": {"movie_id": {"value": 101}, "name": {"value": "Interstellar"}},
+    #                 "reasoning": "This test ensures that when a user edits a movie name, the event correctly captures the movie ID and new name.",
     #             },
     #         },
     #         {
@@ -305,8 +305,8 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_FILM",
-    #                 "event_criteria": {"name": "The Matrix", "director": "Lana Wachowski, Lilly Wachowski", "changed_field": "movie_director"},
-    #                 "reasoning": "This test ensures that when a user updates the director of a movie, the event logs the correct movie name and new director details while noting the changed field.",
+    #                 "event_criteria": {"name": {"value": "The Matrix"}, "director": {"value": ["Lana Wachowski", "Lilly Wachowski"]}},
+    #                 "reasoning": "This test ensures that when a user updates the director of a movie, the event logs the correct movie name and new director details.",
     #             },
     #         },
     #         {
@@ -314,8 +314,8 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_FILM",
-    #                 "event_criteria": {"name": "Pulp Fiction", "year": 1994, "changed_field": "movie_year"},
-    #                 "reasoning": "This test ensures that when a user modifies the release year, the event correctly records the new year and the changed field.",
+    #                 "event_criteria": {"name": {"value": "Pulp Fiction"}, "year": {"value": 1994}},
+    #                 "reasoning": "This test ensures that when a user modifies the release year, the event correctly records the new year.",
     #             },
     #         },
     #         {
@@ -323,8 +323,8 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_FILM",
-    #                 "event_criteria": {"name": "The Godfather", "genre": "Drama", "changed_field": "movie_genres"},
-    #                 "reasoning": "This test verifies that when a genre is added, the event properly captures the movie name, new genre, and updated field.",
+    #                 "event_criteria": {"name": {"value": "The Godfather"}, "genre": {"value": ["Drama"]}},
+    #                 "reasoning": "This test verifies that when a genre is added, the event properly captures the movie name and new genre.",
     #             },
     #         },
     #         {
@@ -332,8 +332,8 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_FILM",
-    #                 "event_criteria": {"name": "Inception", "rating": 8.8, "changed_field": "movie_rating"},
-    #                 "reasoning": "This test ensures that when a user updates the rating, the event correctly records the new rating and the changed field.",
+    #                 "event_criteria": {"name": {"value": "Inception"}, "rating": {"value": 8.8}},
+    #                 "reasoning": "This test ensures that when a user updates the rating, the event correctly records the new rating.",
     #             },
     #         },
     #         {
@@ -341,7 +341,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_FILM",
-    #                 "event_criteria": {"name": "Avatar", "movie_duration": 162, "changed_field": "movie_duration"},
+    #                 "event_criteria": {"name": {"value": "Avatar"}, "duration": {"value": 162}},
     #                 "reasoning": "This test ensures that the event captures the updated duration of the movie correctly.",
     #             },
     #         },
@@ -350,8 +350,8 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_FILM",
-    #                 "event_criteria": {"name": "Titanic", "movie_cast": "Leonardo DiCaprio, Kate Winslet", "changed_field": "movie_cast"},
-    #                 "reasoning": "This test ensures that changes to the cast are properly logged with the new cast details and the updated field.",
+    #                 "event_criteria": {"name": {"value": "Titanic"}, "cast": {"value": ["Leonardo DiCaprio", "Kate Winslet"]}},
+    #                 "reasoning": "This test ensures that changes to the cast are properly logged with the new cast details.",
     #             },
     #         },
     #     ],
@@ -380,7 +380,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": "Amazing cinematography! The visuals were stunning.", "movie_name": "Inception"},
+    #                 "event_criteria": {"content_contains": {"value": "Amazing cinematography! The visuals were stunning."}, "movie_name": {"value": "Inception"}},
     #                 "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
     #             },
     #         },
@@ -389,7 +389,10 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": "The character development was weak, but the action scenes were top-notch.", "movie_name": "Mad Max: Fury Road"},
+    #                 "event_criteria": {
+    #                     "content_contains": {"value": "The character development was weak, but the action scenes were top-notch."},
+    #                     "movie_name": {"value": "Mad Max: Fury Road"},
+    #                 },
     #                 "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
     #             },
     #         },
@@ -398,7 +401,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": "A thought-provoking masterpiece that keeps you guessing.", "movie_name": "The Prestige"},
+    #                 "event_criteria": {"content_contains": {"value": "A thought-provoking masterpiece that keeps you guessing."}, "movie_name": {"value": "The Prestige"}},
     #                 "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
     #             },
     #         },
@@ -407,7 +410,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": "I didn't expect that plot twist! Totally mind-blowing.", "movie_name": "Fight Club"},
+    #                 "event_criteria": {"content_contains": {"value": "I didn't expect that plot twist! Totally mind-blowing."}, "movie_name": {"value": "Fight Club"}},
     #                 "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
     #             },
     #         },
@@ -416,7 +419,10 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": "Not a fan of horror movies, but this one kept me at the edge of my seat!", "movie_name": "The Conjuring"},
+    #                 "event_criteria": {
+    #                     "content_contains": {"value": "Not a fan of horror movies, but this one kept me at the edge of my seat!"},
+    #                     "movie_name": {"value": "The Conjuring"},
+    #                 },
     #                 "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
     #             },
     #         },
@@ -425,7 +431,10 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": "The soundtrack was mesmerizing and added so much depth to the story.", "movie_name": "Interstellar"},
+    #                 "event_criteria": {
+    #                     "content_contains": {"value": "The soundtrack was mesmerizing and added so much depth to the story."},
+    #                     "movie_name": {"value": "Interstellar"},
+    #                 },
     #                 "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
     #             },
     #         },
@@ -434,7 +443,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": "Too much CGI ruined the realism of the film.", "movie_name": "Jurassic World"},
+    #                 "event_criteria": {"content_contains": {"value": "Too much CGI ruined the realism of the film."}, "movie_name": {"value": "Jurassic World"}},
     #                 "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
     #             },
     #         },
@@ -443,7 +452,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "ADD_COMMENT",
-    #                 "event_criteria": {"content_contains": "Loved the chemistry between the lead actors. Perfect casting!", "movie_name": "La La Land"},
+    #                 "event_criteria": {"content_contains": {"value": "Loved the chemistry between the lead actors. Perfect casting!"}, "movie_name": {"value": "La La Land"}},
     #                 "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
     #             },
     #         },
@@ -460,7 +469,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "CONTACT",
-    #                 "event_criteria": {"subject": "Test Subject"},
+    #                 "event_criteria": {"subject": {"value": "Test Subject"}},
     #                 "description": "Verify that the contact form was submitted with the specified subject.",
     #             },
     #         },
@@ -479,7 +488,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "CONTACT",
-    #                 "event_criteria": {"email": "test@example.com"},
+    #                 "event_criteria": {"email": {"value": "test@example.com"}},
     #                 "description": "Verify that the contact form was submitted from the specified email address.",
     #             },
     #         },
@@ -489,7 +498,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "CONTACT",
-    #                 "event_criteria": {"subject": "Partnership Inquiry", "message": {"value": "potential collaboration", "operator": "contains"}},
+    #                 "event_criteria": {"subject": {"value": "Partnership Inquiry"}, "message": {"value": "potential collaboration", "operator": "contains"}},
     #                 "description": "Verify that the contact form was submitted with both the specified subject and message content.",
     #             },
     #         },
@@ -499,12 +508,17 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "CONTACT",
-    #                 "event_criteria": {"name": "John Smith", "email": "john@example.com", "subject": "Feedback", "message": {"value": "Great website, I love the design", "operator": "contains"}},
+    #                 "event_criteria": {
+    #                     "name": {"value": "John Smith"},
+    #                     "email": {"value": "john@example.com"},
+    #                     "subject": {"value": "Feedback"},
+    #                     "message": {"value": "Great website, I love the design", "operator": "contains"},
+    #                 },
     #                 "description": "Verify that the contact form was submitted with all fields matching the specified values.",
     #             },
     #         },
     #     ],
-    # )
+    # ),
     # UseCase(
     #     name="Edit User Profile",
     #     description="The user updates their profile details such as name, email, bio, location, or favorite genres.",
@@ -516,7 +530,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_USER",
-    #                 "event_criteria": {"username": "MovieBuff99", "email": "moviebuff99@example.com", "changed_field": ["username", "email"]},
+    #                 "event_criteria": {"username": {"value": "MovieBuff99"}, "email": {"value": "moviebuff99@example.com"}, "changed_field": {"value": ["username", "email"]}},
     #                 "reasoning": "Ensures that the username and email fields were correctly updated in the user profile.",
     #             },
     #         },
@@ -525,7 +539,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_USER",
-    #                 "event_criteria": {"bio_contains": "Passionate about indie films and classic cinema.", "changed_field": "bio"},
+    #                 "event_criteria": {"bio_contains": {"value": "Passionate about indie films and classic cinema."}, "changed_field": {"value": "bio"}},
     #                 "reasoning": "Ensures that the updated bio contains the expected text.",
     #             },
     #         },
@@ -534,7 +548,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_USER",
-    #                 "event_criteria": {"has_favorite_genre": "Science Fiction", "changed_field": "favorite_genres"},
+    #                 "event_criteria": {"has_favorite_genre": {"value": "Science Fiction"}, "changed_field": {"value": "favorite_genres"}},
     #                 "reasoning": "Ensures that the updated profile includes the specified favorite genre.",
     #             },
     #         },
@@ -543,7 +557,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_USER",
-    #                 "event_criteria": {"location": "Los Angeles, CA", "has_profile_pic": True, "changed_field": ["location", "has_profile_pic"]},
+    #                 "event_criteria": {"location": {"value": "Los Angeles, CA"}, "has_profile_pic": {"value": True}, "changed_field": {"value": ["location", "has_profile_pic"]}},
     #                 "reasoning": "Ensures that the user's location was updated and they have a profile picture.",
     #             },
     #         },
@@ -552,7 +566,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_USER",
-    #                 "event_criteria": {"has_website": True, "changed_field": "website"},
+    #                 "event_criteria": {"has_website": {"value": True}, "changed_field": {"value": "website"}},
     #                 "reasoning": "Checks if the website field was updated and a valid link was added.",
     #             },
     #         },
@@ -561,7 +575,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_USER",
-    #                 "event_criteria": {"name_contains": "John", "changed_field": ["first_name", "last_name"]},
+    #                 "event_criteria": {"name_contains": {"value": "John"}, "changed_field": {"value": ["first_name", "last_name"]}},
     #                 "reasoning": "Ensures that the first and last names were successfully changed.",
     #             },
     #         },
@@ -570,7 +584,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_USER",
-    #                 "event_criteria": {"email": "johndoe@newdomain.com", "has_profile_pic": False, "changed_field": ["email", "has_profile_pic"]},
+    #                 "event_criteria": {"email": {"value": "johndoe@newdomain.com"}, "has_profile_pic": {"value": False}, "changed_field": {"value": ["email", "has_profile_pic"]}},
     #                 "reasoning": "Verifies that the email is updated and the profile picture is removed.",
     #             },
     #         },
@@ -579,7 +593,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "EDIT_USER",
-    #                 "event_criteria": {"has_favorite_genre": "Horror", "changed_field": "favorite_genres"},
+    #                 "event_criteria": {"has_favorite_genre": {"value": "Horror"}, "changed_field": {"value": "favorite_genres"}},
     #                 "reasoning": "Ensures that the removed genre no longer exists in the favorite genres list.",
     #             },
     #         },
@@ -596,7 +610,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "FILTER_FILM",
-    #                 "event_criteria": {"year": 2020, "has_year_filter": True},
+    #                 "event_criteria": {"year": {"value": 2020}, "has_year_filter": {"value": True}},
     #                 "reasoning": "Ensures that filtering movies by the year 2020 correctly triggers the event.",
     #             },
     #         },
@@ -605,7 +619,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "FILTER_FILM",
-    #                 "event_criteria": {"genre_name": "Action", "has_genre_filter": True},
+    #                 "event_criteria": {"genre_name": {"value": "Action"}, "has_genre_filter": {"value": True}},
     #                 "reasoning": "Ensures that filtering movies by the 'Action' genre correctly triggers the event.",
     #             },
     #         },
@@ -614,12 +628,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "FILTER_FILM",
-    #                 "event_criteria": {
-    #                     "year": 2015,
-    #                     "genre_name": "Comedy",
-    #                     "has_year_filter": True,
-    #                     "has_genre_filter": True,
-    #                 },
+    #                 "event_criteria": {"year": {"value": 2015}, "genre_name": {"value": "Comedy"}, "has_year_filter": {"value": True}, "has_genre_filter": {"value": True}},
     #                 "reasoning": "Validates that filtering by both year (2015) and genre ('Comedy') applies correctly.",
     #             },
     #         },
@@ -628,7 +637,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "FILTER_FILM",
-    #                 "event_criteria": {"year": 1999, "has_year_filter": True},
+    #                 "event_criteria": {"year": {"value": 1999}, "has_year_filter": {"value": True}},
     #                 "reasoning": "Ensures filtering by the year 1999 works independently.",
     #             },
     #         },
@@ -637,7 +646,7 @@ USE_CASES = [
     #             "test": {
     #                 "type": "CheckEventTest",
     #                 "event_name": "FILTER_FILM",
-    #                 "event_criteria": {"genre_name": "Horror", "has_genre_filter": True},
+    #                 "event_criteria": {"genre_name": {"value": "Horror"}, "has_genre_filter": {"value": True}},
     #                 "reasoning": "Ensures filtering by the genre 'Horror' works independently.",
     #             },
     #         },
