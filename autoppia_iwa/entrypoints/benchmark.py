@@ -186,35 +186,41 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
 async def main():
     """Main function to run multi-task agent evaluation."""
     logger.info("Starting evaluation...")
-    AppBootstrap()
+    try:
+        AppBootstrap()
 
-    timing_metrics = TimingMetrics()
-    timing_metrics.start()
+        timing_metrics = TimingMetrics()
+        timing_metrics.start()
 
-    if not config.evaluate_real_tasks:
-        # Load/Initialize demo projects
-        web_projects = await initialize_demo_webs_projects(demo_web_projects)
-        # For simplicity, only take the first project (or however many you want)
-        web_projects = [web_projects[0]]
+        if not config.evaluate_real_tasks:
+            # Load/Initialize demo projects
+            web_projects = await initialize_demo_webs_projects(demo_web_projects)
+            # For simplicity, only take the first project (or however many you want)
+            web_projects = [web_projects[0]]
 
-        for project in web_projects:
-            tasks = await generate_tasks(project)
-            if tasks:
-                await run_evaluation(project, tasks, timing_metrics)
-    else:
-        # Evaluate 'real tasks'
-        tasks_data = load_real_tasks(config.num_of_urls)
-        web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
-
-        for td in tasks_data:
-            project = web_projects.get(td.id)
-            if project:
-                await _load_web_analysis(project)
-                tasks = await generate_tasks(project, td)
+            for project in web_projects:
+                tasks = await generate_tasks(project)
                 if tasks:
                     await run_evaluation(project, tasks, timing_metrics)
+        else:
+            # Evaluate 'real tasks'
+            tasks_data = load_real_tasks(config.num_of_urls)
+            web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
 
-    logger.info("Evaluation complete!")
+            for td in tasks_data:
+                project = web_projects.get(td.id)
+                if project:
+                    await _load_web_analysis(project)
+                    tasks = await generate_tasks(project, td)
+                    if tasks:
+                        await run_evaluation(project, tasks, timing_metrics)
+
+        logger.info("Evaluation complete!")
+    except Exception as e:
+        import sys
+
+        exc_info = sys.exc_info()
+        logger.opt(exception=e).error(f"Failed to process task: {e!s}", exc_info=exc_info, stack_info=True)
 
 
 if __name__ == "__main__":
