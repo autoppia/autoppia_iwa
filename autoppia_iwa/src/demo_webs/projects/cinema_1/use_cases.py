@@ -18,7 +18,7 @@ from .events import (
     RegistrationEvent,
     SearchFilmEvent,
 )
-from .replace_functions import register_replace_func
+from .replace_functions import register_replace_func, replace_film_func
 
 ###############################################################################
 # REGISTRATION_USE_CASE
@@ -32,6 +32,7 @@ REGISTRATION_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
+            "prompt_for_task_generation": "Register with the following username:<username>,email:<email> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "REGISTRATION",
@@ -41,6 +42,7 @@ REGISTRATION_USE_CASE = UseCase(
         },
         {
             "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
+            "prompt_for_task_generation": "Create a new account with username:<username>,email:<email> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "REGISTRATION",
@@ -50,6 +52,7 @@ REGISTRATION_USE_CASE = UseCase(
         },
         {
             "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+            "prompt_for_task_generation": "Fill the registration form with username:<username>, email:<email> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "REGISTRATION",
@@ -59,6 +62,7 @@ REGISTRATION_USE_CASE = UseCase(
         },
         {
             "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+            "prompt_for_task_generation": "Sign up for an account with username:<username>,email:<email> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "REGISTRATION",
@@ -81,6 +85,7 @@ LOGIN_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGIN",
@@ -90,6 +95,7 @@ LOGIN_USE_CASE = UseCase(
         },
         {
             "prompt": "Login with a specific username:<username> and password:<password>",
+            "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGIN",
@@ -99,6 +105,7 @@ LOGIN_USE_CASE = UseCase(
         },
         {
             "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
+            "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGIN",
@@ -108,6 +115,7 @@ LOGIN_USE_CASE = UseCase(
         },
         {
             "prompt": "Sign in to the website username:<username> and password:<password>",
+            "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGIN",
@@ -127,6 +135,7 @@ LOGOUT_USE_CASE = UseCase(
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
     examples=[
+        # Este ejemplo no tiene "prompt", así que no añadimos "prompt_for_task_generation"
         {
             "type": "CheckEventTest",
             "event_name": "LogoutEvent",
@@ -146,6 +155,7 @@ FILM_DETAIL_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Show details for the movie The Matrix",
+            "prompt_for_task_generation": "Show details for the movie The Matrix",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -155,6 +165,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "Show details for the movie Interstellar directed by Christopher Nolan",
+            "prompt_for_task_generation": "Show details for the movie Interstellar directed by Christopher Nolan",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -164,6 +175,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "Show information about the movie The Dark Knight released in 2008",
+            "prompt_for_task_generation": "Show information about the movie The Dark Knight released in 2008",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -173,6 +185,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "Give me details on The Godfather including its rating",
+            "prompt_for_task_generation": "Give me details on The Godfather including its rating",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -182,6 +195,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "I want to see details of The Matrix and its genre",
+            "prompt_for_task_generation": "I want to see details of The Matrix and its genre",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -191,6 +205,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "What is the duration of Goodfellas?",
+            "prompt_for_task_generation": "What is the duration of Goodfellas?",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -209,50 +224,54 @@ SEARCH_FILM_USE_CASE_1 = UseCase(
     description="The user searches for a film using a query.",
     event=SearchFilmEvent,
     event_source_code=SearchFilmEvent.get_source_code_of_class(),
+    replace_func=replace_film_func,
     examples=[
         {
-            "prompt_for_prompt_generation": "Look for the film <film>",
+            "prompt_for_prompt_generation": "Look for the film <movie>",
             "prompt": "Look for the film 'The Shawshank Redemption'",
+            "prompt_for_task_generation": "Look for the film 'The Shawshank Redemption'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
                 "event_criteria": {"query": {"value": "The Shawshank Redemption"}},
-                "reasoning": "This test applies when searching for a specific film title <film>",
+                "reasoning": "This test applies when searching for a specific film title <movie>",
             },
         },
         {
-            "prompt_for_prompt_generation": "Find a movie called <film>",
+            "prompt_for_prompt_generation": "Find a movie called <movie>",
             "prompt": "Find a movie called 'Forrest Gump",
+            "prompt_for_task_generation": "Find a movie called 'Forrest Gump",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
                 "event_criteria": {"query": {"value": "Forrest Gump", "operator": "equals"}},
-                "reasoning": "This test applies when searching for the film <film>.",
+                "reasoning": "This test applies when searching for the film <movie>.",
             },
         },
         {
-            "prompt_for_prompt_generation": "Search for <film> in the movie database",
+            "prompt_for_prompt_generation": "Search for <movie> in the movie database",
             "prompt": "Search for Interestellar in the movie database",
+            "prompt_for_task_generation": "Search for Interestellar in the movie database",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
                 "event_criteria": {"query": {"value": "<film>", "operator": "equals"}},
-                "reasoning": "This test applies when searching for the film <film>.",
+                "reasoning": "This test applies when searching for the film <movie>.",
             },
         },
         {
-            "prompt_for_prompt_generation": "Look up a movie <film>",
+            "prompt_for_prompt_generation": "Look up a movie <movie>",
             "prompt": "Look up a movie 'The Dark Knight'",
+            "prompt_for_task_generation": "Look up a movie 'The Dark Knight'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
                 "event_criteria": {"query": {"value": "The Dark Knight"}},
-                "reasoning": "This test applies when searching for <film>.",
+                "reasoning": "This test applies when searching for <movie>.",
             },
         },
     ],
 )
-
 
 ###############################################################################
 # ADD_FILM_USE_CASE
@@ -265,6 +284,7 @@ ADD_FILM_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Add the movie The Grand Budapest Hotel directed by Wes Anderson",
+            "prompt_for_task_generation": "Add the movie The Grand Budapest Hotel directed by Wes Anderson",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -277,6 +297,7 @@ ADD_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Add the film Whiplash released in 2014",
+            "prompt_for_task_generation": "Add the film Whiplash released in 2014",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -286,6 +307,7 @@ ADD_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Add a movie named Mad Max: Fury Road with a rating of 4.1",
+            "prompt_for_task_generation": "Add a movie named Mad Max: Fury Road with a rating of 4.1",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -295,6 +317,7 @@ ADD_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Add the movie Spirited Away with the genres Animation, Fantasy",
+            "prompt_for_task_generation": "Add the movie Spirited Away with the genres Animation, Fantasy",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -304,6 +327,7 @@ ADD_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Add the movie Django Unchained with a duration of 165 minutes",
+            "prompt_for_task_generation": "Add the movie Django Unchained with a duration of 165 minutes",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -313,6 +337,7 @@ ADD_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Add a movie The Dark Knight starring Christian Bale, Heath Ledger, and Aaron Eckhart",
+            "prompt_for_task_generation": "Add a movie The Dark Knight starring Christian Bale, Heath Ledger, and Aaron Eckhart",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -337,6 +362,7 @@ EDIT_FILM_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Change the name of the movie with ID 101 to Interstellar",
+            "prompt_for_task_generation": "Change the name of the movie with ID 101 to Interstellar",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -346,6 +372,7 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Update the director of The Matrix to Lana Wachowski and Lilly Wachowski",
+            "prompt_for_task_generation": "Update the director of The Matrix to Lana Wachowski and Lilly Wachowski",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -358,6 +385,7 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Modify the release year of Pulp Fiction to 1994",
+            "prompt_for_task_generation": "Modify the release year of Pulp Fiction to 1994",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -367,6 +395,7 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Add Drama to the genres of The Godfather",
+            "prompt_for_task_generation": "Add Drama to the genres of The Godfather",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -376,6 +405,7 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Change the rating of Inception to 8.8",
+            "prompt_for_task_generation": "Change the rating of Inception to 8.8",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -385,6 +415,7 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Edit the duration of Avatar to 162 minutes",
+            "prompt_for_task_generation": "Edit the duration of Avatar to 162 minutes",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -394,6 +425,7 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Modify the cast of Titanic to include Leonardo DiCaprio and Kate Winslet",
+            "prompt_for_task_generation": "Modify the cast of Titanic to include Leonardo DiCaprio and Kate Winslet",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -416,6 +448,7 @@ DELETE_FILM_USE_CASE = UseCase(
     event=DeleteFilmEvent,
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
     examples=[
+        # Este ejemplo no tiene "prompt", así que no añadimos "prompt_for_task_generation"
         {
             "type": "CheckEventTest",
             "event_name": "DeleteFilmEvent",
@@ -433,9 +466,10 @@ CONTACT_USE_CASE = UseCase(
     event=ContactEvent,
     event_source_code=ContactEvent.get_source_code_of_class(),
     examples=[
-        # Aquí mantenemos comentadas las demás si las quieres conservar:
+        # Comentados: también les agregamos la clave si tienen 'prompt'
         # {
         #     "prompt": "Send a contact form with the subject 'Test Subject'",
+        #     "prompt_for_task_generation": "Send a contact form with the subject 'Test Subject'",
         #     "test": {
         #         "type": "CheckEventTest",
         #         "event_name": "CONTACT",
@@ -449,6 +483,7 @@ CONTACT_USE_CASE = UseCase(
         # },
         # {
         #     "prompt": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
+        #     "prompt_for_task_generation": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
         #     "test": {
         #         "type": "CheckEventTest",
         #         "event_name": "CONTACT",
@@ -463,6 +498,7 @@ CONTACT_USE_CASE = UseCase(
         # },
         # {
         #     "prompt": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
+        #     "prompt_for_task_generation": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
         #     "test": {
         #         "type": "CheckEventTest",
         #         "event_name": "CONTACT",
@@ -480,6 +516,7 @@ CONTACT_USE_CASE = UseCase(
         # },
         # {
         #     "prompt": "Complete the contact form using the email address different to 'test@example.com'",
+        #     "prompt_for_task_generation": "Complete the contact form using the email address different to 'test@example.com'",
         #     "test": {
         #         "type": "CheckEventTest",
         #         "event_name": "CONTACT",
@@ -494,6 +531,7 @@ CONTACT_USE_CASE = UseCase(
         # },
         # {
         #     "prompt": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
+        #     "prompt_for_task_generation": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
         #     "test": {
         #         "type": "CheckEventTest",
         #         "event_name": "CONTACT",
@@ -511,6 +549,7 @@ CONTACT_USE_CASE = UseCase(
         # },
         # {
         #     "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
+        #     "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
         #     "test": {
         #         "type": "CheckEventTest",
         #         "event_name": "CONTACT",
@@ -534,6 +573,7 @@ CONTACT_USE_CASE = UseCase(
         # },
         {
             "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
+            "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "CONTACT",
@@ -560,6 +600,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Change the username to 'MovieBuff99' and update the email to 'moviebuff99@example.com'",
+            "prompt_for_task_generation": "Change the username to 'MovieBuff99' and update the email to 'moviebuff99@example.com'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_USER",
@@ -573,6 +614,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
         },
         {
             "prompt": "Update the bio to 'Passionate about indie films and classic cinema.'",
+            "prompt_for_task_generation": "Update the bio to 'Passionate about indie films and classic cinema.'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_USER",
@@ -585,6 +627,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
         },
         {
             "prompt": "Add a new favorite genre 'Science Fiction'",
+            "prompt_for_task_generation": "Add a new favorite genre 'Science Fiction'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_USER",
@@ -597,6 +640,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
         },
         {
             "prompt": "Set the location to 'Los Angeles, CA' and add a profile picture",
+            "prompt_for_task_generation": "Set the location to 'Los Angeles, CA' and add a profile picture",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_USER",
@@ -610,6 +654,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
         },
         {
             "prompt": "Update the website link to 'https://cinemareviews.com'",
+            "prompt_for_task_generation": "Update the website link to 'https://cinemareviews.com'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_USER",
@@ -622,6 +667,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
         },
         {
             "prompt": "Modify the first name to 'John' and last name to 'Doe'",
+            "prompt_for_task_generation": "Modify the first name to 'John' and last name to 'Doe'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_USER",
@@ -634,6 +680,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
         },
         {
             "prompt": "Change email to 'johndoe@newdomain.com' and remove the profile picture",
+            "prompt_for_task_generation": "Change email to 'johndoe@newdomain.com' and remove the profile picture",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_USER",
@@ -647,6 +694,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
         },
         {
             "prompt": "Remove 'Horror' from the favorite genres",
+            "prompt_for_task_generation": "Remove 'Horror' from the favorite genres",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_USER",
@@ -671,6 +719,7 @@ FILTER_FILM_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Filter movies released in the year 2020",
+            "prompt_for_task_generation": "Filter movies released in the year 2020",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
@@ -680,6 +729,7 @@ FILTER_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Find action movies",
+            "prompt_for_task_generation": "Find action movies",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
@@ -689,6 +739,7 @@ FILTER_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Search for films from the year 2015 in the genre 'Comedy'",
+            "prompt_for_task_generation": "Search for films from the year 2015 in the genre 'Comedy'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
@@ -703,6 +754,7 @@ FILTER_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Show movies from 1999",
+            "prompt_for_task_generation": "Show movies from 1999",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
@@ -712,6 +764,7 @@ FILTER_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Show only Horror movies",
+            "prompt_for_task_generation": "Show only Horror movies",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
@@ -722,129 +775,128 @@ FILTER_FILM_USE_CASE = UseCase(
     ],
 )
 
-ADD_COMMENT_USE_CASE = (
-    UseCase(
-        name="Add Comment",
-        description="The user adds a comment to a movie.",
-        event=AddCommentEvent,
-        event_source_code=AddCommentEvent.get_source_code_of_class(),
-        examples=[
-            {
-                "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "event_criteria": {"content": {"value": "Amazing cinematography! The visuals were stunning."}, "movie_name": {"value": "Inception"}},
-                    "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
+###############################################################################
+# ADD_COMMENT_USE_CASE
+###############################################################################
+ADD_COMMENT_USE_CASE = UseCase(
+    name="Add Comment",
+    description="The user adds a comment to a movie.",
+    event=AddCommentEvent,
+    event_source_code=AddCommentEvent.get_source_code_of_class(),
+    examples=[
+        {
+            "prompt": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
+            "prompt_for_task_generation": "Add a comment: 'Amazing cinematography! The visuals were stunning.' to the movie Inception",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {
+                    "content": {"value": "Amazing cinematography! The visuals were stunning."},
+                    "movie_name": {"value": "Inception"},
                 },
+                "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
             },
-            {
-                "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "event_criteria": {
-                        "content": {"value": "The character development was weak, but the action scenes were top-notch."},
-                        "movie_name": {"value": "Mad Max: Fury Road"},
-                    },
-                    "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
+        },
+        {
+            "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
+            "prompt_for_task_generation": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {
+                    "content": {"value": "The character development was weak, but the action scenes were top-notch."},
+                    "movie_name": {"value": "Mad Max: Fury Road"},
                 },
+                "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
             },
-            {
-                "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "event_criteria": {"content": {"value": "A thought-provoking masterpiece that keeps you guessing."}, "movie_name": {"value": "The Prestige"}},
-                    "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
+        },
+        {
+            "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
+            "prompt_for_task_generation": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {
+                    "content": {"value": "A thought-provoking masterpiece that keeps you guessing."},
+                    "movie_name": {"value": "The Prestige"},
                 },
+                "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
             },
-            {
-                "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "event_criteria": {"content": {"value": "I didn't expect that plot twist! Totally mind-blowing."}, "movie_name": {"value": "Fight Club"}},
-                    "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
+        },
+        {
+            "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
+            "prompt_for_task_generation": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {
+                    "content": {"value": "I didn't expect that plot twist! Totally mind-blowing."},
+                    "movie_name": {"value": "Fight Club"},
                 },
+                "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
             },
-            {
-                "prompt": "Write a comment which contains word 'character' on the film The Conjuring",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "event_criteria": {
-                        "content": {"value": "Not a fan of horror movies, but this one kept me at the edge of my seat!"},
-                        "movie_name": {"value": "The Conjuring"},
-                    },
-                    "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
+        },
+        {
+            "prompt": "Write a comment which contains word 'character' on the film The Conjuring",
+            "prompt_for_task_generation": "Write a comment which contains word 'character' on the film The Conjuring",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {
+                    "content": {"value": "Not a fan of horror movies, but this one kept me at the edge of my seat!"},
+                    "movie_name": {"value": "The Conjuring"},
                 },
+                "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
             },
-            {
-                "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar. Commenter Name could not be 'John'",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "event_criteria": {
-                        "content": {"value": "The soundtrack was mesmerizing and added so much depth to the story."},
-                        "commenter_name": {"value": "John", "operator": "not_equals"},
-                        "movie_name": {"value": "Interstellar"},
-                    },
-                    "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
+        },
+        {
+            "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar. Commenter Name could not be 'John'",
+            "prompt_for_task_generation": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interstellar. Commenter Name could not be 'John'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {
+                    "content": {"value": "The soundtrack was mesmerizing and added so much depth to the story."},
+                    "commenter_name": {"value": "John", "operator": "not_equals"},
+                    "movie_name": {"value": "Interstellar"},
                 },
+                "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
             },
-            {
-                "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "event_criteria": {"content": {"value": "Too much CGI ruined the realism of the film."}, "movie_name": {"value": "Jurassic World"}},
-                    "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
+        },
+        {
+            "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
+            "prompt_for_task_generation": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {
+                    "content": {"value": "Too much CGI ruined the realism of the film."},
+                    "movie_name": {"value": "Jurassic World"},
                 },
+                "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
             },
-            {
-                "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": "ADD_COMMENT",
-                    "event_criteria": {"content": {"value": "Loved the chemistry between the lead actors. Perfect casting!"}, "movie_name": {"value": "La La Land"}},
-                    "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
+        },
+        {
+            "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
+            "prompt_for_task_generation": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {
+                    "content": {"value": "Loved the chemistry between the lead actors. Perfect casting!"},
+                    "movie_name": {"value": "La La Land"},
                 },
+                "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
             },
-        ],
-    ),
+        },
+    ],
 )
+
 ###############################################################################
-# EJEMPLO DE CASO COMPUESTO (OPCIONAL, EN TU CÓDIGO ESTABA COMENTADO)
-# Puedes descomentar si necesitas un CompositeEvent
-###############################################################################
+# EJEMPLO DE CASO COMPUESTO (OPCIONAL)
 # COMPOSITE_USE_CASE = UseCase(
 #     name="Filter and View Movie",
-#     description="User filters movies by genre and year, then views details of a selected movie.",
-#     event=CompositeEvent,
-#     event_source_code=CompositeEvent.get_source_code_of_class(),
-#     examples=[
-#         {
-#             "prompt": "Find Action movies from 2020, then view details of 'Inception'.",
-#             "test": {
-#                 "type": "CheckEventTest",
-#                 "event_name": "COMPOSITE_EVENT",
-#                 "criteria": {
-#                     "event_criteria": [
-#                         {
-#                             "event_name": "FILTER_FILM",
-#                             "genre_name": "Action",
-#                             "year": 2020,
-#                             "has_genre_filter": True,
-#                             "has_year_filter": True,
-#                         },
-#                         {"event_name": "FILM_DETAIL", "movie_name": "Inception"},
-#                     ]
-#                 },
-#                 "reasoning": "This test ensures that filtering by genre and year happens before viewing a specific movie.",
-#             },
-#         }
-#     ],
+#     ...
 # )
 
 ###############################################################################
@@ -855,11 +907,11 @@ ALL_USE_CASES = [
     # LOGIN_USE_CASE,
     # LOGOUT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
-    # SEARCH_FILM_USE_CASE_1,
+    SEARCH_FILM_USE_CASE_1,
     # ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
     # DELETE_FILM_USE_CASE,
-    ADD_COMMENT_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,
     # FILTER_FILM_USE_CASE,

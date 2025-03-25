@@ -5,7 +5,7 @@ from .events import EVENTS
 from .models import MODELS
 from .relevant_data import RELEVANT_DATA
 from .urls import URLS
-from .use_cases import USE_CASES
+from .use_cases import ALL_USE_CASES
 
 FRONTEND_PORT_INDEX = 0
 BACKEND_PORT_INDEX = 0
@@ -17,6 +17,6 @@ cinema_project = WebProject(
     events=EVENTS,
     relevant_data=RELEVANT_DATA,
     models=MODELS,
-    use_cases=USE_CASES,
+    use_cases=ALL_USE_CASES,
     urls=URLS,
 )
