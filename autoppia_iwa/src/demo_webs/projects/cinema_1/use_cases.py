@@ -118,7 +118,7 @@ USE_CASES = [
                 "prompt": "Show details for the movie The Matrix",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "FILM_DETAILS",
+                    "event_name": "FILM_DETAIL",
                     "event_criteria": {"name": {"value": "The Matrix"}},
                     "reasoning": "This test ensures that when the user requests details for a specific movie, the correct movie name is captured in the event.",
                 },
@@ -127,7 +127,7 @@ USE_CASES = [
                 "prompt": "Show details for the movie Interstellar directed by Christopher Nolan",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "FILM_DETAILS",
+                    "event_name": "FILM_DETAIL",
                     "event_criteria": {"name": {"value": "Interstellar"}, "director": {"value": "Christopher Nolan"}},
                     "reasoning": "This test ensures that when a user requests movie details with a director's name, the event captures the correct movie and director information.",
                 },
@@ -136,7 +136,7 @@ USE_CASES = [
                 "prompt": "Show information about the movie Parasite released in 2019",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "FILM_DETAILS",
+                    "event_name": "FILM_DETAIL",
                     "event_criteria": {"name": {"value": "Parasite"}, "year": {"value": 2019}},
                     "reasoning": "This test validates that the event correctly records the movie's name and release year when viewing film details.",
                 },
@@ -145,7 +145,7 @@ USE_CASES = [
                 "prompt": "Give me details on The Godfather including its rating",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "FILM_DETAILS",
+                    "event_name": "FILM_DETAIL",
                     "event_criteria": {"name": {"value": "The Godfather"}, "rating": {"value": "9.2"}},
                     "reasoning": "This test ensures that when a user specifically requests movie details including the rating, the event captures and records the rating information.",
                 },
@@ -154,7 +154,7 @@ USE_CASES = [
                 "prompt": "I want to see details of Blade Runner 2049 and its genre",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "FILM_DETAILS",
+                    "event_name": "FILM_DETAIL",
                     "event_criteria": {"name": {"value": "Blade Runner 2049"}, "genre": {"value": "Sci-Fi"}},
                     "reasoning": "This test checks if the movie genre is correctly included when a user asks for movie details including genre information.",
                 },
@@ -163,7 +163,7 @@ USE_CASES = [
                 "prompt": "What is the duration of Fight Club?",
                 "test": {
                     "type": "CheckEventTest",
-                    "event_name": "FILM_DETAILS",
+                    "event_name": "FILM_DETAIL",
                     "event_criteria": {"name": {"value": "Fight Club"}, "duration": {"value": "139 min"}},
                     "reasoning": "This test ensures that when a user requests the duration of a movie, the event logs the duration field correctly.",
                 },
@@ -673,7 +673,7 @@ USE_CASES = [
     #                             "has_genre_filter": True,
     #                             "has_year_filter": True,
     #                         },
-    #                         {"event_name": "FILM_DETAILS", "movie_name": "Inception"},
+    #                         {"event_name": "FILM_DETAIL", "movie_name": "Inception"},
     #                     ]
     #                 },
     #                 "reasoning": "This test ensures that filtering by genre and year happens before viewing a specific movie.",

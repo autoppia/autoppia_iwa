@@ -285,7 +285,7 @@ class EditUserEvent(Event):
 class FilmDetailEvent(Event):
     """Event triggered when a film detail page is viewed"""
 
-    event_name: str = "FILM_DETAILS"
+    event_name: str = "FILM_DETAIL"
 
     movie_id: int
     movie_name: str
