@@ -13,7 +13,7 @@ cinema_project = WebProject(
     id="cinema",
     name="Autoppia Cinema",
     frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),
-    backend_url=get_backend_url(index=BACKEND_PORT_INDEX, symetric=True),
+    backend_url=get_backend_url(index=BACKEND_PORT_INDEX, symmetric=True),
     events=EVENTS,
     relevant_data=RELEVANT_DATA,
     models=MODELS,

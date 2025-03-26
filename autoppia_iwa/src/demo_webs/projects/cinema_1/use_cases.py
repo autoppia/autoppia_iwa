@@ -436,10 +436,9 @@ DELETE_FILM_USE_CASE = UseCase(
     event=DeleteFilmEvent,
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
     examples=[
-        # Este ejemplo no tiene "prompt", así que no añadimos "prompt_for_task_generation"
         {
             "type": "CheckEventTest",
-            "event_name": "DeleteFilmEvent",
+            "event_name": "DELETE_FILM",
             "event_criteria": {},
         },
     ],
@@ -898,8 +897,8 @@ ALL_USE_CASES = [
     # FILM_DETAIL_USE_CASE,
     # SEARCH_FILM_USE_CASE_1,
     # ADD_FILM_USE_CASE,
-    EDIT_FILM_USE_CASE,
-    # DELETE_FILM_USE_CASE,
+    # EDIT_FILM_USE_CASE,
+    DELETE_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,

@@ -138,7 +138,7 @@ async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent,
         return task_solution
 
     except Exception as e:
-        logger.opt(exception=True).error(f"Error generating solution for Task {task.id}: {e}")
+        logger.opt(exception=True).error(f"Error generating solution for Task {task.id}: {e!r}")
         return None
     finally:
         await backend_service.close()
