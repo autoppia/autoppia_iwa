@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# EJEMPLO DE CÓDIGO: use_cases.py
+# use_cases.py
 # -----------------------------------------------------------------------------
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
@@ -18,7 +18,7 @@ from .events import (
     RegistrationEvent,
     SearchFilmEvent,
 )
-from .replace_functions import register_replace_func, replace_film_placeholders_func
+from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders_func
 
 ###############################################################################
 # REGISTRATION_USE_CASE
@@ -28,7 +28,7 @@ REGISTRATION_USE_CASE = UseCase(
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
-    replace_func=register_replace_func,  # si tuvieras una función para reemplazar
+    replace_func=register_replace_func,
     examples=[
         {
             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
@@ -81,7 +81,7 @@ LOGIN_USE_CASE = UseCase(
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
-    # replace_func=login_replace_func,  # si tuvieras una función para reemplazar
+    replace_func=login_replace_func,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
@@ -938,16 +938,16 @@ ADD_COMMENT_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
-    # LOGIN_USE_CASE,
-    # LOGOUT_USE_CASE,  # Must be login-ed first
-    FILM_DETAIL_USE_CASE,
+    LOGIN_USE_CASE,
+    LOGOUT_USE_CASE,  # Must be login-ed first
+    # FILM_DETAIL_USE_CASE,
     # SEARCH_FILM_USE_CASE_1,
-    ADD_FILM_USE_CASE,
-    EDIT_FILM_USE_CASE,
-    DELETE_FILM_USE_CASE,
+    # ADD_FILM_USE_CASE,
+    # EDIT_FILM_USE_CASE,
+    # DELETE_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
-    # EDIT_USER_PROFILE_USE_CASE,   # Must be login-ed first
-    FILTER_FILM_USE_CASE,
+    EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
+    # FILTER_FILM_USE_CASE,
     # COMPOSITE_USE_CASE,  # si quisieras meterlo también
 ]
