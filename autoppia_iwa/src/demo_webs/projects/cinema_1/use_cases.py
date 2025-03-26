@@ -18,7 +18,7 @@ from .events import (
     RegistrationEvent,
     SearchFilmEvent,
 )
-from .replace_functions import register_replace_func, replace_film_func
+from .replace_functions import register_replace_func, replace_film_placeholders_func
 
 ###############################################################################
 # REGISTRATION_USE_CASE
@@ -152,10 +152,11 @@ FILM_DETAIL_USE_CASE = UseCase(
     description="The user views the details of a specific movie, including director, year, genres, rating, duration, and cast.",
     event=FilmDetailEvent,
     event_source_code=FilmDetailEvent.get_source_code_of_class(),
+    replace_func=replace_film_placeholders_func,
     examples=[
         {
             "prompt": "Show details for the movie The Matrix",
-            "prompt_for_task_generation": "Show details for the movie The Matrix",
+            "prompt_for_task_generation": "Show details for the movie <movie>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -165,7 +166,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "Show details for the movie Interestellar directed by Christopher Nolan",
-            "prompt_for_task_generation": "Show details for the movie Interestellar directed by Christopher Nolan",
+            "prompt_for_task_generation": "Show details for the movie <movie> directed by <director>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -175,7 +176,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "Show information about the movie The Dark Knight released in 2008",
-            "prompt_for_task_generation": "Show information about the movie The Dark Knight released in 2008",
+            "prompt_for_task_generation": "Show information about the movie <movie> released in <year>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -185,7 +186,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "Give me details on The Godfather including its rating",
-            "prompt_for_task_generation": "Give me details on The Godfather including its rating",
+            "prompt_for_task_generation": "Give me details on <movie> including its rating",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -195,7 +196,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "I want to see details of The Matrix and its genre",
-            "prompt_for_task_generation": "I want to see details of The Matrix and its genre",
+            "prompt_for_task_generation": "I want to see details of <movie> and its genre",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -205,7 +206,7 @@ FILM_DETAIL_USE_CASE = UseCase(
         },
         {
             "prompt": "What is the duration of Goodfellas?",
-            "prompt_for_task_generation": "What is the duration of Goodfellas?",
+            "prompt_for_task_generation": "What is the duration of <movie>?",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
@@ -224,12 +225,11 @@ SEARCH_FILM_USE_CASE_1 = UseCase(
     description="The user searches for a film using a query.",
     event=SearchFilmEvent,
     event_source_code=SearchFilmEvent.get_source_code_of_class(),
-    replace_func=replace_film_func,
+    replace_func=replace_film_placeholders_func,
     examples=[
         {
-            "prompt_for_prompt_generation": "Look for the film <movie>",
             "prompt": "Look for the film 'The Shawshank Redemption'",
-            "prompt_for_task_generation": "Look for the film 'The Shawshank Redemption'",
+            "prompt_for_task_generation": "Look for the film '<movie>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
@@ -238,9 +238,8 @@ SEARCH_FILM_USE_CASE_1 = UseCase(
             },
         },
         {
-            "prompt_for_prompt_generation": "Find a movie called <movie>",
-            "prompt": "Find a movie called 'Forrest Gump",
-            "prompt_for_task_generation": "Find a movie called 'Forrest Gump",
+            "prompt": "Find a movie called 'Forrest Gump'",
+            "prompt_for_task_generation": "Find a movie called '<movie>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
@@ -249,20 +248,18 @@ SEARCH_FILM_USE_CASE_1 = UseCase(
             },
         },
         {
-            "prompt_for_prompt_generation": "Search for <movie> in the movie database",
             "prompt": "Search for Interestellar in the movie database",
-            "prompt_for_task_generation": "Search for Interestellar in the movie database",
+            "prompt_for_task_generation": "Search for '<movie>' in the movie database",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
-                "event_criteria": {"query": {"value": "<film>", "operator": "equals"}},
+                "event_criteria": {"query": {"value": "Interestellar", "operator": "equals"}},
                 "reasoning": "This test applies when searching for the film <movie>.",
             },
         },
         {
-            "prompt_for_prompt_generation": "Look up a movie <movie>",
             "prompt": "Look up a movie 'The Dark Knight'",
-            "prompt_for_task_generation": "Look up a movie 'The Dark Knight'",
+            "prompt_for_task_generation": "Look up a movie '<movie>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
@@ -283,8 +280,8 @@ ADD_FILM_USE_CASE = UseCase(
     event_source_code=AddFilmEvent.get_source_code_of_class(),
     examples=[
         {
-            "prompt": "Add the movie The Grand Budapest Hotel directed by Wes Anderson",
-            "prompt_for_task_generation": "Add the movie The Grand Budapest Hotel directed by Wes Anderson",
+            "prompt": "Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'",
+            "prompt_for_task_generation": "Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -296,7 +293,7 @@ ADD_FILM_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the film Whiplash released in 2014",
+            "prompt": "Add the film 'Whiplash' released in 2014",
             "prompt_for_task_generation": "Add the film Whiplash released in 2014",
             "test": {
                 "type": "CheckEventTest",
@@ -306,7 +303,7 @@ ADD_FILM_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add a movie named Mad Max: Fury Road with a rating of 4.1",
+            "prompt": "Add a movie named 'Mad Max: Fury Road' with a rating of 4.1",
             "prompt_for_task_generation": "Add a movie named Mad Max: Fury Road with a rating of 4.1",
             "test": {
                 "type": "CheckEventTest",
@@ -316,8 +313,8 @@ ADD_FILM_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the movie Spirited Away with the genres Animation, Fantasy",
-            "prompt_for_task_generation": "Add the movie Spirited Away with the genres Animation, Fantasy",
+            "prompt": "Add the movie 'Spirited Away' with the genres 'Animation' and 'Fantasy'",
+            "prompt_for_task_generation": "Add the movie Spirited Away with the genres 'Animation', 'Fantasy'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -326,7 +323,7 @@ ADD_FILM_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the movie Django Unchained with a duration of 165 minutes",
+            "prompt": "Add the movie 'Django Unchained' with a duration of 165 minutes",
             "prompt_for_task_generation": "Add the movie Django Unchained with a duration of 165 minutes",
             "test": {
                 "type": "CheckEventTest",
@@ -336,8 +333,8 @@ ADD_FILM_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add a movie The Dark Knight starring Christian Bale, Heath Ledger, and Aaron Eckhart",
-            "prompt_for_task_generation": "Add a movie The Dark Knight starring Christian Bale, Heath Ledger, and Aaron Eckhart",
+            "prompt": "Add a movie 'The Dark Knight' starring 'Christian Bale', 'Heath Ledger', 'Aaron Eckhart'",
+            "prompt_for_task_generation": "Add a movie 'The Dark Knight' starring 'Christian Bale', 'Heath Ledger', and 'Aaron Eckhart'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -359,20 +356,11 @@ EDIT_FILM_USE_CASE = UseCase(
     description="The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.",
     event=EditFilmEvent,
     event_source_code=EditFilmEvent.get_source_code_of_class(),
+    replace_func=replace_film_placeholders_func,
     examples=[
         {
-            "prompt": "Change the name of the movie with ID 101 to Interestellar",
-            "prompt_for_task_generation": "Change the name of the movie with ID 101 to Interestellar",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_FILM",
-                "event_criteria": {"movie_id": {"value": 101}, "name": {"value": "Interestellar"}},
-                "reasoning": "Ensures the correct movie ID and new name are captured.",
-            },
-        },
-        {
-            "prompt": "Update the director of The Matrix to Lana Wachowski and Lilly Wachowski",
-            "prompt_for_task_generation": "Update the director of The Matrix to Lana Wachowski and Lilly Wachowski",
+            "prompt": "Update the director of 'The Matrix' to 'Lana Wachowski' and 'Lilly Wachowski'",
+            "prompt_for_task_generation": "Update the director of <movie> to Lana Wachowski and Lilly Wachowski",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -385,7 +373,7 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Modify the release year of Pulp Fiction to 1994",
-            "prompt_for_task_generation": "Modify the release year of Pulp Fiction to 1994",
+            "prompt_for_task_generation": "Modify the release year of <movie> to 1994",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -395,27 +383,27 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Add Drama to the genres of The Godfather",
-            "prompt_for_task_generation": "Add Drama to the genres of The Godfather",
+            "prompt_for_task_generation": "Add Drama to the genres of <movie>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "The Godfather"}, "genre": {"value": ["Drama"]}},
+                "event_criteria": {"name": {"value": "The Godfather"}, "genre": {"value": "Drama", "operator": "contains"}},
                 "reasoning": "Verifies that the new genre is added.",
             },
         },
         {
-            "prompt": "Change the rating of Inception to 8.8",
-            "prompt_for_task_generation": "Change the rating of Inception to 8.8",
+            "prompt": "Change the rating of Inception to 4.8",
+            "prompt_for_task_generation": "Change the rating of <movie> to 4.2",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "Inception"}, "rating": {"value": 8.8}},
+                "event_criteria": {"name": {"value": "Inception"}, "rating": {"value": 4.8}},
                 "reasoning": "Ensures the rating is updated correctly.",
             },
         },
         {
             "prompt": "Edit the duration of Avatar to 162 minutes",
-            "prompt_for_task_generation": "Edit the duration of Avatar to 162 minutes",
+            "prompt_for_task_generation": "Edit the duration of <movie> to 143 minutes",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -425,13 +413,13 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Modify the cast of Titanic to include Leonardo DiCaprio and Kate Winslet",
-            "prompt_for_task_generation": "Modify the cast of Titanic to include Leonardo DiCaprio and Kate Winslet",
+            "prompt_for_task_generation": "Modify the cast of <movie> to include 'Leonardo DiCaprio' and 'Kate Winslet'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
                 "event_criteria": {
                     "name": {"value": "Titanic"},
-                    "cast": {"value": ["Leonardo DiCaprio", "Kate Winslet"]},
+                    "cast": {"value": ["Leonardo DiCaprio", "Kate Winslet"], "operator": "contains"},
                 },
                 "reasoning": "Ensures the cast changes are properly logged.",
             },
@@ -783,10 +771,10 @@ ADD_COMMENT_USE_CASE = UseCase(
     description="The user adds a comment to a movie.",
     event=AddCommentEvent,
     event_source_code=AddCommentEvent.get_source_code_of_class(),
-    replace_func=replace_film_func,
+    replace_func=replace_film_placeholders_func,
     examples=[
         {
-            "prompt": "Search the movie:<movie> and add a comment: 'Amazing cinematography! The visuals were stunning.'",
+            "prompt": "Search the movie:Inception and add a comment: 'Amazing cinematography! The visuals were stunning.'",
             "prompt_for_task_generation": "Search the movie:<movie> and  add a comment: 'Amazing cinematography! The visuals were stunning.' ",
             "test": {
                 "type": "CheckEventTest",
@@ -901,20 +889,20 @@ ADD_COMMENT_USE_CASE = UseCase(
 # )
 
 ###############################################################################
-# LISTA FINAL: ALL_USE_CASES
+# FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
     # LOGIN_USE_CASE,
-    # LOGOUT_USE_CASE,
-    # FILM_DETAIL_USE_CASE,
+    LOGOUT_USE_CASE,
+    FILM_DETAIL_USE_CASE,
     # SEARCH_FILM_USE_CASE_1,
-    # ADD_FILM_USE_CASE,
-    # EDIT_FILM_USE_CASE,
-    # DELETE_FILM_USE_CASE,
-    ADD_COMMENT_USE_CASE,
+    ADD_FILM_USE_CASE,
+    EDIT_FILM_USE_CASE,
+    DELETE_FILM_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
-    # EDIT_USER_PROFILE_USE_CASE,
-    # FILTER_FILM_USE_CASE,
+    EDIT_USER_PROFILE_USE_CASE,
+    FILTER_FILM_USE_CASE,
     # COMPOSITE_USE_CASE,  # si quisieras meterlo también
 ]

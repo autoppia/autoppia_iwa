@@ -25,17 +25,24 @@ def register_replace_func(text: str) -> str:
     return text
 
 
-def replace_film_func(text: str) -> str:
-    if not isinstance(text, str):
+def replace_film_placeholders(text: str, movies_data: list) -> str:
+    """Replaces placeholders in the text with values from a random movie in the dataset."""
+    if not isinstance(text, str) or not movies_data:
         return text
-
     import random
 
-    idx = random.randint(0, len(MOVIES_DATA) - 1)
+    movie = random.choice(movies_data)
+    # Replace placeholders dynamically
+    for key, value in movie.items():
+        placeholder = f"<{key}>"
+        if placeholder in text:
+            text = text.replace(placeholder, str(value))
 
-    # Aseguramos que el índice esté dentro de los límites
-    idx = idx % len(MOVIES_DATA)
-
-    text = text.replace("<movie>", MOVIES_DATA[idx]["name"])
+    if "<movie>" in text:
+        text = text.replace("<movie>", movie["name"])
 
     return text
+
+
+def replace_film_placeholders_func(text: str) -> str:
+    return replace_film_placeholders(text, MOVIES_DATA)
