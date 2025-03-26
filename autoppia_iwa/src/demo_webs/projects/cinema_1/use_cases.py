@@ -138,7 +138,7 @@ LOGOUT_USE_CASE = UseCase(
         # Este ejemplo no tiene "prompt", así que no añadimos "prompt_for_task_generation"
         {
             "type": "CheckEventTest",
-            "event_name": "LogoutEvent",
+            "event_name": "LOGOUT",
             "event_criteria": {},
         },
     ],
@@ -190,7 +190,7 @@ FILM_DETAIL_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"name": {"value": "The Godfather"}, "rating": {"value": "1.0", "operator": "greater_than"}},
+                "event_criteria": {"name": {"value": "The Godfather"}, "rating": {"value": 0.0, "operator": "greater_than"}},
                 "reasoning": "Ensures that when rating info is requested, it is captured in the event.",
             },
         },
@@ -928,15 +928,15 @@ ADD_COMMENT_USE_CASE = UseCase(
 ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
     # LOGIN_USE_CASE,
-    # LOGOUT_USE_CASE,
-    # FILM_DETAIL_USE_CASE,
+    LOGOUT_USE_CASE,  # Must be login-ed first
+    FILM_DETAIL_USE_CASE,
     # SEARCH_FILM_USE_CASE_1,
     # ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
-    DELETE_FILM_USE_CASE,
+    # DELETE_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
-    # EDIT_USER_PROFILE_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,   # Must be login-ed first
     # FILTER_FILM_USE_CASE,
     # COMPOSITE_USE_CASE,  # si quisieras meterlo también
 ]
