@@ -437,9 +437,44 @@ DELETE_FILM_USE_CASE = UseCase(
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
     examples=[
         {
-            "type": "CheckEventTest",
-            "event_name": "DELETE_FILM",
-            "event_criteria": {},
+            "prompt": "Remove The Matrix from the database",
+            "prompt_for_task_generation": "Remove '<movie> from the database",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"name": {"value": "The Matrix"}},
+                "reasoning": "Ensures that 'The Matrix' is correctly removed from the system.",
+            },
+        },
+        {
+            "prompt": "Erase all records of Pulp Fiction",
+            "prompt_for_task_generation": "Erase all records of '<movie>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"name": {"value": "Pulp Fiction"}},
+                "reasoning": "Confirms that all records of 'Pulp Fiction' are deleted.",
+            },
+        },
+        {
+            "prompt": "Permanently delete The Godfather from the collection",
+            "prompt_for_task_generation": "Permanently delete '<movie> from the collection",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"name": {"value": "The Godfather"}},
+                "reasoning": "Ensures 'The Godfather' is permanently removed from the system.",
+            },
+        },
+        {
+            "prompt": "Discard Titanic from the system",
+            "prompt_for_task_generation": "Discard '<movie> from the system",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"name": {"value": "Titanic"}},
+                "reasoning": "Ensures that 'Titanic' is discarded as expected.",
+            },
         },
     ],
 )
