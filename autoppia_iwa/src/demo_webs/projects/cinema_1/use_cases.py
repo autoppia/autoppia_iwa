@@ -383,7 +383,7 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Add Drama to the genres of The Godfather",
-            "prompt_for_task_generation": "Add Drama to the genres of <movie>",
+            "prompt_for_task_generation": "Add 'Drama' to the genres of <movie>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
@@ -393,11 +393,21 @@ EDIT_FILM_USE_CASE = UseCase(
         },
         {
             "prompt": "Change the rating of Inception to 4.8",
-            "prompt_for_task_generation": "Change the rating of <movie> to 4.2",
+            "prompt_for_task_generation": "Change the rating of <movie> to 4.8",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
                 "event_criteria": {"name": {"value": "Inception"}, "rating": {"value": 4.8}},
+                "reasoning": "Ensures the rating is updated correctly.",
+            },
+        },
+        {
+            "prompt": "Change the rating of Inception to 4.8 and change the movie name to 'Nope'",
+            "prompt_for_task_generation": "Change the rating of <movie> to 3.2 and change the movie name to 'Nope'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "EDIT_FILM",
+                "event_criteria": {"name": {"value": "Nope"}, "rating": {"value": 3.2}},
                 "reasoning": "Ensures the rating is updated correctly.",
             },
         },
@@ -435,6 +445,7 @@ DELETE_FILM_USE_CASE = UseCase(
     description="The user deletes a film from the system.",
     event=DeleteFilmEvent,
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
+    replace_func=replace_film_placeholders_func,
     examples=[
         {
             "prompt": "Remove The Matrix from the database",
@@ -740,13 +751,13 @@ FILTER_FILM_USE_CASE = UseCase(
     event_source_code=FilterFilmEvent.get_source_code_of_class(),
     examples=[
         {
-            "prompt": "Filter movies released in the year 2020",
-            "prompt_for_task_generation": "Filter movies released in the year 2020",
+            "prompt": "Filter movies released in the year 2014",
+            "prompt_for_task_generation": "Filter movies released in the year 2014",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
-                "event_criteria": {"year": {"value": 2020}, "has_year_filter": {"value": True}},
-                "reasoning": "Ensures that filtering movies by the year 2020 correctly triggers the event.",
+                "event_criteria": {"year": {"value": 2014}, "has_year_filter": {"value": True}},
+                "reasoning": "Ensures that filtering movies by the year 2014 correctly triggers the event.",
             },
         },
         {
@@ -928,15 +939,15 @@ ADD_COMMENT_USE_CASE = UseCase(
 ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
     # LOGIN_USE_CASE,
-    LOGOUT_USE_CASE,  # Must be login-ed first
+    # LOGOUT_USE_CASE,  # Must be login-ed first
     FILM_DETAIL_USE_CASE,
     # SEARCH_FILM_USE_CASE_1,
-    # ADD_FILM_USE_CASE,
-    # EDIT_FILM_USE_CASE,
-    # DELETE_FILM_USE_CASE,
+    ADD_FILM_USE_CASE,
+    EDIT_FILM_USE_CASE,
+    DELETE_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,   # Must be login-ed first
-    # FILTER_FILM_USE_CASE,
+    FILTER_FILM_USE_CASE,
     # COMPOSITE_USE_CASE,  # si quisieras meterlo también
 ]
