@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import ClassVar
 
-from pydantic import BaseModel
+from loguru import logger
+from pydantic import BaseModel, ValidationError
 
 
 class Event(BaseModel):
@@ -24,12 +25,10 @@ class Event(BaseModel):
         if criteria and hasattr(criteria, "model_fields"):
             for field_name in criteria.model_fields:
                 field_value = getattr(criteria, field_name)
-                print(f"Before: {field_value}. self_web_agent_id:{self.web_agent_id}")
+                logger.debug(f"Before: {field_value}. self_web_agent_id: {self.web_agent_id}")
 
-                if hasattr(field_value, "value"):
-                    if isinstance(field_value.value, str):
-                        replaced_value = field_value.value.replace("<web_agent_id>", self.web_agent_id)
-                        field_value.value = replaced_value
+                if hasattr(field_value, "value") and isinstance(field_value.value, str):
+                    field_value.value = field_value.value.replace("<web_agent_id>", self.web_agent_id)
                 elif isinstance(field_value, str):
                     replaced_value = field_value.replace("<web_agent_id>", self.web_agent_id)
                     setattr(criteria, field_name, replaced_value)
@@ -53,32 +52,51 @@ class Event(BaseModel):
         else:
             timestamp = int(datetime.now().timestamp())
 
-        # Extract user_id from user object if it exists
-        user_id = backend_event.user_id or None
-        web_agent_id = backend_event.web_agent_id or None
-        return cls(event_name=backend_event.event_name, timestamp=timestamp, web_agent_id=web_agent_id, user_id=user_id)
+        event = cls(
+            event_name=backend_event.event_name,
+            timestamp=timestamp,
+            web_agent_id=backend_event.web_agent_id or "",
+            user_id=backend_event.user_id or None,
+        )
+        return event
 
     @staticmethod
     def parse_all(backend_events: list["BackendEvent"]) -> list["Event"]:
-        """Parse all backend events and return appropriate typed events"""
+        """
+        Parse multiple backend events into typed event instances.
+
+        Args:
+            backend_events: List of raw event data from the backend
+
+        Returns:
+            List of parsed event instances
+        """
         events: list[Event] = []
-        # TODO: If we have more types we should include here
-        # TODO: Moving (ALL_BACKEND_EVENT_TYPES) here to resolve circular import error
-        from autoppia_iwa.src.demo_webs.projects.cinema_1.events import BACKEND_EVENT_TYPES as web_1_backend_types
+        if not backend_events:
+            logger.warning("No backend events provided for parsing.")
+            return events
 
-        ALL_BACKEND_EVENT_TYPES = web_1_backend_types
+        # Dynamic import of event mappings to avoid circular imports
+        try:
+            from autoppia_iwa.src.demo_webs.projects.cinema_1.events import BACKEND_EVENT_TYPES as web_1_backend_types
+            from autoppia_iwa.src.demo_webs.projects.personal_management_2.events import BACKEND_EVENT_TYPES as personal_management_2_backend_types
+        except ImportError as e:
+            logger.error(f"Error importing event type mappings: {e}")
+            web_1_backend_types = {}
+            personal_management_2_backend_types = {}
 
-        event_class_map = ALL_BACKEND_EVENT_TYPES
+        event_class_map = {**web_1_backend_types, **personal_management_2_backend_types}
 
         for event_data in backend_events:
-            event_name = event_data.event_name
-            event_class = event_class_map.get(event_name, Event)
             try:
+                event_class = event_class_map.get(event_data.event_name, Event)
                 events.append(event_class.parse(event_data))
-            except Exception as e:
-                print(f"Error parsing event {event_name}: {e}")
-                # Fallback to base Event class if specific parsing fails
+            except ValidationError as ve:
+                logger.error(f"Validation error for event {event_data.event_name}: {ve}")
                 events.append(Event.parse(event_data))
+            except Exception as e:
+                logger.exception(f"Unexpected error parsing event {event_data.event_name}: {e}")
+                continue
 
         return events
 
