@@ -10,7 +10,7 @@ from .use_cases import ALL_USE_CASES
 
 FRONTEND_PORT_INDEX = 2
 BACKEND_PORT_INDEX = 2
-cinema_project = WebProject(
+personal_management_project = WebProject(
     id="personal_management",
     name="Autoppia Personal Management",
     frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),
