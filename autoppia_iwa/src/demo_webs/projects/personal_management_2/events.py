@@ -538,7 +538,7 @@ class UserUpdateEvent(Event):
     """Event triggered when a user updates their profile"""
 
     event_name: str = "USER_UPDATE"
-    user_id: str
+    user_id: int
     updated_fields: list[str]
 
     class ValidationCriteria(BaseModel):
