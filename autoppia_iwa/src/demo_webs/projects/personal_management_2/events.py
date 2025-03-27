@@ -599,3 +599,50 @@ class UserRedirectEvent(Event):
             from_path=data.get("from_path", ""),
             to_path=data.get("to_path", ""),
         )
+
+
+# =============================================================================
+#                    AVAILABLE EVENTS AND USE CASES
+# =============================================================================
+
+EVENTS = [
+    AttendanceCreateEvent,
+    AttendanceUpdateEvent,
+    AttendanceDeleteEvent,
+    DepartmentCreateEvent,
+    DepartmentUpdateEvent,
+    DepartmentDeleteEvent,
+    EmployeeCreateEvent,
+    EmployeeUpdateEvent,
+    EmployeeDeleteEvent,
+    PayrollCreateEvent,
+    PayrollUpdateEvent,
+    PayrollDeleteEvent,
+    PositionCreateEvent,
+    PositionUpdateEvent,
+    PositionDeleteEvent,
+    UserViewEvent,
+    UserUpdateEvent,
+    UserRedirectEvent,
+]
+
+BACKEND_EVENT_TYPES = {
+    "ATTENDANCE_CREATE": AttendanceCreateEvent,
+    "ATTENDANCE_UPDATE": AttendanceUpdateEvent,
+    "ATTENDANCE_DELETE": AttendanceDeleteEvent,
+    "DEPARTMENT_CREATE": DepartmentCreateEvent,
+    "DEPARTMENT_UPDATE": DepartmentUpdateEvent,
+    "DEPARTMENT_DELETE": DepartmentDeleteEvent,
+    "EMPLOYEE_CREATE": EmployeeCreateEvent,
+    "EMPLOYEE_UPDATE": EmployeeUpdateEvent,
+    "EMPLOYEE_DELETE": EmployeeDeleteEvent,
+    "PAYROLL_CREATE": PayrollCreateEvent,
+    "PAYROLL_UPDATE": PayrollUpdateEvent,
+    "PAYROLL_DELETE": PayrollDeleteEvent,
+    "POSITION_CREATE": PositionCreateEvent,
+    "POSITION_UPDATE": PositionUpdateEvent,
+    "POSITION_DELETE": PositionDeleteEvent,
+    "USER_VIEW": UserViewEvent,
+    "USER_UPDATE": UserUpdateEvent,
+    "USER_REDIRECT": UserRedirectEvent,
+}
