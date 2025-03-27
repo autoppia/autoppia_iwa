@@ -175,13 +175,23 @@ FILM_DETAIL_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Show information about the movie The Dark Knight released in 2008",
-            "prompt_for_task_generation": "Show information about the movie <movie> released in <year>",
+            "prompt": "Show information about the movie The Dark Knight",
+            "prompt_for_task_generation": "Show information about the movie <movie>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"name": {"value": "The Dark Knight"}, "year": {"value": 2008}},
-                "reasoning": "Validates the movie's name and release year are correctly recorded.",
+                "event_criteria": {"name": {"value": "The Dark Knight"}},
+                "reasoning": "Validates the movie's name is correctly recorded.",
+            },
+        },
+        {
+            "prompt": "Show information about the movie released in 2008",
+            "prompt_for_task_generation": "Show information about the movie released in <year>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "FILM_DETAIL",
+                "event_criteria": {"year": {"value": 2008}},
+                "reasoning": "Validates the movie's release year is correctly recorded.",
             },
         },
         {
@@ -940,7 +950,7 @@ ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
     LOGIN_USE_CASE,
     LOGOUT_USE_CASE,  # Must be login-ed first
-    # FILM_DETAIL_USE_CASE,
+    FILM_DETAIL_USE_CASE,
     # SEARCH_FILM_USE_CASE_1,
     # ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
