@@ -1,5 +1,7 @@
+from .data import MOVIES_DATA
+
+
 def login_replace_func(text: str) -> str:
-    """Replace username and password placeholders with web_agent_id"""
     if not isinstance(text, str):
         return text
 
@@ -12,7 +14,6 @@ def login_replace_func(text: str) -> str:
 
 
 def register_replace_func(text: str) -> str:
-    """Replace username and password placeholders with web_agent_id"""
     if not isinstance(text, str):
         return text
 
@@ -22,3 +23,26 @@ def register_replace_func(text: str) -> str:
         text = text.replace(placeholder, value)
 
     return text
+
+
+def replace_film_placeholders(text: str, movies_data: list) -> str:
+    """Replaces placeholders in the text with values from a random movie in the dataset."""
+    if not isinstance(text, str) or not movies_data:
+        return text
+    import random
+
+    movie = random.choice(movies_data)
+    # Replace placeholders dynamically
+    for key, value in movie.items():
+        placeholder = f"<{key}>"
+        if placeholder in text:
+            text = text.replace(placeholder, str(value))
+
+    if "<movie>" in text:
+        text = text.replace("<movie>", movie["name"])
+
+    return text
+
+
+def replace_film_placeholders_func(text: str) -> str:
+    return replace_film_placeholders(text, MOVIES_DATA)

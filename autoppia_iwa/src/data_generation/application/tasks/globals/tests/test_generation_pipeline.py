@@ -17,6 +17,7 @@ from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 
 from .prompts import CHECK_EVENT_TEST_GENERATION_PROMPT
+from .utils import clean_examples
 
 
 class GlobalTestGenerationPipeline:
@@ -78,8 +79,8 @@ class GlobalTestGenerationPipeline:
         interactive_elements = task.interactive_elements or "[]"
 
         # Convert test_examples to a JSON string for the prompt
-        examples = json.dumps(use_case.examples, indent=2)
-
+        cleaned_examples = clean_examples(use_case.examples)
+        examples = json.dumps(cleaned_examples, indent=2)
         # 2) Prepare the LLM prompt
         llm_prompt = CHECK_EVENT_TEST_GENERATION_PROMPT.format(
             use_case_name=use_case.name,

@@ -18,7 +18,7 @@ and you are in charge or generating variants of prompts for that use case.
 ## Response Format
 The response should be a list with lenght {number_of_prompts} of strings, each string being a prompt:
 [
-  "Search for a Movie called 'Interestellar'",
+  "Find for a Movie called 'The Shawshank Redemption'",
   "Submit the contact form with my information"
 ]
 """

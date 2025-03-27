@@ -95,12 +95,12 @@ class LogoutEvent(Event):
         return not (criteria.username is not None and not validate_criterion(self.username, criteria.username))
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "LogoutEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "LogoutEvent":
         """
         Parse a logout event from backend data.
         """
-        base_event = super().parse(backend_event)
-        data = backend_event.get("data", {})
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
         username = data.get("username", "")
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
 
@@ -238,7 +238,7 @@ class EditUserEvent(Event):
         return True
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "EditUserEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "EditUserEvent":
         """
         Parse an edit user event from backend data
 
@@ -248,10 +248,10 @@ class EditUserEvent(Event):
         Returns:
             EditUserEvent object populated with data from the backend event
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
 
         # Extract data
-        data = backend_event.get("data", {})
+        data = backend_event.data
 
         # Extract favorite genres as a list of strings
         favorite_genres = []
@@ -285,7 +285,7 @@ class EditUserEvent(Event):
 class FilmDetailEvent(Event):
     """Event triggered when a film detail page is viewed"""
 
-    event_name: str = "FILM_DETAILS"
+    event_name: str = "FILM_DETAIL"
 
     movie_id: int
     movie_name: str
@@ -349,12 +349,12 @@ class FilmDetailEvent(Event):
         return not (criteria.duration is not None and not validate_criterion(self.movie_duration, criteria.duration))
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "FilmDetailEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "FilmDetailEvent":
         """
         Parse a film detail event from backend data.
         """
-        base_event = super().parse(backend_event)
-        data = backend_event.get("data", {})
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
             genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
@@ -434,12 +434,12 @@ class AddFilmEvent(Event):
         return not (criteria.duration is not None and not validate_criterion(self.movie_duration, criteria.duration))
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "AddFilmEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "AddFilmEvent":
         """
         Parse an add film event from backend data.
         """
-        base_event = super().parse(backend_event)
-        data = backend_event.get("data", {})
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
             genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
@@ -538,12 +538,12 @@ class EditFilmEvent(Event):
         return True
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "EditFilmEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "EditFilmEvent":
         """
         Parse an edit film event from backend data.
         """
-        base_event = super().parse(backend_event)
-        data = backend_event.get("data", {})
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
             genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
@@ -618,12 +618,12 @@ class DeleteFilmEvent(Event):
         return not (criteria.year is not None and not validate_criterion(self.movie_year, criteria.year))
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "DeleteFilmEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "DeleteFilmEvent":
         """
         Parse a delete film event from backend data.
         """
-        base_event = super().parse(backend_event)
-        data = backend_event.get("data", {})
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
             genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
@@ -692,7 +692,7 @@ class AddCommentEvent(Event):
     class ValidationCriteria(BaseModel):
         """Criteria for validating add comment events"""
 
-        content_contains: str | CriterionValue | None = None
+        content: str | CriterionValue | None = None
         commenter_name: str | CriterionValue | None = None
         movie_id: int | CriterionValue | None = None
         movie_name: str | CriterionValue | None = None
@@ -703,9 +703,9 @@ class AddCommentEvent(Event):
         """
         if not criteria:
             return True
-        if criteria.content_contains is not None and not validate_criterion(
+        if criteria.content is not None and not validate_criterion(
             self.content,
-            CriterionValue(value=criteria.content_contains.value if isinstance(criteria.content_contains, CriterionValue) else criteria.content_contains, operator=ComparisonOperator.CONTAINS),
+            CriterionValue(value=criteria.content.value if isinstance(criteria.content, CriterionValue) else criteria.content, operator=ComparisonOperator.CONTAINS),
         ):
             return False
         if criteria.commenter_name is not None and not validate_criterion(self.commenter_name, criteria.commenter_name):
@@ -720,7 +720,7 @@ class AddCommentEvent(Event):
         Parse an add comment event from backend data.
         """
         base_event = Event.parse(backend_event)
-        data = base_event.get("data", {})
+        data = backend_event.data
         movie_data = data.get("movie", {})
         return cls(
             event_name=base_event.event_name,
@@ -872,7 +872,7 @@ class FilterFilmEvent(Event):
         return True
 
     @classmethod
-    def parse(cls, backend_event: dict[str, Any]) -> "FilterFilmEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "FilterFilmEvent":
         """
         Parse a filter film event from backend data
 
@@ -882,10 +882,10 @@ class FilterFilmEvent(Event):
         Returns:
             FilterFilmEvent object populated with data from the backend event
         """
-        base_event = super().parse(backend_event)
+        base_event = Event.parse(backend_event)
 
         # Extract data
-        data = backend_event.get("data", {})
+        data = backend_event.data
         genre_data = data.get("genre", {})
 
         return cls(
@@ -931,7 +931,7 @@ class FilterFilmEvent(Event):
 #         return all(event._validate_criteria(event.__class__.ValidationCriteria(**event_criteria)) for event, event_criteria in zip(self.events, criteria.event_criteria, strict=False))
 #
 #     @classmethod
-#     def parse(cls, backend_event: dict[str, Any]) -> "CompositeEvent":
+#     def parse(cls, backend_event: "BackendEvent") -> "CompositeEvent":
 #         """
 #         Parse a composite event from backend data
 #
@@ -941,7 +941,7 @@ class FilterFilmEvent(Event):
 #         Returns:
 #             CompositeEvent object populated with data from the backend event
 #         """
-#         base_event = super().parse(backend_event)
+#         base_event = Event.parse(backend_event)
 #         event_data = backend_event.get("events", [])
 #
 #         parsed_events = []
