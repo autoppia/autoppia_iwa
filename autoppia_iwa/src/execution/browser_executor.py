@@ -49,8 +49,8 @@ class PlaywrightBrowserExecutor:
             execution_time = (datetime.now() - start_time).total_seconds()
 
             # Capture backend events and updated browser state
-            backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             await self.page.wait_for_load_state("domcontentloaded")
+            backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             snapshot_after = await self._capture_snapshot()
 
             # Create a detailed browser snapshot

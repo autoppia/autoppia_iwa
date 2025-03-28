@@ -65,7 +65,12 @@ class GlobalTaskGenerationPipeline:
 
         # 2) Build the LLM prompt using a template
         prompt_examples = use_case.get_example_prompts_str()
-        llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(use_case_name=use_case.name, use_case_description=use_case.description, prompt_examples=prompt_examples, number_of_prompts=number_of_prompts)
+        llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
+            use_case_name=use_case.name,
+            use_case_description=use_case.description,
+            prompt_examples=prompt_examples,
+            number_of_prompts=number_of_prompts,
+        )
 
         # 3) Call the LLM (with retry logic) and parse the list of strings result
         prompt_list = await self._call_llm_with_retry(llm_prompt)

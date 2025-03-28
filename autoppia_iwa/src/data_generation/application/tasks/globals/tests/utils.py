@@ -37,3 +37,23 @@ def extract_domain(url: str) -> str:
     pattern = re.compile(r"https?://([^/]+)")
     match = pattern.match(url)
     return match.group(1).lower() if match else ""
+
+
+def clean_examples(examples):
+    """
+    Elimina el campo 'prompt_for_task_generation' de cada ejemplo en la lista
+    """
+    cleaned_examples = []
+
+    for example in examples:
+        # Crear una copia del ejemplo para no modificar el original
+        cleaned_example = example.copy()
+
+        # Eliminar el campo 'prompt_for_task_generation' si existe
+        if "prompt_for_task_generation" in cleaned_example:
+            del cleaned_example["prompt_for_task_generation"]
+
+        # Añadir el ejemplo limpio a la lista de resultados
+        cleaned_examples.append(cleaned_example)
+
+    return cleaned_examples

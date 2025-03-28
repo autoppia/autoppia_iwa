@@ -37,7 +37,7 @@ class UseCase(BaseModel):
         """
         Extract all prompt strings from the examples
         """
-        return [example["prompt"] for example in self.examples if "prompt" in example]
+        return [example["prompt_for_task_generation"] for example in self.examples if "prompt_for_task_generation" in example]
 
     def get_example_prompts_str(self, separator="\n") -> str:
         """
