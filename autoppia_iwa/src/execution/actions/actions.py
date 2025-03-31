@@ -292,17 +292,17 @@ class GetDropDownOptions(BaseActionWithSelector):
                 action_logger.debug(f"Frame {i} evaluate error: {e!s}")
 
         if found_dropdown:
-            msg = "\n".join(all_options) + "\nUse the exact string in SelectDropDownOption"
+            msg = "\n".join(all_options) + "\nUse the exact string in SelectDropDownOptionAction"
             action_logger.info(msg)
         else:
             action_logger.warning("No dropdown options found in any frame.")
 
 
-class SelectDropDownOption(BaseActionWithSelector):
+class SelectDropDownOptionAction(BaseActionWithSelector):
     type: Literal["SelectDropDownOptionAction"] = "SelectDropDownOptionAction"
     text: str
 
-    @log_action("SelectDropDownOption")
+    @log_action("SelectDropDownOptionAction")
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         xpath = self.validate_selector()
         found = False
@@ -386,7 +386,7 @@ AllActionsUnion = Annotated[
     | ScreenshotAction
     | SendKeysIWAAction
     | GetDropDownOptions
-    | SelectDropDownOption
+    | SelectDropDownOptionAction
     | UndefinedAction
     | IdleAction,
     Field(discriminator="type"),
@@ -414,7 +414,7 @@ ACTION_CLASS_MAP_LOWER = {
     "undefined": UndefinedAction,
     "sendkeysiwa": SendKeysIWAAction,
     "getdropdownoptions": GetDropDownOptions,
-    "selectdropdownoption": SelectDropDownOption,
+    "SelectDropDownOptionAction": SelectDropDownOptionAction,
 }
 
 ACTION_CLASS_MAP_CAPS = {
@@ -434,7 +434,7 @@ ACTION_CLASS_MAP_CAPS = {
     "UndefinedAction": UndefinedAction,
     "SendKeysIWAAction": SendKeysIWAAction,
     "GetDropDownOptions": GetDropDownOptions,
-    "SelectDropDownOption": SelectDropDownOption,
+    "SelectDropDownOptionAction": SelectDropDownOptionAction,
 }
 
 ACTION_CLASS_MAP = {**ACTION_CLASS_MAP_CAPS, **ACTION_CLASS_MAP_LOWER}
