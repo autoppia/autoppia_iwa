@@ -45,6 +45,7 @@ class BenchmarkConfig:
     prompts_per_url: int = 1
     num_of_urls: int = 1
     prompt_per_use_case: int = 1
+
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
@@ -64,7 +65,7 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Define agents
 AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(id="2", name="Random-clicker"),
-    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5005, timeout=120),
+    ApifiedWebAgent(id="1", name="CacheAgent", host="127.0.0.1", port=7000, timeout=120),
     # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1",
     #                 port=5000, timeout=120),
