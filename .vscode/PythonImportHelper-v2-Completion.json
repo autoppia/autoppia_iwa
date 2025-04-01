@@ -9970,7 +9970,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
-        "peekOfCode": "MOVIES_DATA = [\n    {\n        \"name\": \"The Shawshank Redemption\",\n        \"desc\": \"Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.\",\n        \"year\": 1994,\n        \"director\": \"Frank Darabont\",\n        \"cast\": \"Tim Robbins, Morgan Freeman, Bob Gunton\",\n        \"duration\": 142,\n        \"trailer_url\": \"https://www.youtube.com/watch?v=6hB3S9bIaco\",\n        \"rating\": 4.8,",
+        "peekOfCode": "MOVIES_DATA = [\n    {\n        \"id\": 1,\n        \"name\": \"The Shawshank Redemption\",\n        \"desc\": \"Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.\",\n        \"year\": 1994,\n        \"director\": \"Frank Darabont\",\n        \"cast\": \"Tim Robbins, Morgan Freeman, Bob Gunton\",\n        \"duration\": 142,\n        \"trailer_url\": \"https://www.youtube.com/watch?v=6hB3S9bIaco\",",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
         "documentation": {}
     },
@@ -10456,7 +10456,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "ALL_USE_CASES = [\n    # REGISTRATION_USE_CASE,\n    # LOGIN_USE_CASE,\n    FILM_DETAIL_USE_CASE,\n    # SEARCH_FILM_USE_CASE,\n    # ADD_FILM_USE_CASE,\n    # EDIT_FILM_USE_CASE,\n    # DELETE_FILM_USE_CASE,\n    # ADD_COMMENT_USE_CASE,\n    # CONTACT_USE_CASE,",
+        "peekOfCode": "ALL_USE_CASES = [\n    # REGISTRATION_USE_CASE,\n    # LOGIN_USE_CASE,\n    # SEARCH_FILM_USE_CASE,\n    ADD_COMMENT_USE_CASE,\n    CONTACT_USE_CASE,\n    # FILM_DETAIL_USE_CASE,\n    # ADD_FILM_USE_CASE,\n    # EDIT_FILM_USE_CASE,\n    # DELETE_FILM_USE_CASE,",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
