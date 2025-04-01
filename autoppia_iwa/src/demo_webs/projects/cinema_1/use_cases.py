@@ -18,7 +18,7 @@ from .events import (
     RegistrationEvent,
     SearchFilmEvent,
 )
-from .generation_functions import generate_film_constraints
+from .generation_functions import generate_contact_constraints, generate_film_constraints
 from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
 
 ###############################################################################
@@ -595,11 +595,26 @@ DELETE_FILM_USE_CASE = UseCase(
 ###############################################################################
 # CONTACT_USE_CASE
 ###############################################################################
+CONTACT_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to fill or submit the contact form (e.g., "Fill out the contact form...", "Submit a contact form...", "Go to the contact page and send a form...").
+
+For example, if the constraints are "name not_equals John AND message contains 'services'":
+- CORRECT: "Fill out the contact form with a name not_equals John and a message that contains 'services'."
+- INCORRECT: "Fill out the form with name = John" (contradice not_equals John)
+- INCORRECT: "Fill out the form and mention your budget" (agrega un constraint que NO está en la lista)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 CONTACT_USE_CASE = UseCase(
     name="CONTACT",
     description="The user navigates to the contact form page, fills out fields, and submits the form successfully.",
     event=ContactEvent,
     event_source_code=ContactEvent.get_source_code_of_class(),
+    constraints_generator=generate_contact_constraints,
+    additional_prompt_info=CONTACT_ADDITIONAL_PROMPT_INFO,
     examples=[
         # Comentados: también les agregamos la clave si tienen 'prompt'
         # {
@@ -1043,13 +1058,12 @@ ALL_USE_CASES = [
     # LOGIN_USE_CASE,
     # SEARCH_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
-    # CONTACT_USE_CASE,
+    CONTACT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
     # DELETE_FILM_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
     # FILTER_FILM_USE_CASE,
-    # COMPOSITE_USE_CASE,  # si quisieras meterlo también
-    LOGOUT_USE_CASE,
+    # LOGOUT_USE_CASE,
 ]

@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from .data import MOVIES_DATA
+from .data import FIELD_OPERATORS_MAP_CONTACT, MOVIES_DATA
 
 
 def generate_film_constraints():
@@ -19,6 +19,84 @@ def generate_film_constraints():
     if constraints_str:
         return parse_constraints_str(constraints_str)
     return None
+
+
+def generate_contact_constraints() -> list:
+    """
+    Genera una lista de constraints estructurados para el formulario de contacto.
+    Cada constraint es un diccionario con la forma:
+       {"field": <campo>, "operator": <ComparisonOperator>, "value": <valor>}
+    """
+
+    def _generate_random_value_for_contact(field: str) -> str:
+        if field == "name":
+            return random.choice(["Alice", "Bob", "John", "Maria", "TestUser", "Peter", "Susan", "Robert", "Linda", "Michael", "Jessica", "William", "Karen", "David", "Lisa"])
+        elif field == "email":
+            return random.choice(
+                [
+                    "test@example.com",
+                    "info@example.org",
+                    "user@yahoo.com",
+                    "admin@domain.com",
+                    "contact@site.com",
+                    "noreply@domain.com",
+                    "service@provider.com",
+                    "hello@world.com",
+                    "support@company.com",
+                    "sales@business.com",
+                    "user1@site.com",
+                    "example@mail.com",
+                    "foo@bar.com",
+                    "john@doe.com",
+                    "jane@doe.com",
+                ]
+            )
+        elif field == "subject":
+            return random.choice(
+                ["Feedback", "Inquiry", "Question", "Collaboration", "Request", "Complaint", "Suggestion", "Appointment", "Meeting", "Proposal", "Support", "Information", "Order", "Refund", "Other"]
+            )
+        elif field == "message":
+            return random.choice(
+                [
+                    "Hello, I'd like more info",
+                    "Need further details please",
+                    "Just a quick question",
+                    "Hello, I'm interested in your services",
+                    "I have a query regarding your service",
+                    "Could you provide more details?",
+                    "I need assistance with my order",
+                    "I'm having an issue with the product",
+                    "Please contact me regarding my inquiry",
+                    "I want to learn more about your services",
+                    "Could you help me with my account?",
+                    "I'm writing to request support",
+                    "Please provide me with more information",
+                    "I would like to discuss a potential project",
+                    "I am interested in collaborating with you",
+                ]
+            )
+        return "TestValue"
+
+    num_constraints = random.randint(1, 4)
+    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())  # ["name", "email", "subject", "message"]
+    constraints_list = []
+
+    for _ in range(num_constraints):
+        if not fields:
+            break
+        field = random.choice(fields)
+        fields.remove(field)
+
+        # Convertimos el operador de string a instancia de ComparisonOperator
+        possible_ops = FIELD_OPERATORS_MAP_CONTACT[field]
+        operator_str = random.choice(possible_ops)
+        operator = ComparisonOperator(operator_str)
+
+        value = _generate_random_value_for_contact(field)
+        constraint = {"field": field, "operator": operator, "value": value}
+        constraints_list.append(constraint)
+
+    return constraints_list
 
 
 def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any]:

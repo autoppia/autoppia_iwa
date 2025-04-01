@@ -111,7 +111,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     """
     import random
 
-    from .data import FIELD_OPERATORS_MAP
+    from .data import FIELD_OPERATORS_MAP_FILM
     from .generation_functions import generate_constraint_from_solution
 
     # Elegir una película aleatoria como punto de partida
@@ -122,14 +122,14 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     num_constraints = random.randint(1, 3)
 
     # Seleccionar campos aleatorios para los constraints
-    available_fields = list(FIELD_OPERATORS_MAP.keys())
+    available_fields = list(FIELD_OPERATORS_MAP_FILM.keys())
     selected_fields = random.sample(available_fields, min(num_constraints, len(available_fields)))
 
     constraint_list = []
 
     for field in selected_fields:
         # Obtener operadores válidos para este campo
-        valid_operators = FIELD_OPERATORS_MAP[field]
+        valid_operators = FIELD_OPERATORS_MAP_FILM[field]
         # Elegir un operador aleatorio
         operator = random.choice(valid_operators)
 
