@@ -31,7 +31,8 @@ If constraints are "director not_equals Robert Zemeckis AND year greater_than 20
 
 ## CURRENT CONSTRAINT SET
 {constraints_info}
-
+## ADITIONAL INFO
+{additional_prompt_info}
 ## GENERATION PROTOCOL
 - Format: JSON array of strings
 - EACH PROMPT MUST:

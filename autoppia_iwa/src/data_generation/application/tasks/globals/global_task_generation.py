@@ -68,19 +68,19 @@ class GlobalTaskGenerationPipeline:
             constraints_info = use_case.generate_constraints()
 
         # Build the LLM prompt using a template
-        prompt_examples = use_case.get_example_prompts_str()
+        if not use_case.additional_prompt_info:
+            use_case.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case.get_example_prompts_str()}"
         llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
             use_case_name=use_case.name,
             use_case_description=use_case.description,
             additional_prompt_info=use_case.additional_prompt_info,
-            prompt_examples=prompt_examples,
             constraints_info=constraints_info,
             number_of_prompts=number_of_prompts,
         )
 
         # Call the LLM (with retry logic) and parse the list of strings result
         prompt_list = await self._call_llm_with_retry(llm_prompt)
-
+        print(prompt_list)
         # For each prompt string, create a Task
         # We'll fetch the HTML and screenshot just once for all tasks
         url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url

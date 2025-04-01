@@ -143,7 +143,7 @@ LOGOUT_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGOUT",
-                "event_criteria": {},
+                "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test verifies that the system can handle a login followed by logout instruction.",
             },
         },
@@ -153,7 +153,7 @@ LOGOUT_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGOUT",
-                "event_criteria": {},
+                "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test checks if the system recognizes 'sign out' as a logout action after login.",
             },
         },
@@ -163,7 +163,7 @@ LOGOUT_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGOUT",
-                "event_criteria": {},
+                "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test verifies logout detection after form-based login phrasing.",
             },
         },
@@ -173,7 +173,7 @@ LOGOUT_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGOUT",
-                "event_criteria": {},
+                "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test ensures logout is detected after 'sign in' terminology.",
             },
         },
@@ -183,7 +183,7 @@ LOGOUT_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOGOUT",
-                "event_criteria": {},
+                "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test checks if the system recognizes 'end my session' as a logout request.",
             },
         },
@@ -1042,8 +1042,8 @@ ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
     # LOGIN_USE_CASE,
     # SEARCH_FILM_USE_CASE,
-    ADD_COMMENT_USE_CASE,
-    CONTACT_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
+    # CONTACT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
@@ -1051,5 +1051,5 @@ ALL_USE_CASES = [
     # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
     # FILTER_FILM_USE_CASE,
     # COMPOSITE_USE_CASE,  # si quisieras meterlo también
-    # LOGOUT_USE_CASE,
+    LOGOUT_USE_CASE,
 ]
