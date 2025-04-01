@@ -3,12 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
-# ================ Comparison Operators for Advanced Validation ================
-
 
 class ComparisonOperator(str, Enum):
-    """Operators for flexible criterion comparison"""
-
     EQUALS = "equals"
     NOT_EQUALS = "not_equals"
     CONTAINS = "contains"
@@ -22,13 +18,8 @@ class ComparisonOperator(str, Enum):
 
 
 class CriterionValue(BaseModel):
-    """A validation criterion with its comparison operator"""
-
     value: Any
     operator: ComparisonOperator = ComparisonOperator.EQUALS
-
-
-# ================ Helper Methods for Criterion Validation ================
 
 
 def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bool:
@@ -42,14 +33,11 @@ def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bo
     Returns:
         True if the criterion is met, False otherwise
     """
-
-    # If criterion is a simple value, use default comparison
     if not isinstance(criterion, CriterionValue):
         if isinstance(actual_value, str) and isinstance(criterion, str):
             return criterion.lower() in actual_value.lower()
         return actual_value == criterion
 
-    # If criterion has an operator, apply according to type
     if criterion.operator == ComparisonOperator.EQUALS:
         if isinstance(actual_value, str) and isinstance(criterion.value, str):
             return actual_value.lower() == criterion.value.lower()
@@ -61,14 +49,18 @@ def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bo
         return actual_value != criterion.value
 
     elif criterion.operator == ComparisonOperator.CONTAINS:
-        if not isinstance(actual_value, str) or not isinstance(criterion.value, str):
-            return False
-        return criterion.value.lower() in actual_value.lower()
+        if isinstance(actual_value, list):
+            return any((isinstance(item, str) and isinstance(criterion.value, str) and criterion.value.lower() in item.lower()) or (item == criterion.value) for item in actual_value)
+        if isinstance(actual_value, str) and isinstance(criterion.value, str):
+            return criterion.value.lower() in actual_value.lower()
+        return False
 
     elif criterion.operator == ComparisonOperator.NOT_CONTAINS:
-        if not isinstance(actual_value, str) or not isinstance(criterion.value, str):
-            return False
-        return criterion.value.lower() not in actual_value.lower()
+        if isinstance(actual_value, list):
+            return all((isinstance(item, str) and isinstance(criterion.value, str) and criterion.value.lower() not in item.lower()) or (item != criterion.value) for item in actual_value)
+        if isinstance(actual_value, str) and isinstance(criterion.value, str):
+            return criterion.value.lower() not in actual_value.lower()
+        return False
 
     elif criterion.operator == ComparisonOperator.GREATER_THAN:
         if actual_value is None:

@@ -18,6 +18,7 @@ from .events import (
     RegistrationEvent,
     SearchFilmEvent,
 )
+from .generation_functions import generate_film_constraints
 from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
 
 ###############################################################################
@@ -196,6 +197,20 @@ FILM_DETAIL_USE_CASE = UseCase(
     event=FilmDetailEvent,
     event_source_code=FilmDetailEvent.get_source_code_of_class(),
     replace_func=replace_film_placeholders,
+    additional_prompt_info="""
+        CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+        1. Include ALL constraints mentioned above - not just some of them
+        2. Include ONLY the constraints mentioned above - do not add any other criteria
+        3. Be phrased as a request to view details of a movie (use phrases like "Show details for...", "Give me information about...")
+
+        For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
+        - CORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010"
+        - INCORRECT: "Show me details about a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
+        - INCORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+
+        ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+        """,
+    constraints_generator=generate_film_constraints,
     examples=[
         {
             "prompt": "Show details for the movie The Matrix",
