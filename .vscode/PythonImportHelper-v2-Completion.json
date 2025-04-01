@@ -10549,11 +10549,20 @@
         "documentation": {}
     },
     {
+        "label": "ADD_FILM_ADDITIONAL_PROMPT_INFO",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "peekOfCode": "ADD_FILM_ADDITIONAL_PROMPT_INFO = \"\"\"\nCRITICAL REQUIREMENT: EVERY prompt you generate MUST:\n1. Include ALL constraints mentioned above — not just some of them.\n2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.\n3. Be phrased as a request to add or insert a film (use phrases like \"Add...\", \"Insert...\", \"Register...\", etc.).\nFor example, if the constraints are \"year equals 2014 AND director equals 'Wes Anderson'\":\n- CORRECT: \"Add a film whose year equals 2014 and that is directed by Wes Anderson.\"\n- INCORRECT: \"Add a film with a high rating\" (you added an extra filter).\nALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.\n\"\"\"",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "documentation": {}
+    },
+    {
         "label": "ADD_FILM_USE_CASE",
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "ADD_FILM_USE_CASE = UseCase(\n    name=\"ADD_FILM\",\n    description=\"The user adds a new film to the system, specifying details such as name, director, year, genres, duration, and cast.\",\n    event=AddFilmEvent,\n    event_source_code=AddFilmEvent.get_source_code_of_class(),\n    examples=[\n        {\n            \"prompt\": \"Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'\",\n            \"prompt_for_task_generation\": \"Add the movie '<movie>' directed by '<director>'\",\n            \"test\": {",
+        "peekOfCode": "ADD_FILM_USE_CASE = UseCase(\n    name=\"ADD_FILM\",\n    description=\"The user adds a new film to the system, specifying details such as name, director, year, genres, duration, language, and cast.\",\n    event=AddFilmEvent,\n    event_source_code=AddFilmEvent.get_source_code_of_class(),\n    constraints_generator=generate_film_constraints,  # Reutilizamos el generador de constraints para películas.\n    additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,\n    examples=[\n        {\n            \"prompt\": \"Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'\",",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
