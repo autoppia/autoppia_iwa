@@ -362,12 +362,26 @@ SEARCH_FILM_USE_CASE = UseCase(
 ###############################################################################
 # ADD_FILM_USE_CASE
 ###############################################################################
+ADD_FILM_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+3. Be phrased as a request to add or insert a film (use phrases like "Add...", "Insert...", "Register...", etc.).
+
+For example, if the constraints are "year equals 2014 AND director equals 'Wes Anderson'":
+- CORRECT: "Add a film whose year equals 2014 and that is directed by Wes Anderson."
+- INCORRECT: "Add a film with a high rating" (you added an extra filter).
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 
 ADD_FILM_USE_CASE = UseCase(
     name="ADD_FILM",
-    description="The user adds a new film to the system, specifying details such as name, director, year, genres, duration, and cast.",
+    description="The user adds a new film to the system, specifying details such as name, director, year, genres, duration, language, and cast.",
     event=AddFilmEvent,
     event_source_code=AddFilmEvent.get_source_code_of_class(),
+    constraints_generator=generate_film_constraints,  # Reutilizamos el generador de constraints para películas.
+    additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'",
@@ -375,11 +389,8 @@ ADD_FILM_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
-                "event_criteria": {
-                    "name": {"value": "The Grand Budapest Hotel", "operator": "equals"},
-                    "director": {"value": "Wes Anderson", "operator": "equals"},
-                },
-                "reasoning": "Validates capturing movie name and director with exact match.",
+                "event_criteria": {"name": {"value": "The Grand Budapest Hotel", "operator": "equals"}, "director": {"value": "Wes Anderson", "operator": "equals"}},
+                "reasoning": "Validates that the film's name and director are captured with an exact match.",
             },
         },
         {
@@ -389,17 +400,17 @@ ADD_FILM_USE_CASE = UseCase(
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
                 "event_criteria": {"name": {"value": "Whiplash", "operator": "equals"}, "year": {"value": 2014, "operator": "equals"}},
-                "reasoning": "Checks if the event records the year correctly with exact match.",
+                "reasoning": "Checks that the film's release year is recorded correctly.",
             },
         },
         {
-            "prompt": "Add the movie 'Spirited Away' with genres Animation, Fantasy and Adventure",
+            "prompt": "Add the movie 'Spirited Away' with genres Animation, Fantasy, and Adventure",
             "prompt_for_task_generation": "Add the movie '<movie>' with genres <genre>, <genre> and <genre>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
                 "event_criteria": {"name": {"value": "Spirited Away", "operator": "equals"}, "genres": {"value": ["Animation", "Fantasy", "Adventure"], "operator": "contains"}},
-                "reasoning": "Validates that multiple genres are captured in the event using contains operator.",
+                "reasoning": "Validates that multiple genres are captured correctly using the contains operator.",
             },
         },
         {
@@ -409,7 +420,7 @@ ADD_FILM_USE_CASE = UseCase(
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
                 "event_criteria": {"name": {"value": "Django Unchained", "operator": "equals"}, "duration": {"value": 180, "operator": "less_than"}},
-                "reasoning": "Ensures that the duration field is stored and properly compared with less_than operator.",
+                "reasoning": "Ensures that the film's duration is stored and compared correctly using the less_than operator.",
             },
         },
         {
@@ -419,7 +430,7 @@ ADD_FILM_USE_CASE = UseCase(
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
                 "event_criteria": {"name": {"value": "Parasite", "operator": "equals"}, "language": {"value": "English", "operator": "not_equals"}},
-                "reasoning": "Tests the not_equals operator for language field validation.",
+                "reasoning": "Tests the not_equals operator for the language field, ensuring that the film's language is different from English.",
             },
         },
         {
@@ -429,12 +440,12 @@ ADD_FILM_USE_CASE = UseCase(
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
                 "event_criteria": {"name": {"value": "The Shining", "operator": "equals"}, "director": {"value": ["Kubrick", "Spielberg", "Scorsese"], "operator": "in_list"}},
-                "reasoning": "Tests the in_list operator for validating that director is one of several options.",
+                "reasoning": "Validates that the director is one of the allowed options using the in_list operator.",
             },
         },
         {
-            "prompt": "Add a movie 'Amélie' with running time at least 120 minutes starring Audrey Tautou",
-            "prompt_for_task_generation": "Add a movie '<movie>' with running time at least <duration> minutes starring <cast>",
+            "prompt": "Add the movie 'Amélie' with running time at least 120 minutes starring Audrey Tautou",
+            "prompt_for_task_generation": "Add the movie '<movie>' with running time at least <duration> minutes starring <cast>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_FILM",
@@ -443,12 +454,11 @@ ADD_FILM_USE_CASE = UseCase(
                     "duration": {"value": 120, "operator": "greater_equal"},
                     "cast": {"value": "Audrey Tautou", "operator": "contains"},
                 },
-                "reasoning": "Checks both greater_equal operator for duration and contains operator for cast.",
+                "reasoning": "Checks that the film's duration meets the minimum requirement and that the cast includes Audrey Tautou.",
             },
         },
     ],
 )
-
 
 ###############################################################################
 # EDIT_FILM_USE_CASE
@@ -1135,9 +1145,9 @@ ALL_USE_CASES = [
     # ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
-    # ADD_FILM_USE_CASE,
+    ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
-    DELETE_FILM_USE_CASE,
+    # DELETE_FILM_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
     # FILTER_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
