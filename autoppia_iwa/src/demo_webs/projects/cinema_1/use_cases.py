@@ -25,7 +25,7 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 # REGISTRATION_USE_CASE
 ###############################################################################
 REGISTRATION_USE_CASE = UseCase(
-    name="User Registration",
+    name="REGISTRATION",
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
@@ -78,7 +78,7 @@ REGISTRATION_USE_CASE = UseCase(
 # LOGIN_USE_CASE
 ###############################################################################
 LOGIN_USE_CASE = UseCase(
-    name="User Login",
+    name="LOGIN",
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
@@ -131,10 +131,11 @@ LOGIN_USE_CASE = UseCase(
 # LOGOUT_USE_CASE
 ###############################################################################
 LOGOUT_USE_CASE = UseCase(
-    name="User Logout",
+    name="LOGOUT",
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
+    replace_func=login_replace_func,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>, then logout",
@@ -188,12 +189,13 @@ LOGOUT_USE_CASE = UseCase(
         },
     ],
 )
+
 ###############################################################################
 # FILM_DETAIL_USE_CASE
 ###############################################################################
 FILM_DETAIL_USE_CASE = UseCase(
-    name="View Film Details",
-    description="The user views the details of a specific movie, including director, year, genres, rating, duration, and cast.",
+    name="FILM_DETAIL",
+    description="The user explicitly requests to navigate to or go to the details page of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
     event=FilmDetailEvent,
     event_source_code=FilmDetailEvent.get_source_code_of_class(),
     replace_func=replace_film_placeholders,
@@ -213,103 +215,102 @@ FILM_DETAIL_USE_CASE = UseCase(
     constraints_generator=generate_film_constraints,
     examples=[
         {
-            "prompt": "Show details for the movie The Matrix",
-            "prompt_for_task_generation": "Show details for the movie <movie>",
+            "prompt": "Navigate to The Matrix movie page",
+            "prompt_for_task_generation": "Navigate to <movie> movie page",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
                 "event_criteria": {"name": {"value": "The Matrix", "operator": "equals"}},
-                "reasoning": "This test ensures that when the user requests details for The Matrix, the correct movie name is captured.",
+                "reasoning": "Explicitly directs the system to navigate to The Matrix film detail page.",
             },
         },
         {
-            "prompt": "Show details for the movie Interstellar directed by Christopher Nolan",
-            "prompt_for_task_generation": "Show details for the movie <movie> directed by <director>",
+            "prompt": "Go to the film details page for Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Go to the film details page for <movie> by <director>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"name": {"value": "Interestellar", "operator": "equals"}, "director": {"value": "Christopher Nolan", "operator": "equals"}},
-                "reasoning": "Checks that when a user requests movie details with a director's name, both are captured.",
+                "event_criteria": {"name": {"value": "Interstellar", "operator": "equals"}, "director": {"value": "Christopher Nolan", "operator": "equals"}},
+                "reasoning": "Explicitly directs the system to go to the Interstellar film details page, using director as additional criteria.",
             },
         },
         {
-            "prompt": "Show information about a movie released after 2005",
-            "prompt_for_task_generation": "Show information about a movie released after <year>",
+            "prompt": "Navigate directly to a sci-fi movie page from 2010",
+            "prompt_for_task_generation": "Navigate directly to a <genre> movie page from <year>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"year": {"value": 2005, "operator": "greater_than"}},
-                "reasoning": "Validates that the year criterion is correctly processed with a greater_than operator.",
+                "event_criteria": {"genres": {"value": ["Sci-Fi"], "operator": "contains"}, "year": {"value": 2010, "operator": "equals"}},
+                "reasoning": "Explicitly instructs the system to navigate to a film detail page that matches both genre and year criteria.",
             },
         },
         {
-            "prompt": "Give me details on a movie with rating above 4.5",
-            "prompt_for_task_generation": "Give me details on a movie with rating above <rating>",
+            "prompt": "Go directly to a movie page with rating above 4.5",
+            "prompt_for_task_generation": "Go directly to a movie page with rating above <rating>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"rating": {"value": 4.5, "operator": "greater_equal"}},
-                "reasoning": "Ensures that rating comparisons with greater_equal operator work correctly.",
+                "event_criteria": {"rating": {"value": 4.5, "operator": "greater_than"}},
+                "reasoning": "Explicitly instructs the system to go to a film detail page for a highly-rated movie that exceeds the specified rating.",
             },
         },
         {
-            "prompt": "I want to see details of a movie in the Sci-Fi genre",
-            "prompt_for_task_generation": "I want to see details of a movie in the <genre> genre",
+            "prompt": "Take me directly to the Pulp Fiction film details page",
+            "prompt_for_task_generation": "Take me directly to the <movie> film details page",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"genres": {"value": ["Sci-Fi"], "operator": "contains"}},
-                "reasoning": "Checks if the genre is correctly matched using the contains operator for lists.",
+                "event_criteria": {"name": {"value": "Pulp Fiction", "operator": "equals"}},
+                "reasoning": "Explicitly requests direct navigation to the Pulp Fiction film detail page.",
             },
         },
         {
-            "prompt": "What are some movies not directed by Christopher Nolan?",
-            "prompt_for_task_generation": "What are some movies not directed by <director>?",
+            "prompt": "Navigate to a comedy film page less than 100 minutes long",
+            "prompt_for_task_generation": "Navigate to a <genre> film page less than <duration> minutes long",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"director": {"value": "Christopher Nolan", "operator": "not_equals"}},
-                "reasoning": "Tests the not_equals operator for excluding specific directors.",
+                "event_criteria": {"genres": {"value": ["Comedy"], "operator": "contains"}, "duration": {"value": 100, "operator": "less_than"}},
+                "reasoning": "Explicitly directs the system to navigate to a film detail page that matches both genre and duration criteria.",
             },
         },
         {
-            "prompt": "Show me films with duration less than 150 minutes",
-            "prompt_for_task_generation": "Show me films with duration less than <duration> minutes",
+            "prompt": "Go to a film details page from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Go to a film details page from the <decade>s with <actor>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"duration": {"value": 150, "operator": "less_than"}},
-                "reasoning": "Verifies that duration constraints with the less_than operator work properly.",
+                "event_criteria": {"year": {"value": [1990, 1999], "operator": "between"}, "cast": {"value": "Al Pacino", "operator": "contains"}},
+                "reasoning": "Explicitly instructs the system to go to a film detail page matching both decade range and cast member criteria.",
             },
         },
         {
-            "prompt": "Find movies from the 90s",
-            "prompt_for_task_generation": "Find movies from the <decade>s",
+            "prompt": "Navigate me to a horror movie page not directed by Wes Craven",
+            "prompt_for_task_generation": "Navigate me to a <genre> movie page not directed by <director>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"year": {"value": [1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999], "operator": "in_list"}},
-                "reasoning": "Tests the in_list operator for finding movies in a specific decade.",
+                "event_criteria": {"genres": {"value": ["Horror"], "operator": "contains"}, "director": {"value": "Wes Craven", "operator": "not_equals"}},
+                "reasoning": "Explicitly directs the system to navigate to a horror film detail page excluding those by the specified director.",
             },
         },
         {
-            "prompt": "Show movies that are not in the Horror genre",
-            "prompt_for_task_generation": "Show movies that are not in the <genre> genre",
+            "prompt": "Go directly to the highest-rated James Cameron film page",
+            "prompt_for_task_generation": "Go directly to the highest-rated <director> film page",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILM_DETAIL",
-                "event_criteria": {"genres": {"value": ["Horror"], "operator": "not_contains"}},
-                "reasoning": "Tests the not_contains operator for excluding movies of a specific genre.",
+                "event_criteria": {"director": {"value": "James Cameron", "operator": "equals"}, "rating": {"value": 0, "operator": "sort_desc"}},
+                "reasoning": "Explicitly instructs the system to go directly to the film detail page of the highest-rated film by the specified director.",
             },
         },
     ],
 )
-
 ###############################################################################
 # SEARCH_FILM_USE_CASE
 ###############################################################################
 SEARCH_FILM_USE_CASE = UseCase(
-    name="Search Film",
+    name="SEARCH_FILM",
     description="The user searches for a film using a query.",
     event=SearchFilmEvent,
     event_source_code=SearchFilmEvent.get_source_code_of_class(),
@@ -363,7 +364,7 @@ SEARCH_FILM_USE_CASE = UseCase(
 ###############################################################################
 
 ADD_FILM_USE_CASE = UseCase(
-    name="Add Film",
+    name="ADD_FILM",
     description="The user adds a new film to the system, specifying details such as name, director, year, genres, duration, and cast.",
     event=AddFilmEvent,
     event_source_code=AddFilmEvent.get_source_code_of_class(),
@@ -453,7 +454,7 @@ ADD_FILM_USE_CASE = UseCase(
 # EDIT_FILM_USE_CASE
 ###############################################################################
 EDIT_FILM_USE_CASE = UseCase(
-    name="Edit Film",
+    name="EDIT_FILM",
     description="The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.",
     event=EditFilmEvent,
     event_source_code=EditFilmEvent.get_source_code_of_class(),
@@ -542,7 +543,7 @@ EDIT_FILM_USE_CASE = UseCase(
 # DELETE_FILM_USE_CASE
 ###############################################################################
 DELETE_FILM_USE_CASE = UseCase(
-    name="Delete Film",
+    name="DELETE_FILM",
     description="The user deletes a film from the system.",
     event=DeleteFilmEvent,
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
@@ -595,7 +596,7 @@ DELETE_FILM_USE_CASE = UseCase(
 # CONTACT_USE_CASE
 ###############################################################################
 CONTACT_USE_CASE = UseCase(
-    name="Send Contact Form",
+    name="CONTACT",
     description="The user navigates to the contact form page, fills out fields, and submits the form successfully.",
     event=ContactEvent,
     event_source_code=ContactEvent.get_source_code_of_class(),
@@ -727,7 +728,7 @@ CONTACT_USE_CASE = UseCase(
 # EDIT_USER_PROFILE_USE_CASE
 ###############################################################################
 EDIT_USER_PROFILE_USE_CASE = UseCase(
-    name="Edit User Profile",
+    name="EDIT_FILM",
     description="The user updates their profile details such as name, email, bio, location, or favorite genres.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
@@ -846,7 +847,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
 # FILTER_FILM_USE_CASE
 ###############################################################################
 FILTER_FILM_USE_CASE = UseCase(
-    name="Filter Films",
+    name="FILTER_FILM",
     description="The user applies filters to search for films by genre and/or year.",
     event=FilterFilmEvent,
     event_source_code=FilterFilmEvent.get_source_code_of_class(),
@@ -913,7 +914,7 @@ FILTER_FILM_USE_CASE = UseCase(
 # ADD_COMMENT_USE_CASE
 ###############################################################################
 ADD_COMMENT_USE_CASE = UseCase(
-    name="Add Comment",
+    name="ADD_COMMENT",
     description="The user adds a comment to a movie.",
     event=AddCommentEvent,
     event_source_code=AddCommentEvent.get_source_code_of_class(),
@@ -1040,7 +1041,6 @@ ADD_COMMENT_USE_CASE = UseCase(
 ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
     # LOGIN_USE_CASE,
-    # LOGOUT_USE_CASE,  # Must be login-ed first
     FILM_DETAIL_USE_CASE,
     # SEARCH_FILM_USE_CASE,
     # ADD_FILM_USE_CASE,
@@ -1051,4 +1051,5 @@ ALL_USE_CASES = [
     # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
     # FILTER_FILM_USE_CASE,
     # COMPOSITE_USE_CASE,  # si quisieras meterlo también
+    # LOGOUT_USE_CASE,
 ]
