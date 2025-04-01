@@ -193,13 +193,7 @@ LOGOUT_USE_CASE = UseCase(
 ###############################################################################
 # FILM_DETAIL_USE_CASE
 ###############################################################################
-FILM_DETAIL_USE_CASE = UseCase(
-    name="FILM_DETAIL",
-    description="The user explicitly requests to navigate to or go to the details page of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
-    event=FilmDetailEvent,
-    event_source_code=FilmDetailEvent.get_source_code_of_class(),
-    replace_func=replace_film_placeholders,
-    additional_prompt_info="""
+FILM_DETAIL_INFO = """
         CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
         1. Include ALL constraints mentioned above - not just some of them
         2. Include ONLY the constraints mentioned above - do not add any other criteria
@@ -211,7 +205,13 @@ FILM_DETAIL_USE_CASE = UseCase(
         - INCORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
 
         ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
-        """,
+        """
+FILM_DETAIL_USE_CASE = UseCase(
+    name="FILM_DETAIL",
+    description="The user explicitly requests to navigate to or go to the details page of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    event=FilmDetailEvent,
+    event_source_code=FilmDetailEvent.get_source_code_of_class(),
+    additional_prompt_info=FILM_DETAIL_INFO,
     constraints_generator=generate_film_constraints,
     examples=[
         {
@@ -542,55 +542,130 @@ EDIT_FILM_USE_CASE = UseCase(
 ###############################################################################
 # DELETE_FILM_USE_CASE
 ###############################################################################
+DELETE_FILM_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+3. Be phrased as a request to delete or remove a film (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
+
+For example, if the constraints are "year greater_than 2014 AND genres contains Sci-Fi":
+- CORRECT: "Delete a film whose year is greater than 2014 and that belongs to the Sci-Fi genre."
+- INCORRECT: "Delete a film from 2015 with a high rating" (you added an extra filter).
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
 DELETE_FILM_USE_CASE = UseCase(
     name="DELETE_FILM",
     description="The user deletes a film from the system.",
     event=DeleteFilmEvent,
     event_source_code=DeleteFilmEvent.get_source_code_of_class(),
-    replace_func=replace_film_placeholders,
+    additional_prompt_info=DELETE_FILM_ADDITIONAL_PROMPT_INFO,
+    constraints_generator=generate_film_constraints,
     examples=[
         {
-            "prompt": "Remove The Matrix from the database",
-            "prompt_for_task_generation": "Remove '<movie> from the database",
+            "prompt": "Remove The Matrix, a film released after 2014, from the database",
+            "prompt_for_task_generation": "Remove '<movie>' that was released after <year> from the database",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_FILM",
-                "event_criteria": {"name": {"value": "The Matrix"}},
-                "reasoning": "Ensures that 'The Matrix' is correctly removed from the system.",
+                "event_criteria": {"name": {"value": "The Matrix", "operator": "equals"}, "year": {"value": 2014, "operator": "greater_than"}},
+                "reasoning": "Ensures that 'The Matrix' is deleted and that its release year is greater than 2014.",
             },
         },
         {
-            "prompt": "Erase all records of Pulp Fiction",
-            "prompt_for_task_generation": "Erase all records of '<movie>",
+            "prompt": "Erase all records of Pulp Fiction, a film not directed by Quentin Tarantino",
+            "prompt_for_task_generation": "Erase all records of '<movie>' not directed by <director>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_FILM",
-                "event_criteria": {"name": {"value": "Pulp Fiction"}},
-                "reasoning": "Confirms that all records of 'Pulp Fiction' are deleted.",
+                "event_criteria": {"name": {"value": "Pulp Fiction", "operator": "equals"}, "director": {"value": "Quentin Tarantino", "operator": "not_equals"}},
+                "reasoning": "Confirms that 'Pulp Fiction' is deleted and verifies that the film's director is not Quentin Tarantino.",
             },
         },
         {
-            "prompt": "Permanently delete The Godfather from the collection",
-            "prompt_for_task_generation": "Permanently delete '<movie> from the collection",
+            "prompt": "Permanently delete The Godfather, which has a duration greater than 175 minutes",
+            "prompt_for_task_generation": "Permanently delete '<movie>' with duration greater than <duration> minutes",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_FILM",
-                "event_criteria": {"name": {"value": "The Godfather"}},
-                "reasoning": "Ensures 'The Godfather' is permanently removed from the system.",
+                "event_criteria": {"name": {"value": "The Godfather", "operator": "equals"}, "duration": {"value": 175, "operator": "greater_than"}},
+                "reasoning": "Ensures that 'The Godfather' is permanently removed and that its duration exceeds 175 minutes.",
             },
         },
         {
-            "prompt": "Discard Titanic from the system",
-            "prompt_for_task_generation": "Discard '<movie> from the system",
+            "prompt": "Discard Titanic, a film with a rating less than 7.0, from the system",
+            "prompt_for_task_generation": "Discard '<movie>' with rating less than <rating>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_FILM",
-                "event_criteria": {"name": {"value": "Titanic"}},
-                "reasoning": "Ensures that 'Titanic' is discarded as expected.",
+                "event_criteria": {"name": {"value": "Titanic", "operator": "equals"}, "rating": {"value": 7.0, "operator": "less_than"}},
+                "reasoning": "Verifies that 'Titanic' is discarded and its rating is below 7.0.",
+            },
+        },
+        {
+            "prompt": "Remove Airplane!, a comedy film released before 1980, from the records",
+            "prompt_for_task_generation": "Remove a <genre> film called '<movie>' released before <year>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"name": {"value": "Airplane!", "operator": "equals"}, "genres": {"value": ["Comedy"], "operator": "contains"}, "year": {"value": 1980, "operator": "less_than"}},
+                "reasoning": "Checks that 'Airplane!' is removed and meets the genre and release year criteria.",
+            },
+        },
+        {
+            "prompt": "Erase the horror film that is not directed by Wes Craven",
+            "prompt_for_task_generation": "Erase a <genre> film not directed by <director>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"genres": {"value": ["Horror"], "operator": "contains"}, "director": {"value": "Wes Craven", "operator": "not_equals"}},
+                "reasoning": "Ensures deletion of a horror film and verifies that it is not directed by Wes Craven.",
+            },
+        },
+        {
+            "prompt": "Permanently delete a film featuring Robert De Niro that was released after 2000",
+            "prompt_for_task_generation": "Permanently delete a film with cast containing <actor> and released after <year>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"cast": {"value": "Robert De Niro", "operator": "contains"}, "year": {"value": 2000, "operator": "greater_than"}},
+                "reasoning": "Verifies that the film to be deleted features Robert De Niro and was released after the year 2000.",
+            },
+        },
+        {
+            "prompt": "Discard Inception, a film with a rating greater than 8.0, from the system",
+            "prompt_for_task_generation": "Discard '<movie>' with rating greater than <rating>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"name": {"value": "Inception", "operator": "equals"}, "rating": {"value": 8.0, "operator": "greater_than"}},
+                "reasoning": "Ensures that 'Inception' is discarded and its rating exceeds 8.0.",
+            },
+        },
+        {
+            "prompt": "Remove Gladiator, ensuring it was released before 2000",
+            "prompt_for_task_generation": "Remove '<movie>' ensuring it was released before <year>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"name": {"value": "Gladiator", "operator": "equals"}, "year": {"value": 2000, "operator": "less_than"}},
+                "reasoning": "Verifies that 'Gladiator' is removed and that its release year is before 2000.",
+            },
+        },
+        {
+            "prompt": "Erase all records of Avatar, a film that does not belong to the Action genre",
+            "prompt_for_task_generation": "Erase all records of '<movie>' that does not belong to the <genre> genre",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"name": {"value": "Avatar", "operator": "equals"}, "genres": {"value": ["Action"], "operator": "not_contains"}},
+                "reasoning": "Checks that 'Avatar' is erased and confirms that it does not belong to the Action genre.",
             },
         },
     ],
 )
+
 
 ###############################################################################
 # CONTACT_USE_CASE
@@ -1058,11 +1133,11 @@ ALL_USE_CASES = [
     # LOGIN_USE_CASE,
     # SEARCH_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
-    CONTACT_USE_CASE,
+    # CONTACT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
-    # DELETE_FILM_USE_CASE,
+    DELETE_FILM_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
     # FILTER_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
