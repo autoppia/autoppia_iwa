@@ -130,3 +130,26 @@ MOVIES_DATA = [
         "genres": ["Adventure", "Drama", "Sci-Fi"],
     },
 ]
+
+# constants.py
+
+EQUALS = "equals"
+NOT_EQUALS = "not_equals"
+CONTAINS = "contains"
+NOT_CONTAINS = "not_contains"
+GREATER_THAN = "greater_than"
+LESS_THAN = "less_than"
+GREATER_EQUAL = "greater_equal"
+LESS_EQUAL = "less_equal"
+IN_LIST = "in_list"
+NOT_IN_LIST = "not_in_list"
+
+# Sugerencia de mapeo campo -> lista de operadores válidos
+FIELD_OPERATORS_MAP = {
+    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "director": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "year": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL, IN_LIST, NOT_IN_LIST],
+    "rating": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
+    "duration": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
+    "genres": [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST],
+}

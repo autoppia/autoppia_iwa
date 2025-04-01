@@ -18,13 +18,80 @@ class UseCase(BaseModel):
     examples: list[dict]
     replace_func: Callable[[str], str] | None = Field(default=None, exclude=True)
 
+    # Only one field for constraints - the structured data
+    constraints: list[dict[str, Any]] | None = Field(default=None)
+    constraints_generator: Callable | None = Field(default=None, exclude=True)
+    additional_prompt_info: str | None = Field(default=None)
+
     class Config:
         arbitrary_types_allowed = True
 
     def apply_replacements(self, text: str, *args, **kwargs) -> str:
         if self.replace_func and isinstance(text, str):
             return self.replace_func(text, *args, **kwargs)
+
+        # Also replace constraints_info if needed
+        if isinstance(text, str) and "<constraints_info>" in text and self.constraints:
+            text = text.replace("<constraints_info>", self.constraints_to_str())
+
         return text
+
+    def generate_constraints(self):
+        """
+        Generates constraints using the specific generator for this use case.
+        """
+        if self.constraints_generator:
+            self.constraints = self.constraints_generator()
+        return self.constraints_to_str() if self.constraints else ""
+
+    def constraints_to_str(self) -> str:
+        """
+        Converts the constraints list to a human-readable string.
+        Example: "1) year equals 2014 AND 2) genres contains Sci-Fi"
+        """
+        if not self.constraints:
+            return ""
+
+        parts = []
+        for idx, constraint in enumerate(self.constraints, start=1):
+            field = constraint["field"]
+            op = constraint["operator"]
+            value = constraint["value"]
+
+            # Special formatting for lists
+            value_str = f"[{', '.join(map(str, value))}]" if isinstance(value, list) else str(value)
+
+            parts.append(f"{idx}) {field} {op.value} {value_str}")
+
+        return " AND ".join(parts)
+
+    def add_constraints(self, constraints: list[dict[str, Any]]) -> None:
+        """
+        Adds constraints to the use case and an example that uses these constraints
+        """
+        self.constraints = constraints
+
+        # Create an example that uses the constraints
+        if constraints:
+            # Get the string representation of constraints
+            constraints_str = self.constraints_to_str()
+
+            # Create a generic constraint example
+            prompt = f"Show me items with these criteria: {constraints_str}"
+            prompt_template = "Show me items with these criteria: <constraints_info>"
+
+            constraint_example = {
+                "prompt": prompt,
+                "prompt_for_task_generation": prompt_template,
+                "test": {
+                    "type": "CheckEventTest",
+                    "event_name": self.event.__name__,
+                    "event_criteria": {c["field"]: {"value": c["value"], "operator": c["operator"]} for c in constraints},
+                    "reasoning": "Validates that constraints are correctly processed and used for filtering.",
+                },
+            }
+
+            self.examples.append(constraint_example)
 
     def check_success(self, events: list[Any]) -> bool:
         """
