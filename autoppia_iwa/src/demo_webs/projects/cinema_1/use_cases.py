@@ -18,7 +18,14 @@ from .events import (
     RegistrationEvent,
     SearchFilmEvent,
 )
-from .generation_functions import generate_add_comment_constraints, generate_contact_constraints, generate_film_constraints, generate_film_filter_constraints
+from .generation_functions import (
+    generate_add_comment_constraints,
+    generate_add_film_constraints,
+    generate_contact_constraints,
+    generate_edit_film_constraints,
+    generate_film_constraints,
+    generate_film_filter_constraints,
+)
 from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
 
 ###############################################################################
@@ -380,7 +387,7 @@ ADD_FILM_USE_CASE = UseCase(
     description="The user adds a new film to the system, specifying details such as name, director, year, genres, duration, language, and cast.",
     event=AddFilmEvent,
     event_source_code=AddFilmEvent.get_source_code_of_class(),
-    constraints_generator=generate_film_constraints,  # Reutilizamos el generador de constraints para películas.
+    constraints_generator=generate_add_film_constraints,
     additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -463,24 +470,39 @@ ADD_FILM_USE_CASE = UseCase(
 ###############################################################################
 # EDIT_FILM_USE_CASE
 ###############################################################################
+EDIT_FILM_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+3. Be phrased as a request to edit or modify a film (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
+
+For example, if the constraints are "year equals 2014 AND director contains 'e'":
+- CORRECT: "Edit a film where the year equals 2014 and the director's name contains the letter 'e'."
+- INCORRECT: "Edit a random film with a high rating" (you added an extra filter).
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
 EDIT_FILM_USE_CASE = UseCase(
     name="EDIT_FILM",
     description="The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.",
     event=EditFilmEvent,
     event_source_code=EditFilmEvent.get_source_code_of_class(),
     replace_func=replace_film_placeholders,
+    constraints_generator=generate_edit_film_constraints,
+    additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Update the director of 'The Matrix' to 'Lana Wachowski' and 'Lilly Wachowski'",
-            "prompt_for_task_generation": "Update the director of <movie> to Lana Wachowski and Lilly Wachowski",
+            "prompt": "Update the director of The Matrix to Christopher Nolan",
+            "prompt_for_task_generation": "Update the director of <movie> to Christopher Nolan",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
                 "event_criteria": {
-                    "name": {"value": "The Matrix"},
-                    "director": {"value": ["Lana Wachowski", "Lilly Wachowski"]},
+                    "name": {"value": "The Matrix", "operator": "equals"},
+                    "director": {"value": "Christopher Nolan", "operator": "equals"},
                 },
-                "reasoning": "Ensures the new directors are recorded as a list.",
+                "reasoning": "Ensures the new director is recorded.",
             },
         },
         {
@@ -489,66 +511,55 @@ EDIT_FILM_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "Pulp Fiction"}, "year": {"value": 1994}},
+                "event_criteria": {"name": {"value": "Pulp Fiction", "operator": "equals"}, "year": {"value": 1994, "operator": "equals"}},
                 "reasoning": "Ensures the new year is recorded.",
             },
         },
         {
-            "prompt": "Add Drama to the genres of The Godfather",
-            "prompt_for_task_generation": "Add 'Drama' to the genres of <movie>",
+            "prompt": "Add Sci-Fi to the genres of Inception",
+            "prompt_for_task_generation": "Add 'Sci-Fi' to the genres of <movie>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "The Godfather"}, "genre": {"value": "Drama", "operator": "contains"}},
+                "event_criteria": {"name": {"value": "Inception", "operator": "equals"}, "genre": {"value": "Sci-Fi", "operator": "contains"}},
                 "reasoning": "Verifies that the new genre is added.",
             },
         },
         {
-            "prompt": "Change the rating of Inception to 4.8",
+            "prompt": "Change the rating of Interstellar to 4.8",
             "prompt_for_task_generation": "Change the rating of <movie> to 4.8",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "Inception"}, "rating": {"value": 4.8}},
+                "event_criteria": {"name": {"value": "Interestellar", "operator": "equals"}, "rating": {"value": 4.8, "operator": "equals"}},
                 "reasoning": "Ensures the rating is updated correctly.",
             },
         },
         {
-            "prompt": "Change the rating of Inception to 4.8 and change the movie name to 'Nope'",
-            "prompt_for_task_generation": "Change the rating of <movie> to 3.2 and change the movie name to 'Nope'",
+            "prompt": "Edit the duration of The Godfather to 175 minutes",
+            "prompt_for_task_generation": "Edit the duration of <movie> to 175 minutes",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "Nope"}, "rating": {"value": 3.2}},
-                "reasoning": "Ensures the rating is updated correctly.",
-            },
-        },
-        {
-            "prompt": "Edit the duration of Avatar to 162 minutes",
-            "prompt_for_task_generation": "Edit the duration of <movie> to 143 minutes",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "Avatar"}, "duration": {"value": 162}},
+                "event_criteria": {"name": {"value": "The Godfather", "operator": "equals"}, "duration": {"value": 175, "operator": "equals"}},
                 "reasoning": "Ensures that the duration is updated.",
             },
         },
         {
-            "prompt": "Modify the cast of Titanic to include Leonardo DiCaprio and Kate Winslet",
-            "prompt_for_task_generation": "Modify the cast of <movie> to include 'Leonardo DiCaprio' and 'Kate Winslet'",
+            "prompt": "Modify the cast of The Shawshank Redemption to include Morgan Freeman",
+            "prompt_for_task_generation": "Modify the cast of <movie> to include 'Morgan Freeman'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_FILM",
                 "event_criteria": {
-                    "name": {"value": "Titanic"},
-                    "cast": {"value": ["Leonardo DiCaprio", "Kate Winslet"], "operator": "contains"},
+                    "name": {"value": "The Shawshank Redemption", "operator": "equals"},
+                    "cast": {"value": "Morgan Freeman", "operator": "contains"},
                 },
                 "reasoning": "Ensures the cast changes are properly logged.",
             },
         },
     ],
 )
-
 ###############################################################################
 # DELETE_FILM_USE_CASE
 ###############################################################################
@@ -828,7 +839,7 @@ CONTACT_USE_CASE = UseCase(
 # EDIT_USER_PROFILE_USE_CASE
 ###############################################################################
 EDIT_USER_PROFILE_USE_CASE = UseCase(
-    name="EDIT_FILM",
+    name="EDIT_USER_PROFILE",
     description="The user updates their profile details such as name, email, bio, location, or favorite genres.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
@@ -1100,11 +1111,11 @@ ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
     # LOGIN_USE_CASE,
     # SEARCH_FILM_USE_CASE,
-    ADD_COMMENT_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE,
-    # EDIT_FILM_USE_CASE,
+    EDIT_FILM_USE_CASE,
     # DELETE_FILM_USE_CASE,
     # FILTER_FILM_USE_CASE,
     # LOGOUT_USE_CASE,

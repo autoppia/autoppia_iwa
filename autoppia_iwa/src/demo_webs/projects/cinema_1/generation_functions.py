@@ -416,3 +416,210 @@ def generate_add_comment_constraints():
         constraints.append({"field": field, "operator": ComparisonOperator(operator), "value": value})
 
     return constraints
+
+
+def generate_edit_film_constraints():
+    """
+    Generates constraints specifically for editing film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from random import choice, randint, sample, uniform
+
+    # Obtener películas disponibles
+    movies = MOVIES_DATA
+
+    # Campos editables (sin name porque ya tenemos la película)
+    editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]
+
+    random_words = [
+        "car",
+        "star",
+        "red",
+        "blue",
+        "green",
+        "e",
+        "a",
+        "o",
+        "x",
+        "z",
+        # Palabras más largas
+        "cinema",
+        "movie",
+        "light",
+        "shadow",
+        "dream",
+        "story",
+        "heart",
+        "vision",
+        "gold",
+        "silver",
+        "thunder",
+        "wind",
+        "quantum",
+        "stellar",
+        "cosmic",
+        "rhythm",
+        "echo",
+        "spark",
+        "rebel",
+        "sage",
+    ]
+
+    all_genres = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"]
+
+    # Generar constraints
+    constraints = []
+
+    # Seleccionar película base
+    base_movie = choice(movies)
+    constraints.append({"field": "name", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": base_movie["name"]})
+
+    # Seleccionar 1, 2, 3 o 4 campos para editar
+    selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
+
+    for field in selected_fields:
+        if field == "director":
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
+                    "value": choice(random_words),
+                }
+            )
+        elif field == "year":
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
+                    "value": randint(1950, 2024),
+                }
+            )
+        elif field == "genres":
+            constraints.append({"field": field, "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(all_genres)})
+        elif field == "rating":
+            rating_value = round(uniform(0, 5), 1)
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
+                    "value": rating_value,
+                }
+            )
+        elif field == "duration":
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
+                    "value": randint(50, 180),
+                }
+            )
+        elif field == "cast":
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
+                    "value": choice(random_words),
+                }
+            )
+
+    return constraints
+
+
+def generate_add_film_constraints():
+    """
+    Generates constraints specifically for editing film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from random import choice, randint, sample, uniform
+
+    # Campos editables
+    editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]
+
+    random_words = [
+        "car",
+        "star",
+        "red",
+        "blue",
+        "green",
+        "e",
+        "a",
+        "o",
+        "x",
+        "z",
+        # Palabras más largas
+        "cinema",
+        "movie",
+        "light",
+        "shadow",
+        "dream",
+        "story",
+        "heart",
+        "vision",
+        "gold",
+        "silver",
+        "thunder",
+        "wind",
+        "quantum",
+        "stellar",
+        "cosmic",
+        "rhythm",
+        "echo",
+        "spark",
+        "rebel",
+        "sage",
+    ]
+
+    all_genres = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"]
+
+    # Generar constraints
+    constraints = []
+
+    # Seleccionar 1, 2, 3 o 4 campos para editar
+    selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
+
+    for field in selected_fields:
+        if field == "director":
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
+                    "value": choice(random_words),
+                }
+            )
+        elif field == "year":
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
+                    "value": randint(1950, 2024),
+                }
+            )
+        elif field == "genres":
+            constraints.append({"field": field, "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(all_genres)})
+        elif field == "rating":
+            rating_value = round(uniform(0, 5), 1)
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
+                    "value": rating_value,
+                }
+            )
+        elif field == "duration":
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
+                    "value": randint(50, 180),
+                }
+            )
+        elif field == "cast":
+            constraints.append(
+                {
+                    "field": field,
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
+                    "value": choice(random_words),
+                }
+            )
+
+    return constraints
