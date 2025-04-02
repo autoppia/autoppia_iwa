@@ -11145,7 +11145,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.execution.actions.actions",
         "description": "autoppia_iwa.src.execution.actions.actions",
-        "peekOfCode": "class SelectDropDownOptionAction(BaseActionWithSelector):\n    type: Literal[\"SelectDropDownOptionAction\"] = \"SelectDropDownOptionAction\"\n    text: str\n    @log_action(\"SelectDropDownOptionAction\")\n    async def execute(self, page: Page | None, backend_service, web_agent_id: str):\n        xpath = self.validate_selector()\n        found = False\n        for i, frame in enumerate(page.frames):\n            try:\n                dropdown_info = await frame.evaluate(",
+        "peekOfCode": "class SelectDropDownOptionAction(BaseActionWithSelector):\n    type: Literal[\"SelectDropDownOptionAction\"] = \"SelectDropDownOptionAction\"\n    text: str | None = None\n    value: str | None = None\n    @log_action(\"SelectDropDownOptionAction\")\n    async def execute(self, page: Page | None, backend_service, web_agent_id: str):\n        xpath = self.validate_selector()\n        found = False\n        if not (self.text or self.value):\n            raise ValueError(\"Either 'text' or 'value' must be provided for selecting an option.\")",
         "detail": "autoppia_iwa.src.execution.actions.actions",
         "documentation": {}
     },

@@ -300,12 +300,16 @@ class GetDropDownOptions(BaseActionWithSelector):
 
 class SelectDropDownOptionAction(BaseActionWithSelector):
     type: Literal["SelectDropDownOptionAction"] = "SelectDropDownOptionAction"
-    text: str
+    text: str | None = None
+    value: str | None = None
 
     @log_action("SelectDropDownOptionAction")
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         xpath = self.validate_selector()
         found = False
+
+        if not (self.text or self.value):
+            raise ValueError("Either 'text' or 'value' must be provided for selecting an option.")
 
         for i, frame in enumerate(page.frames):
             try:
@@ -329,7 +333,7 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
                                 tagName: select.tagName,
                                 optionCount: select.options.length,
                                 currentValue: select.value,
-                                availableOptions: Array.from(select.options).map(o => o.text.trim())
+                                availableOptions: Array.from(select.options).map(o => ({ text: o.text.trim(), value: o.value }))
                             };
                         } catch (e) {
                             return { error: e.toString(), found: false };
@@ -340,15 +344,23 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
                 )
 
                 if dropdown_info.get("found"):
-                    selected = await frame.locator(xpath).nth(0).select_option(label=self.text, timeout=1000)
-                    action_logger.info(f"Selected '{self.text}' => {selected} in frame {i}")
+                    locator = frame.locator(xpath).nth(0)
+                    if self.text:
+                        selected = await locator.select_option(label=self.text, timeout=1000)
+                        action_logger.info(f"Selected by text '{self.text}' => {selected} in frame {i}")
+                    elif self.value:
+                        selected = await locator.select_option(value=self.value, timeout=1000)
+                        action_logger.info(f"Selected by value '{self.value}' => {selected} in frame {i}")
+
                     found = True
                     break
+
             except Exception as e:
                 action_logger.debug(f"Frame {i} attempt failed: {e}")
 
         if not found:
-            action_logger.info(f"Could not select option '{self.text}' in any frame")
+            selection_method = f"text '{self.text}'" if self.text else f"value '{self.value}'"
+            action_logger.info(f"Could not select option with {selection_method} in any frame")
 
 
 class UndefinedAction(BaseAction):
