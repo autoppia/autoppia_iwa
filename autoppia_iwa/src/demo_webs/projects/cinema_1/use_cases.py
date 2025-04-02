@@ -18,7 +18,7 @@ from .events import (
     RegistrationEvent,
     SearchFilmEvent,
 )
-from .generation_functions import generate_contact_constraints, generate_film_constraints, generate_film_filter_constraints
+from .generation_functions import generate_add_comment_constraints, generate_contact_constraints, generate_film_constraints, generate_film_filter_constraints
 from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
 
 ###############################################################################
@@ -1009,121 +1009,83 @@ FILTER_FILM_USE_CASE = UseCase(
 ###############################################################################
 # ADD_COMMENT_USE_CASE
 ###############################################################################
+ADD_COMMENT_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to add a comment to a movie (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
+
+For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
+- CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
+- INCORRECT: "Write a comment about any movie" (missing specific constraints)
+- INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 ADD_COMMENT_USE_CASE = UseCase(
     name="ADD_COMMENT",
     description="The user adds a comment to a movie.",
     event=AddCommentEvent,
     event_source_code=AddCommentEvent.get_source_code_of_class(),
-    replace_func=replace_film_placeholders,
+    constraints_generator=generate_add_comment_constraints,
+    additional_prompt_info=ADD_COMMENT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Search the movie:Inception and add a comment: 'Amazing cinematography! The visuals were stunning.'",
-            "prompt_for_task_generation": "Search the movie:<movie> and  add a comment: 'Amazing cinematography! The visuals were stunning.' ",
+            "prompt": "Navigate to a movie and add a comment about Inception",
+            "prompt_for_task_generation": "Navigate to <movie> and add a comment",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {"movie_name": {"value": "Inception", "operator": "equals"}},
+                "reasoning": "Verifies adding a comment to a specific movie.",
+            },
+        },
+        {
+            "prompt": "Write a review for a movie, ensuring the commenter is not John",
+            "prompt_for_task_generation": "Write a review for <movie>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {"commenter_name": {"value": "John", "operator": "not_equals"}},
+                "reasoning": "Ensures comment can be added with name constraint.",
+            },
+        },
+        {
+            "prompt": "Post a comment containing the word 'masterpiece'",
+            "prompt_for_task_generation": "Post a comment for <movie>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {"content": {"value": "masterpiece", "operator": "contains"}},
+                "reasoning": "Validates comment generation with specific content.",
+            },
+        },
+        {
+            "prompt": "Add a comment for a movie not called The Matrix by someone other than John",
+            "prompt_for_task_generation": "Add a comment for <movie>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "ADD_COMMENT",
+                "event_criteria": {"movie_name": {"value": "The Matrix", "operator": "not_equals"}, "commenter_name": {"value": "John", "operator": "not_equals"}},
+                "reasoning": "Checks multiple constraints for comment addition.",
+            },
+        },
+        {
+            "prompt": "Write a detailed review with specific movie, content, and commenter constraints",
+            "prompt_for_task_generation": "Write a review for <movie>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_COMMENT",
                 "event_criteria": {
-                    "content": {"value": "Amazing cinematography! The visuals were stunning."},
-                    "movie_name": {"value": "Inception"},
+                    "movie_name": {"value": "Interstellar", "operator": "equals"},
+                    "content": {"value": "boring", "operator": "not_contains"},
+                    "commenter_name": {"value": "David", "operator": "not_equals"},
                 },
-                "reasoning": "This test verifies that a positive comment on a movie is recorded correctly.",
+                "reasoning": "Demonstrates complex constraint combinations for comment generation.",
             },
         },
-        #     {
-        #         "prompt": "Comment 'The character development was weak, but the action scenes were top-notch.' on Mad Max: Fury Road",
-        #         "prompt_for_task_generation": "Comment 'The character development was weak, but the action scenes were top-notch.' on <movie>",
-        #         "test": {
-        #             "type": "CheckEventTest",
-        #             "event_name": "ADD_COMMENT",
-        #             "event_criteria": {
-        #                 "content": {"value": "The character development was weak, but the action scenes were top-notch."},
-        #                 "movie_name": {"value": "Mad Max: Fury Road"},
-        #             },
-        #             "reasoning": "This test ensures that a balanced critique is properly captured in the system.",
-        #         },
-        #     },
-        #     {
-        #         "prompt": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for The Prestige",
-        #         "prompt_for_task_generation": "Leave a review: 'A thought-provoking masterpiece that keeps you guessing.' for <movie>",
-        #         "test": {
-        #             "type": "CheckEventTest",
-        #             "event_name": "ADD_COMMENT",
-        #             "event_criteria": {
-        #                 "content": {"value": "A thought-provoking masterpiece that keeps you guessing."},
-        #                 "movie_name": {"value": "The Prestige"},
-        #             },
-        #             "reasoning": "This test checks if a detailed review is correctly logged under the respective movie.",
-        #         },
-        #     },
-        #     {
-        #         "prompt": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under Fight Club",
-        #         "prompt_for_task_generation": "Post a comment 'I didn't expect that plot twist! Totally mind-blowing.' under <movie>",
-        #         "test": {
-        #             "type": "CheckEventTest",
-        #             "event_name": "ADD_COMMENT",
-        #             "event_criteria": {
-        #                 "content": {"value": "I didn't expect that plot twist! Totally mind-blowing."},
-        #                 "movie_name": {"value": "Fight Club"},
-        #             },
-        #             "reasoning": "This test ensures that a reaction to a shocking plot twist is recorded correctly.",
-        #         },
-        #     },
-        #     {
-        #         "prompt": "Write a comment which contains word 'character' on the film The Conjuring",
-        #         "prompt_for_task_generation": "Write a comment which contains word 'character' on the film <movie>",
-        #         "test": {
-        #             "type": "CheckEventTest",
-        #             "event_name": "ADD_COMMENT",
-        #             "event_criteria": {
-        #                 "content": {"value": "Not a fan of horror movies, but this one kept me at the edge of my seat!"},
-        #                 "movie_name": {"value": "The Conjuring"},
-        #             },
-        #             "reasoning": "This test confirms that feedback from a non-horror fan is correctly stored.",
-        #         },
-        #     },
-        #     {
-        #         "prompt": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for Interestellar. Commenter Name could not be 'John'",
-        #         "prompt_for_task_generation": "Leave a review: 'The soundtrack was mesmerizing and added so much depth to the story.' for <movie>. Commenter Name could not be 'John'",
-        #         "test": {
-        #             "type": "CheckEventTest",
-        #             "event_name": "ADD_COMMENT",
-        #             "event_criteria": {
-        #                 "content": {"value": "The soundtrack was mesmerizing and added so much depth to the story."},
-        #                 "commenter_name": {"value": "John", "operator": "not_equals"},
-        #                 "movie_name": {"value": "Interestellar"},
-        #             },
-        #             "reasoning": "This test verifies if a comment about the movie's soundtrack is accurately captured.",
-        #         },
-        #     },
-        #     {
-        #         "prompt": "Post a comment 'Too much CGI ruined the realism of the film.' under Jurassic World",
-        #         "prompt_for_task_generation": "Post a comment 'Too much CGI ruined the realism of the film.' under  <movie>",
-        #         "test": {
-        #             "type": "CheckEventTest",
-        #             "event_name": "ADD_COMMENT",
-        #             "event_criteria": {
-        #                 "content": {"value": "Too much CGI ruined the realism of the film."},
-        #                 "movie_name": {"value": "Jurassic World"},
-        #             },
-        #             "reasoning": "This test ensures that criticism about CGI-heavy movies is properly logged.",
-        #         },
-        #     },
-        #     {
-        #         "prompt": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film La La Land",
-        #         "prompt_for_task_generation": "Write a comment 'Loved the chemistry between the lead actors. Perfect casting!' on the film  <movie>",
-        #         "test": {
-        #             "type": "CheckEventTest",
-        #             "event_name": "ADD_COMMENT",
-        #             "event_criteria": {
-        #                 "content": {"value": "Loved the chemistry between the lead actors. Perfect casting!"},
-        #                 "movie_name": {"value": "La La Land"},
-        #             },
-        #             "reasoning": "This test checks whether romantic or chemistry-related feedback is recorded correctly.",
-        #         },
-        #     },
     ],
 )
-
 ###############################################################################
 # EJEMPLO DE CASO COMPUESTO (OPCIONAL)
 # COMPOSITE_USE_CASE = UseCase(
@@ -1138,13 +1100,13 @@ ALL_USE_CASES = [
     # REGISTRATION_USE_CASE,
     # LOGIN_USE_CASE,
     # SEARCH_FILM_USE_CASE,
-    # ADD_COMMENT_USE_CASE,
+    ADD_COMMENT_USE_CASE,
     # CONTACT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE,
     # EDIT_FILM_USE_CASE,
     # DELETE_FILM_USE_CASE,
-    FILTER_FILM_USE_CASE,
+    # FILTER_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
     # DELETE_FILM_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first

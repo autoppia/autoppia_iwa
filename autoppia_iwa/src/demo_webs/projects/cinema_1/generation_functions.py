@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from .data import FIELD_OPERATORS_MAP_CONTACT, MOVIES_DATA
+from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, MOVIES_DATA
 
 
 def generate_film_constraints():
@@ -338,3 +338,81 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
 
     # Si llegamos aquí, el constraint generado no es válido
     return None
+
+
+def generate_add_comment_constraints():
+    """
+    Genera combinaciones de constraints para añadir comentarios.
+    """
+    from random import choice, sample
+
+    # Películas disponibles
+    movies = [movie["name"] for movie in MOVIES_DATA]
+
+    # Palabras y frases para generar comentarios
+    comment_keywords = [
+        "amazing",
+        "stunning",
+        "great",
+        "awesome",
+        "fantastic",
+        "brilliant",
+        "incredible",
+        "genius",
+        "classic",
+        "masterpiece",
+        "mind-blowing cinematography",
+        "perfect storytelling",
+        "incredible character development",
+        "visually spectacular",
+        "deeply emotional journey",
+        "groundbreaking narrative",
+        "exceptional performances",
+        "thought-provoking plot",
+        "revolutionary filmmaking",
+        "beautifully crafted",
+        "complex narrative",
+        "intricate storyline",
+        "subtle character arcs",
+        "nuanced performances",
+        "stunning visual effects",
+        "immersive soundtrack",
+        "innovative cinematography",
+        "masterful editing",
+        "atmospheric sound design",
+        "kept me on the edge of my seat",
+        "couldn't look away",
+        "completely absorbed",
+        "emotionally powerful",
+        "intellectually stimulating",
+        "redefines the genre",
+        "unlike anything I've seen before",
+        "sets a new standard",
+        "a true cinematic experience",
+    ]
+
+    # Nombres para commenter_name
+    commenter_names = ["John", "Sarah", "Michael", "Emma", "David", "Lisa", "Alex", "Rachel", "Tom", "Emily"]
+
+    # Definición de operadores para cada campo
+
+    # Generar constraints
+    constraints = []
+
+    # Elegir campos aleatorios (1 o 2)
+    selected_fields = sample(["movie_name", "commenter_name", "content"], k=choice([1, 2, 3]))
+    for field in selected_fields:
+        # Elegir un operador aleatorio para el campo
+        operator = choice(FIELD_OPERATORS_MAP_ADD_COMMENT[field])
+
+        # Seleccionar valor basado en el campo
+        if field == "movie_name":
+            value = choice(movies)
+        elif field == "commenter_name":
+            value = choice(commenter_names)
+        else:  # content
+            value = choice(comment_keywords)
+
+        constraints.append({"field": field, "operator": ComparisonOperator(operator), "value": value})
+
+    return constraints
