@@ -808,40 +808,25 @@ class FilterFilmEvent(Event):
     """Event triggered when a user filters films by genre and/or year"""
 
     event_name: str = "FILTER_FILM"
-
-    genre_id: int | None = None
     genre_name: str | None = None
     year: int | None = None
-    filters_applied: dict[str, bool] = Field(default_factory=dict)
 
     class ValidationCriteria(BaseModel):
         """Criteria for validating filter film events"""
 
-        genre_id: int | CriterionValue | None = None
         genre_name: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
-        has_genre_filter: bool | None = None
-        has_year_filter: bool | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
         Validate if this filter film event meets the criteria
-
         Args:
             criteria: Optional validation criteria to check against
-
         Returns:
             True if criteria is met or not provided, False otherwise
         """
         if not criteria:
             return True
-
-        # Validate genre_id
-        if criteria.genre_id is not None:
-            if self.genre_id is None:
-                return False
-            if not validate_criterion(self.genre_id, criteria.genre_id):
-                return False
 
         # Validate genre_name
         if criteria.genre_name is not None:
@@ -857,28 +842,14 @@ class FilterFilmEvent(Event):
             if not validate_criterion(self.year, criteria.year):
                 return False
 
-        # Validate has_genre_filter
-        if criteria.has_genre_filter is not None:
-            has_genre = self.filters_applied.get("genre", False)
-            if has_genre != criteria.has_genre_filter:
-                return False
-
-        # Validate has_year_filter
-        if criteria.has_year_filter is not None:
-            has_year = self.filters_applied.get("year", False)
-            if has_year != criteria.has_year_filter:
-                return False
-
         return True
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "FilterFilmEvent":
         """
         Parse a filter film event from backend data
-
         Args:
             backend_event: Event data from the backend API
-
         Returns:
             FilterFilmEvent object populated with data from the backend event
         """
@@ -893,10 +864,8 @@ class FilterFilmEvent(Event):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            genre_id=genre_data.get("id") if genre_data else None,
             genre_name=genre_data.get("name") if genre_data else None,
             year=data.get("year"),
-            filters_applied=data.get("filters_applied", {}),
         )
 
 

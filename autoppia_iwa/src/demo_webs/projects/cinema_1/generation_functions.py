@@ -99,6 +99,50 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
+def generate_film_filter_constraints():
+    """
+    Genera una combinación de constraints para filtrado de películas
+    usando los años y géneros reales de las películas.
+    """
+    from random import choice
+
+    existing_years = list(set(movie["year"] for movie in MOVIES_DATA))
+
+    existing_genres = list(set(genre for movie in MOVIES_DATA for genre in movie["genres"]))
+
+    generation_type = choice(["single_genre", "single_year", "genre_and_year"])
+
+    constraints = []
+
+    if generation_type == "single_genre":
+        if existing_genres:
+            constraints.append({"field": "genres", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(existing_genres)})
+
+    elif generation_type == "single_year":
+        if existing_years:
+            constraints.append(
+                {
+                    "field": "year",
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
+                    "value": choice(existing_years),
+                }
+            )
+
+    elif generation_type == "genre_and_year" and existing_genres and existing_years:
+        constraints.extend(
+            [
+                {"field": "genres", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": choice(existing_genres)},
+                {
+                    "field": "year",
+                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
+                    "value": choice(existing_years),
+                },
+            ]
+        )
+
+    return constraints
+
+
 def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any]:
     """
     Genera un constraint para un campo y operador específicos que la película solución satisface.

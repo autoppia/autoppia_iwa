@@ -18,7 +18,7 @@ from .events import (
     RegistrationEvent,
     SearchFilmEvent,
 )
-from .generation_functions import generate_contact_constraints, generate_film_constraints
+from .generation_functions import generate_contact_constraints, generate_film_constraints, generate_film_filter_constraints
 from .replace_functions import login_replace_func, register_replace_func, replace_film_placeholders
 
 ###############################################################################
@@ -948,63 +948,59 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
 ###############################################################################
 FILTER_FILM_USE_CASE = UseCase(
     name="FILTER_FILM",
-    description="The user applies filters to search for films by genre and/or year.",
+    description="The user applies filters to search for films by genre and/or year. Includes Filter in the prompt",
     event=FilterFilmEvent,
     event_source_code=FilterFilmEvent.get_source_code_of_class(),
+    constraints_generator=generate_film_filter_constraints,
     examples=[
         {
-            "prompt": "Filter movies released in the year 2014",
-            "prompt_for_task_generation": "Filter movies released in the year 2014",
+            "prompt": "Filter movies released in the year 1994",
+            "prompt_for_task_generation": "Filter movies released in the year 1994",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
-                "event_criteria": {"year": {"value": 2014}, "has_year_filter": {"value": True}},
-                "reasoning": "Ensures that filtering movies by the year 2014 correctly triggers the event.",
+                "event_criteria": {"year": 1994},
+                "reasoning": "Ensures that filtering movies by the year 1994 correctly triggers the event.",
             },
         },
         {
-            "prompt": "Find action movies",
-            "prompt_for_task_generation": "Find action movies",
+            "prompt": "Filter for Action movies",
+            "prompt_for_task_generation": "Filter for Action movies",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
-                "event_criteria": {"genre_name": {"value": "Action"}, "has_genre_filter": {"value": True}},
-                "reasoning": "Ensures that filtering movies by the 'Action' genre correctly triggers the event.",
+                "event_criteria": {"genre_name": "Action"},
+                "reasoning": "Ensures that searching for 'Action' genre movies correctly triggers the event.",
             },
         },
         {
-            "prompt": "Search for films from the year 2015 in the genre 'Comedy'",
-            "prompt_for_task_generation": "Search for films from the year 2015 in the genre 'Comedy'",
+            "prompt": "Browse films from 2010 in the Drama genre",
+            "prompt_for_task_generation": "Browse films from 2010 in the Drama genre",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
-                "event_criteria": {
-                    "year": {"value": 2015},
-                    "genre_name": {"value": "Comedy"},
-                    "has_year_filter": {"value": True},
-                    "has_genre_filter": {"value": True},
-                },
+                "event_criteria": {"year": 2010, "genre_name": "Drama"},
                 "reasoning": "Validates that filtering by both year and genre applies correctly.",
             },
         },
         {
-            "prompt": "Show movies from 1999",
-            "prompt_for_task_generation": "Show movies from 1999",
+            "prompt": "Filter Screen movies from 1999",
+            "prompt_for_task_generation": "Filter Screen movies from 1999",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
-                "event_criteria": {"year": {"value": 1999}, "has_year_filter": {"value": True}},
-                "reasoning": "Ensures filtering by the year 1999 works independently.",
+                "event_criteria": {"year": 1999},
+                "reasoning": "Ensures screening movies by the year 1999 works independently.",
             },
         },
         {
-            "prompt": "Show only Horror movies",
-            "prompt_for_task_generation": "Show only Horror movies",
+            "prompt": "Filter movie list to Sci-Fi genre",
+            "prompt_for_task_generation": "Filter movie list to Sci-Fi genre",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_FILM",
-                "event_criteria": {"genre_name": {"value": "Horror"}, "has_genre_filter": {"value": True}},
-                "reasoning": "Ensures filtering by the genre 'Horror' works independently.",
+                "event_criteria": {"genre_name": "Sci-Fi"},
+                "reasoning": "Ensures refining movies by the 'Sci-Fi' genre works independently.",
             },
         },
     ],
@@ -1139,18 +1135,18 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    REGISTRATION_USE_CASE,
-    LOGIN_USE_CASE,
-    SEARCH_FILM_USE_CASE,
-    ADD_COMMENT_USE_CASE,
-    CONTACT_USE_CASE,
-    FILM_DETAIL_USE_CASE,
-    ADD_FILM_USE_CASE,
-    EDIT_FILM_USE_CASE,
-    DELETE_FILM_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # LOGIN_USE_CASE,
+    # SEARCH_FILM_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
+    # CONTACT_USE_CASE,
+    # FILM_DETAIL_USE_CASE,
+    # ADD_FILM_USE_CASE,
+    # EDIT_FILM_USE_CASE,
+    # DELETE_FILM_USE_CASE,
     FILTER_FILM_USE_CASE,
-    LOGOUT_USE_CASE,
-    DELETE_FILM_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # DELETE_FILM_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
     # FILTER_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
