@@ -241,10 +241,10 @@ class SendKeysIWAAction(BaseAction):
         await page.keyboard.press(self.keys)
 
 
-class GetDropDownOptions(BaseActionWithSelector):
+class GetDropDownOptionsAction(BaseActionWithSelector):
     type: Literal["GetDropDownOptionsAction"] = "GetDropDownOptionsAction"
 
-    @log_action("GetDropDownOptions")
+    @log_action("GetDropDownOptionsAction")
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         xpath = self.validate_selector()
         all_options = []
@@ -369,7 +369,7 @@ AllActionsUnion = Annotated[
     | DragAndDropAction
     | ScreenshotAction
     | SendKeysIWAAction
-    | GetDropDownOptions
+    | GetDropDownOptionsAction
     | SelectDropDownOptionAction
     | UndefinedAction
     | IdleAction,
@@ -397,7 +397,7 @@ ACTION_CLASS_MAP_LOWER = {
     "idle": IdleAction,
     "undefined": UndefinedAction,
     "sendkeysiwa": SendKeysIWAAction,
-    "getdropdownoptions": GetDropDownOptions,
+    "getdropdownoptionsaction": GetDropDownOptionsAction,
     "SelectDropDownOptionAction": SelectDropDownOptionAction,
 }
 
@@ -417,7 +417,7 @@ ACTION_CLASS_MAP_CAPS = {
     "IdleAction": IdleAction,
     "UndefinedAction": UndefinedAction,
     "SendKeysIWAAction": SendKeysIWAAction,
-    "GetDropDownOptions": GetDropDownOptions,
+    "GetDropDownOptionsAction": GetDropDownOptionsAction,
     "SelectDropDownOptionAction": SelectDropDownOptionAction,
 }
 
