@@ -42,6 +42,7 @@ async def evaluate_in_browser(web_agent_id: str, actions: list[BaseAction], is_w
 
         try:
             for i, action in enumerate(actions):
+                await asyncio.sleep(1.0)
                 start_time = time.time()
                 try:
                     result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real)
