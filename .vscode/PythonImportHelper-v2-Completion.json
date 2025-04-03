@@ -5304,6 +5304,22 @@
         "documentation": {}
     },
     {
+        "label": "migrations",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "models",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
         "label": "models",
         "importPath": "django.db",
         "description": "django.db",
@@ -9248,7 +9264,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "config = BenchmarkConfig()\nsolution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: list[IWebAgent] = [\n    # RandomClickerWebAgent(id=\"2\", name=\"Random-clicker\"),\n    ApifiedWebAgent(id=\"1\", name=\"Agent1\", host=\"127.0.0.1\", port=7000, timeout=120),\n    # ApifiedWebAgent(id=\"1\", name=\"Agent1\", host=\"127.0.0.1\", port=11112, timeout=120),\n    # ApifiedWebAgent(id=\"2\", name=\"Agent2\", host=\"127.0.0.1\",\n    #                 port=5000, timeout=120),\n    # ApifiedWebAgent(id=\"3\", name=\"Agent3\", host=\"127.0.0.1\",",
+        "peekOfCode": "config = BenchmarkConfig()\nsolution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: list[IWebAgent] = [\n    # RandomClickerWebAgent(id=\"2\", name=\"Random-clicker\"),\n    ApifiedWebAgent(id=\"1\", name=\"Agent1\", host=\"127.0.0.1\", port=7000, timeout=120),\n    # ApifiedWebAgent(id=\"1\", name=\"Agent1\", host=\"127.0.0.1\", port=11112, timeout=120),\n    # ApifiedWebAgent(id=\"2\", name=\"Agent2\", host=\"127.0.0.1\", port=8005, timeout=120),\n    # ApifiedWebAgent(id=\"3\", name=\"Agent3\", host=\"127.0.0.1\",\n    #                 port=5000, timeout=120),",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -9257,7 +9273,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark",
         "description": "autoppia_iwa.entrypoints.benchmark",
-        "peekOfCode": "solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: list[IWebAgent] = [\n    # RandomClickerWebAgent(id=\"2\", name=\"Random-clicker\"),\n    ApifiedWebAgent(id=\"1\", name=\"Agent1\", host=\"127.0.0.1\", port=7000, timeout=120),\n    # ApifiedWebAgent(id=\"1\", name=\"Agent1\", host=\"127.0.0.1\", port=11112, timeout=120),\n    # ApifiedWebAgent(id=\"2\", name=\"Agent2\", host=\"127.0.0.1\",\n    #                 port=5000, timeout=120),\n    # ApifiedWebAgent(id=\"3\", name=\"Agent3\", host=\"127.0.0.1\",\n    #                 port=5000, timeout=120),",
+        "peekOfCode": "solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))\n# Define agents\nAGENTS: list[IWebAgent] = [\n    # RandomClickerWebAgent(id=\"2\", name=\"Random-clicker\"),\n    ApifiedWebAgent(id=\"1\", name=\"Agent1\", host=\"127.0.0.1\", port=7000, timeout=120),\n    # ApifiedWebAgent(id=\"1\", name=\"Agent1\", host=\"127.0.0.1\", port=11112, timeout=120),\n    # ApifiedWebAgent(id=\"2\", name=\"Agent2\", host=\"127.0.0.1\", port=8005, timeout=120),\n    # ApifiedWebAgent(id=\"3\", name=\"Agent3\", host=\"127.0.0.1\",\n    #                 port=5000, timeout=120),\n]",
         "detail": "autoppia_iwa.entrypoints.benchmark",
         "documentation": {}
     },
@@ -10094,7 +10110,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
-        "peekOfCode": "FIELD_OPERATORS_MAP_CONTACT = {\n    \"name\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"email\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"subject\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"message\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n}",
+        "peekOfCode": "FIELD_OPERATORS_MAP_CONTACT = {\n    \"name\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"email\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"subject\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"message\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n}\nFIELD_OPERATORS_MAP_ADD_COMMENT = {\n    \"movie_name\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"commenter_name\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"content\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
+        "documentation": {}
+    },
+    {
+        "label": "FIELD_OPERATORS_MAP_ADD_COMMENT",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
+        "peekOfCode": "FIELD_OPERATORS_MAP_ADD_COMMENT = {\n    \"movie_name\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"commenter_name\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n    \"content\": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],\n}",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.data",
         "documentation": {}
     },
@@ -10202,7 +10227,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
-        "peekOfCode": "class FilterFilmEvent(Event):\n    \"\"\"Event triggered when a user filters films by genre and/or year\"\"\"\n    event_name: str = \"FILTER_FILM\"\n    genre_id: int | None = None\n    genre_name: str | None = None\n    year: int | None = None\n    filters_applied: dict[str, bool] = Field(default_factory=dict)\n    class ValidationCriteria(BaseModel):\n        \"\"\"Criteria for validating filter film events\"\"\"\n        genre_id: int | CriterionValue | None = None",
+        "peekOfCode": "class FilterFilmEvent(Event):\n    \"\"\"Event triggered when a user filters films by genre and/or year\"\"\"\n    event_name: str = \"FILTER_FILM\"\n    genre_name: str | None = None\n    year: int | None = None\n    class ValidationCriteria(BaseModel):\n        \"\"\"Criteria for validating filter film events\"\"\"\n        genre_name: str | CriterionValue | None = None\n        year: int | CriterionValue | None = None\n    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.events",
         "documentation": {}
     },
@@ -10279,11 +10304,47 @@
         "documentation": {}
     },
     {
+        "label": "generate_film_filter_constraints",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "peekOfCode": "def generate_film_filter_constraints():\n    \"\"\"\n    Genera una combinación de constraints para filtrado de películas\n    usando los años y géneros reales de las películas.\n    \"\"\"\n    from random import choice\n    existing_years = list(set(movie[\"year\"] for movie in MOVIES_DATA))\n    existing_genres = list(set(genre for movie in MOVIES_DATA for genre in movie[\"genres\"]))\n    generation_type = choice([\"single_genre\", \"single_year\", \"genre_and_year\"])\n    constraints = []",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "documentation": {}
+    },
+    {
         "label": "generate_constraint_from_solution",
         "kind": 2,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
         "peekOfCode": "def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any]:\n    \"\"\"\n    Genera un constraint para un campo y operador específicos que la película solución satisface.\n    Utiliza el conjunto completo de películas para generar constraints más realistas.\n    \"\"\"\n    constraint = {\"field\": field, \"operator\": operator}\n    if field == \"name\" or field == \"director\":\n        if operator == ComparisonOperator.EQUALS:\n            constraint[\"value\"] = movie[field]\n        elif operator == ComparisonOperator.NOT_EQUALS:",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "documentation": {}
+    },
+    {
+        "label": "generate_add_comment_constraints",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "peekOfCode": "def generate_add_comment_constraints():\n    \"\"\"\n    Genera combinaciones de constraints para añadir comentarios.\n    \"\"\"\n    from random import choice, sample\n    # Películas disponibles\n    movies = [movie[\"name\"] for movie in MOVIES_DATA]\n    # Palabras y frases para generar comentarios\n    comment_keywords = [\n        \"amazing\",",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "documentation": {}
+    },
+    {
+        "label": "generate_edit_film_constraints",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "peekOfCode": "def generate_edit_film_constraints():\n    \"\"\"\n    Generates constraints specifically for editing film-related use cases.\n    Returns the constraints as structured data.\n    \"\"\"\n    from random import choice, randint, sample, uniform\n    # Obtener películas disponibles\n    movies = MOVIES_DATA\n    # Campos editables (sin name porque ya tenemos la película)\n    editable_fields = [\"director\", \"year\", \"genres\", \"rating\", \"duration\", \"cast\"]",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "documentation": {}
+    },
+    {
+        "label": "generate_add_film_constraints",
+        "kind": 2,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
+        "peekOfCode": "def generate_add_film_constraints():\n    \"\"\"\n    Generates constraints specifically for editing film-related use cases.\n    Returns the constraints as structured data.\n    \"\"\"\n    from random import choice, randint, sample, uniform\n    # Campos editables\n    editable_fields = [\"director\", \"year\", \"genres\", \"rating\", \"duration\", \"cast\"]\n    random_words = [\n        \"car\",",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.generation_functions",
         "documentation": {}
     },
@@ -10562,7 +10623,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "ADD_FILM_USE_CASE = UseCase(\n    name=\"ADD_FILM\",\n    description=\"The user adds a new film to the system, specifying details such as name, director, year, genres, duration, language, and cast.\",\n    event=AddFilmEvent,\n    event_source_code=AddFilmEvent.get_source_code_of_class(),\n    constraints_generator=generate_film_constraints,  # Reutilizamos el generador de constraints para películas.\n    additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,\n    examples=[\n        {\n            \"prompt\": \"Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'\",",
+        "peekOfCode": "ADD_FILM_USE_CASE = UseCase(\n    name=\"ADD_FILM\",\n    description=\"The user adds a new film to the system, specifying details such as name, director, year, genres, duration, language, and cast.\",\n    event=AddFilmEvent,\n    event_source_code=AddFilmEvent.get_source_code_of_class(),\n    constraints_generator=generate_add_film_constraints,\n    additional_prompt_info=ADD_FILM_ADDITIONAL_PROMPT_INFO,\n    examples=[\n        {\n            \"prompt\": \"Add the movie 'The Grand Budapest Hotel' directed by 'Wes Anderson'\",",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "documentation": {}
+    },
+    {
+        "label": "EDIT_FILM_ADDITIONAL_PROMPT_INFO",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "peekOfCode": "EDIT_FILM_ADDITIONAL_PROMPT_INFO = \"\"\"\nCRITICAL REQUIREMENT: EVERY prompt you generate MUST:\n1. Include ALL constraints mentioned above — not just some of them.\n2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.\n3. Be phrased as a request to edit or modify a film (use phrases like \"Edit...\", \"Modify...\", \"Update...\", \"Change...\", etc.).\nFor example, if the constraints are \"year equals 2014 AND director contains 'e'\":\n- CORRECT: \"Edit a film where the year equals 2014 and the director's name contains the letter 'e'.\"\n- INCORRECT: \"Edit a random film with a high rating\" (you added an extra filter).\nALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.\n\"\"\"",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
@@ -10571,7 +10641,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "EDIT_FILM_USE_CASE = UseCase(\n    name=\"EDIT_FILM\",\n    description=\"The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.\",\n    event=EditFilmEvent,\n    event_source_code=EditFilmEvent.get_source_code_of_class(),\n    replace_func=replace_film_placeholders,\n    examples=[\n        {\n            \"prompt\": \"Update the director of 'The Matrix' to 'Lana Wachowski' and 'Lilly Wachowski'\",\n            \"prompt_for_task_generation\": \"Update the director of <movie> to Lana Wachowski and Lilly Wachowski\",",
+        "peekOfCode": "EDIT_FILM_USE_CASE = UseCase(\n    name=\"EDIT_FILM\",\n    description=\"The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.\",\n    event=EditFilmEvent,\n    event_source_code=EditFilmEvent.get_source_code_of_class(),\n    replace_func=replace_film_placeholders,\n    constraints_generator=generate_edit_film_constraints,\n    additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,\n    examples=[\n        {",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
@@ -10616,7 +10686,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "EDIT_USER_PROFILE_USE_CASE = UseCase(\n    name=\"EDIT_FILM\",\n    description=\"The user updates their profile details such as name, email, bio, location, or favorite genres.\",\n    event=EditUserEvent,\n    event_source_code=EditUserEvent.get_source_code_of_class(),\n    examples=[\n        {\n            \"prompt\": \"Change the username to 'MovieBuff99' and update the email to 'moviebuff99@example.com'\",\n            \"prompt_for_task_generation\": \"Change the username to 'MovieBuff99' and update the email to 'moviebuff99@example.com'\",\n            \"test\": {",
+        "peekOfCode": "EDIT_USER_PROFILE_USE_CASE = UseCase(\n    name=\"EDIT_USER_PROFILE\",\n    description=\"The user updates their profile details such as name, email, bio, location, or favorite genres.\",\n    event=EditUserEvent,\n    event_source_code=EditUserEvent.get_source_code_of_class(),\n    examples=[\n        {\n            \"prompt\": \"Change the username to 'MovieBuff99' and update the email to 'moviebuff99@example.com'\",\n            \"prompt_for_task_generation\": \"Change the username to 'MovieBuff99' and update the email to 'moviebuff99@example.com'\",\n            \"test\": {",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
@@ -10625,7 +10695,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "FILTER_FILM_USE_CASE = UseCase(\n    name=\"FILTER_FILM\",\n    description=\"The user applies filters to search for films by genre and/or year.\",\n    event=FilterFilmEvent,\n    event_source_code=FilterFilmEvent.get_source_code_of_class(),\n    examples=[\n        {\n            \"prompt\": \"Filter movies released in the year 2014\",\n            \"prompt_for_task_generation\": \"Filter movies released in the year 2014\",\n            \"test\": {",
+        "peekOfCode": "FILTER_FILM_USE_CASE = UseCase(\n    name=\"FILTER_FILM\",\n    description=\"The user applies filters to search for films by genre and/or year. Includes Filter in the prompt\",\n    event=FilterFilmEvent,\n    event_source_code=FilterFilmEvent.get_source_code_of_class(),\n    constraints_generator=generate_film_filter_constraints,\n    examples=[\n        {\n            \"prompt\": \"Filter movies released in the year 1994\",\n            \"prompt_for_task_generation\": \"Filter movies released in the year 1994\",",
+        "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "documentation": {}
+    },
+    {
+        "label": "ADD_COMMENT_ADDITIONAL_PROMPT_INFO",
+        "kind": 5,
+        "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
+        "peekOfCode": "ADD_COMMENT_ADDITIONAL_PROMPT_INFO = \"\"\"\nCRITICAL REQUIREMENT: EVERY prompt you generate MUST:\n1. Include ALL constraints mentioned above — not just some of them.\n2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.\n3. Be phrased as a request to add a comment to a movie (use phrases like \"Add a comment...\", \"Write a review...\", \"Post a comment...\", \"Leave feedback...\").\nFor example, if the constraints are \"movie_name contains 'Inception' AND content not_contains 'boring'\":\n- CORRECT: \"Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'.\"\n- INCORRECT: \"Write a comment about any movie\" (missing specific constraints)\n- INCORRECT: \"Post a review that includes extra unnecessary details\" (adding constraints not specified)\nALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
@@ -10634,7 +10713,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "ADD_COMMENT_USE_CASE = UseCase(\n    name=\"ADD_COMMENT\",\n    description=\"The user adds a comment to a movie.\",\n    event=AddCommentEvent,\n    event_source_code=AddCommentEvent.get_source_code_of_class(),\n    replace_func=replace_film_placeholders,\n    examples=[\n        {\n            \"prompt\": \"Search the movie:Inception and add a comment: 'Amazing cinematography! The visuals were stunning.'\",\n            \"prompt_for_task_generation\": \"Search the movie:<movie> and  add a comment: 'Amazing cinematography! The visuals were stunning.' \",",
+        "peekOfCode": "ADD_COMMENT_USE_CASE = UseCase(\n    name=\"ADD_COMMENT\",\n    description=\"The user adds a comment to a movie.\",\n    event=AddCommentEvent,\n    event_source_code=AddCommentEvent.get_source_code_of_class(),\n    constraints_generator=generate_add_comment_constraints,\n    additional_prompt_info=ADD_COMMENT_ADDITIONAL_PROMPT_INFO,\n    examples=[\n        {\n            \"prompt\": \"Navigate to a movie and add a comment about Inception\",",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
@@ -10643,7 +10722,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "description": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
-        "peekOfCode": "ALL_USE_CASES = [\n    REGISTRATION_USE_CASE,\n    LOGIN_USE_CASE,\n    SEARCH_FILM_USE_CASE,\n    ADD_COMMENT_USE_CASE,\n    CONTACT_USE_CASE,\n    FILM_DETAIL_USE_CASE,\n    ADD_FILM_USE_CASE,\n    EDIT_FILM_USE_CASE,\n    DELETE_FILM_USE_CASE,",
+        "peekOfCode": "ALL_USE_CASES = [\n    EDIT_FILM_USE_CASE,\n    # ADD_COMMENT_USE_CASE,\n    #  ===== SOLVED =====\n    # REGISTRATION_USE_CASE,\n    # LOGIN_USE_CASE,\n    # SEARCH_FILM_USE_CASE,\n    # CONTACT_USE_CASE,\n    # FILM_DETAIL_USE_CASE,\n    # DELETE_FILM_USE_CASE,",
         "detail": "autoppia_iwa.src.demo_webs.projects.cinema_1.use_cases",
         "documentation": {}
     },
@@ -12322,6 +12401,15 @@
         "documentation": {}
     },
     {
+        "label": "Migration",
+        "kind": 6,
+        "importPath": "modules.webs_demo.web_1_demo_movies.movieapp.migrations.0002_alter_movie_img",
+        "description": "modules.webs_demo.web_1_demo_movies.movieapp.migrations.0002_alter_movie_img",
+        "peekOfCode": "class Migration(migrations.Migration):\n    dependencies = [\n        (\"movieapp\", \"0001_initial\"),\n    ]\n    operations = [\n        migrations.AlterField(\n            model_name=\"movie\",\n            name=\"img\",\n            field=models.ImageField(blank=True, null=True, upload_to=\"gallery\"),\n        ),",
+        "detail": "modules.webs_demo.web_1_demo_movies.movieapp.migrations.0002_alter_movie_img",
+        "documentation": {}
+    },
+    {
         "label": "split",
         "kind": 2,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieapp.templatetags.custom_filters",
@@ -12380,7 +12468,7 @@
         "kind": 6,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieapp.forms",
         "description": "modules.webs_demo.web_1_demo_movies.movieapp.forms",
-        "peekOfCode": "class MovieForm(forms.ModelForm):\n    class Meta:\n        model = Movie\n        fields = ['name', 'desc', 'year', 'img', 'director', 'cast', 'duration', 'trailer_url', 'rating', 'genres']\n        widgets = {\n            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter the movie name'}),\n            'desc': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Write a synopsis or description of the movie'}),\n            'year': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Release year', 'min': 1900, 'max': 2025}),\n            'director': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Director\\'s name'}),\n            'cast': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Main actors separated by commas'}),",
+        "peekOfCode": "class MovieForm(forms.ModelForm):\n    # Incluimos el campo 'img' como opcional.\n    img = forms.ImageField(required=False)\n    class Meta:\n        model = Movie\n        # Se incluye 'img' en la lista de campos para que se renderice en el formulario,\n        # pero luego lo ignoramos al guardar.\n        fields = ['name', 'desc', 'year', 'img', 'director', 'cast', 'duration', 'trailer_url', 'rating', 'genres']\n        widgets = {\n            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter the movie name'}),",
         "detail": "modules.webs_demo.web_1_demo_movies.movieapp.forms",
         "documentation": {}
     },
@@ -12443,7 +12531,7 @@
         "kind": 6,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieapp.models",
         "description": "modules.webs_demo.web_1_demo_movies.movieapp.models",
-        "peekOfCode": "class Genre(models.Model):\n    name = models.CharField(max_length=100)\n    def __str__(self):\n        return self.name\nclass Movie(models.Model):\n    name = models.CharField(max_length=250)\n    desc = models.TextField()\n    year = models.IntegerField(validators=[MinValueValidator(1900), MaxValueValidator(2100)])\n    img = models.ImageField(upload_to='gallery')\n    director = models.CharField(max_length=250, blank=True, null=True)",
+        "peekOfCode": "class Genre(models.Model):\n    name = models.CharField(max_length=100)\n    def __str__(self):\n        return self.name\nclass Movie(models.Model):\n    name = models.CharField(max_length=250)\n    desc = models.TextField()\n    year = models.IntegerField(validators=[MinValueValidator(1900), MaxValueValidator(2100)])\n    img = models.ImageField(upload_to='gallery', blank=True, null=True)\n    director = models.CharField(max_length=250, blank=True, null=True)",
         "detail": "modules.webs_demo.web_1_demo_movies.movieapp.models",
         "documentation": {}
     },
@@ -12452,7 +12540,7 @@
         "kind": 6,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieapp.models",
         "description": "modules.webs_demo.web_1_demo_movies.movieapp.models",
-        "peekOfCode": "class Movie(models.Model):\n    name = models.CharField(max_length=250)\n    desc = models.TextField()\n    year = models.IntegerField(validators=[MinValueValidator(1900), MaxValueValidator(2100)])\n    img = models.ImageField(upload_to='gallery')\n    director = models.CharField(max_length=250, blank=True, null=True)\n    cast = models.TextField(blank=True, null=True, help_text=\"Names of actors separated by commas\")\n    duration = models.IntegerField(blank=True, null=True, help_text=\"Duration in minutes\")\n    trailer_url = models.URLField(blank=True, null=True)\n    rating = models.FloatField(",
+        "peekOfCode": "class Movie(models.Model):\n    name = models.CharField(max_length=250)\n    desc = models.TextField()\n    year = models.IntegerField(validators=[MinValueValidator(1900), MaxValueValidator(2100)])\n    img = models.ImageField(upload_to='gallery', blank=True, null=True)\n    director = models.CharField(max_length=250, blank=True, null=True)\n    cast = models.TextField(blank=True, null=True, help_text=\"Names of actors separated by commas\")\n    duration = models.IntegerField(blank=True, null=True, help_text=\"Duration in minutes\")\n    trailer_url = models.URLField(blank=True, null=True)\n    rating = models.FloatField(",
         "detail": "modules.webs_demo.web_1_demo_movies.movieapp.models",
         "documentation": {}
     },
@@ -12551,7 +12639,7 @@
         "kind": 2,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieapp.views",
         "description": "modules.webs_demo.web_1_demo_movies.movieapp.views",
-        "peekOfCode": "def add_movie(request):\n    \"\"\"\n    Vista para agregar una nueva película y registrar el evento de ADD_FILM.\n    \"\"\"\n    if request.method == \"POST\":\n        form = MovieForm(request.POST, request.FILES)\n        if form.is_valid():\n            movie = form.save()\n            add_film_event = Event.create_add_film_event(\n                user=request.user if request.user.is_authenticated else None,",
+        "peekOfCode": "def add_movie(request):\n    \"\"\"\n    Vista para registrar un evento de ADD_FILM sin guardar la película.\n    \"\"\"\n    if request.method == \"POST\":\n        form = MovieForm(request.POST, request.FILES)\n        if form.is_valid():\n            # Preparar los valores a añadir\n            new_values = {\n                'name': form.cleaned_data.get('name'),",
         "detail": "modules.webs_demo.web_1_demo_movies.movieapp.views",
         "documentation": {}
     },
@@ -12560,7 +12648,7 @@
         "kind": 2,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieapp.views",
         "description": "modules.webs_demo.web_1_demo_movies.movieapp.views",
-        "peekOfCode": "def update_movie(request, id):\n    \"\"\"\n    Vista para actualizar una película existente.\n    Registra el evento de EDIT_FILM si se detectan cambios.\n    \"\"\"\n    movie = get_object_or_404(Movie, id=id)\n    original_values = {\n        'name': movie.name,\n        'desc': movie.desc,\n        'year': movie.year,",
+        "peekOfCode": "def update_movie(request, id):\n    \"\"\"\n    Vista para actualizar una película existente.\n    Registra el evento de EDIT_FILM si se detectan cambios, pero NO guarda los cambios en la BD.\n    \"\"\"\n    movie = get_object_or_404(Movie, id=id)\n    original_values = {\n        'name': movie.name,\n        'desc': movie.desc,\n        'year': movie.year,",
         "detail": "modules.webs_demo.web_1_demo_movies.movieapp.views",
         "documentation": {}
     },
@@ -12659,7 +12747,7 @@
         "kind": 5,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
         "description": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
-        "peekOfCode": "BASE_DIR = Path(__file__).resolve().parent.parent\n# Quick-start development settings - unsuitable for production\n# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/\n# SECURITY WARNING: keep the secret key used in production secret!\nSECRET_KEY = 'django-insecure-_r^nsyw@&+qjw7)m1*0yzt2_+wg+l5_66_k(2dl(%1)e$2r8r6'\n# SECURITY WARNING: don't run with debug turned on in production!\nDEBUG = True\nALLOWED_HOSTS = ['0.0.0.0','localhost']\n# Application definition\nINSTALLED_APPS = [",
+        "peekOfCode": "BASE_DIR = Path(__file__).resolve().parent.parent\n# Quick-start development settings - unsuitable for production\n# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/\n# SECURITY WARNING: keep the secret key used in production secret!\nSECRET_KEY = 'django-insecure-_r^nsyw@&+qjw7)m1*0yzt2_+wg+l5_66_k(2dl(%1)e$2r8r6'\n# SECURITY WARNING: don't run with debug turned on in production!\nDEBUG = True\nALLOWED_HOSTS = ['0.0.0.0','localhost','127.0.0.1']\n# Application definition\nINSTALLED_APPS = [",
         "detail": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
         "documentation": {}
     },
@@ -12668,7 +12756,7 @@
         "kind": 5,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
         "description": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
-        "peekOfCode": "SECRET_KEY = 'django-insecure-_r^nsyw@&+qjw7)m1*0yzt2_+wg+l5_66_k(2dl(%1)e$2r8r6'\n# SECURITY WARNING: don't run with debug turned on in production!\nDEBUG = True\nALLOWED_HOSTS = ['0.0.0.0','localhost']\n# Application definition\nINSTALLED_APPS = [\n    'movieapp',\n    'management_admin',\n    'events',\n    'django.contrib.admin',",
+        "peekOfCode": "SECRET_KEY = 'django-insecure-_r^nsyw@&+qjw7)m1*0yzt2_+wg+l5_66_k(2dl(%1)e$2r8r6'\n# SECURITY WARNING: don't run with debug turned on in production!\nDEBUG = True\nALLOWED_HOSTS = ['0.0.0.0','localhost','127.0.0.1']\n# Application definition\nINSTALLED_APPS = [\n    'movieapp',\n    'management_admin',\n    'events',\n    'django.contrib.admin',",
         "detail": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
         "documentation": {}
     },
@@ -12677,7 +12765,7 @@
         "kind": 5,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
         "description": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
-        "peekOfCode": "DEBUG = True\nALLOWED_HOSTS = ['0.0.0.0','localhost']\n# Application definition\nINSTALLED_APPS = [\n    'movieapp',\n    'management_admin',\n    'events',\n    'django.contrib.admin',\n    'django.contrib.auth',\n    'django.contrib.contenttypes',",
+        "peekOfCode": "DEBUG = True\nALLOWED_HOSTS = ['0.0.0.0','localhost','127.0.0.1']\n# Application definition\nINSTALLED_APPS = [\n    'movieapp',\n    'management_admin',\n    'events',\n    'django.contrib.admin',\n    'django.contrib.auth',\n    'django.contrib.contenttypes',",
         "detail": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
         "documentation": {}
     },
@@ -12686,7 +12774,7 @@
         "kind": 5,
         "importPath": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
         "description": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
-        "peekOfCode": "ALLOWED_HOSTS = ['0.0.0.0','localhost']\n# Application definition\nINSTALLED_APPS = [\n    'movieapp',\n    'management_admin',\n    'events',\n    'django.contrib.admin',\n    'django.contrib.auth',\n    'django.contrib.contenttypes',\n    'django.contrib.sessions',",
+        "peekOfCode": "ALLOWED_HOSTS = ['0.0.0.0','localhost','127.0.0.1']\n# Application definition\nINSTALLED_APPS = [\n    'movieapp',\n    'management_admin',\n    'events',\n    'django.contrib.admin',\n    'django.contrib.auth',\n    'django.contrib.contenttypes',\n    'django.contrib.sessions',",
         "detail": "modules.webs_demo.web_1_demo_movies.movieproject.settings",
         "documentation": {}
     },
