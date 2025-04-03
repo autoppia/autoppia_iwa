@@ -1,6 +1,5 @@
 import asyncio
 import time
-import traceback
 
 from loguru import logger
 from playwright.async_api import async_playwright
@@ -30,48 +29,40 @@ actions = [
 ]
 
 
-async def evaluate_in_browser(web_agent_id: str, actions: list[BaseAction], is_web_real: bool, backend_demo_webs_service) -> tuple[list[ActionExecutionResult], list[float]]:
-    """
-    Executes all actions in a Playwright browser context and returns the results + times.
-    """
-    action_execution_times: list[float] = []
-    action_results: list[ActionExecutionResult] = []
+async def evaluate_in_browser(web_agent_id: str, actions: list[BaseAction], is_web_real: bool, backend_demo_webs_service: BackendDemoWebService) -> tuple[list[ActionExecutionResult], list[float]]:
+    action_results = []
+    action_execution_times = []
 
     async with async_playwright() as playwright:
-        browser, context = None, None
-        try:
-            browser = await playwright.chromium.launch(headless=False)
-            context = await browser.new_context(extra_http_headers={"X-WebAgent-Id": web_agent_id})
-            context.set_default_timeout(30000)
-            page = await context.new_page()
+        browser = await playwright.chromium.launch(headless=False)
+        context = await browser.new_context(extra_http_headers={"X-WebAgent-Id": web_agent_id})
+        page = await context.new_page()
 
-            browser_executor = PlaywrightBrowserExecutor(BrowserSpecification(), page, backend_demo_webs_service)
+        browser_executor = PlaywrightBrowserExecutor(BrowserSpecification(), page, backend_demo_webs_service)
+
+        try:
             for i, action in enumerate(actions):
-                start_time_action = time.time()
+                start_time = time.time()
                 try:
                     result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real)
                     action_results.append(result)
-                    elapsed = time.time() - start_time_action
-                    action_execution_times.append(elapsed)
-
+                    logger.info(f"✅ Action {i + 1}/{len(actions)} executed successfully.")
                 except Exception as e:
-                    logger.error(f"Action {i + 1}/{len(actions)} failed: {e}")
-                    logger.info(traceback.format_exc())
-                    elapsed = time.time() - start_time_action
-                    action_execution_times.append(elapsed)
-
-                    break
-
-            return action_results, action_execution_times
+                    logger.error(f"❌ Action {i + 1}/{len(actions)} failed: {e}")
+                finally:
+                    elapsed_time = time.time() - start_time
+                    action_execution_times.append(elapsed_time)
 
         except Exception as e:
-            logger.error(f"Browser evaluation error: {e}")
-            return [], []
+            logger.error(f"🚨 Browser evaluation error: {e}")
+
         finally:
             if context:
                 await context.close()
             if browser:
                 await browser.close()
+
+        return action_results, action_execution_times
 
 
 async def init_backend() -> BackendDemoWebService:
