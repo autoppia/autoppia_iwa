@@ -317,12 +317,36 @@ FILM_DETAIL_USE_CASE = UseCase(
 ###############################################################################
 # SEARCH_FILM_USE_CASE
 ###############################################################################
+SEARCH_FILM_INFO = """
+        CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+        1. Make it EXPLICIT that this is a SEARCH for a movie using clear terms such as:
+           - "Search for..."
+           - "Look for the film..."
+           - "Find a movie..."
+           - "Look up a movie..."
+        2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
+        3. Include ONLY the movie title as part of the search
+        4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
+
+        For example:
+        - CORRECT: "Search for the movie Inception in the database"
+        - CORRECT: "Look for the film Titanic"
+        - CORRECT: "Find movies called The Matrix"
+        - INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
+        - INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
+        - INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
+        - INCORRECT: "Find a movie called Inception released after 2010" (includes constraints)
+
+        ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
+        """
+
 SEARCH_FILM_USE_CASE = UseCase(
     name="SEARCH_FILM",
     description="The user searches for a film using a query.",
     event=SearchFilmEvent,
     event_source_code=SearchFilmEvent.get_source_code_of_class(),
     replace_func=replace_film_placeholders,
+    additional_prompt_info=SEARCH_FILM_INFO,
     examples=[
         {
             "prompt": "Look for the film 'The Shawshank Redemption'",
@@ -350,7 +374,7 @@ SEARCH_FILM_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_FILM",
-                "event_criteria": {"query": {"value": "Interestellar", "operator": "equals"}},
+                "event_criteria": {"query": {"value": "ar", "operator": "equals"}},
                 "reasoning": "This test applies when searching for the film <movie>.",
             },
         },
@@ -1051,13 +1075,8 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    CONTACT_USE_CASE,
     # EDIT_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
-    #  ===== SOLVED =====
-    #     REGISTRATION_USE_CASE,
-    #     LOGIN_USE_CASE,
-    #     SEARCH_FILM_USE_CASE,
     #     # FILM_DETAIL_USE_CASE,
     #     # DELETE_FILM_USE_CASE,
     #     # FILTER_FILM_USE_CASE,
@@ -1071,6 +1090,11 @@ ALL_USE_CASES = [
     #     EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
     #     # FILTER_FILM_USE_CASE,
     #     # LOGOUT_USE_CASE,
+    # SOLVED RIVER
+    # CONTACT_USE_CASE,
+    # LOGIN_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # SEARCH_FILM_USE_CASE,
 ]
 
 
