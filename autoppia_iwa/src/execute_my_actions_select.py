@@ -1,5 +1,6 @@
 import asyncio
 import time
+import traceback
 
 from loguru import logger
 from playwright.async_api import async_playwright
@@ -55,6 +56,7 @@ async def evaluate_in_browser(web_agent_id: str, actions: list[BaseAction], is_w
 
                 except Exception as e:
                     logger.error(f"Action {i + 1}/{len(actions)} failed: {e}")
+                    logger.info(traceback.format_exc())
                     elapsed = time.time() - start_time_action
                     action_execution_times.append(elapsed)
 
@@ -72,16 +74,22 @@ async def evaluate_in_browser(web_agent_id: str, actions: list[BaseAction], is_w
                 await browser.close()
 
 
-async def init_backend():
+async def init_backend() -> BackendDemoWebService:
+    """
+    Initializes the backend service for demo web projects.
+    """
     web_projects = await initialize_demo_webs_projects(demo_web_projects)
     return BackendDemoWebService(web_projects[0])
 
 
-async def execute_complete():
+async def execute_complete() -> tuple[list[ActionExecutionResult], list[float]]:
+    """
+    Initializes the backend and executes the complete evaluation in the browser.
+    """
     backend_service = await init_backend()
     return await evaluate_in_browser("123", actions, False, backend_service)
 
 
 if __name__ == "__main__":
     app = AppBootstrap()
-    acitons_result = execution_time = asyncio.run(execute_complete())
+    actions_result, execution_time = asyncio.run(execute_complete())
