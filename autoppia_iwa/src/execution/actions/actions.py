@@ -309,41 +309,25 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
 
         for i, frame in enumerate(page.frames):
             try:
-                dropdown_info = await frame.evaluate(
-                    """
-                    (xpath) => {
-                        try {
-                            const select = document.evaluate(xpath, document, null,
-                                XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                            if (!select) return null;
-                            if (select.tagName.toLowerCase() !== 'select') {
-                                return {
-                                    error: `Found element but it's a ${select.tagName}, not a SELECT`,
-                                    found: false
-                                };
-                            }
-                            return {
-                                id: select.id,
-                                name: select.name,
-                                found: true,
-                                tagName: select.tagName,
-                                optionCount: select.options.length,
-                                currentValue: select.value,
-                                availableOptions: Array.from(select.options).map(o => o.text.trim())
-                            };
-                        } catch (e) {
-                            return { error: e.toString(), found: false };
-                        }
-                    }
-                    """,
-                    xpath,
-                )
+                # First check if the element exists
+                select_element = await frame.wait_for_selector(xpath, state="attached", timeout=1000)
 
-                if dropdown_info.get("found"):
-                    selected = await frame.locator(xpath).nth(0).select_option(label=self.text, timeout=1000)
-                    action_logger.info(f"Selected '{self.text}' => {selected} in frame {i}")
+                # Verify it's a select element
+                tag_name = await select_element.evaluate("el => el.tagName.toLowerCase()")
+                if tag_name != "select":
+                    action_logger.debug(f"Found element but it's a {tag_name}, not a SELECT in frame {i}")
+                    continue
+
+                # Select the option
+                try:
+                    await select_element.select_option(label=self.text, timeout=1000)
+                    action_logger.info(f"Selected '{self.text}' in frame {i}")
                     found = True
                     break
+                except Exception as e:
+                    action_logger.debug(f"Failed to select option in frame {i}: {e}")
+                    continue
+
             except Exception as e:
                 action_logger.debug(f"Frame {i} attempt failed: {e}")
 
