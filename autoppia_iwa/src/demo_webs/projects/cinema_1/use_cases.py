@@ -23,6 +23,7 @@ from .generation_functions import (
     generate_add_film_constraints,
     generate_contact_constraints,
     generate_edit_film_constraints,
+    generate_edit_profile_constraints,
     generate_film_constraints,
     generate_film_filter_constraints,
 )
@@ -691,6 +692,7 @@ DELETE_FILM_USE_CASE = UseCase(
 ###############################################################################
 # CONTACT_USE_CASE
 ###############################################################################
+
 CONTACT_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
@@ -712,111 +714,71 @@ CONTACT_USE_CASE = UseCase(
     constraints_generator=generate_contact_constraints,
     additional_prompt_info=CONTACT_ADDITIONAL_PROMPT_INFO,
     examples=[
-        # Comentados: también les agregamos la clave si tienen 'prompt'
-        # {
-        #     "prompt": "Send a contact form with the subject 'Test Subject'",
-        #     "prompt_for_task_generation": "Send a contact form with the subject 'Test Subject'",
-        #     "test": {
-        #         "type": "CheckEventTest",
-        #         "event_name": "CONTACT",
-        #         "event_criteria": {
-        #             "subject": {
-        #                 "value": "Test Subject"
-        #             }
-        #         },
-        #         "reasoning": "Verify that the contact form was submitted with the specified subject.",
-        #     },
-        # },
-        # {
-        #     "prompt": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
-        #     "prompt_for_task_generation": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
-        #     "test": {
-        #         "type": "CheckEventTest",
-        #         "event_name": "CONTACT",
-        #         "event_criteria": {
-        #             "message": {
-        #                 "value": "Hello, I would like information about your services",
-        #                 "operator": "contains"
-        #             }
-        #         },
-        #         "reasoning": "Verify that the contact form was submitted with the specific message content.",
-        #     },
-        # },
-        # {
-        #     "prompt": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
-        #     "prompt_for_task_generation": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
-        #     "test": {
-        #         "type": "CheckEventTest",
-        #         "event_name": "CONTACT",
-        #         "event_criteria": {
-        #             "email": {
-        #                 "value": "test@example.com"
-        #             },
-        #             "name": {
-        #                 "value": "jhon",
-        #                 "operator": "not_equals"
-        #             }
-        #         },
-        #         "reasoning": "Verify that the contact form was submitted from the specified email address.",
-        #     },
-        # },
-        # {
-        #     "prompt": "Complete the contact form using the email address different to 'test@example.com'",
-        #     "prompt_for_task_generation": "Complete the contact form using the email address different to 'test@example.com'",
-        #     "test": {
-        #         "type": "CheckEventTest",
-        #         "event_name": "CONTACT",
-        #         "event_criteria": {
-        #             "email": {
-        #                 "value": "test@example.com",
-        #                 "operator": "not_equals"
-        #             }
-        #         },
-        #         "reasoning": "Verify that the contact form was submitted from the specified email address.",
-        #     },
-        # },
-        # {
-        #     "prompt": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
-        #     "prompt_for_task_generation": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
-        #     "test": {
-        #         "type": "CheckEventTest",
-        #         "event_name": "CONTACT",
-        #         "event_criteria": {
-        #             "subject": {
-        #                 "value": "Partnership Inquiry"
-        #             },
-        #             "message": {
-        #                 "value": "potential collaboration",
-        #                 "operator": "contains"
-        #             }
-        #         },
-        #         "reasoning": "Verify that the contact form was submitted with both the specified subject and message content.",
-        #     },
-        # },
-        # {
-        #     "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
-        #     "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
-        #     "test": {
-        #         "type": "CheckEventTest",
-        #         "event_name": "CONTACT",
-        #         "event_criteria": {
-        #             "name": {
-        #                 "value": "John Smith"
-        #             },
-        #             "email": {
-        #                 "value": "john@example.com"
-        #             },
-        #             "subject": {
-        #                 "value": "Feedback"
-        #             },
-        #             "message": {
-        #                 "value": "Great website, I love the design",
-        #                 "operator": "contains"
-        #             }
-        #         },
-        #         "reasoning": "Verify that the contact form was submitted with all fields matching the specified values.",
-        #     },
-        # },
+        {
+            "prompt": "Send a contact form with the subject 'Test Subject'",
+            "prompt_for_task_generation": "Send a contact form with the subject 'Test Subject'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "CONTACT",
+                "event_criteria": {"subject": {"value": "Test Subject"}},
+                "reasoning": "Verify that the contact form was submitted with the specified subject.",
+            },
+        },
+        {
+            "prompt": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
+            "prompt_for_task_generation": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "CONTACT",
+                "event_criteria": {"message": {"value": "Hello, I would like information about your services", "operator": "contains"}},
+                "reasoning": "Verify that the contact form was submitted with the specific message content.",
+            },
+        },
+        {
+            "prompt": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
+            "prompt_for_task_generation": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "CONTACT",
+                "event_criteria": {"email": {"value": "test@example.com"}, "name": {"value": "jhon", "operator": "not_equals"}},
+                "reasoning": "Verify that the contact form was submitted from the specified email address.",
+            },
+        },
+        {
+            "prompt": "Complete the contact form using the email address different to 'test@example.com'",
+            "prompt_for_task_generation": "Complete the contact form using the email address different to 'test@example.com'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "CONTACT",
+                "event_criteria": {"email": {"value": "test@example.com", "operator": "not_equals"}},
+                "reasoning": "Verify that the contact form was submitted from the specified email address.",
+            },
+        },
+        {
+            "prompt": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
+            "prompt_for_task_generation": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "CONTACT",
+                "event_criteria": {"subject": {"value": "Partnership Inquiry"}, "message": {"value": "potential collaboration", "operator": "contains"}},
+                "reasoning": "Verify that the contact form was submitted with both the specified subject and message content.",
+            },
+        },
+        {
+            "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
+            "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "CONTACT",
+                "event_criteria": {
+                    "name": {"value": "John Smith"},
+                    "email": {"value": "john@example.com"},
+                    "subject": {"value": "Feedback"},
+                    "message": {"value": "Great website, I love the design", "operator": "contains"},
+                },
+                "reasoning": "Verify that the contact form was submitted with all fields matching the specified values.",
+            },
+        },
         {
             "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
             "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
@@ -834,121 +796,108 @@ CONTACT_USE_CASE = UseCase(
         },
     ],
 )
-
 ###############################################################################
 # EDIT_USER_PROFILE_USE_CASE
 ###############################################################################
+EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+3. Begin with "Login for the following username:<username> and password:<password>".
+4. Be phrased as a request to edit or modify a user profile (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
+
+For example, if the constraints are "username equals 'filmfan' AND password equals 'pass123' AND bio contains 'cinema'":
+- CORRECT: "Login for the following username:filmfan and password:pass123. Edit your profile to update your bio to include the word 'cinema'."
+- INCORRECT: "Edit a profile to change the website" (missing login information and specific constraints).
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
 EDIT_USER_PROFILE_USE_CASE = UseCase(
-    name="EDIT_USER_PROFILE",
-    description="The user updates their profile details such as name, email, bio, location, or favorite genres.",
+    name="EDIT_PROFILE",
+    description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
+    replace_func=login_replace_func,
+    constraints_generator=generate_edit_profile_constraints,
+    additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Change the username to 'MovieBuff99' and update the email to 'moviebuff99@example.com'",
-            "prompt_for_task_generation": "Change the username to 'MovieBuff99' and update the email to 'moviebuff99@example.com'",
+            "prompt": "Login for the following username:user1 and password:pass123. Update your first name to John.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your first name to <first_name>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_USER",
+                "event_name": "EDIT_PROFILE",
                 "event_criteria": {
-                    "username": {"value": "MovieBuff99"},
-                    "email": {"value": "moviebuff99@example.com"},
-                    "changed_field": {"value": ["username", "email"]},
+                    "username": {"value": "user1", "operator": "equals"},
+                    "first_name": {"value": "John", "operator": "equals"},
                 },
-                "reasoning": "Ensures that the username and email fields were correctly updated in the user profile.",
+                "reasoning": "Ensures the new first name is recorded.",
             },
         },
         {
-            "prompt": "Update the bio to 'Passionate about indie films and classic cinema.'",
-            "prompt_for_task_generation": "Update the bio to 'Passionate about indie films and classic cinema.'",
+            "prompt": "Login for the following username:filmfan and password:pass456. Modify your bio to include your passion for cinema.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your bio to include <bio_content>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_USER",
+                "event_name": "EDIT_PROFILE",
                 "event_criteria": {
-                    "bio_contains": {"value": "Passionate about indie films and classic cinema."},
-                    "changed_field": {"value": "bio"},
+                    "username": {"value": "filmfan", "operator": "equals"},
+                    "bio": {"value": "cinema", "operator": "contains"},
                 },
-                "reasoning": "Ensures that the updated bio contains the expected text.",
+                "reasoning": "Ensures the new bio content is recorded.",
             },
         },
         {
-            "prompt": "Add a new favorite genre 'Science Fiction'",
-            "prompt_for_task_generation": "Add a new favorite genre 'Science Fiction'",
+            "prompt": "Login for the following username:movielover and password:pass789. Change your location to New York, USA.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your location to <location>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_USER",
+                "event_name": "EDIT_PROFILE",
                 "event_criteria": {
-                    "has_favorite_genre": {"value": "Science Fiction"},
-                    "changed_field": {"value": "favorite_genres"},
+                    "username": {"value": "movielover", "operator": "equals"},
+                    "location": {"value": "New York, USA", "operator": "equals"},
                 },
-                "reasoning": "Ensures that the updated profile includes the specified favorite genre.",
+                "reasoning": "Ensures the location is updated.",
             },
         },
         {
-            "prompt": "Set the location to 'Los Angeles, CA' and add a profile picture",
-            "prompt_for_task_generation": "Set the location to 'Los Angeles, CA' and add a profile picture",
+            "prompt": "Login for the following username:cinephile and password:pass321. Edit your website to https://myfilmblog.example.com.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Edit your website to <website>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_USER",
+                "event_name": "EDIT_PROFILE",
                 "event_criteria": {
-                    "location": {"value": "Los Angeles, CA"},
-                    "has_profile_pic": {"value": True},
-                    "changed_field": {"value": ["location", "has_profile_pic"]},
+                    "username": {"value": "cinephile", "operator": "equals"},
+                    "website": {"value": "https://myfilmblog.example.com", "operator": "equals"},
                 },
-                "reasoning": "Ensures that the user's location was updated and they have a profile picture.",
+                "reasoning": "Ensures the website is updated.",
             },
         },
         {
-            "prompt": "Update the website link to 'https://cinemareviews.com'",
-            "prompt_for_task_generation": "Update the website link to 'https://cinemareviews.com'",
+            "prompt": "Login for the following username:director101 and password:pass654. Update your favorite genre to Sci-Fi.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your favorite genre to <genre>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_USER",
+                "event_name": "EDIT_PROFILE",
                 "event_criteria": {
-                    "has_website": {"value": True},
-                    "changed_field": {"value": "website"},
+                    "username": {"value": "director101", "operator": "equals"},
+                    "favorite_genres": {"value": "Sci-Fi", "operator": "equals"},
                 },
-                "reasoning": "Checks if the website field was updated and a valid link was added.",
+                "reasoning": "Ensures the favorite genre is updated.",
             },
         },
         {
-            "prompt": "Modify the first name to 'John' and last name to 'Doe'",
-            "prompt_for_task_generation": "Modify the first name to 'John' and last name to 'Doe'",
+            "prompt": "Login for the following username:producer and password:pass987. Change your last name to Smith.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your last name to <last_name>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_USER",
+                "event_name": "EDIT_PROFILE",
                 "event_criteria": {
-                    "name_contains": {"value": "John"},
-                    "changed_field": {"value": ["first_name", "last_name"]},
+                    "username": {"value": "producer", "operator": "equals"},
+                    "last_name": {"value": "Smith", "operator": "equals"},
                 },
-                "reasoning": "Ensures that the first and last names were successfully changed.",
-            },
-        },
-        {
-            "prompt": "Change email to 'johndoe@newdomain.com' and remove the profile picture",
-            "prompt_for_task_generation": "Change email to 'johndoe@newdomain.com' and remove the profile picture",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_USER",
-                "event_criteria": {
-                    "email": {"value": "johndoe@newdomain.com"},
-                    "has_profile_pic": {"value": False},
-                    "changed_field": {"value": ["email", "has_profile_pic"]},
-                },
-                "reasoning": "Verifies that the email is updated and the profile picture is removed.",
-            },
-        },
-        {
-            "prompt": "Remove 'Horror' from the favorite genres",
-            "prompt_for_task_generation": "Remove 'Horror' from the favorite genres",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_USER",
-                "event_criteria": {
-                    "has_favorite_genre": {"value": "Horror"},
-                    "changed_field": {"value": "favorite_genres"},
-                },
-                "reasoning": "Ensures that the removed genre no longer exists in the favorite genres list.",
+                "reasoning": "Ensures the last name is updated.",
             },
         },
     ],
@@ -1097,12 +1046,6 @@ ADD_COMMENT_USE_CASE = UseCase(
         },
     ],
 )
-###############################################################################
-# EJEMPLO DE CASO COMPUESTO (OPCIONAL)
-# COMPOSITE_USE_CASE = UseCase(
-#     name="Filter and View Movie",
-#     ...
-# )
 
 ###############################################################################
 # FINAL LIST: ALL_USE_CASES
@@ -1115,12 +1058,12 @@ ALL_USE_CASES = [
     # CONTACT_USE_CASE,
     # FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE,
-    EDIT_FILM_USE_CASE,
+    # EDIT_FILM_USE_CASE,
     # DELETE_FILM_USE_CASE,
     # FILTER_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
     # DELETE_FILM_USE_CASE,
-    # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
+    EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
     # FILTER_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
 ]

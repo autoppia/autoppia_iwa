@@ -109,16 +109,14 @@ class EditUserEvent(Event):
     """Event triggered when a user edits their profile"""
 
     event_name: str = "EDIT_USER"
-
-    user_id: int | None = None
     username: str
     first_name: str | None = None
     last_name: str | None = None
     email: str
-    profile_id: int | None = None
     bio: str | None = None
     location: str | None = None
     website: str | None = None
+    profile_id: int | None = None
     has_profile_pic: bool = False
     favorite_genres: list[str] = Field(default_factory=list)
     previous_values: dict[str, Any] = Field(default_factory=dict)
@@ -127,14 +125,12 @@ class EditUserEvent(Event):
         """Criteria for validating edit user events"""
 
         username: str | CriterionValue | None = None
-        email: str | CriterionValue | None = None
-        name_contains: str | CriterionValue | None = None  # For first or last name
+        first_name: str | CriterionValue | None = None
+        last_name: str | CriterionValue | None = None
+        bio: str | CriterionValue | None = None
         location: str | CriterionValue | None = None
-        bio_contains: str | CriterionValue | None = None
-        has_profile_pic: bool | CriterionValue | None = None
-        has_favorite_genre: str | CriterionValue | None = None
-        has_website: bool | CriterionValue | None = None
-        changed_field: str | list[str] | CriterionValue | None = None
+        website: str | CriterionValue | None = None
+        favorite_genres: str | list[str] | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
@@ -149,91 +145,59 @@ class EditUserEvent(Event):
         if not criteria:
             return True
 
-        # Validate username
+        # Validate first_name
         if criteria.username is not None and not validate_criterion(self.username, criteria.username):
             return False
 
-        # Validate email
-        if criteria.email is not None and not validate_criterion(self.email, criteria.email):
+        if criteria.first_name is not None and not validate_criterion(self.first_name, criteria.first_name):
             return False
 
-        # Validate name contains (check both first and last name)
-        if criteria.name_contains is not None:
-            full_name = f"{self.first_name or ''} {self.last_name or ''}".strip()
-            if isinstance(criteria.name_contains, str):
-                if criteria.name_contains.lower() not in full_name.lower():
-                    return False
-            else:
-                # Using operator
-                if criteria.name_contains.operator == ComparisonOperator.CONTAINS:
-                    if criteria.name_contains.value.lower() not in full_name.lower():
-                        return False
-                elif criteria.name_contains.operator == ComparisonOperator.EQUALS and criteria.name_contains.value.lower() != full_name.lower():
-                    return False
+        # Validate last_name
+        if criteria.last_name is not None and not validate_criterion(self.last_name, criteria.last_name):
+            return False
+
+        # Validate bio
+        if criteria.bio is not None and not validate_criterion(self.bio, criteria.bio):
+            return False
 
         # Validate location
-        if criteria.location is not None:
-            if self.location is None:
-                return False
-            if not validate_criterion(self.location, criteria.location):
-                return False
-
-        # Validate bio contains
-        if criteria.bio_contains is not None:
-            if self.bio is None:
-                return False
-            if isinstance(criteria.bio_contains, str) and criteria.bio_contains.lower() not in self.bio.lower():
-                return False
-            else:
-                # Using operator
-                if criteria.bio_contains.operator == ComparisonOperator.CONTAINS and criteria.bio_contains.value.lower() not in self.bio.lower():
-                    return False
-
-        # Validate has_profile_pic
-        if criteria.has_profile_pic is not None and not validate_criterion(self.has_profile_pic, criteria.has_profile_pic):
+        if criteria.location is not None and not validate_criterion(self.location, criteria.location):
             return False
 
-        # Validate has_favorite_genre
-        if criteria.has_favorite_genre is not None:
-            if isinstance(criteria.has_favorite_genre, str):
-                if not any(criteria.has_favorite_genre.lower() in genre.lower() for genre in self.favorite_genres):
+        # Validate website
+        if criteria.website is not None and not validate_criterion(self.website, criteria.website):
+            return False
+
+        # Validate favorite_genres
+        if criteria.favorite_genres is not None:
+            if isinstance(criteria.favorite_genres, str):
+                # Check if any genre contains the string
+                if not any(criteria.favorite_genres.lower() in genre.lower() for genre in self.favorite_genres):
+                    return False
+            elif isinstance(criteria.favorite_genres, list):
+                # Check if any genre in the list matches
+                if not any(genre in self.favorite_genres for genre in criteria.favorite_genres):
                     return False
             else:
                 # Using operator
-                if criteria.has_favorite_genre.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.has_favorite_genre.value.lower() in genre.lower() for genre in self.favorite_genres):
+                if criteria.favorite_genres.operator == ComparisonOperator.EQUALS:
+                    # For EQUALS, match the exact genre
+                    if not any(criteria.favorite_genres.value.lower() == genre.lower() for genre in self.favorite_genres):
                         return False
-                elif criteria.has_favorite_genre.operator == ComparisonOperator.EQUALS and not any(criteria.has_favorite_genre.value.lower() == genre.lower() for genre in self.favorite_genres):
-                    return False
-
-        # Validate has_website
-        if criteria.has_website is not None:
-            has_website = self.website is not None and self.website != ""
-            if not validate_criterion(has_website, criteria.has_website):
-                return False
-
-        # Validate changed_field
-        if criteria.changed_field is not None:
-            # Determine what fields were changed
-            changed_fields = []
-            for field, value in self.previous_values.items():
-                current_value = getattr(self, field, None)
-                if current_value != value:
-                    changed_fields.append(field)
-
-            if isinstance(criteria.changed_field, str):
-                if criteria.changed_field not in changed_fields:
-                    return False
-            elif isinstance(criteria.changed_field, list):
-                if not any(field in changed_fields for field in criteria.changed_field):
-                    return False
-            else:
-                # Using operator
-                if criteria.changed_field.operator == ComparisonOperator.IN_LIST:
-                    if not any(field in criteria.changed_field.value for field in changed_fields):
+                elif criteria.favorite_genres.operator == ComparisonOperator.CONTAINS:
+                    # For CONTAINS, check if any genre contains the substring
+                    if not any(criteria.favorite_genres.value.lower() in genre.lower() for genre in self.favorite_genres):
                         return False
-                elif criteria.changed_field.operator == ComparisonOperator.EQUALS and criteria.changed_field.value not in changed_fields:
-                    return False
+                elif criteria.favorite_genres.operator == ComparisonOperator.NOT_CONTAINS:
+                    # For NOT_CONTAINS, check that no genre contains the substring
+                    if any(criteria.favorite_genres.value.lower() in genre.lower() for genre in self.favorite_genres):
+                        return False
+                elif criteria.favorite_genres.operator == ComparisonOperator.IN_LIST:
+                    # For IN_LIST, check if any genre is in the provided list
+                    if not isinstance(criteria.favorite_genres.value, list):
+                        return False
+                    if not any(genre.lower() in [v.lower() for v in criteria.favorite_genres.value] for genre in self.favorite_genres):
+                        return False
 
         return True
 
@@ -250,30 +214,44 @@ class EditUserEvent(Event):
         """
         base_event = Event.parse(backend_event)
 
-        # Extract data
+        # Get the data directly from the backend event
+        # Based on the provided example format
         data = backend_event.data
 
-        # Extract favorite genres as a list of strings
+        # Extract favorite genres from the complex format
         favorite_genres = []
         if "favorite_genres" in data and isinstance(data["favorite_genres"], list):
-            favorite_genres = [genre.get("name", "") for genre in data["favorite_genres"] if isinstance(genre, dict) and "name" in genre]
+            for genre_item in data["favorite_genres"]:
+                if isinstance(genre_item, dict) and "name" in genre_item:
+                    favorite_genres.append(genre_item["name"])
+                elif isinstance(genre_item, str):
+                    favorite_genres.append(genre_item)
+
+        # Handle previous_values properly
+        previous_values = data.get("previous_values", {})
+
+        # Process previous_values favorite_genres if present
+        if "favorite_genres" in previous_values and isinstance(previous_values["favorite_genres"], list):
+            # If it's already a list of strings, keep it
+            if all(isinstance(item, str) for item in previous_values["favorite_genres"]):
+                pass
+            # If it's a list of objects, extract the names
+            else:
+                previous_values["favorite_genres"] = [item["name"] if isinstance(item, dict) and "name" in item else str(item) for item in previous_values["favorite_genres"]]
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            username=data.get("username", ""),
-            first_name=data.get("first_name", ""),
-            last_name=data.get("last_name", ""),
+            username=data.get("username"),
+            first_name=data.get("first_name"),
+            last_name=data.get("last_name"),
             email=data.get("email", ""),
-            profile_id=data.get("profile_id"),
             bio=data.get("bio"),
             location=data.get("location"),
             website=data.get("website"),
-            has_profile_pic=data.get("has_profile_pic", False),
             favorite_genres=favorite_genres,
-            previous_values=data.get("previous_values", {}),
+            previous_values=previous_values,
         )
 
 

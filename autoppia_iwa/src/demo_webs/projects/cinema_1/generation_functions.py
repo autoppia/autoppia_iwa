@@ -623,3 +623,93 @@ def generate_add_film_constraints():
             )
 
     return constraints
+
+
+def generate_edit_profile_constraints():
+    """
+    Generates constraints specifically for editing user profiles.
+    Returns the constraints as structured data.
+    """
+    from random import choice, sample
+
+    from .data import FIELD_OPERATORS_MAP_EDIT_USER
+
+    # Editable profile fields (username and email are excluded as mentioned in requirements)
+    editable_fields = ["first_name", "last_name", "bio", "location", "website", "favorite_genres"]
+
+    # Short words, letters, and syllables for text fields (for CONTAINS operators)
+    random_text_elements = [
+        "e",
+        "a",
+        "o",
+        "x",
+        "z",  # Single letters
+        "car",
+        "star",
+        "red",
+        "blue",
+        "green",  # Short words
+        "cinema",
+        "movie",
+        "light",
+        "shadow",
+        "dream",  # Longer words
+    ]
+
+    # Sample data for generating realistic values
+    random_names = ["John", "Emma", "Michael", "Sophia", "James", "Olivia", "William", "Ava", "Benjamin", "Isabella", "Lucas", "Mia", "Henry", "Charlotte", "Alexander"]
+
+    random_locations = ["New York, USA", "London, UK", "Tokyo, Japan", "Paris, France", "Sydney, Australia", "Toronto, Canada", "Berlin, Germany", "Rome, Italy", "Madrid, Spain", "Seoul, South Korea"]
+
+    random_websites = [
+        "https://filmcritics.example.com",
+        "https://moviereviews.example.net",
+        "https://cinephileworld.example.org",
+        "https://filmjournals.example.io",
+        "https://moviefans.example.co",
+        "https://filmmakers.example.site",
+    ]
+
+    random_bios = [
+        "Passionate about independent films and documentaries.",
+        "Film school graduate with a love for classic cinema.",
+        "Movie enthusiast exploring international cinema.",
+        "Film critic specializing in sci-fi and fantasy genres.",
+        "Animation lover and aspiring filmmaker.",
+    ]
+
+    all_genres = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"]
+
+    # Generar constraints
+    constraints = []
+
+    # Select random fields to edit
+    selected_fields = sample(editable_fields, k=choice([1, 2, 3]))
+
+    for field in selected_fields:
+        # Get valid operators for this field from the map
+        valid_operators = FIELD_OPERATORS_MAP_EDIT_USER.get(field, [])
+
+        if not valid_operators:
+            continue
+
+        # Convert string operator to ComparisonOperator instance
+        operator_str = choice(valid_operators)
+        operator = ComparisonOperator(operator_str)
+
+        if field == "first_name" or field == "last_name":
+            value = choice(random_names) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
+        elif field == "bio":
+            value = choice(random_bios) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
+        elif field == "location":
+            value = choice(random_locations) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
+        elif field == "website":
+            # Website only uses EQUALS operator
+            value = choice(random_websites)
+        elif field == "favorite_genres":
+            # For favorite_genres, only use EQUALS with a single genre
+            value = choice(all_genres)
+
+        constraints.append({"field": field, "operator": operator, "value": value})
+
+    return constraints
