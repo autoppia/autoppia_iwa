@@ -1075,27 +1075,28 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    # EDIT_FILM_USE_CASE,
-    # ADD_COMMENT_USE_CASE,
-    FILM_DETAIL_USE_CASE,
-    # DELETE_FILM_USE_CASE,
-    # FILTER_FILM_USE_CASE,
+    #############################
+    # ====> SOLVE THESE <====
+    #############################
+    # EDIT_FILM_USE_CASE, # solve the issue with the select dropdown in the DOM
+    # FILM_DETAIL_USE_CASE,
+    FILTER_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
     # ADD_FILM_USE_CASE,
-    # EDIT_FILM_USE_CASE,
-    # DELETE_FILM_USE_CASE,
-    # FILTER_FILM_USE_CASE,
-    # LOGOUT_USE_CASE,
-    # DELETE_FILM_USE_CASE,
-    # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
-    # FILTER_FILM_USE_CASE,
-    # LOGOUT_USE_CASE,
-    # ==== SOLVED RIVER ====
+    #############################
+    # ====> SOLVED RIVER <====
+    #############################
     # CONTACT_USE_CASE,
     # LOGIN_USE_CASE,
     # REGISTRATION_USE_CASE,
     # SEARCH_FILM_USE_CASE,
+    #############################
+    # ====> SOLVED GUL <====
+    #############################
+    # DELETE_FILM_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
+    #############################
+    # ====> DON'T SOLVED <====
+    #############################
+    # EDIT_USER_PROFILE_USE_CASE,
 ]
-
-
-# EDIT_USER_PROFILE_USE_CASE,
