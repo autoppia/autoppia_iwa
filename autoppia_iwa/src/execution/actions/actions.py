@@ -301,38 +301,90 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
 class SelectDropDownOptionAction(BaseActionWithSelector):
     type: Literal["SelectDropDownOptionAction"] = "SelectDropDownOptionAction"
     text: str
+    timeout_ms: int = 2000
 
     @log_action("SelectDropDownOptionAction")
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         xpath = self.validate_selector()
         found = False
+        last_error = None
 
-        for i, frame in enumerate(page.frames):
+        async def try_select(frame, frame_idx):
+            nonlocal found, last_error
             try:
-                # First check if the element exists
-                select_element = await frame.wait_for_selector(xpath, state="attached", timeout=1000)
+                # Wait for element with more tolerance
+                select_element = await frame.wait_for_selector(
+                    xpath,
+                    state="attached",
+                    timeout=self.timeout_ms,
+                    strict=True,
+                )
 
-                # Verify it's a select element
+                # Verify element type
                 tag_name = await select_element.evaluate("el => el.tagName.toLowerCase()")
                 if tag_name != "select":
-                    action_logger.debug(f"Found element but it's a {tag_name}, not a SELECT in frame {i}")
-                    continue
+                    action_logger.debug(f"Element at {xpath} is {tag_name}, not SELECT (frame {frame_idx})")
+                    return False
 
-                # Select the option
-                try:
-                    await select_element.select_option(label=self.text, timeout=1000)
-                    action_logger.info(f"Selected '{self.text}' in frame {i}")
-                    found = True
-                    break
-                except Exception as e:
-                    action_logger.debug(f"Failed to select option in frame {i}: {e}")
-                    continue
+                # Try multiple selection strategies
+                selection_strategies = [{"label": self.text}, {"value": self.text}, {"index": await self._find_option_index(select_element, self.text)}]
+
+                for strategy in selection_strategies:
+                    try:
+                        await select_element.select_option(**strategy, timeout=2000)
+                        action_logger.info(f"Selected '{self.text}' using {strategy} in frame {frame_idx}")
+                        return True
+                    except Exception as e:
+                        action_logger.debug(f"Selection failed with {strategy}: {e!s}")
+                        last_error = str(e)
+                        continue
+
+                return False
 
             except Exception as e:
-                action_logger.debug(f"Frame {i} attempt failed: {e}")
+                last_error = str(e)
+                action_logger.debug(f"Frame {frame_idx} attempt failed: {last_error}")
+                return False
+
+        # Try main frame first (most common case)
+        if await try_select(page.main_frame, "main"):
+            return True
+
+        # Try other frames if needed
+        for i, frame in enumerate(page.frames):
+            if frame == page.main_frame:
+                continue  # Already tried
+            if await try_select(frame, i):
+                return True
+
+        # Fallback: Try clicking the dropdown first
+        if not found:
+            action_logger.info("Attempting dropdown click fallback")
+            try:
+                element = await page.wait_for_selector(xpath, timeout=2000)
+                await element.click()
+                await page.wait_for_timeout(500)  # Allow dropdown to open
+                option = await page.wait_for_selector(f"//option[translate(normalize-space(), ' ', '')='{self.text.replace(' ', '')}']", timeout=2000)
+                await option.click()
+                found = True
+            except Exception as e:
+                last_error = str(e)
+                action_logger.debug(f"Dropdown fallback failed: {last_error}")
 
         if not found:
-            action_logger.info(f"Could not select option '{self.text}' in any frame")
+            action_logger.error(f"Failed to select option '{self.text}'. Last error: {last_error}")
+
+        return found
+
+    async def _find_option_index(self, select_element, text):
+        """Helper to find option index by text"""
+        options = await select_element.query_selector_all("option")
+        clean_text = text.strip().lower()
+        for idx, option in enumerate(options):
+            option_text = (await option.inner_text()).strip().lower()
+            if clean_text in option_text:
+                return idx
+        return -1
 
 
 class UndefinedAction(BaseAction):
