@@ -27,7 +27,7 @@ def log_action(action_name: str):
             except Exception as e:
                 # error_details = traceback.format_exc()
                 # action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
-                action_logger.error(f"{action_name} failed: {e}")
+                # action_logger.error(f"{action_name} failed: {e}")
                 raise e
 
         return wrapper
@@ -301,7 +301,7 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
 class SelectDropDownOptionAction(BaseActionWithSelector):
     type: Literal["SelectDropDownOptionAction"] = "SelectDropDownOptionAction"
     text: str
-    timeout_ms: int = 2000
+    timeout_ms: int = 1000
 
     @log_action("SelectDropDownOptionAction")
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
@@ -331,8 +331,7 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
 
                 for strategy in selection_strategies:
                     try:
-                        await select_element.select_option(**strategy, timeout=2000)
-                        action_logger.info(f"Selected '{self.text}' using {strategy} in frame {frame_idx}")
+                        await select_element.select_option(**strategy, timeout=self.timeout_ms)
                         return True
                     except Exception as e:
                         action_logger.debug(f"Selection failed with {strategy}: {e!s}")
@@ -343,7 +342,6 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
 
             except Exception as e:
                 last_error = str(e)
-                action_logger.debug(f"Frame {frame_idx} attempt failed: {last_error}")
                 return False
 
         # Try main frame first (most common case)
@@ -359,17 +357,15 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
 
         # Fallback: Try clicking the dropdown first
         if not found:
-            action_logger.info("Attempting dropdown click fallback")
             try:
-                element = await page.wait_for_selector(xpath, timeout=2000)
+                element = await page.wait_for_selector(xpath, timeout=self.timout_ms)
                 await element.click()
-                await page.wait_for_timeout(500)  # Allow dropdown to open
-                option = await page.wait_for_selector(f"//option[translate(normalize-space(), ' ', '')='{self.text.replace(' ', '')}']", timeout=2000)
+                await page.wait_for_timeout(300)  # Allow dropdown to open
+                option = await page.wait_for_selector(f"//option[translate(normalize-space(), ' ', '')='{self.text.replace(' ', '')}']", timeout=self.timeout)
                 await option.click()
                 found = True
             except Exception as e:
                 last_error = str(e)
-                action_logger.debug(f"Dropdown fallback failed: {last_error}")
 
         if not found:
             action_logger.error(f"Failed to select option '{self.text}'. Last error: {last_error}")
