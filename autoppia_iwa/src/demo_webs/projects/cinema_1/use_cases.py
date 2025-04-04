@@ -1075,7 +1075,7 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    # EDIT_FILM_USE_CASE,
+    EDIT_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
     #     # FILM_DETAIL_USE_CASE,
     #     # DELETE_FILM_USE_CASE,
