@@ -27,7 +27,7 @@ def log_action(action_name: str):
             except Exception as e:
                 # error_details = traceback.format_exc()
                 # action_logger.error(f"{action_name} failed: {e}\n\n Traceback: {error_details}")
-                # action_logger.error(f"{action_name} failed: {e}")
+                action_logger.error(f"{action_name} failed: {e}")
                 raise e
 
         return wrapper
