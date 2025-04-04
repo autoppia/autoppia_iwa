@@ -517,29 +517,29 @@ EDIT_FILM_USE_CASE = UseCase(
     constraints_generator=generate_edit_film_constraints,
     additional_prompt_info=EDIT_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {
-            "prompt": "Update the director of The Matrix to Christopher Nolan",
-            "prompt_for_task_generation": "Update the director of <movie> to Christopher Nolan",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_FILM",
-                "event_criteria": {
-                    "name": {"value": "The Matrix", "operator": "equals"},
-                    "director": {"value": "Christopher Nolan", "operator": "equals"},
-                },
-                "reasoning": "Ensures the new director is recorded.",
-            },
-        },
-        {
-            "prompt": "Modify the release year of Pulp Fiction to 1994",
-            "prompt_for_task_generation": "Modify the release year of <movie> to 1994",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "Pulp Fiction", "operator": "equals"}, "year": {"value": 1994, "operator": "equals"}},
-                "reasoning": "Ensures the new year is recorded.",
-            },
-        },
+        # {
+        #     "prompt": "Update the director of The Matrix to Christopher Nolan",
+        #     "prompt_for_task_generation": "Update the director of <movie> to Christopher Nolan",
+        #     "test": {
+        #         "type": "CheckEventTest",
+        #         "event_name": "EDIT_FILM",
+        #         "event_criteria": {
+        #             "name": {"value": "The Matrix", "operator": "equals"},
+        #             "director": {"value": "Christopher Nolan", "operator": "equals"},
+        #         },
+        #         "reasoning": "Ensures the new director is recorded.",
+        #     },
+        # },
+        # {
+        #     "prompt": "Modify the release year of Pulp Fiction to 1994",
+        #     "prompt_for_task_generation": "Modify the release year of <movie> to 1994",
+        #     "test": {
+        #         "type": "CheckEventTest",
+        #         "event_name": "EDIT_FILM",
+        #         "event_criteria": {"name": {"value": "Pulp Fiction", "operator": "equals"}, "year": {"value": 1994, "operator": "equals"}},
+        #         "reasoning": "Ensures the new year is recorded.",
+        #     },
+        # },
         {
             "prompt": "Add Sci-Fi to the genres of Inception",
             "prompt_for_task_generation": "Add 'Sci-Fi' to the genres of <movie>",
@@ -550,39 +550,39 @@ EDIT_FILM_USE_CASE = UseCase(
                 "reasoning": "Verifies that the new genre is added.",
             },
         },
-        {
-            "prompt": "Change the rating of Interstellar to 4.8",
-            "prompt_for_task_generation": "Change the rating of <movie> to 4.8",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "Interestellar", "operator": "equals"}, "rating": {"value": 4.8, "operator": "equals"}},
-                "reasoning": "Ensures the rating is updated correctly.",
-            },
-        },
-        {
-            "prompt": "Edit the duration of The Godfather to 175 minutes",
-            "prompt_for_task_generation": "Edit the duration of <movie> to 175 minutes",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_FILM",
-                "event_criteria": {"name": {"value": "The Godfather", "operator": "equals"}, "duration": {"value": 175, "operator": "equals"}},
-                "reasoning": "Ensures that the duration is updated.",
-            },
-        },
-        {
-            "prompt": "Modify the cast of The Shawshank Redemption to include Morgan Freeman",
-            "prompt_for_task_generation": "Modify the cast of <movie> to include 'Morgan Freeman'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_FILM",
-                "event_criteria": {
-                    "name": {"value": "The Shawshank Redemption", "operator": "equals"},
-                    "cast": {"value": "Morgan Freeman", "operator": "contains"},
-                },
-                "reasoning": "Ensures the cast changes are properly logged.",
-            },
-        },
+        # {
+        #     "prompt": "Change the rating of Interstellar to 4.8",
+        #     "prompt_for_task_generation": "Change the rating of <movie> to 4.8",
+        #     "test": {
+        #         "type": "CheckEventTest",
+        #         "event_name": "EDIT_FILM",
+        #         "event_criteria": {"name": {"value": "Interestellar", "operator": "equals"}, "rating": {"value": 4.8, "operator": "equals"}},
+        #         "reasoning": "Ensures the rating is updated correctly.",
+        #     },
+        # },
+        # {
+        #     "prompt": "Edit the duration of The Godfather to 175 minutes",
+        #     "prompt_for_task_generation": "Edit the duration of <movie> to 175 minutes",
+        #     "test": {
+        #         "type": "CheckEventTest",
+        #         "event_name": "EDIT_FILM",
+        #         "event_criteria": {"name": {"value": "The Godfather", "operator": "equals"}, "duration": {"value": 175, "operator": "equals"}},
+        #         "reasoning": "Ensures that the duration is updated.",
+        #     },
+        # },
+        # {
+        #     "prompt": "Modify the cast of The Shawshank Redemption to include Morgan Freeman",
+        #     "prompt_for_task_generation": "Modify the cast of <movie> to include 'Morgan Freeman'",
+        #     "test": {
+        #         "type": "CheckEventTest",
+        #         "event_name": "EDIT_FILM",
+        #         "event_criteria": {
+        #             "name": {"value": "The Shawshank Redemption", "operator": "equals"},
+        #             "cast": {"value": "Morgan Freeman", "operator": "contains"},
+        #         },
+        #         "reasoning": "Ensures the cast changes are properly logged.",
+        #     },
+        # },
     ],
 )
 ###############################################################################
