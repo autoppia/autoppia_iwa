@@ -507,7 +507,7 @@ For example, if the constraints are "year equals 2014 AND director contains 'e'"
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
-
+# TODO: Uncomment the use-cases examples once figured out the issue with the select dropdown options actions
 EDIT_FILM_USE_CASE = UseCase(
     name="EDIT_FILM",
     description="The user edits an existing film, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.",
@@ -1075,22 +1075,22 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    EDIT_FILM_USE_CASE,
-    # ADD_COMMENT_USE_CASE,
-    #     # FILM_DETAIL_USE_CASE,
-    #     # DELETE_FILM_USE_CASE,
-    #     # FILTER_FILM_USE_CASE,
-    #     # LOGOUT_USE_CASE,
-    #     # ADD_FILM_USE_CASE,
-    #     # EDIT_FILM_USE_CASE,
-    #     # DELETE_FILM_USE_CASE,
-    #     # FILTER_FILM_USE_CASE,
-    #     # LOGOUT_USE_CASE,
-    #     # DELETE_FILM_USE_CASE,
-    #     EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
-    #     # FILTER_FILM_USE_CASE,
-    #     # LOGOUT_USE_CASE,
-    # SOLVED RIVER
+    # EDIT_FILM_USE_CASE,
+    ADD_COMMENT_USE_CASE,
+    # FILM_DETAIL_USE_CASE,
+    # DELETE_FILM_USE_CASE,
+    # FILTER_FILM_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # ADD_FILM_USE_CASE,
+    # EDIT_FILM_USE_CASE,
+    # DELETE_FILM_USE_CASE,
+    # FILTER_FILM_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # DELETE_FILM_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,  # Must be login-ed first
+    # FILTER_FILM_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # ==== SOLVED RIVER ====
     # CONTACT_USE_CASE,
     # LOGIN_USE_CASE,
     # REGISTRATION_USE_CASE,
