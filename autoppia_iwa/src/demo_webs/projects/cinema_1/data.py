@@ -175,36 +175,3 @@ FIELD_OPERATORS_MAP_EDIT_USER = {
     "website": [EQUALS, CONTAINS, NOT_CONTAINS],
     "favorite_genres": [IN_LIST, NOT_IN_LIST],
 }
-
-GENRE_ID_MAPPING = {
-    "": "All Genres",
-    "1": "Action",
-    "2": "Adventure",
-    "3": "Animation",
-    "4": "Comedy",
-    "5": "Crime",
-    "6": "Documentary",
-    "7": "Drama",
-    "8": "Fantasy",
-    "9": "Horror",
-    "10": "Mystery",
-    "11": "Romance",
-    "12": "Sci-Fi",
-    "13": "Thriller",
-    "14": "War",
-    "15": "Western",
-}
-
-MOVIES_YEAR_LIST = [
-    "",  # Represents "All Years"
-    "2014",
-    "2010",
-    "2008",
-    "2001",
-    "1999",
-    "1994",
-    "1990",
-    "1972",
-]
-
-ID_MOVIE_MAPPING = {m["id"]: m["name"] for m in MOVIES_DATA}
