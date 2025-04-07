@@ -175,6 +175,7 @@ FIELD_OPERATORS_MAP_EDIT_USER = {
     "website": [EQUALS, CONTAINS, NOT_CONTAINS],
     "favorite_genres": [IN_LIST, NOT_IN_LIST],
 }
+
 GENRE_ID_MAPPING = {
     "": "All Genres",
     "1": "Action",
@@ -193,3 +194,15 @@ GENRE_ID_MAPPING = {
     "14": "War",
     "15": "Western",
 }
+
+MOVIES_YEAR_LIST = [
+    "",  # Represents "All Years"
+    "2014",
+    "2010",
+    "2008",
+    "2001",
+    "1999",
+    "1994",
+    "1990",
+    "1972",
+]
