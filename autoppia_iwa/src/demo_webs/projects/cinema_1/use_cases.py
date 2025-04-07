@@ -201,19 +201,25 @@ LOGOUT_USE_CASE = UseCase(
 ###############################################################################
 # FILM_DETAIL_USE_CASE
 ###############################################################################
-FILM_DETAIL_INFO = """
-        CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-        1. Include ALL constraints mentioned above - not just some of them
-        2. Include ONLY the constraints mentioned above - do not add any other criteria
-        3. Be phrased as a request to view details of a movie (use phrases like "Show details for...", "Give me information about...")
+from .data import ID_MOVIE_MAPPING
 
-        For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
-        - CORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010"
-        - INCORRECT: "Show me details about a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
-        - INCORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+FILM_DETAIL_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to view details of a movie (use phrases like "Show details for...", "Give me information about...")
+4. If a specific movie is referenced, use its ID only (not the name) from the mapping below
 
-        ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
-        """
+MOVIE ID MAPPING:
+{chr(10).join([f'- "{name}" → ID: {movie_id}' for movie_id, name in ID_MOVIE_MAPPING.items()])}
+
+For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
+- CORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010"
+- INCORRECT: "Show me details about a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
+- INCORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
 FILM_DETAIL_USE_CASE = UseCase(
     name="FILM_DETAIL",
     description="The user explicitly requests to navigate to or go to the details page of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
@@ -1104,8 +1110,7 @@ ALL_USE_CASES = [
     # ====> SOLVE THESE <====
     #############################
     # EDIT_FILM_USE_CASE, # solve the issue with the select dropdown in the DOM
-    # FILM_DETAIL_USE_CASE,
-    FILTER_FILM_USE_CASE,
+    FILM_DETAIL_USE_CASE,
     # LOGOUT_USE_CASE,
     # ADD_FILM_USE_CASE,
     #############################
@@ -1120,6 +1125,7 @@ ALL_USE_CASES = [
     #############################
     # DELETE_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
+    # FILTER_FILM_USE_CASE,
     #############################
     # ====> DON'T SOLVE <====
     #############################

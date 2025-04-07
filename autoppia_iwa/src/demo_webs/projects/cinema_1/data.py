@@ -206,3 +206,5 @@ MOVIES_YEAR_LIST = [
     "1990",
     "1972",
 ]
+
+ID_MOVIE_MAPPING = {m["id"]: m["name"] for m in MOVIES_DATA}
