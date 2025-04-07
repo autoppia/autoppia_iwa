@@ -524,7 +524,16 @@ class EditFilmEvent(Event):
         data = backend_event.data
         genres = []
         if "genres" in data and isinstance(data["genres"], list):
-            genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
+            genres = []
+
+            for genre in data["genres"]:
+                if isinstance(genre, dict):
+                    if "name" in genre:
+                        genre_name = genre.get("name", "")
+                        genres.append(genre_name)
+                elif isinstance(genre, str):
+                    genres.append(genre)
+
         previous_values = data.get("previous_values", {})
         changed_fields = data.get("changed_fields", [])
         return cls(
