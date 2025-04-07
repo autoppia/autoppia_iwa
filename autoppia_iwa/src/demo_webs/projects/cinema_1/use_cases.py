@@ -1109,8 +1109,8 @@ ALL_USE_CASES = [
     #############################
     # ====> SOLVE THESE <====
     #############################
-    # EDIT_FILM_USE_CASE, # solve the issue with the select dropdown in the DOM
-    FILM_DETAIL_USE_CASE,
+    EDIT_FILM_USE_CASE,  # solve the issue with the select dropdown in the DOM
+    # FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE,
     #############################
     # ====> SOLVED RIVER <====
