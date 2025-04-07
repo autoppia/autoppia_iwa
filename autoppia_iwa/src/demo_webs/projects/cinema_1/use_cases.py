@@ -1111,7 +1111,6 @@ ALL_USE_CASES = [
     #############################
     # EDIT_FILM_USE_CASE, # solve the issue with the select dropdown in the DOM
     FILM_DETAIL_USE_CASE,
-    # LOGOUT_USE_CASE,
     # ADD_FILM_USE_CASE,
     #############################
     # ====> SOLVED RIVER <====
@@ -1126,6 +1125,7 @@ ALL_USE_CASES = [
     # DELETE_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
     # FILTER_FILM_USE_CASE,
+    # LOGOUT_USE_CASE,
     #############################
     # ====> DON'T SOLVE <====
     #############################
