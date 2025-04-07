@@ -201,17 +201,17 @@ LOGOUT_USE_CASE = UseCase(
 ###############################################################################
 # FILM_DETAIL_USE_CASE
 ###############################################################################
-from .data import ID_MOVIE_MAPPING
+from .data import MOVIES_DATA
 
 FILM_DETAIL_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
 3. Be phrased as a request to view details of a movie (use phrases like "Show details for...", "Give me information about...")
-4. If a specific movie is referenced, use its ID only (not the name) from the mapping below
+4. Only use the movies name defined below.
 
-MOVIE ID MAPPING:
-{chr(10).join([f'- "{name}" → ID: {movie_id}' for movie_id, name in ID_MOVIE_MAPPING.items()])}
+MOVIES NAMES:
+{chr(10).join([n["name"] for n in MOVIES_DATA])}
 
 For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
 - CORRECT: "Show me details about a movie not directed by Robert Zemeckis that was released after 2010"
