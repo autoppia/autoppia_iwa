@@ -930,12 +930,37 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
 ###############################################################################
 # FILTER_FILM_USE_CASE
 ###############################################################################
+FILTER_FILM_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+3. Include the word "Filter" (or "filtering", "filtered", "filters") explicitly in the prompt.
+4. Be phrased as a request to filter or browse films (e.g., "Filter...", "Show only...", "Display...", "Browse...", etc.).
+5. Use ONLY the allowed genres and years from the lists below.
+
+ALLOWED YEARS:
+1972, 1990, 1994, 1999, 2001, 2008, 2010, 2014
+
+ALLOWED GENRES:
+"Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"
+
+For example, if the constraints are "genre_name equals 'Action' AND year equals 1999":
+- CORRECT: "Filter for Action movies released in 1999."
+- CORRECT: "Browse films from 1999 in the Action genre."
+- INCORRECT: "Search for Action films from the 90s" (uses vague year and incorrect phrasing).
+- INCORRECT: "Show all Action films" (missing the year constraint if both are provided).
+- INCORRECT: "Filter for Mystery movies" (Mystery is not in the allowed genre list).
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
 FILTER_FILM_USE_CASE = UseCase(
     name="FILTER_FILM",
     description="The user applies filters to search for films by genre and/or year. Includes Filter in the prompt",
     event=FilterFilmEvent,
     event_source_code=FilterFilmEvent.get_source_code_of_class(),
     constraints_generator=generate_film_filter_constraints,
+    additional_prompt_info=FILTER_FILM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Filter movies released in the year 1994",
