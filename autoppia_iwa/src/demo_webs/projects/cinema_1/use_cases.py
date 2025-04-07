@@ -1096,7 +1096,7 @@ ALL_USE_CASES = [
     # DELETE_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
     #############################
-    # ====> DON'T SOLVED <====
+    # ====> DON'T SOLVE <====
     #############################
     # EDIT_USER_PROFILE_USE_CASE,
 ]
