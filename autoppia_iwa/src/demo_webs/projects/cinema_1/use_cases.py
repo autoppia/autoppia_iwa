@@ -3,6 +3,7 @@
 # -----------------------------------------------------------------------------
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
+from .data import MOVIES_DATA
 from .events import (
     AddCommentEvent,
     # CompositeEvent  # si eventualmente necesitas el composite
@@ -201,7 +202,6 @@ LOGOUT_USE_CASE = UseCase(
 ###############################################################################
 # FILM_DETAIL_USE_CASE
 ###############################################################################
-from .data import MOVIES_DATA
 
 FILM_DETAIL_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
@@ -1029,7 +1029,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
 3. Be phrased as a request to add a comment to a movie (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
-
+4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
 For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
 - CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
 - INCORRECT: "Write a comment about any movie" (missing specific constraints)
@@ -1119,13 +1119,10 @@ ALL_USE_CASES = [
     # LOGIN_USE_CASE,
     # REGISTRATION_USE_CASE,
     # SEARCH_FILM_USE_CASE,
-    #############################
-    # ====> SOLVED GUL <====
-    #############################
+    # LOGOUT_USE_CASE,
+    # FILTER_FILM_USE_CASE,
     # DELETE_FILM_USE_CASE,
     # ADD_COMMENT_USE_CASE,
-    # FILTER_FILM_USE_CASE,
-    # LOGOUT_USE_CASE,
     #############################
     # ====> DON'T SOLVE <====
     #############################

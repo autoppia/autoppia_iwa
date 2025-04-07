@@ -44,7 +44,7 @@ class BenchmarkConfig:
     m: int = 1  # Number of copies of each solution to evaluate
     prompts_per_url: int = 1
     num_of_urls: int = 1
-    prompt_per_use_case: int = 3
+    prompt_per_use_case: int = 2
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
