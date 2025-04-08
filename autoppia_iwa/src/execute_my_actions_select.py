@@ -15,13 +15,13 @@ from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecuto
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 actions = [
-    NavigateAction(url="http://localhost:8001/", go_back=False, go_forward=False),
+    NavigateAction(url="http://localhost:8000/", go_back=False, go_forward=False),
     ClickAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/a"}),
     TypeAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div/input"}, text="Inception 4"),
     TypeAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div[3]/div/div/input"}, text="Christopher Nolan"),
     TypeAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/div/div/input"}, text="2010"),
     TypeAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div[2]/div[2]/div/input"}, text="148"),
-    SelectDropDownOptionAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/select"}, text="Science Fiction"),
+    SelectDropDownOptionAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/select"}, text="Comedy"),
     SelectDropDownOptionAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div[4]/select"}, text="Action"),
     TypeAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div[5]/input"}, text="Leonardo DiCaprio, Joseph Gordon-Levitt"),
     TypeAction(selector={"type": "xpathSelector", "value": "html/body/main/div/div/div/div/div[2]/form/div[6]/textarea"}, text="An Amazing Sci-Fi Movie"),

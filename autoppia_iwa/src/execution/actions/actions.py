@@ -358,10 +358,10 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
         # Fallback: Try clicking the dropdown first
         if not found:
             try:
-                element = await page.wait_for_selector(xpath, timeout=self.timout_ms)
+                element = await page.wait_for_selector(xpath, timeout=self.timeout_ms)
                 await element.click()
                 await page.wait_for_timeout(300)  # Allow dropdown to open
-                option = await page.wait_for_selector(f"//option[translate(normalize-space(), ' ', '')='{self.text.replace(' ', '')}']", timeout=self.timeout)
+                option = await page.wait_for_selector(f"//option[translate(normalize-space(), ' ', '')='{self.text.replace(' ', '')}']", timeout=self.timeout_ms)
                 await option.click()
                 found = True
             except Exception as e:
