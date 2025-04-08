@@ -1109,7 +1109,7 @@ ALL_USE_CASES = [
     # ====> SOLVE THESE <====
     ############################
     # EDIT_FILM_USE_CASE, # Solved
-    FILM_DETAIL_USE_CASE,
+    # FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE, # Solved
     #############################
     # ====> SOLVED RIVER <====
@@ -1125,5 +1125,5 @@ ALL_USE_CASES = [
     #############################
     # ====> DON'T SOLVE <====
     #############################
-    # EDIT_USER_PROFILE_USE_CASE,
+    EDIT_USER_PROFILE_USE_CASE,
 ]
