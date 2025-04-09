@@ -690,10 +690,7 @@ class AddCommentEvent(Event):
         """
         if not criteria:
             return True
-        if criteria.content is not None and not validate_criterion(
-            self.content,
-            CriterionValue(value=criteria.content.value if isinstance(criteria.content, CriterionValue) else criteria.content, operator=ComparisonOperator.CONTAINS),
-        ):
+        if criteria.content is not None and not validate_criterion(self.content, criteria.content):
             return False
         if criteria.commenter_name is not None and not validate_criterion(self.commenter_name, criteria.commenter_name):
             return False
