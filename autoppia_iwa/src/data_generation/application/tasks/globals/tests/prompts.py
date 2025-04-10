@@ -90,6 +90,11 @@ Each field in event_criteria can follow either of these structures:
   "reasoning": "Clear explanation of why this test is necessary."
 }}
 ```
+IMPORTANT: IF YOU DECIDE TO USE in_list or not_in_list operator dont forget add a list in the value like
+{{
+  "value": "[value1,value2]",
+  "operator": "equals"
+}}
 
 EXAMPLES OF CORRECT OPERATOR USAGE:
 - "operator": "equals"     ✓ CORRECT

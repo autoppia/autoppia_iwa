@@ -1,12 +1,8 @@
-# -----------------------------------------------------------------------------
-# use_cases.py
-# -----------------------------------------------------------------------------
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .data import MOVIES_DATA
 from .events import (
     AddCommentEvent,
-    # CompositeEvent  # si eventualmente necesitas el composite
     AddFilmEvent,
     ContactEvent,
     DeleteFilmEvent,
@@ -714,6 +710,16 @@ DELETE_FILM_USE_CASE = UseCase(
                 "reasoning": "Checks that 'Avatar' is erased and confirms that it does not belong to the Action genre.",
             },
         },
+        {
+            "prompt": "Delete a film whose year is in the list [1999, 1972, 1990]",
+            "prompt_for_task_generation": "Delete a film whose year is in the list [<year1>, <year2>, <year3>]",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DELETE_FILM",
+                "event_criteria": {"year": {"value": [1999, 1972, 1990], "operator": "in_list"}},
+                "reasoning": "Verifies that the film's release year is one of the specific years mentioned in the list: 1999, 1972, or 1990.",
+            },
+        },
     ],
 )
 
@@ -1105,22 +1111,16 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    #############################
-    # ====> SOLVE THESE <====
-    ############################
-    # EDIT_FILM_USE_CASE,  # Solved
+    # EDIT_FILM_USE_CASE,
     # FILM_DETAIL_USE_CASE,
-    # ADD_FILM_USE_CASE,  # Solved
-    # EDIT_USER_PROFILE_USE_CASE,  # Solved
-    #############################
-    # ====> SOLVED RIVER <====
-    #############################
+    # ADD_FILM_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,
     # CONTACT_USE_CASE,
     # LOGIN_USE_CASE,
     # REGISTRATION_USE_CASE,
     # SEARCH_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
     # FILTER_FILM_USE_CASE,
-    # DELETE_FILM_USE_CASE,
-    ADD_COMMENT_USE_CASE,
+    DELETE_FILM_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
 ]
