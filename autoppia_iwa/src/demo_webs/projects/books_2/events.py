@@ -853,6 +853,166 @@ class FilterBookEvent(Event):
         )
 
 
+class PurchaseBookEvent(Event):
+    """Event triggered when a user purchases a book"""
+
+    event_name: str = "PURCHASE_BOOK"
+
+    book_id: int
+    book_name: str
+    price: float
+    book_director: str | None = None
+    book_year: int | None = None
+    book_genres: list[str] = Field(default_factory=list)
+    book_rating: float | None = None
+    book_duration: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating purchase book events"""
+
+        book_id: int | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        genre: str | CriterionValue | None = None
+        director: str | CriterionValue | None = None
+        year: int | CriterionValue | None = None
+        price: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        """
+        Validate if this purchase book event meets the criteria.
+        """
+        if not criteria:
+            return True
+        if criteria.book_id is not None and not validate_criterion(self.book_id, criteria.book_id):
+            return False
+        if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
+            return False
+        if criteria.genre is not None:
+            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
+                return False
+            else:
+                if (
+                    (criteria.genre.operator == ComparisonOperator.EQUALS and not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.CONTAINS and not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.NOT_CONTAINS and any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (
+                        criteria.genre.operator == ComparisonOperator.IN_LIST
+                        and not any(genre.lower() in [v.lower() if isinstance(v, str) else v for v in criteria.genre.value] for genre in self.book_genres)
+                    )
+                ):
+                    return False
+        if criteria.director is not None and not validate_criterion(self.book_director, criteria.director):
+            return False
+        if criteria.price is not None and not validate_criterion(self.price, criteria.price):
+            return False
+        return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "PurchaseBookEvent":
+        """
+        Parse a purchase book event from backend data.
+        """
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        genres = []
+        if "genres" in data and isinstance(data["genres"], list):
+            genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            book_id=data.get("id", 0),
+            book_name=data.get("name", ""),
+            price=data.get("price", 0.0),
+            book_director=data.get("director", ""),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            book_duration=data.get("duration"),
+        )
+
+
+class ShoppingCartEvent(Event):
+    """Event triggered when a user adds a book to shopping cart"""
+
+    event_name: str = "SHOPPING_CART"
+
+    book_id: int
+    book_name: str
+    price: float
+    book_director: str | None = None
+    book_year: int | None = None
+    book_genres: list[str] = Field(default_factory=list)
+    book_rating: float | None = None
+    book_duration: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating shopping cart events"""
+
+        book_id: int | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        genre: str | CriterionValue | None = None
+        director: str | CriterionValue | None = None
+        year: int | CriterionValue | None = None
+        price: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        """
+        Validate if this shopping cart event meets the criteria.
+        """
+        if not criteria:
+            return True
+        if criteria.book_id is not None and not validate_criterion(self.book_id, criteria.book_id):
+            return False
+        if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
+            return False
+        if criteria.genre is not None:
+            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
+                return False
+            else:
+                if (
+                    (criteria.genre.operator == ComparisonOperator.EQUALS and not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.CONTAINS and not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.NOT_CONTAINS and any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (
+                        criteria.genre.operator == ComparisonOperator.IN_LIST
+                        and not any(genre.lower() in [v.lower() if isinstance(v, str) else v for v in criteria.genre.value] for genre in self.book_genres)
+                    )
+                ):
+                    return False
+        if criteria.director is not None and not validate_criterion(self.book_director, criteria.director):
+            return False
+        if criteria.price is not None and not validate_criterion(self.price, criteria.price):
+            return False
+        return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ShoppingCartEvent":
+        """
+        Parse a shopping cart event from backend data.
+        """
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        genres = []
+        if "genres" in data and isinstance(data["genres"], list):
+            genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            book_id=data.get("id", 0),
+            book_name=data.get("name", ""),
+            price=data.get("price", 0.0),
+            book_director=data.get("director", ""),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            book_duration=data.get("duration"),
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
