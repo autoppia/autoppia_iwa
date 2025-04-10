@@ -203,7 +203,7 @@ FILM_DETAIL_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to view details of a movie (use phrases like "Show details for...", "Give me information about...")
+3. Be phrased as a request to view details of a movie (use phrases like "Show details for...", "Give me details about...")
 4. Only use the movies name defined below.
 
 MOVIES NAMES:
@@ -1121,6 +1121,6 @@ ALL_USE_CASES = [
     # SEARCH_FILM_USE_CASE,
     # LOGOUT_USE_CASE,
     # FILTER_FILM_USE_CASE,
-    DELETE_FILM_USE_CASE,
-    # ADD_COMMENT_USE_CASE,
+    # DELETE_FILM_USE_CASE,
+    ADD_COMMENT_USE_CASE,
 ]

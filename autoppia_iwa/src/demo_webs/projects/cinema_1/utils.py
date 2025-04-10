@@ -116,7 +116,6 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
 
     # Elegir una película aleatoria como punto de partida
     solution_movie = random.choice(data)
-    print(f"Película inicial seleccionada: {solution_movie['name']}")
 
     # Decidir cuántos constraints generar (1-3)
     num_constraints = random.randint(1, 3)
@@ -157,11 +156,11 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
         constraints_str = " AND ".join(parts)
 
         # Mostrar todas las películas que satisfacen las restricciones (solo para debug)
-        matching_movies = [movie for movie in data if item_matches_all_constraints(movie, constraint_list)]
-        print(f"Restricciones generadas: {constraints_str}")
-        print(f"Películas que satisfacen las restricciones ({len(matching_movies)}):")
-        for movie in matching_movies:
-            print(f"  - {movie['name']} ({movie['year']}) - Director: {movie['director']}")
+        [movie for movie in data if item_matches_all_constraints(movie, constraint_list)]
+
+        # for movie in matching_movies:
+        #     print(
+        #         f"  - {movie['name']} ({movie['year']}) - Director: {movie['director']}")
 
         # Retornar solo el string de restricciones sin información adicional
         return constraints_str

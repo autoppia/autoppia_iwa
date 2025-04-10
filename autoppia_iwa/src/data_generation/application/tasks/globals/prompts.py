@@ -29,6 +29,14 @@ If constraints are "director not_equals Robert Zemeckis AND year greater_than 20
 - "Show a movie directed by Christopher Nolan" (missing constraints)
 - "Show a movie after 2010 with a high rating" (added unauthorized criteria)
 
+If constraints are "director contains 'd Cop' AND duration less_equal 178":
+✅ CORRECT:
+- "Give me information about a movie directed by a director which his name CONTAINS 'd Cop' with a duration of 178 minutes or less
+❌ INCORRECT:
+- "Give me information about a movie directed by d Cop with a duration of 178 minutes or less (contrain is not clear d Cop is not the name of director, you wanted to say contains be clear with contrains)"
+
+Be clear with contrains, specially when you want to refer to CONTAINS or NOT CONTAINS
+
 ## CURRENT CONSTRAINT SET
 {constraints_info}
 ## ADITIONAL INFO
