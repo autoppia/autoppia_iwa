@@ -1,13 +1,10 @@
 # base.py
-import logging
 from enum import Enum
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 
+from loguru import logger
 from playwright.async_api import Page
 from pydantic import BaseModel, Field
-
-logger = logging.getLogger(__name__)
-
 
 # ------------------------------------------------------
 # SELECTOR LOGIC
@@ -67,6 +64,13 @@ class Selector(BaseModel):
         else:
             raise ValueError(f"Unsupported selector type: {self.type}")
 
+    def model_dump(self, **kwargs) -> dict[str, Any]:
+        """Custom model dump that properly handles enums."""
+        dump = super().model_dump(**kwargs)
+        if "type" in dump:
+            dump["type"] = dump["type"].value
+        return dump
+
 
 # ------------------------------------------------------
 # BASE ACTION CLASSES
@@ -118,6 +122,15 @@ class BaseAction(BaseModel):
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
         """Each subclass must implement its own `execute` logic."""
         raise NotImplementedError("Execute method must be implemented by subclasses.")
+
+    def model_dump(self, **kwargs) -> dict[str, Any]:
+        """Custom model dump that properly handles enums and nested models."""
+        dump = super().model_dump(**kwargs)
+        if "selector" in dump and isinstance(dump["selector"], dict):
+            selector = dump["selector"]
+            if "type" in selector and isinstance(selector["type"], Enum):
+                selector["type"] = selector["type"].value
+        return dump
 
     @classmethod
     def create_action(cls, action_data: dict) -> Optional["BaseAction"]:
@@ -171,3 +184,10 @@ class BaseActionWithSelector(BaseAction):
         if not self.selector:
             raise ValueError("Selector is required for this action.")
         return self.selector.to_playwright_selector()
+
+    def model_dump(self, **kwargs) -> dict[str, Any]:
+        """Custom model dump that handles the Selector field."""
+        dump = super().model_dump(**kwargs)
+        if "selector" in dump and isinstance(self.selector, Selector):
+            dump["selector"] = self.selector.model_dump(**kwargs)
+        return dump
