@@ -177,6 +177,6 @@ LOGOUT_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     LOGIN_USE_CASE,
-    REGISTRATION_USE_CASE,
-    LOGOUT_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # LOGOUT_USE_CASE,
 ]

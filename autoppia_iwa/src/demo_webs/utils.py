@@ -26,8 +26,9 @@ def get_backend_url(index: int, symmetric=True):
 
 
 async def initialize_demo_webs_projects(demo_web_projects: list[WebProject]):
-    for demo_web_project in demo_web_projects:
-        await _load_web_analysis(demo_web_project)
+    # Uncomment when need the web analysis
+    # for demo_web_project in demo_web_projects:
+    #     await _load_web_analysis(demo_web_project)
     return demo_web_projects
 
 

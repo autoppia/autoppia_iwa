@@ -37,6 +37,8 @@ logger.add(LOG_FILE, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} 
 class BenchmarkConfig:
     """Configuration for the benchmark test."""
 
+    web_project_index: int = 1
+
     use_cached_tasks: bool = False
     use_cached_solutions: bool = False
     evaluate_real_tasks: bool = False
@@ -56,6 +58,9 @@ class BenchmarkConfig:
     def __post_init__(self):
         for directory in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir):
             directory.mkdir(parents=True, exist_ok=True)
+        if self.web_project_index >= len(demo_web_projects):
+            raise ValueError(f"Invalid web project index {self.web_project_index}, must be less than {len(demo_web_projects)}.")
+        logger.debug(f"Selected demo project: {demo_web_projects[self.web_project_index].name}")
 
 
 # Initialize configuration & solution cache
@@ -197,7 +202,7 @@ async def main():
             # Load/Initialize demo projects
             web_projects = await initialize_demo_webs_projects(demo_web_projects)
             # For simplicity, only take the first project (or however many you want)
-            web_projects = [web_projects[0]]
+            web_projects = [web_projects[config.web_project_index]]
 
             for project in web_projects:
                 tasks = await generate_tasks(project)
@@ -228,7 +233,5 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except Exception as e:
-        import traceback
-
         traceback.print_exc()
         logger.opt(exception=e).error(f"Error: {e}", stace_info=True)
