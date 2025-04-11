@@ -103,5 +103,10 @@ Each field in event_criteria can follow either of these structures:
 - "operator": <ComparisonOperator.EQUALS: 'equals'>   ✗ INCORRECT
 - "operator": ComparisonOperator.EQUALS               ✗ INCORRECT
 
+### ADDITIONAL RULE:
+- **DO NOT change spellings, punctuation, or formatting of any values used in the constraints.**
+  - Example: If the value is `"Interestellar"`, keep it exactly as `"Interestellar"` — do not correct it to `"Interstellar"`
+  - Values must be preserved exactly as they appear in the prompt or constraints, even if they seem misspelled or strange.
+
 IMPORTANT: Return ONLY the raw JSON object without markdown code blocks or any other formatting.
 """
