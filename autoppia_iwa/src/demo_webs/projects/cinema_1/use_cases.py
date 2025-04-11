@@ -1113,7 +1113,7 @@ ADD_COMMENT_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     # EDIT_FILM_USE_CASE,
-    # FILM_DETAIL_USE_CASE,
+    FILM_DETAIL_USE_CASE,
     # ADD_FILM_USE_CASE,
     # EDIT_USER_PROFILE_USE_CASE,
     # CONTACT_USE_CASE,
@@ -1123,5 +1123,5 @@ ALL_USE_CASES = [
     # LOGOUT_USE_CASE,
     # FILTER_FILM_USE_CASE,
     # DELETE_FILM_USE_CASE,
-    ADD_COMMENT_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
 ]
