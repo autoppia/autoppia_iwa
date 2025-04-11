@@ -1034,7 +1034,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
 3. Be phrased as a request to add a comment to a movie (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
-4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
+4. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
+5. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
 For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
 - CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
 - INCORRECT: "Write a comment about any movie" (missing specific constraints)
@@ -1111,16 +1112,16 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    EDIT_FILM_USE_CASE,
-    FILM_DETAIL_USE_CASE,
-    ADD_FILM_USE_CASE,
-    EDIT_USER_PROFILE_USE_CASE,
-    CONTACT_USE_CASE,
-    LOGIN_USE_CASE,
-    REGISTRATION_USE_CASE,
-    SEARCH_FILM_USE_CASE,
-    LOGOUT_USE_CASE,
-    FILTER_FILM_USE_CASE,
-    DELETE_FILM_USE_CASE,
+    # EDIT_FILM_USE_CASE,
+    # FILM_DETAIL_USE_CASE,
+    # ADD_FILM_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,
+    # CONTACT_USE_CASE,
+    # LOGIN_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # SEARCH_FILM_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # FILTER_FILM_USE_CASE,
+    # DELETE_FILM_USE_CASE,
     ADD_COMMENT_USE_CASE,
 ]
