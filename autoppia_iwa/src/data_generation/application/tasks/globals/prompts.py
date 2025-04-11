@@ -19,6 +19,10 @@ SYNTHETIC PROMPT GENERATION PROTOCOL
      * "Give me information about..."
      * "Retrieve details of..."
 
+3. CONSTRAINT VALUE FORMATTING
+   - All **specific values** used in constraints (e.g., names, strings) MUST be enclosed in **single quotes ('')
+   - Example: "director is NOT 'Robert Zemeckis'", not just "director is not Robert Zemeckis"
+
 ## CONSTRAINT REPRESENTATION EXAMPLE
 If constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
 ✅ CORRECT:
@@ -31,7 +35,8 @@ If constraints are "director not_equals Robert Zemeckis AND year greater_than 20
 
 If constraints are "director contains 'd Cop' AND duration less_equal 178":
 ✅ CORRECT:
-- "Give me information about a movie directed by a director which his name CONTAINS 'd Cop' with a duration of 178 minutes or less
+- "Give me information about a movie directed by a director whose name CONTAINS 'd Cop' with a duration of 178 minutes or less"
+
 ❌ INCORRECT:
 - "Give me information about a movie directed by d Cop with a duration of 178 minutes or less" (constraint is not clear - 'd Cop' is not the name of the director; you meant it should **contain** 'd Cop'. Be clear with constraints.)
 
@@ -47,6 +52,7 @@ Be clear with constraints, especially when referring to CONTAINS or NOT CONTAINS
 - Format: JSON array of strings
 - EACH PROMPT MUST:
   * Include ALL constraints verbatim
+  * Wrap specific values in single quotes
   * Sound like a natural request
   * Match the use case description
   * EXCLUDE any additional criteria
