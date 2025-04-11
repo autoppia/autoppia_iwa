@@ -320,27 +320,27 @@ FILM_DETAIL_USE_CASE = UseCase(
 # SEARCH_FILM_USE_CASE
 ###############################################################################
 SEARCH_FILM_INFO = """
-        CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-        1. Make it EXPLICIT that this is a SEARCH for a movie using clear terms such as:
-           - "Search for..."
-           - "Look for the film..."
-           - "Find a movie..."
-           - "Look up a movie..."
-        2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
-        3. Include ONLY the movie title as part of the search
-        4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Make it EXPLICIT that this is a SEARCH for a movie using clear terms such as:
+   - "Search for..."
+   - "Look for the film..."
+   - "Find a movie..."
+   - "Look up a movie..."
+2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
+3. Include ONLY the movie title as part of the search
+4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
 
-        For example:
-        - CORRECT: "Search for the movie Inception in the database"
-        - CORRECT: "Look for the film Titanic"
-        - CORRECT: "Find movies called The Matrix"
-        - INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
-        - INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
-        - INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
-        - INCORRECT: "Find a movie called Inception released after 2010" (includes constraints)
+For example:
+- CORRECT: "Search for the movie Inception in the database"
+- CORRECT: "Look for the film Titanic"
+- CORRECT: "Find movies called The Matrix"
+- INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
+- INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
+- INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
+- INCORRECT: "Find a movie called Inception released after 2010" (includes constraints)
 
-        ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
-        """
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
+"""
 
 SEARCH_FILM_USE_CASE = UseCase(
     name="SEARCH_FILM",
@@ -946,7 +946,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Include the word "Filter" (or "filtering", "filtered", "filters") explicitly in the prompt.
-4. Be phrased as a request to filter or browse films (e.g., "Filter...", "Show only...", "Display...", "Browse...", etc.).
+4. Be phrased as a request to filter or browse films (e.g., "Filter...", "Show only...", etc.).
 5. Use ONLY the allowed genres and years from the lists below.
 
 ALLOWED YEARS:
@@ -1112,16 +1112,16 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    EDIT_FILM_USE_CASE,
+    # EDIT_FILM_USE_CASE,
     FILM_DETAIL_USE_CASE,
-    ADD_FILM_USE_CASE,
-    EDIT_USER_PROFILE_USE_CASE,
-    CONTACT_USE_CASE,
-    LOGIN_USE_CASE,
-    REGISTRATION_USE_CASE,
-    SEARCH_FILM_USE_CASE,
-    LOGOUT_USE_CASE,
-    FILTER_FILM_USE_CASE,
-    DELETE_FILM_USE_CASE,
-    ADD_COMMENT_USE_CASE,
+    # ADD_FILM_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,
+    # CONTACT_USE_CASE,
+    # LOGIN_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # SEARCH_FILM_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # FILTER_FILM_USE_CASE,
+    # DELETE_FILM_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
 ]
