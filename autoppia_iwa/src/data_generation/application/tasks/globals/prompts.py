@@ -22,8 +22,8 @@ SYNTHETIC PROMPT GENERATION PROTOCOL
 ## CONSTRAINT REPRESENTATION EXAMPLE
 If constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
 ✅ CORRECT:
-- "Show me details about a movie NOT directed by Robert Zemeckis that was released AFTER 2010"
-- "Retrieve information for a film where the director is NOT Robert Zemeckis and the release year EXCEEDS 2010"
+- "Show me details about a movie NOT directed by 'Robert Zemeckis' that was released AFTER 2010"
+- "Retrieve information for a film where the director is NOT 'Robert Zemeckis' and the release year EXCEEDS 2010"
 
 ❌ INCORRECT:
 - "Show a movie directed by Christopher Nolan" (missing constraints)
@@ -33,20 +33,22 @@ If constraints are "director contains 'd Cop' AND duration less_equal 178":
 ✅ CORRECT:
 - "Give me information about a movie directed by a director which his name CONTAINS 'd Cop' with a duration of 178 minutes or less
 ❌ INCORRECT:
-- "Give me information about a movie directed by d Cop with a duration of 178 minutes or less (contrain is not clear d Cop is not the name of director, you wanted to say contains be clear with contrains)"
+- "Give me information about a movie directed by d Cop with a duration of 178 minutes or less" (constraint is not clear - 'd Cop' is not the name of the director; you meant it should **contain** 'd Cop'. Be clear with constraints.)
 
-Be clear with contrains, specially when you want to refer to CONTAINS or NOT CONTAINS
+Be clear with constraints, especially when referring to CONTAINS or NOT CONTAINS.
 
 ## CURRENT CONSTRAINT SET
 {constraints_info}
-## ADITIONAL INFO
+
+## ADDITIONAL INFO
 {additional_prompt_info}
+
 ## GENERATION PROTOCOL
 - Format: JSON array of strings
 - EACH PROMPT MUST:
   * Include ALL constraints verbatim
   * Sound like a natural request
-  * Match use case description
+  * Match the use case description
   * EXCLUDE any additional criteria
 
 - Generate {number_of_prompts} prompts that are 100% constraint-compliant,
