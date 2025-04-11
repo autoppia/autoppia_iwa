@@ -108,5 +108,20 @@ Each field in event_criteria can follow either of these structures:
   - Example: If the value is `"Interestellar"`, keep it exactly as `"Interestellar"` — do not correct it to `"Interstellar"`
   - Values must be preserved exactly as they appear in the prompt or constraints, even if they seem misspelled or strange.
 
+
+### Example for event criteria:
+**Task Prompt:** *Fill out the contact form with a subject that contains 'Refund'.*
+
+{{
+  "type": "CheckEventTest",
+  "event_name": "CONTACT",
+  "event_criteria": {{
+    "subject": {{
+      "value": "Refund",
+      "operator": "contains"
+    }}
+  }},
+}}
+
 IMPORTANT: Return ONLY the raw JSON object without markdown code blocks or any other formatting.
 """
