@@ -1040,6 +1040,7 @@ For example, if the constraints are "movie_name contains 'Inception' AND content
 - CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
 - INCORRECT: "Write a comment about any movie" (missing specific constraints)
 - INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
+6. Use field values exactly as provided. Do **not** correct spelling, reword, or normalize entries (e.g., don't change 'Interestellar' to 'Interstellar').
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
