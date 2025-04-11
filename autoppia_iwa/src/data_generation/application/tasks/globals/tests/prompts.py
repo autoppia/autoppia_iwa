@@ -90,13 +90,13 @@ Each field in event_criteria can follow either of these structures:
   "reasoning": "Clear explanation of why this test is necessary."
 }}
 ```
-IMPORTANT: IF YOU DECIDE TO USE in_list or not_in_list operator dont forget add a list in the value like
+**IMPORTANT:** If you use `in_list` or `not_in_list` as the operator, make sure `value` is a JSON array like:
 {{
-  "value": "[value1,value2]",
-  "operator": "equals"
+  "value": ["value1", "value2"],
+  "operator": "not_in_list"
 }}
 
-EXAMPLES OF CORRECT OPERATOR USAGE:
+### CORRECT OPERATOR USAGE:
 - "operator": "equals"     ✓ CORRECT
 - "operator": "contains"   ✓ CORRECT
 - Omitting operator (uses "equals" by default)  ✓ CORRECT
