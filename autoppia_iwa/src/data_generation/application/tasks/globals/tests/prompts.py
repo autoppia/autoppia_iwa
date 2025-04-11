@@ -96,6 +96,8 @@ Each field in event_criteria can follow either of these structures:
   "operator": "not_in_list"
 }}
 
+PAY ATTENTION TO THE PROMPT TRY TO FIGURE OUT IF IT IS A CONTAINS OR EQUAL
+
 ### CORRECT OPERATOR USAGE:
 - "operator": "equals"     ✓ CORRECT
 - "operator": "contains"   ✓ CORRECT

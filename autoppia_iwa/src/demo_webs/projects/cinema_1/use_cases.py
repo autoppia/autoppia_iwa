@@ -1031,18 +1031,47 @@ FILTER_FILM_USE_CASE = UseCase(
 ###############################################################################
 ADD_COMMENT_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-3. Be phrased as a request to add a comment to a movie (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
-4. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
-5. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
-For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
-- CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
-- INCORRECT: "Write a comment about any movie" (missing specific constraints)
-- INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
-6. Use field values exactly as provided. Do **not** correct spelling, reword, or normalize entries (e.g., don't change 'Interestellar' to 'Interstellar').
+1. **Mention EXACTLY the constraints** for movie_name, commenter_name, or content, **using the same words** as the constraints.
+   - If the constraint is movie_name = 'Inception', you must say: "Add a comment to a movie whose name EQUALS 'Inception'."
+   - If the constraint is commenter_name contains 'John', you must say: "Ensure the commenter's name CONTAINS 'John'."
+   - If the constraint is content not_contains 'boring', you must say: "Ensure the comment's content does NOT contain 'boring'."
+   - Avoid ambiguous or vague phrases like "emotionally powerful," "true cinematic experience," or "redefines the genre." Instead, **only** use literal constraints from the system.
 
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+2. **Do NOT** introduce or interpret subjective phrases like "sets a new standard," "redefines the genre," "true cinematic experience," "is emotionally powerful," etc.
+   - If such a phrase appears in a constraint, rewrite it explicitly as content = "the exact substring" or content not_contains "the exact substring," or omit it if it doesn't map to an operator.
+
+3. The prompt MUST be phrased as a direct request to add or post a comment (e.g. "Add a comment...", "Write a review...", "Leave feedback...").
+   - If the constraint says commenter_name = 'Tom', you must say "Ensure the commenter's name EQUALS 'Tom'."
+
+4. If there's a constraint about `movie_name`, you must specify it: "Add a comment to a movie whose name [operator] 'XYZ'."
+   - If there's no constraint about movie_name, the prompt can simply say "Add a comment to a movie."
+
+5. If there's a constraint about `commenter_name`, you must reference the person posting the comment, e.g., "a comment from someone whose name CONTAINS 'John'."
+   - If there's no constraint, do not invent one.
+
+6. If there's a constraint about `content`, you must explicitly say "a comment whose content [operator] 'XYZ'."
+   - e.g. "a comment whose content NOT_CONTAINS 'boring'."
+
+7. **Use field values exactly as provided.** Do not correct spelling or reword.
+   - If the system says the movie_name is 'Interestellar', do NOT change it to 'Interstellar'.
+   - If the system says commenter_name not_equals 'Michael', you must keep 'Michael' exactly.
+
+8. **No extraneous constraints**: Do not add extra conditions like "with a rating of X", "mention your budget," etc. If it's not in the constraint, it must not appear.
+
+EXAMPLE of a correct prompt if the constraints are:
+- movie_name not_equals 'The Matrix'
+- commenter_name contains 'John'
+- content not_contains 'boring'
+
+CORRECT:
+"Add a comment to a movie whose name does NOT EQUAL 'The Matrix', with a commenter's name that CONTAINS 'John', and the comment content that does NOT CONTAIN 'boring'."
+
+INCORRECT (vague, missing details, or extra):
+- "Post a review for a film that is not The Matrix about an amazing experience" (vague and missing actual content constraint).
+- "Add a comment to any movie" (omits constraints).
+- "Write a comment that does not mention the word 'boring' but also do not mention 'bad acting' either" (extra constraint not in the system).
+
+ALL prompts must follow this structure, phrasing each constraint EXACTLY, and only the constraints that were specified.
 """
 ADD_COMMENT_USE_CASE = UseCase(
     name="ADD_COMMENT",
