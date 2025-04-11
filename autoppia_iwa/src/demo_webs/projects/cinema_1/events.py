@@ -145,10 +145,11 @@ class EditUserEvent(Event):
         if not criteria:
             return True
 
-        # Validate first_name
+        # Validate username
         if criteria.username is not None and not validate_criterion(self.username, criteria.username):
             return False
 
+        # Validate first_name
         if criteria.first_name is not None and not validate_criterion(self.first_name, criteria.first_name):
             return False
 
