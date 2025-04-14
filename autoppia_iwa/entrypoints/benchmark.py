@@ -37,7 +37,7 @@ logger.add(LOG_FILE, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} 
 class BenchmarkConfig:
     """Configuration for the benchmark test."""
 
-    web_project_index: int = 1
+    web_project_index: int = 0
 
     use_cached_tasks: bool = False
     use_cached_solutions: bool = False
