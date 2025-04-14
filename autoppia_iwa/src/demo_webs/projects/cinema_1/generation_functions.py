@@ -2,7 +2,8 @@ import random
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, MOVIES_DATA
+from ..shared_data import FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
+from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, MOVIES_DATA
 
 
 def generate_film_constraints():
@@ -631,8 +632,6 @@ def generate_edit_profile_constraints():
     Returns the constraints as structured data.
     """
     from random import choice, sample
-
-    from .data import FIELD_OPERATORS_MAP_EDIT_USER
 
     # Editable profile fields (username and email are excluded as mentioned in requirements)
     editable_fields = ["first_name", "last_name", "bio", "location", "website", "favorite_genres"]

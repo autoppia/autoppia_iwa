@@ -130,3 +130,10 @@ BOOKS_DATA = [
         "genres": ["Education", "Science"],
     },
 ]
+from ..shared_data import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
+
+FIELD_OPERATORS_MAP_ADD_COMMENT = {
+    "book_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "commenter_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "content": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+}

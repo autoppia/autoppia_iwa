@@ -131,47 +131,10 @@ MOVIES_DATA = [
     },
 ]
 
-# constants.py
-
-EQUALS = "equals"
-NOT_EQUALS = "not_equals"
-CONTAINS = "contains"
-NOT_CONTAINS = "not_contains"
-GREATER_THAN = "greater_than"
-LESS_THAN = "less_than"
-GREATER_EQUAL = "greater_equal"
-LESS_EQUAL = "less_equal"
-IN_LIST = "in_list"
-NOT_IN_LIST = "not_in_list"
-
-# Sugerencia de mapeo campo -> lista de operadores válidos
-FIELD_OPERATORS_MAP_FILM = {
-    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "director": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "year": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL, IN_LIST, NOT_IN_LIST],
-    "rating": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
-    "duration": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
-    "genres": [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST],
-}
-
-FIELD_OPERATORS_MAP_CONTACT = {
-    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "email": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "message": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-}
+from ..shared_data import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
 
 FIELD_OPERATORS_MAP_ADD_COMMENT = {
     "movie_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "commenter_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "content": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-}
-
-FIELD_OPERATORS_MAP_EDIT_USER = {
-    "first_name": [EQUALS, CONTAINS, NOT_CONTAINS],
-    "last_name": [EQUALS, CONTAINS, NOT_CONTAINS],
-    "bio": [EQUALS, CONTAINS, NOT_CONTAINS],
-    "location": [EQUALS, CONTAINS, NOT_CONTAINS],
-    "website": [EQUALS, CONTAINS, NOT_CONTAINS],
-    "favorite_genres": [IN_LIST, NOT_IN_LIST],
 }
