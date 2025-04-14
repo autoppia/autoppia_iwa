@@ -941,16 +941,16 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 5. Use ONLY the allowed genres and years from the lists below.
 
 ALLOWED YEARS:
-1972, 1990, 1994, 1999, 2001, 2008, 2010, 2014
+2024, 2023, 2022, 2020, 2019, 2018, 2005, 2001
 
 ALLOWED GENRES:
-"Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"
+"Children", "Cooking", "Culture", "Education", "History", "Magazine", "Music", "Romance", "Science", "Story"
 
-For example, if the constraints are "genre_name equals 'Action' AND year equals 1999":
-- CORRECT: "Filter for Action books released in 1999."
-- CORRECT: "Browse books from 1999 in the Action genre."
-- INCORRECT: "Search for Action books from the 90s" (uses vague year and incorrect phrasing).
-- INCORRECT: "Show all Action books" (missing the year constraint if both are provided).
+For example, if the constraints are "genre_name equals 'Culture' AND year equals 2020":
+- CORRECT: "Filter for 'Culture' books released in 2020."
+- CORRECT: "Browse books from 2020 in the 'Culture' genre."
+- INCORRECT: "Search for 'Culture' books from the 20s" (uses vague year and incorrect phrasing).
+- INCORRECT: "Show all 'Culture' books" (missing the year constraint if both are provided).
 - INCORRECT: "Filter for Mystery books" (Mystery is not in the allowed genre list).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -965,12 +965,12 @@ FILTER_BOOK_USE_CASE = UseCase(
     additional_prompt_info=FILTER_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Filter books released in the year 1994",
-            "prompt_for_task_generation": "Filter books released in the year 1994",
+            "prompt": "Filter books released in the year 2005",
+            "prompt_for_task_generation": "Filter books released in the year 2005",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_BOOK",
-                "event_criteria": {"year": 1994},
+                "event_criteria": {"year": 2005},
                 "reasoning": "Ensures that filtering books by the year 1994 correctly triggers the event.",
             },
         },
@@ -985,33 +985,33 @@ FILTER_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Browse books from 2010 in the Drama genre",
-            "prompt_for_task_generation": "Browse books from 2010 in the Drama genre",
+            "prompt": "Browse books from 2019 in the Story genre",
+            "prompt_for_task_generation": "Browse books from 2019 in the Story genre",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_BOOK",
-                "event_criteria": {"year": 2010, "genre_name": "Drama"},
+                "event_criteria": {"year": 2019, "genre_name": "Story"},
                 "reasoning": "Validates that filtering by both year and genre applies correctly.",
             },
         },
         {
-            "prompt": "Filter Screen books from 1999",
-            "prompt_for_task_generation": "Filter Screen books from 1999",
+            "prompt": "Filter Screen books from 2022",
+            "prompt_for_task_generation": "Filter Screen books from 2022",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_BOOK",
-                "event_criteria": {"year": 1999},
-                "reasoning": "Ensures screening books by the year 1999 works independently.",
+                "event_criteria": {"year": 2022},
+                "reasoning": "Ensures screening books by the year 2022 works independently.",
             },
         },
         {
-            "prompt": "Filter book list to Sci-Fi genre",
-            "prompt_for_task_generation": "Filter book list to Sci-Fi genre",
+            "prompt": "Filter book list to Education genre",
+            "prompt_for_task_generation": "Filter book list to Education genre",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "FILTER_BOOK",
-                "event_criteria": {"genre_name": "Sci-Fi"},
-                "reasoning": "Ensures refining books by the 'Sci-Fi' genre works independently.",
+                "event_criteria": {"genre_name": "Education"},
+                "reasoning": "Ensures refining books by the 'Education' genre works independently.",
             },
         },
     ],
@@ -1026,8 +1026,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
 3. Be phrased as a request to add a comment to a book (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
 4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
-For example, if the constraints are "book_name contains 'Inception' AND content not_contains 'boring'":
-- CORRECT: "Add a comment to a book that contains 'Inception' with a review that does NOT contain the word 'boring'."
+For example, if the constraints are "book_name contains 'Fourth Win' AND content not_contains 'boring'":
+- CORRECT: "Add a comment to a book that contains 'Fourth Win' with a review that does NOT contain the word 'boring'."
 - INCORRECT: "Write a comment about any book" (missing specific constraints)
 - INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
 
@@ -1042,12 +1042,12 @@ ADD_COMMENT_USE_CASE = UseCase(
     additional_prompt_info=ADD_COMMENT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Navigate to a book and add a comment about Inception",
+            "prompt": "Navigate to a book and add a comment about 'Fourth Win'",
             "prompt_for_task_generation": "Navigate to <book> and add a comment",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_COMMENT",
-                "event_criteria": {"book_name": {"value": "Inception", "operator": "equals"}},
+                "event_criteria": {"book_name": {"value": "Fourth Win", "operator": "equals"}},
                 "reasoning": "Verifies adding a comment to a specific book.",
             },
         },
@@ -1088,7 +1088,7 @@ ADD_COMMENT_USE_CASE = UseCase(
                 "type": "CheckEventTest",
                 "event_name": "ADD_COMMENT",
                 "event_criteria": {
-                    "book_name": {"value": "Interstellar", "operator": "equals"},
+                    "book_name": {"value": "Elementary Statistics", "operator": "equals"},
                     "content": {"value": "boring", "operator": "not_contains"},
                     "commenter_name": {"value": "David", "operator": "not_equals"},
                 },
