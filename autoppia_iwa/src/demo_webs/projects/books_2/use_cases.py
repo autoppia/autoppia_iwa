@@ -12,8 +12,10 @@ from .events import (
     FilterBookEvent,
     LoginEvent,
     LogoutEvent,
+    PurchaseBookEvent,
     RegistrationEvent,
     SearchBookEvent,
+    ShoppingCartEvent,
 )
 from .generation_functions import (
     generate_add_book_constraints,
@@ -1098,6 +1100,123 @@ ADD_COMMENT_USE_CASE = UseCase(
     ],
 )
 
+SHOPPING_CART_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to add/remove/view items in the shopping cart (e.g., "Add to cart...", "Remove from cart...", "View cart...", "Update cart...").
+4. Explicitly mention the shopping cart in the prompt (e.g., "shopping cart", "cart").
+5. If constraints include book_name or quantity, they MUST be referenced directly in the prompt.
+
+For example, if the constraints are "book_name equals 'Inception' AND quantity equals 2":
+- CORRECT: "Add 2 copies of Inception to the shopping cart."
+- CORRECT: "Update the cart to include 2 Inception books."
+- INCORRECT: "Put some books in the cart" (missing specific constraints).
+- INCORRECT: "Add Inception to my list" (doesn't mention cart).
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+SHOPPING_CART_USE_CASE = UseCase(
+    name="SHOPPING_CART",
+    description="The user interacts with the shopping cart by adding, removing, or viewing items.",
+    event=ShoppingCartEvent,
+    event_source_code=ShoppingCartEvent.get_source_code_of_class(),
+    # constraints_generator=generate_shopping_cart_constraints,
+    additional_prompt_info=SHOPPING_CART_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Add the book 'Fourth Win' to the shopping cart",
+            "prompt_for_task_generation": "Add the book '<book>' to the shopping cart",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "SHOPPING_CART",
+                "event_criteria": {"book_name": {"value": "Fourth Win", "operator": "equals"}},
+                "reasoning": "Ensures that a book with a specific name can be added to the shopping cart.",
+            },
+        },
+        {
+            "prompt": "Place 'Elementary Statistics' in the cart",
+            "prompt_for_task_generation": "Place '<book>' in the cart",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "SHOPPING_CART",
+                "event_criteria": {"book_name": {"value": "Elementary Statistics", "operator": "equals"}},
+                "reasoning": "Tests another phrasing for adding a book to the cart.",
+            },
+        },
+        {
+            "prompt": "Add 'Dark Nights: Metal: Dark Knights Rising' to basket",
+            "prompt_for_task_generation": "Add '<book>' to basket",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "SHOPPING_CART",
+                "event_criteria": {"book_name": {"value": "Dark Nights: Metal: Dark Knights Rising", "operator": "equals"}},
+                "reasoning": "Verifies alternative synonym usage for shopping cart.",
+            },
+        },
+    ],
+)
+
+
+PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...", "Checkout...", "Complete order...").
+4. Explicitly mention the purchase/checkout action in the prompt.
+5. If constraints include payment_method or shipping_address, they MUST be referenced directly.
+
+For example, if constraints are "payment_method equals 'Credit Card'":
+- CORRECT: "Purchase my cart items with Credit Card payment."
+- CORRECT: "Checkout using Credit Card."
+- INCORRECT: "Buy my books" (missing payment method constraint).
+- INCORRECT: "Complete purchase with unspecified details" (vague).
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+PURCHASE_BOOK_USE_CASE = UseCase(
+    name="PURCHASE_BOOK",
+    description="The user completes a purchase of items in the shopping cart.",
+    event=PurchaseBookEvent,
+    event_source_code=PurchaseBookEvent.get_source_code_of_class(),
+    replace_func=replace_book_placeholders,
+    # constraints_generator=generate_purchase_book_constraints,
+    additional_prompt_info=PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Purchase the book titled 'Dark Nights: Metal: Dark Knights Rising'",
+            "prompt_for_task_generation": "Purchase the book titled <book>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "PURCHASE_BOOK",
+                "event_criteria": {"book_name": {"value": "Dark Nights: Metal: Dark Knights Rising", "operator": "equals"}},
+                "reasoning": "Ensures the book 'Dark Nights: Metal: Dark Knights Rising' is purchased directly.",
+            },
+        },
+        {
+            "prompt": "Checkout with 'Elementary Statistics'",
+            "prompt_for_task_generation": "Checkout with <book>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "PURCHASE_BOOK",
+                "event_criteria": {"book_name": {"value": "Elementary Statistics", "operator": "equals"}},
+                "reasoning": "Validates that the checkout process includes the right book.",
+            },
+        },
+        {
+            "prompt": "Buy the book 'Fourth Win' now",
+            "prompt_for_task_generation": "Buy the book <book> now",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "PURCHASE_BOOK",
+                "event_criteria": {"book_name": {"value": "Fourth Win", "operator": "equals"}},
+                "reasoning": "Tests a direct instruction to purchase a book.",
+            },
+        },
+    ],
+)
 
 ###############################################################################
 # FINAL LIST: ALL_USE_CASES
@@ -1118,4 +1237,6 @@ ALL_USE_CASES = [
     FILTER_BOOK_USE_CASE,
     DELETE_BOOK_USE_CASE,
     ADD_COMMENT_USE_CASE,
+    SHOPPING_CART_USE_CASE,
+    PURCHASE_BOOK_USE_CASE,
 ]

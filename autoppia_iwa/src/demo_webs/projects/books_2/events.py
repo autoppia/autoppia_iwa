@@ -1018,7 +1018,22 @@ class ShoppingCartEvent(Event):
 # =============================================================================
 
 
-EVENTS = [RegistrationEvent, LoginEvent, LogoutEvent, BookDetailEvent, SearchBookEvent, AddBookEvent, EditBookEvent, DeleteBookEvent, AddCommentEvent, ContactEvent, EditUserEvent, FilterBookEvent]
+EVENTS = [
+    RegistrationEvent,
+    LoginEvent,
+    LogoutEvent,
+    BookDetailEvent,
+    SearchBookEvent,
+    AddBookEvent,
+    EditBookEvent,
+    DeleteBookEvent,
+    AddCommentEvent,
+    ContactEvent,
+    EditUserEvent,
+    FilterBookEvent,
+    ShoppingCartEvent,
+    PurchaseBookEvent,
+]
 
 BACKEND_EVENT_TYPES = {
     "LOGIN": LoginEvent,
@@ -1033,4 +1048,6 @@ BACKEND_EVENT_TYPES = {
     "ADD_COMMENT": AddCommentEvent,
     "CONTACT": ContactEvent,
     "FILTER_BOOK": FilterBookEvent,
+    "SHOPPING_CART": ShoppingCartEvent,
+    "PURCHASE_BOOK": PurchaseBookEvent,
 }
