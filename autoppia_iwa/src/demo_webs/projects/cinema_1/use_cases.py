@@ -1105,22 +1105,16 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    #############################
-    # ====> SOLVE THESE <====
-    ############################
-    # EDIT_FILM_USE_CASE,  # Solved
-    # FILM_DETAIL_USE_CASE,
-    # ADD_FILM_USE_CASE,  # Solved
-    # EDIT_USER_PROFILE_USE_CASE,  # Solved
-    #############################
-    # ====> SOLVED RIVER <====
-    #############################
-    # CONTACT_USE_CASE,
-    # LOGIN_USE_CASE,
-    # REGISTRATION_USE_CASE,
-    # SEARCH_FILM_USE_CASE,
-    # LOGOUT_USE_CASE,
-    # FILTER_FILM_USE_CASE,
-    # DELETE_FILM_USE_CASE,
+    EDIT_FILM_USE_CASE,
+    FILM_DETAIL_USE_CASE,
+    ADD_FILM_USE_CASE,
+    EDIT_USER_PROFILE_USE_CASE,
+    CONTACT_USE_CASE,
+    LOGIN_USE_CASE,
+    REGISTRATION_USE_CASE,
+    SEARCH_FILM_USE_CASE,
+    LOGOUT_USE_CASE,
+    FILTER_FILM_USE_CASE,
+    DELETE_FILM_USE_CASE,
     ADD_COMMENT_USE_CASE,
 ]
