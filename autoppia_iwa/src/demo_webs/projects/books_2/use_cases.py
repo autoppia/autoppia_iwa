@@ -975,13 +975,13 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Login for the following username:director101 and password:pass654. Update your favorite genre to Sci-Fi.",
+            "prompt": "Login for the following username:author101 and password:pass654. Update your favorite genre to Sci-Fi.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your favorite genre to <genre>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_PROFILE",
                 "event_criteria": {
-                    "username": {"value": "director101", "operator": "equals"},
+                    "username": {"value": "author101", "operator": "equals"},
                     "favorite_genres": {"value": "Sci-Fi", "operator": "equals"},
                 },
                 "reasoning": "Ensures the favorite genre is updated.",
