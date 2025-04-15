@@ -332,16 +332,16 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
    - "Look up a book..."
 2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
 3. Include ONLY the book title as part of the search
-4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
+4. DO NOT include ANY constraints or conditions like author, year, genre, etc.
 
 For example:
-- CORRECT: "Search for the book Inception in the database"
-- CORRECT: "Look for the book Titanic"
-- CORRECT: "Find books called The Matrix"
-- INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
-- INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
-- INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
-- INCORRECT: "Find a book called Inception released after 2010" (includes constraints)
+- CORRECT: "Search for the book 'A Breath of Snow and Ashes' in the database"
+- CORRECT: "Look for the book 'Fourth Wing'"
+- CORRECT: "Find books called The 'The Housemaid Is Watching'"
+- INCORRECT: "Show me details about 'Fourth Wing'" (doesn't specify it's a search)
+- INCORRECT: "Give me information on 'The Housemaid Is Watching'" (ambiguous, doesn't clearly indicate search)
+- INCORRECT: "Search for 'A Breath of Snow and Ashes' NOT written by James Cameron" (includes constraints)
+- INCORRECT: "Find a book called 'Dark Nights: Metal: Dark Knights Rising' released after 2018" (includes constraints)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
 """
@@ -355,43 +355,53 @@ SEARCH_BOOK_USE_CASE = UseCase(
     additional_prompt_info=SEARCH_BOOK_INFO,
     examples=[
         {
-            "prompt": "Look for the book 'The Shawshank Redemption'",
+            "prompt": "Look for the book 'Lidia's Italian-American Kitchen'",
             "prompt_for_task_generation": "Look for the book '<book>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "The Shawshank Redemption"}},
+                "event_criteria": {"query": {"value": "Lidia's Italian-American Kitchen"}},
                 "reasoning": "This test applies when searching for a specific book title <book>",
             },
         },
         {
-            "prompt": "Find a book called 'Forrest Gump'",
+            "prompt": "Find a book called 'Programming Massively Parallel Processors' starring Al Pacino",
             "prompt_for_task_generation": "Find a book called '<book>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "Forrest Gump", "operator": "equals"}},
+                "event_criteria": {"query": {"value": "Programming Massively Parallel Processors", "operator": "equals"}},
                 "reasoning": "This test applies when searching for the book <book>.",
             },
         },
         {
-            "prompt": "Search for Interestellar in the book database",
+            "prompt": "Search for 'Elementary Statistics' in the book database",
             "prompt_for_task_generation": "Search for '<book>' in the book database",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "ar", "operator": "equals"}},
+                "event_criteria": {"query": {"value": "Elementary Statistics", "operator": "equals"}},
                 "reasoning": "This test applies when searching for the book <book>.",
             },
         },
         {
-            "prompt": "Look up a book 'The Dark Knight'",
+            "prompt": "Look up a book 'Dark Nights: Metal: Dark Knights Rising' featuring Uma Thurman",
             "prompt_for_task_generation": "Look up a book '<book>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "The Dark Knight"}},
+                "event_criteria": {"query": {"value": "Dark Nights: Metal: Dark Knights Rising"}},
                 "reasoning": "This test applies when searching for <book>.",
+            },
+        },
+        {
+            "prompt": "Find a book called 'Case Files Family Medicine 5th Edition' with Leonardo DiCaprio on the cover",
+            "prompt_for_task_generation": "Find a book called '<book>'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "SEARCH_BOOK",
+                "event_criteria": {"query": {"value": "Case Files Family Medicine 5th Edition", "operator": "equals"}},
+                "reasoning": "This test applies when searching for the book <book>.",
             },
         },
     ],
