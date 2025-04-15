@@ -511,7 +511,7 @@ ADD_BOOK_USE_CASE = UseCase(
         },
         {
             "prompt": "Add the book 'Deep Work' with running time at least 450 minutes starring Cal Newport",
-            "prompt_for_task_generation": "Add the book '<book>' with running time at least <duration> minutes starring <cast>",
+            "prompt_for_task_generation": "Add the book '<book>' with running time at least <page_count> minutes starring <cast>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -535,15 +535,15 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to edit or modify a book (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
 
-For example, if the constraints are "year equals 2014 AND director contains 'e'":
-- CORRECT: "Edit a book where the year equals 2014 and the director's name contains the letter 'e'."
+For example, if the constraints are "year equals 2014 AND author contains 'e'":
+- CORRECT: "Edit a book where the year equals 2014 and the author's name contains the letter 'e'."
 - INCORRECT: "Edit a random book with a high rating" (you added an extra filter).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 EDIT_BOOK_USE_CASE = UseCase(
     name="EDIT_BOOK",
-    description="The user edits an existing book, modifying one or more attributes such as name, director, year, genres, rating, duration, or cast.",
+    description="The user edits an existing book, modifying one or more attributes such as name, author, year, genres, rating, page_count.",
     event=EditBookEvent,
     event_source_code=EditBookEvent.get_source_code_of_class(),
     replace_func=replace_book_placeholders,
@@ -551,69 +551,81 @@ EDIT_BOOK_USE_CASE = UseCase(
     additional_prompt_info=EDIT_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Update the director of The Matrix to Christopher Nolan",
-            "prompt_for_task_generation": "Update the director of <book> to Christopher Nolan",
+            "prompt": "Update the author of 'Lidia's Italian-American Kitchen' to Jamie Oliver",
+            "prompt_for_task_generation": "Update the author of <book> to Jamie Oliver",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "name": {"value": "The Matrix", "operator": "equals"},
-                    "director": {"value": "Christopher Nolan", "operator": "equals"},
+                    "name": {"value": "Lidia's Italian-American Kitchen", "operator": "equals"},
+                    "author": {"value": "Jamie Oliver", "operator": "equals"},
                 },
-                "reasoning": "Ensures the new director is recorded.",
+                "reasoning": "Ensures the new author is recorded.",
             },
         },
         {
-            "prompt": "Modify the release year of Pulp Fiction to 1994",
-            "prompt_for_task_generation": "Modify the release year of <book> to 1994",
+            "prompt": "Modify the release year of 'Programming Massively Parallel Processors' to 2023",
+            "prompt_for_task_generation": "Modify the release year of <book> to 2023",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
-                "event_criteria": {"name": {"value": "Pulp Fiction", "operator": "equals"}, "year": {"value": 1994, "operator": "equals"}},
+                "event_criteria": {
+                    "name": {"value": "Programming Massively Parallel Processors", "operator": "equals"},
+                    "year": {"value": 2023, "operator": "equals"},
+                },
                 "reasoning": "Ensures the new year is recorded.",
             },
         },
         {
-            "prompt": "Add Sci-Fi to the genres of Inception",
-            "prompt_for_task_generation": "Add 'Sci-Fi' to the genres of <book>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {"name": {"value": "Inception", "operator": "equals"}, "genre": {"value": "Sci-Fi", "operator": "contains"}},
-                "reasoning": "Verifies that the new genre is added.",
-            },
-        },
-        {
-            "prompt": "Change the rating of Interstellar to 4.8",
-            "prompt_for_task_generation": "Change the rating of <book> to 4.8",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {"name": {"value": "Interestellar", "operator": "equals"}, "rating": {"value": 4.8, "operator": "equals"}},
-                "reasoning": "Ensures the rating is updated correctly.",
-            },
-        },
-        {
-            "prompt": "Edit the duration of The Godfather to 175 minutes",
-            "prompt_for_task_generation": "Edit the duration of <book> to 175 minutes",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {"name": {"value": "The Godfather", "operator": "equals"}, "duration": {"value": 175, "operator": "equals"}},
-                "reasoning": "Ensures that the duration is updated.",
-            },
-        },
-        {
-            "prompt": "Modify the cast of The Shawshank Redemption to include Morgan Freeman",
-            "prompt_for_task_generation": "Modify the cast of <book> to include 'Morgan Freeman'",
+            "prompt": "Add 'Baking' to the genres of 'Lidia's Italian-American Kitchen'",
+            "prompt_for_task_generation": "Add 'Baking' to the genres of <book>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "name": {"value": "The Shawshank Redemption", "operator": "equals"},
-                    "cast": {"value": "Morgan Freeman", "operator": "contains"},
+                    "name": {"value": "Lidia's Italian-American Kitchen", "operator": "equals"},
+                    "genres": {"value": "Baking", "operator": "contains"},
                 },
-                "reasoning": "Ensures the cast changes are properly logged.",
+                "reasoning": "Verifies that the new genre is added.",
+            },
+        },
+        {
+            "prompt": "Change the rating of 'Elementary Statistics' to 4.9",
+            "prompt_for_task_generation": "Change the rating of <book> to 4.9",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "EDIT_BOOK",
+                "event_criteria": {
+                    "name": {"value": "Elementary Statistics", "operator": "equals"},
+                    "rating": {"value": 4.9, "operator": "equals"},
+                },
+                "reasoning": "Ensures the rating is updated correctly.",
+            },
+        },
+        {
+            "prompt": "Edit the duration of 'A Breath of Snow and Ashes' to 1000 pages",
+            "prompt_for_task_generation": "Edit the duration of <book> to 1000 pages",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "EDIT_BOOK",
+                "event_criteria": {
+                    "name": {"value": "A Breath of Snow and Ashes", "operator": "equals"},
+                    "duration": {"value": 1000, "operator": "equals"},
+                },
+                "reasoning": "Ensures that the duration is updated.",
+            },
+        },
+        {
+            "prompt": "Modify the author of 'Dark Nights: Metal: Dark Knights Rising' to include Neil Gaiman",
+            "prompt_for_task_generation": "Modify the author of <book> to include 'Neil Gaiman'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "EDIT_BOOK",
+                "event_criteria": {
+                    "name": {"value": "Dark Nights: Metal: Dark Knights Rising", "operator": "equals"},
+                    "author": {"value": "Neil Gaiman", "operator": "contains"},
+                },
+                "reasoning": "Ensures the author changes are properly logged.",
             },
         },
     ],
@@ -643,103 +655,134 @@ DELETE_BOOK_USE_CASE = UseCase(
     constraints_generator=generate_book_constraints,
     examples=[
         {
-            "prompt": "Remove The Matrix, a book released after 2014, from the database",
+            "prompt": "Remove 'Programming Massively Parallel Processors', a book released after 2021, from the database",
             "prompt_for_task_generation": "Remove '<book>' that was released after <year> from the database",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"name": {"value": "The Matrix", "operator": "equals"}, "year": {"value": 2014, "operator": "greater_than"}},
-                "reasoning": "Ensures that 'The Matrix' is deleted and that its release year is greater than 2014.",
+                "event_criteria": {
+                    "name": {"value": "Programming Massively Parallel Processors", "operator": "equals"},
+                    "year": {"value": 2021, "operator": "greater_than"},
+                },
+                "reasoning": "Ensures the book is deleted and its release year is greater than 2021.",
             },
         },
         {
-            "prompt": "Erase all records of Pulp Fiction, a book not directed by Quentin Tarantino",
-            "prompt_for_task_generation": "Erase all records of '<book>' not directed by <director>",
+            "prompt": "Erase all records of 'Dark Nights: Metal: Dark Knights Rising', a book not authored by Stephen King",
+            "prompt_for_task_generation": "Erase all records of '<book>' not authored by <author>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"name": {"value": "Pulp Fiction", "operator": "equals"}, "director": {"value": "Quentin Tarantino", "operator": "not_equals"}},
-                "reasoning": "Confirms that 'Pulp Fiction' is deleted and verifies that the book's director is not Quentin Tarantino.",
+                "event_criteria": {
+                    "name": {"value": "Dark Nights: Metal: Dark Knights Rising", "operator": "equals"},
+                    "author": {"value": "Stephen King", "operator": "not_equals"},
+                },
+                "reasoning": "Confirms deletion and verifies the author is not Stephen King.",
             },
         },
         {
-            "prompt": "Permanently delete The Godfather, which has a duration greater than 175 minutes",
-            "prompt_for_task_generation": "Permanently delete '<book>' with duration greater than <duration> minutes",
+            "prompt": "Permanently delete 'Ettinger's Textbook of Veterinary Internal Medicine', which has a duration greater than 2000 pages",
+            "prompt_for_task_generation": "Permanently delete '<book>' with duration greater than <duration> pages",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"name": {"value": "The Godfather", "operator": "equals"}, "duration": {"value": 175, "operator": "greater_than"}},
-                "reasoning": "Ensures that 'The Godfather' is permanently removed and that its duration exceeds 175 minutes.",
+                "event_criteria": {
+                    "name": {"value": "Ettinger's Textbook of Veterinary Internal Medicine", "operator": "equals"},
+                    "duration": {"value": 2000, "operator": "greater_than"},
+                },
+                "reasoning": "Ensures the book is removed and its page count exceeds 2000.",
             },
         },
         {
-            "prompt": "Discard Titanic, a book with a rating less than 7.0, from the system",
+            "prompt": "Discard 'Case Files Family Medicine 5th Edition', a book with a rating less than 4.6",
             "prompt_for_task_generation": "Discard '<book>' with rating less than <rating>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"name": {"value": "Titanic", "operator": "equals"}, "rating": {"value": 7.0, "operator": "less_than"}},
-                "reasoning": "Verifies that 'Titanic' is discarded and its rating is below 7.0.",
+                "event_criteria": {
+                    "name": {"value": "Case Files Family Medicine 5th Edition", "operator": "equals"},
+                    "rating": {"value": 4.6, "operator": "less_than"},
+                },
+                "reasoning": "Verifies deletion and checks the rating is below 4.6.",
             },
         },
         {
-            "prompt": "Remove Airplane!, a comedy book released before 1980, from the records",
+            "prompt": "Remove 'A Breath of Snow and Ashes', a historical fiction book released before 2010",
             "prompt_for_task_generation": "Remove a <genre> book called '<book>' released before <year>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"name": {"value": "Airplane!", "operator": "equals"}, "genres": {"value": ["Comedy"], "operator": "contains"}, "year": {"value": 1980, "operator": "less_than"}},
-                "reasoning": "Checks that 'Airplane!' is removed and meets the genre and release year criteria.",
+                "event_criteria": {
+                    "name": {"value": "A Breath of Snow and Ashes", "operator": "equals"},
+                    "genres": {"value": ["Magazine"], "operator": "contains"},
+                    "year": {"value": 2010, "operator": "less_than"},
+                },
+                "reasoning": "Checks deletion and validates genre/release year.",
             },
         },
         {
-            "prompt": "Erase the horror book that is not directed by Wes Craven",
-            "prompt_for_task_generation": "Erase a <genre> book not directed by <director>",
+            "prompt": "Erase the education book that is not authored by Donald Knuth",
+            "prompt_for_task_generation": "Erase a <genre> book not authored by <author>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"genres": {"value": ["Horror"], "operator": "contains"}, "director": {"value": "Wes Craven", "operator": "not_equals"}},
-                "reasoning": "Ensures deletion of a horror book and verifies that it is not directed by Wes Craven.",
+                "event_criteria": {
+                    "genres": {"value": ["Education"], "operator": "contains"},
+                    "author": {"value": "Donald Knuth", "operator": "not_equals"},
+                },
+                "reasoning": "Ensures deletion of an education book not by Knuth.",
             },
         },
         {
-            "prompt": "Permanently delete a book featuring Robert De Niro that was released after 2000",
-            "prompt_for_task_generation": "Permanently delete a book with cast containing <actor> and released after <year>",
+            "prompt": "Permanently delete a book authored by 'Diana Gabaldon' that was released after 2000",
+            "prompt_for_task_generation": "Permanently delete a book with author containing <author> and released after <year>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"cast": {"value": "Robert De Niro", "operator": "contains"}, "year": {"value": 2000, "operator": "greater_than"}},
-                "reasoning": "Verifies that the book to be deleted features Robert De Niro and was released after the year 2000.",
+                "event_criteria": {
+                    "author": {"value": "Diana Gabaldon", "operator": "contains"},
+                    "year": {"value": 2000, "operator": "greater_than"},
+                },
+                "reasoning": "Verifies deletion of a post-2000 book featuring Diana Gabaldon.",
             },
         },
         {
-            "prompt": "Discard Inception, a book with a rating greater than 8.0, from the system",
+            "prompt": "Discard 'Fourth Wing', a book with a rating greater than 4.5",
             "prompt_for_task_generation": "Discard '<book>' with rating greater than <rating>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"name": {"value": "Inception", "operator": "equals"}, "rating": {"value": 8.0, "operator": "greater_than"}},
-                "reasoning": "Ensures that 'Inception' is discarded and its rating exceeds 8.0.",
+                "event_criteria": {
+                    "name": {"value": "Fourth Wing", "operator": "equals"},
+                    "rating": {"value": 4.5, "operator": "greater_than"},
+                },
+                "reasoning": "Ensures deletion and checks rating exceeds 4.5.",
             },
         },
         {
-            "prompt": "Remove Gladiator, ensuring it was released before 2000",
+            "prompt": "Remove 'The Housemaid Is Watching', ensuring it was released before 2025",
             "prompt_for_task_generation": "Remove '<book>' ensuring it was released before <year>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"name": {"value": "Gladiator", "operator": "equals"}, "year": {"value": 2000, "operator": "less_than"}},
-                "reasoning": "Verifies that 'Gladiator' is removed and that its release year is before 2000.",
+                "event_criteria": {
+                    "name": {"value": "The Housemaid Is Watching", "operator": "equals"},
+                    "year": {"value": 2025, "operator": "less_than"},
+                },
+                "reasoning": "Verifies deletion and release year is before 2025.",
             },
         },
         {
-            "prompt": "Erase all records of Avatar, a book that does not belong to the Action genre",
+            "prompt": "Erase all records of 'Art of Computer Programming', a book that does not belong to the Romance genre",
             "prompt_for_task_generation": "Erase all records of '<book>' that does not belong to the <genre> genre",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {"name": {"value": "Avatar", "operator": "equals"}, "genres": {"value": ["Action"], "operator": "not_contains"}},
-                "reasoning": "Checks that 'Avatar' is erased and confirms that it does not belong to the Action genre.",
+                "event_criteria": {
+                    "name": {"value": "Art of Computer Programming, the, Volumes 1-4B, Boxed Set", "operator": "equals"},
+                    "genres": {"value": ["Romance"], "operator": "not_contains"},
+                },
+                "reasoning": "Confirms deletion and genre exclusion.",
             },
         },
     ],
