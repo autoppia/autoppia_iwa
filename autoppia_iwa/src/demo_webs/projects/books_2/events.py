@@ -272,7 +272,6 @@ class BookDetailEvent(Event):
     book_genres: list[str] = Field(default_factory=list)
     book_rating: float | None = None
     book_pages: int | None = None
-    book_cast: str | None = None
 
     class ValidationCriteria(BaseModel):
         """
@@ -348,7 +347,6 @@ class BookDetailEvent(Event):
             book_genres=genres,
             book_rating=data.get("rating"),
             book_pages=data.get("duration"),
-            book_cast=data.get("cast", ""),
         )
 
 
@@ -364,7 +362,6 @@ class AddBookEvent(Event):
     book_genres: list[str] = Field(default_factory=list)
     book_rating: float | None = None
     book_pages: int | None = None
-    book_cast: str | None = None
 
     class ValidationCriteria(BaseModel):
         """Criteria for validating add book events"""
@@ -433,7 +430,6 @@ class AddBookEvent(Event):
             book_genres=genres,
             book_rating=data.get("rating"),
             book_pages=data.get("duration"),
-            book_cast=data.get("cast", ""),
         )
 
 
@@ -449,7 +445,6 @@ class EditBookEvent(Event):
     book_genres: list[str] = Field(default_factory=list)
     book_rating: float | None = None
     book_pages: int | None = None
-    book_cast: str | None = None
     previous_values: dict[str, Any] = Field(default_factory=dict)
     changed_fields: list[str] = Field(default_factory=list)
 
@@ -548,7 +543,6 @@ class EditBookEvent(Event):
             book_genres=genres,
             book_rating=data.get("rating"),
             book_pages=data.get("duration"),
-            book_cast=data.get("cast", ""),
             previous_values=previous_values,
             changed_fields=changed_fields,
         )
