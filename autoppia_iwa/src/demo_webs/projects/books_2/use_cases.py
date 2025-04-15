@@ -212,48 +212,49 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 BOOKS NAMES:
 {chr(10).join([n["name"] for n in BOOKS_DATA])}
 
-For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
-- CORRECT: "Show me details about a book not directed by Robert Zemeckis that was released after 2010"
-- INCORRECT: "Show me details about a book directed by Christopher Nolan" (you added a random director, and missing the year constraint)
-- INCORRECT: "Show me details about a book not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
 """
+
 BOOK_DETAIL_USE_CASE = UseCase(
     name="BOOK_DETAIL",
-    description="The user explicitly requests to navigate to or go to the details page of a specific book that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    description="The user explicitly requests to navigate to or go to the details page of a specific book that meets certain criteria, where they can view information including author, year, genres, rating, page count, and characters.",
     event=BookDetailEvent,
     event_source_code=BookDetailEvent.get_source_code_of_class(),
     additional_prompt_info=BOOK_DETAIL_INFO,
     constraints_generator=generate_book_constraints,
     examples=[
         {
-            "prompt": "Navigate to The Matrix book page",
+            "prompt": "Navigate to 'The Housemaid Is Watching' book page",
             "prompt_for_task_generation": "Navigate to <book> book page",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"name": {"value": "The Matrix", "operator": "equals"}},
-                "reasoning": "Explicitly directs the system to navigate to The Matrix book detail page.",
+                "event_criteria": {"name": {"value": "The Housemaid Is Watching", "operator": "equals"}},
+                "reasoning": "Explicitly directs the system to navigate to 'The Housemaid Is Watching' book detail page.",
             },
         },
         {
-            "prompt": "Go to the book details page for Interstellar by Christopher Nolan",
-            "prompt_for_task_generation": "Go to the book details page for <book> by <director>",
+            "prompt": "Go to the book details page for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Go to the book details page for <book> by <author>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"name": {"value": "Interstellar", "operator": "equals"}, "director": {"value": "Christopher Nolan", "operator": "equals"}},
-                "reasoning": "Explicitly directs the system to go to the Interstellar book details page, using director as additional criteria.",
+                "event_criteria": {"name": {"value": "Art of Computer Programming, the, Volumes 1-4B, Boxed Set", "operator": "equals"}, "author": {"value": "Donald Knuth", "operator": "equals"}},
+                "reasoning": "Explicitly directs the system to go to the 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' book details page, using author as additional criteria.",
             },
         },
         {
-            "prompt": "Navigate directly to a sci-fi book page from 2010",
+            "prompt": "Navigate directly to a Science book page from 2022",
             "prompt_for_task_generation": "Navigate directly to a <genre> book page from <year>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"genres": {"value": ["Sci-Fi"], "operator": "contains"}, "year": {"value": 2010, "operator": "equals"}},
+                "event_criteria": {"genres": {"value": ["Science"], "operator": "contains"}, "year": {"value": 2022, "operator": "equals"}},
                 "reasoning": "Explicitly instructs the system to navigate to a book detail page that matches both genre and year criteria.",
             },
         },
@@ -268,53 +269,53 @@ BOOK_DETAIL_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Take me directly to the Pulp Fiction book details page",
+            "prompt": "Take me directly to the 'Fourth Wing' book details page",
             "prompt_for_task_generation": "Take me directly to the <book> book details page",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"name": {"value": "Pulp Fiction", "operator": "equals"}},
-                "reasoning": "Explicitly requests direct navigation to the Pulp Fiction book detail page.",
+                "event_criteria": {"name": {"value": "Fourth Wing", "operator": "equals"}},
+                "reasoning": "Explicitly requests direct navigation to the 'Fourth Wing' book detail page.",
             },
         },
         {
-            "prompt": "Navigate to a comedy book page less than 100 minutes long",
-            "prompt_for_task_generation": "Navigate to a <genre> book page less than <duration> minutes long",
+            "prompt": "Navigate to a 'Magazine' book page less than 1000 pages long",
+            "prompt_for_task_generation": "Navigate to a <genre> book page less than <page_count> pages long",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"genres": {"value": ["Comedy"], "operator": "contains"}, "duration": {"value": 100, "operator": "less_than"}},
-                "reasoning": "Explicitly directs the system to navigate to a book detail page that matches both genre and duration criteria.",
+                "event_criteria": {"genres": {"value": ["Magazine"], "operator": "contains"}, "duration": {"value": 1000, "operator": "less_than"}},
+                "reasoning": "Explicitly directs the system to navigate to a book detail page that matches both genre and page count criteria.",
             },
         },
         {
-            "prompt": "Go to a book details page from the 90s with Al Pacino",
-            "prompt_for_task_generation": "Go to a book details page from the <decade>s with <actor>",
+            "prompt": "Go to a book details page from the 2010s directed by 'Ron Larson'",
+            "prompt_for_task_generation": "Go to a book details page from the <decade> directed by '<author>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"year": {"value": [1990, 1999], "operator": "between"}, "cast": {"value": "Al Pacino", "operator": "contains"}},
-                "reasoning": "Explicitly instructs the system to go to a book detail page matching both decade range and cast member criteria.",
+                "event_criteria": {"year": {"value": [2010, 2019], "operator": "between"}, "author": {"value": "Ron Larson", "operator": "contains"}},
+                "reasoning": "Explicitly instructs the system to go to a book detail page matching both decade range and criteria.",
             },
         },
         {
-            "prompt": "Navigate me to a horror book page not directed by Wes Craven",
-            "prompt_for_task_generation": "Navigate me to a <genre> book page not directed by <director>",
+            "prompt": "Navigate me to a 'Science' book page not written by 'Grant Morrison'",
+            "prompt_for_task_generation": "Navigate me to a <genre> book page not written by <author>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"genres": {"value": ["Horror"], "operator": "contains"}, "director": {"value": "Wes Craven", "operator": "not_equals"}},
-                "reasoning": "Explicitly directs the system to navigate to a horror book detail page excluding those by the specified director.",
+                "event_criteria": {"genres": {"value": ["Science"], "operator": "contains"}, "author": {"value": "Grant Morrison", "operator": "not_equals"}},
+                "reasoning": "Explicitly directs the system to navigate to a Science book detail page excluding those by the specified author.",
             },
         },
         {
-            "prompt": "Go directly to the highest-rated James Cameron book page",
-            "prompt_for_task_generation": "Go directly to the highest-rated <director> book page",
+            "prompt": "Go directly to the highest-rated 'Lidia Matticchio Bastianich' book page",
+            "prompt_for_task_generation": "Go directly to the highest-rated <author> book page",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"director": {"value": "James Cameron", "operator": "equals"}, "rating": {"value": 0, "operator": "sort_desc"}},
-                "reasoning": "Explicitly instructs the system to go directly to the book detail page of the highest-rated book by the specified director.",
+                "event_criteria": {"author": {"value": "Lidia Matticchio Bastianich", "operator": "equals"}, "rating": {"value": 4.0, "operator": "greater_equal"}},
+                "reasoning": "Explicitly instructs the system to go directly to the book detail page of the highest-rated book by the specified author.",
             },
         },
     ],
@@ -323,27 +324,27 @@ BOOK_DETAIL_USE_CASE = UseCase(
 # SEARCH_BOOK_USE_CASE
 ###############################################################################
 SEARCH_BOOK_INFO = """
-        CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-        1. Make it EXPLICIT that this is a SEARCH for a book using clear terms such as:
-           - "Search for..."
-           - "Look for the book..."
-           - "Find a book..."
-           - "Look up a book..."
-        2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
-        3. Include ONLY the book title as part of the search
-        4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Make it EXPLICIT that this is a SEARCH for a book using clear terms such as:
+   - "Search for..."
+   - "Look for the book..."
+   - "Find a book..."
+   - "Look up a book..."
+2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
+3. Include ONLY the book title as part of the search
+4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
 
-        For example:
-        - CORRECT: "Search for the book Inception in the database"
-        - CORRECT: "Look for the book Titanic"
-        - CORRECT: "Find books called The Matrix"
-        - INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
-        - INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
-        - INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
-        - INCORRECT: "Find a book called Inception released after 2010" (includes constraints)
+For example:
+- CORRECT: "Search for the book Inception in the database"
+- CORRECT: "Look for the book Titanic"
+- CORRECT: "Find books called The Matrix"
+- INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
+- INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
+- INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
+- INCORRECT: "Find a book called Inception released after 2010" (includes constraints)
 
-        ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
-        """
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
+"""
 
 SEARCH_BOOK_USE_CASE = UseCase(
     name="SEARCH_BOOK",

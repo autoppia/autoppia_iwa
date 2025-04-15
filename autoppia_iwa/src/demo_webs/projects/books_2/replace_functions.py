@@ -72,7 +72,10 @@ def replace_book_placeholders(
     if "<book>" in text:
         text = text.replace("<book>", book["name"])
 
-    if "<duration>" in text:
-        text = text.replace("<duration>", str(book.get("duration", "120")))
+    if "<author>" in text:
+        text = text.replace("<author>", book["director"])
+
+    if "<page_count>" in text:
+        text = text.replace("<page_count>", str(book.get("duration", "120")))
 
     return text
