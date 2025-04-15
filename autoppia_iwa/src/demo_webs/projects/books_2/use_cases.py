@@ -416,8 +416,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to add or insert a book (use phrases like "Add...", "Insert...", "Register...", etc.).
 
-For example, if the constraints are "year equals 2014 AND director equals 'Wes Anderson'":
-- CORRECT: "Add a book whose year equals 2014 and that is directed by Wes Anderson."
+For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
+- CORRECT: "Add a book whose year equals 2014 and that is authored by Wes Anderson."
 - INCORRECT: "Add a book with a high rating" (you added an extra filter).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -425,84 +425,102 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 
 ADD_BOOK_USE_CASE = UseCase(
     name="ADD_BOOK",
-    description="The user adds a new book to the system, specifying details such as name, director, year, genres, duration, language, and cast.",
+    description="The user adds a new book to the system, specifying details such as name, author, year, genres, page_count",
     event=AddBookEvent,
     event_source_code=AddBookEvent.get_source_code_of_class(),
     constraints_generator=generate_add_book_constraints,
     additional_prompt_info=ADD_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Add the book 'The Grand Budapest Hotel' directed by 'Wes Anderson'",
-            "prompt_for_task_generation": "Add the book '<book>' directed by '<director>'",
+            "prompt": "Add the book 'A Guide to the Good Life' authored by William B. Irvine",
+            "prompt_for_task_generation": "Add the book '<book>' authored by '<author>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
-                "event_criteria": {"name": {"value": "The Grand Budapest Hotel", "operator": "equals"}, "director": {"value": "Wes Anderson", "operator": "equals"}},
-                "reasoning": "Validates that the book's name and director are captured with an exact match.",
+                "event_criteria": {
+                    "name": {"value": "A Guide to the Good Life", "operator": "equals"},
+                    "author": {"value": "William B. Irvine", "operator": "equals"},
+                },
+                "reasoning": "Ensures that the book name and exact author match are recorded.",
             },
         },
         {
-            "prompt": "Add the book 'Whiplash' released in 2014",
+            "prompt": "Add the book 'AI Superpowers' released in 2018",
             "prompt_for_task_generation": "Add the book '<book>' released in <year>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
-                "event_criteria": {"name": {"value": "Whiplash", "operator": "equals"}, "year": {"value": 2014, "operator": "equals"}},
-                "reasoning": "Checks that the book's release year is recorded correctly.",
+                "event_criteria": {
+                    "name": {"value": "AI Superpowers", "operator": "equals"},
+                    "year": {"value": 2018, "operator": "equals"},
+                },
+                "reasoning": "Tests if the correct release year is stored for the book.",
             },
         },
         {
-            "prompt": "Add the book 'Spirited Away' with genres Animation, Fantasy, and Adventure",
-            "prompt_for_task_generation": "Add the book '<book>' with genres <genre>, <genre> and <genre>",
+            "prompt": "Add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
+            "prompt_for_task_generation": "Add the book '<book>' with genres <genre> and <genre>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
-                "event_criteria": {"name": {"value": "Spirited Away", "operator": "equals"}, "genres": {"value": ["Animation", "Fantasy", "Adventure"], "operator": "contains"}},
-                "reasoning": "Validates that multiple genres are captured correctly using the contains operator.",
+                "event_criteria": {
+                    "name": {"value": "Sapiens: A Brief History of Humankind", "operator": "equals"},
+                    "genres": {"value": ["History", "Anthropology"], "operator": "contains"},
+                },
+                "reasoning": "Validates the genre containment logic for multi-genre books.",
             },
         },
         {
-            "prompt": "Add the book 'Django Unchained' with a duration under 180 minutes",
-            "prompt_for_task_generation": "Add the book '<book>' with a duration under <duration> minutes",
+            "prompt": "Add the book 'The Midnight Library' with a page_count under 320 minutes",
+            "prompt_for_task_generation": "Add the book '<book>' with a page_count under <page_count> minutes",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
-                "event_criteria": {"name": {"value": "Django Unchained", "operator": "equals"}, "duration": {"value": 180, "operator": "less_than"}},
-                "reasoning": "Ensures that the book's duration is stored and compared correctly using the less_than operator.",
+                "event_criteria": {
+                    "name": {"value": "The Midnight Library", "operator": "equals"},
+                    "page_count": {"value": 320, "operator": "less_than"},
+                },
+                "reasoning": "Checks that the book's page_count is handled with a less-than comparison.",
             },
         },
         {
-            "prompt": "Add a book 'Parasite' that is not in English",
-            "prompt_for_task_generation": "Add a book '<book>' that is not in <language>",
+            "prompt": "Add the book 'The Art of Learning' with rating not 4.8.",
+            "prompt_for_task_generation": "Add the book '<book>' with rating not equal to <rating>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
-                "event_criteria": {"name": {"value": "Parasite", "operator": "equals"}, "language": {"value": "English", "operator": "not_equals"}},
-                "reasoning": "Tests the not_equals operator for the language field, ensuring that the book's language is different from English.",
+                "event_criteria": {
+                    "name": {"value": "The Art of Learning", "operator": "equals"},
+                    "rating": {"value": 4.8, "operator": "not_equals"},
+                },
+                "reasoning": "Tests exclusion by rating using the not_equals operator.",
             },
         },
         {
-            "prompt": "Add a book 'The Shining' from one of these directors: Kubrick, Spielberg, or Scorsese",
-            "prompt_for_task_generation": "Add a book '<book>' from one of these directors: <director>, <director>, or <director>",
+            "prompt": "Add the book 'The Practicing Mind' from one of these authors: Thomas M. Sterner, James Clear, or Ryan Holiday",
+            "prompt_for_task_generation": "Add a book '<book>' from one of these authors: <author>, <author>, or <author>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
-                "event_criteria": {"name": {"value": "The Shining", "operator": "equals"}, "director": {"value": ["Kubrick", "Spielberg", "Scorsese"], "operator": "in_list"}},
-                "reasoning": "Validates that the director is one of the allowed options using the in_list operator.",
+                "event_criteria": {
+                    "name": {"value": "The Practicing Mind", "operator": "equals"},
+                    "author": {"value": ["Thomas M. Sterner", "James Clear", "Ryan Holiday"], "operator": "in_list"},
+                },
+                "reasoning": "Validates that the author falls within an allowed set of names.",
             },
         },
         {
-            "prompt": "Add the book 'Amélie' with running time at least 120 minutes starring Audrey Tautou",
+            "prompt": "Add the book 'Deep Work' with running time at least 450 minutes starring Cal Newport",
             "prompt_for_task_generation": "Add the book '<book>' with running time at least <duration> minutes starring <cast>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
                 "event_criteria": {
-                    "name": {"value": "Amélie", "operator": "equals"},
-                    "duration": {"value": 120, "operator": "greater_equal"},
-                    "cast": {"value": "Audrey Tautou", "operator": "contains"},
+                    "name": {"value": "Deep Work", "operator": "equals"},
+                    "duration": {"value": 450, "operator": "greater_equal"},
+                    "cast": {"value": "Cal Newport", "operator": "contains"},
                 },
-                "reasoning": "Checks that the book's duration meets the minimum requirement and that the cast includes Audrey Tautou.",
+                "reasoning": "Validates the greater_equal condition on duration and inclusion of a cast member.",
             },
         },
     ],
