@@ -285,7 +285,7 @@ class BookDetailEvent(Event):
         author: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
-        duration: int | CriterionValue | None = None
+        pages: int | CriterionValue | None = None
 
         class Config:
             title = "Book Detail Validation"
@@ -324,7 +324,7 @@ class BookDetailEvent(Event):
             return False
         if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
             return False
-        return not (criteria.duration is not None and not validate_criterion(self.book_pages, criteria.duration))
+        return not (criteria.pages is not None and not validate_criterion(self.book_pages, criteria.pages))
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "BookDetailEvent":
@@ -374,7 +374,7 @@ class AddBookEvent(Event):
         author: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
-        duration: int | CriterionValue | None = None
+        pages: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
@@ -409,7 +409,7 @@ class AddBookEvent(Event):
             return False
         if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
             return False
-        return not (criteria.duration is not None and not validate_criterion(self.book_pages, criteria.duration))
+        return not (criteria.pages is not None and not validate_criterion(self.book_pages, criteria.pages))
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "AddBookEvent":
