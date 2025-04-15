@@ -471,8 +471,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the book 'The Midnight Library' with a page_count under 320 minutes",
-            "prompt_for_task_generation": "Add the book '<book>' with a page_count under <page_count> minutes",
+            "prompt": "Add the book 'The Midnight Library' with a page_count under 320 pages",
+            "prompt_for_task_generation": "Add the book '<book>' with a page_count under <page_count> pages",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -510,17 +510,17 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the book 'Deep Work' with running time at least 450 minutes starring Cal Newport",
-            "prompt_for_task_generation": "Add the book '<book>' with running time at least <page_count> minutes starring <cast>",
+            "prompt": "Add the book 'Deep Work' with running time at least 450 pages authored by Cal Newport",
+            "prompt_for_task_generation": "Add the book '<book>' with running time at least <page_count> pages authored by <author>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
                 "event_criteria": {
                     "name": {"value": "Deep Work", "operator": "equals"},
-                    "duration": {"value": 450, "operator": "greater_equal"},
-                    "cast": {"value": "Cal Newport", "operator": "contains"},
+                    "page_count": {"value": 450, "operator": "greater_equal"},
+                    "author": {"value": "Cal Newport", "operator": "contains"},
                 },
-                "reasoning": "Validates the greater_equal condition on duration and inclusion of a cast member.",
+                "reasoning": "Validates the greater_equal condition on duration and inclusion of a author member.",
             },
         },
     ],
@@ -906,8 +906,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Begin with "Login for the following username:<username> and password:<password>".
 4. Be phrased as a request to edit or modify a user profile (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
 
-For example, if the constraints are "username equals 'bookfan' AND password equals 'pass123' AND bio contains 'cinema'":
-- CORRECT: "Login for the following username:bookfan and password:pass123. Edit your profile to update your bio to include the word 'cinema'."
+For example, if the constraints are "username equals 'bookfan' AND password equals 'pass123' AND bio contains 'bookworm'":
+- CORRECT: "Login for the following username:bookfan and password:pass123. Edit your profile to update your bio to include the word 'bookworm'."
 - INCORRECT: "Edit a profile to change the website" (missing login information and specific constraints).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -936,14 +936,14 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Login for the following username:bookfan and password:pass456. Modify your bio to include your passion for cinema.",
+            "prompt": "Login for the following username:bookfan and password:pass456. Modify your bio to include your passion for bookworm.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your bio to include <bio_content>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_PROFILE",
                 "event_criteria": {
                     "username": {"value": "bookfan", "operator": "equals"},
-                    "bio": {"value": "cinema", "operator": "contains"},
+                    "bio": {"value": "bookworm", "operator": "contains"},
                 },
                 "reasoning": "Ensures the new bio content is recorded.",
             },
@@ -975,14 +975,14 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Login for the following username:author101 and password:pass654. Update your favorite genre to Sci-Fi.",
+            "prompt": "Login for the following username:author101 and password:pass654. Update your favorite genre to Science.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your favorite genre to <genre>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_PROFILE",
                 "event_criteria": {
                     "username": {"value": "author101", "operator": "equals"},
-                    "favorite_genres": {"value": "Sci-Fi", "operator": "equals"},
+                    "favorite_genres": {"value": "Science", "operator": "equals"},
                 },
                 "reasoning": "Ensures the favorite genre is updated.",
             },
