@@ -1,12 +1,9 @@
 import asyncio
 import time
 import traceback
-from dataclasses import dataclass
-from pathlib import Path
 
 from loguru import logger
 
-from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
@@ -16,6 +13,7 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
@@ -32,49 +30,17 @@ LOG_FILE = "benchmark.log"
 logger.remove()
 logger.add(LOG_FILE, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}", colorize=True)
 
-
-@dataclass
-class BenchmarkConfig:
-    """Configuration for the benchmark test."""
-
-    web_project_index: int = 0
-
-    use_cached_tasks: bool = False
-    use_cached_solutions: bool = False
-    evaluate_real_tasks: bool = False
-
-    m: int = 1  # Number of copies of each solution to evaluate
-    prompts_per_url: int = 1
-    num_of_urls: int = 1
-    prompt_per_use_case: int = 3
-
-    # Paths
-    base_dir: Path = PROJECT_BASE_DIR.parent
-    data_dir: Path = base_dir / "data"
-    tasks_cache_dir: Path = data_dir / "tasks_cache"
-    solutions_cache_dir: Path = data_dir / "solutions_cache"
-    output_dir: Path = base_dir / "results"
-
-    def __post_init__(self):
-        for directory in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir):
-            directory.mkdir(parents=True, exist_ok=True)
-        if self.web_project_index >= len(demo_web_projects):
-            raise ValueError(f"Invalid web project index {self.web_project_index}, must be less than {len(demo_web_projects)}.")
-        logger.debug(f"Selected demo project: {demo_web_projects[self.web_project_index].name}")
-
-
 # Initialize configuration & solution cache
-config = BenchmarkConfig()
+config = BenchmarkConfig(web_project_number=2)
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
 AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(id="2", name="Random-clicker"),
-    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=7000, timeout=120),
+    # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=7000, timeout=120),
     # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=11112, timeout=120),
     # ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1", port=8005, timeout=120),
-    # ApifiedWebAgent(id="3", name="Agent3", host="127.0.0.1",
-    #                 port=5000, timeout=120),
+    ApifiedWebAgent(id="3", name="Agent3", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()
@@ -202,7 +168,7 @@ async def main():
             # Load/Initialize demo projects
             web_projects = await initialize_demo_webs_projects(demo_web_projects)
             # For simplicity, only take the first project (or however many you want)
-            web_projects = [web_projects[config.web_project_index]]
+            web_projects = [web_projects[config.web_project_number]]
 
             for project in web_projects:
                 tasks = await generate_tasks(project)
