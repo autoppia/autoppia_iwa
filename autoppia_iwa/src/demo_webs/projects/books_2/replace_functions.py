@@ -72,10 +72,20 @@ def replace_book_placeholders(
     if "<book>" in text:
         text = text.replace("<book>", book["name"])
 
-    if "<author>" in text:
-        text = text.replace("<author>", book["director"])
-
     if "<page_count>" in text:
-        text = text.replace("<page_count>", str(book.get("duration", "120")))
+        text = text.replace("<page_count>", str(book.get("duration", 120)))
+
+    if "<authors>" in text:
+        text = text.replace("<authors>", book["director"])
+
+    if "<author>" in text:
+        director_field = book.get("director", "")
+        if isinstance(director_field, str):
+            authors = [name.strip() for name in director_field.split(",") if name.strip()]
+            author_count = text.count("<author>")
+
+            for i in range(author_count):
+                replacement = authors[i % len(authors)] if authors else ""
+                text = text.replace("<author>", replacement, 1)
 
     return text
