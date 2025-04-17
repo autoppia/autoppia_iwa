@@ -1,4 +1,5 @@
 import asyncio
+import sys
 import time
 import traceback
 
@@ -28,6 +29,12 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 LOG_FILE = "benchmark.log"
 
 logger.remove()
+logger.add(
+    sys.stderr,
+    level="INFO",
+    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    colorize=True,
+)
 logger.add(LOG_FILE, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}", colorize=True)
 
 # Initialize configuration & solution cache
@@ -168,7 +175,7 @@ async def main():
             # Load/Initialize demo projects
             web_projects = await initialize_demo_webs_projects(demo_web_projects)
             # For simplicity, only take the first project (or however many you want)
-            web_projects = [web_projects[config.web_project_number]]
+            web_projects = [web_projects[config.current_web_project_index]]
 
             for project in web_projects:
                 tasks = await generate_tasks(project)
@@ -200,4 +207,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception as e:
         traceback.print_exc()
-        logger.opt(exception=e).error(f"Error: {e}", stace_info=True)
+        logger.error(f"Error: {e}", stace_info=True)
