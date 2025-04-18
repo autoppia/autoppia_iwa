@@ -174,7 +174,6 @@ async def main():
         if not config.evaluate_real_tasks:
             # Load/Initialize demo projects
             web_projects = await initialize_demo_webs_projects(demo_web_projects)
-            # For simplicity, only take the first project (or however many you want)
             web_projects = [web_projects[config.current_web_project_index]]
 
             for project in web_projects:
