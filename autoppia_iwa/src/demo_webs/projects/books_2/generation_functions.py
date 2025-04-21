@@ -572,7 +572,7 @@ def generate_add_book_constraints():
         "sage",
     ]
 
-    all_genres = ["Children", "Cooking", "Culture", "Education", "History", "Magazine", "Music", "Romance", "Science", "Story"]
+    all_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
@@ -679,7 +679,7 @@ def generate_edit_profile_constraints():
         "Animation lover and aspiring bookmaker.",
     ]
 
-    all_genres = ["Children", "Cooking", "Culture", "Education", "History", "Magazine", "Music", "Romance", "Science", "Story"]
+    all_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
