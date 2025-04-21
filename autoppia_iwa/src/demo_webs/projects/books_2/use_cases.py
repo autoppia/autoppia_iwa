@@ -415,10 +415,10 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to add or insert a book (use phrases like "Add...", "Insert...", "Register...", etc.).
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>'. Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
-- CORRECT: "Add a book whose year equals 2014 and that is authored by Wes Anderson."
-- INCORRECT: "Add a book with a high rating" (you added an extra filter).
+- CORRECT: "First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2014 and that is authored by Wes Anderson."
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -429,11 +429,12 @@ ADD_BOOK_USE_CASE = UseCase(
     event=AddBookEvent,
     event_source_code=AddBookEvent.get_source_code_of_class(),
     constraints_generator=generate_add_book_constraints,
+    replace_func=login_replace_func,
     additional_prompt_info=ADD_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Add the book 'A Guide to the Good Life' authored by William B. Irvine",
-            "prompt_for_task_generation": "Add the book '<book>' authored by '<author>'",
+            "prompt": "First, authenticate with username 'user<web_agent_id>' and password 'password123'. Then, add the book 'A Guide to the Good Life' authored by William B. Irvine",
+            "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book '<book>' authored by '<author>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -445,8 +446,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the book 'AI Superpowers' released in 2018",
-            "prompt_for_task_generation": "Add the book '<book>' released in <year>",
+            "prompt": "Initiate session using 'user<web_agent_id>' as the username and 'password123' as the secret. Then, add the book 'AI Superpowers' released in 2018",
+            "prompt_for_task_generation": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book '<book>' released in <year>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -458,8 +459,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
-            "prompt_for_task_generation": "Add the book '<book>' with genres <genre> and <genre>",
+            "prompt": "After successful login with 'user<web_agent_id>' and 'password123', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
+            "prompt_for_task_generation": "After successful login with '<username>' and '<password>', add the book '<book>' with genres <genre> and <genre>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -471,8 +472,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the book 'The Midnight Library' with a page_count under 320 pages",
-            "prompt_for_task_generation": "Add the book '<book>' with a page_count under <page_count> pages",
+            "prompt": "Once logged in as 'user<web_agent_id>' with the password 'password123', add the book 'The Midnight Library' with a page_count under 320 pages",
+            "prompt_for_task_generation": "Once logged in as '<username>' with the password '<password>', add the book '<book>' with a page_count under <page_count> pages",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -484,8 +485,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the book 'The Art of Learning' with rating not 4.8.",
-            "prompt_for_task_generation": "Add the book '<book>' with rating not equal to <rating>",
+            "prompt": "Having authenticated with 'user<web_agent_id>' and 'password123', add the book 'The Art of Learning' with rating not 4.8.",
+            "prompt_for_task_generation": "Having authenticated with '<username>' and '<password>', add the book '<book>' with rating not equal to <rating>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -497,8 +498,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the book 'The Practicing Mind' from one of these authors: Thomas M. Sterner, James Clear, or Ryan Holiday",
-            "prompt_for_task_generation": "Add a book '<book>' from one of these authors: <author>, <author>, or <author>",
+            "prompt": "Upon logging in with username 'user<web_agent_id>' and the secret 'password123', add the book 'The Practicing Mind' from one of these authors: Thomas M. Sterner, James Clear, or Ryan Holiday",
+            "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: <author>, <author>, or <author>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -510,8 +511,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add the book 'Deep Work' with running time at least 450 pages authored by Cal Newport",
-            "prompt_for_task_generation": "Add the book '<book>' with running time at least <page_count> pages authored by <author>",
+            "prompt": "With credentials 'user<web_agent_id>' and 'password123' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by Cal Newport",
+            "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by <author>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -1006,7 +1007,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
 ###############################################################################
 # FILTER_BOOK_USE_CASE
 ###############################################################################
-FILTER_BOOK_ADDITIONAL_PROMPT_INFO = """
+FILTER_BOOK_ADDITIONAL_PROMPT_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
@@ -1015,11 +1016,10 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 5. Use ONLY the allowed genres and years from the lists below.
 
 ALLOWED YEARS:
-2024, 2023, 2022, 2020, 2019, 2018, 2005, 2001
+{list(set(book["year"] for book in BOOKS_DATA))}
 
 ALLOWED GENRES:
-"Children", "Cooking", "Culture", "Education", "History", "Magazine", "Music", "Romance", "Science", "Story"
-
+{list(set(genre for book in BOOKS_DATA for genre in book["genres"]))}
 For example, if the constraints are "genre_name equals 'Culture' AND year equals 2020":
 - CORRECT: "Filter for 'Culture' books released in 2020."
 - CORRECT: "Browse books from 2020 in the 'Culture' genre."
@@ -1300,9 +1300,9 @@ ALL_USE_CASES = [
     # FILTER_BOOK_USE_CASE,
     # CONTACT_USE_CASE,
     # LOGIN_USE_CASE,
+    # LOGOUT_USE_CASE,  # Requires Login first
     # ===== PENDING =====
-    LOGOUT_USE_CASE,  # Requires Login first
-    # ADD_BOOK_USE_CASE,  # Requires Login first
+    ADD_BOOK_USE_CASE,  # Requires Login first
     # EDIT_BOOK_USE_CASE,   # Requires Login first + Book registered on that User id
     # DELETE_BOOK_USE_CASE,   # Requires Login first
     # BOOK_DETAIL_USE_CASE,   # Requires BOOK ID
