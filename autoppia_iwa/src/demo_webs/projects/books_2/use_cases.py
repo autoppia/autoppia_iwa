@@ -1300,9 +1300,9 @@ ALL_USE_CASES = [
     # FILTER_BOOK_USE_CASE,
     # CONTACT_USE_CASE,
     # ===== PENDING =====
-    # LOGIN_USE_CASE,
+    LOGIN_USE_CASE,
     # LOGOUT_USE_CASE,   # Requires Login first
-    ADD_BOOK_USE_CASE,  # Requires Login first
+    # ADD_BOOK_USE_CASE,  # Requires Login first
     # EDIT_BOOK_USE_CASE,   # Requires Login first + Book registered on that User id
     # DELETE_BOOK_USE_CASE,   # Requires Login first
     # BOOK_DETAIL_USE_CASE,   # Requires BOOK ID
