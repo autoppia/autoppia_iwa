@@ -47,7 +47,7 @@ AGENTS: list[IWebAgent] = [
     # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=7000, timeout=120),
     # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=11112, timeout=120),
     # ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1", port=8005, timeout=120),
-    ApifiedWebAgent(id="1", name="Agent3", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()
