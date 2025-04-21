@@ -360,12 +360,17 @@ class ConcurrentEvaluator(IEvaluator):
         async with async_playwright() as playwright:
             browser, context = None, None
             try:
+                browser_specifications = BrowserSpecification()
                 browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS)
-                context = await browser.new_context(extra_http_headers={"X-WebAgent-Id": web_agent_id})
+                # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
+                context = await browser.new_context(
+                    extra_http_headers={"X-WebAgent-Id": web_agent_id},
+                    viewport={"width": browser_specifications.viewport_width, "height": browser_specifications.viewport_height},
+                )
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
 
-                browser_executor = PlaywrightBrowserExecutor(BrowserSpecification(), page, self.backend_demo_webs_service)
+                browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
                     try:
