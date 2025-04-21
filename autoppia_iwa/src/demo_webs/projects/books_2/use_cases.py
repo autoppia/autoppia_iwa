@@ -1305,11 +1305,11 @@ ALL_USE_CASES = [
     # LOGOUT_USE_CASE,  # Requires Login first
     # ADD_BOOK_USE_CASE,  # Requires Login first
     # ADD_COMMENT_USE_CASE,  # Requires BOOK ID
+    # EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
     # ===== PENDING =====
     EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
     # DELETE_BOOK_USE_CASE,   # Requires Login first
     # BOOK_DETAIL_USE_CASE,   # Requires BOOK ID
     # SHOPPING_CART_USE_CASE,   # Requires Login first
     # PURCHASE_BOOK_USE_CASE,   # Requires Login first
-    # EDIT_USER_PROFILE_USE_CASE,   # Requires Login first
 ]
