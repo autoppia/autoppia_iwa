@@ -25,7 +25,7 @@ def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
         value_str = op_value[1]
 
         # Convert value based on type
-        if field in ["year", "duration"]:
+        if field in ["year", "page_count"]:
             # For integer numeric fields
             value = [int(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else int(value_str)
         elif field == "rating":
@@ -161,7 +161,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
         print(f"Constraints generated: {constraints_str}")
         print(f"Books that satisfy constraints ({len(matching_books)}):")
         for book in matching_books:
-            print(f"  - {book['name']} ({book['year']}) - Director: {book['director']}")
+            print(f"  - {book['name']} ({book['year']}) - Author: {book['author']}")
 
         # Retornar solo el string de restricciones sin información adicional
         return constraints_str

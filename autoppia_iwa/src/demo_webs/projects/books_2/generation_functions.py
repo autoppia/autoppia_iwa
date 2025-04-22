@@ -151,7 +151,7 @@ def generate_constraint_from_solution(book: dict, field: str, operator: Comparis
     """
     constraint = {"field": field, "operator": operator}
 
-    if field == "name" or field == "director":
+    if field == "name" or field == "author":
         if operator == ComparisonOperator.EQUALS:
             constraint["value"] = book[field]
         elif operator == ComparisonOperator.NOT_EQUALS:
@@ -177,7 +177,7 @@ def generate_constraint_from_solution(book: dict, field: str, operator: Comparis
                     constraint["value"] = test_str
                     break
 
-    elif field == "year" or field == "duration":
+    elif field == "year" or field == "page_count":
         value = book[field]
         if operator == ComparisonOperator.EQUALS:
             constraint["value"] = value
@@ -432,7 +432,7 @@ def generate_edit_book_constraints():
     books = BOOKS_DATA
 
     # Campos editables (sin name porque ya tenemos la película)
-    editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]
+    editable_fields = ["author", "year", "genres", "rating", "page_count"]
 
     random_words = [
         "car",
@@ -468,7 +468,7 @@ def generate_edit_book_constraints():
         "sage",
     ]
 
-    all_genres = ["Children", "Cooking", "Culture", "Education", "History", "Magazine", "Music", "Romance", "Science", "Story"]
+    all_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
@@ -481,7 +481,7 @@ def generate_edit_book_constraints():
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
 
     for field in selected_fields:
-        if field == "director":
+        if field == "author":
             constraints.append(
                 {
                     "field": field,
@@ -508,7 +508,7 @@ def generate_edit_book_constraints():
                     "value": rating_value,
                 }
             )
-        elif field == "duration":
+        elif field == "page_count":
             constraints.append(
                 {
                     "field": field,
@@ -516,15 +516,6 @@ def generate_edit_book_constraints():
                     "value": randint(50, 180),
                 }
             )
-        elif field == "cast":
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
-                    "value": choice(random_words),
-                }
-            )
-
     return constraints
 
 
@@ -536,7 +527,7 @@ def generate_add_book_constraints():
     from random import choice, randint, sample, uniform
 
     # Campos editables
-    editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]
+    editable_fields = ["author", "year", "genres", "rating", "page_count"]
 
     random_words = [
         "car",
@@ -581,7 +572,7 @@ def generate_add_book_constraints():
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
 
     for field in selected_fields:
-        if field == "director":
+        if field == "author":
             constraints.append(
                 {
                     "field": field,
@@ -608,20 +599,12 @@ def generate_add_book_constraints():
                     "value": rating_value,
                 }
             )
-        elif field == "duration":
+        elif field == "page_count":
             constraints.append(
                 {
                     "field": field,
                     "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
                     "value": randint(50, 180),
-                }
-            )
-        elif field == "cast":
-            constraints.append(
-                {
-                    "field": field,
-                    "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.CONTAINS), ComparisonOperator(ComparisonOperator.NOT_CONTAINS)]),
-                    "value": choice(random_words),
                 }
             )
 
