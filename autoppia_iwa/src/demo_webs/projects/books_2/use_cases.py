@@ -1152,9 +1152,11 @@ SHOPPING_CART_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-3. Be phrased as a request to add/remove/view items in the shopping cart (e.g., "Add to cart...", "Remove from cart...", "View cart...", "Update cart...").
+3. Be phrased as a request to add/remove/view items in the shopping cart (e.g., "Add to cart...", "Remove from cart...", "View cart...").
 4. Explicitly mention the shopping cart in the prompt (e.g., "shopping cart", "cart").
 5. If constraints include book_name or quantity, they MUST be referenced directly in the prompt.
+6. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "book_name equals 'Inception' AND quantity equals 2":
 - CORRECT: "Add 2 copies of Inception to the shopping cart."
@@ -1170,37 +1172,46 @@ SHOPPING_CART_USE_CASE = UseCase(
     description="The user interacts with the shopping cart by adding, removing, or viewing items.",
     event=ShoppingCartEvent,
     event_source_code=ShoppingCartEvent.get_source_code_of_class(),
-    # constraints_generator=generate_shopping_cart_constraints,
+    constraints_generator=generate_book_constraints,
     additional_prompt_info=SHOPPING_CART_ADDITIONAL_PROMPT_INFO,
+    replace_func=login_replace_func,
     examples=[
         {
-            "prompt": "Add the book 'Fourth Win' to the shopping cart",
-            "prompt_for_task_generation": "Add the book '<book>' to the shopping cart",
+            "prompt": "Login with username: <username> and password: <password>. After logging in, add 'Fourth Win' to your shopping cart.",
+            "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, add '<book>' to your shopping cart.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SHOPPING_CART",
-                "event_criteria": {"book_name": {"value": "Fourth Win", "operator": "equals"}},
-                "reasoning": "Ensures that a book with a specific name can be added to the shopping cart.",
+                "event_criteria": {
+                    "name": {"value": "Fourth Win", "operator": "equals"},
+                },
+                "reasoning": "Verifies that after login, the correct book are added to the cart.",
             },
         },
         {
-            "prompt": "Place 'Elementary Statistics' in the cart",
-            "prompt_for_task_generation": "Place '<book>' in the cart",
+            "prompt": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
+            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a <book> with <page_count> greater than or equal to 704, with genre '<genre>' into your shopping cart.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SHOPPING_CART",
-                "event_criteria": {"book_name": {"value": "Elementary Statistics", "operator": "equals"}},
-                "reasoning": "Tests another phrasing for adding a book to the cart.",
+                "event_criteria": {
+                    "rating": {"value": 4.0, "operator": "greater_equal"},
+                    "genres": {"value": ["Education"], "operator": "contains"},
+                },
+                "reasoning": "Tests login followed by finding a book based on author and rating.",
             },
         },
         {
-            "prompt": "Add 'Dark Nights: Metal: Dark Knights Rising' to basket",
-            "prompt_for_task_generation": "Add '<book>' to basket",
+            "prompt": "Authenticate using username: <username> and password: <password>. After that, add a 'Comics' genre book with less than 400 pages to your shopping cart.",
+            "prompt_for_task_generation": "Authenticate using username: <username> and password: <password>. After that, add a '<genre>' genre book with less than <page_count> pages to your shopping cart.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SHOPPING_CART",
-                "event_criteria": {"book_name": {"value": "Dark Nights: Metal: Dark Knights Rising", "operator": "equals"}},
-                "reasoning": "Verifies alternative synonym usage for shopping cart.",
+                "event_criteria": {
+                    "genres": {"value": ["Comics"], "operator": "contains"},
+                    "page_count": {"value": 400, "operator": "less_than"},
+                },
+                "reasoning": "Ensures a login followed by adding a book based on genre and page count filter.",
             },
         },
     ],
@@ -1282,8 +1293,8 @@ ALL_USE_CASES = [
     # EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
     # EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
     # DELETE_BOOK_USE_CASE,  # Requires Login first
+    # BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
     # ===== PENDING =====
-    BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
-    # SHOPPING_CART_USE_CASE,   # Requires Login first
+    SHOPPING_CART_USE_CASE,  # Requires Login first
     # PURCHASE_BOOK_USE_CASE,   # Requires Login first
 ]
