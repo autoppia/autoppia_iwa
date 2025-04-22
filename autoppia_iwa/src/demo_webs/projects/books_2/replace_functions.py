@@ -90,4 +90,5 @@ def replace_book_placeholders(
                 replacement = authors[i % len(authors)] if authors else ""
                 text = text.replace("<author>", replacement, 1)
 
+    text = login_replace_func(text=text)
     return text

@@ -433,7 +433,7 @@ ADD_BOOK_USE_CASE = UseCase(
     additional_prompt_info=ADD_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "First, authenticate with username 'user<web_agent_id>' and password 'password123'. Then, add the book 'A Guide to the Good Life' authored by William B. Irvine",
+            "prompt": "First, authenticate with username '<username>' and password 'password123'. Then, add the book 'A Guide to the Good Life' authored by William B. Irvine",
             "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book '<book>' authored by '<author>'",
             "test": {
                 "type": "CheckEventTest",
@@ -446,7 +446,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Initiate session using 'user<web_agent_id>' as the username and 'password123' as the secret. Then, add the book 'AI Superpowers' released in 2018",
+            "prompt": "Initiate session using '<username>' as the username and 'password123' as the secret. Then, add the book 'AI Superpowers' released in 2018",
             "prompt_for_task_generation": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book '<book>' released in <year>",
             "test": {
                 "type": "CheckEventTest",
@@ -459,7 +459,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "After successful login with 'user<web_agent_id>' and 'password123', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
+            "prompt": "After successful login with '<username>' and 'password123', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
             "prompt_for_task_generation": "After successful login with '<username>' and '<password>', add the book '<book>' with genres <genre> and <genre>",
             "test": {
                 "type": "CheckEventTest",
@@ -472,7 +472,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Once logged in as 'user<web_agent_id>' with the password 'password123', add the book 'The Midnight Library' with a page_count under 320 pages",
+            "prompt": "Once logged in as '<username>' with the password 'password123', add the book 'The Midnight Library' with a page_count under 320 pages",
             "prompt_for_task_generation": "Once logged in as '<username>' with the password '<password>', add the book '<book>' with a page_count under <page_count> pages",
             "test": {
                 "type": "CheckEventTest",
@@ -485,7 +485,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Having authenticated with 'user<web_agent_id>' and 'password123', add the book 'The Art of Learning' with rating not 4.8.",
+            "prompt": "Having authenticated with '<username>' and 'password123', add the book 'The Art of Learning' with rating not 4.8.",
             "prompt_for_task_generation": "Having authenticated with '<username>' and '<password>', add the book '<book>' with rating not equal to <rating>",
             "test": {
                 "type": "CheckEventTest",
@@ -498,7 +498,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Upon logging in with username 'user<web_agent_id>' and the secret 'password123', add the book 'The Practicing Mind' from one of these authors: Thomas M. Sterner, James Clear, or Ryan Holiday",
+            "prompt": "Upon logging in with username '<username>' and the secret 'password123', add the book 'The Practicing Mind' from one of these authors: Thomas M. Sterner, James Clear, or Ryan Holiday",
             "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: <author>, <author>, or <author>",
             "test": {
                 "type": "CheckEventTest",
@@ -511,7 +511,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "With credentials 'user<web_agent_id>' and 'password123' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by Cal Newport",
+            "prompt": "With credentials '<username>' and 'password123' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by Cal Newport",
             "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by <author>",
             "test": {
                 "type": "CheckEventTest",
@@ -535,6 +535,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to edit or modify a book (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>'. Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year equals 2014 AND author contains 'e'":
 - CORRECT: "Edit a book where the year equals 2014 and the author's name contains the letter 'e'."
@@ -544,7 +545,7 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 EDIT_BOOK_USE_CASE = UseCase(
     name="EDIT_BOOK",
-    description="The user edits an existing book, modifying one or more attributes such author, year, genres, rating, page_count.",
+    description="The user edits an existing book, modifying one or more attributes such as author, year, genres, rating, or page_count.",
     event=EditBookEvent,
     event_source_code=EditBookEvent.get_source_code_of_class(),
     replace_func=replace_book_placeholders,
@@ -552,8 +553,8 @@ EDIT_BOOK_USE_CASE = UseCase(
     additional_prompt_info=EDIT_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Update the author of your book to Jamie Oliver",
-            "prompt_for_task_generation": "Update the author of <your_book> to Jamie Oliver",
+            "prompt": "Sign in with username: <username> and password: <password>. After that, update the author of your book to Jamie Oliver.",
+            "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. After that, update the author of <your_book> to Jamie Oliver.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
@@ -564,8 +565,8 @@ EDIT_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Modify the release year of your book to 2023",
-            "prompt_for_task_generation": "Modify the release year of <your_book> to 2023",
+            "prompt": "First, log into your account (username: <username>, password: <password>). Then, modify the release year of your book to 2023.",
+            "prompt_for_task_generation": "First, log into your account (username: <username>, password: <password>). Then, modify the release year of <your_book> to 2023.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
@@ -576,20 +577,20 @@ EDIT_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add 'Baking' to the genres of your book",
-            "prompt_for_task_generation": "Add 'Baking' to the genres of <your_book>",
+            "prompt": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of your book.",
+            "prompt_for_task_generation": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of <your_book>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "genres": {"value": "Baking", "operator": "contains"},
+                    "genres": {"value": "Romance", "operator": "contains"},
                 },
                 "reasoning": "Verifies that the new genre is added.",
             },
         },
         {
-            "prompt": "Change the rating of your book to 4.9",
-            "prompt_for_task_generation": "Change the rating of <book> to 4.9",
+            "prompt": "Using username: <username> and password: <password>, sign into the platform. Then change the rating of your book to 4.9.",
+            "prompt_for_task_generation": "Using username: <username> and password: <password>, sign into the platform. Then change the rating of <your_book> to 4.9.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
@@ -600,8 +601,8 @@ EDIT_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Edit the page_count of your book to 1000 pages",
-            "prompt_for_task_generation": "Edit the page_count of <your_book> to 1000 pages",
+            "prompt": "Authenticate yourself with username <username> and password <password>. After logging in, edit the page_count of your book to 1000 pages.",
+            "prompt_for_task_generation": "Authenticate yourself with username <username> and password <password>. After logging in, edit the page_count of <your_book> to 1000 pages.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
@@ -612,8 +613,8 @@ EDIT_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Modify the author of your book to include Neil Gaiman",
-            "prompt_for_task_generation": "Modify the author of <your_book> to include 'Neil Gaiman'",
+            "prompt": "Login credentials: username <username>, password <password>. Sign in first and then modify the author of your book to include Neil Gaiman.",
+            "prompt_for_task_generation": "Login credentials: username <username>, password <password>. Sign in first and then modify the author of <your_book> to include 'Neil Gaiman'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
