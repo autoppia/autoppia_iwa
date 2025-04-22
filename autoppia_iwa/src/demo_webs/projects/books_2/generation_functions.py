@@ -513,7 +513,7 @@ def generate_edit_book_constraints():
                 {
                     "field": field,
                     "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": randint(50, 180),
+                    "value": randint(50, 1080),
                 }
             )
     return constraints
@@ -604,7 +604,7 @@ def generate_add_book_constraints():
                 {
                     "field": field,
                     "operator": choice([ComparisonOperator(ComparisonOperator.EQUALS), ComparisonOperator(ComparisonOperator.GREATER_EQUAL), ComparisonOperator(ComparisonOperator.LESS_EQUAL)]),
-                    "value": randint(50, 180),
+                    "value": randint(50, 1800),
                 }
             )
 
