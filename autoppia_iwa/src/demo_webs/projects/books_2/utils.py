@@ -116,7 +116,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
 
     # Elegir una película aleatoria como punto de partida
     solution_book = random.choice(data)
-    print(f"Película inicial seleccionada: {solution_book['name']}")
+    # print(f"Película inicial seleccionada: {solution_book['name']}")
 
     # Decidir cuántos constraints generar (1-3)
     num_constraints = random.randint(1, 3)

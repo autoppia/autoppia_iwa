@@ -222,7 +222,8 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 
 BOOK_DETAIL_USE_CASE = UseCase(
     name="BOOK_DETAIL",
-    description="The user explicitly requests to navigate to or go to the details page of a specific book that meets certain criteria, where they can view information including author, year, genres, rating, page count, and characters.",
+    description="The user explicitly requests to navigate to or go to the details page of a specific book that meets certain criteria, "
+    "where they can view information including author, year, genres, rating, page count, and characters.",
     event=BookDetailEvent,
     event_source_code=BookDetailEvent.get_source_code_of_class(),
     additional_prompt_info=BOOK_DETAIL_INFO,
@@ -244,7 +245,10 @@ BOOK_DETAIL_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"name": {"value": "Art of Computer Programming, the, Volumes 1-4B, Boxed Set", "operator": "equals"}, "author": {"value": "Donald Knuth", "operator": "equals"}},
+                "event_criteria": {
+                    "name": {"value": "Art of Computer Programming, the, Volumes 1-4B, Boxed Set", "operator": "equals"},
+                    "author": {"value": "Donald Knuth", "operator": "equals"},
+                },
                 "reasoning": "Explicitly directs the system to go to the 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' book details page, using author as additional criteria.",
             },
         },
@@ -415,7 +419,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to add or insert a book (use phrases like "Add...", "Insert...", "Register...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>'. Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
 - CORRECT: "First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2014 and that is authored by Wes Anderson."
@@ -535,7 +540,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to edit or modify a book (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>'. Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year equals 2014 AND author contains 'e'":
 - CORRECT: "Edit a book where the year equals 2014 and the author's name contains the letter 'e'."
@@ -634,7 +640,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to delete or remove a book (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>'. Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year greater_than 2014 AND genres contains Sci-Fi":
 - CORRECT: "Delete a book whose year is greater than 2014 and that belongs to the Sci-Fi genre."
@@ -1065,7 +1072,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
 3. Be phrased as a request to add a comment to a book (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
-4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction.
+4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**,
+using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction.
 
 For example, if the constraints are "book_name contains 'Fourth Win' AND content not_contains 'boring'":
 - CORRECT: "Add a comment to a book that contains 'Fourth Win' with a review that does NOT contain the word 'boring'."
