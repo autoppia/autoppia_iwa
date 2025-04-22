@@ -634,6 +634,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to delete or remove a book (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>'. Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year greater_than 2014 AND genres contains Sci-Fi":
 - CORRECT: "Delete a book whose year is greater than 2014 and that belongs to the Sci-Fi genre."
@@ -648,136 +649,106 @@ DELETE_BOOK_USE_CASE = UseCase(
     event=DeleteBookEvent,
     event_source_code=DeleteBookEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_BOOK_ADDITIONAL_PROMPT_INFO,
-    constraints_generator=generate_book_constraints,
+    # constraints_generator=generate_delete_book_constraints,
+    replace_func=login_replace_func,
     examples=[
         {
-            "prompt": "Remove 'Programming Massively Parallel Processors', a book released after 2021, from the database",
-            "prompt_for_task_generation": "Remove '<book>' that was released after <year> from the database",
+            "prompt": "Log in (username: <username>, password: <password>) and remove '<your_book>'",
+            "prompt_for_task_generation": "Log in (username: <username>, password: <password>) and remove '<your_book>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Programming Massively Parallel Processors", "operator": "equals"},
-                    "year": {"value": 2021, "operator": "greater_than"},
-                },
+                "event_criteria": {},
                 "reasoning": "Ensures the book is deleted and its release year is greater than 2021.",
             },
         },
         {
-            "prompt": "Erase all records of 'Dark Nights: Metal: Dark Knights Rising', a book not authored by Stephen King",
-            "prompt_for_task_generation": "Erase all records of '<book>' not authored by <author>",
+            "prompt": "After successful login with username: <username> and password: <password>, erase all records of '<your_book>'",
+            "prompt_for_task_generation": "After successful login with username: <username> and password: <password>, erase all records of '<your_book>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Dark Nights: Metal: Dark Knights Rising", "operator": "equals"},
-                    "author": {"value": "Stephen King", "operator": "not_equals"},
-                },
+                "event_criteria": {},
                 "reasoning": "Confirms deletion and verifies the author is not Stephen King.",
             },
         },
         {
-            "prompt": "Permanently delete 'Ettinger's Textbook of Veterinary Internal Medicine', which has a page_count greater than 2000 pages",
-            "prompt_for_task_generation": "Permanently delete '<book>' with page_count greater than <page_count> pages",
+            "prompt": "Log in (username: <username>, password: <password>), and then permanently delete '<your_book>'",
+            "prompt_for_task_generation": "Log in (username: <username>, password: <password>), and then permanently delete '<your_book>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Ettinger's Textbook of Veterinary Internal Medicine", "operator": "equals"},
-                    "page_count": {"value": 2000, "operator": "greater_than"},
-                },
+                "event_criteria": {},
                 "reasoning": "Ensures the book is removed and its page count exceeds 2000.",
             },
         },
         {
-            "prompt": "Discard 'Case Files Family Medicine 5th Edition', a book with a rating less than 4.6",
-            "prompt_for_task_generation": "Discard '<book>' with rating less than <rating>",
+            "prompt": "Sign into your account using username <username> and password <password>. After logging in, discard '<your_book>'",
+            "prompt_for_task_generation": "Sign into your account using username <username> and password <password>. After logging in, discard '<your_book>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Case Files Family Medicine 5th Edition", "operator": "equals"},
-                    "rating": {"value": 4.6, "operator": "less_than"},
-                },
+                "event_criteria": {},
                 "reasoning": "Verifies deletion and checks the rating is below 4.6.",
             },
         },
         {
-            "prompt": "Remove 'A Breath of Snow and Ashes', a historical fiction book released before 2010",
-            "prompt_for_task_generation": "Remove a <genre> book called '<book>' released before <year>",
+            "prompt": "Initiate session by logging in with username: <username> and password: <password>. Then, remove '<your_book>'",
+            "prompt_for_task_generation": "Initiate session by logging in with username: <username> and password: <password>. Then, remove '<your_book>' ",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "A Breath of Snow and Ashes", "operator": "equals"},
-                    "genres": {"value": ["Magazine"], "operator": "contains"},
-                    "year": {"value": 2010, "operator": "less_than"},
-                },
+                "event_criteria": {},
                 "reasoning": "Checks deletion and validates genre/release year.",
             },
         },
         {
-            "prompt": "Erase the education book that is not authored by Donald Knuth",
-            "prompt_for_task_generation": "Erase a <genre> book not authored by <author>",
+            "prompt": "Once logged in as <username> (password: <password>), erase the book",
+            "prompt_for_task_generation": "Once logged in as <username> (password: <password>), erase a <genre> book not authored by <author>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "genres": {"value": ["Education"], "operator": "contains"},
-                    "author": {"value": "Donald Knuth", "operator": "not_equals"},
-                },
+                "event_criteria": {},
                 "reasoning": "Ensures deletion of an education book not by Knuth.",
             },
         },
         {
-            "prompt": "Permanently delete a book authored by 'Diana Gabaldon' that was released after 2000",
-            "prompt_for_task_generation": "Permanently delete a book with author containing <author> and released after <year>",
+            "prompt": "Begin by signing in with username <username> and password <password>. Then, permanently delete a book.",
+            "prompt_for_task_generation": "Begin by signing in with username <username> and password <password>. Then, permanently delete a book.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "author": {"value": "Diana Gabaldon", "operator": "contains"},
-                    "year": {"value": 2000, "operator": "greater_than"},
-                },
+                "event_criteria": {},
                 "reasoning": "Verifies deletion of a post-2000 book featuring Diana Gabaldon.",
             },
         },
         {
-            "prompt": "Discard 'Fourth Wing', a book with a rating greater than 4.5",
-            "prompt_for_task_generation": "Discard '<book>' with rating greater than <rating>",
+            "prompt": "First, log into the system (username: <username>, password: <password>), and discard 'Fourth Wing', a book.",
+            "prompt_for_task_generation": "First, log into the system (username: <username>, password: <password>), and discard '<your_book>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Fourth Wing", "operator": "equals"},
-                    "rating": {"value": 4.5, "operator": "greater_than"},
-                },
+                "event_criteria": {},
                 "reasoning": "Ensures deletion and checks rating exceeds 4.5.",
             },
         },
         {
-            "prompt": "Remove 'The Housemaid Is Watching', ensuring it was released before 2025",
-            "prompt_for_task_generation": "Remove '<book>' ensuring it was released before <year>",
+            "prompt": "Authenticate yourself with username <username> and password <password>. Then, remove <your_book>.",
+            "prompt_for_task_generation": "Authenticate yourself with username <username> and password <password>. Then, remove '<your_book>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "The Housemaid Is Watching", "operator": "equals"},
-                    "year": {"value": 2025, "operator": "less_than"},
-                },
+                "event_criteria": {},
                 "reasoning": "Verifies deletion and release year is before 2025.",
             },
         },
         {
-            "prompt": "Erase all records of 'Art of Computer Programming', a book that does not belong to the Romance genre",
-            "prompt_for_task_generation": "Erase all records of '<book>' that does not belong to the <genre> genre",
+            "prompt": "Using your credentials (username: <username>, password: <password>), sign in and erase all records of <your_book>",
+            "prompt_for_task_generation": "Using your credentials (username: <username>, password: <password>), sign in and erase all records of '<your_book>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Art of Computer Programming, the, Volumes 1-4B, Boxed Set", "operator": "equals"},
-                    "genres": {"value": ["Romance"], "operator": "not_contains"},
-                },
+                "event_criteria": {},
                 "reasoning": "Confirms deletion and genre exclusion.",
             },
         },
@@ -925,7 +896,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                 "type": "CheckEventTest",
                 "event_name": "EDIT_PROFILE",
                 "event_criteria": {
-                    "username": {"value": "user1", "operator": "equals"},
+                    "username": {"value": "<username>", "operator": "equals"},
                     "first_name": {"value": "John", "operator": "equals"},
                 },
                 "reasoning": "Ensures the new first name is recorded.",
@@ -1302,8 +1273,8 @@ ALL_USE_CASES = [
     # ADD_COMMENT_USE_CASE,  # Requires BOOK ID
     # EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
     # ===== PENDING =====
-    EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
-    # DELETE_BOOK_USE_CASE,   # Requires Login first
+    # EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
+    DELETE_BOOK_USE_CASE,  # Requires Login first
     # BOOK_DETAIL_USE_CASE,   # Requires BOOK ID
     # SHOPPING_CART_USE_CASE,   # Requires Login first
     # PURCHASE_BOOK_USE_CASE,   # Requires Login first
