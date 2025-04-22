@@ -1,9 +1,10 @@
 import random
+from random import choice, randint, sample, uniform
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from ..shared_data import FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data import BOOKS_DATA
+from .data import BOOKS_DATA, FIELD_OPERATORS_MAP_ADD_COMMENT
 
 
 def generate_book_constraints():
@@ -105,8 +106,6 @@ def generate_book_filter_constraints():
     Genera una combinación de constraints para filtrado de películas
     usando los años y géneros reales de las películas.
     """
-    from random import choice
-
     existing_years = list(set(book["year"] for book in BOOKS_DATA))
 
     existing_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
@@ -345,9 +344,6 @@ def generate_add_comment_constraints():
     """
     Genera combinaciones de constraints para añadir comentarios.
     """
-    from random import choice, sample
-
-    from .data import FIELD_OPERATORS_MAP_ADD_COMMENT
 
     # Películas disponibles
     books = [book["name"] for book in BOOKS_DATA]
@@ -426,10 +422,6 @@ def generate_edit_book_constraints():
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
     """
-    from random import choice, randint, sample, uniform
-
-    # Obtener películas disponibles
-    books = BOOKS_DATA
 
     # Campos editables (sin name porque ya tenemos la película)
     editable_fields = ["author", "year", "genres", "rating", "page_count"]
@@ -472,10 +464,6 @@ def generate_edit_book_constraints():
 
     # Generar constraints
     constraints = []
-
-    # Seleccionar película base
-    base_book = choice(books)
-    constraints.append({"field": "name", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": base_book["name"]})
 
     # Seleccionar 1, 2, 3 o 4 campos para editar
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
@@ -524,7 +512,6 @@ def generate_add_book_constraints():
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
     """
-    from random import choice, randint, sample, uniform
 
     # Campos editables
     editable_fields = ["author", "year", "genres", "rating", "page_count"]
@@ -616,7 +603,6 @@ def generate_edit_profile_constraints():
     Generates constraints specifically for editing user profiles.
     Returns the constraints as structured data.
     """
-    from random import choice, sample
 
     # Editable profile fields (username and email are excluded as mentioned in requirements)
     editable_fields = ["first_name", "last_name", "bio", "location", "website", "favorite_genres"]

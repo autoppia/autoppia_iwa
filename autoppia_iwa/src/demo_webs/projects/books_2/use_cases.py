@@ -284,7 +284,7 @@ BOOK_DETAIL_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_DETAIL",
-                "event_criteria": {"genres": {"value": ["Magazine"], "operator": "contains"}, "duration": {"value": 1000, "operator": "less_than"}},
+                "event_criteria": {"genres": {"value": ["Magazine"], "operator": "contains"}, "page_count": {"value": 1000, "operator": "less_than"}},
                 "reasoning": "Explicitly directs the system to navigate to a book detail page that matches both genre and page count criteria.",
             },
         },
@@ -521,7 +521,7 @@ ADD_BOOK_USE_CASE = UseCase(
                     "page_count": {"value": 450, "operator": "greater_equal"},
                     "author": {"value": "Cal Newport", "operator": "contains"},
                 },
-                "reasoning": "Validates the greater_equal condition on duration and inclusion of a author member.",
+                "reasoning": "Validates the greater_equal condition on page_count and inclusion of a author member.",
             },
         },
     ],
@@ -544,7 +544,7 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 EDIT_BOOK_USE_CASE = UseCase(
     name="EDIT_BOOK",
-    description="The user edits an existing book, modifying one or more attributes such as name, author, year, genres, rating, page_count.",
+    description="The user edits an existing book, modifying one or more attributes such author, year, genres, rating, page_count.",
     event=EditBookEvent,
     event_source_code=EditBookEvent.get_source_code_of_class(),
     replace_func=replace_book_placeholders,
@@ -552,78 +552,72 @@ EDIT_BOOK_USE_CASE = UseCase(
     additional_prompt_info=EDIT_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Update the author of 'Lidia's Italian-American Kitchen' to Jamie Oliver",
-            "prompt_for_task_generation": "Update the author of <book> to Jamie Oliver",
+            "prompt": "Update the author of your book to Jamie Oliver",
+            "prompt_for_task_generation": "Update the author of <your_book> to Jamie Oliver",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "name": {"value": "Lidia's Italian-American Kitchen", "operator": "equals"},
                     "author": {"value": "Jamie Oliver", "operator": "equals"},
                 },
                 "reasoning": "Ensures the new author is recorded.",
             },
         },
         {
-            "prompt": "Modify the release year of 'Programming Massively Parallel Processors' to 2023",
-            "prompt_for_task_generation": "Modify the release year of <book> to 2023",
+            "prompt": "Modify the release year of your book to 2023",
+            "prompt_for_task_generation": "Modify the release year of <your_book> to 2023",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "name": {"value": "Programming Massively Parallel Processors", "operator": "equals"},
                     "year": {"value": 2023, "operator": "equals"},
                 },
                 "reasoning": "Ensures the new year is recorded.",
             },
         },
         {
-            "prompt": "Add 'Baking' to the genres of 'Lidia's Italian-American Kitchen'",
-            "prompt_for_task_generation": "Add 'Baking' to the genres of <book>",
+            "prompt": "Add 'Baking' to the genres of your book",
+            "prompt_for_task_generation": "Add 'Baking' to the genres of <your_book>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "name": {"value": "Lidia's Italian-American Kitchen", "operator": "equals"},
                     "genres": {"value": "Baking", "operator": "contains"},
                 },
                 "reasoning": "Verifies that the new genre is added.",
             },
         },
         {
-            "prompt": "Change the rating of 'Elementary Statistics' to 4.9",
+            "prompt": "Change the rating of your book to 4.9",
             "prompt_for_task_generation": "Change the rating of <book> to 4.9",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "name": {"value": "Elementary Statistics", "operator": "equals"},
                     "rating": {"value": 4.9, "operator": "equals"},
                 },
                 "reasoning": "Ensures the rating is updated correctly.",
             },
         },
         {
-            "prompt": "Edit the duration of 'A Breath of Snow and Ashes' to 1000 pages",
-            "prompt_for_task_generation": "Edit the duration of <book> to 1000 pages",
+            "prompt": "Edit the page_count of your book to 1000 pages",
+            "prompt_for_task_generation": "Edit the page_count of <your_book> to 1000 pages",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "name": {"value": "A Breath of Snow and Ashes", "operator": "equals"},
-                    "duration": {"value": 1000, "operator": "equals"},
+                    "page_count": {"value": 1000, "operator": "equals"},
                 },
-                "reasoning": "Ensures that the duration is updated.",
+                "reasoning": "Ensures that the page_count is updated.",
             },
         },
         {
-            "prompt": "Modify the author of 'Dark Nights: Metal: Dark Knights Rising' to include Neil Gaiman",
-            "prompt_for_task_generation": "Modify the author of <book> to include 'Neil Gaiman'",
+            "prompt": "Modify the author of your book to include Neil Gaiman",
+            "prompt_for_task_generation": "Modify the author of <your_book> to include 'Neil Gaiman'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "EDIT_BOOK",
                 "event_criteria": {
-                    "name": {"value": "Dark Nights: Metal: Dark Knights Rising", "operator": "equals"},
                     "author": {"value": "Neil Gaiman", "operator": "contains"},
                 },
                 "reasoning": "Ensures the author changes are properly logged.",
@@ -682,14 +676,14 @@ DELETE_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Permanently delete 'Ettinger's Textbook of Veterinary Internal Medicine', which has a duration greater than 2000 pages",
-            "prompt_for_task_generation": "Permanently delete '<book>' with duration greater than <duration> pages",
+            "prompt": "Permanently delete 'Ettinger's Textbook of Veterinary Internal Medicine', which has a page_count greater than 2000 pages",
+            "prompt_for_task_generation": "Permanently delete '<book>' with page_count greater than <page_count> pages",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_BOOK",
                 "event_criteria": {
                     "name": {"value": "Ettinger's Textbook of Veterinary Internal Medicine", "operator": "equals"},
-                    "duration": {"value": 2000, "operator": "greater_than"},
+                    "page_count": {"value": 2000, "operator": "greater_than"},
                 },
                 "reasoning": "Ensures the book is removed and its page count exceeds 2000.",
             },
