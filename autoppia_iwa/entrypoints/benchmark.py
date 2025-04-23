@@ -1,5 +1,4 @@
 import asyncio
-import sys
 import time
 import traceback
 
@@ -14,7 +13,7 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig
+from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig, setup_logging
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
@@ -25,20 +24,17 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
-# Setup Loguru
+# ==================================
+# ==== BENCHMARK CONFIGURATIONS ====
+# ==================================
+WEB_PROJECT_NUMBER = 2
+NUM_OF_PROMPT_PER_USE_CASE = 3
+
 LOG_FILE = "benchmark.log"
 
-logger.remove()
-logger.add(
-    sys.stderr,
-    level="INFO",
-    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-    colorize=True,
-)
-logger.add(LOG_FILE, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}", colorize=True)
-
 # Initialize configuration & solution cache
-config = BenchmarkConfig(web_project_number=2)
+setup_logging(LOG_FILE)
+config = BenchmarkConfig(web_project_number=WEB_PROJECT_NUMBER, prompt_per_use_case=NUM_OF_PROMPT_PER_USE_CASE)
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
@@ -94,7 +90,7 @@ async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent,
         # (Optional) Reset DB
         await backend_service.reset_database()
 
-        # Load from cache if available
+        # Try loading from cache
         if config.use_cached_solutions:
             cached_solution = await solution_cache.load_solution(task.id, agent.id)
             if cached_solution and cached_solution.actions:
@@ -117,7 +113,7 @@ async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent,
         return task_solution
 
     except Exception as e:
-        logger.opt(exception=True).error(f"Error generating solution for Task {task.id}: {e!r}")
+        logger.error(f"Error generating solution for Task {task.id}: {e!r}")
         return None
     finally:
         await backend_service.close()

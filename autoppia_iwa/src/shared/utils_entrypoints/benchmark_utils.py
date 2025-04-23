@@ -1,3 +1,4 @@
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -107,3 +108,24 @@ class BenchmarkConfig:
         logger.debug(f"  Prompts per URL: {self.prompts_per_url}")
         logger.debug(f"  Number of URLs: {self.num_of_urls}")
         logger.debug(f"  Prompts per use case: {self.prompt_per_use_case}")
+
+
+# ==================================
+# ======= LOGGING SETUP ============
+# ==================================
+def setup_logging(log_file: str):
+    """Configure loguru logger with enhanced formatting"""
+    logger.remove()
+
+    # Console logging with colors
+    logger.add(
+        sys.stderr,
+        level="INFO",
+        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        colorize=True,
+        backtrace=True,
+        diagnose=True,
+    )
+
+    # File logging
+    logger.add(log_file, level="DEBUG", format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}", rotation="10 MB", retention="7 days")
