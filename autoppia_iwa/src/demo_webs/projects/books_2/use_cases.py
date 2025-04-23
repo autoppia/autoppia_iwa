@@ -1225,14 +1225,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...", "Checkout...", "Complete order...").
 4. Explicitly mention the purchase/checkout action in the prompt.
 5. If constraints include payment_method or shipping_address, they MUST be referenced directly.
-6. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-
-For example, if constraints are "payment_method equals 'Credit Card'":
-- CORRECT: "Purchase my cart items with Credit Card payment."
-- CORRECT: "Checkout using Credit Card."
-- INCORRECT: "Buy my books" (missing payment method constraint).
-- INCORRECT: "Complete purchase with unspecified details" (vague).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
