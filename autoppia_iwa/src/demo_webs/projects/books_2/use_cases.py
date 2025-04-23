@@ -1174,7 +1174,7 @@ SHOPPING_CART_USE_CASE = UseCase(
     event_source_code=ShoppingCartEvent.get_source_code_of_class(),
     constraints_generator=generate_book_constraints,
     additional_prompt_info=SHOPPING_CART_ADDITIONAL_PROMPT_INFO,
-    replace_func=login_replace_func,
+    replace_func=replace_book_placeholders,
     examples=[
         {
             "prompt": "Login with username: <username> and password: <password>. After logging in, add 'Fourth Win' to your shopping cart.",
@@ -1190,7 +1190,7 @@ SHOPPING_CART_USE_CASE = UseCase(
         },
         {
             "prompt": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
-            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a <book> with <page_count> greater than or equal to 704, with genre '<genre>' into your shopping cart.",
+            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a book with page_count greater than or equal to <page_count>, with genre '<genre>' into your shopping cart.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SHOPPING_CART",
@@ -1225,6 +1225,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...", "Checkout...", "Complete order...").
 4. Explicitly mention the purchase/checkout action in the prompt.
 5. If constraints include payment_method or shipping_address, they MUST be referenced directly.
+6. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if constraints are "payment_method equals 'Credit Card'":
 - CORRECT: "Purchase my cart items with Credit Card payment."
@@ -1241,37 +1243,72 @@ PURCHASE_BOOK_USE_CASE = UseCase(
     event=PurchaseBookEvent,
     event_source_code=PurchaseBookEvent.get_source_code_of_class(),
     replace_func=replace_book_placeholders,
-    # constraints_generator=generate_purchase_book_constraints,
+    constraints_generator=generate_book_constraints,
     additional_prompt_info=PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Purchase the book titled 'Dark Nights: Metal: Dark Knights Rising'",
-            "prompt_for_task_generation": "Purchase the book titled <book>",
+            "prompt": "First, authenticate with username: <username> and password: <password>. After successful login, purchase the book titled 'Klara and the Sun' from the year 2021.",
+            "prompt_for_task_generation": "First, authenticate with username: <username> and password: <password>. After successful login, purchase the book titled <book> from the year <year>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "PURCHASE_BOOK",
-                "event_criteria": {"book_name": {"value": "Dark Nights: Metal: Dark Knights Rising", "operator": "equals"}},
-                "reasoning": "Ensures the book 'Dark Nights: Metal: Dark Knights Rising' is purchased directly.",
+                "event_criteria": {
+                    "name": {"value": "Klara and the Sun", "operator": "equals"},
+                    "year": {"value": 2021, "operator": "equals"},
+                },
+                "reasoning": "Ensures login occurs first, then a specific book from a specific year is purchased.",
             },
         },
         {
-            "prompt": "Checkout with 'Elementary Statistics'",
-            "prompt_for_task_generation": "Checkout with <book>",
+            "prompt": "Initiate session using username: <username> and password: <password>. Once logged in, checkout with the 'Elementary Statistics' book priced below $100.",
+            "prompt_for_task_generation": "Initiate session using username: <username> and password: <password>. Once logged in, checkout with the <book> book priced below <price>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "PURCHASE_BOOK",
-                "event_criteria": {"book_name": {"value": "Elementary Statistics", "operator": "equals"}},
-                "reasoning": "Validates that the checkout process includes the right book.",
+                "event_criteria": {
+                    "name": {"value": "Elementary Statistics", "operator": "equals"},
+                    "price": {"value": 100, "operator": "less_than"},
+                },
+                "reasoning": "Validates login and ensures the correct book is checked out with a price condition.",
             },
         },
         {
-            "prompt": "Buy the book 'Fourth Win' now",
-            "prompt_for_task_generation": "Buy the book <book> now",
+            "prompt": "After successful login with username: <username> and password: <password>, buy the book 'Fourth Win' authored by 'Rebecca Yarros'.",
+            "prompt_for_task_generation": "After successful login with username: <username> and password: <password>, buy the book <book> authored by <author>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "PURCHASE_BOOK",
-                "event_criteria": {"book_name": {"value": "Fourth Win", "operator": "equals"}},
-                "reasoning": "Tests a direct instruction to purchase a book.",
+                "event_criteria": {
+                    "name": {"value": "Fourth Win", "operator": "equals"},
+                    "author": {"value": "Rebecca Yarros", "operator": "equals"},
+                },
+                "reasoning": "Ensures the login and verifies purchase based on both book name and author.",
+            },
+        },
+        {
+            "prompt": "Sign in with username: <username> and password: <password>. Then complete the order for a 'History' genre book released in 2019.",
+            "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. Then complete the order for a '<genre>' genre book released in <year>.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "PURCHASE_BOOK",
+                "event_criteria": {
+                    "genres": {"value": ["History"], "operator": "contains"},
+                    "year": {"value": 2019, "operator": "equals"},
+                },
+                "reasoning": "Tests login followed by purchase filtered by genre and year.",
+            },
+        },
+        {
+            "prompt": "Log in with username: <username> and password: <password>. Then proceed to buy a book in the 'Education' genre with more than 700 pages.",
+            "prompt_for_task_generation": "Log in with username: <username> and password: <password>. Then proceed to buy a book in the '<genre>' genre with more than <page_count> pages.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "PURCHASE_BOOK",
+                "event_criteria": {
+                    "genres": {"value": ["Education"], "operator": "contains"},
+                    "page_count": {"value": 700, "operator": "greater_than"},
+                },
+                "reasoning": "Verifies that after login, a book is purchased based on genre and minimum page count.",
             },
         },
     ],
@@ -1295,6 +1332,6 @@ ALL_USE_CASES = [
     # DELETE_BOOK_USE_CASE,  # Requires Login first
     # BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
     # ===== PENDING =====
-    SHOPPING_CART_USE_CASE,  # Requires Login first
-    # PURCHASE_BOOK_USE_CASE,   # Requires Login first
+    # SHOPPING_CART_USE_CASE,  # Requires Login first
+    PURCHASE_BOOK_USE_CASE,  # Requires Login first
 ]
