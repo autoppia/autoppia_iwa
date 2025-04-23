@@ -640,7 +640,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to delete or remove a book (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password>  (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year greater_than 2014 AND genres contains Sci-Fi":
@@ -877,7 +877,7 @@ EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-3. Begin with "Login for the following username:<username> and password:<password>".
+3. Begin with "Login for the following username:<username> and password:<password> (**strictly** containing both the username and password placeholders)".
 4. Be phrased as a request to edit or modify a user profile (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
 
 For example, if the constraints are "username equals 'bookfan' AND password equals 'pass123' AND bio contains 'bookworm'":
@@ -1155,7 +1155,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 3. Be phrased as a request to add/remove/view items in the shopping cart (e.g., "Add to cart...", "Remove from cart...", "View cart...").
 4. Explicitly mention the shopping cart in the prompt (e.g., "shopping cart", "cart").
 5. If constraints include book_name or quantity, they MUST be referenced directly in the prompt.
-6. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "book_name equals 'Inception' AND quantity equals 2":
@@ -1312,20 +1312,18 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    # ===== TESTED =====
-    # REGISTRATION_USE_CASE,
-    # SEARCH_BOOK_USE_CASE,
-    # FILTER_BOOK_USE_CASE,
-    # CONTACT_USE_CASE,
-    # LOGIN_USE_CASE,
-    # LOGOUT_USE_CASE,  # Requires Login first
-    # ADD_BOOK_USE_CASE,  # Requires Login first
-    # ADD_COMMENT_USE_CASE,  # Requires BOOK ID
-    # EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
-    # EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
-    # DELETE_BOOK_USE_CASE,  # Requires Login first
-    # BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
-    # ===== PENDING =====
-    # SHOPPING_CART_USE_CASE,  # Requires Login first
+    REGISTRATION_USE_CASE,
+    SEARCH_BOOK_USE_CASE,
+    FILTER_BOOK_USE_CASE,
+    CONTACT_USE_CASE,
+    LOGIN_USE_CASE,
+    LOGOUT_USE_CASE,  # Requires Login first
+    ADD_BOOK_USE_CASE,  # Requires Login first
+    ADD_COMMENT_USE_CASE,  # Requires BOOK ID
+    EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
+    EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
+    DELETE_BOOK_USE_CASE,  # Requires Login first
+    BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
+    SHOPPING_CART_USE_CASE,  # Requires Login first
     PURCHASE_BOOK_USE_CASE,  # Requires Login first
 ]
