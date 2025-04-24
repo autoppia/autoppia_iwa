@@ -361,8 +361,8 @@ class ConcurrentEvaluator(IEvaluator):
             browser, context = None, None
             try:
                 browser_specifications = BrowserSpecification()
-                browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS)
-                # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
+                # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS)
+                browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
                 context = await browser.new_context(
                     extra_http_headers={"X-WebAgent-Id": web_agent_id},
                     viewport={"width": browser_specifications.viewport_width, "height": browser_specifications.viewport_height},
