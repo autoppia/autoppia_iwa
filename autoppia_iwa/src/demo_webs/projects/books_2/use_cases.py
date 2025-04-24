@@ -419,7 +419,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to add or insert a book (use phrases like "Add...", "Insert...", "Register...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
@@ -540,7 +540,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to edit or modify a book (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>'.
+4. Begin with a creative instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year equals 2014 AND author contains 'e'":
@@ -1313,17 +1313,17 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     REGISTRATION_USE_CASE,
-    SEARCH_BOOK_USE_CASE,
-    FILTER_BOOK_USE_CASE,
-    CONTACT_USE_CASE,
+    # SEARCH_BOOK_USE_CASE,
+    # FILTER_BOOK_USE_CASE,
+    # CONTACT_USE_CASE,
     LOGIN_USE_CASE,
     LOGOUT_USE_CASE,  # Requires Login first
     ADD_BOOK_USE_CASE,  # Requires Login first
-    ADD_COMMENT_USE_CASE,  # Requires BOOK ID
+    # ADD_COMMENT_USE_CASE,  # Requires BOOK ID
     EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
     EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
-    DELETE_BOOK_USE_CASE,  # Requires Login first
-    BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
-    SHOPPING_CART_USE_CASE,  # Requires Login first
-    PURCHASE_BOOK_USE_CASE,  # Requires Login first
+    # DELETE_BOOK_USE_CASE,  # Requires Login first
+    # BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
+    # SHOPPING_CART_USE_CASE,  # Requires Login first
+    # PURCHASE_BOOK_USE_CASE,  # Requires Login first
 ]
