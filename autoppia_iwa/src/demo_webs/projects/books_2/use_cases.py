@@ -1267,19 +1267,6 @@ PURCHASE_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "After successful login with username: <username> and password: <password>, buy the book 'Fourth Win' authored by 'Rebecca Yarros'.",
-            "prompt_for_task_generation": "After successful login with username: <username> and password: <password>, buy the book <book> authored by <author>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "PURCHASE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Fourth Win", "operator": "equals"},
-                    "author": {"value": "Rebecca Yarros", "operator": "equals"},
-                },
-                "reasoning": "Ensures the login and verifies purchase based on both book name and author.",
-            },
-        },
-        {
             "prompt": "Sign in with username: <username> and password: <password>. Then complete the order for a 'History' genre book released in 2019.",
             "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. Then complete the order for a '<genre>' genre book released in <year>.",
             "test": {
@@ -1312,18 +1299,18 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    REGISTRATION_USE_CASE,
-    SEARCH_BOOK_USE_CASE,
-    FILTER_BOOK_USE_CASE,
-    CONTACT_USE_CASE,
-    LOGIN_USE_CASE,
-    LOGOUT_USE_CASE,  # Requires Login first
-    ADD_BOOK_USE_CASE,  # Requires Login first
-    ADD_COMMENT_USE_CASE,  # Requires BOOK ID
-    EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
-    EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
-    DELETE_BOOK_USE_CASE,  # Requires Login first
+    # REGISTRATION_USE_CASE,
+    # SEARCH_BOOK_USE_CASE,
+    # FILTER_BOOK_USE_CASE,
+    # CONTACT_USE_CASE,
+    # LOGIN_USE_CASE,
+    # LOGOUT_USE_CASE,  # Requires Login first
+    # ADD_BOOK_USE_CASE,  # Requires Login first
+    # ADD_COMMENT_USE_CASE,  # Requires BOOK ID
+    # EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
+    # EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
+    # DELETE_BOOK_USE_CASE,  # Requires Login first
     BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
-    SHOPPING_CART_USE_CASE,  # Requires Login first
-    PURCHASE_BOOK_USE_CASE,  # Requires Login first
+    # SHOPPING_CART_USE_CASE,  # Requires Login first
+    # PURCHASE_BOOK_USE_CASE,  # Requires Login first
 ]

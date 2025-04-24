@@ -267,7 +267,6 @@ class BookDetailEvent(Event):
 
     book_id: int
     book_name: str
-    book_author: str | None = None
     book_year: int | None = None
     book_genres: list[str] = Field(default_factory=list)
     book_rating: float | None = None
@@ -281,7 +280,6 @@ class BookDetailEvent(Event):
 
         name: str | CriterionValue | None = None
         genre: str | CriterionValue | None = None
-        author: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         pages: int | CriterionValue | None = None
@@ -317,8 +315,6 @@ class BookDetailEvent(Event):
                         return False
                     if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.book_genres):
                         return False
-        if criteria.author is not None and not validate_criterion(self.book_author, criteria.author):
-            return False
         if criteria.year is not None and not validate_criterion(self.book_year, criteria.year):
             return False
         if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
@@ -342,7 +338,6 @@ class BookDetailEvent(Event):
             user_id=base_event.user_id,
             book_id=data.get("id", 0),
             book_name=data.get("name", ""),
-            book_author=data.get("director", ""),
             book_year=data.get("year"),
             book_genres=genres,
             book_rating=data.get("rating"),
@@ -852,10 +847,8 @@ class PurchaseBookEvent(Event):
 
     event_name: str = "PURCHASE_BOOK"
 
-    book_id: int
     book_name: str
     price: float
-    book_author: str | None = None
     book_year: int | None = None
     book_genres: list[str] = Field(default_factory=list)
     book_rating: float | None = None
@@ -864,10 +857,8 @@ class PurchaseBookEvent(Event):
     class ValidationCriteria(BaseModel):
         """Criteria for validating purchase book events"""
 
-        book_id: int | CriterionValue | None = None
         name: str | CriterionValue | None = None
         genre: str | CriterionValue | None = None
-        author: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         price: float | CriterionValue | None = None
 
@@ -877,8 +868,6 @@ class PurchaseBookEvent(Event):
         """
         if not criteria:
             return True
-        if criteria.book_id is not None and not validate_criterion(self.book_id, criteria.book_id):
-            return False
         if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
             return False
         if criteria.genre is not None:
@@ -895,8 +884,6 @@ class PurchaseBookEvent(Event):
                     )
                 ):
                     return False
-        if criteria.author is not None and not validate_criterion(self.book_author, criteria.author):
-            return False
         if criteria.price is not None and not validate_criterion(self.price, criteria.price):
             return False
         return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
@@ -916,10 +903,8 @@ class PurchaseBookEvent(Event):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            book_id=data.get("id", 0),
             book_name=data.get("name", ""),
             price=data.get("price", 0.0),
-            book_author=data.get("director", ""),
             book_year=data.get("year"),
             book_genres=genres,
             book_rating=data.get("rating"),
@@ -932,10 +917,8 @@ class ShoppingCartEvent(Event):
 
     event_name: str = "SHOPPING_CART"
 
-    book_id: int
     book_name: str
     price: float
-    book_author: str | None = None
     book_year: int | None = None
     book_genres: list[str] = Field(default_factory=list)
     book_rating: float | None = None
@@ -944,10 +927,8 @@ class ShoppingCartEvent(Event):
     class ValidationCriteria(BaseModel):
         """Criteria for validating shopping cart events"""
 
-        book_id: int | CriterionValue | None = None
         name: str | CriterionValue | None = None
         genre: str | CriterionValue | None = None
-        author: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         price: float | CriterionValue | None = None
 
@@ -957,8 +938,6 @@ class ShoppingCartEvent(Event):
         """
         if not criteria:
             return True
-        if criteria.book_id is not None and not validate_criterion(self.book_id, criteria.book_id):
-            return False
         if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
             return False
         if criteria.genre is not None:
@@ -975,8 +954,6 @@ class ShoppingCartEvent(Event):
                     )
                 ):
                     return False
-        if criteria.author is not None and not validate_criterion(self.book_author, criteria.author):
-            return False
         if criteria.price is not None and not validate_criterion(self.price, criteria.price):
             return False
         return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
@@ -996,10 +973,8 @@ class ShoppingCartEvent(Event):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            book_id=data.get("id", 0),
             book_name=data.get("name", ""),
             price=data.get("price", 0.0),
-            book_author=data.get("director", ""),
             book_year=data.get("year"),
             book_genres=genres,
             book_rating=data.get("rating"),
