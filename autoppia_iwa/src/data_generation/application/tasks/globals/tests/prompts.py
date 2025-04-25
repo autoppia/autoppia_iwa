@@ -66,8 +66,8 @@ Each field in event_criteria can follow either of these structures:
 - **contains**: Field must contain the value (for string fields)
 - **not_contains**: Field must not contain the value (for string fields)
 - **greater_than**, **less_than**, **greater_equal**, **less_equal**: Numeric comparisons
-- **in_list**: Value must be one of several options (specify value as an array)
-- **not_in_list**: Value must not be any of the listed option
+- **in_list**: Value must be one of several options (specify value as an **array**)
+- **not_in_list**: Value must not be any of the listed option (specify value as an **array**)
 ---
 
 ## **Test Generation Instructions**
