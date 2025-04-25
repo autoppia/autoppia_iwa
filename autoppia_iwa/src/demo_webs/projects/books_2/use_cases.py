@@ -423,7 +423,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
-- CORRECT: "First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2014 and that is authored by Wes Anderson."
+- CORRECT: "First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2014 and that is authored by 'Wes Anderson'."
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -438,7 +438,7 @@ ADD_BOOK_USE_CASE = UseCase(
     additional_prompt_info=ADD_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password 'password123'. Then, add the book 'A Guide to the Good Life' authored by William B. Irvine",
+            "prompt": "First, authenticate with username '<username>' and password 'password123'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
             "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book '<book>' authored by '<author>'",
             "test": {
                 "type": "CheckEventTest",
@@ -503,8 +503,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Upon logging in with username '<username>' and the secret 'password123', add the book 'The Practicing Mind' from one of these authors: Thomas M. Sterner, James Clear, or Ryan Holiday",
-            "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: <author>, <author>, or <author>",
+            "prompt": "Upon logging in with username '<username>' and the secret 'password123', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
+            "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: '<author>', '<author>', or '<author>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -516,8 +516,8 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "With credentials '<username>' and 'password123' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by Cal Newport",
-            "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by <author>",
+            "prompt": "With credentials '<username>' and 'password123' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
+            "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by '<author>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_BOOK",
@@ -1222,7 +1222,7 @@ PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...", "Checkout...").
+3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...").
 4. Explicitly mention the purchase/checkout action in the prompt.
 5. If constraints include payment_method or shipping_address, they MUST be referenced directly.
 6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
