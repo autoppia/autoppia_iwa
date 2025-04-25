@@ -176,7 +176,7 @@ def generate_constraint_from_solution(book: dict, field: str, operator: Comparis
                     constraint["value"] = test_str
                     break
 
-    elif field == "year" or field == "page_count":
+    elif field == "year" or field == "page_count" or field == "price":
         value = book[field]
         if operator == ComparisonOperator.EQUALS:
             constraint["value"] = value
