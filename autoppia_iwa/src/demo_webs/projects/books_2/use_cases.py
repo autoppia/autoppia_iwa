@@ -1222,7 +1222,7 @@ PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...", "Checkout...", "Complete order...").
+3. Be phrased as a request to purchase books (e.g., "Purchase...", "Buy...", "Checkout...").
 4. Explicitly mention the purchase/checkout action in the prompt.
 5. If constraints include payment_method or shipping_address, they MUST be referenced directly.
 6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
@@ -1267,7 +1267,7 @@ PURCHASE_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Sign in with username: <username> and password: <password>. Then complete the order for a 'History' genre book released in 2019.",
+            "prompt": "Sign in with username: <username> and password: <password>. Then complete buying the order for a 'History' genre book released in 2019.",
             "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. Then complete the order for a '<genre>' genre book released in <year>.",
             "test": {
                 "type": "CheckEventTest",
@@ -1299,18 +1299,18 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    # REGISTRATION_USE_CASE,
-    # SEARCH_BOOK_USE_CASE,
-    # FILTER_BOOK_USE_CASE,
-    # CONTACT_USE_CASE,
-    # LOGIN_USE_CASE,
-    # LOGOUT_USE_CASE,  # Requires Login first
-    # ADD_BOOK_USE_CASE,  # Requires Login first
-    # ADD_COMMENT_USE_CASE,  # Requires BOOK ID
-    # EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
-    # EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
-    # DELETE_BOOK_USE_CASE,  # Requires Login first
+    REGISTRATION_USE_CASE,
+    SEARCH_BOOK_USE_CASE,
+    FILTER_BOOK_USE_CASE,
+    CONTACT_USE_CASE,
+    LOGIN_USE_CASE,
+    LOGOUT_USE_CASE,  # Requires Login first
+    ADD_BOOK_USE_CASE,  # Requires Login first
+    ADD_COMMENT_USE_CASE,  # Requires BOOK ID
+    EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
+    EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
+    DELETE_BOOK_USE_CASE,  # Requires Login first
     BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
-    # SHOPPING_CART_USE_CASE,  # Requires Login first
-    # PURCHASE_BOOK_USE_CASE,  # Requires Login first
+    SHOPPING_CART_USE_CASE,  # Requires Login first
+    PURCHASE_BOOK_USE_CASE,  # Requires Login first
 ]
