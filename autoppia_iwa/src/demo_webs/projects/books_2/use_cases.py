@@ -985,7 +985,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Include the word "Filter" (or "filtering", "filtered", "filters") explicitly in the prompt.
-4. Be phrased as a request to filter or browse books (e.g., "Filter...", "Show only...", "Display...", "Browse...", etc.).
+4. Be phrased as a request to filter or browse books (e.g., "Filter...", "Show only...", etc.).
 5. Use ONLY the allowed genres and years from the lists below.
 
 ALLOWED YEARS:
@@ -1072,13 +1072,14 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
 3. Be phrased as a request to add a comment to a book (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
-4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**,
-using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction.
-
+4. If the constraint contains a field that must be equal to a value, you **must** explicitly mention the word 'equal'.
+5. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
 For example, if the constraints are "book_name contains 'Fourth Win' AND content not_contains 'boring'":
 - CORRECT: "Add a comment to a book that contains 'Fourth Win' with a review that does NOT contain the word 'boring'."
 - INCORRECT: "Write a comment about any book" (missing specific constraints)
 - INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
+6. Value Preservation: Use the exact field values as they are provided in the constraints. Do NOT attempt to correct spelling, rephrase, or normalize any entries.
+7. Quoting of Values: Enclose the value of the comment's content AND the commenter's name within single quotation marks.
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -1102,7 +1103,7 @@ ADD_COMMENT_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Write a review for a book, ensuring the commenter is not John.",
+            "prompt": "Write a review for a book, ensuring the commenter is not 'John'.",
             "prompt_for_task_generation": "Write a review for a book, ensuring the commenter is not '<commenter>'.",
             "test": {
                 "type": "CheckEventTest",
@@ -1122,7 +1123,7 @@ ADD_COMMENT_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add a comment for a book not called The Matrix by someone other than John.",
+            "prompt": "Add a comment for a book not called The Matrix by someone other than 'John'.",
             "prompt_for_task_generation": "Add a comment for a book not called '<book>' by someone other than '<commenter>'.",
             "test": {
                 "type": "CheckEventTest",
@@ -1132,7 +1133,7 @@ ADD_COMMENT_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Write a detailed review with specific book, content, and commenter constraints.",
+            "prompt": "Write a detailed review for the book 'Elementary Statistics' with a comment that does NOT contain the word 'boring' and ensuring the commenter is not 'David'.",
             "prompt_for_task_generation": "Write a detailed review for the book '<book>' with a comment that does NOT contain the word '<content>' and ensuring the commenter is not '<commenter>'.",
             "test": {
                 "type": "CheckEventTest",
@@ -1299,18 +1300,18 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    REGISTRATION_USE_CASE,
-    SEARCH_BOOK_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # SEARCH_BOOK_USE_CASE,
     FILTER_BOOK_USE_CASE,
-    CONTACT_USE_CASE,
-    LOGIN_USE_CASE,
-    LOGOUT_USE_CASE,  # Requires Login first
-    ADD_BOOK_USE_CASE,  # Requires Login first
+    # CONTACT_USE_CASE,
+    # LOGIN_USE_CASE,
+    # LOGOUT_USE_CASE,  # Requires Login first
+    # ADD_BOOK_USE_CASE,  # Requires Login first
     ADD_COMMENT_USE_CASE,  # Requires BOOK ID
-    EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
-    EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
-    DELETE_BOOK_USE_CASE,  # Requires Login first
-    BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
-    SHOPPING_CART_USE_CASE,  # Requires Login first
-    PURCHASE_BOOK_USE_CASE,  # Requires Login first
+    # EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
+    # EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
+    # DELETE_BOOK_USE_CASE,  # Requires Login first
+    # BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
+    # SHOPPING_CART_USE_CASE,  # Requires Login first
+    # PURCHASE_BOOK_USE_CASE,  # Requires Login first
 ]
