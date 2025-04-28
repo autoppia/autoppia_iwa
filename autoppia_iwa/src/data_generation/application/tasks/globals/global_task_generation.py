@@ -62,10 +62,13 @@ class GlobalTaskGenerationPipeline:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
         """
+        additional_system_prompt = None
 
-        constraints_info = ""
         if hasattr(use_case, "generate_constraints"):
             constraints_info = use_case.generate_constraints()
+        else:
+            constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
+            additional_system_prompt = constraints_info
 
         # Build the LLM prompt using a template
         if not use_case.additional_prompt_info:
@@ -79,7 +82,7 @@ class GlobalTaskGenerationPipeline:
         )
 
         # Call the LLM (with retry logic) and parse the list of strings result
-        prompt_list = await self._call_llm_with_retry(llm_prompt)
+        prompt_list = await self._call_llm_with_retry(llm_prompt, additional_system_prompt=additional_system_prompt)
         print(prompt_list)
         # For each prompt string, create a Task
         # We'll fetch the HTML and screenshot just once for all tasks
@@ -109,15 +112,15 @@ class GlobalTaskGenerationPipeline:
         random.shuffle(tasks)
         return tasks
 
-    async def _call_llm_with_retry(self, llm_prompt: str) -> list[str]:
+    async def _call_llm_with_retry(self, llm_prompt: str, additional_system_prompt: str | None = None) -> list[str]:
         """
         Calls the LLM with the given prompt, parsing the response as a list of strings with retry.
         Returns a list of prompt strings.
         """
-        messages = [
-            {"role": "system", "content": "You are a helpful assistant that generates user tasks as a list of strings."},
-            {"role": "user", "content": llm_prompt},
-        ]
+        base_system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
+        system_prompt = f"{base_system_prompt} {additional_system_prompt}" if additional_system_prompt else base_system_prompt
+
+        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
         for attempt in range(self.max_retries):
             try:
