@@ -53,6 +53,8 @@ class GlobalTestGenerationPipeline:
 
             if task.use_case.constraints_generator is None:
                 logger.debug(f"Skipping task {task.id}: UseCase has no constraints.")
+                only_name_event = {"event_name": task.use_case.name}
+                task.tests = [CheckEventTest(**only_name_event)]
                 continue
 
             try:
