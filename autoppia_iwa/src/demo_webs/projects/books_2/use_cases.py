@@ -640,7 +640,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Be phrased as a request to delete or remove a book (use phrases like "Remove...", "Delete...", "Erase...", "Discard...").
-4. Begin with a creative instruction to log in using username '<username>' and password '<password>  (**strictly** containing both the username and password placeholders)'.
+4. Do **not** specify book details like name, year, or author. The user is only allowed to delete books they have added. Use terms like 'your book' or 'user-registered book' in the final prompt.
+5. Begin with a creative instruction to log in using username '<username>' and password '<password>  (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 For example, if the constraints are "year greater_than 2014 AND genres contains Sci-Fi":
@@ -656,7 +657,6 @@ DELETE_BOOK_USE_CASE = UseCase(
     event=DeleteBookEvent,
     event_source_code=DeleteBookEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_BOOK_ADDITIONAL_PROMPT_INFO,
-    # constraints_generator=generate_delete_book_constraints,
     replace_func=login_replace_func,
     examples=[
         {
