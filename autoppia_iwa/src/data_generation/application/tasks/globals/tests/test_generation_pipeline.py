@@ -51,6 +51,10 @@ class GlobalTestGenerationPipeline:
                 logger.debug(f"Task {task.id} has no UseCase. Skipping global test generation.")
                 continue
 
+            if not hasattr(task.use_case, "generate_constraints") or not callable(task.use_case.generate_constraints):
+                logger.debug(f"Skipping task {task.id}: UseCase has no constraints.")
+                continue
+
             try:
                 # Generate test definitions
                 test_definitions = await self._generate_check_event_tests(task)

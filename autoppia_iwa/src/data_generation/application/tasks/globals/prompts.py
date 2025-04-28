@@ -51,6 +51,8 @@ Be clear with constraints, especially when referring to CONTAINS or NOT CONTAINS
 ## CURRENT CONSTRAINT SET
 {constraints_info}
 
+Do not generate the constraint for this prompt if the constraint set above does not contains the constraints.
+
 ## ADDITIONAL INFO
 {additional_prompt_info}
 
