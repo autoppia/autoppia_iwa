@@ -33,12 +33,20 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 ###############################################################################
 # REGISTRATION_USE_CASE
 ###############################################################################
+REGISTRATION_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Be sure to add instruction to register using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 REGISTRATION_USE_CASE = UseCase(
     name="REGISTRATION",
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
     replace_func=register_replace_func,
+    additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
@@ -86,12 +94,20 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 # LOGIN_USE_CASE
 ###############################################################################
+LOGIN_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Be sure to add instruction to login using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 LOGIN_USE_CASE = UseCase(
     name="LOGIN",
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
+    additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
@@ -139,12 +155,20 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 # LOGOUT_USE_CASE
 ###############################################################################
+LOGOUT_ADDITIONAL_PROMPT_INFO = """"
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Be sure to add instruction to login using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 LOGOUT_USE_CASE = UseCase(
     name="LOGOUT",
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
+    additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>, then logout",
@@ -324,27 +348,27 @@ FILM_DETAIL_USE_CASE = UseCase(
 # SEARCH_FILM_USE_CASE
 ###############################################################################
 SEARCH_FILM_INFO = """
-        CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-        1. Make it EXPLICIT that this is a SEARCH for a movie using clear terms such as:
-           - "Search for..."
-           - "Look for the film..."
-           - "Find a movie..."
-           - "Look up a movie..."
-        2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
-        3. Include ONLY the movie title as part of the search
-        4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Make it EXPLICIT that this is a SEARCH for a movie using clear terms such as:
+   - "Search for..."
+   - "Look for the film..."
+   - "Find a movie..."
+   - "Look up a movie..."
+2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
+3. Include ONLY the movie title as part of the search
+4. DO NOT include ANY constraints or conditions like director, year, genre, etc.
 
-        For example:
-        - CORRECT: "Search for the movie Inception in the database"
-        - CORRECT: "Look for the film Titanic"
-        - CORRECT: "Find movies called The Matrix"
-        - INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
-        - INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
-        - INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
-        - INCORRECT: "Find a movie called Inception released after 2010" (includes constraints)
+For example:
+- CORRECT: "Search for the movie Inception in the database"
+- CORRECT: "Look for the film Titanic"
+- CORRECT: "Find movies called The Matrix"
+- INCORRECT: "Show me details about Inception" (doesn't specify it's a search)
+- INCORRECT: "Give me information on Titanic" (ambiguous, doesn't clearly indicate search)
+- INCORRECT: "Search for Titanic NOT directed by James Cameron" (includes constraints)
+- INCORRECT: "Find a movie called Inception released after 2010" (includes constraints)
 
-        ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
-        """
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL clearly indicating that it is a simple SEARCH with NO additional constraints.
+"""
 
 SEARCH_FILM_USE_CASE = UseCase(
     name="SEARCH_FILM",
