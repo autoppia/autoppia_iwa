@@ -92,6 +92,23 @@ Then the `not_in_list` test should only validate that those **exact** years are 
 
 Only use the **exact values stated** in the prompt. Do not expand them or infer larger sets unless explicitly stated.
 
+## Don't correct the spelling or modify the constraints mentioned in the prompt.
+> "Navigate to the details page for a film where the name equals 'Interestellar' and the year is NOT in the list [2001, 1990, 2010]."
+❌ INCORRECT:
+
+"name": {{
+  "value": "interstellar",
+  "operator": "equal"
+}}
+
+✅ CORRECT:
+"name": {{
+  "value": "interestellar",
+  "operator": "equal"
+}}
+
+Do not modify the constraints mentioned in the prompt.
+
 ---
 
 ## **Test Generation Instructions**
