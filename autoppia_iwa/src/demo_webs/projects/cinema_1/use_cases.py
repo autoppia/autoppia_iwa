@@ -867,7 +867,7 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 EDIT_USER_PROFILE_USE_CASE = UseCase(
-    name="EDIT_PROFILE",
+    name="EDIT_USER",
     description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
@@ -880,7 +880,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your first name to <first_name>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "user1", "operator": "equals"},
                     "first_name": {"value": "John", "operator": "equals"},
@@ -893,7 +893,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your bio to include <bio_content>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "filmfan", "operator": "equals"},
                     "bio": {"value": "cinema", "operator": "contains"},
@@ -906,7 +906,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your location to <location>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "movielover", "operator": "equals"},
                     "location": {"value": "New York, USA", "operator": "equals"},
@@ -919,7 +919,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Edit your website to <website>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "cinephile", "operator": "equals"},
                     "website": {"value": "https://myfilmblog.example.com", "operator": "equals"},
@@ -932,7 +932,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your favorite genre to <genre>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "director101", "operator": "equals"},
                     "favorite_genres": {"value": "Sci-Fi", "operator": "equals"},
@@ -945,7 +945,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your last name to <last_name>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "producer", "operator": "equals"},
                     "last_name": {"value": "Smith", "operator": "equals"},
