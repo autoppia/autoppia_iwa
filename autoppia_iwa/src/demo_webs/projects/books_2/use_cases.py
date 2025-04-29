@@ -33,9 +33,7 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 ###############################################################################
 REGISTRATION_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-4. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+1. Be sure to add instruction to register using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -97,9 +95,7 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 LOGIN_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-4. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+1. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -160,9 +156,7 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 LOGOUT_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above — not just some of them.
-2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-4. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+1. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -237,7 +231,7 @@ BOOK_DETAIL_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to view details of a book (use phrases like "Show details for...", "Give me information about...")
+3. Be phrased as a request to **view details** of a movie (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
 4. Only use the books name defined below.
 
 BOOKS NAMES:
