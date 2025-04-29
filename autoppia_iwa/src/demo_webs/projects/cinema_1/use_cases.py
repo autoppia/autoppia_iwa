@@ -207,7 +207,7 @@ FILM_DETAIL_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to view details of a movie (use phrases like "Show details for...", "Give me information about...")
+3. Be phrased as a request to **view details** of a movie (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
 4. Only use the movies name defined below.
 
 MOVIES NAMES:
