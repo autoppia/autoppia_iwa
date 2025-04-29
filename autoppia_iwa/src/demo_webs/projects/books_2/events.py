@@ -14,7 +14,7 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 class RegistrationEvent(Event):
     """Event triggered when a user registration is completed"""
 
-    event_name: str = "REGISTRATION"
+    event_name: str = "REGISTRATION_BOOK"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -46,7 +46,7 @@ class RegistrationEvent(Event):
 class LoginEvent(Event):
     """Event triggered when a user logs in"""
 
-    event_name: str = "LOGIN"
+    event_name: str = "LOGIN_BOOK"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -78,7 +78,7 @@ class LoginEvent(Event):
 class LogoutEvent(Event):
     """Event triggered when a user logs out"""
 
-    event_name: str = "LOGOUT"
+    event_name: str = "LOGOUT_BOOK"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -108,7 +108,7 @@ class LogoutEvent(Event):
 class EditUserEvent(Event):
     """Event triggered when a user edits their profile"""
 
-    event_name: str = "EDIT_USER"
+    event_name: str = "EDIT_USER_BOOK"
     username: str
     first_name: str | None = None
     last_name: str | None = None
@@ -658,7 +658,7 @@ class SearchBookEvent(Event):
 class AddCommentEvent(Event):
     """Event triggered when a user adds a comment to a book"""
 
-    event_name: str = "ADD_COMMENT"
+    event_name: str = "ADD_COMMENT_BOOK"
 
     commenter_name: str
     content: str
@@ -715,7 +715,7 @@ class AddCommentEvent(Event):
 class ContactEvent(Event):
     """Event triggered when a user submits a contact form"""
 
-    event_name: str = "CONTACT"
+    event_name: str = "CONTACT_BOOK"
 
     name: str
     email: str
@@ -1005,17 +1005,17 @@ EVENTS = [
 ]
 
 BACKEND_EVENT_TYPES = {
-    "LOGIN": LoginEvent,
-    "LOGOUT": LogoutEvent,
-    "REGISTRATION": RegistrationEvent,
-    "EDIT_USER": EditUserEvent,
+    "LOGIN_BOOK": LoginEvent,
+    "LOGOUT_BOOK": LogoutEvent,
+    "REGISTRATION_BOOK": RegistrationEvent,
+    "EDIT_USER_BOOK": EditUserEvent,
     "BOOK_DETAIL": BookDetailEvent,
     "SEARCH_book": SearchBookEvent,
     "ADD_BOOK": AddBookEvent,
     "EDIT_BOOK": EditBookEvent,
     "DELETE_BOOK": DeleteBookEvent,
-    "ADD_COMMENT": AddCommentEvent,
-    "CONTACT": ContactEvent,
+    "ADD_COMMENT_BOOK": AddCommentEvent,
+    "CONTACT_BOOK": ContactEvent,
     "FILTER_BOOK": FilterBookEvent,
     "SHOPPING_CART": ShoppingCartEvent,
     "PURCHASE_BOOK": PurchaseBookEvent,

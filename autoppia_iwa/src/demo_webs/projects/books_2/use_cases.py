@@ -32,7 +32,7 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 # REGISTRATION_USE_CASE
 ###############################################################################
 REGISTRATION_USE_CASE = UseCase(
-    name="REGISTRATION",
+    name="REGISTRATION_BOOK",
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
@@ -43,7 +43,7 @@ REGISTRATION_USE_CASE = UseCase(
             "prompt_for_task_generation": "Register with the following username:<username>,email:<email> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "REGISTRATION",
+                "event_name": "REGISTRATION_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test applies when the task requires a registration event with a specific username.",
             },
@@ -53,7 +53,7 @@ REGISTRATION_USE_CASE = UseCase(
             "prompt_for_task_generation": "Create a new account with username:<username>,email:<email> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "REGISTRATION",
+                "event_name": "REGISTRATION_BOOK",
                 "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
                 "reasoning": "This test applies when the task requires registration with a specific username.",
             },
@@ -63,7 +63,7 @@ REGISTRATION_USE_CASE = UseCase(
             "prompt_for_task_generation": "Fill the registration form with username:<username>, email:<email> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "REGISTRATION",
+                "event_name": "REGISTRATION_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}, "email": {"value": "<email>"}},
                 "reasoning": "This test applies when the task requires registration with both username and email specified.",
             },
@@ -73,7 +73,7 @@ REGISTRATION_USE_CASE = UseCase(
             "prompt_for_task_generation": "Sign up for an account with username:<username>,email:<email> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "REGISTRATION",
+                "event_name": "REGISTRATION_BOOK",
                 "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
                 "reasoning": "This test applies when the task requires registration with a specific username.",
             },
@@ -85,7 +85,7 @@ REGISTRATION_USE_CASE = UseCase(
 # LOGIN_USE_CASE
 ###############################################################################
 LOGIN_USE_CASE = UseCase(
-    name="LOGIN",
+    name="LOGIN_BOOK",
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
@@ -96,7 +96,7 @@ LOGIN_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGIN",
+                "event_name": "LOGIN_BOOK",
                 "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
                 "reasoning": "This test applies when the task requires a login event.",
             },
@@ -106,7 +106,7 @@ LOGIN_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGIN",
+                "event_name": "LOGIN_BOOK",
                 "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
                 "reasoning": "This test applies when the task requires a login event with username containing a specific value.",
             },
@@ -116,7 +116,7 @@ LOGIN_USE_CASE = UseCase(
             "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGIN",
+                "event_name": "LOGIN_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test applies when the task requires a login event.",
             },
@@ -126,7 +126,7 @@ LOGIN_USE_CASE = UseCase(
             "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGIN",
+                "event_name": "LOGIN_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test applies when the task requires a login event.",
             },
@@ -138,7 +138,7 @@ LOGIN_USE_CASE = UseCase(
 # LOGOUT_USE_CASE
 ###############################################################################
 LOGOUT_USE_CASE = UseCase(
-    name="LOGOUT",
+    name="LOGOUT_BOOK",
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
@@ -149,7 +149,7 @@ LOGOUT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>, then logout",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGOUT",
+                "event_name": "LOGOUT_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test verifies that the system can handle a login followed by logout instruction.",
             },
@@ -159,7 +159,7 @@ LOGOUT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>, then sign out from the system",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGOUT",
+                "event_name": "LOGOUT_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test checks if the system recognizes 'sign out' as a logout action after login.",
             },
@@ -169,7 +169,7 @@ LOGOUT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGOUT",
+                "event_name": "LOGOUT_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test verifies logout detection after form-based login phrasing.",
             },
@@ -179,7 +179,7 @@ LOGOUT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>, after that please log me out",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGOUT",
+                "event_name": "LOGOUT_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test ensures logout is detected after 'sign in' terminology.",
             },
@@ -189,7 +189,7 @@ LOGOUT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Authenticate with username:<username> and password:<password>, then end my session",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "LOGOUT",
+                "event_name": "LOGOUT_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}},
                 "reasoning": "This test checks if the system recognizes 'end my session' as a logout request.",
             },
@@ -781,7 +781,7 @@ For example, if the constraints are "name not_equals John AND message contains '
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 CONTACT_USE_CASE = UseCase(
-    name="CONTACT",
+    name="CONTACT_BOOK",
     description="The user navigates to the contact form page, fills out fields, and submits the form successfully.",
     event=ContactEvent,
     event_source_code=ContactEvent.get_source_code_of_class(),
@@ -793,7 +793,7 @@ CONTACT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Send a contact form with the subject 'Test Subject'",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "CONTACT",
+                "event_name": "CONTACT_BOOK",
                 "event_criteria": {"subject": {"value": "Test Subject"}},
                 "reasoning": "Verify that the contact form was submitted with the specified subject.",
             },
@@ -803,7 +803,7 @@ CONTACT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "CONTACT",
+                "event_name": "CONTACT_BOOK",
                 "event_criteria": {"message": {"value": "Hello, I would like information about your services", "operator": "contains"}},
                 "reasoning": "Verify that the contact form was submitted with the specific message content.",
             },
@@ -813,7 +813,7 @@ CONTACT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "CONTACT",
+                "event_name": "CONTACT_BOOK",
                 "event_criteria": {"email": {"value": "test@example.com"}, "name": {"value": "jhon", "operator": "not_equals"}},
                 "reasoning": "Verify that the contact form was submitted from the specified email address.",
             },
@@ -823,7 +823,7 @@ CONTACT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Complete the contact form using the email address different to 'test@example.com'",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "CONTACT",
+                "event_name": "CONTACT_BOOK",
                 "event_criteria": {"email": {"value": "test@example.com", "operator": "not_equals"}},
                 "reasoning": "Verify that the contact form was submitted from the specified email address.",
             },
@@ -833,7 +833,7 @@ CONTACT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "CONTACT",
+                "event_name": "CONTACT_BOOK",
                 "event_criteria": {"subject": {"value": "Partnership Inquiry"}, "message": {"value": "potential collaboration", "operator": "contains"}},
                 "reasoning": "Verify that the contact form was submitted with both the specified subject and message content.",
             },
@@ -843,7 +843,7 @@ CONTACT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "CONTACT",
+                "event_name": "CONTACT_BOOK",
                 "event_criteria": {
                     "name": {"value": "John Smith"},
                     "email": {"value": "john@example.com"},
@@ -858,7 +858,7 @@ CONTACT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "CONTACT",
+                "event_name": "CONTACT_BOOK",
                 "event_criteria": {
                     "name": {"value": "John Smith"},
                     "email": {"value": "john@example.com"},
@@ -888,7 +888,7 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 EDIT_USER_PROFILE_USE_CASE = UseCase(
-    name="EDIT_PROFILE",
+    name="EDIT_USER_BOOK",
     description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
@@ -901,7 +901,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your first name to <first_name>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER_BOOK",
                 "event_criteria": {
                     "username": {"value": "<username>", "operator": "equals"},
                     "first_name": {"value": "John", "operator": "equals"},
@@ -914,7 +914,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your bio to include <bio_content>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER_BOOK",
                 "event_criteria": {
                     "username": {"value": "bookfan", "operator": "equals"},
                     "bio": {"value": "bookworm", "operator": "contains"},
@@ -927,7 +927,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your location to <location>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER_BOOK",
                 "event_criteria": {
                     "username": {"value": "booklover", "operator": "equals"},
                     "location": {"value": "New York, USA", "operator": "equals"},
@@ -940,7 +940,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Edit your website to <website>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER_BOOK",
                 "event_criteria": {
                     "username": {"value": "cinephile", "operator": "equals"},
                     "website": {"value": "https://mybookblog.example.com", "operator": "equals"},
@@ -953,7 +953,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your favorite genre to <genre>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER_BOOK",
                 "event_criteria": {
                     "username": {"value": "author101", "operator": "equals"},
                     "favorite_genres": {"value": "Science", "operator": "equals"},
@@ -966,7 +966,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your last name to <last_name>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER_BOOK",
                 "event_criteria": {
                     "username": {"value": "producer", "operator": "equals"},
                     "last_name": {"value": "Smith", "operator": "equals"},
@@ -1085,7 +1085,7 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 ADD_COMMENT_USE_CASE = UseCase(
-    name="ADD_COMMENT",
+    name="ADD_COMMENT_BOOK",
     description="The user adds a comment to a book.",
     event=AddCommentEvent,
     event_source_code=AddCommentEvent.get_source_code_of_class(),
@@ -1097,7 +1097,7 @@ ADD_COMMENT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Navigate to a book '<book>' and add a comment '<comment>'.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
+                "event_name": "ADD_COMMENT_BOOK",
                 "event_criteria": {"book_name": {"value": "Fourth Win", "operator": "equals"}},
                 "reasoning": "Verifies adding a comment to a specific book.",
             },
@@ -1107,7 +1107,7 @@ ADD_COMMENT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Write a review for a book, ensuring the commenter is not '<commenter>'.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
+                "event_name": "ADD_COMMENT_BOOK",
                 "event_criteria": {"commenter_name": {"value": "John", "operator": "not_equals"}},
                 "reasoning": "Ensures comment can be added with name constraint.",
             },
@@ -1117,7 +1117,7 @@ ADD_COMMENT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Post a comment containing the word '<comment>'.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
+                "event_name": "ADD_COMMENT_BOOK",
                 "event_criteria": {"content": {"value": "masterpiece", "operator": "contains"}},
                 "reasoning": "Validates comment generation with specific content.",
             },
@@ -1127,7 +1127,7 @@ ADD_COMMENT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Add a comment for a book not called '<book>' by someone other than '<commenter>'.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
+                "event_name": "ADD_COMMENT_BOOK",
                 "event_criteria": {"book_name": {"value": "The Matrix", "operator": "not_equals"}, "commenter_name": {"value": "John", "operator": "not_equals"}},
                 "reasoning": "Checks multiple constraints for comment addition.",
             },
@@ -1137,7 +1137,7 @@ ADD_COMMENT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Write a detailed review for the book '<book>' with a comment that does NOT contain the word '<content>' and ensuring the commenter is not '<commenter>'.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT",
+                "event_name": "ADD_COMMENT_BOOK",
                 "event_criteria": {
                     "book_name": {"value": "Elementary Statistics", "operator": "equals"},
                     "content": {"value": "boring", "operator": "not_contains"},
