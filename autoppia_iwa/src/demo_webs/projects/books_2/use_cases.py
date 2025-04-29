@@ -31,12 +31,23 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 ###############################################################################
 # REGISTRATION_USE_CASE
 ###############################################################################
+REGISTRATION_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+4. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
 REGISTRATION_USE_CASE = UseCase(
     name="REGISTRATION_BOOK",
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
     replace_func=register_replace_func,
+    additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
@@ -84,12 +95,22 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 # LOGIN_USE_CASE
 ###############################################################################
+LOGIN_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+4. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 LOGIN_USE_CASE = UseCase(
     name="LOGIN_BOOK",
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
+    additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
@@ -137,12 +158,22 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 # LOGOUT_USE_CASE
 ###############################################################################
+LOGOUT_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+4. Be sure to add instruction to log in using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 LOGOUT_USE_CASE = UseCase(
     name="LOGOUT_BOOK",
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
+    additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>, then logout",
