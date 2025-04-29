@@ -27,6 +27,8 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ==================================
 # ==== BENCHMARK CONFIGURATIONS ====
 # ==================================
+RUN_ALL_WEB_PROJECTS: bool = True
+
 WEB_PROJECT_NUMBER = 2
 NUM_OF_PROMPT_PER_USE_CASE = 1
 
@@ -34,7 +36,7 @@ LOG_FILE = "benchmark.log"
 
 # Initialize configuration & solution cache
 setup_logging(LOG_FILE)
-config = BenchmarkConfig(web_project_number=WEB_PROJECT_NUMBER, prompt_per_use_case=NUM_OF_PROMPT_PER_USE_CASE)
+config = BenchmarkConfig(web_project_number=WEB_PROJECT_NUMBER, prompt_per_use_case=NUM_OF_PROMPT_PER_USE_CASE, run_all_web_projects=RUN_ALL_WEB_PROJECTS)
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
@@ -76,6 +78,7 @@ async def evaluate_multiple_solutions(web_project, task, task_solutions, validat
         return evaluation_results
     except Exception:
         traceback.print_exc()
+        return []
 
 
 async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent, task: Task, timing_metrics: TimingMetrics) -> TaskSolution | None:
@@ -170,9 +173,19 @@ async def main():
         if not config.evaluate_real_tasks:
             # Load/Initialize demo projects
             web_projects = await initialize_demo_webs_projects(demo_web_projects)
-            web_projects = [web_projects[config.current_web_project_index]]
 
-            for project in web_projects:
+            projects_to_run: list[WebProject] = []
+            if config.run_all_web_projects:
+                projects_to_run = web_projects
+                logger.info(f"Running all {len(projects_to_run)} web projects.")
+            else:
+                if 0 <= config.current_web_project_index < len(web_projects):
+                    projects_to_run = [web_projects[config.current_web_project_index]]
+                    logger.info(f"Running selected web project: {projects_to_run[0].name} (ID: {projects_to_run[0].id})")
+                else:
+                    logger.error(f"Invalid web project number: {config.web_project_number}. Available projects: {config.get_available_project_numbers()}")
+
+            for project in projects_to_run:
                 tasks = await generate_tasks(project)
                 if tasks:
                     await run_evaluation(project, tasks, timing_metrics)

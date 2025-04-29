@@ -53,6 +53,9 @@ class GlobalTaskGenerationPipeline:
                 logger.info(f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}'")
             except Exception as e:
                 logger.error(f"Error generating tasks for {use_case.name}: {e!s}")
+                import traceback
+
+                traceback.print_exc()
                 continue
 
         logger.info(f"Total generated tasks across all use cases: {len(all_tasks)}")
