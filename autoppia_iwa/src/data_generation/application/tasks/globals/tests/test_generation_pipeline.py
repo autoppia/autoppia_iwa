@@ -1,5 +1,4 @@
 import json
-import re
 import time
 from typing import Any
 
@@ -120,60 +119,64 @@ class GlobalTestGenerationPipeline:
 
     def _parse_llm_response(self, response: Any) -> list[dict[str, Any]]:
         """
-        Parse the LLM response as a JSON array of "CheckEventTest" definitions.
+        Parse the LLM response as a JSON array of "CheckEventTest" definitions and
+        restructure the event_criteria if it has nested 'value' keys.
         Return a list of dictionaries if successful, otherwise an empty list.
         """
-        # If the LLM library already returns a Python list/dict, handle that:
+        test_list = []
+
         if isinstance(response, list):
-            return self._validate_test_list(response)
-
-        if isinstance(response, dict):
-            # Possibly a single test or a dict containing the array
+            test_list = response
+        elif isinstance(response, dict):
             if response.get("type") == "CheckEventTest":
-                return self._validate_test_list([response])
-            # Or search if there's a key containing the array
-            for value in response.values():
-                if isinstance(value, list):
-                    return self._validate_test_list(value)
-            return []
-
-        if isinstance(response, str):
-            # Attempt JSON parsing
+                test_list = [response]
+            elif "tests" in response and isinstance(response["tests"], list):
+                test_list = response["tests"]
+        elif isinstance(response, str):
             try:
                 data = json.loads(response.strip())
                 if isinstance(data, list):
-                    return self._validate_test_list(data)
-                elif isinstance(data, dict):
-                    if data.get("type") == "CheckEventTest":
-                        return self._validate_test_list([data])
-                    # Or check subfields
-                    for value in data.values():
-                        if isinstance(value, list):
-                            return self._validate_test_list(value)
+                    test_list = data
+                elif isinstance(data, dict) and data.get("type") == "CheckEventTest":
+                    test_list = [data]
             except json.JSONDecodeError:
-                # Last-resort regex
-                match = re.search(r"\[\s*{.*}\s*\]", response, re.DOTALL)
-                if match:
-                    try:
-                        array_str = match.group(0)
-                        data = json.loads(array_str)
-                        return self._validate_test_list(data)
-                    except json.JSONDecodeError:
-                        pass
-            return []
+                logger.warning("Failed to parse LLM response as JSON.")
 
-        logger.warning(f"Unexpected type for LLM response: {type(response)}")
-        return []
+        validated_tests = []
+        for test_item in test_list:
+            if not isinstance(test_item, dict) or test_item.get("type") != "CheckEventTest":
+                continue
+
+            event_criteria = test_item.get("event_criteria")
+            if isinstance(event_criteria, dict):
+                restructured_criteria = {}
+                for key, value in event_criteria.items():
+                    if isinstance(value, dict) and "value" in value and isinstance(value["value"], dict) and "operator" in value["value"] and "value" in value["value"]:
+                        # Found the nested structure, restructure it
+                        restructured_criteria[key] = {
+                            "operator": value["value"].get("operator"),
+                            "value": value["value"].get("value"),
+                        }
+                    elif isinstance(value, dict) and "operator" in value and "value" in value:
+                        # Already in the correct format
+                        restructured_criteria[key] = value
+                    elif isinstance(value, dict) and "value" in value and not isinstance(value["value"], dict) and "operator" in value:
+                        # Handle cases where 'value' directly contains the value and 'operator' is at the same level
+                        restructured_criteria[key] = {"operator": value.get("operator"), "value": value.get("value")}
+                    else:
+                        restructured_criteria[key] = value  # Keep as is if not the expected nested structure
+                test_item["event_criteria"] = restructured_criteria
+            validated_tests.append(test_item)
+
+        return self._validate_test_list(validated_tests)
 
     def _validate_test_list(self, test_list: list[Any]) -> list[dict[str, Any]]:
         """
-        Ensure each item is a dict with "event_name" == "CheckEventTest".
+        Ensure each item is a dict with "type" == "CheckEventTest" after potential restructuring.
         """
         valid_tests = []
         for test_item in test_list:
-            if not isinstance(test_item, dict):
-                continue
-            if test_item.get("type") == "CheckEventTest":
+            if isinstance(test_item, dict) and test_item.get("type") == "CheckEventTest":
                 valid_tests.append(test_item)
         return valid_tests
 
