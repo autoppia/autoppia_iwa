@@ -67,8 +67,12 @@ class TaskGenerationPipeline:
                 # Add tests to tasks
                 global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
                 all_tasks.extend(global_tasks_with_tests)
-                print(global_tasks_with_tests[0].prompt)
-                from pprint import pprint
+
+                for task in global_tasks_with_tests:
+                    print("Prompt: ", task.prompt)
+                    for i, _test in enumerate(task.tests):
+                        print(f"Test: {i}")
+                        from pprint import pprint
 
                 pprint(global_tasks_with_tests[0].tests[0].model_dump())
 
