@@ -7,16 +7,12 @@ from dependency_injector.wiring import Provide
 from loguru import logger
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
-
-# Your single test class of interest
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
-
-# Import the new prompt
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 
-from .prompts import CHECK_EVENT_TEST_GENERATION_PROMPT
+from .prompts import CHECK_EVENT_TEST_GENERATION_SYSTEM_PROMPT, CHECK_EVENT_TEST_GENERATION_USER_PROMPT
 from .utils import clean_examples
 
 
@@ -88,7 +84,7 @@ class GlobalTestGenerationPipeline:
         cleaned_examples = clean_examples(use_case.examples)
         examples = json.dumps(cleaned_examples, indent=2)
         # 2) Prepare the LLM prompt
-        llm_prompt = CHECK_EVENT_TEST_GENERATION_PROMPT.format(
+        user_input_prompt = CHECK_EVENT_TEST_GENERATION_USER_PROMPT.format(
             use_case_name=use_case.name,
             use_case_description=use_case.description,
             task_prompt=task.prompt,
@@ -103,7 +99,7 @@ class GlobalTestGenerationPipeline:
         for attempt in range(self.max_retries):
             try:
                 response = await self.llm_service.async_predict(
-                    messages=[{"role": "system", "content": llm_prompt}],
+                    messages=[{"role": "system", "content": CHECK_EVENT_TEST_GENERATION_SYSTEM_PROMPT}, {"role": "user", "content": user_input_prompt}],
                     json_format=True,
                 )
                 # 4) Parse the JSON array of test defs
