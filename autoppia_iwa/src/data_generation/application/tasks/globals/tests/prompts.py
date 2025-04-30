@@ -92,10 +92,10 @@ Then the `not_in_list` test should only validate that those **exact** years are 
 
 Only use the **exact values stated** in the prompt. Do not expand them or infer larger sets unless explicitly stated.
 
-## Don't correct the spelling or modify the constraints mentioned in the prompt.
+## DON'T CORRECT THE SPELLING OR MODIFY THE CONSTRAINTS MENTIONED IN THE PROMPT.
 > "Navigate to the details page for a film where the name equals 'Interestellar' and the year is NOT in the list [2001, 1990, 2010]."
-❌ INCORRECT:
 
+❌ INCORRECT:
 "name": {{
   "value": "interstellar",
   "operator": "equal"
@@ -109,6 +109,22 @@ Only use the **exact values stated** in the prompt. Do not expand them or infer 
 
 Do not modify the constraints mentioned in the prompt.
 
+## CONTAIN RELATED CONSTRAINT GENERATION
+> Fill out the contact form with a name that contains 'John' and a message equal to 'I'm having an issue with the product'.
+
+❌ INCORRECT:
+"name": {{
+  "value": "John",
+  "operator": "equal"
+}}
+
+✅ CORRECT:
+"name": {{
+  "value": "John",
+  "operator": "contain"
+}}
+
+As mentioned in the prompt, only the test should include an operator for name 'John' not equal operator.
 ---
 
 ## **Test Generation Instructions**
