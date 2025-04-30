@@ -120,6 +120,9 @@ Use *only* one of these two **flat** structures for each `fieldName`:
     * *Example:* Task requires year *NOT* in `[2023, 2022, 2011]`.
         * ✅ **CORRECT:** `"year": { "value": [2023, 2022, 2011], "operator": "not_in_list" }`
         * ❌ **INCORRECT:** `"year": { "value": [2010, 2013, ..., 2021], "operator": "not_in_list" }` (Inferred other years)
+
+5.  **Handling Dynamic Usernames:** When the `Task Prompt` specifies authentication with a dynamic username pattern like `'user<web_agent_id>'`, and if the LLM determines that validating the username is a necessary part of the test, it **MAY** use the literal placeholder `'user<web_agent_id>'` as the `value` in the `event_criteria`. However, the LLM should only do this if it has identified the `'username'` field as relevant in the `Event Source Code` for an authentication-related event.
+
 **Final Structure Check:** Before outputting the JSON, meticulously review each field definition within `event_criteria`. **Confirm that `operator` and `value` are direct keys under the `fieldName` and are NEVER nested inside an extra `value` object.**
 
 ## Final Output Requirement:
