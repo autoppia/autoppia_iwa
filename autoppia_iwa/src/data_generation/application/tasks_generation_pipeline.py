@@ -67,6 +67,10 @@ class TaskGenerationPipeline:
                 # Add tests to tasks
                 global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
                 all_tasks.extend(global_tasks_with_tests)
+                print(global_tasks_with_tests[0].prompt)
+                from pprint import pprint
+
+                pprint(global_tasks_with_tests[0].tests[0].model_dump())
 
             # Apply final task limit if configured
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:
