@@ -20,7 +20,12 @@ class UseCase(BaseModel):
 
     # Only one field for constraints - the structured data
     constraints: list[dict[str, Any]] | None = Field(default=None)
-    constraints_generator: Callable | None = Field(default=None, exclude=True)
+    constraints_generator: Callable | None | bool = Field(
+        default=None,
+        exclude=True,
+        description="An optional callable function that dynamically generates a list of constraint dictionaries. "
+        "Default to 'None'. Set 'False' when no dynamic constraints are needed and hence no events_criteria in CheckEventTest is generated.",
+    )
     additional_prompt_info: str | None = Field(default=None)
 
     class Config:

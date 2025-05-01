@@ -683,6 +683,7 @@ DELETE_BOOK_USE_CASE = UseCase(
     event_source_code=DeleteBookEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_BOOK_ADDITIONAL_PROMPT_INFO,
     replace_func=login_replace_func,
+    constraints_generator=False,
     examples=[
         {
             "prompt": "Log in (username: <username>, password: <password>) and remove '<your_book>'.",
