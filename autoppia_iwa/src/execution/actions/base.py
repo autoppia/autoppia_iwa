@@ -45,9 +45,11 @@ class Selector(BaseModel):
         if self.type == SelectorType.ATTRIBUTE_VALUE_SELECTOR:
             if self.attribute in ATTRIBUTE_FORMATS:
                 fmt = ATTRIBUTE_FORMATS[self.attribute]
-                if self.attribute in ["id", "class"]:
-                    # #id or .class
-                    return f"{fmt}{self.value}"
+                if self.attribute == "id":
+                    return f"#{self.value}"
+                elif self.attribute == "class":
+                    classes = self.value.strip().split()
+                    return "".join(f".{cls}" for cls in classes)
                 return fmt.format(value=self.value)
             return f"[{self.attribute}='{self.value}']"
 
