@@ -8,7 +8,6 @@ from dependency_injector.wiring import Provide
 from loguru import logger
 from PIL import Image
 
-# Domain & framework imports (adjust paths as needed):
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
@@ -16,7 +15,6 @@ from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.utils import transform_image_into_base64
 from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot
 
-# Prompt template (adjust path if it's in a different folder):
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 
 

@@ -1105,7 +1105,7 @@ For example, if the constraints are "book_name contains 'Fourth Win' AND content
 - INCORRECT: "Write a comment about any book" (missing specific constraints)
 - INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
 6. Value Preservation: Use the exact field values as they are provided in the constraints. Do NOT attempt to correct spelling, rephrase, or normalize any entries.
-7. Quoting of Values: Enclose the value of the comment's content AND the commenter's name within single quotation marks.
+7. Quoting of Values: Enclose the value of the comment's content AND the commenter's name within **single quotation*** marks.
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
