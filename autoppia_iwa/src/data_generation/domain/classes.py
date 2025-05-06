@@ -48,6 +48,7 @@ class Task(BaseModel):
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     success_criteria: str | None = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
     use_case: UseCase | None = None
+    should_record: bool = False
 
     class Config:
         extra = "allow"
