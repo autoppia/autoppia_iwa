@@ -319,7 +319,7 @@ class ScreenshotAction(BaseAction):
     """Takes a screenshot of the current page."""
 
     type: Literal["ScreenshotAction"] = "ScreenshotAction"
-    file_path: str = Field(..., description="The file path where the screenshot should be saved.")
+    file_path: str = Field(None, description="The file path where the screenshot should be saved.")
     full_page: bool = Field(False, description="Whether to capture the full scrollable page.")
 
     @log_action("ScreenshotAction")
