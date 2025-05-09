@@ -142,6 +142,7 @@ class BaseAction(BaseModel):
     """
 
     type: str = Field(..., description="Discriminating field for the action type.")
+    selector: Selector | None = Field(None, description="The selector to locate the target element. Optional for actions not targeting specific elements.")
 
     model_config = ConfigDict(extra="allow", use_enum_values=True)
 
@@ -166,7 +167,25 @@ class BaseAction(BaseModel):
             NotImplementedError: If the subclass does not implement this method.
             ValueError: If `page` is required but is `None`.
         """
-        raise NotImplementedError("Execute method must be implemented by subclasses.")
+        raise NotImplementedError(f"{self.__class__.__name__}.execute method must be implemented by subclasses.")
+
+    def get_playwright_selector(self) -> str:
+        """
+        Validates that the selector exists and returns its Playwright representation.
+
+        Returns:
+            The Playwright-compatible selector string.
+
+        Raises:
+            ValueError: If the selector is missing or invalid. (Shouldn't happen if pydantic validation passed)
+        """
+        if not self.selector:
+            raise ValueError(f"Selector is required for {self.type} action but is missing.")
+        try:
+            return self.selector.to_playwright_selector()
+        except ValueError as e:
+            logger.error(f"Invalid selector configuration: {self.selector}. Error: {e}")
+            raise ValueError(f"Invalid selector configuration. Error: {e}") from e
 
     @classmethod
     def create_action(cls, action_data: dict) -> Optional["BaseAction"]:
@@ -226,25 +245,7 @@ class BaseActionWithSelector(BaseAction):
     Base class for actions that require a `Selector` to identify an element.
     """
 
-    selector: Selector = Field(..., description="The selector used to locate the target element for the action.")
-
-    def get_playwright_selector(self) -> str:
-        """
-        Validates that the selector exists and returns its Playwright representation.
-
-        Returns:
-            The Playwright-compatible selector string.
-
-        Raises:
-            ValueError: If the selector is missing or invalid. (Shouldn't happen if pydantic validation passed)
-        """
-        if not self.selector:
-            raise ValueError("Selector is required for this action but is missing.")
-        try:
-            return self.selector.to_playwright_selector()
-        except ValueError as e:
-            logger.error(f"Invalid selector configuration: {self.selector}. Error: {e}")
-            raise ValueError(f"Invalid selector configuration. Error: {e}") from e
+    selector: Selector = Field(..., description="The selector used to locate the target element for the action. This is mandatory.")
 
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         """Execute method placeholder for actions with selectors."""
