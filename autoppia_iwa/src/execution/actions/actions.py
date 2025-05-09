@@ -123,11 +123,12 @@ class NavigateAction(BaseAction):
             raise ValueError("Invalid state: NavigateAction has no target.")
 
 
-class TypeAction(BaseActionWithSelector):
+class TypeAction(BaseAction):
     """Fills an input field identified by a selector with the given text. Clears the field first."""
 
     type: Literal["TypeAction"] = "TypeAction"
     text: str = Field(..., description="The text to type into the element.")
+    selector: Selector | None = Field(None, description="Selector for the element to type into. Required if 'text' is not provided.")
 
     @model_validator(mode="before")
     @classmethod
@@ -145,8 +146,11 @@ class TypeAction(BaseActionWithSelector):
     @log_action("TypeAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "TypeAction")
-        sel_str = self.get_playwright_selector()
-        await page.fill(sel_str, self.text)
+        if self.selector:
+            sel_str = self.get_playwright_selector()
+            await page.fill(sel_str, self.text)
+        else:
+            await page.keyboard.type(self.text)
 
 
 class SelectAction(BaseActionWithSelector):
