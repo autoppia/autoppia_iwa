@@ -1,9 +1,12 @@
 # evaluation_helper.py
 import asyncio
+import base64
 import hashlib
+import io
 from collections import defaultdict
 
 from loguru import logger
+from PIL import Image
 from playwright.async_api import Page
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
@@ -402,3 +405,81 @@ def initialize_test_results_matrix(task: Task, num_actions: int):
         test_results_matrix.append(row)
 
     return test_results_matrix
+
+
+def make_gif_from_screenshots(all_screenshots_objects, duration_ms=500, loop_count=0):
+    """
+    Creates an animated GIF from a list of screenshot objects.
+
+    Each object in the list is expected to have a '.base64' attribute
+    containing base64-encoded image data (as bytes). The function decodes
+    these images and compiles them into an animated GIF.
+
+    Args:
+        all_screenshots_objects: A list of objects, where each object 'ss'
+                                 has an attribute 'ss.base64' which are
+                                 bytes representing a base64 encoded image.
+        duration_ms: The display duration for each frame in the GIF,
+                     in milliseconds. Defaults to 500ms.
+        loop_count: The number of times the GIF should loop.
+                    Set to 0 for infinite looping. Defaults to 0.
+
+    Returns:
+        bytes: The binary content of the generated GIF image.
+               Returns empty bytes (b"") if no images could be processed
+               or if an error occurs.
+    """
+    gif_bytes = b""
+
+    pil_images = []
+    for b64_string in all_screenshots_objects:
+        try:
+            image_data_bytes = base64.b64decode(b64_string.encode("ascii"))
+
+            # Create a PIL Image object from the image bytes
+            image_file_like = io.BytesIO(image_data_bytes)
+            img = Image.open(image_file_like)
+
+            # Ensure the image is in a mode compatible with GIF (e.g., RGBA or P)
+            # Converting to RGBA can help handle various image formats consistently.
+            if img.mode != "RGB" and img.mode != "L" and img.mode != "P":
+                img = img.convert("RGBA")
+
+            pil_images.append(img)
+        except base64.binascii.Error as e_b64:
+            print(f"Warning: Could not decode base64 string: {e_b64}. Skipping this image.")
+            continue
+        except OSError as e_pil:  # Catches PIL.UnidentifiedImageError and other PIL I/O issues
+            print(f"Warning: Pillow could not open image from base64 string: {e_pil}. Skipping this image.")
+            continue
+        except Exception as e_general:
+            print(f"Warning: An unexpected error occurred while processing a base64 image: {e_general}. Skipping this image.")
+            continue
+
+    if not pil_images:
+        print("No images were successfully decoded to create a GIF.")
+        return gif_bytes
+
+    # Create the GIF in memory
+    gif_buffer = io.BytesIO()
+    try:
+        pil_images[0].save(
+            gif_buffer,
+            format="GIF",
+            save_all=True,  # Important: save all frames
+            append_images=pil_images[1:],  # Append the rest of the images
+            duration=duration_ms,  # Time per frame in milliseconds
+            loop=loop_count,  # 0 for infinite loop
+            optimize=False,  # Set to True for smaller file size, but longer processing & potential quality loss
+        )
+        gif_bytes = gif_buffer.getvalue()
+    except Exception as e:
+        print(f"Error: Could not create GIF: {e}")
+        return b""
+    finally:
+        # Close all opened PIL Image objects to free resources
+        for img in pil_images:
+            img.close()
+        gif_buffer.close()
+    b64_gif = base64.b64encode(gif_bytes)
+    return b64_gif
