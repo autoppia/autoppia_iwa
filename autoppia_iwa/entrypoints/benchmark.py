@@ -27,9 +27,9 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ==================================
 # ==== BENCHMARK CONFIGURATIONS ====
 # ==================================
-RUN_ALL_WEB_PROJECTS: bool = True
+RUN_ALL_WEB_PROJECTS: bool = False
 
-WEB_PROJECT_NUMBER = 2
+WEB_PROJECT_NUMBER = 3
 NUM_OF_PROMPT_PER_USE_CASE = 1
 
 LOG_FILE = "benchmark.log"
