@@ -23,19 +23,18 @@ def replace_products_placeholders(
         "<product_name>": "title",
         "<product_variant>": "title",
         "<price>": "price",
-        "<description>": "description",
         "<category>": "category",
         "<product_category>": "category",
         "<rating>": "rating",
         "<brand>": "brand",
-        "<inStock>": "inStock",
     }
 
+    modified_text = text
+
     for placeholder, key in placeholder_to_key.items():
-        if placeholder in text and key in product:
+        if placeholder in modified_text and key in product:
             value = product[key]
-            replacement = str(random.choice(value)) if isinstance(value, list) and value else str(value)
+            replacement = str(value)
+            modified_text = modified_text.replace(placeholder, replacement)
 
-            text = text.replace(placeholder, replacement)
-
-    return text
+    return modified_text
