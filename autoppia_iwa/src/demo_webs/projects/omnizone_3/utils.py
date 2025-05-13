@@ -1,77 +1,5 @@
-from typing import Any
-
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import constraints_exist_in_db
-
-
-def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
-    """
-    Parses the constraints string into a list of dictionaries.
-    Example input: "1) year equals 2014 AND 2) genres contains Sci-Fi"
-    """
-    if not constraints_str:
-        return []
-
-    constraints = []
-    parts = constraints_str.split(" AND ")
-
-    for part in parts:
-        # Remove the numeric prefix (e.g., "1) ")
-        clean_part = part.split(") ", 1)[1] if ") " in part else part
-
-        # Split into field, operator, and value
-        field, rest = clean_part.split(" ", 1)
-        op_value = rest.split(" ", 1)
-        op = op_value[0]
-        value_str = op_value[1]
-
-        # Convert value based on type
-        if field in ["year", "page_count"]:
-            # For integer numeric fields
-            value = [int(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else int(value_str)
-        elif field == "rating":
-            # For float numeric fields
-            value = [float(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else float(value_str)
-        elif field == "genres":
-            # For list fields
-            value = value_str.strip("[]").split(", ") if "[" in value_str and "]" in value_str else value_str
-        else:
-            # For text fields
-            value = value_str
-
-        constraints.append({"field": field, "operator": ComparisonOperator(op), "value": value})
-
-    return constraints
-
-
-def generate_and_add_constraints_to_use_case(use_case, data: list[dict], constraints_generator=None):
-    """
-    Generates constraints and adds them to a use case.
-
-    Args:
-        use_case: The use case to add constraints to
-        data: The data to use for constraint generation (books, products, etc.)
-        constraints_generator: Custom constraint generator function (optional)
-
-    Returns:
-        The same use case, now with constraints
-    """
-
-    # If no generator is provided, use the default one
-    if constraints_generator is None:
-        constraints_generator = build_constraints_info
-
-    # Generate the constraints string
-    constraints_str = constraints_generator(data)
-
-    if constraints_str:
-        # Parse the constraints string into structured data
-        constraints = parse_constraints_str(constraints_str)
-
-        # Add the constraints to the use case
-        use_case.add_constraints(constraints)
-
-    return use_case
 
 
 def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | None:
@@ -85,7 +13,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     """
     import random
 
-    from ..shared_data import FIELD_OPERATORS_MAP_BOOK
+    from ..shared_data import FIELD_OPERATORS_MAP_PRODUCTS
     from .generation_functions import generate_constraint_from_solution
 
     # Elegir una película aleatoria como punto de partida
@@ -96,14 +24,14 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     num_constraints = random.randint(1, 3)
 
     # Seleccionar campos aleatorios para los constraints
-    available_fields = list(FIELD_OPERATORS_MAP_BOOK.keys())
+    available_fields = list(FIELD_OPERATORS_MAP_PRODUCTS.keys())
     selected_fields = random.sample(available_fields, min(num_constraints, len(available_fields)))
 
     constraint_list = []
 
     for field in selected_fields:
         # Obtener operadores válidos para este campo
-        valid_operators = FIELD_OPERATORS_MAP_BOOK[field]
+        valid_operators = FIELD_OPERATORS_MAP_PRODUCTS[field]
         # Elegir un operador aleatorio
         operator = random.choice(valid_operators)
 

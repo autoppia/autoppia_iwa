@@ -1,6 +1,8 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import AddToCartEvent, CarouselScrollEvent, CheckoutStartedEvent, ItemDetailEvent, OrderCompletedEvent, ProceedToCheckoutEvent, QuantityChangedEvent, SearchProductEvent, ViewCartEvent
+from .generation_functions import generate_omnizone_products_constraints
+from .replace_functions import replace_products_placeholders
 
 ###############################################################################
 # PRODUCT_DETAIL_USE_CASE
@@ -26,10 +28,13 @@ PRODUCT_DETAIL_USE_CASE = UseCase(
     description="The user explicitly requests to view the details page of a specific product that meets certain criteria.",
     event=ItemDetailEvent,
     event_source_code=ItemDetailEvent.get_source_code_of_class(),
+    constraints_generator=generate_omnizone_products_constraints,
+    replace_func=replace_products_placeholders,
     additional_prompt_info=PRODUCT_DETAIL_INFO,
     examples=[
         {
             "prompt": "Show me details for the iPhone 15 Pro",
+            "prompt_for_task_generation": "Show me details for the <product_name>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_DETAIL",
@@ -38,7 +43,8 @@ PRODUCT_DETAIL_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "View product page for a laptop with rating above 4.5",
+            "prompt": "View product page for a 'laptop' with rating above 4.5",
+            "prompt_for_task_generation": "View product page for a <product_name> with rating above <rating>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_DETAIL",
@@ -74,9 +80,11 @@ SEARCH_PRODUCT_USE_CASE = UseCase(
     event=SearchProductEvent,
     event_source_code=SearchProductEvent.get_source_code_of_class(),
     additional_prompt_info=SEARCH_PRODUCT_INFO,
+    replace_func=replace_products_placeholders,
     examples=[
         {
             "prompt": "Search for wireless earbuds",
+            "prompt_for_task_generation": "Search for <query>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_PRODUCT",
@@ -108,10 +116,13 @@ ADD_TO_CART_USE_CASE = UseCase(
     description="The user adds items to their shopping cart.",
     event=AddToCartEvent,
     event_source_code=AddToCartEvent.get_source_code_of_class(),
+    constraints_generator=generate_omnizone_products_constraints,
+    replace_func=replace_products_placeholders,
     additional_prompt_info=ADD_TO_CART_INFO,
     examples=[
         {
             "prompt": "Add AirPods Pro to my cart",
+            "prompt_for_task_generation": "Add <product_name> to my cart",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_TO_CART",
@@ -143,7 +154,13 @@ VIEW_CART_USE_CASE = UseCase(
     event=ViewCartEvent,
     event_source_code=ViewCartEvent.get_source_code_of_class(),
     additional_prompt_info=VIEW_CART_INFO,
-    examples=[{"prompt": "View my shopping cart", "test": {"type": "CheckEventTest", "event_name": "VIEW_CART", "event_criteria": {}, "reasoning": "Simple request to view cart contents."}}],
+    examples=[
+        {
+            "prompt": "View my shopping cart",
+            "prompt_for_task_generation": "View my shopping cart",
+            "test": {"type": "CheckEventTest", "event_name": "VIEW_CART", "event_criteria": {}, "reasoning": "Simple request to view cart contents."},
+        }
+    ],
 )
 
 ###############################################################################
@@ -162,7 +179,7 @@ For example:
 """
 
 CHECKOUT_USE_CASE = UseCase(
-    name="CHECKOUT",
+    name="CHECKOUT_STARTED",
     description="The user initiates the checkout process.",
     event=CheckoutStartedEvent,
     event_source_code=CheckoutStartedEvent.get_source_code_of_class(),
@@ -170,6 +187,7 @@ CHECKOUT_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Proceed to checkout with my current cart",
+            "prompt_for_task_generation": "Proceed to checkout with my current cart",
             "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Initiates checkout process with current cart contents."},
         }
     ],
@@ -199,10 +217,12 @@ ORDER_COMPLETION_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Complete my purchase with PayPal",
+            "prompt_for_task_generation": "Complete my purchase with <payment_method>",
             "test": {"type": "CheckEventTest", "event_name": "ORDER_COMPLETED", "event_criteria": {}, "reasoning": "Completes the order with specified payment method."},
         }
     ],
 )
+
 ###############################################################################
 # PROCEED_TO_CHECKOUT_USE_CASE
 ###############################################################################
@@ -229,10 +249,12 @@ PROCEED_TO_CHECKOUT_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Proceed to checkout with my current cart items",
+            "prompt_for_task_generation": "Proceed to checkout with my current cart items",
             "test": {"type": "CheckEventTest", "event_name": "PROCEED_TO_CHECKOUT", "event_criteria": {}, "reasoning": "Initiates checkout process with current cart contents."},
         },
         {
             "prompt": "Go to checkout with my 2 items worth $99.98",
+            "prompt_for_task_generation": "Go to checkout with my <item_count> items worth <total_amount>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "PROCEED_TO_CHECKOUT",
@@ -269,6 +291,7 @@ QUANTITY_CHANGE_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Update quantity of AirPods Pro in my cart from 1 to 2",
+            "prompt_for_task_generation": "Update quantity of <product_name> in my cart from <previous_quantity> to <new_quantity>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "QUANTITY_CHANGED",
@@ -282,6 +305,7 @@ QUANTITY_CHANGE_USE_CASE = UseCase(
         },
         {
             "prompt": "Reduce quantity of USB-C cables in my cart to 1",
+            "prompt_for_task_generation": "Reduce quantity of <product_name> in my cart to <new_quantity>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "QUANTITY_CHANGED",
@@ -318,6 +342,7 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Scroll right in the 'Recommended For You' carousel",
+            "prompt_for_task_generation": "Scroll <direction> in the '<carousel_title>' carousel",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "CAROUSEL_SCROLL",
@@ -327,6 +352,7 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
         },
         {
             "prompt": "Browse more products in the 'Trending Now' section",
+            "prompt_for_task_generation": "Browse more products in the '<carousel_title>' section",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "CAROUSEL_SCROLL",
