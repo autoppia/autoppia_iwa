@@ -36,7 +36,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
         operator = random.choice(valid_operators)
 
         # Generar un constraint basado en el campo, operador y la película solución
-        constraint = generate_constraint_from_solution(solution_book, field, ComparisonOperator(operator), data)
+        constraint = generate_constraint_from_solution(solution_book, field, ComparisonOperator(operator))
 
         if constraint:
             constraint_list.append(constraint)
