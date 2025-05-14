@@ -1,3 +1,6 @@
+import contextlib
+import fcntl
+import json
 import time
 from typing import Any
 
@@ -5,6 +8,7 @@ import aiohttp
 from aiohttp.client_exceptions import ClientError
 from loguru import logger
 
+from autoppia_iwa.config.config import WEB_3_AUTOZONE_JSON_FILEPATH
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 
@@ -53,21 +57,46 @@ class BackendDemoWebService:
 
     async def get_backend_events(self, web_agent_id: str) -> list[BackendEvent]:
         """
-        Fetch recent events from the backend for the specified web_agent_id.
+        Fetch recent events from either a JSON file (for non-real projects) or return empty list (for real projects).
+        Filters events to only those matching the specified web_agent_id.
 
         Args:
             web_agent_id (str): ID of the web agent to filter events for.
 
         Returns:
-            List[BackendEvent]: List of events from the backend or an empty list if any failure occurs.
+            List[BackendEvent]: List of filtered events or an empty list if any failure occurs.
         """
         if self.web_project.is_web_real:
             return []
+        if ":8002" in self.base_url:
+            if not WEB_3_AUTOZONE_JSON_FILEPATH:
+                logger.error("JSON file path not configured in environment variables")
+                return []
 
-        endpoint = f"{self.base_url}events/list/"
-        headers = {"X-WebAgent-Id": web_agent_id}
+            try:
+                with open(WEB_3_AUTOZONE_JSON_FILEPATH) as f:
+                    with contextlib.suppress(ImportError, ModuleNotFoundError):
+                        fcntl.flock(f, fcntl.LOCK_SH)
 
+                    try:
+                        events_data = json.load(f)
+                    finally:
+                        with contextlib.suppress(NameError):
+                            fcntl.flock(f, fcntl.LOCK_UN)
+
+                filtered_events = [BackendEvent(**event) for event in events_data if event.get("web_agent_id") == web_agent_id]
+
+                return filtered_events
+
+            except FileNotFoundError:
+                logger.warning(f"Events file not found at {WEB_3_AUTOZONE_JSON_FILEPATH}")
+            except json.JSONDecodeError as e:
+                logger.error(f"Error parsing JSON from {WEB_3_AUTOZONE_JSON_FILEPATH}: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error reading events from file: {e}")
         try:
+            endpoint = f"{self.base_url}events/list/"
+            headers = {"X-WebAgent-Id": web_agent_id}
             session = await self._get_session()
             async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()  # Raise on 4xx/5xx
@@ -80,7 +109,6 @@ class BackendDemoWebService:
             logger.error(f"Error parsing JSON response: {e}")
         except Exception as e:
             logger.error(f"Unexpected error fetching backend events: {e}")
-
         return []
 
     async def reset_web_agent_events(self, web_agent_id: str) -> bool:
@@ -190,7 +218,31 @@ class BackendDemoWebService:
             logger.info("Not resetting DB as its real website")
             return False
 
-        # If user supplies an explicit endpoint, use that; else use the default
+        # Handle port 8002 case - reset JSON file instead of making API call
+        if ":8002" in self.base_url:
+            if not WEB_3_AUTOZONE_JSON_FILEPATH:
+                logger.error("JSON file path not configured in environment variables")
+                return False
+
+            try:
+                # Acquire exclusive lock and clear the file
+                with open(WEB_3_AUTOZONE_JSON_FILEPATH, "w") as f:
+                    with contextlib.suppress(ImportError, ModuleNotFoundError):
+                        fcntl.flock(f, fcntl.LOCK_EX)
+
+                    json.dump([], f)
+
+                    with contextlib.suppress(NameError):
+                        fcntl.flock(f, fcntl.LOCK_UN)
+
+                logger.info(f"Successfully cleared events from JSON file at {WEB_3_AUTOZONE_JSON_FILEPATH}")
+                return True
+
+            except Exception as e:
+                logger.error(f"Failed to reset JSON file database: {e}")
+                return False
+
+        # Original API reset behavior for other ports
         endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
 
         try:

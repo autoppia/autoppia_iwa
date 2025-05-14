@@ -65,3 +65,8 @@ AGENT_NAME = os.getenv("AGENT_NAME")
 USE_APIFIED_AGENT = bool(strtobool(os.getenv("USE_APIFIED_AGENT", "false")))
 AGENT_HOST = os.getenv("AGENT_HOST", "localhost")
 AGENT_PORT = int(os.getenv("AGENT_PORT", "8080"))
+
+# ============================
+# WEBs Configurations
+# ============================
+WEB_3_AUTOZONE_JSON_FILEPATH = os.getenv("WEB_3_AUTOZONE_JSON_PATH", "")
