@@ -5,7 +5,7 @@ import time
 from collections import defaultdict
 
 from loguru import logger
-from playwright.async_api import async_playwright
+from playwright.async_api import ViewportSize, async_playwright
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
@@ -147,6 +147,7 @@ class ConcurrentEvaluator(IEvaluator):
             )
 
         logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
+        evaluation_gif = ""
         try:
             # If simulated, reset the DB first
             browser_setup_start = time.time()
@@ -157,7 +158,6 @@ class ConcurrentEvaluator(IEvaluator):
 
             execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
 
-            evaluation_gif = ""
             if self.config.should_record_gif:
                 all_screenshots = []
                 for h in execution_history:
@@ -376,7 +376,7 @@ class ConcurrentEvaluator(IEvaluator):
                 # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
                 context = await browser.new_context(
                     extra_http_headers={"X-WebAgent-Id": web_agent_id},
-                    viewport={"width": browser_specifications.viewport_width, "height": browser_specifications.viewport_height},
+                    viewport=ViewportSize(width=browser_specifications.viewport_width, height=browser_specifications.viewport_height),
                 )
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
