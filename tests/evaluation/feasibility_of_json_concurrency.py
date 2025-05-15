@@ -1,4 +1,6 @@
+from autoppia_iwa.config.config import WEB_3_AUTOZONE_JSON_FILEPATH
 from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.projects.omnizone_3.main import omnizone_project
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
@@ -90,7 +92,7 @@ search_scenarios = [[action_navigate, action_type_search(q), action_submit_searc
 async def evaluate_scenario(task_instance, list_of_actions_list, scenario_name="default_scenario"):
     print(f"\n--- Evaluating Scenario: {scenario_name} ---")
     task_instance.prompt = f"Test scenario: {scenario_name}"
-    evaluator_config = EvaluatorConfig(save_results_in_db=False, browser_timeout=30000)  # , chunk_size=3)
+    evaluator_config = EvaluatorConfig(save_results_in_db=False, browser_timeout=30000, chunk_size=3)
     evaluator = ConcurrentEvaluator(WEB_PROJECT, evaluator_config)
 
     evaluator_input = [TaskSolution(task_id=task_instance.id, actions=actions, web_agent_id=generate_random_web_agent_id()) for actions in list_of_actions_list]
@@ -115,6 +117,7 @@ async def main():
     # await evaluate_scenario(task, all_scenarios, "UI Flow Tests")
 
     # To run search-based scenarios:
+    task.tests = [CheckEventTest(event_name="SEARCH_PRODUCT", event_criteria={"query": ""})]
     await evaluate_scenario(task, search_scenarios, "Search Queries")
 
 
@@ -122,14 +125,10 @@ def read_write_json_file():
     import contextlib
     import fcntl
     import json
-    import os
-
-    from dotenv import load_dotenv
 
     from autoppia_iwa.src.demo_webs.classes import BackendEvent
 
-    load_dotenv()
-    json_file_path = os.getenv("WEB_3_AUTOZONE_JSON_PATH")
+    json_file_path = WEB_3_AUTOZONE_JSON_FILEPATH
 
     with open(json_file_path) as f:
         with contextlib.suppress(ImportError, ModuleNotFoundError):
