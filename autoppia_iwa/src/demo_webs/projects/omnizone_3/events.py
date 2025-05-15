@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Optional
 
+from loguru import logger
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
@@ -12,16 +13,40 @@ class BaseEventValidator:
     """Base class for event validation criteria with common functionality."""
 
     @staticmethod
-    def _validate_field(value, criterion) -> bool:
+    def _validate_field(value: Any, criterion: Any | CriterionValue | None) -> bool:
         """Helper method to validate a single field against its criterion."""
         if criterion is None:
             return True
         return validate_criterion(value, criterion)
 
 
+def parse_price(price_raw: Any) -> float | None:
+    """
+    Helper function to parse price data, handling strings with currency symbols
+    and commas, as well as direct numbers. Returns float or None if parsing fails.
+    """
+    if price_raw is None:
+        return None
+    try:
+        if isinstance(price_raw, str):
+            price_str = price_raw.replace("$", "").replace(",", "").strip()
+            if not price_str:
+                return None
+            return float(price_str)
+        elif isinstance(price_raw, int | float):
+            return float(price_raw)
+        else:
+            logger.debug(f"Price data is not a string, int, or float: {type(price_raw)}")
+            return None
+    except (ValueError, TypeError) as e:
+        logger.debug(f"Could not parse price data '{price_raw}'. Error: {e}")
+        return None
+
+
 class ProductSummary(BaseModel):
     """Summary of a single product, used in lists within other events."""
 
+    id: str
     title: str
     price: float
     quantity: int = Field(default=1, ge=1)
@@ -39,10 +64,10 @@ class ProductSummary(BaseModel):
             return None
 
         try:
-            price_raw = data.get("price", 0.0)
-            price = float(price_raw.replace("$", "").replace(",", "").strip()) if isinstance(price_raw, str) else float(price_raw)
+            price = parse_price(data.get("price"))
 
             return cls(
+                id=data.get("productId"),
                 title=str(data.get("title", "")),
                 price=price,
                 quantity=int(data.get("quantity", 1)),
@@ -60,6 +85,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
 
     event_name: str = "VIEW_DETAIL"
 
+    item_id: str
     item_name: str
     item_category: str | None = None
     item_brand: str | None = None
@@ -69,6 +95,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         """Validation criteria for ItemDetailEvent."""
 
+        id: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         category: str | CriterionValue | None = None
         brand: str | CriterionValue | None = None
@@ -85,6 +112,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
 
         return all(
             [
+                self._validate_field(self.item_id, criteria.id),
                 self._validate_field(self.item_name, criteria.name),
                 self._validate_field(self.item_category, criteria.category),
                 self._validate_field(self.item_brand, criteria.brand),
@@ -102,12 +130,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
         product_summary = ProductSummary.parse_from_data(data)
 
         if not product_summary:
-            price = None
-            if "price" in data:
-                try:
-                    price = float(str(data.get("price", "0")).replace("$", "").strip())
-                except (ValueError, TypeError):
-                    price = None
+            parsed_price = parse_price(data.get("price"))
 
             return cls(
                 event_name=base_event.event_name,
@@ -118,7 +141,8 @@ class ItemDetailEvent(Event, BaseEventValidator):
                 item_category=data.get("category"),
                 item_brand=data.get("brand"),
                 item_rating=data.get("rating"),
-                item_price=price,
+                item_price=parsed_price,
+                item_id=data.get("productId"),
             )
         else:
             # Use parsed ProductSummary data
@@ -132,6 +156,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
                 item_brand=product_summary.brand,
                 item_rating=product_summary.rating,
                 item_price=product_summary.price,
+                item_id=product_summary.id,
             )
 
 
@@ -212,7 +237,7 @@ class ProceedToCheckoutEvent(Event, BaseEventValidator):
         products_data = data.get("products", [])
 
         products = [
-            ProductSummary(title=str(p.get("title", "")), price=float(p.get("price", "")), quantity=int(p.get("quantity", 1)), brand=str(p.get("brand", "")))
+            ProductSummary(id=str(p.get("id", "")), title=str(p.get("title", "")), price=float(p.get("price", "")), quantity=int(p.get("quantity", 1)), brand=str(p.get("brand", "")))
             for p in products_data
             if isinstance(p, dict)
         ]
@@ -236,6 +261,7 @@ class AddToCartEvent(Event, BaseEventValidator):
 
     event_name: str = "ADD_TO_CART"
 
+    item_id: str
     item_name: str
     item_price: float
     item_quantity: int
@@ -246,6 +272,7 @@ class AddToCartEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         """Criteria for validating AddToCart events."""
 
+        id: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         category: str | CriterionValue | None = None
         brand: str | CriterionValue | None = None
@@ -262,6 +289,7 @@ class AddToCartEvent(Event, BaseEventValidator):
 
         return all(
             [
+                self._validate_field(self.item_id, criteria.id),
                 self._validate_field(self.item_name, criteria.name),
                 self._validate_field(self.item_category, criteria.category),
                 self._validate_field(self.item_brand, criteria.brand),
@@ -284,10 +312,7 @@ class AddToCartEvent(Event, BaseEventValidator):
             # Fallback if ProductSummary parsing fails
             price = None
             if "price" in data:
-                try:
-                    price = float(str(data.get("price", "0")).replace("$", "").strip())
-                except (ValueError, TypeError):
-                    price = None
+                price = parse_price(data["price"])
             quantity = int(data.get("quantity", 1))
             item_name = data.get("title", "")
 
@@ -302,6 +327,7 @@ class AddToCartEvent(Event, BaseEventValidator):
                 item_quantity=quantity,
                 item_category=data.get("category"),
                 item_brand=data.get("brand"),
+                item_id=data.get("productId", ""),
             )
         else:
             # Use parsed ProductSummary data
@@ -316,6 +342,7 @@ class AddToCartEvent(Event, BaseEventValidator):
                 item_quantity=product_summary.quantity,
                 item_category=product_summary.category,
                 item_brand=product_summary.brand,
+                item_id=product_summary.id,
             )
 
 
@@ -350,6 +377,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
 
     event_name: str = "QUANTITY_CHANGED"
 
+    item_id: str
     item_name: str
     previous_quantity: int
     new_quantity: int
@@ -363,6 +391,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         """Criteria for validating quantity change events."""
 
+        id: str | CriterionValue | None
         name: str | CriterionValue | None = Field(default=None, alias="item_name")
         previous_quantity: int | CriterionValue | None = None
         new_quantity: int | CriterionValue | None = None
@@ -382,6 +411,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
 
         return all(
             [
+                self._validate_field(self.item_id, criteria.id),
                 self._validate_field(self.item_name, criteria.name),
                 self._validate_field(self.previous_quantity, criteria.previous_quantity),
                 self._validate_field(self.new_quantity, criteria.new_quantity),
@@ -407,10 +437,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
 
         price = None
         if "price" in data:
-            try:
-                price = float(str(data.get("price", "0")).replace("$", "").strip())
-            except (ValueError, TypeError):
-                price = None
+            parse_price(data.get("price"))
 
         # Pydantic will handle datetime parsing if input is str in ISO format
         created_at = data.get("created_at")
@@ -440,6 +467,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
             item_rating=data.get("rating"),
             created_at=created_at,
             updated_at=updated_at,
+            item_id=data.get("productId", ""),
         )
 
 
@@ -483,17 +511,11 @@ class OrderCompletedEvent(Event, BaseEventValidator):
         base_event = Event.parse(backend_event)
         data = backend_event.data
 
-        # Expect backend data to contain an 'items' list for completed orders
-        items_data = data.get("items", data.get("products", []))
-
-        purchased_items = [ProductSummary.parse_from_data(item_data) for item_data in items_data if isinstance(item_data, dict)]
-        purchased_items = [item for item in purchased_items if item is not None]  # Filter out parsing failures
-
-        # Use backend amounts, fall back to 0.0 if needed
         total_amount = float(data.get("totalAmount", data.get("value", 0.0)))
         tax = float(data.get("tax", 0.0))
         shipping = float(data.get("shipping", 0.0))
         order_total = float(data.get("orderTotal", 0.0))
+        items_count = int(data.get("items", 0))
 
         return cls(
             event_name=base_event.event_name,
@@ -503,7 +525,7 @@ class OrderCompletedEvent(Event, BaseEventValidator):
             tax=tax,
             shipping=shipping,
             order_total=order_total,
-            items=purchased_items,
+            items=items_count,
             total_amount=total_amount,
         )
 
@@ -549,6 +571,7 @@ class CheckoutStartedEvent(Event, BaseEventValidator):
 
     event_name: str = "CHECKOUT_STARTED"
 
+    item_id: str
     item_name: str
     item_price: float
     item_quantity: int
@@ -559,6 +582,7 @@ class CheckoutStartedEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         """Criteria for validating checkout start events."""
 
+        id: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         category: str | CriterionValue | None = None
         brand: str | CriterionValue | None = None
@@ -572,6 +596,7 @@ class CheckoutStartedEvent(Event, BaseEventValidator):
 
         return all(
             [
+                self._validate_field(self.item_id, criteria.id),
                 self._validate_field(self.item_name, criteria.name),
                 self._validate_field(self.item_category, criteria.category),
                 self._validate_field(self.item_brand, criteria.brand),
@@ -586,12 +611,14 @@ class CheckoutStartedEvent(Event, BaseEventValidator):
         """Parse a checkout started event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        ProductSummary.parse_from_data(data)
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
+            item_id=data.get("productId", ""),
             item_name=data.get("title", ""),
             item_price=float(data.get("price", 0.0)),
             item_quantity=int(data.get("quantity", 1)),
