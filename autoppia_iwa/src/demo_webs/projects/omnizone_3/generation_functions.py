@@ -321,7 +321,8 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
         if not allowed_operators:
             continue
 
-        op = random.choice(allowed_operators)
+        op_str = random.choice(allowed_operators)
+        op = ComparisonOperator(op_str)
 
         # Generate value using the product key
         constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
@@ -440,11 +441,9 @@ def generate_checkout_constraints() -> list[dict[str, Any]]:
 def generate_order_completion_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     # Fields available in ValidationCriteria and generators: order_id, affiliation, value, tax, shipping, order_total, currency, coupon
-    available_fields = ["order_id", "affiliation", "value", "tax", "shipping", "order_total", "currency", "coupon"]
+    available_fields = ["items", "order_total"]
     selected_fields = random.sample(available_fields, random.randint(1, min(3, len(available_fields))))
 
-    # Define allowed operators for these fields (if not covered by FIELD_OPERATORS_MAP_PRODUCTS)
-    order_string_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS]
     order_numeric_operators = [
         ComparisonOperator.EQUALS,
         ComparisonOperator.NOT_EQUALS,
@@ -457,23 +456,10 @@ def generate_order_completion_constraints() -> list[dict[str, Any]]:
     # Mock some plausible order data for calculations and generating values
     random.randint(1, 10)
     mock_subtotal = round(random.uniform(20.0, 1000.0), 2)
-    mock_tax = round(mock_subtotal * random.uniform(0.05, 0.15), 2)
-    mock_shipping = round(random.uniform(0.0, 25.0), 2)
-    mock_order_total = round(mock_subtotal + mock_tax + mock_shipping, 2)
-    mock_order_id = f"ORD{random.randint(10000, 99999)}"
-    mock_affiliation = random.choice(["Online Store", "Mobile App"])
-    mock_currency = "USD" if random.random() > 0.1 else random.choice(["EUR", "GBP"])
-    mock_coupon = random.choice(["SUMMER10", "SAVE20", None, None, None])
-
+    mock_order_total = round(mock_subtotal, 2)
     mock_order_data = {
-        "order_id": mock_order_id,
-        "affiliation": mock_affiliation,
-        "value": mock_subtotal,
-        "tax": mock_tax,
-        "shipping": mock_shipping,
+        "items": mock_subtotal,
         "order_total": mock_order_total,
-        "currency": mock_currency,
-        "coupon": mock_coupon,
     }
 
     for field in selected_fields:
@@ -481,14 +467,7 @@ def generate_order_completion_constraints() -> list[dict[str, Any]]:
         if value is None:
             continue  # Skip if mock data doesn't have it
 
-        # Pick operator based on field type and allowed operators (use specific lists for order fields)
-        if field in ["order_id", "affiliation", "currency", "coupon"] and order_string_operators:
-            op = random.choice(order_string_operators)
-        elif field in ["value", "tax", "shipping", "order_total"] and order_numeric_operators:
-            op = random.choice(order_numeric_operators)
-        # No check against FIELD_OPERATORS_MAP_PRODUCTS here as these are order-level fields, not product attributes in the map
-        else:
-            continue
+        op = random.choice(order_numeric_operators)
 
         # Generate constraint value using the mock order data for the specific field
         constraint_value = generate_constraint_value(field, op, mock_order_data, all_products_data=PRODUCTS_DATA)

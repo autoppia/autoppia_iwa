@@ -16,7 +16,7 @@ from .generation_functions import (
     generate_carousel_scroll_constraints,
     generate_cart_operation_constraints,
     generate_checkout_constraints,
-    generate_order_completion_constraints,
+    # generate_order_completion_constraints,
     generate_quantity_change_constraints,
     generate_search_query_constraints,
 )
@@ -299,48 +299,51 @@ VIEW_CART_USE_CASE = UseCase(
 # CHECKOUT_USE_CASE
 ###############################################################################
 
-CHECKOUT_INFO = """
+CHECKOUT_STARTED_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Explicitly mention checkout/proceeding to purchase
 2. May include cart contents if specified in constraints
 3. DO NOT include payment/shipping details unless specified
 
 For example:
-- CORRECT: "Proceed to checkout with my cart items"
+- CORRECT: "Click on Buy now to procees checkout with my cart items"
 - INCORRECT: "Pay for my order" (too late in flow)
 """
-
 CHECKOUT_USE_CASE = UseCase(
     name="CHECKOUT_STARTED",
     description="The user initiates the checkout process.",
     event=CheckoutStartedEvent,
     event_source_code=CheckoutStartedEvent.get_source_code_of_class(),
     constraints_generator=generate_checkout_constraints,
-    additional_prompt_info=CHECKOUT_INFO,
+    additional_prompt_info=CHECKOUT_STARTED_INFO,
     examples=[
         {
-            "prompt": "Proceed to checkout with my current cart",
-            "prompt_for_task_generation": "Proceed to checkout with my current cart",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Initiates checkout process with current cart contents."},
+            "prompt": "Click on Buy now to procees checkout with my cart items",
+            "prompt_for_task_generation": "Click on Buy now to procees checkout with my cart items",
+            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Initiates checkout process with current cart contents by clicking Buy now."},
         },
         {
-            "prompt": "Start the checkout process for these items",
-            "prompt_for_task_generation": "Start the checkout process for <cart_reference>",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Initiates checkout with implied cart contents."},
+            "prompt": "Click Buy now to start the checkout process for these items",
+            "prompt_for_task_generation": "Click Buy now to start the checkout process for these items",
+            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Initiates checkout with implied cart contents by clicking Buy now."},
         },
         {
-            "prompt": "Begin checkout for my selected products",
-            "prompt_for_task_generation": "Begin checkout for my <cart_reference>",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Alternative phrasing to start checkout."},
+            "prompt": "I want to begin checkout for my selected products, click the Buy now button.",
+            "prompt_for_task_generation": "I want to begin checkout for my selected products, click the Buy now button.",
+            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Alternative phrasing to start checkout via Buy now."},
         },
         {
-            "prompt": "I'm ready to checkout now",
-            "prompt_for_task_generation": "I'm ready to checkout now",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Simple declaration to start checkout."},
+            "prompt": "I'm ready to checkout now, click Buy now.",
+            "prompt_for_task_generation": "I'm ready to checkout now, click Buy now.",
+            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Simple declaration to start checkout by clicking Buy now."},
+        },
+        {
+            "prompt": "Buy now and take me to the checkout page.",
+            "prompt_for_task_generation": "Buy now and take me to the checkout page.",
+            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Direct request to proceed to checkout via Buy now."},
         },
     ],
 )
-
 ###############################################################################
 # ORDER_COMPLETION_USE_CASE
 ###############################################################################
@@ -361,36 +364,36 @@ ORDER_COMPLETION_USE_CASE = UseCase(
     description="The user completes an order/purchase.",
     event=OrderCompletedEvent,
     event_source_code=OrderCompletedEvent.get_source_code_of_class(),
-    constraints_generator=generate_order_completion_constraints,
+    # constraints_generator=generate_order_completion_constraints,
     additional_prompt_info=ORDER_COMPLETION_INFO,
     examples=[
         {
             "prompt": "Complete my purchase with Credit Card",
-            "prompt_for_task_generation": "Complete my purchase with <payment_method>",
+            "prompt_for_task_generation": "Complete my purchase with Credit Card",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ORDER_COMPLETED",
-                "event_criteria": {"payment_method": {"value": "Credit Card", "operator": "equals"}},
+                # "event_criteria": {"payment_method": {"value": "Credit Card", "operator": "equals"}},
                 "reasoning": "Completes the order with specified payment method.",
             },
         },
         {
             "prompt": "Place my order using my saved payment info",
-            "prompt_for_task_generation": "Place my order using <payment_reference>",
+            "prompt_for_task_generation": "Place my order using my saved payment info",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ORDER_COMPLETED",
-                "event_criteria": {"payment_method": {"value": "saved payment info", "operator": "equals"}},
+                # "event_criteria": {"payment_method": {"value": "saved payment info", "operator": "equals"}},
                 "reasoning": "Completes order with saved payment method.",
             },
         },
         {
             "prompt": "Finalize my purchase with standard shipping",
-            "prompt_for_task_generation": "Finalize my purchase with <shipping_method>",
+            "prompt_for_task_generation": "Finalize my purchase with standard shipping",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ORDER_COMPLETED",
-                "event_criteria": {"shipping_method": {"value": "standard", "operator": "equals"}},
+                # "event_criteria": {"shipping_method": {"value": "standard", "operator": "equals"}},
                 "reasoning": "Completes order with shipping preference.",
             },
         },
