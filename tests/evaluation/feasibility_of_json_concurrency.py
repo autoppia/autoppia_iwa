@@ -2,7 +2,7 @@ from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.projects.omnizone_3.main import omnizone_project
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.execution.actions.actions import ClickAction, HoverAction, NavigateAction, ScrollAction, SubmitAction, TypeAction
+from autoppia_iwa.src.execution.actions.actions import ClickAction, HoverAction, NavigateAction, ScrollAction, TypeAction
 from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.classes import TaskSolution
@@ -24,9 +24,12 @@ def action_type_search(text):
     )
 
 
-action_submit_search = SubmitAction(
-    # selector=Selector(type=SelectorType.XPATH_SELECTOR, value="html/body/header/nav/div[2]/div/button")
-    selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//button[.//svg[contains(@class, 'lucide-search')]]")
+action_submit_search = ClickAction(
+    selector=Selector(type=SelectorType.XPATH_SELECTOR, value="html/body/header/nav/div[2]/div/button")
+    # selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//button[.//svg[contains(@class, 'lucide-search')]]")
+    # selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//button[@type='submit']//svg[contains(@class, 'lucide-search')]")
+    # selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//button//svg[@class='lucide-search']/ancestor::button[1]")
+    # selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//button[@type='submit']")
 )
 
 action_click_cart = ClickAction(selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//a[@href='/cart']"))
@@ -78,7 +81,7 @@ searchable_queries = [
     "Resistance bands and foam roller fitness set",
 ]
 
-search_scenarios = [[action_type_search(q), action_submit_search] for q in searchable_queries]
+search_scenarios = [[action_navigate, action_type_search(q), action_submit_search] for q in searchable_queries]
 
 
 # --- Scenario Evaluation Function ---
@@ -87,7 +90,7 @@ search_scenarios = [[action_type_search(q), action_submit_search] for q in searc
 async def evaluate_scenario(task_instance, list_of_actions_list, scenario_name="default_scenario"):
     print(f"\n--- Evaluating Scenario: {scenario_name} ---")
     task_instance.prompt = f"Test scenario: {scenario_name}"
-    evaluator_config = EvaluatorConfig(save_results_in_db=False, browser_timeout=30000, chunk_size=5)
+    evaluator_config = EvaluatorConfig(save_results_in_db=False, browser_timeout=30000)  # , chunk_size=3)
     evaluator = ConcurrentEvaluator(WEB_PROJECT, evaluator_config)
 
     evaluator_input = [TaskSolution(task_id=task_instance.id, actions=actions, web_agent_id=generate_random_web_agent_id()) for actions in list_of_actions_list]
