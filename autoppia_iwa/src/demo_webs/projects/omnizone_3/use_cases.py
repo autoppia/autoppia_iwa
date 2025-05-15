@@ -12,10 +12,10 @@ from .events import (
     ViewCartEvent,
 )
 from .generation_functions import (
+    generate_autozone_products_constraints,
     generate_carousel_scroll_constraints,
     generate_cart_operation_constraints,
     generate_checkout_constraints,
-    generate_omnizone_products_constraints,
     generate_order_completion_constraints,
     generate_quantity_change_constraints,
     generate_search_query_constraints,
@@ -46,7 +46,7 @@ PRODUCT_DETAIL_USE_CASE = UseCase(
     description="The user explicitly requests to view the details page of a specific product that meets certain criteria.",
     event=ItemDetailEvent,
     event_source_code=ItemDetailEvent.get_source_code_of_class(),
-    constraints_generator=generate_omnizone_products_constraints,
+    constraints_generator=generate_autozone_products_constraints,
     replace_func=replace_products_placeholders,
     additional_prompt_info=PRODUCT_DETAIL_INFO,
     examples=[
