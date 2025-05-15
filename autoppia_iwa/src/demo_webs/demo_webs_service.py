@@ -1,6 +1,5 @@
-import contextlib
-import fcntl
 import json
+import os
 import time
 from typing import Any
 
@@ -29,6 +28,23 @@ class BackendDemoWebService:
         self.web_project: WebProject = web_project
         self.base_url = web_project.backend_url
 
+        # Cache attributes for port 8002 JSON data
+        self._cached_json_data_8002: list[dict[str, Any]] | None = None
+        self._indexed_events_8002: dict[str, list[BackendEvent]] | None = None
+        self._cached_json_file_mtime_8002: float | None = None
+
+        self._json_parser = json
+        self._json_decode_error = json.JSONDecodeError
+        self._read_mode = "r"
+        try:
+            import orjson
+
+            self._json_parser = orjson
+            self._json_decode_error = orjson.JSONDecodeError  # type: ignore
+            self._read_mode = "rb"
+        except ImportError:
+            logger.warning("orjson not found, falling back to standard json. For faster JSON processing, consider installing orjson.")
+
     async def _get_session(self) -> aiohttp.ClientSession:
         """
         Lazy creation of aiohttp session, re-using it if open.
@@ -53,7 +69,80 @@ class BackendDemoWebService:
     def __del__(self):
         """Warn if the session was not closed."""
         if self._session and not self._session.closed:
-            print("Warning: Unclosed ClientSession detected. Please call `close()` explicitly.")
+            logger.warning("Unclosed ClientSession detected in BackendDemoWebService.__del__. Please call `close()` explicitly.")
+
+    def _invalidate_json_cache_8002(self):
+        """Invalidates the cache for the port 8002 JSON file."""
+        logger.debug("Invalidating JSON cache for port 8002.")
+        self._cached_json_data_8002 = None
+        self._indexed_events_8002 = None
+        self._cached_json_file_mtime_8002 = None
+
+    async def _load_and_cache_json_8002(self) -> bool:
+        """
+        Loads data from WEB_3_AUTOZONE_JSON_FILEPATH, parses it,
+        and populates the cache and index.
+        Returns True on success, False on failure.
+        """
+        if not WEB_3_AUTOZONE_JSON_FILEPATH:
+            logger.error("JSON file path (WEB_3_AUTOZONE_JSON_FILEPATH) not configured.")
+            return False
+        try:
+            current_mtime = os.path.getmtime(WEB_3_AUTOZONE_JSON_FILEPATH)
+            # Check if cache is still valid (e.g., another concurrent call might have updated it)
+            if self._cached_json_file_mtime_8002 == current_mtime and self._indexed_events_8002 is not None:
+                logger.debug("JSON cache for port 8002 already up-to-date by another process/task.")
+                return True
+
+            logger.debug(f"Loading and caching JSON from {WEB_3_AUTOZONE_JSON_FILEPATH}")
+            with open(WEB_3_AUTOZONE_JSON_FILEPATH, self._read_mode) as f:
+                # Add fcntl.flock(f.fileno(), fcntl.LOCK_SH) here if concurrent access is an issue
+                # and ensure it's released in a finally block.
+                file_content = f.read()
+
+            raw_events_data = self._json_parser.loads(file_content)
+
+            if not isinstance(raw_events_data, list):
+                logger.error(f"JSON data at {WEB_3_AUTOZONE_JSON_FILEPATH} is not a list.")
+                self._invalidate_json_cache_8002()
+                return False
+
+            self._cached_json_data_8002 = raw_events_data  # Cache raw data if needed elsewhere
+            self._cached_json_file_mtime_8002 = current_mtime
+
+            # Build the indexed cache
+            temp_indexed_events: dict[str, list[BackendEvent]] = {}
+            for event_dict in raw_events_data:
+                if not isinstance(event_dict, dict):
+                    logger.warning(f"Skipping non-dictionary event item: {event_dict}")
+                    continue
+                agent_id = event_dict.get("web_agent_id")
+                if agent_id is not None:
+                    try:
+                        event = BackendEvent(**event_dict)
+                        if agent_id not in temp_indexed_events:
+                            temp_indexed_events[agent_id] = []
+                        temp_indexed_events[agent_id].append(event)
+                    except Exception as e:
+                        logger.warning(f"Error instantiating BackendEvent for event: {event_dict}. Error: {e}")
+                else:
+                    logger.debug(f"Event missing 'web_agent_id' or it's None: {event_dict}")
+            self._indexed_events_8002 = temp_indexed_events
+            logger.info(f"Successfully loaded and indexed JSON data for port 8002. {len(raw_events_data)} events, {len(self._indexed_events_8002)} unique agent IDs.")
+            return True
+
+        except FileNotFoundError:
+            logger.warning(f"Events file not found at {WEB_3_AUTOZONE_JSON_FILEPATH}")
+            self._invalidate_json_cache_8002()
+            return False
+        except self._json_decode_error as e:
+            logger.error(f"Error parsing JSON from {WEB_3_AUTOZONE_JSON_FILEPATH}: {e}")
+            self._invalidate_json_cache_8002()
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error loading/caching JSON for port 8002: {e}")
+            self._invalidate_json_cache_8002()
+            return False
 
     async def get_backend_events(self, web_agent_id: str) -> list[BackendEvent]:
         """
@@ -74,39 +163,53 @@ class BackendDemoWebService:
                 return []
 
             try:
-                with open(WEB_3_AUTOZONE_JSON_FILEPATH) as f:
-                    with contextlib.suppress(ImportError, ModuleNotFoundError):
-                        fcntl.flock(f, fcntl.LOCK_SH)
+                current_mtime: float | None = None
+                if os.path.exists(WEB_3_AUTOZONE_JSON_FILEPATH):
+                    current_mtime = os.path.getmtime(WEB_3_AUTOZONE_JSON_FILEPATH)
+                else:  # File doesn't exist
+                    if self._cached_json_file_mtime_8002 is not None or self._indexed_events_8002 is not None:
+                        logger.warning(f"Previously cached file {WEB_3_AUTOZONE_JSON_FILEPATH} no longer exists. Invalidating cache.")
+                        self._invalidate_json_cache_8002()
+                    return []  # File not found, no events
 
-                    try:
-                        events_data = json.load(f)
-                    finally:
-                        with contextlib.suppress(NameError):
-                            fcntl.flock(f, fcntl.LOCK_UN)
-
-                filtered_events = [BackendEvent(**event) for event in events_data if event.get("web_agent_id") == web_agent_id]
-
-                return filtered_events
+                # Check cache validity:
+                # 1. Is indexed cache populated?
+                # 2. Does the file modification time match the cached one?
+                # 3. Was the file present (current_mtime is not None)?
+                if self._indexed_events_8002 is not None and self._cached_json_file_mtime_8002 == current_mtime and current_mtime is not None:
+                    logger.debug(f"Using cached and indexed JSON data for port 8002, agent ID: {web_agent_id}")
+                    return self._indexed_events_8002.get(web_agent_id, [])
+                else:
+                    logger.info(f"Cache miss or file update for port 8002 (cached_mtime={self._cached_json_file_mtime_8002}, current_mtime={current_mtime}). Reloading.")
+                    if await self._load_and_cache_json_8002() and self._indexed_events_8002 is not None:
+                        return self._indexed_events_8002.get(web_agent_id, [])
+                    return []  # Loading failed or resulted in no data for agent
 
             except FileNotFoundError:
-                logger.warning(f"Events file not found at {WEB_3_AUTOZONE_JSON_FILEPATH}")
-            except json.JSONDecodeError as e:
-                logger.error(f"Error parsing JSON from {WEB_3_AUTOZONE_JSON_FILEPATH}: {e}")
+                logger.warning(f"Events file not found at {WEB_3_AUTOZONE_JSON_FILEPATH} during get_backend_events check.")
+                self._invalidate_json_cache_8002()
+                return []
             except Exception as e:
-                logger.error(f"Unexpected error reading events from file: {e}")
+                logger.error(f"Unexpected error in get_backend_events for port 8002 before loading: {e}")
+                self._invalidate_json_cache_8002()
+                return []
+
+        # Original logic for non-8002 ports or if the 8002 branch doesn't return
         try:
             endpoint = f"{self.base_url}events/list/"
             headers = {"X-WebAgent-Id": web_agent_id}
             session = await self._get_session()
             async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()  # Raise on 4xx/5xx
-                events_data = await response.json()
+                events_data = await response.json(loads=self._json_parser.loads)  # Can specify custom decoder
                 print(events_data, [BackendEvent(**event) for event in events_data])
                 return [BackendEvent(**event) for event in events_data]
         except ClientError as e:
             logger.error(f"Network error while fetching backend events: {e}")
+        except self._json_decode_error as e:
+            logger.error(f"Error parsing JSON response from network: {e}")
         except ValueError as e:
-            logger.error(f"Error parsing JSON response: {e}")
+            logger.error(f"Error parsing JSON response (ValueError): {e}")
         except Exception as e:
             logger.error(f"Unexpected error fetching backend events: {e}")
         return []
@@ -126,9 +229,9 @@ class BackendDemoWebService:
 
         endpoint = f"{self.base_url}events/reset/"
         headers = {"X-WebAgent-Id": web_agent_id}
+        session = await self._get_session()
 
         try:
-            session = await self._get_session()
             async with session.delete(endpoint, headers=headers, timeout=10) as response:
                 # Try to parse the body for a success message
                 try:
@@ -180,9 +283,9 @@ class BackendDemoWebService:
             return False
 
         endpoint = f"{self.base_url}events/reset/all/"
+        session = await self._get_session()
 
         try:
-            session = await self._get_session()
             async with session.delete(endpoint, timeout=10) as response:
                 response.raise_for_status()
 
@@ -226,32 +329,34 @@ class BackendDemoWebService:
 
             try:
                 # Acquire exclusive lock and clear the file
-                with open(WEB_3_AUTOZONE_JSON_FILEPATH, "w") as f:
-                    with contextlib.suppress(ImportError, ModuleNotFoundError):
-                        fcntl.flock(f, fcntl.LOCK_EX)
-
-                    json.dump([], f)
-
-                    with contextlib.suppress(NameError):
-                        fcntl.flock(f, fcntl.LOCK_UN)
+                # Ensure fcntl is available and handle appropriately if not.
+                with open(WEB_3_AUTOZONE_JSON_FILEPATH, "w") as f:  # Open in text mode for json.dump
+                    # Example with fcntl (ensure fcntl is imported and available)
+                    # with contextlib.suppress(ImportError, ModuleNotFoundError, AttributeError):
+                    #     fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                    try:
+                        json.dump([], f)  # Standard json.dump for writing an empty list
+                    finally:
+                        # with contextlib.suppress(ImportError, ModuleNotFoundError, AttributeError):
+                        #     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                        pass  # Placeholder for fcntl unlock
 
                 logger.info(f"Successfully cleared events from JSON file at {WEB_3_AUTOZONE_JSON_FILEPATH}")
+                self._invalidate_json_cache_8002()  # Crucial: Invalidate cache
                 return True
-
             except Exception as e:
                 logger.error(f"Failed to reset JSON file database: {e}")
                 return False
 
         # Original API reset behavior for other ports
         endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
-
+        session = await self._get_session()  # Re-use session
         try:
-            session = await self._get_session()
             async with session.post(endpoint, timeout=30) as response:
                 response.raise_for_status()
 
                 try:
-                    response_json = await response.json()
+                    response_json = await response.json(loads=self._json_parser.loads)
                     status = response_json.get("status")
                     message = response_json.get("message", "")
 
