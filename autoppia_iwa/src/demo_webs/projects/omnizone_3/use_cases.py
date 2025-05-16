@@ -301,17 +301,16 @@ VIEW_CART_USE_CASE = UseCase(
 
 CHECKOUT_STARTED_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Explicitly mention checkout/proceeding to purchase
+1. Explicitly mention 'Click on Buy now' to purchase
 2. May include cart contents if specified in constraints
-3. DO NOT include payment/shipping details unless specified
 
 For example:
-- CORRECT: "Click on Buy now to procees checkout with my cart items"
+- CORRECT: "Click on Buy now to process checkout with my cart items"
 - INCORRECT: "Pay for my order" (too late in flow)
 """
-CHECKOUT_USE_CASE = UseCase(
+CHECKOUT_STARTED_USE_CASE = UseCase(
     name="CHECKOUT_STARTED",
-    description="The user initiates the checkout process.",
+    description="The user initiates the checkout process by clicking on Buy now.",
     event=CheckoutStartedEvent,
     event_source_code=CheckoutStartedEvent.get_source_code_of_class(),
     constraints_generator=generate_checkout_constraints,
@@ -487,7 +486,6 @@ QUANTITY_CHANGE_USE_CASE = UseCase(
                 "event_name": "QUANTITY_CHANGED",
                 "event_criteria": {
                     "item_name": {"value": "Espresso Machine", "operator": "equals"},
-                    "previous_quantity": {"value": 1, "operator": "equals"},
                     "new_quantity": {"value": 2, "operator": "equals"},
                 },
                 "reasoning": "Changes quantity of specific product in cart.",
@@ -504,28 +502,27 @@ QUANTITY_CHANGE_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Change the quantity of item kitchen-6 from 3 to 2",
-            "prompt_for_task_generation": "Change the quantity of <product_reference> from <previous_quantity> to <new_quantity>",
+            "prompt": "Change the quantity of item kitchen-6 to 3",
+            "prompt_for_task_generation": "Change the quantity of <product_id> from <previous_quantity> to <new_quantity>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "QUANTITY_CHANGED",
                 "event_criteria": {
                     "item_id": {"value": "kitchen-6", "operator": "equals"},
-                    "previous_quantity": {"value": 3, "operator": "equals"},
-                    "new_quantity": {"value": 2, "operator": "equals"},
+                    "new_quantity": {"value": 3, "operator": "equals"},
                 },
                 "reasoning": "Changes quantity using product ID reference.",
             },
         },
         {
-            "prompt": "Increase quantity of the Electric Kettle by 1",
-            "prompt_for_task_generation": "Increase quantity of <product_name> by <quantity_delta>",
+            "prompt": "Increase quantity of the Electric Kettle by 5",
+            "prompt_for_task_generation": "Increase quantity of <product_name> by <new_quantity>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "QUANTITY_CHANGED",
                 "event_criteria": {
                     "item_name": {"value": "Electric Kettle", "operator": "equals"},
-                    "quantity_delta": {"value": 1, "operator": "equals"},
+                    "new_quantity": {"value": 1, "operator": "equals"},
                 },
                 "reasoning": "Changes quantity by delta using product name.",
             },
@@ -612,7 +609,7 @@ ALL_USE_CASES = [
     VIEW_CART_USE_CASE,
     QUANTITY_CHANGE_USE_CASE,
     PROCEED_TO_CHECKOUT_USE_CASE,
-    CHECKOUT_USE_CASE,
+    CHECKOUT_STARTED_USE_CASE,
     ORDER_COMPLETION_USE_CASE,
     CAROUSEL_SCROLL_USE_CASE,
 ]

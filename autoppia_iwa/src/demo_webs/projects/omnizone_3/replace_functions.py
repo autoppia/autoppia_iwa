@@ -19,6 +19,7 @@ def replace_products_placeholders(
 
     placeholder_to_key = {
         "<id>": "id",
+        "<product_id>": "id",
         "<title>": "title",
         "<product_name>": "title",
         "<product_variant>": "title",

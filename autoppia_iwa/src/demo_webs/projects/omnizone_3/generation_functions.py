@@ -379,7 +379,7 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
     else:
         return []
 
-    # Constraints on previous and new quantity (map to 'previous_quantity', 'new_quantity')
+    # Constraints on new quantity
     # Operators are typically EQUALS, GREATER/LESS (EQUAL) or IN_RANGE for quantities
     quantity_operators = [
         ComparisonOperator.EQUALS,
@@ -393,16 +393,11 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
         while new_qty == prev_qty:  # Ensure new_qty is different
             new_qty = random.randint(max(0, prev_qty - 2), prev_qty + 3)
 
-        # Generate constraints for previous and new quantity
-        op_prev = random.choice(quantity_operators)
+        # Generate constraints for previous and new qu
         op_new = random.choice(quantity_operators)
 
-        # Generate values based on the desired quantities using _generate_constraint_value with mock source
-        constraint_value_prev = generate_constraint_value("quantity", op_prev, {"quantity": prev_qty})  # Use "quantity" field name for value generation logic
         constraint_value_new = generate_constraint_value("quantity", op_new, {"quantity": new_qty})  # Use "quantity" field name
 
-        if constraint_value_prev is not None:
-            constraints_list.append(_create_constraint_dict("previous_quantity", op_prev, constraint_value_prev))
         if constraint_value_new is not None:
             constraints_list.append(_create_constraint_dict("new_quantity", op_new, constraint_value_new))
 
