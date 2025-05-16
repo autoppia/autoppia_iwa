@@ -68,9 +68,15 @@ class Event(BaseModel):
         # TODO: Moving (ALL_BACKEND_EVENT_TYPES) here to resolve circular import error
         from autoppia_iwa.src.demo_webs.projects.books_2.events import BACKEND_EVENT_TYPES as web_2_backend_types
         from autoppia_iwa.src.demo_webs.projects.cinema_1.events import BACKEND_EVENT_TYPES as web_1_backend_types
+        from autoppia_iwa.src.demo_webs.projects.dining_4.events import BACKEND_EVENT_TYPES as web_4_backend_types
         from autoppia_iwa.src.demo_webs.projects.omnizone_3.events import BACKEND_EVENT_TYPES as web_3_backend_types
 
-        ALL_BACKEND_EVENT_TYPES = {**web_1_backend_types, **web_2_backend_types, **web_3_backend_types}
+        ALL_BACKEND_EVENT_TYPES = {
+            **web_1_backend_types,
+            **web_2_backend_types,
+            **web_3_backend_types,
+            **web_4_backend_types,
+        }
         event_class_map = ALL_BACKEND_EVENT_TYPES
 
         for event_data in backend_events:
