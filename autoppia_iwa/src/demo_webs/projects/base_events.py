@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from pydantic import BaseModel
+
+from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue, validate_criterion
 
 
 class Event(BaseModel):
@@ -110,3 +112,14 @@ class EventRegistry:
         if event_name not in cls._registry:
             raise ValueError(f"Event class '{event_name}' is not registered")
         return cls._registry[event_name]
+
+
+class BaseEventValidator:
+    """Base class for event validation criteria with common functionality."""
+
+    @staticmethod
+    def _validate_field(value: Any, criterion: Any | CriterionValue | None) -> bool:
+        """Helper method to validate a single field against its criterion."""
+        if criterion is None:
+            return True
+        return validate_criterion(value, criterion)

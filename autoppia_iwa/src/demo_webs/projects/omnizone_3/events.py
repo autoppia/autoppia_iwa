@@ -1,46 +1,13 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from loguru import logger
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue, validate_criterion
+from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
+from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
-
-class BaseEventValidator:
-    """Base class for event validation criteria with common functionality."""
-
-    @staticmethod
-    def _validate_field(value: Any, criterion: Any | CriterionValue | None) -> bool:
-        """Helper method to validate a single field against its criterion."""
-        if criterion is None:
-            return True
-        return validate_criterion(value, criterion)
-
-
-def parse_price(price_raw: Any) -> float | None:
-    """
-    Helper function to parse price data, handling strings with currency symbols
-    and commas, as well as direct numbers. Returns float or None if parsing fails.
-    """
-    if price_raw is None:
-        return None
-    try:
-        if isinstance(price_raw, str):
-            price_str = price_raw.replace("$", "").replace(",", "").strip()
-            if not price_str:
-                return None
-            return float(price_str)
-        elif isinstance(price_raw, int | float):
-            return float(price_raw)
-        else:
-            logger.debug(f"Price data is not a string, int, or float: {type(price_raw)}")
-            return None
-    except (ValueError, TypeError) as e:
-        logger.debug(f"Could not parse price data '{price_raw}'. Error: {e}")
-        return None
+from ..shared_utils import parse_price
 
 
 class ProductSummary(BaseModel):

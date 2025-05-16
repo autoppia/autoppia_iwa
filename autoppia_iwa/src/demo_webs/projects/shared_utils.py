@@ -1,3 +1,7 @@
+from typing import Any
+
+from loguru import logger
+
 from .criterion_helper import CriterionValue, validate_criterion
 
 
@@ -26,3 +30,26 @@ def item_matches_all_constraints(item: dict, constraints: list[dict]) -> bool:
         if not validate_criterion(actual_value, criterion):
             return False
     return True
+
+
+def parse_price(price_raw: Any) -> float | None:
+    """
+    Helper function to parse price data, handling strings with currency symbols
+    and commas, as well as direct numbers. Returns float or None if parsing fails.
+    """
+    if price_raw is None:
+        return None
+    try:
+        if isinstance(price_raw, str):
+            price_str = price_raw.replace("$", "").replace(",", "").strip()
+            if not price_str:
+                return None
+            return float(price_str)
+        elif isinstance(price_raw, int | float):
+            return float(price_raw)
+        else:
+            logger.debug(f"Price data is not a string, int, or float: {type(price_raw)}")
+            return None
+    except (ValueError, TypeError) as e:
+        logger.debug(f"Could not parse price data '{price_raw}'. Error: {e}")
+        return None
