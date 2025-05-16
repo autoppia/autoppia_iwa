@@ -5,31 +5,8 @@ from typing import Any
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_data import FIELD_OPERATORS_MAP_PRODUCTS
+from ..shared_utils import create_constraint_dict, parse_price
 from .data import PRODUCTS_DATA
-
-
-def _parse_price_string(price_raw: str | float | int | None) -> float | None:
-    """Helper to parse price string to float, handles None."""
-    if price_raw is None:
-        return None
-    if isinstance(price_raw, str):
-        try:
-            # Remove currency symbols, commas, and whitespace
-            cleaned_price = price_raw.replace("$", "").replace(",", "").strip()
-            return float(cleaned_price)
-        except (ValueError, AttributeError):
-            print(f"Warning: Could not parse price string: '{price_raw}'")
-            return None
-    elif isinstance(price_raw, int | float):
-        return float(price_raw)
-    else:
-        print(f"Warning: Unexpected price type: {type(price_raw)}. Value: {price_raw}")
-        return None
-
-
-def _create_constraint_dict(field: str, operator: ComparisonOperator, value: Any) -> dict[str, Any]:
-    """Creates a single constraint dictionary in the list[dict] format."""
-    return {"field": field, "operator": operator, "value": value}
 
 
 def generate_constraint_value(field: str, operator: ComparisonOperator, product_data_source: dict[str, Any], all_products_data: list[dict[str, Any]] = PRODUCTS_DATA) -> Any:
@@ -52,7 +29,7 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
             for item in pool_source:
                 val = item.get(field)
                 if field == "price" or field == "value" or field == "total_amount" or field == "tax" or field == "shipping" or field == "order_total":
-                    parsed_val = _parse_price_string(val)
+                    parsed_val = parse_price(val)
                     if parsed_val is not None:
                         value_pool.append(parsed_val)
                 elif val is not None:
@@ -238,7 +215,7 @@ def generate_autozone_products_constraints() -> list[dict[str, Any]]:
 
             if constraint_value is not None:
                 # Create the constraint dictionary using the CRITERIA field name as the "field" key
-                constraint_dict = _create_constraint_dict(criteria_field, op, constraint_value)
+                constraint_dict = create_constraint_dict(criteria_field, op, constraint_value)
                 constraints_list.append(constraint_dict)
         else:
             print(f"Warning: Could not select operator for criteria field '{criteria_field}'. Skipping constraint generation.")
@@ -256,9 +233,9 @@ def generate_search_query_constraints() -> list[dict[str, Any]]:
         constraint_value = generate_constraint_value("query", op, {}, all_products_data=PRODUCTS_DATA)
         if constraint_value is not None:
             # Create the constraint dictionary for the "query" field
-            constraints_list.append(_create_constraint_dict("query", op, constraint_value))
+            constraints_list.append(create_constraint_dict("query", op, constraint_value))
 
-    return constraints_list if constraints_list else [_create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]  # Fallback
+    return constraints_list if constraints_list else [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]  # Fallback
 
 
 def generate_cart_operation_constraints() -> list[dict[str, Any]]:
@@ -288,7 +265,7 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
             constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
             if constraint_value is not None:
                 # Create constraint dictionary using the criterion alias as the 'field'
-                constraints_list.append(_create_constraint_dict(selected_id_field, op, constraint_value))
+                constraints_list.append(create_constraint_dict(selected_id_field, op, constraint_value))
         else:
             print(f"Warning: Could not select operator for product key '{product_key}' in cart operation constraints.")
 
@@ -329,7 +306,7 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
 
         if constraint_value is not None:
             # Create constraint dictionary using the criterion alias as the 'field'
-            constraints_list.append(_create_constraint_dict(criterion_alias, op, constraint_value))
+            constraints_list.append(create_constraint_dict(criterion_alias, op, constraint_value))
 
     # Optional quantity constraint (maps to 'quantity' alias in ValidationCriteria)
     # Quantity operator is typically EQUALS, GREATER_EQUAL, LESS_EQUAL
@@ -343,7 +320,7 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
         # Generate a plausible quantity value using _generate_constraint_value with a mock source
         quantity_value = generate_constraint_value("quantity", op, {"quantity": random.randint(1, 5)})
         if quantity_value is not None:
-            constraints_list.append(_create_constraint_dict("quantity", op, quantity_value))
+            constraints_list.append(create_constraint_dict("quantity", op, quantity_value))
 
     return constraints_list
 
@@ -373,7 +350,7 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
             constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
             if constraint_value is not None:
                 # Create constraint dictionary using the criterion alias as the 'field'
-                constraints_list.append(_create_constraint_dict(selected_id_field, op, constraint_value))
+                constraints_list.append(create_constraint_dict(selected_id_field, op, constraint_value))
         else:
             print(f"Warning: Could not select operator for product key '{product_key}' in quantity change constraints.")
     else:
@@ -399,7 +376,7 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
         constraint_value_new = generate_constraint_value("quantity", op_new, {"quantity": new_qty})  # Use "quantity" field name
 
         if constraint_value_new is not None:
-            constraints_list.append(_create_constraint_dict("new_quantity", op_new, constraint_value_new))
+            constraints_list.append(create_constraint_dict("new_quantity", op_new, constraint_value_new))
 
     return constraints_list
 
@@ -415,12 +392,12 @@ def generate_checkout_constraints() -> list[dict[str, Any]]:
         # Generate constraint value using _generate_constraint_value with mock source
         constraint_value = generate_constraint_value("total_items", op, {"total_items": total_items_value})
         if constraint_value is not None:
-            constraints_list.append(_create_constraint_dict("total_items", op, constraint_value))
+            constraints_list.append(create_constraint_dict("total_items", op, constraint_value))
 
     if random.random() > 0.3 and PRODUCTS_DATA and total_amount_operators:
         op = random.choice(total_amount_operators)
-        min_price = min(_parse_price_string(p["price"]) or 0 for p in PRODUCTS_DATA) if PRODUCTS_DATA else 1.0
-        max_price = max(_parse_price_string(p["price"]) or 100 for p in PRODUCTS_DATA) if PRODUCTS_DATA else 100.0
+        min_price = min(parse_price(p["price"]) or 0 for p in PRODUCTS_DATA) if PRODUCTS_DATA else 1.0
+        max_price = max(parse_price(p["price"]) or 100 for p in PRODUCTS_DATA) if PRODUCTS_DATA else 100.0
         plausible_amount = random.uniform(
             min_price * 1,
             max_price * (constraints_list[0]["value"] if constraints_list and constraints_list[0]["field"] == "total_items" and isinstance(constraints_list[0]["value"], int) else 5) / 2.0,
@@ -428,7 +405,7 @@ def generate_checkout_constraints() -> list[dict[str, Any]]:
         # Generate constraint value using _generate_constraint_value with mock source
         constraint_value = generate_constraint_value("total_amount", op, {"total_amount": round(plausible_amount, 2)})
         if constraint_value is not None:
-            constraints_list.append(_create_constraint_dict("total_amount", op, constraint_value))
+            constraints_list.append(create_constraint_dict("total_amount", op, constraint_value))
 
     return constraints_list
 
@@ -467,7 +444,7 @@ def generate_order_completion_constraints() -> list[dict[str, Any]]:
         # Generate constraint value using the mock order data for the specific field
         constraint_value = generate_constraint_value(field, op, mock_order_data, all_products_data=PRODUCTS_DATA)
         if constraint_value is not None:
-            constraints_list.append(_create_constraint_dict(field, op, constraint_value))  # Use the field name
+            constraints_list.append(create_constraint_dict(field, op, constraint_value))  # Use the field name
 
     return constraints_list
 
@@ -497,6 +474,6 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
         # Generate constraint value using the mock data for the specific field
         constraint_value = generate_constraint_value(field, op, mock_data)
         if constraint_value is not None:
-            constraints_list.append(_create_constraint_dict(field, op, constraint_value))
+            constraints_list.append(create_constraint_dict(field, op, constraint_value))
 
     return constraints_list

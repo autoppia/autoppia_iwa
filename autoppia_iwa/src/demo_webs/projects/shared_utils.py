@@ -2,7 +2,7 @@ from typing import Any
 
 from loguru import logger
 
-from .criterion_helper import CriterionValue, validate_criterion
+from .criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 
 
 def constraints_exist_in_db(data: list[dict], constraints: list[dict]) -> bool:
@@ -53,3 +53,8 @@ def parse_price(price_raw: Any) -> float | None:
     except (ValueError, TypeError) as e:
         logger.debug(f"Could not parse price data '{price_raw}'. Error: {e}")
         return None
+
+
+def create_constraint_dict(field: str, operator: ComparisonOperator, value: Any) -> dict[str, Any]:
+    """Creates a single constraint dictionary in the list[dict] format."""
+    return {"field": field, "operator": operator, "value": value}
