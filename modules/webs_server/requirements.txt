@@ -1,0 +1,25 @@
+# Core
+fastapi==0.95.2
+uvicorn[standard]==0.22.0
+loguru==0.7.3
+
+# Database
+asyncpg==0.27.0
+psycopg2-binary==2.9.6
+
+# Performance
+orjson==3.9.0
+uvloop==0.17.0
+httptools==0.5.0
+
+# Environment
+python-dotenv==1.0.0
+
+# Development
+pytest==7.3.1
+pytest-asyncio==0.21.0
+httpx==0.24.1
+
+# Security
+python-multipart==0.0.6
+bcrypt==4.0.1
