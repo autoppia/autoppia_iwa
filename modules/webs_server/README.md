@@ -24,16 +24,35 @@ A high-performance API for managing web agent events, built with FastAPI and Pos
 ## Prerequisites
 - Docker 20.10+
 - Docker Compose 2.0+
-- Python 3.9+ (for local development)
+- Python 3.9+ (for local development, if not using Docker)
 
 ## Installation
 
 ### With Docker (Recommended)
-```bash
-cd autoppia_iwa/modules/webs_server
-cp .env.template .env  # Update with your credentials
-docker-compose up --build
-```
+
+Follow these steps to install and run the application using Docker Compose:
+
+1.  Navigate to the project's `webs_server` directory where the `docker-compose.yaml` and `Dockerfile` are located:
+    ```bash
+    cd autoppia_iwa/modules/webs_server
+    ```
+2.  Create your environment configuration file from the provided template. This file (`.env`) contains crucial settings like database credentials and ports. **You must edit `.env` after copying to set your actual configuration values.**
+    ```bash
+    cp .env.template .env
+    ```
+3.  Build the Docker images (if they haven't been built or if you've made changes) and start the services defined in `docker-compose.yaml` in detached mode (in the background):
+    ```bash
+    docker-compose up --build -d
+    ```
+4.  Verify that the services are running correctly:
+    ```bash
+    docker-compose ps
+    ```
+    You should see output listing the `app` and `db` services with their status. Wait for the `db` service to show `(healthy)`.
+    You can view the application logs with:
+    ```bash
+    docker-compose logs -f app
+    ```
 
 ### Local Development
 1.  Navigate to the `webs_server` directory.
@@ -218,7 +237,6 @@ Example Request URL
 DELETE /reset_events/?web_url=[https://anothersite.org/path/to/resource](https://anothersite.org/path/to/resource)
 ```
 
-\</details\>
 
 **Responses:**
 
