@@ -31,7 +31,7 @@ A high-performance API for managing web agent events, built with FastAPI and Pos
 ### With Docker (Recommended)
 ```bash
 cd autoppia_iwa/modules/webs_server
-cp .env.example .env  # Update with your credentials
+cp .env.template .env  # Update with your credentials
 docker-compose up --build
 ```
 
