@@ -17,7 +17,7 @@ def generate_web_agent_id() -> str:
     return str(uuid.uuid4())
 
 PREDEFINED_URLS = [
-    "https://example.com/page1",
+    "https://localhost:8000/page1",
     "https://example.com/page2",
     "https://anothersite.org/path/to/resource",
     "https://test-domain.net/products/123",

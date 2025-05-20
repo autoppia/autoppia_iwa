@@ -3,6 +3,7 @@ import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import List, Dict, Any
+from urllib.parse import urlparse
 
 import asyncpg
 import orjson
@@ -10,7 +11,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import ORJSONResponse
 from loguru import logger
-from pydantic import BaseModel, HttpUrl, Field
+from pydantic import BaseModel, Field, validator
 
 # --- Configuration ---
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@host:port/database")
@@ -19,10 +20,11 @@ DB_POOL_MAX = int(os.getenv("DB_POOL_MAX", "50"))
 GZIP_MIN_SIZE = int(os.getenv("GZIP_MIN_SIZE", "1000"))
 
 # --- Helper Function for URL Trimming ---
-def trim_url_to_origin(url: HttpUrl) -> str:
-    """Trims a pydantic HttpUrl object to its scheme://host[:port] origin string."""
-    port_str = f":{url.port}" if url.port else ""
-    return f"{url.scheme}://{url.host}{port_str}"
+def trim_url_to_origin(url: str) -> str:
+    """Trims a URL to its scheme://host[:port] origin string."""
+    parsed = urlparse(url)
+    port_str = f":{parsed.port}" if parsed.port else ""
+    return f"{parsed.scheme}://{parsed.hostname}{port_str}"
 
 # --- SQL Query Constants ---
 INSERT_EVENT_SQL = """
@@ -52,8 +54,18 @@ DELETE_EVENTS_SQL = """
 # --- Pydantic Models ---
 class EventInput(BaseModel):
     web_agent_id: str = Field(..., max_length=255)
-    web_url: HttpUrl
+    web_url: str
     data: Dict[str, Any]
+
+    @validator('web_url')
+    def validate_url(cls, v):
+        try:
+            parsed = urlparse(v)
+            if not all([parsed.scheme, parsed.hostname]):
+                raise ValueError("Invalid URL format")
+            return v
+        except Exception as e:
+            raise ValueError(f"Invalid URL: {str(e)}")
 
     class Config:
         json_loads = orjson.loads
@@ -63,7 +75,7 @@ class EventInput(BaseModel):
 class EventOutput(BaseModel):
     id: int
     web_agent_id: str
-    web_url: HttpUrl
+    web_url: str
     data: Dict[str, Any]
     created_at: datetime
 
@@ -74,7 +86,7 @@ class EventOutput(BaseModel):
 
 class ResetResponse(BaseModel):
     message: str
-    web_url: HttpUrl
+    web_url: str
     deleted_count: int
 
 
@@ -194,7 +206,7 @@ async def save_event_endpoint(event: EventInput):
 
 @app.get("/get_events/", response_model=List[EventOutput], summary="Get events for a web agent and URL")
 async def get_events_endpoint(
-        web_url: HttpUrl = Query(..., description="The specific web URL to filter events for."),
+        web_url: str = Query(..., description="The specific web URL to filter events for."),
         web_agent_id: str = Query(..., max_length=255, description="The specific web agent ID to filter events for.")
 ):
     """
@@ -244,7 +256,7 @@ async def get_events_endpoint(
 
 @app.delete("/reset_events/", response_model=ResetResponse, summary="Delete all events for a web URL")
 async def reset_events_endpoint(
-        web_url: HttpUrl = Query(..., description="The web URL for which all events should be deleted.")):
+        web_url: str = Query(..., description="The web URL for which all events should be deleted.")):
     """
     Deletes all events for a given web_url using a prepared statement.
     Deletion is based on the origin (scheme://host[:port]) of the provided web_url.
