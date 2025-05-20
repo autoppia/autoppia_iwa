@@ -538,3 +538,4 @@ RESTAURANT_COUNTRIES = [
     {"code": "VN", "name": "Vietnam"},
 ]
 RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business meeting", "other"]
+SCROLL_DIRECTIONS = ["left", "right"]

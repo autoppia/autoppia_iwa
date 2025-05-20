@@ -5,7 +5,7 @@ from typing import Any
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
 
 from ..shared_utils import create_constraint_dict
-from .data import RESTAURANT_COUNTRIES, RESTAURANT_DATA as MOCK_RESTAURANTS_DATA, RESTAURANT_OCCASIONS, RESTAURANT_PEOPLE_COUNTS, RESTAURANT_TIMES
+from .data import RESTAURANT_COUNTRIES, RESTAURANT_DATA as MOCK_RESTAURANTS_DATA, RESTAURANT_OCCASIONS, RESTAURANT_PEOPLE_COUNTS, RESTAURANT_TIMES, SCROLL_DIRECTIONS
 
 
 def generate_mock_dates():
@@ -54,8 +54,6 @@ MOCK_PEOPLE_COUNT_STRINGS = ["1 person", "2 people", "4 guests"]
 
 MOCK_RESTAURANT_QUERIES = ["pizza", "mexican food", "nearby cafes"] + [r["name"] for r in MOCK_RESTAURANTS_DATA]
 MOCK_RESTAURANT_ACTIONS = ["view_full_menu", "collapse_menu"]
-MOCK_SCROLL_DIRECTIONS = ["left", "right"]
-MOCK_VISIBLE_COUNTS = [3, 5, 7, 10]
 MOCK_PHONE_NUMBERS = ["555-1234", "9876543210", "+1-202-555-0182"]
 MOCK_SPECIAL_REQUESTS = ["window seat", "allergies: nuts", "quiet table"]
 
@@ -91,7 +89,6 @@ FIELD_OPERATORS_MAP_RESTAURANT_EVENTS = {
     "special_request": [ComparisonOperator.CONTAINS, ComparisonOperator.EQUALS],
     # ScrollViewEvent
     "direction": [ComparisonOperator.EQUALS],
-    "visible_count": [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL],
 }
 
 
@@ -138,9 +135,7 @@ def _generate_value_for_field(field_name: str, operator: ComparisonOperator) -> 
         return random.choice(MOCK_SPECIAL_REQUESTS)
     # For ScrollViewEvent
     elif field_name == "direction":
-        return random.choice(MOCK_SCROLL_DIRECTIONS)
-    elif field_name == "visible_count":
-        return random.choice(MOCK_VISIBLE_COUNTS)
+        return random.choice(SCROLL_DIRECTIONS)
 
     # Fallback for unhandled fields, though ideally all relevant fields are covered above
     print(f"Warning: No specific mock value generator for field '{field_name}'. Using default string.")
