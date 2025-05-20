@@ -186,6 +186,7 @@ async def save_event_endpoint(event: EventInput):
             event_data_json_string
         )
         if result:
+            logger.info(f"Event saved successfully: {result}")
             return {
                 "message": "Event saved successfully",
                 "event_id": result["id"],
