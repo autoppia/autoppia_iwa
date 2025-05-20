@@ -15,6 +15,20 @@ from .events import (
     ViewFullMenuEvent,
     ViewRestaurantEvent,
 )
+from .generation_functions import (
+    generate_book_restaurant_constraints,
+    generate_collapse_menu_constraints,
+    generate_country_selected_constraints,
+    generate_date_dropdown_opened_constraints,
+    generate_occasion_selected_constraints,
+    generate_people_dropdown_opened_constraints,
+    generate_reservation_complete_constraints,
+    generate_scroll_view_constraints,
+    generate_search_restaurant_constraints,
+    generate_time_dropdown_opened_constraints,
+    generate_view_full_menu_constraints,
+    generate_view_restaurant_constraints,
+)
 
 ###############################################################################
 # DATE_DROPDOWN_OPENED_USE_CASE
@@ -33,7 +47,7 @@ DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
     event=DateDropdownOpenedEvent,
     event_source_code=DateDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=DATE_DROPDOWN_OPENED_INFO,
-    # constraints_generator=lambda seed=None: generate_simple_selection_constraints("selected_date", [datetime(2025, 4, 30, 19, 0, 0, tzinfo=timezone.utc)], seed), # Example
+    constraints_generator=generate_date_dropdown_opened_constraints,
     examples=[
         {
             "prompt": "Open the date selector for my booking.",
@@ -65,7 +79,7 @@ TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
     event=TimeDropdownOpenedEvent,
     event_source_code=TimeDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=TIME_DROPDOWN_OPENED_INFO,
-    # constraints_generator=lambda seed=None: generate_simple_selection_constraints("selected_time", ["12:30 PM"], seed), # Example
+    constraints_generator=generate_time_dropdown_opened_constraints,
     examples=[
         {
             "prompt": "Click on the time field to choose a reservation time.",
@@ -97,7 +111,7 @@ PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
     event=PeopleDropdownOpenedEvent,
     event_source_code=PeopleDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=PEOPLE_DROPDOWN_OPENED_INFO,
-    # constraints_generator=lambda seed=None: generate_simple_selection_constraints("people_count", [4], seed), # Example
+    constraints_generator=generate_people_dropdown_opened_constraints,
     examples=[
         {
             "prompt": "Open the guest number selection for my table.",
@@ -131,7 +145,7 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
     description="The user searches for restaurants using a search query.",
     event=SearchRestaurantEvent,
     event_source_code=SearchRestaurantEvent.get_source_code_of_class(),
-    # constraints_generator=generate_restaurant_search_query_constraints, # Placeholder for actual generator
+    constraints_generator=generate_search_restaurant_constraints,
     additional_prompt_info=SEARCH_RESTAURANT_INFO,
     examples=[
         {
@@ -173,7 +187,7 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     description="The user explicitly requests to view the details page of a specific restaurant.",
     event=ViewRestaurantEvent,
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
-    # constraints_generator=generate_restaurant_details_constraints, # Placeholder
+    constraints_generator=generate_view_restaurant_constraints,
     additional_prompt_info=VIEW_RESTAURANT_INFO,
     examples=[
         {
@@ -219,6 +233,7 @@ VIEW_FULL_MENU_USE_CASE = UseCase(
     event=ViewFullMenuEvent,
     event_source_code=ViewFullMenuEvent.get_source_code_of_class(),
     additional_prompt_info=VIEW_FULL_MENU_INFO,
+    constraints_generator=generate_view_full_menu_constraints,
     examples=[
         {
             "prompt": "Show the full menu for 'The Royal Dine' for 2 people for dinner on July 18.",
@@ -255,6 +270,7 @@ COLLAPSE_MENU_USE_CASE = UseCase(
     event=CollapseMenuEvent,
     event_source_code=CollapseMenuEvent.get_source_code_of_class(),
     additional_prompt_info=COLLAPSE_MENU_INFO,
+    constraints_generator=generate_collapse_menu_constraints,
     examples=[
         {
             "prompt": "Hide the menu for 'The Royal Dine'.",
@@ -286,7 +302,7 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
     description="User initiates a booking for a restaurant with specific details (date, time, people).",
     event=BookRestaurantEvent,
     event_source_code=BookRestaurantEvent.get_source_code_of_class(),
-    # constraints_generator=generate_booking_details_constraints, # Placeholder
+    constraints_generator=generate_book_restaurant_constraints,
     additional_prompt_info=BOOK_RESTAURANT_INFO,
     examples=[
         {
@@ -324,7 +340,7 @@ COUNTRY_SELECTED_USE_CASE = UseCase(
     description="User selects a country, often as part of filling out contact or payment details for a reservation.",
     event=CountrySelectedEvent,
     event_source_code=CountrySelectedEvent.get_source_code_of_class(),
-    # constraints_generator=lambda seed=None: generate_simple_selection_constraints("country_name", ["India", "USA"], seed), # Example
+    constraints_generator=generate_country_selected_constraints,
     additional_prompt_info=COUNTRY_SELECTED_INFO,
     examples=[
         {
@@ -356,7 +372,7 @@ OCCASION_SELECTED_USE_CASE = UseCase(
     description="User selects a special occasion for their restaurant reservation.",
     event=OccasionSelectedEvent,
     event_source_code=OccasionSelectedEvent.get_source_code_of_class(),
-    # constraints_generator=lambda seed=None: generate_simple_selection_constraints("occasion", ["birthday", "anniversary"], seed), # Example
+    constraints_generator=generate_occasion_selected_constraints,
     additional_prompt_info=OCCASION_SELECTED_INFO,
     examples=[
         {
@@ -389,6 +405,7 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
     event=ReservationCompleteEvent,
     event_source_code=ReservationCompleteEvent.get_source_code_of_class(),
     additional_prompt_info=RESERVATION_COMPLETE_INFO,
+    constraints_generator=generate_reservation_complete_constraints,
     examples=[
         {
             "prompt": "Complete my reservation for 'The Royal Dine' on July 18th at 1:30 PM for 2 people. My email is user_name@gmail.com, phone is 123, it's for a birthday, and special request is 'a quiet table'.",
@@ -430,6 +447,7 @@ SCROLL_VIEW_USE_CASE = UseCase(
     event=ScrollViewEvent,
     event_source_code=ScrollViewEvent.get_source_code_of_class(),
     additional_prompt_info=SCROLL_VIEW_INFO,
+    constraints_generator=generate_scroll_view_constraints,
     examples=[
         {
             "prompt": "Scroll right to see more available time slots.",
