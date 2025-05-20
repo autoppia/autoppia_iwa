@@ -29,6 +29,7 @@ from .generation_functions import (
     generate_view_full_menu_constraints,
     generate_view_restaurant_constraints,
 )
+from .replace_functions import replace_restaurant_placeholders
 
 ###############################################################################
 # DATE_DROPDOWN_OPENED_USE_CASE
@@ -55,10 +56,20 @@ DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DATE_DROPDOWN_OPENED",
-                "event_criteria": {"selected_date": {"value": datetime(2025, 4, 30, 19, 0, 0, tzinfo=UTC), "operator": "equals"}},  # Based on your JSON example
+                "event_criteria": {"selected_date": {"value": datetime(2025, 4, 30, 19, 0, 0, tzinfo=UTC), "operator": "equals"}},
                 "reasoning": "User opens the date picker, which shows a default/current date.",
             },
-        }
+        },
+        {
+            "prompt": "Click on the calendar icon to select a date after June 15th.",
+            "prompt_for_task_generation": "Click on the calendar icon to select a date after <date>.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "DATE_DROPDOWN_OPENED",
+                "event_criteria": {"selected_date": {"value": datetime(2025, 6, 15, 0, 0, 0, tzinfo=UTC), "operator": "greater_than"}},
+                "reasoning": "User opens date picker with intention to select a future date.",
+            },
+        },
     ],
 )
 
@@ -80,6 +91,7 @@ TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
     event_source_code=TimeDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=TIME_DROPDOWN_OPENED_INFO,
     constraints_generator=generate_time_dropdown_opened_constraints,
+    replace_func=replace_restaurant_placeholders,
     examples=[
         {
             "prompt": "Click on the time field to choose a reservation time.",
@@ -112,6 +124,7 @@ PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
     event_source_code=PeopleDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=PEOPLE_DROPDOWN_OPENED_INFO,
     constraints_generator=generate_people_dropdown_opened_constraints,
+    replace_func=replace_restaurant_placeholders,
     examples=[
         {
             "prompt": "Open the guest number selection for my table.",
@@ -122,7 +135,19 @@ PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
                 "event_criteria": {"people_count": {"value": 4, "operator": "equals"}},
                 "reasoning": "User opens the people picker, showing a default/current count.",
             },
-        }
+        },
+        {
+            "prompt": "Select the party size dropdown for a group larger than 6 people.",
+            "prompt_for_task_generation": "Select the party size dropdown for a group larger than <count> people.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "PEOPLE_DROPDOWN_OPENED",
+                "event_criteria": {
+                    "people_count": {"value": 6, "operator": "greater_than"},
+                    "reasoning": "User opens people picker looking for large group options.",
+                },
+            },
+        },
     ],
 )
 
@@ -149,8 +174,8 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
     additional_prompt_info=SEARCH_RESTAURANT_INFO,
     examples=[
         {
-            "prompt": "Search for italian restaurants in downtown",
-            "prompt_for_task_generation": "Search for <cuisine_type> restaurants in <location_hint>",
+            "prompt": "Search for 'italian restaurants in downtown'",
+            "prompt_for_task_generation": "Search for 'italian restaurants in downtown'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_RESTAURANT",
@@ -160,12 +185,32 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
         },
         {
             "prompt": "Find restaurants named 'The Royal Dine'",
-            "prompt_for_task_generation": "Find restaurants named '<restaurant_query>'",
+            "prompt_for_task_generation": "Find restaurants named '<query>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_RESTAURANT",
                 "event_criteria": {"query": {"value": "The Royal Dine", "operator": "equals"}},
                 "reasoning": "Search for a specific restaurant name.",
+            },
+        },
+        {
+            "prompt": "Look up places to eat that serve vegan food",
+            "prompt_for_task_generation": "Look up places to eat that serve <query> food",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "SEARCH_RESTAURANT",
+                "event_criteria": {"query": {"value": "vegan", "operator": "contains"}},
+                "reasoning": "Search for restaurants with specific dietary options.",
+            },
+        },
+        {
+            "prompt": "Search for restaurants with outdoor seating in midtown",
+            "prompt_for_task_generation": "Search for restaurants with <query> in midtown",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "SEARCH_RESTAURANT",
+                "event_criteria": {"query": {"value": "outdoor seating", "operator": "contains"}},
+                "reasoning": "Search for restaurants with specific features.",
             },
         },
     ],
@@ -189,6 +234,7 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
     additional_prompt_info=VIEW_RESTAURANT_INFO,
+    replace_func=replace_restaurant_placeholders,
     examples=[
         {
             "prompt": "Show me details for 'The Royal Dine'",
@@ -211,6 +257,26 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
                 "event_name": "VIEW_RESTAURANT",
                 "event_criteria": {"restaurant_id": {"value": "royal-dine", "operator": "equals"}},
                 "reasoning": "Requests to view restaurant details using its ID.",
+            },
+        },
+        {
+            "prompt": "Show me the page for a restaurant with rating above 4.5",
+            "prompt_for_task_generation": "Show me the page for a restaurant with rating above <rating>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "VIEW_RESTAURANT",
+                "event_criteria": {"rating": {"value": 4.5, "operator": "greater_than"}},
+                "reasoning": "Requests to view highly-rated restaurants.",
+            },
+        },
+        {
+            "prompt": "View details for restaurants that serve sushi",
+            "prompt_for_task_generation": "View details for restaurants that serve <cuisine>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "VIEW_RESTAURANT",
+                "event_criteria": {"cuisine": {"value": "sushi", "operator": "contains"}},
+                "reasoning": "Requests to view restaurants serving specific cuisine.",
             },
         },
     ],
@@ -245,11 +311,35 @@ VIEW_FULL_MENU_USE_CASE = UseCase(
                     "restaurant_name": {"value": "The Royal Dine", "operator": "equals"},
                     "people": {"value": 2, "operator": "equals"},
                     "selected_date": {"value": date(2024, 7, 18), "operator": "equals"},
-                    "time": {"value": "1:00 PM", "operator": "equals"},  # From your JSON
+                    "time": {"value": "1:00 PM", "operator": "equals"},
                 },
                 "reasoning": "Requests full menu with booking context (people, date, time).",
             },
-        }
+        },
+        {
+            "prompt": "Display the complete menu for lunch at 'Sushi Palace'",
+            "prompt_for_task_generation": "Display the complete menu for <meal_time> at '<restaurant_name>'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "VIEW_FULL_MENU",
+                "event_criteria": {"restaurant_name": {"value": "Sushi Palace", "operator": "equals"}},
+                "time": {"value": "12:00 PM", "operator": "contains"},
+            },
+            "reasoning": "Requests menu for specific meal time.",
+        },
+        {
+            "prompt": "View the full dinner menu for restaurants with vegan options",
+            "prompt_for_task_generation": "View the full <meal_time> menu for restaurants with <dietary_requirement> options",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "VIEW_FULL_MENU",
+                "event_criteria": {
+                    "dietary_restrictions": {"value": "vegan", "operator": "contains"},
+                    "time": {"value": "6:00 PM", "operator": "contains"},
+                },
+                "reasoning": "Requests menu filtered by dietary requirements.",
+            },
+        },
     ],
 )
 
@@ -319,7 +409,7 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
                 },
                 "reasoning": "User provides all necessary details to book a restaurant.",
             },
-        }
+        },
     ],
 )
 
@@ -352,7 +442,27 @@ COUNTRY_SELECTED_USE_CASE = UseCase(
                 "event_criteria": {"country_code": {"value": "IN", "operator": "equals"}, "country_name": {"value": "India", "operator": "equals"}},
                 "reasoning": "User selects a country from a list.",
             },
-        }
+        },
+        {
+            "prompt": "Choose a country other than United States for my reservation details",
+            "prompt_for_task_generation": "Choose a country other than <country_name> for my reservation details",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "COUNTRY_SELECTED",
+                "event_criteria": {"country_name": {"value": "United States", "operator": "not_equals"}},
+                "reasoning": "User selects any country except the specified one.",
+            },
+        },
+        {
+            "prompt": "Set my country to one in Europe for the billing address",
+            "prompt_for_task_generation": "Set my country to one in <region> for the billing address",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "COUNTRY_SELECTED",
+                "event_criteria": {"region": {"value": "Europe", "operator": "equals"}},
+                "reasoning": "User selects country from specific region.",
+            },
+        },
     ],
 )
 
@@ -384,7 +494,27 @@ OCCASION_SELECTED_USE_CASE = UseCase(
                 "event_criteria": {"occasion": {"value": "birthday", "operator": "equals"}},
                 "reasoning": "User specifies an occasion for the booking.",
             },
-        }
+        },
+        {
+            "prompt": "Mark this booking as a special occasion (not anniversary)",
+            "prompt_for_task_generation": "Mark this booking as a special occasion (not <occasion_type>)",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "OCCASION_SELECTED",
+                "event_criteria": {"occasion": {"value": "anniversary", "operator": "not_equals"}},
+                "reasoning": "User indicates special occasion while excluding specific type.",
+            },
+        },
+        {
+            "prompt": "Select 'business dinner' as the occasion type",
+            "prompt_for_task_generation": "Select '<occasion_type>' as the occasion type",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "OCCASION_SELECTED",
+                "event_criteria": {"occasion": {"value": "business dinner", "operator": "equals"}},
+                "reasoning": "User selects specific business-related occasion.",
+            },
+        },
     ],
 )
 
@@ -425,7 +555,32 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
                 },
                 "reasoning": "User provides all final details to complete the reservation.",
             },
-        }
+        },
+        {
+            "prompt": "Finalize booking with email containing 'company.com' and phone number starting with '+1'",
+            "prompt_for_task_generation": "Finalize booking with email containing '<email_fragment>' and phone number starting with '<phone_prefix>'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "RESERVATION_COMPLETE",
+                "event_criteria": {
+                    "email": {"value": "company.com", "operator": "contains"},
+                    "phone_number": {"value": "+1", "operator": "starts_with"},
+                },
+                "reasoning": "User completes reservation with specific email and phone patterns.",
+            },
+        },
+        {
+            "prompt": "Confirm reservation with special dietary requirements (vegan and gluten-free)",
+            "prompt_for_task_generation": "Confirm reservation with special dietary requirements (<requirement1> and <requirement2>)",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "RESERVATION_COMPLETE",
+                "event_criteria": {
+                    "dietary_restrictions": {"value": ["vegan", "gluten-free"], "operator": "contains_all"},
+                },
+                "reasoning": "User completes reservation with multiple dietary requirements.",
+            },
+        },
     ],
 )
 
@@ -471,6 +626,26 @@ SCROLL_VIEW_USE_CASE = UseCase(
                 "event_name": "SCROLL_VIEW",
                 "event_criteria": {"direction": {"value": "right", "operator": "equals"}, "visible_count": {"value": 7, "operator": "equals"}},
                 "reasoning": "User scrolls a view, and a specific number of items become visible.",
+            },
+        },
+        {
+            "prompt": "Scroll not right repeatedly to load more search results",
+            "prompt_for_task_generation": "Scroll <direction> repeatedly to load more search results",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "SCROLL_VIEW",
+                "event_criteria": {"direction": {"value": "right", "operator": "not_equals"}},
+                "reasoning": "User scrolls to load more content.",
+            },
+        },
+        {
+            "prompt": "Swipe left to view additional restaurant photos",
+            "prompt_for_task_generation": "Swipe <direction> to view additional <content_type>",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "SCROLL_VIEW",
+                "event_criteria": {"direction": {"value": "left", "operator": "equals"}},
+                "reasoning": "User swipes to see more content.",
             },
         },
     ],
