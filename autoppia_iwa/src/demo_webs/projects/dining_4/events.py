@@ -466,14 +466,14 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     phone_number: str
     occasion: str
     special_request: str | None = None
-    email: str
+    # email: str
 
     class ValidationCriteria(BaseModel):
         restaurant_id: str | CriterionValue | None = None
         reservation_date_str: str | CriterionValue | None = None
         reservation_time: str | CriterionValue | None = None
         people_count_str: str | CriterionValue | None = None
-        email: str | CriterionValue | None = None
+        # email: str | CriterionValue | None = None
         occasion: str | CriterionValue | None = None
 
         class Config:
@@ -489,7 +489,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
                 self._validate_field(self.reservation_date_str, criteria.reservation_date_str),
                 self._validate_field(self.reservation_time, criteria.reservation_time),
                 self._validate_field(self.people_count_str, criteria.people_count_str),
-                self._validate_field(self.email, criteria.email),
+                # self._validate_field(self.email, criteria.email),
                 self._validate_field(self.occasion, criteria.occasion),
             ]
         )
@@ -512,7 +512,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             phone_number=data.get("phoneNumber", ""),
             occasion=data.get("occasion", ""),
             special_request=data.get("specialRequest"),
-            email=data.get("email", ""),
+            # email=data.get("email", ""),
         )
 
 
@@ -521,11 +521,9 @@ class ScrollViewEvent(Event, BaseEventValidator):
 
     event_name: str = "SCROLL_VIEW"
     direction: str  # "right" or "left", etc.
-    visible_count: int | None = None  # Number of items visible after scroll
 
     class ValidationCriteria(BaseModel):
         direction: str | CriterionValue | None = None
-        visible_count: int | CriterionValue | None = None
 
         class Config:
             title = "Scroll View Validation"
@@ -537,7 +535,6 @@ class ScrollViewEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.direction, criteria.direction),
-                self._validate_field(self.visible_count, criteria.visible_count),
             ]
         )
 
@@ -551,7 +548,6 @@ class ScrollViewEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             direction=data.get("direction", "").lower(),
-            visible_count=data.get("visibleCount") if data.get("visibleCount") is not None else None,
         )
 
 
