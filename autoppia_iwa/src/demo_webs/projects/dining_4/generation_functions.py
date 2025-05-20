@@ -23,13 +23,16 @@ def generate_mock_dates():
     for i in range(1, 8):
         # Date before today
         date_before = today - datetime.timedelta(days=i)
-        mock_dates_raw.append(date_before.date())
+        # Convert date_before.date() (which is a date object) to a datetime object at midnight
+        mock_dates_raw.append(datetime.datetime.combine(date_before.date(), datetime.time.min, tzinfo=datetime.UTC))
 
         # Date after today
         date_after = today + datetime.timedelta(days=i)
-        mock_dates_raw.append(date_after.date())
+        # Convert date_after.date() (which is a date object) to a datetime object at midnight
+        mock_dates_raw.append(datetime.datetime.combine(date_after.date(), datetime.time.min, tzinfo=datetime.UTC))
 
-    return sorted(list(set(mock_dates_raw)))  # Remove duplicates and sort
+    # Remove duplicates and sort the list.
+    return sorted(list(set(mock_dates_raw)))
 
 
 def generate_mock_date_strings(dates: list):
