@@ -53,7 +53,7 @@ DELETE_EVENTS_SQL = """
 
 # --- Pydantic Models ---
 class EventInput(BaseModel):
-    web_agent_id: str = Field(..., max_length=255)
+    web_agent_id: str = Field(default="UNKNOWN_AGENT", max_length=255)
     web_url: str
     data: Dict[str, Any]
 
@@ -207,7 +207,7 @@ async def save_event_endpoint(event: EventInput):
 @app.get("/get_events/", response_model=List[EventOutput], summary="Get events for a web agent and URL")
 async def get_events_endpoint(
         web_url: str = Query(..., description="The specific web URL to filter events for."),
-        web_agent_id: str = Query(..., max_length=255, description="The specific web agent ID to filter events for.")
+        web_agent_id: str = Query(default="UNKNOWN_AGENT", max_length=255, description="The specific web agent ID to filter events for.")
 ):
     """
     Retrieves events, utilizing prepared statements.

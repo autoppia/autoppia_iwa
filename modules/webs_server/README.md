@@ -44,6 +44,10 @@ Follow these steps to install and run the application using Docker Compose:
     ```bash
     docker-compose up --build -d
     ```
+    > Note: Before doing it make sure the network is present by:
+    ```bash
+    docker network create app-network
+    ```
 4.  Verify that the services are running correctly:
     ```bash
     docker-compose ps
