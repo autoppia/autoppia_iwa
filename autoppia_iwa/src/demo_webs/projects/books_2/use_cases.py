@@ -35,7 +35,7 @@ REGISTRATION_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Be sure to add instruction to register using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-
+2. Always use the 'equals' operator for all constraint expressions in registration prompts. This is non-negotiable.
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
@@ -75,16 +75,6 @@ REGISTRATION_USE_CASE = UseCase(
                 "event_name": "REGISTRATION_BOOK",
                 "event_criteria": {"username": {"value": "<username>"}, "email": {"value": "<email>"}},
                 "reasoning": "This test applies when the task requires registration with both username and email specified.",
-            },
-        },
-        {
-            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-            "prompt_for_task_generation": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "REGISTRATION_BOOK",
-                "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
-                "reasoning": "This test applies when the task requires registration with a specific username.",
             },
         },
     ],
@@ -1327,17 +1317,17 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     REGISTRATION_USE_CASE,
-    SEARCH_BOOK_USE_CASE,
-    FILTER_BOOK_USE_CASE,
-    CONTACT_USE_CASE,
-    LOGIN_USE_CASE,
-    LOGOUT_USE_CASE,  # Requires Login first
-    ADD_BOOK_USE_CASE,  # Requires Login first
-    ADD_COMMENT_USE_CASE,  # Requires BOOK ID
-    EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
-    EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
-    DELETE_BOOK_USE_CASE,  # Requires Login first
-    BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
-    SHOPPING_CART_USE_CASE,  # Requires Login first
-    PURCHASE_BOOK_USE_CASE,  # Requires Login first
+    # SEARCH_BOOK_USE_CASE,
+    # FILTER_BOOK_USE_CASE,
+    # CONTACT_USE_CASE,
+    # LOGIN_USE_CASE,
+    # LOGOUT_USE_CASE,  # Requires Login first
+    # ADD_BOOK_USE_CASE,  # Requires Login first
+    # ADD_COMMENT_USE_CASE,  # Requires BOOK ID
+    # EDIT_USER_PROFILE_USE_CASE,  # Requires Login first
+    # EDIT_BOOK_USE_CASE,  # Requires Login first + Book registered on that User id
+    # DELETE_BOOK_USE_CASE,  # Requires Login first
+    # BOOK_DETAIL_USE_CASE,  # Requires BOOK ID
+    # SHOPPING_CART_USE_CASE,  # Requires Login first
+    # PURCHASE_BOOK_USE_CASE,  # Requires Login first
 ]
