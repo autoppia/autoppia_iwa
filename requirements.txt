@@ -2,8 +2,8 @@ beautifulsoup4==4.12.3
 markdownify
 matplotlib==3.9.3
 networkx==3.3
-numpy==1.26.4
-playwright==1.52.0
+numpy==2.0.2
+playwright==1.49.0
 pydantic==2.10.4
 pymongo==4.10.1
 python-dotenv==1.0.1
@@ -11,7 +11,7 @@ Requests==2.32.3
 setuptools
 spacy==3.7.5
 tiktoken==0.7.0
-openai==1.77.0
+openai==1.58.1
 pytest==8.3.4
 dependency-injector==4.41.0
 flask==3.1.0
@@ -21,6 +21,6 @@ pillow==11.1.0
 # torch
 # transformers
 loguru==0.7.3
-aiohttp==3.11.12
+aiohttp==3.10.11
 Faker
 xmldiff==2.7.0
