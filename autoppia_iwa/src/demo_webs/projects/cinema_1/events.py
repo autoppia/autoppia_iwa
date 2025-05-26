@@ -145,10 +145,11 @@ class EditUserEvent(Event):
         if not criteria:
             return True
 
-        # Validate first_name
+        # Validate username
         if criteria.username is not None and not validate_criterion(self.username, criteria.username):
             return False
 
+        # Validate first_name
         if criteria.first_name is not None and not validate_criterion(self.first_name, criteria.first_name):
             return False
 
@@ -180,23 +181,17 @@ class EditUserEvent(Event):
                     return False
             else:
                 # Using operator
-                if criteria.favorite_genres.operator == ComparisonOperator.EQUALS:
-                    # For EQUALS, match the exact genre
-                    if not any(criteria.favorite_genres.value.lower() == genre.lower() for genre in self.favorite_genres):
-                        return False
-                elif criteria.favorite_genres.operator == ComparisonOperator.CONTAINS:
-                    # For CONTAINS, check if any genre contains the substring
-                    if not any(criteria.favorite_genres.value.lower() in genre.lower() for genre in self.favorite_genres):
-                        return False
-                elif criteria.favorite_genres.operator == ComparisonOperator.NOT_CONTAINS:
-                    # For NOT_CONTAINS, check that no genre contains the substring
-                    if any(criteria.favorite_genres.value.lower() in genre.lower() for genre in self.favorite_genres):
-                        return False
-                elif criteria.favorite_genres.operator == ComparisonOperator.IN_LIST:
+                if criteria.favorite_genres.operator == ComparisonOperator.IN_LIST:
                     # For IN_LIST, check if any genre is in the provided list
                     if not isinstance(criteria.favorite_genres.value, list):
                         return False
                     if not any(genre.lower() in [v.lower() for v in criteria.favorite_genres.value] for genre in self.favorite_genres):
+                        return False
+                elif criteria.favorite_genres.operator == ComparisonOperator.NOT_IN_LIST:
+                    # For NOT_IN_LIST, ensure no genre is in the provided list
+                    if not isinstance(criteria.favorite_genres.value, list):
+                        return False
+                    if any(genre.lower() in [v.lower() for v in criteria.favorite_genres.value] for genre in self.favorite_genres):
                         return False
 
         return True

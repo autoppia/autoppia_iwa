@@ -13,10 +13,10 @@ def generate_film_constraints():
     """
     from .utils import build_constraints_info, parse_constraints_str
 
-    # Generar restricciones frescas basadas en los datos de películas
+    # Generate fresh constraints based on movie data
     constraints_str = build_constraints_info(MOVIES_DATA)
 
-    # Convertir el string a la estructura de datos
+    # Convert string to data structure
     if constraints_str:
         return parse_constraints_str(constraints_str)
     return None
@@ -24,9 +24,9 @@ def generate_film_constraints():
 
 def generate_contact_constraints() -> list:
     """
-    Genera una lista de constraints estructurados para el formulario de contacto.
-    Cada constraint es un diccionario con la forma:
-       {"field": <campo>, "operator": <ComparisonOperator>, "value": <valor>}
+    Generates a list of structured constraints for the contact form.
+    Each constraint is a dictionary with the form:
+       {"field": <field>, "operator": <ComparisonOperator>, "value": <value>}
     """
 
     def _generate_random_value_for_contact(field: str) -> str:
@@ -79,7 +79,8 @@ def generate_contact_constraints() -> list:
         return "TestValue"
 
     num_constraints = random.randint(1, 4)
-    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())  # ["name", "email", "subject", "message"]
+    # ["name", "email", "subject", "message"]
+    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())
     constraints_list = []
 
     for _ in range(num_constraints):
@@ -88,7 +89,7 @@ def generate_contact_constraints() -> list:
         field = random.choice(fields)
         fields.remove(field)
 
-        # Convertimos el operador de string a instancia de ComparisonOperator
+        # Convert operator from string to ComparisonOperator instance
         possible_ops = FIELD_OPERATORS_MAP_CONTACT[field]
         operator_str = random.choice(possible_ops)
         operator = ComparisonOperator(operator_str)
@@ -102,8 +103,8 @@ def generate_contact_constraints() -> list:
 
 def generate_film_filter_constraints():
     """
-    Genera una combinación de constraints para filtrado de películas
-    usando los años y géneros reales de las películas.
+    Generates a combination of constraints for filtering movies
+    using the actual years and genres of the movies.
     """
     from random import choice
 
@@ -146,30 +147,32 @@ def generate_film_filter_constraints():
 
 def generate_constraint_from_solution(movie: dict, field: str, operator: ComparisonOperator, movies_data: list[dict]) -> dict[str, Any]:
     """
-    Genera un constraint para un campo y operador específicos que la película solución satisface.
-    Utiliza el conjunto completo de películas para generar constraints más realistas.
+    Generates a constraint for a specific field and operator that the solution movie satisfies.
+    Uses the complete set of movies to generate more realistic constraints.
     """
     constraint = {"field": field, "operator": operator}
 
-    if field == "name" or field == "director":
+    if field in ["name", "director"]:
         if operator == ComparisonOperator.EQUALS:
             constraint["value"] = movie[field]
         elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
+            # Look for a different value from another movie
             other_values = [m[field] for m in movies_data if m[field] != movie[field]]
             if other_values:
                 constraint["value"] = random.choice(other_values)
             else:
-                constraint["value"] = "Other " + field
+                constraint["value"] = "Other_" + field
         elif operator == ComparisonOperator.CONTAINS:
-            if len(movie[field]) > 3:
-                start = random.randint(0, len(movie[field]) - 3)
-                length = random.randint(2, min(5, len(movie[field]) - start))
-                constraint["value"] = movie[field][start : start + length]
+            text = movie[field]
+
+            if len(text) <= 3:
+                constraint["value"] = text
             else:
-                constraint["value"] = movie[field]
+                if random.random() < 0.5:
+                    constraint["value"] = text[:3]
+                else:
+                    constraint["value"] = text[-3:]
         elif operator == ComparisonOperator.NOT_CONTAINS:
-            # Esto es más complejo - encontrar una subcadena que no esté en el campo de la película
             alphabet = "abcdefghijklmnopqrstuvwxyz"
             while True:
                 test_str = "".join(random.choice(alphabet) for _ in range(3))
@@ -177,55 +180,61 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
                     constraint["value"] = test_str
                     break
 
-    elif field == "year" or field == "duration":
+    elif field in ["year", "duration"]:
         value = movie[field]
         if operator == ComparisonOperator.EQUALS:
             constraint["value"] = value
         elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
             other_values = [m[field] for m in movies_data if m[field] != value]
             if other_values:
                 constraint["value"] = random.choice(other_values)
             else:
+                # Fallback: add or subtract 1
                 constraint["value"] = value + (1 if random.random() > 0.5 else -1)
+
         elif operator == ComparisonOperator.GREATER_THAN:
-            # Encontrar un valor menor que el de la película
-            lower_values = [m[field] for m in movies_data if m[field] < value]
-            if lower_values:
-                constraint["value"] = random.choice(lower_values)
+            # movie[field] > constraint_value => constraint_value < movie[field]
+            smaller_values = [m[field] for m in movies_data if m[field] < value]
+            if smaller_values:
+                constraint["value"] = random.choice(smaller_values)
             else:
-                constraint["value"] = value - 1
+                constraint["value"] = value - 1  # Fallback
+
         elif operator == ComparisonOperator.LESS_THAN:
-            # Encontrar un valor mayor que el de la película
-            higher_values = [m[field] for m in movies_data if m[field] > value]
-            if higher_values:
-                constraint["value"] = random.choice(higher_values)
+            # movie[field] < constraint_value => constraint_value > movie[field]
+            bigger_values = [m[field] for m in movies_data if m[field] > value]
+            if bigger_values:
+                constraint["value"] = random.choice(bigger_values)
             else:
-                constraint["value"] = value + 1
+                constraint["value"] = value + 1  # Fallback
+
         elif operator == ComparisonOperator.GREATER_EQUAL:
-            # Podemos usar un valor igual o menor
+            # movie[field] >= constraint_value => constraint_value <= movie[field]
             valid_values = [m[field] for m in movies_data if m[field] <= value]
             if valid_values:
                 constraint["value"] = random.choice(valid_values)
             else:
                 constraint["value"] = value
+
         elif operator == ComparisonOperator.LESS_EQUAL:
-            # Podemos usar un valor igual o mayor
+            # movie[field] <= constraint_value => constraint_value >= movie[field]
             valid_values = [m[field] for m in movies_data if m[field] >= value]
             if valid_values:
                 constraint["value"] = random.choice(valid_values)
             else:
                 constraint["value"] = value
+
         elif operator == ComparisonOperator.IN_LIST:
-            # Incluir el valor de la película y posiblemente algunos otros valores
+            # The base movie must be included => include 'value' in the list
             other_values = [m[field] for m in movies_data if m[field] != value]
             sample_size = min(2, len(other_values))
             if other_values and sample_size > 0:
                 constraint["value"] = [value, *random.sample(other_values, sample_size)]
             else:
                 constraint["value"] = [value]
+
         elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Encontrar valores que no incluyan el de la película
+            # The base movie must NOT be included
             other_values = [m[field] for m in movies_data if m[field] != value]
             if other_values:
                 constraint["value"] = random.sample(other_values, min(3, len(other_values)))
@@ -237,120 +246,122 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
         if operator == ComparisonOperator.EQUALS:
             constraint["value"] = value
         elif operator == ComparisonOperator.NOT_EQUALS:
-            # Buscar un valor diferente de otra película
             other_values = [m[field] for m in movies_data if m[field] != value]
             if other_values:
                 constraint["value"] = random.choice(other_values)
             else:
-                # Asegurarse de que el valor alternativo esté en el rango 0-5
-                constraint["value"] = max(0, min(5, value + (0.1 if random.random() > 0.5 else -0.1)))
+                # Force a slight change
+                new_val = value + (0.1 if random.random() > 0.5 else -0.1)
+                constraint["value"] = max(0, min(5, new_val))
+
         elif operator == ComparisonOperator.GREATER_THAN:
-            # Encontrar un valor menor que el de la película
-            lower_values = [m[field] for m in movies_data if m[field] < value]
-            if lower_values:
-                constraint["value"] = random.choice(lower_values)
+            # movie[field] > constraint_value => constraint_value < movie[field]
+            smaller_values = [m[field] for m in movies_data if m[field] < value]
+            if smaller_values:
+                constraint["value"] = random.choice(smaller_values)
             else:
-                # Asegurarse de que el valor sea positivo y menor que el original
+                # Lower a bit, without going below 0
                 constraint["value"] = max(0, value - 0.1)
+
         elif operator == ComparisonOperator.LESS_THAN:
-            # Encontrar un valor mayor que el de la película
-            higher_values = [m[field] for m in movies_data if m[field] > value]
-            if higher_values:
-                constraint["value"] = random.choice(higher_values)
+            # movie[field] < constraint_value => constraint_value > movie[field]
+            bigger_values = [m[field] for m in movies_data if m[field] > value]
+            if bigger_values:
+                constraint["value"] = random.choice(bigger_values)
             else:
-                # Asegurarse de que el valor no exceda 5
+                # Increase a bit, without exceeding 5
                 constraint["value"] = min(5, value + 0.1)
+
         elif operator == ComparisonOperator.GREATER_EQUAL:
-            # Podemos usar un valor igual o menor
+            # movie[field] >= constraint_value => constraint_value <= movie[field]
             valid_values = [m[field] for m in movies_data if m[field] <= value]
             if valid_values:
                 constraint["value"] = random.choice(valid_values)
             else:
                 constraint["value"] = value
+
         elif operator == ComparisonOperator.LESS_EQUAL:
-            # Podemos usar un valor igual o mayor
+            # movie[field] <= constraint_value => constraint_value >= movie[field]
             valid_values = [m[field] for m in movies_data if m[field] >= value]
             if valid_values:
                 constraint["value"] = random.choice(valid_values)
             else:
                 constraint["value"] = value
+
         elif operator == ComparisonOperator.IN_LIST:
-            # Incluir el valor de la película y posiblemente algunos otros valores
             other_values = [m[field] for m in movies_data if m[field] != value]
             sample_size = min(2, len(other_values))
             if other_values and sample_size > 0:
                 constraint["value"] = [value, *random.sample(other_values, sample_size)]
             else:
                 constraint["value"] = [value]
+
         elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Encontrar valores que no incluyan el de la película
             other_values = [m[field] for m in movies_data if m[field] != value]
             if other_values:
                 constraint["value"] = random.sample(other_values, min(3, len(other_values)))
             else:
-                # Asegurarse de que los valores estén en el rango 0-5
-                constraint["value"] = [max(0, min(5, value + 0.1)), max(0, min(5, value + 0.2))]
+                # Generate 2 values outside of 'value'
+                val1 = max(0, min(5, value + 0.1))
+                val2 = max(0, min(5, value + 0.2))
+                constraint["value"] = [val1, val2]
 
     elif field == "genres":
         if operator == ComparisonOperator.CONTAINS:
             if movie[field]:
                 constraint["value"] = random.choice(movie[field])
             else:
-                return None  # No se puede crear este constraint
+                return None
         elif operator == ComparisonOperator.NOT_CONTAINS:
-            # Encontrar un género que no esté en los géneros de la película
             all_genres = set()
             for m in movies_data:
                 all_genres.update(m["genres"])
-
             movie_genres = set(movie[field])
             available_genres = all_genres - movie_genres
-
             if available_genres:
                 constraint["value"] = random.choice(list(available_genres))
             else:
                 constraint["value"] = "Non-existent genre"
+
         elif operator == ComparisonOperator.IN_LIST:
+            # Take one or more genres from the movie so that it's included in the list
             if movie[field]:
-                # Tomar uno o más géneros de la película para la lista
                 num_genres = min(len(movie[field]), random.randint(1, 2))
                 constraint["value"] = random.sample(movie[field], num_genres)
             else:
-                return None  # No se puede crear este constraint
+                return None
+
         elif operator == ComparisonOperator.NOT_IN_LIST:
-            # Similar a NOT_CONTAINS pero creando una lista
             all_genres = set()
             for m in movies_data:
                 all_genres.update(m["genres"])
-
             movie_genres = set(movie[field])
             available_genres = all_genres - movie_genres
-
             if available_genres:
                 num_genres = min(len(available_genres), random.randint(1, 3))
                 constraint["value"] = random.sample(list(available_genres), num_genres)
             else:
                 constraint["value"] = ["Non-existent genre"]
 
-    # Verificar que el constraint generado es válido para la película solución
+    # Verify that the generated constraint is valid for the solution movie
     criterion = CriterionValue(value=constraint["value"], operator=operator)
     if validate_criterion(movie.get(field), criterion):
         return constraint
 
-    # Si llegamos aquí, el constraint generado no es válido
+    # If we reach here, the generated constraint is not valid for the base movie
     return None
 
 
 def generate_add_comment_constraints():
     """
-    Genera combinaciones de constraints para añadir comentarios.
+    Generates combinations of constraints for adding comments.
     """
     from random import choice, sample
 
-    # Películas disponibles
+    # Available movies
     movies = [movie["name"] for movie in MOVIES_DATA]
 
-    # Palabras y frases para generar comentarios
+    # Words and phrases to generate comments
     comment_keywords = [
         "amazing",
         "stunning",
@@ -392,21 +403,21 @@ def generate_add_comment_constraints():
         "a true cinematic experience",
     ]
 
-    # Nombres para commenter_name
+    # Names for commenter_name
     commenter_names = ["John", "Sarah", "Michael", "Emma", "David", "Lisa", "Alex", "Rachel", "Tom", "Emily"]
 
-    # Definición de operadores para cada campo
+    # Definition of operators for each field
 
-    # Generar constraints
+    # Generate constraints
     constraints = []
 
-    # Elegir campos aleatorios (1 o 2)
+    # Choose random fields (1 or 2)
     selected_fields = sample(["movie_name", "commenter_name", "content"], k=choice([1, 2, 3]))
     for field in selected_fields:
-        # Elegir un operador aleatorio para el campo
+        # Choose a random operator for the field
         operator = choice(FIELD_OPERATORS_MAP_ADD_COMMENT[field])
 
-        # Seleccionar valor basado en el campo
+        # Select value based on the field
         if field == "movie_name":
             value = choice(movies)
         elif field == "commenter_name":
@@ -426,10 +437,10 @@ def generate_edit_film_constraints():
     """
     from random import choice, randint, sample, uniform
 
-    # Obtener películas disponibles
+    # Get available movies
     movies = MOVIES_DATA
 
-    # Campos editables (sin name porque ya tenemos la película)
+    # Editable fields (without name because we already have the movie)
     editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]
 
     random_words = [
@@ -443,7 +454,7 @@ def generate_edit_film_constraints():
         "o",
         "x",
         "z",
-        # Palabras más largas
+        # Longer words
         "cinema",
         "movie",
         "light",
@@ -468,14 +479,14 @@ def generate_edit_film_constraints():
 
     all_genres = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"]
 
-    # Generar constraints
+    # Generate constraints
     constraints = []
 
-    # Seleccionar película base
+    # Select base movie
     base_movie = choice(movies)
     constraints.append({"field": "name", "operator": ComparisonOperator(ComparisonOperator.EQUALS), "value": base_movie["name"]})
 
-    # Seleccionar 1, 2, 3 o 4 campos para editar
+    # Select 1, 2, 3 or 4 fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
 
     for field in selected_fields:
@@ -533,7 +544,7 @@ def generate_add_film_constraints():
     """
     from random import choice, randint, sample, uniform
 
-    # Campos editables
+    # Editable fields
     editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]
 
     random_words = [
@@ -547,7 +558,7 @@ def generate_add_film_constraints():
         "o",
         "x",
         "z",
-        # Palabras más largas
+        # Longer words
         "cinema",
         "movie",
         "light",
@@ -572,10 +583,10 @@ def generate_add_film_constraints():
 
     all_genres = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"]
 
-    # Generar constraints
+    # Generate constraints
     constraints = []
 
-    # Seleccionar 1, 2, 3 o 4 campos para editar
+    # Select 1, 2, 3 or 4 fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3, 4]))
 
     for field in selected_fields:
@@ -679,7 +690,7 @@ def generate_edit_profile_constraints():
 
     all_genres = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"]
 
-    # Generar constraints
+    # Generate constraints
     constraints = []
 
     # Select random fields to edit
