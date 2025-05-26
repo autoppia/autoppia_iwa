@@ -182,6 +182,7 @@ class BackendDemoWebService:
                 async with session.get(endpoint, params=params) as response:
                     response.raise_for_status()
                     events_data = await response.json(loads=self._json_parser.loads)
+                    print(events_data, [BackendEvent(**event) for event in events_data])
                     return [BackendEvent(**event.get("data", {})) for event in events_data]
 
             except Exception as e:
