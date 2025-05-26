@@ -34,8 +34,8 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 REGISTRATION_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Be sure to add instruction to register using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
-Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-
+2. Only phrase it like: "Register with the following username:<username>,email:<email> and password:<password>" etc
+3. Avoid mentioning anything other than mentioned above.
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
@@ -73,18 +73,8 @@ REGISTRATION_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "REGISTRATION_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}, "email": {"value": "<email>"}},
-                "reasoning": "This test applies when the task requires registration with both username and email specified.",
-            },
-        },
-        {
-            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-            "prompt_for_task_generation": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "REGISTRATION_BOOK",
-                "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
-                "reasoning": "This test applies when the task requires registration with a specific username.",
+                "event_criteria": {"username": {"value": "<username>"}},
+                "reasoning": "This test applies when the task requires registration with username specified.",
             },
         },
     ],
