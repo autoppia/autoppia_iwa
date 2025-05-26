@@ -44,7 +44,8 @@ AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(id="2", name="Random-clicker"),
     # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=7000, timeout=120),
     # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=11112, timeout=120),
-    # ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1", port=8005, timeout=120),
+    # ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1",
+    #                 port=8005, timeout=120),
     ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5000, timeout=120),
 ]
 
@@ -185,10 +186,15 @@ async def main():
                 else:
                     logger.error(f"Invalid web project number: {config.web_project_number}. Available projects: {config.get_available_project_numbers()}")
 
+            project_tasks: list[tuple[WebProject, list[Task]]] = []
             for project in projects_to_run:
                 tasks = await generate_tasks(project)
                 if tasks:
-                    await run_evaluation(project, tasks, timing_metrics)
+                    project_tasks.append((project, tasks))
+
+            # 3) Evaluar all tasks for each project
+            for project, tasks in project_tasks:
+                await run_evaluation(project, tasks, timing_metrics)
         else:
             # Evaluate 'real tasks'
             tasks_data = load_real_tasks(config.num_of_urls)
