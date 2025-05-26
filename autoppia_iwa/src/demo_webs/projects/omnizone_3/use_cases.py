@@ -42,7 +42,7 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 PRODUCT_DETAIL_USE_CASE = UseCase(
-    name="PRODUCT_DETAIL",
+    name="VIEW_DETAIL",
     description="The user explicitly requests to view the details page of a specific product that meets certain criteria.",
     event=ItemDetailEvent,
     event_source_code=ItemDetailEvent.get_source_code_of_class(),
