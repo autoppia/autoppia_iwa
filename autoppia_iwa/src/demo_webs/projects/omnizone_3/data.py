@@ -7,7 +7,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.5,
         "brand": "BrewMaster",
-        "inStock": True,
     },
     {
         "id": "kitchen-2",
@@ -17,7 +16,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.7,
         "brand": "ChefPlus",
-        "inStock": True,
     },
     {
         "id": "kitchen-3",
@@ -27,7 +25,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.6,
         "brand": "CuisinePro",
-        "inStock": True,
     },
     {
         "id": "kitchen-4",
@@ -37,7 +34,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.4,
         "brand": "BlendTech",
-        "inStock": True,
     },
     {
         "id": "kitchen-5",
@@ -47,7 +43,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.3,
         "brand": "KitchenAid",
-        "inStock": True,
     },
     {
         "id": "kitchen-6",
@@ -57,7 +52,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.5,
         "brand": "Cuisinart",
-        "inStock": True,
     },
     {
         "id": "kitchen-7",
@@ -67,7 +61,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.8,
         "brand": "KitchenAid",
-        "inStock": True,
     },
     {
         "id": "kitchen-8",
@@ -77,7 +70,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.4,
         "brand": "Crock-Pot",
-        "inStock": True,
     },
     {
         "id": "kitchen-9",
@@ -87,7 +79,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.2,
         "brand": "Aroma",
-        "inStock": True,
     },
     {
         "id": "kitchen-10",
@@ -97,7 +88,6 @@ PRODUCTS_DATA = [
         "category": "Kitchen",
         "rating": 4.3,
         "brand": "Braun",
-        "inStock": True,
     },
     {
         "id": "tech-1",
@@ -107,7 +97,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.7,
         "brand": "SoundCore",
-        "inStock": True,
     },
     {
         "id": "tech-2",
@@ -117,7 +106,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.6,
         "brand": "FitTech",
-        "inStock": True,
     },
     {
         "id": "tech-3",
@@ -127,7 +115,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.8,
         "brand": "Sony",
-        "inStock": True,
     },
     {
         "id": "tech-4",
@@ -137,7 +124,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.9,
         "brand": "ROG",
-        "inStock": True,
     },
     {
         "id": "tech-5",
@@ -147,7 +133,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.5,
         "brand": "NetLink",
-        "inStock": True,
     },
     {
         "id": "tech-6",
@@ -157,7 +142,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.6,
         "brand": "JBL",
-        "inStock": True,
     },
     {
         "id": "tech-7",
@@ -167,7 +151,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.4,
         "brand": "Apple",
-        "inStock": True,
     },
     {
         "id": "tech-8",
@@ -177,7 +160,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.7,
         "brand": "Bose",
-        "inStock": True,
     },
     {
         "id": "tech-9",
@@ -187,7 +169,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.8,
         "brand": "Samsung",
-        "inStock": True,
     },
     {
         "id": "tech-10",
@@ -197,7 +178,6 @@ PRODUCTS_DATA = [
         "category": "Electronics",
         "rating": 4.6,
         "brand": "Nest",
-        "inStock": True,
     },
     {
         "id": "home-1",
@@ -207,7 +187,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.7,
         "brand": "SleepWell",
-        "inStock": True,
     },
     {
         "id": "home-2",
@@ -217,7 +196,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.5,
         "brand": "FurniComfort",
-        "inStock": True,
     },
     {
         "id": "home-3",
@@ -227,7 +205,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.3,
         "brand": "ModLiving",
-        "inStock": True,
     },
     {
         "id": "home-4",
@@ -237,7 +214,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.6,
         "brand": "HomeStyle",
-        "inStock": True,
     },
     {
         "id": "home-5",
@@ -247,7 +223,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.2,
         "brand": "FurniComfort",
-        "inStock": True,
     },
     {
         "id": "home-6",
@@ -257,7 +232,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.4,
         "brand": "RugVista",
-        "inStock": True,
     },
     {
         "id": "home-7",
@@ -267,7 +241,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.5,
         "brand": "HomeStyle",
-        "inStock": True,
     },
     {
         "id": "home-8",
@@ -277,7 +250,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.3,
         "brand": "BrightTech",
-        "inStock": True,
     },
     {
         "id": "home-9",
@@ -287,7 +259,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.4,
         "brand": "ModLiving",
-        "inStock": True,
     },
     {
         "id": "home-10",
@@ -297,7 +268,6 @@ PRODUCTS_DATA = [
         "category": "Home",
         "rating": 4.2,
         "brand": "CozyHome",
-        "inStock": True,
     },
     {
         "id": "fitness-3",
@@ -307,7 +277,6 @@ PRODUCTS_DATA = [
         "category": "Fitness",
         "rating": 4.5,
         "brand": "TheraBand",
-        "inStock": True,
     },
     {
         "id": "fitness-4",
@@ -317,7 +286,6 @@ PRODUCTS_DATA = [
         "category": "Fitness",
         "rating": 4.4,
         "brand": "TriggerPoint",
-        "inStock": True,
     },
     {
         "id": "fitness-5",
@@ -327,7 +295,6 @@ PRODUCTS_DATA = [
         "category": "Fitness",
         "rating": 4.3,
         "brand": "CrossRope",
-        "inStock": True,
     },
     {
         "id": "fitness-6",
@@ -337,7 +304,6 @@ PRODUCTS_DATA = [
         "category": "Fitness",
         "rating": 4.5,
         "brand": "Withings",
-        "inStock": True,
     },
     {
         "id": "fitness-7",
@@ -347,7 +313,6 @@ PRODUCTS_DATA = [
         "category": "Fitness",
         "rating": 4.7,
         "brand": "Nike",
-        "inStock": True,
     },
     {
         "id": "fitness-8",
@@ -357,7 +322,6 @@ PRODUCTS_DATA = [
         "category": "Fitness",
         "rating": 4.6,
         "brand": "HydroFlask",
-        "inStock": True,
     },
     {
         "id": "fitness-9",
@@ -367,7 +331,6 @@ PRODUCTS_DATA = [
         "category": "Fitness",
         "rating": 4.8,
         "brand": "Theragun",
-        "inStock": True,
     },
     {
         "id": "fitness-10",
@@ -377,7 +340,6 @@ PRODUCTS_DATA = [
         "category": "Fitness",
         "rating": 4.4,
         "brand": "Gaiam",
-        "inStock": True,
     },
     {
         "id": "tech-11",
@@ -387,7 +349,6 @@ PRODUCTS_DATA = [
         "category": "Technology",
         "rating": 4.6,
         "brand": "SkyEye",
-        "inStock": True,
     },
     {
         "id": "tech-18",
@@ -397,7 +358,6 @@ PRODUCTS_DATA = [
         "category": "Technology",
         "rating": 4.4,
         "brand": "PulseBoom",
-        "inStock": True,
     },
     {
         "id": "tech-12",
@@ -407,7 +367,6 @@ PRODUCTS_DATA = [
         "category": "Technology",
         "rating": 4.2,
         "brand": "ChargeMate",
-        "inStock": True,
     },
     {
         "id": "tech-13",
@@ -417,7 +376,6 @@ PRODUCTS_DATA = [
         "category": "Technology",
         "rating": 4.7,
         "brand": "VisionX",
-        "inStock": True,
     },
     {
         "id": "tech-14",
@@ -427,7 +385,6 @@ PRODUCTS_DATA = [
         "category": "Technology",
         "rating": 4.5,
         "brand": "ErgoDesk",
-        "inStock": True,
     },
     {
         "id": "tech-15",
@@ -437,6 +394,5 @@ PRODUCTS_DATA = [
         "category": "Technology",
         "rating": 4.6,
         "brand": "Mountify",
-        "inStock": True,
     },
 ]
