@@ -29,7 +29,7 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ==================================
 RUN_ALL_WEB_PROJECTS: bool = False
 
-WEB_PROJECT_NUMBER = 4
+WEB_PROJECT_NUMBER = 3
 NUM_OF_PROMPT_PER_USE_CASE = 1
 
 LOG_FILE = "benchmark.log"
