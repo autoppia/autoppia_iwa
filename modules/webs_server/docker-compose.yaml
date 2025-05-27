@@ -8,8 +8,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - app-network
+#    networks:
+#      - app-network
+
+    network_mode: "host"
 
   db:
     image: postgres:13-alpine
@@ -25,8 +27,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - app-network
+#    networks:
+#      - app-network
     command: >
       postgres -p 5433
                -c max_connections=200
@@ -36,10 +38,11 @@ services:
                -c maintenance_work_mem=128MB
                -c random_page_cost=1.1
                -c checkpoint_completion_target=0.9
+    network_mode: "host"
 
 volumes:
   postgres_data:
 
-networks:
-  app-network:
-    external: true
+#networks:
+#  app-network:
+#    external: true

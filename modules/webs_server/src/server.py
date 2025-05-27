@@ -129,12 +129,10 @@ async def init_db_pool():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("Application startup sequence initiated...")
     await init_db_pool()
     logger.info("Application startup complete.")
     yield
     # Shutdown
-    logger.info("Application shutdown sequence initiated...")
     if hasattr(app.state, "pool") and app.state.pool:
         # Check if pool has _closing attribute and if it's already set to avoid issues if close is called multiple times
         # or if it's not a standard pool object for some reason (defensive)
@@ -220,7 +218,6 @@ async def get_events_endpoint(
 
     # --- Apply trimming to the query parameter before using it in the WHERE clause ---
     trimmed_url = trim_url_to_origin(web_url)
-    logger.debug(f"Attempting to get events for trimmed URL: {trimmed_url}, Agent ID: {web_agent_id}")
 
     try:
         rows = await app.state.pool.fetch(
@@ -228,10 +225,12 @@ async def get_events_endpoint(
             trimmed_url,
             web_agent_id
         )
+        logger.debug("rows fetched: ",rows)
 
         processed_rows = []
         for row in rows:
             row_dict = dict(row)
+            logger.debug("rows dict: ", rows)
             raw_data = row_dict.get('data')
             if isinstance(raw_data, str):
                 try:
@@ -268,7 +267,6 @@ async def reset_events_endpoint(
 
     # --- Apply trimming to the query parameter before using it in the WHERE clause ---
     trimmed_url = trim_url_to_origin(web_url)
-    logger.info(f"Attempting to reset events for trimmed URL: {trimmed_url}")
 
     try:
         deleted_count = await app.state.pool.fetchval(
