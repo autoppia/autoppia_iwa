@@ -603,7 +603,7 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
-    PRODUCT_DETAIL_USE_CASE,
+    # PRODUCT_DETAIL_USE_CASE,
     SEARCH_PRODUCT_USE_CASE,
     # ADD_TO_CART_USE_CASE,
     # VIEW_CART_USE_CASE,
