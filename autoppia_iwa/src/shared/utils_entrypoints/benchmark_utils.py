@@ -1,37 +1,23 @@
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TypeVar
 
 from loguru import logger
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
+
+try:
+    from autoppia_iwa.src.demo_webs.classes import WebProject
+except ImportError:
+    WebProject = TypeVar("WebProject")  # type: ignore
 
 
 @dataclass
 class BenchmarkConfig:
-    """Configuration for benchmark testing of web automation tasks.
+    """Configuration for benchmark testing of web automation tasks."""
 
-    Attributes:
-        web_project_number: The identifier number (1-based) of the specific web project to test.
-                           Ignored if `run_all_web_projects` is True.
-        run_all_web_projects: If True, all defined web projects will be executed sequentially,
-                               overriding the `web_project_number`. This also implies ignoring
-                               any potential indexing issues or errors encountered during the
-                               execution of individual projects to ensure all are attempted.
-        use_cached_tasks: Whether to utilize previously saved tasks from the cache.
-        use_cached_solutions: Whether to utilize previously saved solutions from the cache.
-        evaluate_real_tasks: Whether to perform evaluation against real-world, as opposed to
-                              synthetically generated, tasks.
-        m: The number of duplicate evaluations to run for each generated solution.
-        prompts_per_url: The number of different prompts to generate for each unique URL being tested.
-        num_of_urls: The total number of distinct URLs to include in the benchmark testing.
-        prompt_per_use_case: The number of different prompts to generate for each defined use case
-                               within a web project.
-    """
-
-    web_project_number: int = 1
-    run_all_web_projects: bool = False
+    PROJECT_SELECTOR: str = "all"  # Can be "all", a single number "ID", or comma-separated "ID1,ID2"
     use_cached_tasks: bool = False
     use_cached_solutions: bool = False
     evaluate_real_tasks: bool = False
@@ -42,86 +28,94 @@ class BenchmarkConfig:
     prompt_per_use_case: int = 1
 
     # Paths
-    base_dir: Path = PROJECT_BASE_DIR.parent
-    data_dir: Path = base_dir / "data"
-    tasks_cache_dir: Path = data_dir / "tasks_cache"
-    solutions_cache_dir: Path = data_dir / "solutions_cache"
-    output_dir: Path = base_dir / "results"
-
-    @property
-    def current_web_project_index(self) -> int:
-        """Get the 0-based index of the selected web project.
-
-        Returns:
-            The 0-based index corresponding to the 1-based project number
-
-        Raises:
-            ValueError: If web_project_number is invalid
-        """
-        if not isinstance(self.web_project_number, int) or self.web_project_number < 1:
-            raise ValueError(f"Invalid web project number {self.web_project_number}, must be a positive integer.")
-        return self.web_project_number - 1
-
-    @property
-    def selected_project(self):
-        """Get the selected web project object.
-
-        Returns:
-            The web project object corresponding to web_project_number
-
-        Raises:
-            ValueError: If no project matches the web_project_number
-        """
-        if self.run_all_web_projects:
-            return None
-        try:
-            return demo_web_projects[self.current_web_project_index]
-        except IndexError as e:
-            available = self.get_available_project_numbers()
-            raise ValueError(f"Invalid web project number {self.web_project_number}. Available projects: {available}") from e
-
-    @property
-    def all_projects_to_run(self) -> list:
-        """Get the list of all web projects when run_all_web_projects is True.
-
-        Returns:
-            A list of all demo web project objects.
-        """
-        if self.run_all_web_projects:
-            return demo_web_projects[:]
-        return []
-
-    @staticmethod
-    def get_available_project_numbers() -> list[int]:
-        """Get list of available web project numbers.
-
-        Returns:
-            List of valid 1-based project numbers
-        """
-        return list(range(1, len(demo_web_projects) + 1))
+    base_dir: Path = field(default_factory=lambda: PROJECT_BASE_DIR.parent)
+    data_dir: Path = field(init=False)
+    tasks_cache_dir: Path = field(init=False)
+    solutions_cache_dir: Path = field(init=False)
+    output_dir: Path = field(init=False)
 
     def __post_init__(self):
-        """Initializes the configuration by validating the project number,
-        creating necessary directories, and logging the current settings.
+        """Initializes the configuration by validating selector format,
+        creating necessary directories, and logging initial settings.
         """
-        self._validate_project_number_format()
+        self.data_dir = self.base_dir / "data"
+        self.tasks_cache_dir = self.data_dir / "tasks_cache"
+        self.solutions_cache_dir = self.data_dir / "solutions_cache"
+        self.output_dir = self.base_dir / "results"
+
+        self._validate_project_selector_format()
         self._create_directories()
-        self._log_configuration()
-        if not self.run_all_web_projects:
-            self._validate_project_existence()
+        self._log_initial_configuration()
 
-    def _validate_project_number_format(self):
-        """Validates that the web project number is a positive integer."""
-        if not isinstance(self.web_project_number, int) or self.web_project_number < 1:
-            raise ValueError(f"Invalid web project number format: {self.web_project_number}, must be a positive integer.")
+    def _validate_project_selector_format(self):
+        """Validates the basic format of PROJECT_SELECTOR."""
+        selector = self.PROJECT_SELECTOR.strip().lower()
+        if selector == "all" or not selector:  # Empty string means no projects
+            return
 
-    def _validate_project_existence(self):
-        """Confirms that the specified web project number corresponds to an existing project."""
-        try:
-            _ = self.current_web_project_index
-            _ = self.selected_project
-        except ValueError:
-            raise
+        parts = selector.split(",")
+        if not parts:
+            raise ValueError("PROJECT_SELECTOR format error: selector is invalid (e.g. just a comma).")
+
+        for part in parts:
+            part = part.strip()
+            if not part:  # Handles "1,,2"
+                raise ValueError(f"Empty project number found in PROJECT_SELECTOR: '{self.PROJECT_SELECTOR}'.")
+            if not part.isdigit():
+                raise ValueError(f"Invalid part '{part}' in PROJECT_SELECTOR: '{self.PROJECT_SELECTOR}'. Must be 'all', a positive integer, or comma-separated positive integers.")
+            if int(part) <= 0:
+                raise ValueError(f"Project numbers in PROJECT_SELECTOR '{self.PROJECT_SELECTOR}' must be positive integers.")
+
+    def get_projects_to_run(self, available_projects: list[WebProject]) -> list[WebProject]:
+        """
+        Determines which projects to run based on PROJECT_SELECTOR and the provided list of available projects.
+        Returns a new list of WebProject objects.
+        """
+        selector = self.PROJECT_SELECTOR.strip().lower()
+        project_count = len(available_projects)
+
+        if selector == "all":
+            if not available_projects:
+                logger.info("PROJECT_SELECTOR is 'all', but no demo web projects are available/loaded.")
+                return []
+            return available_projects[:]
+
+        if not selector:
+            logger.info("PROJECT_SELECTOR is empty, no projects will be run.")
+            return []
+
+        selected_indices = set()
+        parts = selector.split(",")
+
+        for part_str in parts:
+            part_str = part_str.strip()
+            # Format validation (isdigit, >0) already done in _validate_project_selector_format
+            project_number = int(part_str)  # 1-based
+
+            if not (1 <= project_number <= project_count):
+                raise ValueError(
+                    f"Project number {project_number} (from selector '{self.PROJECT_SELECTOR}') is out of range. "
+                    f"There are {project_count} available project(s) (numbered 1 to {project_count})."
+                    f"\n{self.get_available_project_details_static(available_projects)}"
+                )
+            selected_indices.add(project_number - 1)  # Convert to 0-based index
+
+        resolved_projects = [available_projects[i] for i in sorted(list(selected_indices))]
+        if not resolved_projects and parts:  # if selector was not empty but resolved to no projects
+            logger.warning(f"PROJECT_SELECTOR '{self.PROJECT_SELECTOR}' did not resolve to any projects from the available list of {project_count} project(s).")
+        return resolved_projects
+
+    @staticmethod
+    def get_available_project_details_static(project_list: list[WebProject]) -> str:
+        if not project_list:
+            return "No demo web projects provided in the list."
+        details = ["Available projects in the provided list:"]
+        for i, project in enumerate(project_list):
+            try:
+                details.append(f"  {i + 1}: {getattr(project, 'name', 'Unnamed Project')} (ID: {getattr(project, 'id', 'N/A')})")
+            except Exception:
+                details.append(f"  {i + 1}: (Error accessing project details)")
+        return "\n".join(details)
 
     def _create_directories(self):
         """Create all required directories if they don't exist."""
@@ -129,14 +123,10 @@ class BenchmarkConfig:
             directory.mkdir(parents=True, exist_ok=True)
             logger.trace(f"Ensured directory exists: {directory}")
 
-    def _log_configuration(self):
-        """Outputs the current benchmark configuration settings for informational purposes."""
-        logger.info("Benchmark Configuration:")
-        if self.run_all_web_projects:
-            logger.info("  Mode: Running ALL web projects")
-            logger.debug("  The web_project_number will not be accessible now.")
-        else:
-            logger.info(f"  Web Project: #{self.web_project_number} - {self.selected_project.name}")
+    def _log_initial_configuration(self):
+        """Outputs the initial benchmark configuration settings (without project list context)."""
+        logger.info("Initial Benchmark Configuration (prior to project loading):")
+        logger.info(f"  Project Selector: '{self.PROJECT_SELECTOR}'")
         logger.info(f"  Using cached tasks: {self.use_cached_tasks}")
         logger.info(f"  Using cached solutions: {self.use_cached_solutions}")
         logger.info(f"  Evaluation mode: {'Real tasks' if self.evaluate_real_tasks else 'Synthetic tasks'}")
@@ -157,11 +147,11 @@ def setup_logging(log_file: str):
     logger.add(
         sys.stderr,
         level="INFO",
-        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
         colorize=True,
         backtrace=True,
         diagnose=True,
     )
 
     # File logging
-    logger.add(log_file, level="DEBUG", format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}", rotation="10 MB", retention="7 days")
+    logger.add(log_file, level="DEBUG", format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}", rotation="10 MB", retention="7 days")

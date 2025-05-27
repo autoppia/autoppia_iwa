@@ -27,16 +27,44 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ==================================
 # ==== BENCHMARK CONFIGURATIONS ====
 # ==================================
-RUN_ALL_WEB_PROJECTS: bool = True
+# Parameter: PROJECT_SELECTOR
+# "all"                 -> run all available projects
+# "N"                   -> run project number N (1-based index)
+# "N,M,P"               -> run projects N, M, and P (1-based indices)
+# "" (empty string)     -> run no projects
+PROJECT_SELECTOR: str = "1,2"  # Default or example: "1", "1,3", ""
 
-WEB_PROJECT_NUMBER = 2
-NUM_OF_PROMPT_PER_USE_CASE = 1
+# Script-level constants for configuring BenchmarkConfig instance
+PROMPT_PER_USE_CASE_CONST: int = 1
+
+PLOT_BENCHMARK_RESULTS: bool = False
+
+USE_CACHED_TASKS_CONST: bool = False
+USE_CACHED_SOLUTIONS_CONST: bool = False
+
+EVALUATE_REAL_TASKS_CONST: bool = False  # If true, demo project selection is bypassed
+
+NUM_URLS_CONST: int = 1
+PROMPTS_PER_URL_CONST: int = 1
+# M_COPIES_CONST: int = 1 # If you want to configure 'm' from here
 
 LOG_FILE = "benchmark.log"
 
-# Initialize configuration & solution cache
+# Initialize logging first
 setup_logging(LOG_FILE)
-config = BenchmarkConfig(web_project_number=WEB_PROJECT_NUMBER, prompt_per_use_case=NUM_OF_PROMPT_PER_USE_CASE, run_all_web_projects=RUN_ALL_WEB_PROJECTS)
+
+# Instantiate BenchmarkConfig with constants from this script
+config = BenchmarkConfig(
+    PROJECT_SELECTOR=PROJECT_SELECTOR,
+    prompt_per_use_case=PROMPT_PER_USE_CASE_CONST,
+    use_cached_tasks=USE_CACHED_TASKS_CONST,
+    use_cached_solutions=USE_CACHED_SOLUTIONS_CONST,
+    evaluate_real_tasks=EVALUATE_REAL_TASKS_CONST,
+    num_of_urls=NUM_URLS_CONST,
+    prompts_per_url=PROMPTS_PER_URL_CONST,
+    # m=M_COPIES_CONST # if you want to control 'm' from here, defaults to 1 in BenchmarkConfig
+)
+
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Define agents
@@ -44,8 +72,7 @@ AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(id="2", name="Random-clicker"),
     # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=7000, timeout=120),
     # ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=11112, timeout=120),
-    # ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1",
-    #                 port=8005, timeout=120),
+    # ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1", port=8005, timeout=120),
     ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5000, timeout=120),
 ]
 
@@ -54,7 +81,7 @@ visualizer = SubnetVisualizer()
 
 @visualize_task(visualizer)
 async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
-    """Generate tasks with caching support."""
+    """Generate tasks with caching support. Uses global 'config'."""
     if config.evaluate_real_tasks and tasks_data:
         task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
         return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
@@ -85,14 +112,13 @@ async def evaluate_multiple_solutions(web_project, task, task_solutions, validat
 async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent, task: Task, timing_metrics: TimingMetrics) -> TaskSolution | None:
     """
     Generate (or load from cache) the solution for ONE Task with ONE Agent.
-    Returns the corresponding TaskSolution.
+    Returns the corresponding TaskSolution. Uses global 'config'.
     """
-    logger.info(f"---\nGenerating solution for Agent: {agent.name} | Task: {task.id}")
+    logger.info(f"---\nGenerating solution for Agent: {agent.name} | Task: {task.id} (Project: {demo_project.name})")
     backend_service = BackendDemoWebService(demo_project)
 
     try:
-        # (Optional) Reset DB
-        await backend_service.reset_database()
+        await backend_service.reset_database()  # (Optional) Reset DB
 
         # Try loading from cache
         if config.use_cached_solutions:
@@ -117,7 +143,7 @@ async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent,
         return task_solution
 
     except Exception as e:
-        logger.error(f"Error generating solution for Task {task.id}: {e!r}")
+        logger.error(f"Error generating solution for Task {task.id} on project {demo_project.name}: {e!r}")
         return None
     finally:
         await backend_service.close()
@@ -127,17 +153,12 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
     """
     For each Task:
       - Generate solutions from ALL Agents
-      - Pass them to the ConcurrentEvaluator in a single call:
-         evaluator.evaluate_task_solutions(task, solutions_for_this_task)
-
-    Then collect results in a structure for final reporting and plotting.
+      - Pass them to the ConcurrentEvaluator
+    Then collect results for reporting.
     """
     final_results = {}
-
-    # Evaluate each task (with all agent solutions)
     for task in tasks:
-        logger.info(f"\n=== Processing Task {task.id} ===")
-
+        logger.info(f"\n=== Processing Task {task.id} for Project {demo_project.name} ===")
         # 1) Generate solutions for this Task from ALL agents
         solutions_for_this_task: list[TaskSolution] = []
         for agent in AGENTS:
@@ -157,9 +178,10 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
 
     # 4) Print and plot results
     print_performance_statistics(final_results, AGENTS, timing_metrics)
-    plot_results(final_results, AGENTS, timing_metrics, str(config.output_dir))
-    plot_task_comparison(final_results, AGENTS, tasks, str(config.output_dir))
-    save_results_to_json(final_results, AGENTS, timing_metrics, str(config.output_dir))
+    if PLOT_BENCHMARK_RESULTS:
+        plot_results(final_results, AGENTS, timing_metrics, str(config.output_dir))
+        plot_task_comparison(final_results, AGENTS, tasks, str(config.output_dir))
+        save_results_to_json(final_results, AGENTS, timing_metrics, str(config.output_dir))
 
 
 async def main():
@@ -171,49 +193,63 @@ async def main():
         timing_metrics = TimingMetrics()
         timing_metrics.start()
 
-        if not config.evaluate_real_tasks:
-            # Load/Initialize demo projects
-            web_projects = await initialize_demo_webs_projects(demo_web_projects)
+        if not config.evaluate_real_tasks:  # Global config
+            logger.info("Mode: Evaluating demo web projects.")
+            all_available_demo_projects = await initialize_demo_webs_projects(demo_web_projects)
 
-            projects_to_run: list[WebProject] = []
-            if config.run_all_web_projects:
-                projects_to_run = web_projects
-                logger.info(f"Running all {len(projects_to_run)} web projects.")
+            if not isinstance(all_available_demo_projects, list):
+                logger.error(f"initialize_demo_webs_projects did not return a list. Got: {type(all_available_demo_projects)}. Cannot proceed with project selection.")
+                return
+
+            # Get the specific list of projects to run based on PROJECT_SELECTOR
+            projects_to_run: list[WebProject] = config.get_projects_to_run(all_available_demo_projects)
+
+            logger.info("--- Effective Project Selection ---")
+            logger.info(f"Project Selector: '{config.PROJECT_SELECTOR}'")
+            logger.info(f"Total demo projects loaded: {len(all_available_demo_projects)}")
+            if not projects_to_run:
+                logger.warning("No projects selected to run based on the current PROJECT_SELECTOR.")
+                if config.PROJECT_SELECTOR and all_available_demo_projects:  # If selector was specific but yielded nothing
+                    logger.info(f"Details of available projects:\n{BenchmarkConfig.get_available_project_details_static(all_available_demo_projects)}")
             else:
-                if 0 <= config.current_web_project_index < len(web_projects):
-                    projects_to_run = [web_projects[config.current_web_project_index]]
-                    logger.info(f"Running selected web project: {projects_to_run[0].name} (ID: {projects_to_run[0].id})")
-                else:
-                    logger.error(f"Invalid web project number: {config.web_project_number}. Available projects: {config.get_available_project_numbers()}")
+                logger.info(f"Will run {len(projects_to_run)} project(s): {[p.name for p in projects_to_run]}")
+            logger.info("---------------------------------")
 
-            project_tasks: list[tuple[WebProject, list[Task]]] = []
             for project in projects_to_run:
+                logger.info(f"===== Starting evaluation for project: {project.name} (ID: {project.id}) =====")
                 tasks = await generate_tasks(project)
                 if tasks:
-                    project_tasks.append((project, tasks))
-
-            # 3) Evaluar all tasks for each project
-            for project, tasks in project_tasks:
-                await run_evaluation(project, tasks, timing_metrics)
+                    await run_evaluation(project, tasks, timing_metrics)
+                else:
+                    logger.warning(f"No tasks generated for project {project.name}. Skipping evaluation run for this project.")
         else:
-            # Evaluate 'real tasks'
-            tasks_data = load_real_tasks(config.num_of_urls)
-            web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
+            logger.info("Mode: Evaluating real tasks.")
+            tasks_data = load_real_tasks(config.num_of_urls)  # Uses num_of_urls from global config
+
+            web_projects_real_map = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
+            logger.info(f"Loaded {len(tasks_data)} real task definitions.")
 
             for td in tasks_data:
-                project = web_projects.get(td.id)
+                project = web_projects_real_map.get(td.id)
                 if project:
+                    logger.info(f"===== Starting evaluation for real task based project: {project.name} (URL: {project.frontend_url}) =====")
                     await _load_web_analysis(project)
                     tasks = await generate_tasks(project, td)
                     if tasks:
                         await run_evaluation(project, tasks, timing_metrics)
+                    else:
+                        logger.warning(f"No tasks generated for real task project {project.name}. Skipping.")
+                else:
+                    logger.warning(f"Could not find or create a project for real task data ID: {td.id}")
 
-        logger.info("Evaluation complete!")
+        logger.info("Evaluation process complete!")
+    except ValueError as ve:
+        logger.error(f"Configuration or Project Selection Error: {ve}")
     except Exception as e:
         import sys
 
         exc_info = sys.exc_info()
-        logger.opt(exception=e).error(f"Failed to process task: {e!s}", exc_info=exc_info, stack_info=True)
+        logger.opt(exception=True).error(f"An unexpected error occurred in main execution: {e!s}", exc_info=exc_info)
 
 
 if __name__ == "__main__":
@@ -221,4 +257,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception as e:
         traceback.print_exc()
-        logger.error(f"Error: {e}", stace_info=True)
+        logger.critical(f"Critical error in script execution: {e}", exc_info=True)
