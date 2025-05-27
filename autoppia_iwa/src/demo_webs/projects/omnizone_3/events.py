@@ -52,7 +52,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
 
     event_name: str = "VIEW_DETAIL"
 
-    item_id: str
+    # item_id: str
     item_name: str
     item_category: str | None = None
     item_brand: str | None = None
@@ -62,7 +62,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         """Validation criteria for ItemDetailEvent."""
 
-        id: str | CriterionValue | None = None
+        # id: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         category: str | CriterionValue | None = None
         brand: str | CriterionValue | None = None
@@ -79,7 +79,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.item_id, criteria.id),
+                # self._validate_field(self.item_id, criteria.id),
                 self._validate_field(self.item_name, criteria.name),
                 self._validate_field(self.item_category, criteria.category),
                 self._validate_field(self.item_brand, criteria.brand),
@@ -109,7 +109,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
                 item_brand=data.get("brand"),
                 item_rating=data.get("rating"),
                 item_price=parsed_price,
-                item_id=data.get("productId"),
+                # item_id=data.get("productId"),
             )
         else:
             # Use parsed ProductSummary data
@@ -123,7 +123,7 @@ class ItemDetailEvent(Event, BaseEventValidator):
                 item_brand=product_summary.brand,
                 item_rating=product_summary.rating,
                 item_price=product_summary.price,
-                item_id=product_summary.id,
+                # item_id=product_summary.id,
             )
 
 

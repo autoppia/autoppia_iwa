@@ -28,7 +28,7 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
             pool_source = all_products_data if field in ["price", "rating"] else [product_data_source]
             for item in pool_source:
                 val = item.get(field)
-                if field == "price" or field == "value" or field == "total_amount" or field == "tax" or field == "shipping" or field == "order_total":
+                if field == "price" or field == "value" or field == "total_amount" or field == "tax" or field == "shipping" or field == "order_total" or field == "rating":
                     parsed_val = parse_price(val)
                     if parsed_val is not None:
                         value_pool.append(parsed_val)
