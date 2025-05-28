@@ -426,8 +426,8 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
     available_fields = ["direction", "title"]
     selected_fields = random.sample(available_fields, random.randint(1, len(available_fields)))
 
-    direction_operators = [ComparisonOperator.EQUALS]
-    title_operators = [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]
+    direction_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
+    title_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
 
     direction = random.choice(["LEFT", "RIGHT"])
     title = random.choice(["Technology", "Home", "Electronics", "Kitchen", "Fitness"])
