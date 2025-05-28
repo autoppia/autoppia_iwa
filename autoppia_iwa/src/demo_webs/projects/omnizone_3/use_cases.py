@@ -363,7 +363,7 @@ ORDER_COMPLETION_USE_CASE = UseCase(
     description="The user completes an order/purchase.",
     event=OrderCompletedEvent,
     event_source_code=OrderCompletedEvent.get_source_code_of_class(),
-    # constraints_generator=generate_order_completion_constraints,
+    constraints_generator=False,
     additional_prompt_info=ORDER_COMPLETION_INFO,
     examples=[
         {
@@ -372,7 +372,7 @@ ORDER_COMPLETION_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ORDER_COMPLETED",
-                # "event_criteria": {"payment_method": {"value": "Credit Card", "operator": "equals"}},
+                "event_criteria": {},
                 "reasoning": "Completes the order with specified payment method.",
             },
         },
@@ -382,7 +382,7 @@ ORDER_COMPLETION_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ORDER_COMPLETED",
-                # "event_criteria": {"payment_method": {"value": "saved payment info", "operator": "equals"}},
+                "event_criteria": {},
                 "reasoning": "Completes order with saved payment method.",
             },
         },
@@ -392,7 +392,7 @@ ORDER_COMPLETION_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ORDER_COMPLETED",
-                # "event_criteria": {"shipping_method": {"value": "standard", "operator": "equals"}},
+                "event_criteria": {},
                 "reasoning": "Completes order with shipping preference.",
             },
         },
@@ -603,13 +603,13 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
-    PRODUCT_DETAIL_USE_CASE,
-    SEARCH_PRODUCT_USE_CASE,
-    ADD_TO_CART_USE_CASE,
-    VIEW_CART_USE_CASE,
-    CAROUSEL_SCROLL_USE_CASE,
-    QUANTITY_CHANGE_USE_CASE,
-    PROCEED_TO_CHECKOUT_USE_CASE,
-    CHECKOUT_STARTED_USE_CASE,
+    # PRODUCT_DETAIL_USE_CASE,
+    # SEARCH_PRODUCT_USE_CASE,
+    # ADD_TO_CART_USE_CASE,
+    # VIEW_CART_USE_CASE,
+    # CAROUSEL_SCROLL_USE_CASE,
+    # QUANTITY_CHANGE_USE_CASE,
+    # PROCEED_TO_CHECKOUT_USE_CASE,
+    # CHECKOUT_STARTED_USE_CASE,
     ORDER_COMPLETION_USE_CASE,
 ]
