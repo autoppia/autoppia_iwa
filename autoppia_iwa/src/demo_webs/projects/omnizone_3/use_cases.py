@@ -359,7 +359,7 @@ For example:
 """
 
 ORDER_COMPLETION_USE_CASE = UseCase(
-    name="ORDER_COMPLETION",
+    name="ORDER_COMPLETED",
     description="The user completes an order/purchase.",
     event=OrderCompletedEvent,
     event_source_code=OrderCompletedEvent.get_source_code_of_class(),
@@ -435,7 +435,7 @@ PROCEED_TO_CHECKOUT_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "PROCEED_TO_CHECKOUT",
-                "event_criteria": {"total_items": {"value": 3, "operator": "equals"}, "total_amount": {"value": 379.97, "operator": "equals"}},
+                "event_criteria": {"total_amount": {"value": 379.97, "operator": "equals"}},
                 "reasoning": "Proceeds to checkout with specific item count and total amount.",
             },
         },
@@ -604,12 +604,12 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 
 ALL_USE_CASES = [
     PRODUCT_DETAIL_USE_CASE,
-    # SEARCH_PRODUCT_USE_CASE,
-    # ADD_TO_CART_USE_CASE,
-    # VIEW_CART_USE_CASE,
-    # QUANTITY_CHANGE_USE_CASE,
-    # PROCEED_TO_CHECKOUT_USE_CASE,
-    # CHECKOUT_STARTED_USE_CASE,
-    # ORDER_COMPLETION_USE_CASE,
-    # CAROUSEL_SCROLL_USE_CASE,
+    SEARCH_PRODUCT_USE_CASE,
+    ADD_TO_CART_USE_CASE,
+    VIEW_CART_USE_CASE,
+    CAROUSEL_SCROLL_USE_CASE,
+    QUANTITY_CHANGE_USE_CASE,
+    PROCEED_TO_CHECKOUT_USE_CASE,
+    CHECKOUT_STARTED_USE_CASE,
+    ORDER_COMPLETION_USE_CASE,
 ]
