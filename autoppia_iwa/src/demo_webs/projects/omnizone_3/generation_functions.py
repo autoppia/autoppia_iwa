@@ -337,11 +337,7 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
     ]
 
     if quantity_operators:
-        prev_qty = random.randint(1, 10)
-        possible_new_quantities = [q for q in range(1, 11) if q != prev_qty]
-
-        new_qty = prev_qty if not possible_new_quantities else random.choice(possible_new_quantities)
-
+        new_qty = random.randint(1, 10)
         op_new = random.choice(quantity_operators)
 
         constraint_value_new = None
