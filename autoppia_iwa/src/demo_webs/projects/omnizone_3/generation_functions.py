@@ -314,7 +314,7 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
     selected_id_field = random.choice(item_identification_fields)
     product_key = product_key_map.get(selected_id_field)
 
-    if product_key and product_key in product:  # Check if key exists in the chosen product
+    if product_key and product_key in product:
         op = None
         if product_key in FIELD_OPERATORS_MAP_PRODUCTS:
             allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[product_key]
@@ -328,7 +328,7 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
         else:
             print(f"Warning: Could not select operator for product key '{product_key}' in quantity change constraints.")
     else:
-        return []
+        pass
 
     quantity_operators = [
         ComparisonOperator.EQUALS,
@@ -337,19 +337,27 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
     ]
 
     if quantity_operators:
-        prev_qty = random.randint(1, 5)
-        new_qty = prev_qty
-        while new_qty == prev_qty:
-            # Ensure new_qty is not negative
-            new_qty = random.randint(max(0, prev_qty - 2), prev_qty + 3)
+        prev_qty = random.randint(1, 10)
+        possible_new_quantities = [q for q in range(1, 11) if q != prev_qty]
+
+        new_qty = prev_qty if not possible_new_quantities else random.choice(possible_new_quantities)
 
         op_new = random.choice(quantity_operators)
 
-        # Pass a mock source for new_quantity
-        constraint_value_new = generate_constraint_value("quantity", op_new, {"quantity": new_qty})
+        constraint_value_new = None
+        if op_new == ComparisonOperator.EQUALS:
+            constraint_value_new = new_qty
+        elif op_new == ComparisonOperator.GREATER_EQUAL:
+            # Value must be >= 1 and <= new_qty
+            constraint_value_new = random.randint(1, new_qty)
+        elif op_new == ComparisonOperator.LESS_EQUAL:
+            # Value must be >= new_qty and <= 10
+            constraint_value_new = random.randint(new_qty, 10)
 
         if constraint_value_new is not None:
             constraints_list.append(create_constraint_dict("new_quantity", op_new, constraint_value_new))
+        else:
+            print(f"Warning: Could not generate valid constraint value for new_quantity with operator {op_new}.")
 
     return constraints_list
 
