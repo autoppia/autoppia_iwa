@@ -18,7 +18,6 @@ TASKS_CACHE_DIR = PROJECT_BASE_DIR.parent / "tests/jobs_demo_website_tasks.json"
 
 USE_CACHED_TASKS: bool = True
 NUMBER_OF_TASKS: int = 3
-NUM_OF_URLS: int = 3
 RANDOM_URLS: bool = False
 # ============================================================
 # TASK CACHING FUNCTIONS
@@ -68,8 +67,6 @@ async def generate_tasks_for_project(demo_project: WebProject) -> list[Task]:
 
     config = TaskGenerationConfig(
         save_task_in_db=False,
-        num_of_urls=NUM_OF_URLS,
-        random_urls=RANDOM_URLS,
     )
 
     print(f"Generating tasks for {demo_project.name}...")
