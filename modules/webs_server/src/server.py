@@ -225,12 +225,10 @@ async def get_events_endpoint(
             trimmed_url,
             web_agent_id
         )
-        logger.debug("rows fetched: ",rows)
 
         processed_rows = []
         for row in rows:
             row_dict = dict(row)
-            logger.debug("rows dict: ", rows)
             raw_data = row_dict.get('data')
             if isinstance(raw_data, str):
                 try:
