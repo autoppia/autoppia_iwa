@@ -204,7 +204,7 @@ class ProceedToCheckoutEvent(Event, BaseEventValidator):
         products_data = data.get("products", [])
 
         products = [
-            ProductSummary(id=str(p.get("id", "")), title=str(p.get("title", "")), price=float(p.get("price", "")), quantity=int(p.get("quantity", 1)), brand=str(p.get("brand", "")))
+            ProductSummary(id=str(p.get("id", "")), title=str(p.get("title", "")), price=parse_price(p.get("price", "")), quantity=int(p.get("quantity", 1)), brand=str(p.get("brand", "")))
             for p in products_data
             if isinstance(p, dict)
         ]
@@ -587,7 +587,7 @@ class CheckoutStartedEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             item_id=data.get("productId", ""),
             item_name=data.get("title", ""),
-            item_price=float(data.get("price", 0.0)),
+            item_price=parse_price(data.get("price", 0.0)),
             item_quantity=int(data.get("quantity", 1)),
             item_category=data.get("category"),
             item_brand=data.get("brand"),
