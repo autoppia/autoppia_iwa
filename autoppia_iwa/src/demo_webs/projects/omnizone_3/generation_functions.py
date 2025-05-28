@@ -3,6 +3,8 @@ import random
 import traceback
 from typing import Any
 
+from loguru import logger
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_data import FIELD_OPERATORS_MAP_PRODUCTS
 from ..shared_utils import create_constraint_dict, parse_price
@@ -59,7 +61,7 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
             value_pool = list(set(term for term in all_terms_list if term and isinstance(term, str)))
 
     except Exception as e:
-        print(f"Error building value pool for field '{field}': {e}")
+        logger.error(f"Error building value pool for field '{field}': {e}")
         traceback.print_exc()
         return None
 
@@ -155,10 +157,10 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
             return None
 
     else:
-        print(f"Warning: Operator {operator} not explicitly handled for field '{field}' in _generate_constraint_value")
+        logger.warning(f"Operator {operator} not explicitly handled for field '{field}' in _generate_constraint_value")
         generated_value = source_value if source_value is not None else (random.choice(valid_pool) if valid_pool else None)
         if generated_value is None:
-            print(f"Warning: Could not generate value for field '{field}' with operator '{operator}' using fallback.")
+            logger.warning(f"Could not generate value for field '{field}' with operator '{operator}' using fallback.")
             return None
 
     return generated_value
@@ -201,7 +203,7 @@ def generate_autozone_products_constraints() -> list[dict[str, Any]]:
                 op_str = random.choice(allowed_operators)
                 op = ComparisonOperator(op_str)
             else:
-                print(f"Warning: No allowed operators defined for product key '{product_key}' in FIELD_OPERATORS_MAP_PRODUCTS.")
+                logger.warning(f"No allowed operators defined for product key '{product_key}' in FIELD_OPERATORS_MAP_PRODUCTS.")
                 continue
 
         if op:
@@ -210,7 +212,7 @@ def generate_autozone_products_constraints() -> list[dict[str, Any]]:
                 constraint_dict = create_constraint_dict(criteria_field, op, constraint_value)
                 constraints_list.append(constraint_dict)
         else:
-            print(f"Warning: Could not select operator for criteria field '{criteria_field}'. Skipping constraint generation.")
+            logger.warning(f"Could not select operator for criteria field '{criteria_field}'. Skipping constraint generation.")
 
     return constraints_list
 
@@ -255,7 +257,7 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
             if constraint_value is not None:
                 constraints_list.append(create_constraint_dict(selected_id_field, op, constraint_value))
         else:
-            print(f"Warning: Could not select operator for product key '{product_key}' in cart operation constraints.")
+            logger.warning(f"Could not select operator for product key '{product_key}' in cart operation constraints.")
     else:
         return []  # Need at least name or id that maps to product data
 
@@ -326,7 +328,7 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
             if constraint_value is not None:
                 constraints_list.append(create_constraint_dict(selected_id_field, op, constraint_value))
         else:
-            print(f"Warning: Could not select operator for product key '{product_key}' in quantity change constraints.")
+            logger.warning(f"Could not select operator for product key '{product_key}' in quantity change constraints.")
     else:
         pass
 
@@ -353,37 +355,35 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
         if constraint_value_new is not None:
             constraints_list.append(create_constraint_dict("new_quantity", op_new, constraint_value_new))
         else:
-            print(f"Warning: Could not generate valid constraint value for new_quantity with operator {op_new}.")
+            logger.warning(f"Could not generate valid constraint value for new_quantity with operator {op_new}.")
 
     return constraints_list
 
 
 def generate_checkout_constraints() -> list[dict[str, Any]]:
-    constraints_list = []
-    total_items_operators = [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]
-    total_amount_operators = [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]
+    """Generate randomized checkout constraints based on product data."""
+    constraints: list[dict[str, Any]] = []
+    field = "total_amount"
+    operators = [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]
 
-    if random.random() > 0.3 and total_items_operators:
-        op = random.choice(total_items_operators)
-        total_items_value = random.randint(1, 10)
-        # Generate constraint value using _generate_constraint_value with mock source
-        constraint_value = generate_constraint_value("total_items", op, {"total_items": total_items_value})
-        if constraint_value is not None:
-            constraints_list.append(create_constraint_dict("total_items", op, constraint_value))
+    if not PRODUCTS_DATA:
+        return constraints
 
-    if random.random() > 0.3 and PRODUCTS_DATA and total_amount_operators:
-        op = random.choice(total_amount_operators)
-        # Calculate plausible amount based on average item price and generated total_items
-        avg_price = sum(parse_price(p["price"]) or 0 for p in PRODUCTS_DATA) / len(PRODUCTS_DATA) if PRODUCTS_DATA else 25.0
-        # If total_items constraint exists, use its value for a more realistic total amount
-        estimated_items = next((c["value"] for c in constraints_list if c["field"] == "total_items" and isinstance(c["value"], int)), random.randint(1, 5))
-        plausible_amount = round(avg_price * estimated_items * random.uniform(0.8, 1.2), 2)  # Add some variance
+    try:
+        product = random.choice(PRODUCTS_DATA)
+        price_str = product["price"]
+        price = parse_price(price_str)
 
-        constraint_value = generate_constraint_value("total_amount", op, {"total_amount": plausible_amount})
-        if constraint_value is not None:
-            constraints_list.append(create_constraint_dict("total_amount", op, constraint_value))
+        operator = random.choice(operators)
+        value = generate_constraint_value(field, operator, {field: price})
 
-    return constraints_list
+        if value is not None:
+            constraints.append(create_constraint_dict(field, operator, value))
+
+    except (KeyError, IndexError, TypeError, ValueError) as e:
+        logger.warning(f"Failed to generate checkout constraint: {e}")
+
+    return constraints
 
 
 def generate_order_completion_constraints() -> list[dict[str, Any]]:
