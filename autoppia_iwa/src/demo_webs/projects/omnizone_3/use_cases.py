@@ -96,7 +96,7 @@ PRODUCT_DETAIL_USE_CASE = UseCase(
                 "event_criteria": {
                     "item_brand": {"value": "KitchenAid", "operator": "equals"},
                     "item_name": {"value": "Stand Mixer", "operator": "equals"},
-                    "item_price": {"value": 200.00, "operator": "greater_than_or_equal"},
+                    "item_price": {"value": 200.00, "operator": "greater_equal"},
                     # "item_price": {"value": 300.00, "operator": "less_than_or_equal"},
                 },
                 "reasoning": "Requests to view details for products matching multiple criteria.",
@@ -603,13 +603,13 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
-    # PRODUCT_DETAIL_USE_CASE,
-    # SEARCH_PRODUCT_USE_CASE,
-    # ADD_TO_CART_USE_CASE,
-    # VIEW_CART_USE_CASE,
-    # CAROUSEL_SCROLL_USE_CASE,
-    # QUANTITY_CHANGE_USE_CASE,
-    # PROCEED_TO_CHECKOUT_USE_CASE,
-    # CHECKOUT_STARTED_USE_CASE,
+    PRODUCT_DETAIL_USE_CASE,
+    SEARCH_PRODUCT_USE_CASE,
+    ADD_TO_CART_USE_CASE,
+    VIEW_CART_USE_CASE,
+    CAROUSEL_SCROLL_USE_CASE,
+    QUANTITY_CHANGE_USE_CASE,
+    PROCEED_TO_CHECKOUT_USE_CASE,
+    CHECKOUT_STARTED_USE_CASE,
     ORDER_COMPLETION_USE_CASE,
 ]
