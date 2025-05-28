@@ -28,7 +28,6 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ==== CONFIGURACIONES ====
 # ==========================
 
-# Manualmente selecciona los proyectos de demo
 PROJECTS_TO_RUN: list[WebProject] = [demo_web_projects[0], demo_web_projects[1]]
 
 PROMPT_PER_USE_CASE_CONST: int = 1
@@ -52,9 +51,9 @@ config = BenchmarkConfig(
 
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
-# Agentes
+# Agents
 AGENTS: list[IWebAgent] = [
-    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=7000, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()
