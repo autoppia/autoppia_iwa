@@ -22,7 +22,6 @@ logger = logging.getLogger("stress_test")
 USE_CACHED_TASKS = False  # Set to True to use cached tasks from JSON file
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 M = 1  # Number of copies of each solution to evaluate
-PROMPTS_PER_URL = 15
 
 # Create output/cache directories if needed
 os.makedirs(TASKS_CACHE_DIR, exist_ok=True)

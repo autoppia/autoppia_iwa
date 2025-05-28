@@ -11,7 +11,6 @@ from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 # GLOBAL CONFIGURATION
 # ============================================================
 
-PROMPTS_PER_URL: int = 5
 RANDOM_URLS: bool = False
 
 
