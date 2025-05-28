@@ -344,7 +344,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
 
     event_name: str = "QUANTITY_CHANGED"
 
-    item_id: str
+    # item_id: str
     item_name: str
     previous_quantity: int
     new_quantity: int
@@ -358,7 +358,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         """Criteria for validating quantity change events."""
 
-        id: str | CriterionValue | None
+        # id: str | CriterionValue | None
         name: str | CriterionValue | None = Field(default=None, alias="item_name")
         previous_quantity: int | CriterionValue | None = None
         new_quantity: int | CriterionValue | None = None
@@ -378,7 +378,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.item_id, criteria.id),
+                # self._validate_field(self.item_id, criteria.id),
                 self._validate_field(self.item_name, criteria.name),
                 self._validate_field(self.previous_quantity, criteria.previous_quantity),
                 self._validate_field(self.new_quantity, criteria.new_quantity),
@@ -434,7 +434,7 @@ class QuantityChangedEvent(Event, BaseEventValidator):
             item_rating=data.get("rating"),
             created_at=created_at,
             updated_at=updated_at,
-            item_id=data.get("productId", ""),
+            # item_id=data.get("productId", ""),
         )
 
 
