@@ -429,9 +429,10 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
     direction_operators = [ComparisonOperator.EQUALS]
     title_operators = [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]
 
-    mock_direction = random.choice(["LEFT", "RIGHT"])
-    mock_title = random.choice(["Featured Products", "Best Sellers", "Electronics", "Kitchen"])
-    mock_data = {"direction": mock_direction, "title": mock_title}
+    direction = random.choice(["LEFT", "RIGHT"])
+    title = random.choice(["Technology", "Home", "Electronics", "Kitchen", "Fitness"])
+    complete_title = f"Top Sellers In {title}"
+    data = {"direction": direction, "title": complete_title}
 
     for field in selected_fields:
         op = None
@@ -443,7 +444,7 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
             continue
 
         if op:
-            constraint_value = generate_constraint_value(field, op, mock_data)
+            constraint_value = generate_constraint_value(field, op, data)
             if constraint_value is not None:
                 constraints_list.append(create_constraint_dict(field, op, constraint_value))
 
