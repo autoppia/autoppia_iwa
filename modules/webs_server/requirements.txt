@@ -1,25 +1,16 @@
-# Core
-fastapi==0.95.2
-uvicorn[standard]==0.22.0
+# Core API and Logging
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
 loguru==0.7.3
 
+# Data Validation
+pydantic==2.11.5
+
 # Database
-asyncpg==0.27.0
-psycopg2-binary==2.9.6
+asyncpg==0.30.0
 
 # Performance
-orjson==3.9.0
-uvloop==0.17.0
-httptools==0.5.0
+orjson==3.10.18
 
-# Environment
-python-dotenv==1.0.0
-
-# Development
-pytest==7.3.1
-pytest-asyncio==0.21.0
-httpx==0.24.1
-
-# Security
-python-multipart==0.0.6
-bcrypt==4.0.1
+# Environment Variables
+python-dotenv==1.1.0
