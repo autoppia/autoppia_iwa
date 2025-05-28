@@ -65,8 +65,6 @@ async def main():
         demo_project,
         use_cached_tasks=USE_CACHED_TASKS,
         task_cache_dir=TASKS_CACHE_DIR,
-        prompts_per_url=PROMPTS_PER_URL,
-        num_of_urls=NUM_OF_URLS,
     )
 
     if not tasks:

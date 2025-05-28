@@ -18,7 +18,6 @@ from tests.test_di_container import TestDIContainer
 TASKS_CACHE_DIR = PROJECT_BASE_DIR.parent / "tests/jobs_demo_website_tasks.json"
 
 USE_CACHED_TASKS = True
-NUMBER_OF_TASKS = 1
 
 
 def load_tasks_from_json() -> list[Task] | None:
@@ -62,7 +61,7 @@ async def generate_tasks_for_project(demo_project: WebProject) -> list[Task]:
         else:
             print(f"No valid cached tasks found for project '{demo_project.name}', generating new tasks...")
 
-    config = TaskGenerationConfig(save_task_in_db=False, num_of_urls=1, random_urls=False, prompts_per_url=NUMBER_OF_TASKS)
+    config = TaskGenerationConfig(save_task_in_db=False)
 
     print(f"Generating tasks for {demo_project.name}...")
     pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
