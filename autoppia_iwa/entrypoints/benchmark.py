@@ -32,7 +32,7 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # "N"                   -> run project number N (1-based index)
 # "N,M,P"               -> run projects N, M, and P (1-based indices)
 # "" (empty string)     -> run no projects
-PROJECT_SELECTOR: str = "3"  # Default or example: "1", "1,3", ""
+PROJECT_SELECTOR: str = "4"  # Default or example: "1", "1,3", ""
 
 # Script-level constants for configuring BenchmarkConfig instance
 PROMPT_PER_USE_CASE_CONST: int = 1

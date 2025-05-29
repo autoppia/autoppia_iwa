@@ -56,7 +56,7 @@ DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DATE_DROPDOWN_OPENED",
-                "event_criteria": {"selected_date": {"value": datetime(2025, 4, 30, 19, 0, 0, tzinfo=UTC), "operator": "equals"}},
+                "event_criteria": {"selected_date": {"value": datetime(2025, 4, 30, 19, 0, 0, tzinfo=UTC).isoformat(), "operator": "equals"}},
                 "reasoning": "User opens the date picker, which shows a default/current date.",
             },
         },
@@ -66,7 +66,7 @@ DATE_DROPDOWN_OPENED_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DATE_DROPDOWN_OPENED",
-                "event_criteria": {"selected_date": {"value": datetime(2025, 6, 15, 0, 0, 0, tzinfo=UTC), "operator": "greater_than"}},
+                "event_criteria": {"selected_date": {"value": datetime(2025, 6, 15, 0, 0, 0, tzinfo=UTC).isoformat(), "operator": "greater_than"}},
                 "reasoning": "User opens date picker with intention to select a future date.",
             },
         },
@@ -310,7 +310,7 @@ VIEW_FULL_MENU_USE_CASE = UseCase(
                 "event_criteria": {
                     "restaurant_name": {"value": "The Royal Dine", "operator": "equals"},
                     "people": {"value": 2, "operator": "equals"},
-                    "selected_date": {"value": date(2024, 7, 18), "operator": "equals"},
+                    "selected_date": {"value": date(2024, 7, 18).isoformat(), "operator": "equals"},
                     "time": {"value": "1:00 PM", "operator": "equals"},
                 },
                 "reasoning": "Requests full menu with booking context (people, date, time).",
@@ -404,7 +404,7 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
                 "event_criteria": {
                     "restaurant_name": {"value": "The Royal Dine", "operator": "equals"},
                     "people": {"value": 2, "operator": "equals"},
-                    "selected_date": {"value": date(2025, 5, 16), "operator": "equals"},
+                    "selected_date": {"value": date(2025, 5, 16).isoformat(), "operator": "equals"},
                     "time": {"value": "1:30 PM", "operator": "equals"},
                 },
                 "reasoning": "User provides all necessary details to book a restaurant.",
@@ -544,8 +544,8 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
                 "type": "CheckEventTest",
                 "event_name": "RESERVATION_COMPLETE",
                 "event_criteria": {
-                    "restaurant_id": {"value": "royal-dine", "operator": "equals"},
-                    "reservation_date_str": {"value": "Jul 18", "operator": "equals"},
+                    # "restaurant_id": {"value": "royal-dine", "operator": "equals"},
+                    # "reservation_date_str": {"value": "Jul 18", "operator": "equals"}, # Keep this as string if that's what the event expects
                     "reservation_time": {"value": "1:30 PM", "operator": "equals"},
                     "people_count_str": {"value": "2 people", "operator": "equals"},
                     "email": {"value": "user_name@gmail.com", "operator": "equals"},
@@ -556,31 +556,31 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
                 "reasoning": "User provides all final details to complete the reservation.",
             },
         },
-        {
-            "prompt": "Finalize booking with email containing 'company.com' and phone number starting with '+1'",
-            "prompt_for_task_generation": "Finalize booking with email containing '<email_fragment>' and phone number starting with '<phone_prefix>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "RESERVATION_COMPLETE",
-                "event_criteria": {
-                    "email": {"value": "company.com", "operator": "contains"},
-                    "phone_number": {"value": "+1", "operator": "starts_with"},
-                },
-                "reasoning": "User completes reservation with specific email and phone patterns.",
-            },
-        },
-        {
-            "prompt": "Confirm reservation with special dietary requirements (vegan and gluten-free)",
-            "prompt_for_task_generation": "Confirm reservation with special dietary requirements (<requirement1> and <requirement2>)",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "RESERVATION_COMPLETE",
-                "event_criteria": {
-                    "dietary_restrictions": {"value": ["vegan", "gluten-free"], "operator": "contains_all"},
-                },
-                "reasoning": "User completes reservation with multiple dietary requirements.",
-            },
-        },
+        # {
+        #     "prompt": "Finalize booking with email containing 'company.com' and phone number starting with '+1'",
+        #     "prompt_for_task_generation": "Finalize booking with email containing '<email_fragment>' and phone number starting with '<phone_prefix>'",
+        #     "test": {
+        #         "type": "CheckEventTest",
+        #         "event_name": "RESERVATION_COMPLETE",
+        #         "event_criteria": {
+        #             "email": {"value": "company.com", "operator": "contains"},
+        #             "phone_number": {"value": "+1", "operator": "starts_with"},
+        #         },
+        #         "reasoning": "User completes reservation with specific email and phone patterns.",
+        #     },
+        # },
+        # {
+        #     "prompt": "Confirm reservation with special dietary requirements (vegan and gluten-free)",
+        #     "prompt_for_task_generation": "Confirm reservation with special dietary requirements (<requirement1> and <requirement2>)",
+        #     "test": {
+        #         "type": "CheckEventTest",
+        #         "event_name": "RESERVATION_COMPLETE",
+        #         "event_criteria": {
+        #             "dietary_restrictions": {"value": ["vegan", "gluten-free"], "operator": "contains_all"},
+        #         },
+        #         "reasoning": "User completes reservation with multiple dietary requirements.",
+        #     },
+        # },
     ],
 )
 

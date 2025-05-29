@@ -30,13 +30,11 @@ def generate_mock_dates():
     for i in range(1, 8):
         # Date before today
         date_before = today - datetime.timedelta(days=i)
-        # Convert date_before.date() (which is a date object) to a datetime object at midnight
-        mock_dates_raw.append(datetime.datetime.combine(date_before.date(), datetime.time.min, tzinfo=datetime.UTC))
+        mock_dates_raw.append(date_before.replace(hour=0, minute=0, second=0, microsecond=0))
 
         # Date after today
         date_after = today + datetime.timedelta(days=i)
-        # Convert date_after.date() (which is a date object) to a datetime object at midnight
-        mock_dates_raw.append(datetime.datetime.combine(date_after.date(), datetime.time.min, tzinfo=datetime.UTC))
+        mock_dates_raw.append(date_after.replace(hour=0, minute=0, second=0, microsecond=0))
 
     # Remove duplicates and sort the list.
     return sorted(list(set(mock_dates_raw)))
@@ -68,15 +66,15 @@ def _generate_value_for_field(field_name: str) -> Any:
     Generates a mock value for a given field and operator, using the updated RESTAURANT_DATA.
     """
     if field_name == "selected_date":  # datetime object for DateDropdownOpenedEvent
-        return random.choice(MOCK_DATES) if MOCK_DATES else datetime.datetime.now(datetime.UTC)
+        return random.choice(MOCK_DATES) if MOCK_DATES else datetime.datetime.now(datetime.UTC).isoformat()
     elif field_name == "selected_time":
         return random.choice(RESTAURANT_TIMES)
     elif field_name == "people_count":
         return random.choice(RESTAURANT_PEOPLE_COUNTS)
     elif field_name == "query":
         return random.choice(MOCK_RESTAURANT_QUERIES)
-    elif field_name == "restaurant_id":
-        return random.choice(RESTAURANT_DATA)["id"] if RESTAURANT_DATA else "r_default"
+    # elif field_name == "restaurant_id":
+    #     return random.choice(RESTAURANT_DATA)["id"] if RESTAURANT_DATA else "r_default"
     elif field_name == "restaurant_name":
         return random.choice(RESTAURANT_DATA)["name"] if RESTAURANT_DATA else "Default Restaurant"
     elif field_name == "action":
@@ -117,7 +115,7 @@ def generate_date_dropdown_opened_constraints() -> list[dict[str, Any]]:
     allowed_operators = [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]
 
     op = random.choice(allowed_operators)
-    value = _generate_value_for_field(criteria_field)
+    value = _generate_value_for_field(criteria_field).isoformat()
     constraints_list.append(create_constraint_dict(criteria_field, op, value))
     return constraints_list
 
@@ -158,7 +156,10 @@ def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
 def generate_view_restaurant_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     # Fields in ViewRestaurantEvent.ValidationCriteria: restaurant_id, restaurant_name
-    possible_fields = [("restaurant_id", [ComparisonOperator.EQUALS]), ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS])]
+    possible_fields = [
+        # ("restaurant_id", [ComparisonOperator.EQUALS]),
+        ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS])
+    ]
 
     # Generate constraints for 1 or 2 fields
     num_constraints = random.randint(1, len(possible_fields))
@@ -259,7 +260,7 @@ def generate_occasion_selected_constraints() -> list[dict[str, Any]]:
 def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = [
-        ("restaurant_id", [ComparisonOperator.EQUALS]),
+        # ("restaurant_id", [ComparisonOperator.EQUALS]),
         ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
         ("reservation_time", [ComparisonOperator.EQUALS]),
         # ("people_count_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
