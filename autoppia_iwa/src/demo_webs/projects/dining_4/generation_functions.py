@@ -56,7 +56,7 @@ def generate_mock_date_strings(dates: list):
 
 MOCK_DATES = generate_mock_dates()
 MOCK_DATE_STRINGS = generate_mock_date_strings(MOCK_DATES)
-MOCK_PEOPLE_COUNT_STRINGS = ["1 person", "2 people", "4 guests"]
+# MOCK_PEOPLE_COUNT_STRINGS = ["1 person", "2 people", "4 guests"]
 MOCK_RESTAURANT_QUERIES = ["pizza", "mexican food", "nearby cafes"] + [r["name"] for r in RESTAURANT_DATA]
 MOCK_RESTAURANT_ACTIONS = ["view_full_menu", "collapse_menu"]
 MOCK_PHONE_NUMBERS = ["555-1234", "9876543210", "+1-202-555-0182"]
@@ -95,8 +95,8 @@ def _generate_value_for_field(field_name: str) -> Any:
         return random.choice(MOCK_DATE_STRINGS)
     elif field_name == "reservation_time":
         return random.choice(RESTAURANT_TIMES)
-    elif field_name == "people_count_str":
-        return random.choice(MOCK_PEOPLE_COUNT_STRINGS)
+    # elif field_name == "people_count_str":
+    #     return random.choice(MOCK_PEOPLE_COUNT_STRINGS)
     elif field_name == "phone_number":
         return random.choice(MOCK_PHONE_NUMBERS)
     elif field_name == "special_request":
@@ -262,7 +262,7 @@ def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
         ("restaurant_id", [ComparisonOperator.EQUALS]),
         ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
         ("reservation_time", [ComparisonOperator.EQUALS]),
-        ("people_count_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
+        # ("people_count_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
         ("occasion", [ComparisonOperator.EQUALS, ComparisonOperator.IN_LIST]),
         ("phone_number", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
     ]
