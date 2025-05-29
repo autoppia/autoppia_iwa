@@ -1,56 +1,78 @@
-# **Project Setup Guide**
+# 🚀 Project Setup Guide
 
-This guide will walk you through setting up and running the project locally on a Linux machine. It includes steps to install Python 3.10 or above, set up a virtual environment or Conda environment, install Playwright, and configure the project dependencies.
-
----
-
-## **1. Introduction**
-
-To ensure the proper functioning of the project, three essential components need to be running simultaneously:
-
-1. **`run_local_llm.py`**: Local model server (used if you don't want to use the Runpod serverless model). Check the [Model Deployment Guide](../../modules/llm_local/setup.md) for step-by-step instructions.
-2. **Demo (Django) app**: Runs the demo application for testing purposes (check its own **setup.md** for setup instructions).
-
-> **Important:** Review the following steps and required ports before starting all components.
+This guide walks you through setting up and running the project locally on a Linux machine, including Python installation, virtual environment setup, Playwright configuration, and project dependencies.
 
 ---
 
-### **1.2 Model Information and GPU Requirements**
+## 📋 1. Introduction
 
-| Model Name             | Variant | Model Link                                                                             | GPU Memory Requirement | Open Source |
-| ---------------------- | ------- | -------------------------------------------------------------------------------------- | ---------------------- | ----------- |
-| **Qwen 2.5 Coder 32B** | Q2_K    | [Qwen2.5-Coder-32B Model](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct-GGUF) | 18 GB                  | Yes         |
-| **Qwen 2.5 Coder 14B** | Q4_K_M  | [Qwen2.5-Coder-14B Model](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF) | 18 GB                  | Yes         |
-| **Hermes LLAMA 3.1**   | Q4_K_M  | [LLAMA Model](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-8B-GGUF)          | 12 GB                  | Yes         |
+To ensure proper project functioning, **three essential components** must run simultaneously:
 
-This table provides the **model name**, a **link** to the model, and the **GPU memory requirements** for each model. Ensure your hardware or cloud setup meets these requirements for inference or training.
+### **Core Components**
+
+| Component | Purpose | Setup Reference |
+|-----------|---------|-----------------|
+| 🤖 **`LLM`** | Local Or External model server | [Model Deployment Guide](../../modules/llm_local/setup.md) |
+| 🌐 **Demo webapps** | Demo application for testing | Check its own **setup.md** |
+| 🕷️ **Web Agent** | Browser automation agent | Configured via AGENT_PORT |
+
+> ⚠️ **Important**: Review the following steps and required ports before starting all components.
 
 ---
 
-## **2. Project Setup**
+### **1.2 LLM REQUIRED**
+
+### 🤖 LLM Configuration
+
+You have **multiple options** for LLM integration:
+
+#### **Option A: External LLM APIs** 🌐 (Recommended - CPU Only)
+Use any external LLM service:
+- **OpenAI** (GPT-4, GPT-3.5)
+- **DeepSeek**
+- **Anthropic Claude**
+- **Any other API provider**
+
+**Benefits:**
+- ✅ No GPU required
+- ✅ No local setup needed
+- ✅ Always up-to-date models
+- ✅ Lower maintenance
+
+#### **Option B: Local LLM Models** 🖥️ (GPU Required)
+
+| Model Name | Variant | GPU Memory | Open Source | Model Link |
+|------------|---------|------------|-------------|------------|
+| **Qwen 2.5 Coder 32B** | Q2_K | 18 GB | ✅ Yes | [Qwen2.5-Coder-32B](https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct-GGUF) |
+| **Qwen 2.5 Coder 14B** | Q4_K_M | 18 GB | ✅ Yes | [Qwen2.5-Coder-14B](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct-GGUF) |
+| **Hermes LLAMA 3.1** | Q4_K_M | 12 GB | ✅ Yes | [LLAMA Model](https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-8B-GGUF) |
+
+---
+💡 **Note**: Ensure your hardware or cloud setup meets these GPU memory requirements for inference.
+
+---
+
+## 🔧 2. Project Setup
 
 ### **Prerequisites**
 
-* **Python 3.10 or above**
-* **pip** (Python package manager)
-* **Conda (Optional)** if preferred for managing environments
-* **sudo/root privileges** for installing system dependencies
-* **Django App Database**: Follow the database setup instructions in the app’s own `setup.md` to configure and connect your preferred database.
+- 🐍 **Python 3.10 or above**
+- 📦 **pip** (Python package manager)
+- 🐍 **Conda** (Optional for environment management)
+- 🔐 **sudo/root privileges** for system dependencies
+- 🗄️ **Django App Database**: Follow database setup in the app's `setup.md`
 
 ---
 
-## **INSTALLATION**
+## 📥 INSTALLATION
 
 ### **Step 1: Verify Python Installation**
-
-Check your Python version:
 
 ```bash
 python3 --version
 ```
 
-If the version is earlier than 3.10, install the correct version (on Ubuntu):
-
+**If version is earlier than 3.10** (Ubuntu):
 ```bash
 sudo apt update
 sudo apt install -y python3.10 python3.10-venv python3-pip
@@ -58,120 +80,181 @@ sudo apt install -y python3.10 python3.10-venv python3-pip
 
 ---
 
-### **Step 2: Choose Environment Setup**
+### **Step 2: Environment Setup**
 
-#### Set Up a Virtual Environment with `venv`
+#### **Virtual Environment with `venv`**
 
-1. Create a virtual environment:
+**Create virtual environment:**
+```bash
+python3 -m venv venv
+```
 
-   ```bash
-   python3 -m venv venv
-   ```
+> 💡 **Note**: If Python version issues occur, specify explicitly:
+```bash
+python3.10 -m venv venv
+```
 
-   > **Note:** If there are issues with Python versions, specify version explicitly:
-
-   ```bash
-   python3.10 -m venv venv
-   ```
-
-2. Activate the virtual environment:
-
-   ```bash
-   source venv/bin/activate
-   ```
+**Activate environment:**
+```bash
+source venv/bin/activate
+```
 
 ---
 
 ### **Step 3: Install Dependencies**
 
-1. Install Python dependencies:
+**Python dependencies:**
+```bash
+pip install -r requirements.txt
+```
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Install Playwright and browser binaries:
-
-   ```bash
-   python3 -m playwright install
-   ```
-
-   This installs Chromium, Firefox, and WebKit.
+**Playwright and browser binaries:**
+```bash
+python3 -m playwright install
+```
+*This installs Chromium, Firefox, and WebKit.*
 
 ---
 
-### **Step 4: Set Up the Environment File (Only if You Don't Have One Already)**
+### **Step 4: Environment Configuration**
 
-1. Create the `.env` file:
+#### **Create `.env` file** (if you don't have one):
+```bash
+touch .env
+```
 
-   ```bash
-   touch .env
-   ```
+#### **Add required environment variables:**
+```env
+# LLM Provider Configuration
+# Can be "serverless", "local", or "openai"
+LLM_PROVIDER="local"
 
-2. Add the required environment variables:
+# Local LLM Configuration
+LOCAL_MODEL_ENDPOINT="http://192.168.0.103:6000/generate"
 
-   ```env
-   # Can be "serverless", "local", or "openai"
-   LLM_PROVIDER="local"
+# OpenAI Configuration
+OPENAI_API_KEY=""  # We suggest using an API key for simplicity
+OPENAI_MODEL="gpt-4o-mini"
+OPENAI_MAX_TOKENS="2000"
+OPENAI_TEMPERATURE="0.7"
 
-   # Local LLM Configuration
-   #LOCAL_MODEL_ENDPOINT="http://192.168.0.103:6000/generate"
-   LOCAL_MODEL_ENDPOINT="http://69.55.141.126:10278/generate"
+# Demo Webs Endpoint Configuration
+DEMO_WEBS_ENDPOINT="http://localhost"
+DEMO_WEBS_STARTING_PORT=8000
 
-   # OpenAI Configuration
-   OPENAI_API_KEY=""
-   OPENAI_MODEL="gpt-4-32k-0613"
-   OPENAI_MAX_TOKENS="2000"
-   OPENAI_TEMPERATURE="0.7"
-   ```
+# Agent Configuration
+AGENT_NAME="autoppia_agent"
+AGENT_HOST="localhost"
+AGENT_PORT="9000"  # Port where the web agent will be deployed
+EVALUATOR_HEADLESS="False"
+```
 
-3. Verify environment variables:
+#### **Configuration Options**
 
-   ```bash
-   cat .env
-   ```
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `DEMO_WEBS_ENDPOINT` | Base URL for demo webs | `http://localhost` | `http://192.168.1.100` |
+| `DEMO_WEBS_STARTING_PORT` | Starting port for demo webs | `8000` | `9000` |
+| `AGENT_HOST` | Hostname where agent runs | `localhost` | `84.247.180.39` |
+| `AGENT_PORT` | **Port where web agent is deployed** | `9000` | `8080` |
+| `EVALUATOR_HEADLESS` | Run browser in headless mode | `False` | `True` |
 
-## **Step 5: Test Browser User Profile Through Login**
+💡 **Important**: `AGENT_PORT` specifies where your web agent will be deployed and accessible.
 
----
-
-### **Step 5: Test Browser User Profile Through Login**
-
-This script tests browser automation with a persistent user profile.
-
-1. **Setup and Launch**: Loads the user profile directory and launches Chromium with saved session data (or creates a new profile).
-2. **Authentication Check**: Logs in or registers if no session is found.
-3. **Event Processing**: Retrieves events, saves them to the database, optionally deletes them.
-4. **Clean Up**: Closes the browser after completing operations.
-
----
-
-## **Notes**
-
-1. **Environment Activation**:
-
-   * For `venv`, run: `source venv/bin/activate` before starting development.
-
-2. **Playwright Browsers**:
-   Reinstall browsers if needed:
-
-   ```bash
-   python3 -m playwright install
-   ```
-
-   or
-
-   ```bash
-   playwright install
-   ```
-
-3. **Dependencies**:
-   If dependencies change, update `requirements.txt`:
-
-   ```bash
-   pip freeze > requirements.txt
-   ```
+**Verify configuration:**
+```bash
+cat .env
+```
 
 ---
 
-Your project should now be ready to run. If you encounter any issues, review the steps or consult the project documentation.
+### **Step 5: Demo Webs Setup** 🌐
+
+#### **Prerequisites**
+- 🐳 Docker and Docker Compose installed
+
+#### **Installation**
+```bash
+CURRENT_DIR=$(pwd)
+cd autoppia_iwa_module/modules/webs_demo/scripts
+
+# Install Docker
+chmod +x install_docker.sh
+./install_docker.sh
+
+# Setup demo webs
+chmod +x setup.sh
+./setup.sh
+
+cd "$CURRENT_DIR"
+```
+
+#### **Configuration** (Optional)
+Edit `.env` to customize endpoints:
+```bash
+DEMO_WEBS_ENDPOINT=http://localhost
+DEMO_WEBS_STARTING_PORT=8000
+```
+
+🔧 **Remote Setup**: Change endpoint to your demo webs server IP for distributed deployment.
+
+---
+
+### **Step 6: Test Browser User Profile** 🧪
+
+This script tests browser automation with persistent user profiles:
+
+**What it does:**
+1. **🚀 Setup & Launch**: Loads user profile directory and launches Chromium
+2. **🔐 Authentication Check**: Handles login/registration if no session exists
+3. **⚙️ Event Processing**: Retrieves and processes events, saves to database
+4. **🧹 Clean Up**: Properly closes browser after operations
+
+---
+
+## 📝 Important Notes
+
+### **Environment Activation**
+Always activate your environment before development:
+```bash
+source venv/bin/activate
+```
+
+### **Playwright Browsers**
+Reinstall browsers if needed:
+```bash
+python3 -m playwright install
+# or
+playwright install
+```
+
+### **Dependencies Management**
+Update requirements after adding new packages:
+```bash
+pip freeze > requirements.txt
+```
+
+### **Port Management**
+Ensure the following ports are available:
+- 🤖 **LLM Server**: 6000 (default)
+- 🌐 **Demo Webs**: 8000+ (configurable)
+- 🕷️ **Web Agent**: 9000 (configurable via AGENT_PORT)
+
+---
+
+## ✅ Ready to Go!
+
+Your project should now be ready to run. If you encounter any issues:
+- 📖 Review the setup steps
+- 📚 Consult project documentation
+- 🔍 Check port availability and conflicts
+
+🎉 **Success**: All components configured and ready for development!
+
+---
+
+## 🆘 Support & Contact
+
+Need help? Contact our team on Discord:
+- **@Daryxx**
+- **@Riiveer**
