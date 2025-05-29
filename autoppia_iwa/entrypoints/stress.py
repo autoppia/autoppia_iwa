@@ -164,7 +164,11 @@ async def main():
                 copy_solution = TaskSolution(task_id=task.id, actions=original_solution.actions.copy() if original_solution.actions else [], web_agent_id=agent.id)
                 solution_copies.append(copy_solution)
 
-            evaluator_config = EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20)
+            evaluator_config = EvaluatorConfig(
+                # save_results_in_db=False,
+                enable_grouping_tasks=False,
+                chunk_size=20,
+            )
             evaluator = ConcurrentEvaluator(web_project=demo_project, config=evaluator_config)
 
             start_eval_time = time.time()

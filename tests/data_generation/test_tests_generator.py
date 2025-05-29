@@ -66,7 +66,7 @@ async def generate_tasks_for_project(demo_project: WebProject) -> list[Task]:
             print(f"No valid cached tasks found for project '{demo_project.name}', generating new tasks...")
 
     config = TaskGenerationConfig(
-        save_task_in_db=False,
+        # save_task_in_db=False,
     )
 
     print(f"Generating tasks for {demo_project.name}...")

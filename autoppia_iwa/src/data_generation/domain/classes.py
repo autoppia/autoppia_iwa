@@ -179,7 +179,7 @@ class Task(BaseModel):
 
 class TaskGenerationConfig(BaseModel):
     # Database saving options
-    save_task_in_db: bool = False
+    # save_task_in_db: bool = False
 
     # Task generation controls
     generate_local_tasks: bool = False  # Generate page-specific tasks

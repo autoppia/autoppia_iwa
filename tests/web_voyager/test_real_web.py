@@ -75,7 +75,11 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
     """Evaluate a task solution."""
     evaluator = ConcurrentEvaluator(
         web_project=web_project,
-        config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20),
+        config=EvaluatorConfig(
+            # save_results_in_db=False,
+            enable_grouping_tasks=False,
+            chunk_size=20,
+        ),
     )
     result = await evaluator.evaluate_single_task_solution(task, task_solution)
 

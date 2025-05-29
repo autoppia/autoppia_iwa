@@ -80,7 +80,9 @@ class TestActionExecution(unittest.IsolatedAsyncioTestCase):
         """
         actions = [BaseAction.create_action(action) for action in self.actions_data[action_type]]
         evaluator_input = TaskSolution(task_id=self.task.id, actions=actions, web_agent_id=generate_random_web_agent_id())
-        evaluator_config = EvaluatorConfig(save_results_in_db=False)
+        evaluator_config = EvaluatorConfig(
+            # save_results_in_db=False,
+        )
         evaluator = ConcurrentEvaluator(self.web_project, evaluator_config)
 
         evaluation_result = await evaluator.evaluate_single_task_solution(self.task, evaluator_input)

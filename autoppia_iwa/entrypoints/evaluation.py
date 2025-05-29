@@ -26,7 +26,7 @@ async def generate_tasks():
     test_projects = await initialize_demo_webs_projects(DEMO_WEB_PROJECT)
     web_project = test_projects[0]
     config = TaskGenerationConfig(
-        save_task_in_db=False,
+        # save_task_in_db=False,
     )
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
     tasks: list[Task] = await pipeline.generate()
@@ -40,7 +40,9 @@ async def evaluate_project_for_agent(agent: IWebAgent, project, tasks, results):
     for task in tasks:
         task_solution: TaskSolution = await agent.solve_task(task)
         evaluator_input = TaskSolution(task_id=task.id, actions=task_solution.actions, web_agent_id=agent.id)
-        evaluator_config = EvaluatorConfig(save_results_in_db=False)
+        evaluator_config = EvaluatorConfig(
+            # save_results_in_db=False
+        )
         evaluator = ConcurrentEvaluator(project, evaluator_config)
         evaluation_result: EvaluationResult = await evaluator.evaluate_single_task_solution(task, evaluator_input)
         score = evaluation_result.final_score

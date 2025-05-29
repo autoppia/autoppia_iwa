@@ -76,7 +76,14 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 @visualize_list_of_evaluations(visualizer)
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
     try:
-        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
+        evaluator = ConcurrentEvaluator(
+            web_project=web_project,
+            config=EvaluatorConfig(
+                # save_results_in_db=False,
+                enable_grouping_tasks=False,
+                chunk_size=20,
+            ),
+        )
         return await evaluator.evaluate_task_solutions(task, task_solutions)
     except Exception:
         traceback.print_exc()
