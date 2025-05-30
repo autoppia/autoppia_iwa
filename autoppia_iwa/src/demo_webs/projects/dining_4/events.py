@@ -1,6 +1,7 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
+from dateutil.parser import isoparse
 from loguru import logger
 from pydantic import BaseModel
 
@@ -12,7 +13,7 @@ from ..shared_utils import parse_price
 # Helper Pydantic Models for ViewFullMenuEvent
 class MenuItem(BaseModel):
     name: str
-    price: float | None = None  # Price can be a string like "$20.00"
+    price: float | None = None
 
     @classmethod
     def parse_from_data(cls, data: dict[str, Any]) -> "MenuItem":
@@ -43,16 +44,33 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
             description = "Validates that the date dropdown was opened with a specific date."
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
+        if not criteria or not criteria.selected_date:
             return True
-        return self._validate_field(self.selected_date, criteria.selected_date)
+
+        # Normalize selected_date to datetime if CriterionValue
+        if isinstance(criteria.selected_date, CriterionValue):
+            raw_value = criteria.selected_date.value
+            if isinstance(raw_value, str):
+                criteria_dt = isoparse(raw_value)
+            elif isinstance(raw_value, datetime):
+                criteria_dt = raw_value
+            else:
+                return False
+        elif isinstance(criteria.selected_date, datetime):
+            criteria_dt = criteria.selected_date
+        else:
+            return False
+
+        criteria_utc = criteria_dt.astimezone(UTC)
+
+        return self.selected_date.year == criteria_utc.year and self.selected_date.month == criteria_utc.month and self.selected_date.day == criteria_utc.day
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "DateDropdownOpenedEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        selected_date_str = data.get("date")
-        parsed_date = datetime.fromisoformat(selected_date_str.replace("Z", "+00:00")) if selected_date_str else None
+        selected_date_str = backend_event.data.get("date")
+
+        parsed_date = isoparse(selected_date_str) if selected_date_str else None
 
         return cls(
             event_name=base_event.event_name,
