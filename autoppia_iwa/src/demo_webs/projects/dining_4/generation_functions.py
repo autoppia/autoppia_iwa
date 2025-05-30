@@ -17,37 +17,29 @@ from .data import (
 
 def generate_mock_dates():
     """
-    Generates a list of mock dates, including today's date and dates
-    within a range of 7 days before and after today.
+    Generates a list of mock dates strictly in the future within the same month,
+    with time set to 19:00.
     """
-    today = datetime.datetime.now(datetime.UTC)
+    today = datetime.datetime.now(datetime.UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+    current_month = today.month
     mock_dates_raw = []
 
-    # Today's date (datetime)
-    mock_dates_raw.append(today.replace(hour=19, minute=0, second=0, microsecond=0, tzinfo=datetime.UTC))
+    # Add future dates starting from tomorrow
+    for i in range(1, 15):  # next 14 days
+        future_date = today + datetime.timedelta(days=i)
+        if future_date.month == current_month:
+            mock_dates_raw.append(future_date.replace(hour=19, minute=0, second=0, microsecond=0))
 
-    # Dates within +/- 7 days (as date objects)
-    for i in range(1, 8):
-        # Date before today
-        date_before = today - datetime.timedelta(days=i)
-        mock_dates_raw.append(date_before.replace(hour=0, minute=0, second=0, microsecond=0))
-
-        # Date after today
-        date_after = today + datetime.timedelta(days=i)
-        mock_dates_raw.append(date_after.replace(hour=0, minute=0, second=0, microsecond=0))
-
-    # Remove duplicates and sort the list.
     return sorted(list(set(mock_dates_raw)))
 
 
 def generate_mock_date_strings(dates: list):
     """
-    Generates a list of date strings (e.g., "Jul 18") from the mock dates.
-    Prioritizes 'date' objects over 'datetime' objects for strings.
+    Converts list of datetime objects to unique, sorted strings like "Jul 18".
     """
     date_strings = []
     for d in dates:
-        if isinstance(d, datetime.date | datetime.datetime):
+        if isinstance(d, datetime.datetime | datetime.date):
             date_strings.append(d.strftime("%b %d"))
     return sorted(list(set(date_strings)))
 
