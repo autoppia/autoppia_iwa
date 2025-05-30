@@ -657,10 +657,12 @@ SCROLL_VIEW_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
+    # ===== Fixed =====
     DATE_DROPDOWN_OPENED_USE_CASE,
     TIME_DROPDOWN_OPENED_USE_CASE,
     PEOPLE_DROPDOWN_OPENED_USE_CASE,
     SEARCH_RESTAURANT_USE_CASE,
+    # ===== TEST =====
     VIEW_RESTAURANT_USE_CASE,
     VIEW_FULL_MENU_USE_CASE,
     COLLAPSE_MENU_USE_CASE,
