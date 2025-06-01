@@ -1,8 +1,12 @@
+# -----------------------------------------------------------------------------
+# use_cases.py
+# -----------------------------------------------------------------------------
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .data import MOVIES_DATA
 from .events import (
     AddCommentEvent,
+    # CompositeEvent  # si eventualmente necesitas el composite
     AddFilmEvent,
     ContactEvent,
     DeleteFilmEvent,
@@ -29,12 +33,20 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 ###############################################################################
 # REGISTRATION_USE_CASE
 ###############################################################################
+REGISTRATION_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Be sure to add instruction to register using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 REGISTRATION_USE_CASE = UseCase(
     name="REGISTRATION",
     description="The user fills out the registration form and successfully creates a new account.",
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
     replace_func=register_replace_func,
+    additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
@@ -82,12 +94,20 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 # LOGIN_USE_CASE
 ###############################################################################
+LOGIN_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Be sure to add instruction to login using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 LOGIN_USE_CASE = UseCase(
     name="LOGIN",
     description="The user fills out the login form and logs in successfully.",
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
+    additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
@@ -135,12 +155,20 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 # LOGOUT_USE_CASE
 ###############################################################################
+LOGOUT_ADDITIONAL_PROMPT_INFO = """"
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Be sure to add instruction to login using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
 LOGOUT_USE_CASE = UseCase(
     name="LOGOUT",
     description="The user logs out of the platform after logging in.",
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
+    additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>, then logout",
@@ -203,7 +231,7 @@ FILM_DETAIL_INFO = f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to view details of a movie (use phrases like "Show film details for...", "Give me film details about...")
+3. Be phrased as a request to **view details** of a movie (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
 4. Only use the movies name defined below.
 
 MOVIES NAMES:
@@ -710,16 +738,6 @@ DELETE_FILM_USE_CASE = UseCase(
                 "reasoning": "Checks that 'Avatar' is erased and confirms that it does not belong to the Action genre.",
             },
         },
-        {
-            "prompt": "Delete a film whose year is in the list [1999, 1972, 1990]",
-            "prompt_for_task_generation": "Delete a film whose year is in the list [<year1>, <year2>, <year3>]",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_FILM",
-                "event_criteria": {"year": {"value": [1999, 1972, 1990], "operator": "in_list"}},
-                "reasoning": "Verifies that the film's release year is one of the specific years mentioned in the list: 1999, 1972, or 1990.",
-            },
-        },
     ],
 )
 
@@ -849,7 +867,7 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 EDIT_USER_PROFILE_USE_CASE = UseCase(
-    name="EDIT_PROFILE",
+    name="EDIT_USER",
     description="The user edits their profile, modifying one or more attributes such as first name, last name, bio, location, website, or favorite genres. Username and email cannot be edited.",
     event=EditUserEvent,
     event_source_code=EditUserEvent.get_source_code_of_class(),
@@ -862,7 +880,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your first name to <first_name>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "user1", "operator": "equals"},
                     "first_name": {"value": "John", "operator": "equals"},
@@ -875,7 +893,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your bio to include <bio_content>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "filmfan", "operator": "equals"},
                     "bio": {"value": "cinema", "operator": "contains"},
@@ -888,7 +906,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your location to <location>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "movielover", "operator": "equals"},
                     "location": {"value": "New York, USA", "operator": "equals"},
@@ -901,7 +919,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Edit your website to <website>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "cinephile", "operator": "equals"},
                     "website": {"value": "https://myfilmblog.example.com", "operator": "equals"},
@@ -914,7 +932,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your favorite genre to <genre>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "director101", "operator": "equals"},
                     "favorite_genres": {"value": "Sci-Fi", "operator": "equals"},
@@ -927,7 +945,7 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your last name to <last_name>.",
             "test": {
                 "type": "CheckEventTest",
-                "event_name": "EDIT_PROFILE",
+                "event_name": "EDIT_USER",
                 "event_criteria": {
                     "username": {"value": "producer", "operator": "equals"},
                     "last_name": {"value": "Smith", "operator": "equals"},
@@ -946,7 +964,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Include the word "Filter" (or "filtering", "filtered", "filters") explicitly in the prompt.
-4. Be phrased as a request to filter or browse films (e.g., "Filter...", "Show only...", etc.).
+4. Be phrased as a request to filter or browse films (e.g., "Filter...", "Show only...", "Display...", "Browse...", etc.).
 5. Use ONLY the allowed genres and years from the lists below.
 
 ALLOWED YEARS:
@@ -1031,47 +1049,16 @@ FILTER_FILM_USE_CASE = UseCase(
 ###############################################################################
 ADD_COMMENT_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. **Mention EXACTLY the constraints** for movie_name, commenter_name, or content, **using the same words** as the constraints.
-   - If the constraint is movie_name = 'Inception', you must say: "Add a comment to a movie whose name EQUALS 'Inception'."
-   - If the constraint is commenter_name contains 'John', you must say: "Ensure the commenter's name CONTAINS 'John'."
-   - If the constraint is content not_contains 'boring', you must say: "Ensure the comment's content does NOT contain 'boring'."
-   - Avoid ambiguous or vague phrases like "emotionally powerful," "true cinematic experience," or "redefines the genre." Instead, **only** use literal constraints from the system.
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to add a comment to a movie (use phrases like "Add a comment...", "Write a review...", "Post a comment...", "Leave feedback...").
+4. If the constraints include the 'content' field (e.g., content contains or content not_contains), the prompt MUST refer specifically to the comment **content or message**, using expressions like "a comment whose content...", "a review whose message...", etc., and NOT just a vague instruction".
+For example, if the constraints are "movie_name contains 'Inception' AND content not_contains 'boring'":
+- CORRECT: "Add a comment to a movie that contains 'Inception' with a review that does NOT contain the word 'boring'."
+- INCORRECT: "Write a comment about any movie" (missing specific constraints)
+- INCORRECT: "Post a review that includes extra unnecessary details" (adding constraints not specified)
 
-2. **Do NOT** introduce or interpret subjective phrases like "sets a new standard," "redefines the genre," "true cinematic experience," "is emotionally powerful," etc.
-   - If such a phrase appears in a constraint, rewrite it explicitly as content = "the exact substring" or content not_contains "the exact substring," or omit it if it doesn't map to an operator.
-
-3. The prompt MUST be phrased as a direct request to add or post a comment (e.g. "Add a comment...", "Write a review...", "Leave feedback...").
-   - If the constraint says commenter_name = 'Tom', you must say "Ensure the commenter's name EQUALS 'Tom'."
-
-4. If there's a constraint about `movie_name`, you must specify it: "Add a comment to a movie whose name [operator] 'XYZ'."
-   - If there's no constraint about movie_name, the prompt can simply say "Add a comment to a movie."
-
-5. If there's a constraint about `commenter_name`, you must reference the person posting the comment, e.g., "a comment from someone whose name CONTAINS 'John'."
-   - If there's no constraint, do not invent one.
-
-6. If there's a constraint about `content`, you must explicitly say "a comment whose content [operator] 'XYZ'."
-   - e.g. "a comment whose content NOT_CONTAINS 'boring'."
-
-7. **Use field values exactly as provided.** Do not correct spelling or reword.
-   - If the system says the movie_name is 'Interestellar', do NOT change it to 'Interstellar'.
-   - If the system says commenter_name not_equals 'Michael', you must keep 'Michael' exactly.
-
-8. **No extraneous constraints**: Do not add extra conditions like "with a rating of X", "mention your budget," etc. If it's not in the constraint, it must not appear.
-
-EXAMPLE of a correct prompt if the constraints are:
-- movie_name not_equals 'The Matrix'
-- commenter_name contains 'John'
-- content not_contains 'boring'
-
-CORRECT:
-"Add a comment to a movie whose name does NOT EQUAL 'The Matrix', with a commenter's name that CONTAINS 'John', and the comment content that does NOT CONTAIN 'boring'."
-
-INCORRECT (vague, missing details, or extra):
-- "Post a review for a film that is not The Matrix about an amazing experience" (vague and missing actual content constraint).
-- "Add a comment to any movie" (omits constraints).
-- "Write a comment that does not mention the word 'boring' but also do not mention 'bad acting' either" (extra constraint not in the system).
-
-ALL prompts must follow this structure, phrasing each constraint EXACTLY, and only the constraints that were specified.
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 ADD_COMMENT_USE_CASE = UseCase(
     name="ADD_COMMENT",

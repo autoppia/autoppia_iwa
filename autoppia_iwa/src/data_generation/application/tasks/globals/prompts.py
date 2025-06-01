@@ -20,8 +20,14 @@ SYNTHETIC PROMPT GENERATION PROTOCOL
      * "Retrieve details of..."
 
 3. CONSTRAINT VALUE FORMATTING
-   - All **specific values** used in constraints (e.g., names, strings) MUST be enclosed in **single quotes ('')
+   - All **specific values** used in constraints (e.g., names, strings) MUST be enclosed in **single quotes ('')**
    - Example: "director is NOT 'Robert Zemeckis'", not just "director is not Robert Zemeckis"
+
+4. INTERPRETING CONTAINS VS. EQUALS:
+   - If the constraint includes the word **'contains'**, it means the specified word or phrase is **part of** the complete value (i.e., the full value can contain more than just the given word).
+     - Example: "title contains 'Ring'" → matches "The Lord of the Rings"
+   - If the constraint uses **'equals'**, you must use the word **'equal'** in the prompt and ensure that the full value is **exactly equal** to the specified one — no more, no less.
+     - Example: "genre equals 'Romance'" → only matches books with genre exactly 'Romance'
 
 ## CONSTRAINT REPRESENTATION EXAMPLE
 If constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
@@ -44,6 +50,8 @@ Be clear with constraints, especially when referring to CONTAINS or NOT CONTAINS
 
 ## CURRENT CONSTRAINT SET
 {constraints_info}
+
+Do not generate the constraint for this prompt if the constraint set above does not contains the constraints.
 
 ## ADDITIONAL INFO
 {additional_prompt_info}

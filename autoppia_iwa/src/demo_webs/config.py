@@ -1,14 +1,10 @@
 import sys
 from pathlib import Path
 
-from .projects.cinema_1.main import cinema_project
-
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
+from .classes import WebProject
+from .projects.books_2.main import books_project
+from .projects.cinema_1.main import cinema_project
 
-# from modules.webs_demo.web_1_demo_django_jobs.events.events import RELEVANT_DATA as relevant_data_web_1
-
-
-# from .utils import get_backend_url, get_frontend_url
-
-demo_web_projects = [cinema_project]
+demo_web_projects: list[WebProject] = [cinema_project, books_project]

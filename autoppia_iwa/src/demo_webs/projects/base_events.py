@@ -24,6 +24,7 @@ class Event(BaseModel):
         if criteria and hasattr(criteria, "model_fields"):
             for field_name in criteria.model_fields:
                 field_value = getattr(criteria, field_name)
+                print(f"Before: {field_value}. self_web_agent_id:{self.web_agent_id}")
 
                 if hasattr(field_value, "value"):
                     if isinstance(field_value.value, str):
@@ -63,10 +64,10 @@ class Event(BaseModel):
         events: list[Event] = []
         # TODO: If we have more types we should include here
         # TODO: Moving (ALL_BACKEND_EVENT_TYPES) here to resolve circular import error
+        from autoppia_iwa.src.demo_webs.projects.books_2.events import BACKEND_EVENT_TYPES as web_2_backend_types
         from autoppia_iwa.src.demo_webs.projects.cinema_1.events import BACKEND_EVENT_TYPES as web_1_backend_types
 
-        ALL_BACKEND_EVENT_TYPES = web_1_backend_types
-
+        ALL_BACKEND_EVENT_TYPES = {**web_1_backend_types, **web_2_backend_types}
         event_class_map = ALL_BACKEND_EVENT_TYPES
 
         for event_data in backend_events:
