@@ -51,7 +51,6 @@ GENERATE_MILESTONES = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "False")))
 # ============================
 PROJECT_BASE_DIR = Path(__file__).resolve().parents[1]
 
-
 # ============================
 # DEMO WEBS
 # ============================
@@ -65,3 +64,4 @@ AGENT_NAME = os.getenv("AGENT_NAME")
 USE_APIFIED_AGENT = bool(strtobool(os.getenv("USE_APIFIED_AGENT", "false")))
 AGENT_HOST = os.getenv("AGENT_HOST", "localhost")
 AGENT_PORT = int(os.getenv("AGENT_PORT", "8080"))
+OPERATOR_ENDPOINT = int(os.getenv("OPERATOR_ENDPOINT", "localhost:4000"))

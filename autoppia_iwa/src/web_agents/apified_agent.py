@@ -1,7 +1,5 @@
 import asyncio
-
 import aiohttp
-
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
