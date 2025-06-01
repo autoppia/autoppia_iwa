@@ -14,7 +14,7 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 class RegistrationEvent(Event):
     """Event triggered when a user registration is completed"""
 
-    event_name: str = "REGISTRATION"
+    event_name: str = "REGISTRATION_BOOK"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -46,7 +46,7 @@ class RegistrationEvent(Event):
 class LoginEvent(Event):
     """Event triggered when a user logs in"""
 
-    event_name: str = "LOGIN"
+    event_name: str = "LOGIN_BOOK"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -78,7 +78,7 @@ class LoginEvent(Event):
 class LogoutEvent(Event):
     """Event triggered when a user logs out"""
 
-    event_name: str = "LOGOUT"
+    event_name: str = "LOGOUT_BOOK"
     username: str
 
     class ValidationCriteria(BaseModel):
@@ -108,8 +108,8 @@ class LogoutEvent(Event):
 class EditUserEvent(Event):
     """Event triggered when a user edits their profile"""
 
-    event_name: str = "EDIT_USER"
-    username: str
+    event_name: str = "EDIT_USER_BOOK"
+    # username: str
     first_name: str | None = None
     last_name: str | None = None
     email: str
@@ -124,7 +124,7 @@ class EditUserEvent(Event):
     class ValidationCriteria(BaseModel):
         """Criteria for validating edit user events"""
 
-        username: str | CriterionValue | None = None
+        # username: str | CriterionValue | None = None
         first_name: str | CriterionValue | None = None
         last_name: str | CriterionValue | None = None
         bio: str | CriterionValue | None = None
@@ -145,10 +145,10 @@ class EditUserEvent(Event):
         if not criteria:
             return True
 
-        # Validate first_name
-        if criteria.username is not None and not validate_criterion(self.username, criteria.username):
-            return False
+        # if criteria.username is not None and not validate_criterion(self.username, criteria.username):
+        #     return False
 
+        # Validate first_name
         if criteria.first_name is not None and not validate_criterion(self.first_name, criteria.first_name):
             return False
 
@@ -243,7 +243,7 @@ class EditUserEvent(Event):
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
-            username=data.get("username"),
+            # username=data.get("username"),
             first_name=data.get("first_name"),
             last_name=data.get("last_name"),
             email=data.get("email", ""),
@@ -256,80 +256,74 @@ class EditUserEvent(Event):
 
 
 # =============================================================================
-#                           FILM EVENTS
+#                           BOOK EVENTS
 # =============================================================================
 
 
-class FilmDetailEvent(Event):
-    """Event triggered when a film detail page is viewed"""
+class BookDetailEvent(Event):
+    """Event triggered when a book detail page is viewed"""
 
-    event_name: str = "FILM_DETAIL"
+    event_name: str = "BOOK_DETAIL"
 
-    movie_id: int
-    movie_name: str
-    movie_director: str | None = None
-    movie_year: int | None = None
-    movie_genres: list[str] = Field(default_factory=list)
-    movie_rating: float | None = None
-    movie_duration: int | None = None
-    movie_cast: str | None = None
+    # book_id: int
+    book_name: str
+    book_year: int | None = None
+    book_genres: list[str] = Field(default_factory=list)
+    book_rating: float | None = None
+    # book_pages: int | None = None
 
     class ValidationCriteria(BaseModel):
         """
-        Validation criteria for FilmDetailEvent.
+        Validation criteria for BookDetailEvent.
         Supports both simple values and advanced criteria with operators.
         """
 
         name: str | CriterionValue | None = None
         genre: str | CriterionValue | None = None
-        director: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
-        duration: int | CriterionValue | None = None
+        # pages: int | CriterionValue | None = None
 
         class Config:
-            title = "Film Detail Validation"
-            description = "Validates that a film detail page was viewed with specific attributes"
+            title = "Book Detail Validation"
+            description = "Validates that a book detail page was viewed with specific attributes"
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
-        Validate this FilmDetailEvent against the criteria.
+        Validate this BookDetailEvent against the criteria.
         """
         if not criteria:
             return True
-        if criteria.name is not None and not validate_criterion(self.movie_name, criteria.name):
+        if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
             return False
         if criteria.genre is not None:
             if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.movie_genres):
+                if not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
                     return False
             else:
                 if criteria.genre.operator == ComparisonOperator.EQUALS:
-                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.movie_genres):
+                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
+                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
+                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.IN_LIST:
                     if not isinstance(criteria.genre.value, list):
                         return False
-                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.movie_genres):
+                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.book_genres):
                         return False
-        if criteria.director is not None and not validate_criterion(self.movie_director, criteria.director):
+        if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
             return False
-        if criteria.year is not None and not validate_criterion(self.movie_year, criteria.year):
-            return False
-        if criteria.rating is not None and not validate_criterion(self.movie_rating, criteria.rating):
-            return False
-        return not (criteria.duration is not None and not validate_criterion(self.movie_duration, criteria.duration))
+        # return not (criteria.pages is not None and not validate_criterion(self.book_pages, criteria.pages))
+        return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "FilmDetailEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "BookDetailEvent":
         """
-        Parse a film detail event from backend data.
+        Parse a book detail event from backend data.
         """
         base_event = Event.parse(backend_event)
         data = backend_event.data
@@ -341,80 +335,77 @@ class FilmDetailEvent(Event):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            movie_id=data.get("id", 0),
-            movie_name=data.get("name", ""),
-            movie_director=data.get("director", ""),
-            movie_year=data.get("year"),
-            movie_genres=genres,
-            movie_rating=data.get("rating"),
-            movie_duration=data.get("duration"),
-            movie_cast=data.get("cast", ""),
+            # book_id=data.get("id", 0),
+            book_name=data.get("name", ""),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            # book_pages=data.get("duration"),
         )
 
 
-class AddFilmEvent(Event):
-    """Event triggered when a user adds a new film"""
+class AddBookEvent(Event):
+    """Event triggered when a user adds a new book"""
 
-    event_name: str = "ADD_FILM"
+    event_name: str = "ADD_BOOK"
 
-    movie_id: int
-    movie_name: str
-    movie_director: str | None = None
-    movie_year: int | None = None
-    movie_genres: list[str] = Field(default_factory=list)
-    movie_rating: float | None = None
-    movie_duration: int | None = None
-    movie_cast: str | None = None
+    # book_id: int
+    # book_name: str
+    book_author: str | None = None
+    book_year: int | None = None
+    book_genres: list[str] = Field(default_factory=list)
+    book_rating: float | None = None
+    book_pages: int | None = None
 
     class ValidationCriteria(BaseModel):
-        """Criteria for validating add film events"""
+        """Criteria for validating add book events"""
 
-        name: str | CriterionValue | None = None
+        # name: str | CriterionValue | None = None
         genre: str | CriterionValue | None = None
-        director: str | CriterionValue | None = None
+        author: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
-        duration: int | CriterionValue | None = None
+        pages: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
-        Validate if this add film event meets the criteria.
+        Validate if this add book event meets the criteria.
         """
         if not criteria:
             return True
-        if criteria.name is not None and not validate_criterion(self.movie_name, criteria.name):
-            return False
+        # if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
+        #     return False
         if criteria.genre is not None:
             if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.movie_genres):
+                if not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
                     return False
             else:
                 if criteria.genre.operator == ComparisonOperator.EQUALS:
-                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.movie_genres):
+                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
+                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
+                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.IN_LIST:
                     if not isinstance(criteria.genre.value, list):
                         return False
-                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.movie_genres):
+                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.book_genres):
                         return False
-        if criteria.director is not None and not validate_criterion(self.movie_director, criteria.director):
+        if criteria.author is not None and not validate_criterion(self.book_author, criteria.author):
             return False
-        if criteria.year is not None and not validate_criterion(self.movie_year, criteria.year):
+        if criteria.year is not None and not validate_criterion(self.book_year, criteria.year):
             return False
-        if criteria.rating is not None and not validate_criterion(self.movie_rating, criteria.rating):
+        if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
             return False
-        return not (criteria.duration is not None and not validate_criterion(self.movie_duration, criteria.duration))
+        return not (criteria.pages is not None and not validate_criterion(self.book_pages, criteria.pages))
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "AddFilmEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "AddBookEvent":
         """
-        Parse an add film event from backend data.
+        Parse an add book event from backend data.
         """
         base_event = Event.parse(backend_event)
         data = backend_event.data
@@ -426,40 +417,38 @@ class AddFilmEvent(Event):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            movie_id=data.get("id", 0),
-            movie_name=data.get("name", ""),
-            movie_director=data.get("director", ""),
-            movie_year=data.get("year"),
-            movie_genres=genres,
-            movie_rating=data.get("rating"),
-            movie_duration=data.get("duration"),
-            movie_cast=data.get("cast", ""),
+            # book_id=data.get("id", 0),
+            # book_name=data.get("name", ""),
+            book_author=data.get("director", ""),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            book_pages=data.get("duration"),
         )
 
 
-class EditFilmEvent(Event):
-    """Event triggered when a user edits an existing film"""
+class EditBookEvent(Event):
+    """Event triggered when a user edits an existing book"""
 
-    event_name: str = "EDIT_FILM"
+    event_name: str = "EDIT_BOOK"
 
-    movie_id: int
-    movie_name: str
-    movie_director: str | None = None
-    movie_year: int | None = None
-    movie_genres: list[str] = Field(default_factory=list)
-    movie_rating: float | None = None
-    movie_duration: int | None = None
-    movie_cast: str | None = None
+    # book_id: int
+    book_name: str
+    book_author: str | None = None
+    book_year: int | None = None
+    book_genres: list[str] = Field(default_factory=list)
+    book_rating: float | None = None
+    book_pages: int | None = None
     previous_values: dict[str, Any] = Field(default_factory=dict)
     changed_fields: list[str] = Field(default_factory=list)
 
     class ValidationCriteria(BaseModel):
-        """Criteria for validating edit film events"""
+        """Criteria for validating edit book events"""
 
-        movie_id: int | CriterionValue | None = None
+        # book_id: int | CriterionValue | None = None
         name: str | CriterionValue | None = None
         genre: str | CriterionValue | None = None
-        director: str | CriterionValue | None = None
+        author: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         # Check if a specific field was changed
@@ -467,38 +456,38 @@ class EditFilmEvent(Event):
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
-        Validate if this edit film event meets the criteria.
+        Validate if this edit book event meets the criteria.
         """
         if not criteria:
             return True
-        if criteria.movie_id is not None and not validate_criterion(self.movie_id, criteria.movie_id):
-            return False
-        if criteria.name is not None and not validate_criterion(self.movie_name, criteria.name):
+        # if criteria.book_id is not None and not validate_criterion(self.book_id, criteria.book_id):
+        #     return False
+        if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
             return False
         if criteria.genre is not None:
             if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.movie_genres):
+                if not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
                     return False
             else:
                 if criteria.genre.operator == ComparisonOperator.EQUALS:
-                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.movie_genres):
+                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
+                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
+                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres):
                         return False
                 elif criteria.genre.operator == ComparisonOperator.IN_LIST:
                     if not isinstance(criteria.genre.value, list):
                         return False
-                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.movie_genres):
+                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.book_genres):
                         return False
-        if criteria.director is not None and not validate_criterion(self.movie_director, criteria.director):
+        if criteria.author is not None and not validate_criterion(self.book_author, criteria.author):
             return False
-        if criteria.year is not None and not validate_criterion(self.movie_year, criteria.year):
+        if criteria.year is not None and not validate_criterion(self.book_year, criteria.year):
             return False
-        if criteria.rating is not None and not validate_criterion(self.movie_rating, criteria.rating):
+        if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
             return False
         if criteria.changed_field is not None:
             if isinstance(criteria.changed_field, str):
@@ -516,9 +505,9 @@ class EditFilmEvent(Event):
         return True
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "EditFilmEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "EditBookEvent":
         """
-        Parse an edit film event from backend data.
+        Parse an edit book event from backend data.
         """
         base_event = Event.parse(backend_event)
         data = backend_event.data
@@ -541,73 +530,72 @@ class EditFilmEvent(Event):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            movie_id=data.get("id", 0),
-            movie_name=data.get("name", ""),
-            movie_director=data.get("director", ""),
-            movie_year=data.get("year"),
-            movie_genres=genres,
-            movie_rating=data.get("rating"),
-            movie_duration=data.get("duration"),
-            movie_cast=data.get("cast", ""),
+            # book_id=data.get("id", 0),
+            book_name=data.get("name", ""),
+            book_author=data.get("director", ""),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            book_pages=data.get("duration"),
             previous_values=previous_values,
             changed_fields=changed_fields,
         )
 
 
-class DeleteFilmEvent(Event):
-    """Event triggered when a user deletes a film"""
+class DeleteBookEvent(Event):
+    """Event triggered when a user deletes a book"""
 
-    event_name: str = "DELETE_FILM"
+    event_name: str = "DELETE_BOOK"
 
-    movie_id: int
-    movie_name: str
-    movie_director: str | None = None
-    movie_year: int | None = None
-    movie_genres: list[str] = Field(default_factory=list)
-    movie_rating: float | None = None
-    movie_duration: int | None = None
+    book_id: int
+    book_name: str
+    book_author: str | None = None
+    book_year: int | None = None
+    book_genres: list[str] = Field(default_factory=list)
+    book_rating: float | None = None
+    book_pages: int | None = None
 
     class ValidationCriteria(BaseModel):
-        """Criteria for validating delete film events"""
+        """Criteria for validating delete book events"""
 
-        movie_id: int | CriterionValue | None = None
+        book_id: int | CriterionValue | None = None
         name: str | CriterionValue | None = None
         genre: str | CriterionValue | None = None
-        director: str | CriterionValue | None = None
+        author: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
-        Validate if this delete film event meets the criteria.
+        Validate if this delete book event meets the criteria.
         """
         if not criteria:
             return True
-        if criteria.movie_id is not None and not validate_criterion(self.movie_id, criteria.movie_id):
+        if criteria.book_id is not None and not validate_criterion(self.book_id, criteria.book_id):
             return False
-        if criteria.name is not None and not validate_criterion(self.movie_name, criteria.name):
+        if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
             return False
         if criteria.genre is not None:
-            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.movie_genres):
+            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
                 return False
             else:
                 if (
-                    (criteria.genre.operator == ComparisonOperator.EQUALS and not any(criteria.genre.value.lower() == genre.lower() for genre in self.movie_genres))
-                    or (criteria.genre.operator == ComparisonOperator.CONTAINS and not any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres))
-                    or (criteria.genre.operator == ComparisonOperator.NOT_CONTAINS and any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres))
+                    (criteria.genre.operator == ComparisonOperator.EQUALS and not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.CONTAINS and not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.NOT_CONTAINS and any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
                     or (
                         criteria.genre.operator == ComparisonOperator.IN_LIST
-                        and not any(genre.lower() in [v.lower() if isinstance(v, str) else v for v in criteria.genre.value] for genre in self.movie_genres)
+                        and not any(genre.lower() in [v.lower() if isinstance(v, str) else v for v in criteria.genre.value] for genre in self.book_genres)
                     )
                 ):
                     return False
-        if criteria.director is not None and not validate_criterion(self.movie_director, criteria.director):
+        if criteria.author is not None and not validate_criterion(self.book_author, criteria.author):
             return False
-        return not (criteria.year is not None and not validate_criterion(self.movie_year, criteria.year))
+        return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "DeleteFilmEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "DeleteBookEvent":
         """
-        Parse a delete film event from backend data.
+        Parse a delete book event from backend data.
         """
         base_event = Event.parse(backend_event)
         data = backend_event.data
@@ -619,25 +607,25 @@ class DeleteFilmEvent(Event):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            movie_id=data.get("id", 0),
-            movie_name=data.get("name", ""),
-            movie_director=data.get("director", ""),
-            movie_year=data.get("year"),
-            movie_genres=genres,
-            movie_rating=data.get("rating"),
-            movie_duration=data.get("duration"),
+            book_id=data.get("id", 0),
+            book_name=data.get("name", ""),
+            book_author=data.get("director", ""),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            book_pages=data.get("duration"),
         )
 
 
-class SearchFilmEvent(Event):
-    """Event triggered when a user searches for a film"""
+class SearchBookEvent(Event):
+    """Event triggered when a user searches for a book"""
 
-    event_name: str = "SEARCH_FILM"
+    event_name: str = "SEARCH_BOOK"
 
     query: str
 
     class ValidationCriteria(BaseModel):
-        """Criteria for validating search film events"""
+        """Criteria for validating search book events"""
 
         query: str | CriterionValue | None = None
 
@@ -655,9 +643,9 @@ class SearchFilmEvent(Event):
         return True
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "SearchFilmEvent":
+    def parse(cls, backend_event: BackendEvent) -> "SearchBookEvent":
         """
-        Parse a search film event from backend data.
+        Parse a search book event from backend data.
         """
 
         base_event = Event.parse(backend_event)
@@ -667,22 +655,22 @@ class SearchFilmEvent(Event):
 
 
 class AddCommentEvent(Event):
-    """Event triggered when a user adds a comment to a film"""
+    """Event triggered when a user adds a comment to a book"""
 
-    event_name: str = "ADD_COMMENT"
+    event_name: str = "ADD_COMMENT_BOOK"
 
     commenter_name: str
     content: str
-    movie_id: int
-    movie_name: str
+    book_id: int
+    book_name: str
 
     class ValidationCriteria(BaseModel):
         """Criteria for validating add comment events"""
 
         content: str | CriterionValue | None = None
         commenter_name: str | CriterionValue | None = None
-        movie_id: int | CriterionValue | None = None
-        movie_name: str | CriterionValue | None = None
+        book_id: int | CriterionValue | None = None
+        book_name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
@@ -694,9 +682,9 @@ class AddCommentEvent(Event):
             return False
         if criteria.commenter_name is not None and not validate_criterion(self.commenter_name, criteria.commenter_name):
             return False
-        if criteria.movie_id is not None and not validate_criterion(self.movie_id, criteria.movie_id):
+        if criteria.book_id is not None and not validate_criterion(self.book_id, criteria.book_id):
             return False
-        return not (criteria.movie_name is not None and not validate_criterion(self.movie_name, criteria.movie_name))
+        return not (criteria.book_name is not None and not validate_criterion(self.book_name, criteria.book_name))
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "AddCommentEvent":
@@ -705,7 +693,7 @@ class AddCommentEvent(Event):
         """
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        movie_data = data.get("movie", {})
+        book_data = data.get("book", {})
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -713,8 +701,8 @@ class AddCommentEvent(Event):
             user_id=base_event.user_id,
             commenter_name=data.get("name", ""),
             content=data.get("content", ""),
-            movie_id=movie_data.get("id", 0),
-            movie_name=movie_data.get("name", ""),
+            book_id=book_data.get("id", 0),
+            book_name=book_data.get("name", ""),
         )
 
 
@@ -726,7 +714,7 @@ class AddCommentEvent(Event):
 class ContactEvent(Event):
     """Event triggered when a user submits a contact form"""
 
-    event_name: str = "CONTACT"
+    event_name: str = "CONTACT_BOOK"
 
     name: str
     email: str
@@ -788,22 +776,22 @@ class ContactEvent(Event):
         )
 
 
-class FilterFilmEvent(Event):
-    """Event triggered when a user filters films by genre and/or year"""
+class FilterBookEvent(Event):
+    """Event triggered when a user filters books by genre and/or year"""
 
-    event_name: str = "FILTER_FILM"
+    event_name: str = "FILTER_BOOK"
     genre_name: str | None = None
     year: int | None = None
 
     class ValidationCriteria(BaseModel):
-        """Criteria for validating filter film events"""
+        """Criteria for validating filter book events"""
 
         genre_name: str | CriterionValue | None = None
         year: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
-        Validate if this filter film event meets the criteria
+        Validate if this filter book event meets the criteria
         Args:
             criteria: Optional validation criteria to check against
         Returns:
@@ -829,13 +817,13 @@ class FilterFilmEvent(Event):
         return True
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "FilterFilmEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "FilterBookEvent":
         """
-        Parse a filter film event from backend data
+        Parse a filter book event from backend data
         Args:
             backend_event: Event data from the backend API
         Returns:
-            FilterFilmEvent object populated with data from the backend event
+            FilterBookEvent object populated with data from the backend event
         """
         base_event = Event.parse(backend_event)
 
@@ -853,63 +841,150 @@ class FilterFilmEvent(Event):
         )
 
 
-# TODO: No sensible, Need to come-up with a new approach
-# class CompositeEvent(Event):
-#     """Event triggered when a user performs multiple actions in sequence"""
-#
-#     event_name: str = "COMPOSITE_EVENT"
-#     events: list[Event] = Field(default_factory=list)
-#
-#     class ValidationCriteria(BaseModel):
-#         """Criteria for validating composite events"""
-#
-#         event_criteria: list[dict[str, Any]] = []
-#
-#     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-#         """
-#         Validate if this composite event meets the criteria for all sub-events.
-#
-#         Args:
-#             criteria: Optional validation criteria for each event
-#
-#         Returns:
-#             True if all criteria are met, False otherwise
-#         """
-#         if not criteria or not criteria.event_criteria:
-#             return True
-#
-#         if len(self.events) != len(criteria.event_criteria):
-#             return False  # Ensure criteria match the number of events
-#
-#         return all(event._validate_criteria(event.__class__.ValidationCriteria(**event_criteria)) for event, event_criteria in zip(self.events, criteria.event_criteria, strict=False))
-#
-#     @classmethod
-#     def parse(cls, backend_event: "BackendEvent") -> "CompositeEvent":
-#         """
-#         Parse a composite event from backend data
-#
-#         Args:
-#             backend_event: Event data from the backend API
-#
-#         Returns:
-#             CompositeEvent object populated with data from the backend event
-#         """
-#         base_event = Event.parse(backend_event)
-#         event_data = backend_event.get("events", [])
-#
-#         parsed_events = []
-#         for event_dict in event_data:
-#             event_class = BACKEND_EVENT_TYPES.get(event_dict.get("event_name"))  # Dynamically get event class
-#             if event_class:
-#                 parsed_events.append(event_class.parse(event_dict))
-#
-#         return cls(
-#             event_name=base_event.event_name,
-#             timestamp=base_event.timestamp,
-#             web_agent_id=base_event.web_agent_id,
-#             user_id=base_event.user_id,
-#             events=parsed_events,
-#         )
+class PurchaseBookEvent(Event):
+    """Event triggered when a user purchases a book"""
+
+    event_name: str = "PURCHASE_BOOK"
+
+    book_name: str
+    # price: float
+    book_year: int | None = None
+    book_genres: list[str] = Field(default_factory=list)
+    book_rating: float | None = None
+    # book_pages: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating purchase book events"""
+
+        name: str | CriterionValue | None = None
+        genre: str | CriterionValue | None = None
+        year: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        # price: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        """
+        Validate if this purchase book event meets the criteria.
+        """
+        if not criteria:
+            return True
+        if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
+            return False
+        if criteria.genre is not None:
+            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
+                return False
+            else:
+                if (
+                    (criteria.genre.operator == ComparisonOperator.EQUALS and not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.CONTAINS and not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.NOT_CONTAINS and any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (
+                        criteria.genre.operator == ComparisonOperator.IN_LIST
+                        and not any(genre.lower() in [v.lower() if isinstance(v, str) else v for v in criteria.genre.value] for genre in self.book_genres)
+                    )
+                ):
+                    return False
+        # if criteria.price is not None and not validate_criterion(self.price, criteria.price):
+        #     return False
+        if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
+            return False
+        return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "PurchaseBookEvent":
+        """
+        Parse a purchase book event from backend data.
+        """
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        genres = []
+        if "genres" in data and isinstance(data["genres"], list):
+            genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            book_name=data.get("name", ""),
+            # price=data.get("price", 0.0),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            # book_pages=data.get("duration"),
+        )
+
+
+class ShoppingCartEvent(Event):
+    """Event triggered when a user adds a book to shopping cart"""
+
+    event_name: str = "SHOPPING_CART"
+
+    book_name: str
+    # price: float
+    book_year: int | None = None
+    book_genres: list[str] = Field(default_factory=list)
+    book_rating: float | None = None
+    # book_pages: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating shopping cart events"""
+
+        name: str | CriterionValue | None = None
+        genre: str | CriterionValue | None = None
+        year: int | CriterionValue | None = None
+        # price: float | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        """
+        Validate if this shopping cart event meets the criteria.
+        """
+        if not criteria:
+            return True
+        if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
+            return False
+        if criteria.genre is not None:
+            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
+                return False
+            else:
+                if (
+                    (criteria.genre.operator == ComparisonOperator.EQUALS and not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.CONTAINS and not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (criteria.genre.operator == ComparisonOperator.NOT_CONTAINS and any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
+                    or (
+                        criteria.genre.operator == ComparisonOperator.IN_LIST
+                        and not any(genre.lower() in [v.lower() if isinstance(v, str) else v for v in criteria.genre.value] for genre in self.book_genres)
+                    )
+                ):
+                    return False
+        if criteria.price is not None and not validate_criterion(self.price, criteria.price):
+            return False
+        if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
+            return False
+        return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ShoppingCartEvent":
+        """
+        Parse a shopping cart event from backend data.
+        """
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        genres = []
+        if "genres" in data and isinstance(data["genres"], list):
+            genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            book_name=data.get("name", ""),
+            # price=data.get("price", 0.0),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            # book_pages=data.get("duration"),
+        )
 
 
 # =============================================================================
@@ -917,50 +992,36 @@ class FilterFilmEvent(Event):
 # =============================================================================
 
 
-EVENTS = [RegistrationEvent, LoginEvent, LogoutEvent, FilmDetailEvent, SearchFilmEvent, AddFilmEvent, EditFilmEvent, DeleteFilmEvent, AddCommentEvent, ContactEvent, EditUserEvent, FilterFilmEvent]
+EVENTS = [
+    RegistrationEvent,
+    LoginEvent,
+    LogoutEvent,
+    BookDetailEvent,
+    SearchBookEvent,
+    AddBookEvent,
+    EditBookEvent,
+    DeleteBookEvent,
+    AddCommentEvent,
+    ContactEvent,
+    EditUserEvent,
+    FilterBookEvent,
+    ShoppingCartEvent,
+    PurchaseBookEvent,
+]
 
 BACKEND_EVENT_TYPES = {
-    "LOGIN": LoginEvent,
-    "LOGOUT": LogoutEvent,
-    "REGISTRATION": RegistrationEvent,
-    "EDIT_USER": EditUserEvent,
-    "FILM_DETAIL": FilmDetailEvent,
-    "SEARCH_FILM": SearchFilmEvent,
-    "ADD_FILM": AddFilmEvent,
-    "EDIT_FILM": EditFilmEvent,
-    "DELETE_FILM": DeleteFilmEvent,
-    "ADD_COMMENT": AddCommentEvent,
-    "CONTACT": ContactEvent,
-    "FILTER_FILM": FilterFilmEvent,
+    "LOGIN_BOOK": LoginEvent,
+    "LOGOUT_BOOK": LogoutEvent,
+    "REGISTRATION_BOOK": RegistrationEvent,
+    "EDIT_USER_BOOK": EditUserEvent,
+    "BOOK_DETAIL": BookDetailEvent,
+    "SEARCH_book": SearchBookEvent,
+    "ADD_BOOK": AddBookEvent,
+    "EDIT_BOOK": EditBookEvent,
+    "DELETE_BOOK": DeleteBookEvent,
+    "ADD_COMMENT_BOOK": AddCommentEvent,
+    "CONTACT_BOOK": ContactEvent,
+    "FILTER_BOOK": FilterBookEvent,
+    "SHOPPING_CART": ShoppingCartEvent,
+    "PURCHASE_BOOK": PurchaseBookEvent,
 }
-
-# =============================================================================
-#                          EXAMPLE USAGE
-# =============================================================================
-"""
-# Example 1: Basic validation for a login event
-login_criteria = LoginEvent.ValidationCriteria(
-    username="testuser"
-)
-
-# Example 2: Advanced login validation with operators
-login_criteria_advanced = LoginEvent.ValidationCriteria(
-    username=CriterionValue(
-        value="testuser",
-        operator=ComparisonOperator.EQUALS
-    )
-)
-
-# Example 3: Movie with rating ≥ 8.0 and runtime < 120 minutes
-movie_criteria = FilmDetailEvent.ValidationCriteria(
-    rating=CriterionValue(value=8.0, operator=ComparisonOperator.GREATER_EQUAL),
-    duration=CriterionValue(value=120, operator=ComparisonOperator.LESS_THAN)
-)
-
-# Example 4: Comedy movie directed by Spielberg after 2000
-movie_criteria2 = FilmDetailEvent.ValidationCriteria(
-    genre="comedy",
-    director="Spielberg",
-    year=CriterionValue(value=2000, operator=ComparisonOperator.GREATER_THAN)
-)
-"""

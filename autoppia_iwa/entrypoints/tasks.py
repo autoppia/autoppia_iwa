@@ -22,8 +22,6 @@ logger = logging.getLogger("stress_test")
 USE_CACHED_TASKS = False  # Set to True to use cached tasks from JSON file
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
 M = 1  # Number of copies of each solution to evaluate
-PROMPTS_PER_URL = 15
-NUM_OF_URLS = 10
 
 # Create output/cache directories if needed
 os.makedirs(TASKS_CACHE_DIR, exist_ok=True)
@@ -65,8 +63,6 @@ async def main():
         demo_project,
         use_cached_tasks=USE_CACHED_TASKS,
         task_cache_dir=TASKS_CACHE_DIR,
-        prompts_per_url=PROMPTS_PER_URL,
-        num_of_urls=NUM_OF_URLS,
     )
 
     if not tasks:

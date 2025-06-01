@@ -1,38 +1,49 @@
 # base.py
-import logging
 from enum import Enum
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 
+from loguru import logger
 from playwright.async_api import Page
-from pydantic import BaseModel, Field
-
-logger = logging.getLogger(__name__)
-
+from pydantic import BaseModel, ConfigDict, Field
 
 # ------------------------------------------------------
-# SELECTOR LOGIC
+# SELECTOR DEFINITIONS
 # ------------------------------------------------------
 
 
 class SelectorType(str, Enum):
+    """Enumeration of supported selector strategies."""
+
     ATTRIBUTE_VALUE_SELECTOR = "attributeValueSelector"
     TAG_CONTAINS_SELECTOR = "tagContainsSelector"
     XPATH_SELECTOR = "xpathSelector"
 
 
 class Selector(BaseModel):
+    """
+    Represents a strategy for locating elements on a web page.
+    """
+
     type: SelectorType
     attribute: str | None = None
     value: str
     case_sensitive: bool = False
 
+    model_config = ConfigDict(use_enum_values=True)
+
     def to_playwright_selector(self) -> str:
         """
-        Returns the final selector string for use with Playwright.
+        Converts the Selector model into a Playwright-compatible selector string.
+
+        Returns:
+            The selector string usable with Playwright's page methods.
+
+        Raises:
+            ValueError: If the selector type is unsupported.
         """
         ATTRIBUTE_FORMATS = {
-            "id": "#",
-            "class": ".",
+            "id": "#{value}",
+            "class": ".{value}",  # Placeholder, handled specially below
             "placeholder": "[placeholder='{value}']",
             "name": "[name='{value}']",
             "role": "[role='{value}']",
@@ -45,25 +56,42 @@ class Selector(BaseModel):
             "href": "a[href='{value}']",
         }
 
-        if self.type == SelectorType.ATTRIBUTE_VALUE_SELECTOR:
-            if self.attribute in ATTRIBUTE_FORMATS:
-                fmt = ATTRIBUTE_FORMATS[self.attribute]
-                if self.attribute in ["id", "class"]:
-                    # #id or .class
-                    return f"{fmt}{self.value}"
-                return fmt.format(value=self.value)
-            return f"[{self.attribute}='{self.value}']"
+        selector_type = SelectorType(self.type)
 
-        elif self.type == SelectorType.TAG_CONTAINS_SELECTOR:
-            if self.case_sensitive:
-                return f'text="{self.value}"'
-            return f"text={self.value}"
+        if selector_type == SelectorType.ATTRIBUTE_VALUE_SELECTOR:
+            if not self.attribute:
+                raise ValueError("Attribute must be specified for ATTRIBUTE_VALUE_SELECTOR")
 
-        elif self.type == SelectorType.XPATH_SELECTOR:
-            if not self.value.startswith("//"):
+            if self.attribute == "id":
+                # Basic sanitization: remove leading '#' if present
+                clean_value = self.value.lstrip("#")
+                return f"#{clean_value}"
+            elif self.attribute == "class":
+                # Handle multiple classes by chaining '.class1.class2'
+                classes = self.value.strip().split()
+                # Basic sanitization: remove leading '.' if present
+                clean_classes = [cls.lstrip(".") for cls in classes]
+                return "".join(f".{cls}" for cls in clean_classes)
+            elif self.attribute in ATTRIBUTE_FORMATS:
+                # Use predefined formats for common attributes
+                return ATTRIBUTE_FORMATS[self.attribute].format(value=self.value)
+            else:
+                return f"[{self.attribute}='{self.value}']"
+
+        elif selector_type == SelectorType.TAG_CONTAINS_SELECTOR:
+            # Playwright's text selector: https://playwright.dev/docs/selectors#text-selector
+            # Handles case sensitivity via options
+            options = "" if self.case_sensitive else "i"  # 'i' for case-insensitive
+            # Ensure value containing quotes is handled correctly
+            quoted_value = repr(self.value)  # Uses appropriate quotes automatically
+            return f"text={quoted_value}{' ' + options if options else ''}"
+
+        elif selector_type == SelectorType.XPATH_SELECTOR:
+            # Prepend 'xpath=' if not already starting with '//' (common convention)
+            if self.value.strip().startswith("//") or self.value.strip().startswith("(//"):
+                return f"xpath={self.value}"
+            else:
                 return f"xpath=//{self.value}"
-            return f"xpath={self.value}"
-
         else:
             raise ValueError(f"Unsupported selector type: {self.type}")
 
@@ -74,7 +102,12 @@ class Selector(BaseModel):
 
 
 class ActionRegistry:
-    """Registry to store and retrieve action subclasses."""
+    """
+    Registry to store and retrieve action subclasses based on their type name.
+
+    Action classes are automatically registered when they are defined,
+    thanks to the `__init_subclass__` mechanism in `BaseAction`.
+    """
 
     _registry: ClassVar[dict[str, type["BaseAction"]]] = {}
 
@@ -101,13 +134,17 @@ class ActionRegistry:
 
 class BaseAction(BaseModel):
     """
-    Base for all actions with a discriminating 'type' field.
+    Abstract base class for all browser automation actions.
+
+    Subclasses must define a `type` attribute (usually using `Literal`)
+    and implement the `execute` method.
+    They are automatically registered in the `ActionRegistry`.
     """
 
-    type: str = Field(..., description="Discriminated action type")
+    type: str = Field(..., description="Discriminating field for the action type.")
+    selector: Selector | None = Field(None, description="The selector to locate the target element. Optional for actions not targeting specific elements.")
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow", use_enum_values=True)
 
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses in the ActionRegistry."""
@@ -116,19 +153,58 @@ class BaseAction(BaseModel):
             ActionRegistry.register(cls.type, cls)
 
     async def execute(self, page: Page | None, backend_service, web_agent_id: str):
-        """Each subclass must implement its own `execute` logic."""
-        raise NotImplementedError("Execute method must be implemented by subclasses.")
+        """
+        Executes the action.
+
+        This method must be implemented by concrete subclasses.
+
+        Args:
+            page: The Playwright Page object to interact with, or None if the action doesn't require a page.
+            backend_service: A placeholder for any backend service interaction needed.
+            web_agent_id: An identifier for the web agent instance.
+
+        Raises:
+            NotImplementedError: If the subclass does not implement this method.
+            ValueError: If `page` is required but is `None`.
+        """
+        raise NotImplementedError(f"{self.__class__.__name__}.execute method must be implemented by subclasses.")
+
+    def get_playwright_selector(self) -> str:
+        """
+        Validates that the selector exists and returns its Playwright representation.
+
+        Returns:
+            The Playwright-compatible selector string.
+
+        Raises:
+            ValueError: If the selector is missing or invalid. (Shouldn't happen if pydantic validation passed)
+        """
+        if not self.selector:
+            raise ValueError(f"Selector is required for {self.type} action but is missing.")
+        try:
+            return self.selector.to_playwright_selector()
+        except ValueError as e:
+            logger.error(f"Invalid selector configuration: {self.selector}. Error: {e}")
+            raise ValueError(f"Invalid selector configuration. Error: {e}") from e
 
     @classmethod
     def create_action(cls, action_data: dict) -> Optional["BaseAction"]:
         """
-        Create an action instance from action_data.
+        Factory method to create an action instance from a dictionary.
+
+        Uses the 'type' field in the dictionary to determine which
+        action subclass to instantiate via the ActionRegistry.
 
         Args:
             action_data: Dictionary containing action type and relevant fields.
 
         Returns:
             An instance of the appropriate BaseAction subclass.
+
+        Raises:
+            ValueError: If action_data is not a dictionary, is missing the 'type' field,
+                        or if the action type is unsupported.
+            pydantic.ValidationError: If the data fails validation for the specific action model.
         """
         if not isinstance(action_data, dict):
             logger.error(f"Invalid action_data: {action_data}. Expected a dictionary.")
@@ -165,9 +241,12 @@ class BaseAction(BaseModel):
 
 
 class BaseActionWithSelector(BaseAction):
-    selector: Selector | None = None
+    """
+    Base class for actions that require a `Selector` to identify an element.
+    """
 
-    def validate_selector(self) -> str:
-        if not self.selector:
-            raise ValueError("Selector is required for this action.")
-        return self.selector.to_playwright_selector()
+    selector: Selector = Field(..., description="The selector used to locate the target element for the action. This is mandatory.")
+
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        """Execute method placeholder for actions with selectors."""
+        raise NotImplementedError("Execute method must be implemented by subclasses of BaseActionWithSelector.")

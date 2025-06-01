@@ -31,11 +31,11 @@ logger = logging.getLogger("stress_test")
 USE_CACHED_TASKS = False  # Set to True to use cached tasks from JSON file
 USE_CACHED_SOLUTIONS = False  # Set to True to use cached solutions when available
 TASKS_CACHE_DIR = "data/tasks_cache"  # Directory to store task cache files
-SOLUTIONS_CACHE_DIR = "data/solutions_cache"  # Directory to store solution cache files
+# Directory to store solution cache files
+SOLUTIONS_CACHE_DIR = "data/solutions_cache"
 OUTPUT_DIR = "results"  # Directory to store test results
 M = 1  # Number of copies of each solution to evaluate
-PROMPTS_PER_URL = 2
-NUM_OF_URLS = 2
+
 
 # Create output/cache directories if needed
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -79,7 +79,11 @@ async def main():
     logger.info(f"Using project: {demo_project.name}")
 
     # Generate or load tasks for the project
-    tasks = await generate_tasks_for_project(demo_project, use_cached_tasks=USE_CACHED_TASKS, task_cache_dir=TASKS_CACHE_DIR, prompts_per_url=PROMPTS_PER_URL, num_of_urls=NUM_OF_URLS)
+    tasks = await generate_tasks_for_project(
+        demo_project,
+        use_cached_tasks=USE_CACHED_TASKS,
+        task_cache_dir=TASKS_CACHE_DIR,
+    )
 
     if not tasks:
         logger.error("No tasks available.")
@@ -160,7 +164,11 @@ async def main():
                 copy_solution = TaskSolution(task_id=task.id, actions=original_solution.actions.copy() if original_solution.actions else [], web_agent_id=agent.id)
                 solution_copies.append(copy_solution)
 
-            evaluator_config = EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20)
+            evaluator_config = EvaluatorConfig(
+                # save_results_in_db=False,
+                enable_grouping_tasks=False,
+                chunk_size=20,
+            )
             evaluator = ConcurrentEvaluator(web_project=demo_project, config=evaluator_config)
 
             start_eval_time = time.time()

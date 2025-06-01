@@ -11,7 +11,6 @@ from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.utils import _load_web_analysis
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
@@ -76,7 +75,11 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
     """Evaluate a task solution."""
     evaluator = ConcurrentEvaluator(
         web_project=web_project,
-        config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20),
+        config=EvaluatorConfig(
+            # save_results_in_db=False,
+            enable_grouping_tasks=False,
+            chunk_size=20,
+        ),
     )
     result = await evaluator.evaluate_single_task_solution(task, task_solution)
 
@@ -206,7 +209,6 @@ async def main():
     for td in tasks_data:
         project = web_projects.get(td.id)
         if project:
-            await _load_web_analysis(project)
             tasks = await generate_tasks(td)
             if tasks:
                 await run_evaluation(project, tasks, timing_metrics)

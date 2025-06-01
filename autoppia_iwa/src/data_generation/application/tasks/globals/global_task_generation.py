@@ -8,7 +8,6 @@ from dependency_injector.wiring import Provide
 from loguru import logger
 from PIL import Image
 
-# Domain & framework imports (adjust paths as needed):
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
@@ -16,7 +15,6 @@ from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.utils import transform_image_into_base64
 from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot
 
-# Prompt template (adjust path if it's in a different folder):
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 
 
@@ -53,6 +51,9 @@ class GlobalTaskGenerationPipeline:
                 logger.info(f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}'")
             except Exception as e:
                 logger.error(f"Error generating tasks for {use_case.name}: {e!s}")
+                import traceback
+
+                traceback.print_exc()
                 continue
 
         logger.info(f"Total generated tasks across all use cases: {len(all_tasks)}")
@@ -62,16 +63,30 @@ class GlobalTaskGenerationPipeline:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
         """
+        additional_system_prompt = None
 
-        # 2) Build the LLM prompt using a template
-        prompt_examples = use_case.get_example_prompts_str()
-        llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(use_case_name=use_case.name, use_case_description=use_case.description, prompt_examples=prompt_examples, number_of_prompts=number_of_prompts)
+        if hasattr(use_case, "generate_constraints"):
+            constraints_info = use_case.generate_constraints()
+        else:
+            constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
+            additional_system_prompt = constraints_info
 
-        # 3) Call the LLM (with retry logic) and parse the list of strings result
-        prompt_list = await self._call_llm_with_retry(llm_prompt)
+        # Build the LLM prompt using a template
+        if not use_case.additional_prompt_info:
+            use_case.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case.get_example_prompts_str()}"
+        llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
+            use_case_name=use_case.name,
+            use_case_description=use_case.description,
+            additional_prompt_info=use_case.additional_prompt_info,
+            constraints_info=constraints_info,
+            number_of_prompts=number_of_prompts,
+        )
 
-        # 4) For each prompt string, create a Task
-        #    We'll fetch the HTML and screenshot just once for all tasks
+        # Call the LLM (with retry logic) and parse the list of strings result
+        prompt_list = await self._call_llm_with_retry(llm_prompt, additional_system_prompt=additional_system_prompt)
+        print(prompt_list)
+        # For each prompt string, create a Task
+        # We'll fetch the HTML and screenshot just once for all tasks
         url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
         html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
 
@@ -98,15 +113,15 @@ class GlobalTaskGenerationPipeline:
         random.shuffle(tasks)
         return tasks
 
-    async def _call_llm_with_retry(self, llm_prompt: str) -> list[str]:
+    async def _call_llm_with_retry(self, llm_prompt: str, additional_system_prompt: str | None = None) -> list[str]:
         """
         Calls the LLM with the given prompt, parsing the response as a list of strings with retry.
         Returns a list of prompt strings.
         """
-        messages = [
-            {"role": "system", "content": "You are a helpful assistant that generates user tasks as a list of strings."},
-            {"role": "user", "content": llm_prompt},
-        ]
+        base_system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
+        system_prompt = f"{base_system_prompt} {additional_system_prompt}" if additional_system_prompt else base_system_prompt
+
+        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 
         for attempt in range(self.max_retries):
             try:

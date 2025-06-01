@@ -12,7 +12,6 @@ from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGeneration
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 
 
 class TaskGenerationPipeline:
@@ -20,12 +19,10 @@ class TaskGenerationPipeline:
         self,
         web_project: WebProject,
         config: TaskGenerationConfig,
-        synthetic_task_repository: BaseMongoRepository = Provide[DIContainer.synthetic_task_repository],
         llm_service: ILLM = Provide[DIContainer.llm_service],
     ):
         self.web_project = web_project
         self.task_config = config
-        self.synthetic_task_repository = synthetic_task_repository
         self.llm_service = llm_service
 
         # Initialize pipelines
@@ -68,6 +65,14 @@ class TaskGenerationPipeline:
                 global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
                 all_tasks.extend(global_tasks_with_tests)
 
+                for task in global_tasks_with_tests:
+                    print("Prompt: ", task.prompt)
+                    for i, _test in enumerate(task.tests):
+                        print(f"Test: {i}")
+                        from pprint import pprint
+
+                        pprint(_test.model_dump())
+
             # Apply final task limit if configured
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:
                 random.shuffle(all_tasks)
@@ -75,10 +80,10 @@ class TaskGenerationPipeline:
                 logger.info(f"Applied final task limit: {len(all_tasks)} tasks")
 
             # Save tasks in DB if configured
-            if self.task_config.save_task_in_db and all_tasks:
-                for task in all_tasks:
-                    self.synthetic_task_repository.save(task.model_dump())
-                logger.info(f"Saved {len(all_tasks)} tasks to database")
+            # if self.task_config.save_task_in_db and all_tasks:
+            #     for task in all_tasks:
+            #         self.synthetic_task_repository.save(task.model_dump())
+            #     logger.info(f"Saved {len(all_tasks)} tasks to database")
 
             # Log completion
             total_time = (datetime.now() - start_time).total_seconds()

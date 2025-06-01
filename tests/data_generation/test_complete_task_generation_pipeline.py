@@ -11,8 +11,6 @@ from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 # GLOBAL CONFIGURATION
 # ============================================================
 
-NUM_OF_URLS: int = 1
-PROMPTS_PER_URL: int = 5
 RANDOM_URLS: bool = False
 
 
@@ -47,9 +45,6 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
 
             # Create task generation configuration
             task_config = TaskGenerationConfig(
-                num_of_urls=NUM_OF_URLS,
-                prompts_per_url=PROMPTS_PER_URL,
-                random_urls=RANDOM_URLS,
                 generate_local_tasks=True,
                 generate_global_tasks=False,
             )

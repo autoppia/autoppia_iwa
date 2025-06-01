@@ -1,10 +1,10 @@
 import asyncio
 import json
-import logging
 import random
 from typing import Any
 
 from dependency_injector.wiring import Provide
+from loguru import logger
 from PIL import Image
 from pydantic import ValidationError
 
@@ -17,9 +17,6 @@ from autoppia_iwa.src.shared.utils import transform_image_into_base64
 from autoppia_iwa.src.shared.web_utils import detect_interactive_elements, get_html_and_screenshot
 
 from .schemas import DraftTaskList
-
-# Set up logging
-logger = logging.getLogger(__name__)
 
 
 class LocalTaskGenerationPipeline:
