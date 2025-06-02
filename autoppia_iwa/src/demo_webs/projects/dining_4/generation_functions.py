@@ -209,19 +209,19 @@ def generate_book_restaurant_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = [
         ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
-        ("selected_date", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]),
+        # ("selected_date", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]),
         ("time", [ComparisonOperator.EQUALS]),
-        ("people", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL]),
+        # ("people", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL]),
     ]
 
-    num_constraints = random.randint(2, len(possible_fields))
+    num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
     for field, operators in selected_fields:
-        op = random.choice(operators)
-        value = random.choice([d for d in MOCK_DATES if isinstance(d, datetime.date)]) if MOCK_DATES else datetime.date.today() if field == "selected_date" else _generate_value_for_field(field)
-
-        constraints_list.append(create_constraint_dict(field, op, value))
+        operator = random.choice(operators)
+        value = _generate_value_for_field(field)
+        constraint = create_constraint_dict(field, operator, value)
+        constraints_list.append(constraint)
 
     return constraints_list
 
