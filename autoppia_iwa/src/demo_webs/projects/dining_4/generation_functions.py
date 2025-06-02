@@ -228,10 +228,19 @@ def generate_book_restaurant_constraints() -> list[dict[str, Any]]:
 
 def generate_country_selected_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    # Randomly choose between code or name
-    field_to_generate = random.choice([("country_code", [ComparisonOperator.EQUALS]), ("country_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS])])
 
-    field, operators = field_to_generate
+    # Always include restaurant_name constraint
+    restaurant_ops = [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]
+    restaurant_op = random.choice(restaurant_ops)
+    restaurant_value = _generate_value_for_field("restaurant_name")
+    constraints_list.append(create_constraint_dict("restaurant_name", restaurant_op, restaurant_value))
+
+    # Optionally include either country_code or country_name
+    optional_fields = [
+        ("country_code", [ComparisonOperator.EQUALS]),
+        ("country_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
+    ]
+    field, operators = random.choice(optional_fields)
     op = random.choice(operators)
     value = _generate_value_for_field(field)
     constraints_list.append(create_constraint_dict(field, op, value))
@@ -240,6 +249,13 @@ def generate_country_selected_constraints() -> list[dict[str, Any]]:
 
 def generate_occasion_selected_constraints() -> list[dict[str, Any]]:
     constraints_list = []
+
+    # Always include restaurant_name constraint
+    restaurant_ops = [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]
+    restaurant_op = random.choice(restaurant_ops)
+    restaurant_value = _generate_value_for_field("restaurant_name")
+    constraints_list.append(create_constraint_dict("restaurant_name", restaurant_op, restaurant_value))
+
     criteria_field = "occasion"
     allowed_operators = [ComparisonOperator.EQUALS, ComparisonOperator.IN_LIST]
 
