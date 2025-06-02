@@ -539,9 +539,11 @@ class ScrollViewEvent(Event, BaseEventValidator):
 
     event_name: str = "SCROLL_VIEW"
     direction: str  # "right" or "left", etc.
+    section_title: str
 
     class ValidationCriteria(BaseModel):
         direction: str | CriterionValue | None = None
+        section_title: str | CriterionValue | None = None
 
         class Config:
             title = "Scroll View Validation"
@@ -553,6 +555,7 @@ class ScrollViewEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.direction, criteria.direction),
+                self._validate_field(self.section_title, criteria.section_title),
             ]
         )
 
@@ -566,6 +569,7 @@ class ScrollViewEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             direction=data.get("direction", "").lower(),
+            section_title=data.get("sectionTitle", ""),
         )
 
 

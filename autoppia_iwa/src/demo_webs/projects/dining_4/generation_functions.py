@@ -10,9 +10,11 @@ from .data import (
     RESTAURANT_DATA,
     RESTAURANT_OCCASIONS,
     RESTAURANT_PEOPLE_COUNTS,
-    RESTAURANT_TIMES,
+    RESTAURANT_TIMES as UNFILTERED_RESTAURANT_TIMES,
     SCROLL_DIRECTIONS,
 )
+
+RESTAURANT_TIMES = UNFILTERED_RESTAURANT_TIMES[1:-1]
 
 
 def generate_mock_dates():
@@ -275,7 +277,7 @@ def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
 
     possible_fields = [
         # ("restaurant_id", [ComparisonOperator.EQUALS]),
-        ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
+        ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]),
         ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
         ("reservation_time", [ComparisonOperator.EQUALS]),
         # ("people_count_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
@@ -296,10 +298,19 @@ def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
 
 def generate_scroll_view_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    selected_field = "direction"
-    allowed_operators = [ComparisonOperator.EQUALS]
 
+    # Constraint for direction
+    selected_field = "direction"
+    allowed_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
     op = random.choice(allowed_operators)
     value = _generate_value_for_field(selected_field)
     constraints_list.append(create_constraint_dict(selected_field, op, value))
+
+    # Constraint for section_title
+    selected_field = "section_title"
+    allowed_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]
+    op = random.choice(allowed_operators)
+    value = _generate_value_for_field(selected_field)
+    constraints_list.append(create_constraint_dict(selected_field, op, value))
+
     return constraints_list

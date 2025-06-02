@@ -539,3 +539,4 @@ RESTAURANT_COUNTRIES = [
 ]
 RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business meeting", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
+SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award-winning"]
