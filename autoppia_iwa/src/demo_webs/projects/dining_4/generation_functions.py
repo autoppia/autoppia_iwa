@@ -169,10 +169,10 @@ def generate_view_full_menu_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = [
         ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
-        ("selected_date", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]),
-        ("time", [ComparisonOperator.EQUALS]),
-        ("people", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL]),
-        ("action", [ComparisonOperator.EQUALS]),
+        # ("selected_date", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]),
+        # ("time", [ComparisonOperator.EQUALS]),
+        # ("people", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL]),
+        # ("action", [ComparisonOperator.EQUALS]),
     ]
 
     num_constraints = random.randint(1, min(3, len(possible_fields)))
@@ -191,7 +191,7 @@ def generate_collapse_menu_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = [
         ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
-        ("action", [ComparisonOperator.EQUALS]),  # Always "collapse_menu"
+        # ("action", [ComparisonOperator.EQUALS]),  # Always "collapse_menu"
     ]
 
     num_constraints = random.randint(1, len(possible_fields))
