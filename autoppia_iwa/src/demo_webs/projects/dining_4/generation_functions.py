@@ -267,8 +267,15 @@ def generate_occasion_selected_constraints() -> list[dict[str, Any]]:
 
 def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
     constraints_list = []
+    # Always include restaurant_name
+    restaurant_ops = [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]
+    restaurant_op = random.choice(restaurant_ops)
+    restaurant_value = _generate_value_for_field("restaurant_name")
+    constraints_list.append(create_constraint_dict("restaurant_name", restaurant_op, restaurant_value))
+
     possible_fields = [
         # ("restaurant_id", [ComparisonOperator.EQUALS]),
+        ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
         ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
         ("reservation_time", [ComparisonOperator.EQUALS]),
         # ("people_count_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),

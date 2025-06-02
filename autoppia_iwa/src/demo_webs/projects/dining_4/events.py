@@ -475,7 +475,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     """Event triggered when a restaurant reservation is completed."""
 
     event_name: str = "RESERVATION_COMPLETE"
-    restaurant_id: str
+    # restaurant_id: str
     reservation_date_str: str  # e.g., "Jul 18"
     reservation_time: str  # e.g., "1:30 PM"
     people_count_str: str  # e.g., "2 people"
@@ -487,7 +487,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     # email: str
 
     class ValidationCriteria(BaseModel):
-        restaurant_id: str | CriterionValue | None = None
+        # restaurant_id: str | CriterionValue | None = None
         reservation_date_str: str | CriterionValue | None = None
         reservation_time: str | CriterionValue | None = None
         people_count_str: str | CriterionValue | None = None
@@ -503,7 +503,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.restaurant_id, criteria.restaurant_id),
+                # self._validate_field(self.restaurant_id, criteria.restaurant_id),
                 self._validate_field(self.reservation_date_str, criteria.reservation_date_str),
                 self._validate_field(self.reservation_time, criteria.reservation_time),
                 self._validate_field(self.people_count_str, criteria.people_count_str),
@@ -521,7 +521,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            restaurant_id=data.get("restaurantId", ""),
+            # restaurant_id=data.get("restaurantId", ""),
             reservation_date_str=data.get("date", ""),
             reservation_time=data.get("time", ""),
             people_count_str=data.get("people", ""),
