@@ -248,7 +248,7 @@ def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
 
     possible_fields = [
         # ("restaurant_id", [ComparisonOperator.EQUALS]),
-        ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]),
+        # ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]),
         ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
         ("reservation_time", [ComparisonOperator.EQUALS]),
         # ("people_count_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),

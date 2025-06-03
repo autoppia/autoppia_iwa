@@ -475,7 +475,6 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     """Event triggered when a restaurant reservation is completed."""
 
     event_name: str = "RESERVATION_COMPLETE"
-    # restaurant_id: str
     reservation_date_str: str  # e.g., "Jul 18"
     reservation_time: str  # e.g., "1:30 PM"
     people_count: int
@@ -484,14 +483,11 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     phone_number: str
     occasion: str
     special_request: str | None = None
-    # email: str
 
     class ValidationCriteria(BaseModel):
-        # restaurant_id: str | CriterionValue | None = None
         reservation_date_str: str | CriterionValue | None = None
         reservation_time: str | CriterionValue | None = None
         people_count: int | CriterionValue | None = None
-        # email: str | CriterionValue | None = None
         occasion: str | CriterionValue | None = None
 
         class Config:
@@ -503,11 +499,9 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.restaurant_id, criteria.restaurant_id),
                 self._validate_field(self.reservation_date_str, criteria.reservation_date_str),
                 self._validate_field(self.reservation_time, criteria.reservation_time),
                 self._validate_field(self.people_count, criteria.people_count),
-                # self._validate_field(self.email, criteria.email),
                 self._validate_field(self.occasion, criteria.occasion),
             ]
         )
@@ -525,7 +519,6 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # restaurant_id=data.get("restaurantId", ""),
             reservation_date_str=parsed_date,
             reservation_time=data.get("time", ""),
             people_count=int(data.get("people", "")),
@@ -534,7 +527,6 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             phone_number=data.get("phoneNumber", ""),
             occasion=data.get("occasion", ""),
             special_request=data.get("specialRequest"),
-            # email=data.get("email", ""),
         )
 
 
