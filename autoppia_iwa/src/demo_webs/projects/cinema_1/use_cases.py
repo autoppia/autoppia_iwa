@@ -857,7 +857,8 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
 3. Begin with "Login for the following username:<username> and password:<password>".
-4. Be phrased as a request to edit or modify a user profile (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
+4. Be sure to add instruction to login using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+5. Be phrased as a request to edit or modify a user profile (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
 
 For example, if the constraints are "username equals 'filmfan' AND password equals 'pass123' AND bio contains 'cinema'":
 - CORRECT: "Login for the following username:filmfan and password:pass123. Edit your profile to update your bio to include the word 'cinema'."
