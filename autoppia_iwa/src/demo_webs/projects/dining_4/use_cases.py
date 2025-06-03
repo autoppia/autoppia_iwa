@@ -703,7 +703,6 @@ SCROLL_VIEW_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
-    # ===== Fixed =====
     DATE_DROPDOWN_OPENED_USE_CASE,
     TIME_DROPDOWN_OPENED_USE_CASE,
     PEOPLE_DROPDOWN_OPENED_USE_CASE,
@@ -714,7 +713,6 @@ ALL_USE_CASES = [
     BOOK_RESTAURANT_USE_CASE,
     COUNTRY_SELECTED_USE_CASE,
     OCCASION_SELECTED_USE_CASE,
-    # ===== TEST =====
-    RESERVATION_COMPLETE_USE_CASE,
     SCROLL_VIEW_USE_CASE,
+    RESERVATION_COMPLETE_USE_CASE,
 ]
