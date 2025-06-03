@@ -4,47 +4,16 @@ from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
 
-from ..shared_utils import create_constraint_dict
+from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
     RESTAURANT_COUNTRIES,
     RESTAURANT_DATA,
     RESTAURANT_OCCASIONS,
     RESTAURANT_PEOPLE_COUNTS,
-    RESTAURANT_TIMES as UNFILTERED_RESTAURANT_TIMES,
+    RESTAURANT_TIMES,
     SCROLL_DIRECTIONS,
+    SCROLL_SECTIONS_TITLES,
 )
-
-RESTAURANT_TIMES = UNFILTERED_RESTAURANT_TIMES[1:-1]
-
-
-def generate_mock_dates():
-    """
-    Generates a list of mock dates strictly in the future within the same month,
-    with time set to 19:00.
-    """
-    today = datetime.datetime.now(datetime.UTC).replace(hour=0, minute=0, second=0, microsecond=0)
-    current_month = today.month
-    mock_dates_raw = []
-
-    # Add future dates starting from tomorrow
-    for i in range(1, 15):  # next 14 days
-        future_date = today + datetime.timedelta(days=i)
-        if future_date.month == current_month:
-            mock_dates_raw.append(future_date.replace(hour=19, minute=0, second=0, microsecond=0))
-
-    return sorted(list(set(mock_dates_raw)))
-
-
-def generate_mock_date_strings(dates: list):
-    """
-    Converts list of datetime objects to unique, sorted strings like "Jul 18".
-    """
-    date_strings = []
-    for d in dates:
-        if isinstance(d, datetime.datetime | datetime.date):
-            date_strings.append(d.strftime("%b %d"))
-    return sorted(list(set(date_strings)))
-
 
 MOCK_DATES = generate_mock_dates()
 MOCK_DATE_STRINGS = generate_mock_date_strings(MOCK_DATES)
@@ -95,6 +64,8 @@ def _generate_value_for_field(field_name: str) -> Any:
         return random.choice(MOCK_SPECIAL_REQUESTS)
     elif field_name == "direction":
         return random.choice(SCROLL_DIRECTIONS)
+    elif field_name == "section_title":
+        return random.choice(SCROLL_SECTIONS_TITLES)
 
     print(f"Warning: No specific mock value generator for field '{field_name}'. Using default string.")
     return "mock_value"
@@ -269,11 +240,11 @@ def generate_occasion_selected_constraints() -> list[dict[str, Any]]:
 
 def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    # Always include restaurant_name
-    restaurant_ops = [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]
-    restaurant_op = random.choice(restaurant_ops)
-    restaurant_value = _generate_value_for_field("restaurant_name")
-    constraints_list.append(create_constraint_dict("restaurant_name", restaurant_op, restaurant_value))
+    # # Always include restaurant_name
+    # restaurant_ops = [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]
+    # restaurant_op = random.choice(restaurant_ops)
+    # restaurant_value = _generate_value_for_field("restaurant_name")
+    # constraints_list.append(create_constraint_dict("restaurant_name", restaurant_op, restaurant_value))
 
     possible_fields = [
         # ("restaurant_id", [ComparisonOperator.EQUALS]),

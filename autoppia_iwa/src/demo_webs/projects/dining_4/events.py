@@ -345,14 +345,14 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     """Event triggered when a restaurant booking is attempted or made (prior to completion details)."""
 
     event_name: str = "BOOK_RESTAURANT"
-    restaurant_id: str
+    # restaurant_id: str
     restaurant_name: str
     time: str  # e.g., "1:30 PM"
     selected_date: date  # e.g., "2025-05-16"
     people: int
 
     class ValidationCriteria(BaseModel):
-        restaurant_id: str | CriterionValue | None = None
+        # restaurant_id: str | CriterionValue | None = None
         restaurant_name: str | CriterionValue | None = None
         time: str | CriterionValue | None = None
         selected_date: date | CriterionValue | None = None
@@ -367,7 +367,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.restaurant_id, criteria.restaurant_id),
+                # self._validate_field(self.restaurant_id, criteria.restaurant_id),
                 self._validate_field(self.restaurant_name, criteria.restaurant_name),
                 self._validate_field(self.time, criteria.time),
                 self._validate_field(self.selected_date, criteria.selected_date),
@@ -393,7 +393,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            restaurant_id=data.get("restaurantId", ""),
+            # restaurant_id=data.get("restaurantId", ""),
             restaurant_name=data.get("restaurantName", ""),
             time=data.get("time", ""),
             selected_date=parsed_date,
@@ -478,7 +478,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     # restaurant_id: str
     reservation_date_str: str  # e.g., "Jul 18"
     reservation_time: str  # e.g., "1:30 PM"
-    people_count_str: str  # e.g., "2 people"
+    people_count: int
     country_code: str
     country_name: str
     phone_number: str
@@ -490,7 +490,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
         # restaurant_id: str | CriterionValue | None = None
         reservation_date_str: str | CriterionValue | None = None
         reservation_time: str | CriterionValue | None = None
-        people_count_str: str | CriterionValue | None = None
+        people_count: int | CriterionValue | None = None
         # email: str | CriterionValue | None = None
         occasion: str | CriterionValue | None = None
 
@@ -506,7 +506,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
                 # self._validate_field(self.restaurant_id, criteria.restaurant_id),
                 self._validate_field(self.reservation_date_str, criteria.reservation_date_str),
                 self._validate_field(self.reservation_time, criteria.reservation_time),
-                self._validate_field(self.people_count_str, criteria.people_count_str),
+                self._validate_field(self.people_count, criteria.people_count),
                 # self._validate_field(self.email, criteria.email),
                 self._validate_field(self.occasion, criteria.occasion),
             ]
@@ -516,15 +516,19 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "ReservationCompleteEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        parsed_date = data.get("date", "")
+        last_element = parsed_date.split(" ")[-1]
+        if len(last_element) == 1:
+            parsed_date = parsed_date.replace(last_element, "0" + last_element)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             # restaurant_id=data.get("restaurantId", ""),
-            reservation_date_str=data.get("date", ""),
+            reservation_date_str=parsed_date,
             reservation_time=data.get("time", ""),
-            people_count_str=data.get("people", ""),
+            people_count=int(data.get("people", "")),
             country_code=data.get("countryCode", ""),
             country_name=data.get("countryName", ""),
             phone_number=data.get("phoneNumber", ""),

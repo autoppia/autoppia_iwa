@@ -1,5 +1,6 @@
 import random
 
+from ..shared_utils import generate_mock_date_strings, generate_mock_dates
 from .data import RESTAURANT_DATA, RESTAURANT_PEOPLE_COUNTS, RESTAURANT_TIMES, SCROLL_DIRECTIONS
 
 
@@ -29,6 +30,7 @@ def replace_restaurant_placeholders(
         # Date, Time, People placeholders
         "<time_description>": lambda: random.choice(RESTAURANT_TIMES) if RESTAURANT_TIMES else "02:00 PM",
         "<people_count>": lambda: str(random.choice(RESTAURANT_PEOPLE_COUNTS)) if RESTAURANT_PEOPLE_COUNTS else "2",
+        "<date_description>": lambda: generate_mock_date_strings(generate_mock_dates()),
         # Scroll view placeholders
         "<direction>": lambda: random.choice(SCROLL_DIRECTIONS),
         "<count>": lambda: str(random.choice(RESTAURANT_PEOPLE_COUNTS)),

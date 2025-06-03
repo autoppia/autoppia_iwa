@@ -1,3 +1,4 @@
+import datetime
 from typing import Any
 
 from loguru import logger
@@ -58,3 +59,32 @@ def parse_price(price_raw: Any) -> float | None:
 def create_constraint_dict(field: str, operator: ComparisonOperator, value: Any) -> dict[str, Any]:
     """Creates a single constraint dictionary in the list[dict] format."""
     return {"field": field, "operator": operator, "value": value}
+
+
+def generate_mock_dates():
+    """
+    Generates a list of mock dates strictly in the future within the same month,
+    with time set to 19:00.
+    """
+    today = datetime.datetime.now(datetime.UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+    current_month = today.month
+    mock_dates_raw = []
+
+    # Add future dates starting from tomorrow
+    for i in range(1, 15):  # next 14 days
+        future_date = today + datetime.timedelta(days=i)
+        if future_date.month == current_month:
+            mock_dates_raw.append(future_date.replace(hour=19, minute=0, second=0, microsecond=0))
+
+    return sorted(list(set(mock_dates_raw)))
+
+
+def generate_mock_date_strings(dates: list):
+    """
+    Converts list of datetime objects to unique, sorted strings like "Jul 18".
+    """
+    date_strings = []
+    for d in dates:
+        if isinstance(d, datetime.datetime | datetime.date):
+            date_strings.append(d.strftime("%b %d"))
+    return sorted(list(set(date_strings)))
