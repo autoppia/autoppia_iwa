@@ -410,6 +410,19 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
                 "reasoning": "User provides all necessary details to book a restaurant.",
             },
         },
+        {
+            "prompt": "Book a table for 3 people on July 18th for dinner at 'Sushi Palace'.",
+            "prompt_for_task_generation": "Book a table for <people_count> people on <date_description> for <meal_time> at '<restaurant_name>'",
+            "tests": {
+                "type": "CheckEventTest",
+                "event_name": "BOOK_RESTAURANT",
+                "event_criteria": {
+                    "restaurant_name": {"value": "Sushi Palace", "operator": "equals"},
+                    "people": {"value": 3, "operator": "equals"},
+                    "selected_date": {"value": date(2024, 7, 18).isoformat(), "operator": "equals"},
+                },
+            },
+        },
     ],
 )
 
@@ -527,6 +540,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Clearly indicate the **final confirmation or completion** of a restaurant reservation.
 2. May involve providing final details like contact information (email, phone) or special requests if these are part of the final step.
 3. Lead to the RESERVATION_COMPLETE event.
+4. Always generate a placeholder for restaurant name as '<restaurant_name>'.
 """
 
 RESERVATION_COMPLETE_USE_CASE = UseCase(
@@ -536,51 +550,83 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
     event_source_code=ReservationCompleteEvent.get_source_code_of_class(),
     additional_prompt_info=RESERVATION_COMPLETE_INFO,
     constraints_generator=generate_reservation_complete_constraints,
+    replace_func=replace_restaurant_placeholders,
     examples=[
         {
-            "prompt": "Complete my reservation for 'The Royal Dine' on July 18th at 1:30 PM for 2 people. My email is user_name@gmail.com, phone is 123, it's for a birthday, and special request is 'a quiet table'.",
+            "prompt": "Complete my reservation for 'The Royal Dine' on July 18th at 1:30 PM for 2 people. My phone is 123, it's for a birthday, and special request is 'a quiet table'.",
             "prompt_for_task_generation": "Complete my reservation for '<restaurant_name>' on <date> at <time> for <people_count>. My email is <email>, phone is <phone_number>, it's for a <occasion>, and special request is '<special_request>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "RESERVATION_COMPLETE",
                 "event_criteria": {
-                    # "restaurant_id": {"value": "royal-dine", "operator": "equals"},
-                    # "reservation_date_str": {"value": "Jul 18", "operator": "equals"}, # Keep this as string if that's what the event expects
                     "reservation_time": {"value": "1:30 PM", "operator": "equals"},
-                    "people_count_str": {"value": "2 people", "operator": "equals"},
-                    "email": {"value": "user_name@gmail.com", "operator": "equals"},
+                    "people_count": {"value": "2 people", "operator": "equals"},
                     "occasion": {"value": "birthday", "operator": "equals"},
                     "phone_number": {"value": "123", "operator": "equals"},
-                    "special_request": {"value": "the", "operator": "equals"},
                 },
                 "reasoning": "User provides all final details to complete the reservation.",
             },
         },
-        # {
-        #     "prompt": "Finalize booking with email containing 'company.com' and phone number starting with '+1'",
-        #     "prompt_for_task_generation": "Finalize booking with email containing '<email_fragment>' and phone number starting with '<phone_prefix>'",
-        #     "test": {
-        #         "type": "CheckEventTest",
-        #         "event_name": "RESERVATION_COMPLETE",
-        #         "event_criteria": {
-        #             "email": {"value": "company.com", "operator": "contains"},
-        #             "phone_number": {"value": "+1", "operator": "starts_with"},
-        #         },
-        #         "reasoning": "User completes reservation with specific email and phone patterns.",
-        #     },
-        # },
-        # {
-        #     "prompt": "Confirm reservation with special dietary requirements (vegan and gluten-free)",
-        #     "prompt_for_task_generation": "Confirm reservation with special dietary requirements (<requirement1> and <requirement2>)",
-        #     "test": {
-        #         "type": "CheckEventTest",
-        #         "event_name": "RESERVATION_COMPLETE",
-        #         "event_criteria": {
-        #             "dietary_restrictions": {"value": ["vegan", "gluten-free"], "operator": "contains_all"},
-        #         },
-        #         "reasoning": "User completes reservation with multiple dietary requirements.",
-        #     },
-        # },
+        {
+            "prompt": "Please finalize my reservation at 'Ocean Breeze' for July 20th, 8:00 PM, 4 people. You can reach me at my number is 9876543210. It's for an anniversary. We'd like a table with a sea view.",
+            "prompt_for_task_generation": "Please finalize my reservation at '<restaurant_name>' for <date>, <time>, <people_count>. You can reach me at my number is <phone_number>. It's for an <occasion>. We'd like a table with a <special_request>.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "RESERVATION_COMPLETE",
+                "event_criteria": {
+                    "reservation_time": {"value": "8:00 PM", "operator": "equals"},
+                    "people_count": {"value": "4 people", "operator": "equals"},
+                    "occasion": {"value": "anniversary", "operator": "equals"},
+                    "phone_number": {"value": "9876543210", "operator": "equals"},
+                },
+                "reasoning": "User confirms full reservation details including contact and occasion.",
+            },
+        },
+        {
+            "prompt": "Finish booking at 'Mountain Top Grill' for 6 people at 6:15 PM on August 5. My email is sam.kim@domain.org and phone is 111-222-3333. Please note it's for a corporate event. Requesting projector setup.",
+            "prompt_for_task_generation": "Finish booking at '<restaurant_name>' for <people_count> at <time> on <date>. My phone is <phone_number>. Please note it's for a <occasion>. Requesting <special_request>.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "RESERVATION_COMPLETE",
+                "event_criteria": {
+                    "reservation_time": {"value": "6:15 PM", "operator": "equals"},
+                    "people_count": {"value": "6 people", "operator": "equals"},
+                    "occasion": {"value": "corporate event", "operator": "equals"},
+                    "phone_number": {"value": "111-222-3333", "operator": "equals"},
+                },
+                "reasoning": "User finalizes reservation with corporate event and special tech request.",
+            },
+        },
+        {
+            "prompt": "Confirm my dinner booking at 'Bella Roma' for September 9th at 9 PM for 3. Call me at +44-1234-567890. We're celebrating a graduation. Please arrange for a dessert surprise.",
+            "prompt_for_task_generation": "Confirm my dinner booking at '<restaurant_name>' for <date> at <time> for <people_count>. Call me at <phone_number>. We're celebrating a <occasion>. Please arrange <special_request>.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "RESERVATION_COMPLETE",
+                "event_criteria": {
+                    "reservation_time": {"value": "9:00 PM", "operator": "equals"},
+                    "people_count": {"value": "3 people", "operator": "equals"},
+                    "occasion": {"value": "graduation", "operator": "equals"},
+                    "phone_number": {"value": "+44-1234-567890", "operator": "equals"},
+                },
+                "reasoning": "Final step includes personal contact, special occasion, and a custom request.",
+            },
+        },
+        {
+            "prompt": "Book my table at 'City Lights Bistro' on October 2nd, 5 PM, party of 5. Phone: 555-0099. It's a reunion. No loud music please.",
+            "prompt_for_task_generation": "Book my table at '<restaurant_name>' on <date>, <time>, party of <people_count>. phone: <phone_number>. It's a <occasion>. <special_request>.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "RESERVATION_COMPLETE",
+                "event_criteria": {
+                    "reservation_time": {"value": "5:00 PM", "operator": "equals"},
+                    "people_count": {"value": "5 people", "operator": "equals"},
+                    "occasion": {"value": "reunion", "operator": "equals"},
+                    "phone_number": {"value": "555-0099", "operator": "equals"},
+                },
+                "reasoning": "User provides all necessary booking details including group size and quiet preference.",
+            },
+        },
     ],
 )
 
