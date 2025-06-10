@@ -443,20 +443,20 @@ class OrderCompletedEvent(Event, BaseEventValidator):
 
     event_name: str = "ORDER_COMPLETED"
 
-    items: int
-    total_amount: float
-    tax: float
-    shipping: float
-    order_total: float
+    # items: int
+    # total_amount: float
+    # tax: float
+    # shipping: float
+    # order_total: float
 
     class ValidationCriteria(BaseModel):
         """Criteria for validating order completion events."""
 
-        items: int | CriterionValue | None = None
-        total_amount: float | CriterionValue | None = None
-        tax: float | CriterionValue | None = None
-        shipping: float | CriterionValue | None = None
-        order_total: float | CriterionValue | None = None
+        # items: int | CriterionValue | None = None
+        # total_amount: float | CriterionValue | None = None
+        # tax: float | CriterionValue | None = None
+        # shipping: float | CriterionValue | None = None
+        # order_total: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -464,11 +464,11 @@ class OrderCompletedEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.items, criteria.items),
-                self._validate_field(self.total_amount, criteria.total_amount),
-                self._validate_field(self.tax, criteria.tax),
-                self._validate_field(self.shipping, criteria.shipping),
-                self._validate_field(self.order_total, criteria.order_total),
+                # self._validate_field(self.items, criteria.items),
+                # self._validate_field(self.total_amount, criteria.total_amount),
+                # self._validate_field(self.tax, criteria.tax),
+                # self._validate_field(self.shipping, criteria.shipping),
+                # self._validate_field(self.order_total, criteria.order_total),
             ]
         )
 
@@ -476,24 +476,24 @@ class OrderCompletedEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "OrderCompletedEvent":
         """Parse an order completed event from backend data."""
         base_event = Event.parse(backend_event)
-        data = backend_event.data
+        # data = backend_event.data
 
-        total_amount = float(data.get("totalAmount", data.get("value", 0.0)))
-        tax = float(data.get("tax", 0.0))
-        shipping = float(data.get("shipping", 0.0))
-        order_total = float(data.get("orderTotal", 0.0))
-        items_count = int(data.get("items", 0))
+        # total_amount = float(data.get("totalAmount", data.get("value", 0.0)))
+        # tax = float(data.get("tax", 0.0))
+        # shipping = float(data.get("shipping", 0.0))
+        # order_total = float(data.get("orderTotal", 0.0))
+        # items_count = int(data.get("items", 0))
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            tax=tax,
-            shipping=shipping,
-            order_total=order_total,
-            items=items_count,
-            total_amount=total_amount,
+            # tax=tax,
+            # shipping=shipping,
+            # order_total=order_total,
+            # items=items_count,
+            # total_amount=total_amount,
         )
 
 
