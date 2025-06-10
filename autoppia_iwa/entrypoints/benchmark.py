@@ -10,7 +10,7 @@ from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.demo_webs.utils import _load_web_analysis, initialize_demo_webs_projects
+from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig, setup_logging
@@ -30,8 +30,8 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # Manualmente selecciona los proyectos de demo
 PROJECTS_TO_RUN: list[WebProject] = [
-    demo_web_projects[0],
-    demo_web_projects[1],
+    # demo_web_projects[0],
+    # demo_web_projects[1],
     demo_web_projects[2],
 ]
 
@@ -173,7 +173,6 @@ async def main():
                 project = real_projects.get(td.id)
                 if project:
                     logger.info(f"===== Starting evaluation for real task project: {project.name} =====")
-                    await _load_web_analysis(project)
                     tasks = await generate_tasks(project, td)
                     if tasks:
                         await run_evaluation(project, tasks, timing_metrics)
