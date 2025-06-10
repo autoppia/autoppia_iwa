@@ -50,12 +50,12 @@ Follow these steps to install and run the application using Docker Compose:
     ```
 4.  Verify that the services are running correctly:
     ```bash
-    docker-compose ps
+    docker ps
     ```
     You should see output listing the `app` and `db` services with their status. Wait for the `db` service to show `(healthy)`.
     You can view the application logs with:
     ```bash
-    docker-compose logs -f app
+    docker logs -f webs_server-app-1
     ```
 
 ### Local Development
@@ -85,7 +85,7 @@ Follow these steps to install and run the application using Docker Compose:
 ### Deploy with Docker Compose
 To run the API and PostgreSQL database in detached mode:
 ```bash
-docker-compose up -d
+docker-compose up --build -d
 ````
 
 The API will be accessible on port `8080`.
