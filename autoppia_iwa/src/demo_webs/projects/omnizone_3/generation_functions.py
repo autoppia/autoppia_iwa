@@ -288,17 +288,17 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
         if constraint_value is not None:
             constraints_list.append(create_constraint_dict(criterion_alias, op, constraint_value))
 
-    quantity_operators = [
-        ComparisonOperator.EQUALS,
-        ComparisonOperator.GREATER_EQUAL,
-        ComparisonOperator.LESS_EQUAL,
-    ]
-    if random.random() > 0.3 and quantity_operators:
-        op = random.choice(quantity_operators)
-        # Use a more realistic mock source value for quantity
-        quantity_value = generate_constraint_value("quantity", op, {"quantity": random.randint(1, 5)})
-        if quantity_value is not None:
-            constraints_list.append(create_constraint_dict("quantity", op, quantity_value))
+    # quantity_operators = [
+    #     ComparisonOperator.EQUALS,
+    #     ComparisonOperator.GREATER_EQUAL,
+    #     ComparisonOperator.LESS_EQUAL,
+    # ]
+    # if random.random() > 0.3 and quantity_operators:
+    #     op = random.choice(quantity_operators)
+    #     # Use a more realistic mock source value for quantity
+    #     quantity_value = generate_constraint_value("quantity", op, {"quantity": random.randint(1, 5)})
+    #     if quantity_value is not None:
+    #         constraints_list.append(create_constraint_dict("quantity", op, quantity_value))
 
     return constraints_list
 
