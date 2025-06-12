@@ -241,6 +241,11 @@ async def main():
                 logger.info(f"===== Starting evaluation for project: {project.name} ({project.id}) =====")
                 tasks = await generate_tasks(project)
                 if tasks:
+                    if RETURN_EVALUATION_GIF:
+                        if not RECORDINGS_DIR.exists():
+                            os.mkdir(RECORDINGS_DIR)
+                        for t in tasks:
+                            t.should_record = True
                     await run_evaluation(project, tasks, timing_metrics)
                 else:
                     logger.warning(f"No tasks generated for project {project.name}. Skipping.")
@@ -256,6 +261,8 @@ async def main():
                     tasks = await generate_tasks(project, td)
                     if tasks:
                         if RETURN_EVALUATION_GIF:
+                            if not RECORDINGS_DIR.exists():
+                                os.mkdir(RECORDINGS_DIR)
                             for t in tasks:
                                 t.should_record = True
                         await run_evaluation(project, tasks, timing_metrics)
