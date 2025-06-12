@@ -21,14 +21,13 @@ LLM_SERVICE = app.container.llm_service()
 
 DEMO_WEB_PROJECT = [demo_web_projects[0]]
 
-NUM_OF_URLS = 1
-NUM_OF_PROMPTS = 2
-
 
 async def generate_tasks():
     test_projects = await initialize_demo_webs_projects(DEMO_WEB_PROJECT)
     web_project = test_projects[0]
-    config = TaskGenerationConfig(save_task_in_db=False, num_of_urls=NUM_OF_URLS, prompts_per_url=NUM_OF_PROMPTS)
+    config = TaskGenerationConfig(
+        save_task_in_db=False,
+    )
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
     tasks: list[Task] = await pipeline.generate()
     return tasks

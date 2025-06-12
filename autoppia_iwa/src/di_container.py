@@ -1,22 +1,16 @@
 from dependency_injector import containers, providers
-from pymongo import MongoClient
 
 from autoppia_iwa.config.config import (
-    ANALYSIS_COLLECTION,
     GENERATE_MILESTONES,
     LLM_PROVIDER,
     LOCAL_MODEL_ENDPOINT,
     LOCAL_PARALLEL_MODEL_ENDPOINT,
-    MONGODB_NAME,
-    MONGODB_URL,
     OPENAI_API_KEY,
     OPENAI_MAX_TOKENS,
     OPENAI_MODEL,
     OPENAI_TEMPERATURE,
-    TASKS_COLLECTION,
 )
 from autoppia_iwa.src.llms.infrastructure.llm_service import LLMConfig, LLMFactory
-from autoppia_iwa.src.shared.infrastructure.databases.base_mongo_repository import BaseMongoRepository
 
 
 class DIContainer(containers.DeclarativeContainer):
@@ -27,23 +21,23 @@ class DIContainer(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(packages=["autoppia_iwa.src"])
 
     # Initialize MongoDB client as Singleton
-    mongo_client = providers.Singleton(lambda: MongoClient(MONGODB_URL))
+    # mongo_client = providers.Singleton(lambda: MongoClient(MONGODB_URL))
 
     # Repository of analysis results as Factory
-    analysis_repository = providers.Factory(
-        BaseMongoRepository,
-        mongo_client=mongo_client,
-        db_name=MONGODB_NAME,
-        collection_name=ANALYSIS_COLLECTION,
-    )
+    # analysis_repository = providers.Factory(
+    #     BaseMongoRepository,
+    #     mongo_client=mongo_client,
+    #     db_name=MONGODB_NAME,
+    #     collection_name=ANALYSIS_COLLECTION,
+    # )
 
-    # Synthetic Task Repository
-    synthetic_task_repository = providers.Factory(
-        BaseMongoRepository,
-        mongo_client=mongo_client,
-        db_name=MONGODB_NAME,
-        collection_name=TASKS_COLLECTION,
-    )
+    # # Synthetic Task Repository
+    # synthetic_task_repository = providers.Factory(
+    #     BaseMongoRepository,
+    #     mongo_client=mongo_client,
+    #     db_name=MONGODB_NAME,
+    #     collection_name=TASKS_COLLECTION,
+    # )
 
     # LLM Service provider using Factory pattern
     llm_service = providers.Singleton(lambda: DIContainer._get_llm_service())

@@ -47,9 +47,6 @@ class TestTaskGenerationPipeline(unittest.IsolatedAsyncioTestCase):
 
             # Create task generation configuration
             task_config = TaskGenerationConfig(
-                num_of_urls=NUM_OF_URLS,
-                prompts_per_url=PROMPTS_PER_URL,
-                random_urls=RANDOM_URLS,
                 generate_local_tasks=True,
                 generate_global_tasks=False,
             )

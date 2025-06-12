@@ -352,8 +352,8 @@ class QuantityChangedEvent(Event, BaseEventValidator):
     item_category: str | None = None
     item_brand: str | None = None
     item_rating: float | None = None
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    # created_at: datetime = Field(default_factory=datetime.now)
+    # updated_at: datetime = Field(default_factory=datetime.now)
 
     class ValidationCriteria(BaseModel):
         """Criteria for validating quantity change events."""
@@ -366,8 +366,8 @@ class QuantityChangedEvent(Event, BaseEventValidator):
         brand: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         rating: float | CriterionValue | None = None
-        created_at: datetime | CriterionValue | None = None
-        updated_at: datetime | CriterionValue | None = None
+        # created_at: datetime | CriterionValue | None = None
+        # updated_at: datetime | CriterionValue | None = None
 
         class Config:
             populate_by_name = True
@@ -386,8 +386,8 @@ class QuantityChangedEvent(Event, BaseEventValidator):
                 self._validate_field(self.item_brand, criteria.brand),
                 self._validate_field(self.item_price, criteria.price),
                 self._validate_field(self.item_rating, criteria.rating),
-                self._validate_field(self.created_at, criteria.created_at),
-                self._validate_field(self.updated_at, criteria.updated_at),
+                # self._validate_field(self.created_at, criteria.created_at),
+                # self._validate_field(self.updated_at, criteria.updated_at),
             ]
         )
 
@@ -398,27 +398,27 @@ class QuantityChangedEvent(Event, BaseEventValidator):
         data = backend_event.data
 
         # Attempt to parse relevant fields, falling back if needed
-        item_name = data.get("title", "")
+        item_name = data.get("product_name", "")
         previous_quantity = int(data.get("previous_quantity", 0))
         new_quantity = int(data.get("new_quantity", 0))
 
         price = None
         if "price" in data:
-            parse_price(data.get("price"))
+            price = parse_price(data.get("price"))
 
         # Pydantic will handle datetime parsing if input is str in ISO format
-        created_at = data.get("created_at")
-        updated_at = data.get("updated_at")
-        if isinstance(created_at, str):
-            try:
-                created_at = datetime.fromisoformat(created_at)
-            except ValueError:
-                created_at = base_event.timestamp
-        if isinstance(updated_at, str):
-            try:
-                updated_at = datetime.fromisoformat(updated_at)
-            except ValueError:
-                updated_at = datetime.now()
+        # created_at = data.get("created_at")
+        # updated_at = data.get("updated_at")
+        # if isinstance(created_at, str):
+        #     try:
+        #         created_at = datetime.fromisoformat(created_at)
+        #     except ValueError:
+        #         created_at = base_event.timestamp
+        # if isinstance(updated_at, str):
+        #     try:
+        #         updated_at = datetime.fromisoformat(updated_at)
+        #     except ValueError:
+        #         updated_at = datetime.now()
 
         return cls(
             event_name=base_event.event_name,
@@ -432,8 +432,8 @@ class QuantityChangedEvent(Event, BaseEventValidator):
             item_category=data.get("category"),
             item_brand=data.get("brand"),
             item_rating=data.get("rating"),
-            created_at=created_at,
-            updated_at=updated_at,
+            # created_at=created_at,
+            # updated_at=updated_at,
             # item_id=data.get("productId", ""),
         )
 
@@ -443,20 +443,20 @@ class OrderCompletedEvent(Event, BaseEventValidator):
 
     event_name: str = "ORDER_COMPLETED"
 
-    items: int
-    total_amount: float
-    tax: float
-    shipping: float
-    order_total: float
+    # items: int
+    # total_amount: float
+    # tax: float
+    # shipping: float
+    # order_total: float
 
     class ValidationCriteria(BaseModel):
         """Criteria for validating order completion events."""
 
-        items: int | CriterionValue | None = None
-        total_amount: float | CriterionValue | None = None
-        tax: float | CriterionValue | None = None
-        shipping: float | CriterionValue | None = None
-        order_total: float | CriterionValue | None = None
+        # items: int | CriterionValue | None = None
+        # total_amount: float | CriterionValue | None = None
+        # tax: float | CriterionValue | None = None
+        # shipping: float | CriterionValue | None = None
+        # order_total: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -464,11 +464,11 @@ class OrderCompletedEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.items, criteria.items),
-                self._validate_field(self.total_amount, criteria.total_amount),
-                self._validate_field(self.tax, criteria.tax),
-                self._validate_field(self.shipping, criteria.shipping),
-                self._validate_field(self.order_total, criteria.order_total),
+                # self._validate_field(self.items, criteria.items),
+                # self._validate_field(self.total_amount, criteria.total_amount),
+                # self._validate_field(self.tax, criteria.tax),
+                # self._validate_field(self.shipping, criteria.shipping),
+                # self._validate_field(self.order_total, criteria.order_total),
             ]
         )
 
@@ -476,24 +476,24 @@ class OrderCompletedEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "OrderCompletedEvent":
         """Parse an order completed event from backend data."""
         base_event = Event.parse(backend_event)
-        data = backend_event.data
+        # data = backend_event.data
 
-        total_amount = float(data.get("totalAmount", data.get("value", 0.0)))
-        tax = float(data.get("tax", 0.0))
-        shipping = float(data.get("shipping", 0.0))
-        order_total = float(data.get("orderTotal", 0.0))
-        items_count = int(data.get("items", 0))
+        # total_amount = float(data.get("totalAmount", data.get("value", 0.0)))
+        # tax = float(data.get("tax", 0.0))
+        # shipping = float(data.get("shipping", 0.0))
+        # order_total = float(data.get("orderTotal", 0.0))
+        # items_count = int(data.get("items", 0))
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            tax=tax,
-            shipping=shipping,
-            order_total=order_total,
-            items=items_count,
-            total_amount=total_amount,
+            # tax=tax,
+            # shipping=shipping,
+            # order_total=order_total,
+            # items=items_count,
+            # total_amount=total_amount,
         )
 
 

@@ -94,12 +94,12 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
 
             if operator == ComparisonOperator.GREATER_THAN:
                 candidates = [v for v in numeric_pool if v > num_source_value]
-                generated_value = random.choice(candidates) if candidates else num_source_value + random.uniform(1, 10)
+                generated_value = random.choice(candidates) if candidates else num_source_value + random.randint(1, 5)
+
             elif operator == ComparisonOperator.LESS_THAN:
                 candidates = [v for v in numeric_pool if v < num_source_value]
-                generated_value = random.choice(candidates) if candidates else num_source_value - random.uniform(1, 10)
-                if generated_value < 0 and field not in ["rating"]:  # Ensure non-negative for quantities/prices
-                    generated_value = 0
+                generated_value = random.choice(candidates) if candidates else max(0, num_source_value - random.randint(1, 5))
+
             elif operator == ComparisonOperator.GREATER_EQUAL:
                 candidates = [v for v in numeric_pool if v >= num_source_value]
                 generated_value = random.choice(candidates) if candidates else num_source_value
@@ -288,17 +288,17 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
         if constraint_value is not None:
             constraints_list.append(create_constraint_dict(criterion_alias, op, constraint_value))
 
-    quantity_operators = [
-        ComparisonOperator.EQUALS,
-        ComparisonOperator.GREATER_EQUAL,
-        ComparisonOperator.LESS_EQUAL,
-    ]
-    if random.random() > 0.3 and quantity_operators:
-        op = random.choice(quantity_operators)
-        # Use a more realistic mock source value for quantity
-        quantity_value = generate_constraint_value("quantity", op, {"quantity": random.randint(1, 5)})
-        if quantity_value is not None:
-            constraints_list.append(create_constraint_dict("quantity", op, quantity_value))
+    # quantity_operators = [
+    #     ComparisonOperator.EQUALS,
+    #     ComparisonOperator.GREATER_EQUAL,
+    #     ComparisonOperator.LESS_EQUAL,
+    # ]
+    # if random.random() > 0.3 and quantity_operators:
+    #     op = random.choice(quantity_operators)
+    #     # Use a more realistic mock source value for quantity
+    #     quantity_value = generate_constraint_value("quantity", op, {"quantity": random.randint(1, 5)})
+    #     if quantity_value is not None:
+    #         constraints_list.append(create_constraint_dict("quantity", op, quantity_value))
 
     return constraints_list
 
@@ -329,33 +329,36 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
                 constraints_list.append(create_constraint_dict(selected_id_field, op, constraint_value))
         else:
             logger.warning(f"Could not select operator for product key '{product_key}' in quantity change constraints.")
-    else:
-        pass
 
     quantity_operators = [
         ComparisonOperator.EQUALS,
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
+        ComparisonOperator.LESS_THAN,
+        ComparisonOperator.GREATER_THAN,
     ]
 
-    if quantity_operators:
-        new_qty = random.randint(1, 10)
-        op_new = random.choice(quantity_operators)
+    new_qty = random.randint(2, 9)  # avoid edge-only scenarios for better range
+    op = random.choice(quantity_operators)
+    constraint_value_new = None
 
-        constraint_value_new = None
-        if op_new == ComparisonOperator.EQUALS:
-            constraint_value_new = new_qty
-        elif op_new == ComparisonOperator.GREATER_EQUAL:
-            # Value must be >= 1 and <= new_qty
-            constraint_value_new = random.randint(1, new_qty)
-        elif op_new == ComparisonOperator.LESS_EQUAL:
-            # Value must be >= new_qty and <= 10
-            constraint_value_new = random.randint(new_qty, 10)
+    if op == ComparisonOperator.EQUALS:
+        constraint_value_new = new_qty
+    elif op == ComparisonOperator.GREATER_EQUAL:
+        constraint_value_new = random.randint(1, new_qty)
+    elif op == ComparisonOperator.LESS_EQUAL:
+        constraint_value_new = random.randint(new_qty, 10)
+    elif op == ComparisonOperator.GREATER_THAN:
+        constraint_value_new = random.randint(new_qty + 1, 10) if new_qty < 10 else 10
+        if constraint_value_new == 10:
+            constraint_value_new = random.randint(1, 9)
+    elif op == ComparisonOperator.LESS_THAN:
+        constraint_value_new = random.randint(1, new_qty - 1) if new_qty > 1 else 1
 
-        if constraint_value_new is not None:
-            constraints_list.append(create_constraint_dict("new_quantity", op_new, constraint_value_new))
-        else:
-            logger.warning(f"Could not generate valid constraint value for new_quantity with operator {op_new}.")
+    if constraint_value_new is not None:
+        constraints_list.append(create_constraint_dict("new_quantity", op, constraint_value_new))
+    else:
+        logger.warning(f"Could not generate valid constraint value for new_quantity with operator {op}.")
 
     return constraints_list
 
