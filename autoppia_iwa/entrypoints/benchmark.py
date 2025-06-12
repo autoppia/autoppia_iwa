@@ -1,9 +1,12 @@
 import asyncio
+import base64
+import os
 import time
 import traceback
 
 from loguru import logger
 
+from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
@@ -30,9 +33,9 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # Manualmente selecciona los proyectos de demo
 PROJECTS_TO_RUN: list[WebProject] = [
-    # demo_web_projects[0],
+    demo_web_projects[0],
     # demo_web_projects[1],
-    demo_web_projects[2],
+    # demo_web_projects[2],
     # demo_web_projects[3],
 ]
 
@@ -41,6 +44,9 @@ PLOT_BENCHMARK_RESULTS: bool = False
 USE_CACHED_TASKS_CONST: bool = False
 USE_CACHED_SOLUTIONS_CONST: bool = False
 EVALUATE_REAL_TASKS_CONST: bool = False
+
+RETURN_EVALUATION_GIF: bool = True
+RECORDINGS_DIR = PROJECT_BASE_DIR / "recordings"
 LOG_FILE = "benchmark.log"
 
 # Logging
@@ -59,7 +65,10 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
 # Agentes
 AGENTS: list[IWebAgent] = [
-    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
+    # ApifiedWebAgent(id="2", name="AnthropicCUA", host="127.0.0.1", port=5005, timeout=120),
+    # ApifiedWebAgent(id="3", name="OpenAICUA", host="127.0.0.1", port=5010, timeout=120),
+    # ApifiedWebAgent(id="1", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()
@@ -83,7 +92,30 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
     try:
         evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
-        return await evaluator.evaluate_task_solutions(task, task_solutions)
+        evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
+
+        # Save recordings if they exist
+        if RETURN_EVALUATION_GIF:
+            for result in evaluation_results:
+                if result.gif_recording:
+                    # Get agent name
+                    web_agent_name = "unknown_agent"
+                    for agent in AGENTS:
+                        if agent.id == result.web_agent_id:
+                            web_agent_name = agent.name
+                            break
+
+                    # Create directory structure
+                    agent_dir = RECORDINGS_DIR / web_agent_name
+                    os.makedirs(agent_dir, exist_ok=True)
+
+                    # Save GIF
+                    recording_path = agent_dir / f"{task.id}.gif"
+                    with open(recording_path, "wb") as f:
+                        f.write(base64.b64decode(result.gif_recording))
+                    logger.info(f"Saved recording to: {recording_path}")
+
+        return evaluation_results
     except Exception:
         traceback.print_exc()
         return []
@@ -176,6 +208,9 @@ async def main():
                     logger.info(f"===== Starting evaluation for real task project: {project.name} =====")
                     tasks = await generate_tasks(project, td)
                     if tasks:
+                        if RETURN_EVALUATION_GIF:
+                            for t in tasks:
+                                t.should_record = True
                         await run_evaluation(project, tasks, timing_metrics)
                     else:
                         logger.warning(f"No tasks generated for real project {project.name}. Skipping.")
