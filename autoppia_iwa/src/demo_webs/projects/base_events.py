@@ -24,7 +24,7 @@ class Event(BaseModel):
         if criteria and hasattr(criteria, "model_fields"):
             for field_name in criteria.model_fields:
                 field_value = getattr(criteria, field_name)
-                print(f"Before: {field_value}. self_web_agent_id:{self.web_agent_id}")
+                # print(f"Before: {field_value}. self_web_agent_id:{self.web_agent_id}")
 
                 if hasattr(field_value, "value"):
                     if isinstance(field_value.value, str):
