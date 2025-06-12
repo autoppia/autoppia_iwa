@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+from pathlib import Path
 
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
@@ -19,11 +20,25 @@ def get_cache_filename(project: WebProject, task_cache_dir: str) -> str:
 
 async def save_tasks_to_json(tasks: list[Task], project: WebProject, task_cache_dir: str) -> bool:
     """
-    Save tasks to a project-specific JSON file.
+    Append new tasks to existing project-specific JSON file without duplicating tasks.
     """
     filename = get_cache_filename(project, task_cache_dir)
     try:
-        cache_data = {"project_id": project.id, "project_name": project.name, "timestamp": datetime.now().isoformat(), "tasks": [task.serialize() for task in tasks]}
+        # Load existing tasks if file exists
+        existing_tasks = []
+        if Path(filename).exists():
+            with open(filename) as f:
+                data = json.load(f)
+                existing_tasks = data.get("tasks", [])
+
+        # Serialize new tasks and merge (avoiding duplicates by 'id')
+        new_serialized = [task.serialize() for task in tasks]
+        all_tasks_by_id = {task["id"]: task for task in existing_tasks}
+        for new_task in new_serialized:
+            all_tasks_by_id[new_task["id"]] = new_task
+
+        # Compose final cache data
+        cache_data = {"project_id": project.id, "project_name": project.name, "timestamp": datetime.now().isoformat(), "tasks": list(all_tasks_by_id.values())}
 
         with open(filename, "w") as f:
             json.dump(cache_data, f, indent=2)
