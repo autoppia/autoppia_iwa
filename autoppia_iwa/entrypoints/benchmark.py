@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import asyncio
 import time
 import traceback
@@ -14,15 +13,9 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig, setup_logging
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.utils_entrypoints.results import (
-    plot_results,
-    plot_task_comparison,
-    print_performance_statistics,
-    save_results_to_json,
-)
+from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_list_of_evaluations, visualize_task
@@ -31,23 +24,32 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
-# =========================================================
-# CONFIGURATION
-# =========================================================
+# ==========================
+# ==== CONFIGURACIONES ====
+# ==========================
 
+# Manualmente selecciona los proyectos de demo
 PROJECTS_TO_RUN: list[WebProject] = [
-    demo_web_projects[0],
+    # demo_web_projects[0],
+    # demo_web_projects[1],
+    demo_web_projects[2],
+    # demo_web_projects[3],
 ]
 
-PROMPT_PER_USE_CASE_CONST = 1
-PLOT_BENCHMARK_RESULTS = False
-USE_CACHED_TASKS_CONST = False
-USE_CACHED_SOLUTIONS_CONST = False
-EVALUATE_REAL_TASKS_CONST = False
+PROMPT_PER_USE_CASE_CONST: int = 1
+PLOT_BENCHMARK_RESULTS: bool = False
+USE_CACHED_TASKS_CONST: bool = False
+USE_CACHED_SOLUTIONS_CONST: bool = False
+EVALUATE_REAL_TASKS_CONST: bool = False
+
+RETURN_EVALUATION_GIF: bool = True
+RECORDINGS_DIR = PROJECT_BASE_DIR / "recordings"
 LOG_FILE = "benchmark.log"
 
+# Logging
 setup_logging(LOG_FILE)
 
+# Benchmark config
 config = BenchmarkConfig(
     projects_to_run=PROJECTS_TO_RUN,
     prompt_per_use_case=PROMPT_PER_USE_CASE_CONST,
@@ -58,10 +60,12 @@ config = BenchmarkConfig(
 
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
+# Agentes
 AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="1", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
-    ApifiedWebAgent(id="2", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
-    ApifiedWebAgent(id="3", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
+    # ApifiedWebAgent(id="2", name="AnthropicCUA", host="127.0.0.1", port=5005, timeout=120),
+    # ApifiedWebAgent(id="3", name="OpenAICUA", host="127.0.0.1", port=5010, timeout=120),
+    # ApifiedWebAgent(id="1", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 # Semaphore to cap concurrent agent calls at 3
@@ -93,8 +97,31 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
     """Run the evaluator for all solutions of a task."""
     try:
-        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20))
-        return await evaluator.evaluate_task_solutions(task, task_solutions)
+        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
+        evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
+
+        # Save recordings if they exist
+        if RETURN_EVALUATION_GIF:
+            for result in evaluation_results:
+                if result.gif_recording:
+                    # Get agent name
+                    web_agent_name = "unknown_agent"
+                    for agent in AGENTS:
+                        if agent.id == result.web_agent_id:
+                            web_agent_name = agent.name
+                            break
+
+                    # Create directory structure
+                    agent_dir = RECORDINGS_DIR / web_agent_name
+                    os.makedirs(agent_dir, exist_ok=True)
+
+                    # Save GIF
+                    recording_path = agent_dir / f"{task.id}.gif"
+                    with open(recording_path, "wb") as f:
+                        f.write(base64.b64decode(result.gif_recording))
+                    logger.info(f"Saved recording to: {recording_path}")
+
+        return evaluation_results
     except Exception:
         traceback.print_exc()
         return []
@@ -225,14 +252,17 @@ async def main():
             for td in tasks_data:
                 project = real_projects.get(td.id)
                 if project:
-                    logger.info(f"===== Starting evaluation for real project: {project.name} =====")
+                    logger.info(f"===== Starting evaluation for real task project: {project.name} =====")
                     tasks = await generate_tasks(project, td)
                     if tasks:
+                        if RETURN_EVALUATION_GIF:
+                            for t in tasks:
+                                t.should_record = True
                         await run_evaluation(project, tasks, timing_metrics)
                     else:
                         logger.warning(f"No tasks generated for real project {project.name}. Skipping.")
                 else:
-                    logger.warning(f"Could not find project for real task ID: {td.id}")
+                    logger.warning(f"Could not find a matching project for real task ID: {td.id}")
 
         logger.info("Evaluation process complete!")
     except Exception as e:
