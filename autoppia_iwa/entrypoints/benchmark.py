@@ -33,6 +33,7 @@ PROJECTS_TO_RUN: list[WebProject] = [
     # demo_web_projects[0],
     # demo_web_projects[1],
     demo_web_projects[2],
+    # demo_web_projects[3],
 ]
 
 PROMPT_PER_USE_CASE_CONST: int = 1
