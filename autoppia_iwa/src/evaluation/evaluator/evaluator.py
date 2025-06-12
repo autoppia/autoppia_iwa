@@ -145,7 +145,7 @@ class ConcurrentEvaluator(IEvaluator):
                 stats=stats,
             )
 
-        logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
+        # logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
         try:
             # If simulated, reset the DB first
             browser_setup_start = time.time()
@@ -259,8 +259,8 @@ class ConcurrentEvaluator(IEvaluator):
                 unique_hash = hash_actions(solution.actions) + f"_{idx}"
                 grouped_indices[unique_hash].append(idx)
 
-        for key, g_indices in grouped_indices.items():
-            logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
+        # for key, g_indices in grouped_indices.items():
+        #     logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
 
         # Shuffle grouped tasks for random evaluation order
         grouped_task_list = list(grouped_indices.values())
@@ -321,7 +321,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                     final_results[idx] = cloned
 
-                logger.info(f"Group evaluation complete for representative web_agent_id: {representative.web_agent_id}")
+                # logger.info(f"Group evaluation complete for representative web_agent_id: {representative.web_agent_id}")
             except Exception as e:
                 logger.error(f"Error evaluating group actions: {e}")
                 self.errors.append(str(e))
