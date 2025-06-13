@@ -1,6 +1,5 @@
 import asyncio
 import base64
-import os
 import time
 import traceback
 
@@ -49,6 +48,9 @@ RETURN_EVALUATION_GIF: bool = True
 RECORDINGS_DIR = PROJECT_BASE_DIR / "recordings"
 LOG_FILE = "benchmark.log"
 
+# Ensure recordings directory exists
+RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
+
 # Logging
 setup_logging(LOG_FILE)
 
@@ -91,31 +93,8 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 @visualize_list_of_evaluations(visualizer)
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
     try:
-        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
-        evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
-
-        # Save recordings if they exist
-        if RETURN_EVALUATION_GIF:
-            for result in evaluation_results:
-                if result.gif_recording:
-                    # Get agent name
-                    web_agent_name = "unknown_agent"
-                    for agent in AGENTS:
-                        if agent.id == result.web_agent_id:
-                            web_agent_name = agent.name
-                            break
-
-                    # Create directory structure
-                    agent_dir = RECORDINGS_DIR / web_agent_name
-                    os.makedirs(agent_dir, exist_ok=True)
-
-                    # Save GIF
-                    recording_path = agent_dir / f"{task.id}.gif"
-                    with open(recording_path, "wb") as f:
-                        f.write(base64.b64decode(result.gif_recording))
-                    logger.info(f"Saved recording to: {recording_path}")
-
-        return evaluation_results
+        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20, should_record_gif=task.should_record))
+        return await evaluator.evaluate_task_solutions(task, task_solutions)
     except Exception:
         traceback.print_exc()
         return []
@@ -153,6 +132,24 @@ async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent,
         await backend_service.close()
 
 
+async def save_recordings(evaluation_results: list, task: Task):
+    for result in evaluation_results:
+        if result.gif_recording:
+            web_agent_name = "unknown_agent"
+            for agent in AGENTS:
+                if agent.id == result.web_agent_id:
+                    web_agent_name = agent.name
+                    break
+
+            agent_dir = RECORDINGS_DIR / web_agent_name
+            agent_dir.mkdir(exist_ok=True)
+
+            recording_path = agent_dir / f"{task.id}.gif"
+            with open(recording_path, "wb") as f:
+                f.write(base64.b64decode(result.gif_recording))
+            logger.info(f"Saved recording to: {recording_path}")
+
+
 async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics):
     final_results = {}
     for task in tasks:
@@ -163,6 +160,8 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
             solutions_for_this_task.append(sol)
 
         evaluation_results = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task, "test_visualizer")
+        await save_recordings(evaluation_results, task)
+
         for eval_result in evaluation_results:
             final_results.setdefault(eval_result.web_agent_id, {})[task.id] = {
                 "score": eval_result.final_score,
@@ -194,11 +193,8 @@ async def main():
                 logger.info(f"===== Starting evaluation for project: {project.name} (ID: {project.id}) =====")
                 tasks = await generate_tasks(project)
                 if tasks:
-                    if RETURN_EVALUATION_GIF:
-                        if not RECORDINGS_DIR.exists():
-                            os.mkdir(RECORDINGS_DIR)
-                        for t in tasks:
-                            t.should_record = True
+                    for t in tasks:
+                        t.should_record = RETURN_EVALUATION_GIF
                     await run_evaluation(project, tasks, timing_metrics)
                 else:
                     logger.warning(f"No tasks generated for project {project.name}. Skipping.")
@@ -213,11 +209,9 @@ async def main():
                     logger.info(f"===== Starting evaluation for real task project: {project.name} =====")
                     tasks = await generate_tasks(project, td)
                     if tasks:
-                        if RETURN_EVALUATION_GIF:
-                            if not RECORDINGS_DIR.exists():
-                                os.mkdir(RECORDINGS_DIR)
-                            for t in tasks:
-                                t.should_record = True
+                        # Set recording flag for all tasks
+                        for t in tasks:
+                            t.should_record = RETURN_EVALUATION_GIF
                         await run_evaluation(project, tasks, timing_metrics)
                     else:
                         logger.warning(f"No tasks generated for real project {project.name}. Skipping.")
@@ -227,11 +221,8 @@ async def main():
         logger.info("Evaluation process complete!")
     except Exception as e:
         logger.exception(f"Unexpected error in main execution: {e}")
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except Exception as e:
-        traceback.print_exc()
-        logger.critical(f"Critical error in script execution: {e}", exc_info=True)
+    asyncio.run(main())
