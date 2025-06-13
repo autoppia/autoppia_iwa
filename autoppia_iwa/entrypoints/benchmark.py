@@ -27,10 +27,10 @@ from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # ==========================
-# ==== CONFIGURACIONES ====
+# ==== CONFIGURATIONS ====
 # ==========================
 
-# Manualmente selecciona los proyectos de demo
+# Manually select the demo projects
 PROJECTS_TO_RUN: list[WebProject] = [
     demo_web_projects[0],
     # demo_web_projects[1],
@@ -40,6 +40,7 @@ PROJECTS_TO_RUN: list[WebProject] = [
 
 PROMPT_PER_USE_CASE_CONST: int = 1
 PLOT_BENCHMARK_RESULTS: bool = False
+SAVE_EVALUATION_RESULTS: bool = False
 USE_CACHED_TASKS_CONST: bool = False
 USE_CACHED_SOLUTIONS_CONST: bool = False
 EVALUATE_REAL_TASKS_CONST: bool = False
@@ -65,7 +66,7 @@ config = BenchmarkConfig(
 
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
-# Agentes
+# Agents
 AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="1", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=180),
     ApifiedWebAgent(id="2", name="AnthropicCUA", host="127.0.0.1", port=5005, timeout=180),
@@ -211,6 +212,7 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
     if PLOT_BENCHMARK_RESULTS:
         plot_results(final_results, AGENTS, timing_metrics, str(config.output_dir))
         plot_task_comparison(final_results, AGENTS, tasks, str(config.output_dir))
+    if SAVE_EVALUATION_RESULTS:
         save_results_to_json(final_results, AGENTS, timing_metrics, str(config.output_dir))
 
 
