@@ -68,8 +68,8 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Agentes
 AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="1", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=180),
-    # ApifiedWebAgent(id="2", name="AnthropicCUA", host="127.0.0.1", port=5005, timeout=180),
-    # ApifiedWebAgent(id="3", name="OpenAICUA", host="127.0.0.1", port=5010, timeout=180),
+    ApifiedWebAgent(id="2", name="AnthropicCUA", host="127.0.0.1", port=5005, timeout=180),
+    ApifiedWebAgent(id="3", name="OpenAICUA", host="127.0.0.1", port=5010, timeout=180),
     # ApifiedWebAgent(id="1", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=180),
 ]
 
