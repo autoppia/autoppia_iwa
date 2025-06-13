@@ -160,10 +160,14 @@ class ConcurrentEvaluator(IEvaluator):
 
             if self.config.should_record_gif:
                 all_screenshots = []
-                for h in execution_history:
-                    all_screenshots.append(h.browser_snapshot.screenshot_before)
-                    all_screenshots.append(h.browser_snapshot.screenshot_after)
-                evaluation_gif = make_gif_from_screenshots(all_screenshots)
+                if execution_history:
+                    all_screenshots.append(execution_history[0].browser_snapshot.screenshot_before)
+
+                    for h in execution_history:
+                        all_screenshots.append(h.browser_snapshot.screenshot_after)
+
+                evaluation_gif = make_gif_from_screenshots(all_screenshots) if all_screenshots else None
+
             stats.action_execution_times = action_execution_times
 
             # Run tests
