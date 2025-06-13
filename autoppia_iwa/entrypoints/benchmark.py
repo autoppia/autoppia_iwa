@@ -1,9 +1,11 @@
 import asyncio
+import base64
 import time
 import traceback
 
 from loguru import logger
 
+from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
@@ -30,9 +32,9 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # Manualmente selecciona los proyectos de demo
 PROJECTS_TO_RUN: list[WebProject] = [
-    # demo_web_projects[0],
+    demo_web_projects[0],
     # demo_web_projects[1],
-    demo_web_projects[2],
+    # demo_web_projects[2],
     # demo_web_projects[3],
 ]
 
@@ -45,6 +47,9 @@ EVALUATE_REAL_TASKS_CONST: bool = False
 RETURN_EVALUATION_GIF: bool = True
 RECORDINGS_DIR = PROJECT_BASE_DIR / "recordings"
 LOG_FILE = "benchmark.log"
+
+# Ensure recordings directory exists
+RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Logging
 setup_logging(LOG_FILE)
@@ -95,7 +100,6 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 
 @visualize_list_of_evaluations(visualizer)
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
-    """Run the evaluator for all solutions of a task."""
     try:
         evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
         evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
@@ -127,50 +131,58 @@ async def evaluate_multiple_solutions(web_project, task, task_solutions, validat
         return []
 
 
-async def generate_solution_for_task(
-    demo_project: WebProject,
-    agent: IWebAgent,
-    task: Task,
-    timing_metrics: TimingMetrics,
-) -> TaskSolution | None:
-    """Ask a single agent to solve a single task (concurrency limited by SEM)."""
-    async with SEM:  # <-- limits parallelism to 3 agents at a time
-        logger.info(f"--- Generating solution | Agent: {agent.name} | Task: {task.id} | Project: {demo_project.name}")
-        backend_service = BackendDemoWebService(demo_project)
+async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent, task: Task, timing_metrics: TimingMetrics) -> TaskSolution | None:
+    logger.info(f"---\nGenerating solution for Agent: {agent.name} | Task: {task.id} (Project: {demo_project.name})")
+    backend_service = BackendDemoWebService(demo_project)
 
-        try:
-            await backend_service.reset_database()
+    try:
+        await backend_service.reset_database()
 
-            if config.use_cached_solutions:
-                cached_solution = await solution_cache.load_solution(task.id, agent.id)
-                if cached_solution and cached_solution.actions:
-                    logger.info(f"Loaded cached solution ({len(cached_solution.actions)} actions).")
-                    return cached_solution
+        if config.use_cached_solutions:
+            cached_solution = await solution_cache.load_solution(task.id, agent.id)
+            if cached_solution and cached_solution.actions:
+                logger.info(f"Loaded cached solution ({len(cached_solution.actions)} actions).")
+                return cached_solution
+            logger.warning(f"No cached solution found for {task.id}, generating a new one.")
 
-            start_time = time.time()
-            prepared_task = task.prepare_for_agent(agent.id)
-            solution = await agent.solve_task(prepared_task)
-            solution_action = solution.actions
-            processed_task_actions = replace_web_agent_id_in_actions(solution_action, agent.id)
-            task_solution = TaskSolution(task_id=task.id, actions=processed_task_actions or [], web_agent_id=agent.id)
-            timing_metrics.record_solution_time(agent.id, task.id, time.time() - start_time)
+        start_time = time.time()
+        prepared_task = task.prepare_for_agent(agent.id)
+        solution = await agent.solve_task(prepared_task)
+        task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
+        timing_metrics.record_solution_time(agent.id, task.id, time.time() - start_time)
 
-            logger.info(f"Generated solution with {len(task_solution.actions)} actions.")
-            if solution_cache.save_solution(task_solution, agent.id, agent.name):
-                logger.info("Solution cached successfully.")
+        logger.info(f"Generated solution with {len(task_solution.actions)} actions.")
+        if solution_cache.save_solution(task_solution, agent.id, agent.name):
+            logger.info("Solution cached successfully.")
 
-            return task_solution
-        except Exception as e:
-            logger.error(f"Error generating solution for Task {task.id}: {e!r}")
-            return None
-        finally:
-            await backend_service.close()
+        return task_solution
+    except Exception as e:
+        logger.error(f"Error generating solution for Task {task.id} on project {demo_project.name}: {e!r}")
+        return None
+    finally:
+        await backend_service.close()
+
+
+async def save_recordings(evaluation_results: list, task: Task):
+    for result in evaluation_results:
+        if result.gif_recording:
+            web_agent_name = "unknown_agent"
+            for agent in AGENTS:
+                if agent.id == result.web_agent_id:
+                    web_agent_name = agent.name
+                    break
+
+            agent_dir = RECORDINGS_DIR / web_agent_name
+            agent_dir.mkdir(exist_ok=True)
+
+            recording_path = agent_dir / f"{task.id}.gif"
+            with open(recording_path, "wb") as f:
+                f.write(base64.b64decode(result.gif_recording))
+            logger.info(f"Saved recording to: {recording_path}")
 
 
 async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics):
-    """Evaluate every task for a project against all agents, max 3 in parallel."""
     final_results = {}
-
     for task in tasks:
         logger.info(f"\n=== Processing Task {task.id} for Project {demo_project.name} ===")
 
@@ -186,6 +198,7 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
                 clean_solutions.append(None)
             else:
                 clean_solutions.append(sol)
+        await save_recordings(evaluation_results, task)
 
         evaluation_results = await evaluate_multiple_solutions(demo_project, task, clean_solutions, "test_visualizer")
         for eval_result in evaluation_results:
@@ -233,19 +246,18 @@ async def main():
         timing_metrics.start()
 
         if not config.evaluate_real_tasks:
+            logger.info("Mode: Evaluating demo web projects.")
             await initialize_demo_webs_projects(demo_web_projects)
             projects_to_run = config.projects_to_run
+
             logger.info(f"Will run {len(projects_to_run)} project(s): {[p.name for p in projects_to_run]}")
 
             for project in projects_to_run:
-                logger.info(f"===== Starting evaluation for project: {project.name} ({project.id}) =====")
+                logger.info(f"===== Starting evaluation for project: {project.name} (ID: {project.id}) =====")
                 tasks = await generate_tasks(project)
                 if tasks:
-                    if RETURN_EVALUATION_GIF:
-                        if not RECORDINGS_DIR.exists():
-                            os.mkdir(RECORDINGS_DIR)
-                        for t in tasks:
-                            t.should_record = True
+                    for t in tasks:
+                        t.should_record = RETURN_EVALUATION_GIF
                     await run_evaluation(project, tasks, timing_metrics)
                 else:
                     logger.warning(f"No tasks generated for project {project.name}. Skipping.")
@@ -260,11 +272,9 @@ async def main():
                     logger.info(f"===== Starting evaluation for real task project: {project.name} =====")
                     tasks = await generate_tasks(project, td)
                     if tasks:
-                        if RETURN_EVALUATION_GIF:
-                            if not RECORDINGS_DIR.exists():
-                                os.mkdir(RECORDINGS_DIR)
-                            for t in tasks:
-                                t.should_record = True
+                        # Set recording flag for all tasks
+                        for t in tasks:
+                            t.should_record = RETURN_EVALUATION_GIF
                         await run_evaluation(project, tasks, timing_metrics)
                     else:
                         logger.warning(f"No tasks generated for real project {project.name}. Skipping.")
@@ -274,11 +284,8 @@ async def main():
         logger.info("Evaluation process complete!")
     except Exception as e:
         logger.exception(f"Unexpected error in main execution: {e}")
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except Exception as e:
-        traceback.print_exc()
-        logger.critical(f"Critical error in script execution: {e}", exc_info=True)
+    asyncio.run(main())
