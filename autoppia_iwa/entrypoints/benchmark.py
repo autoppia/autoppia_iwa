@@ -59,9 +59,12 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Agentes
 AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="1", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
-    ApifiedWebAgent(id="1", name="AnthropicCUA", host="127.0.0.1", port=5001, timeout=120),
-    ApifiedWebAgent(id="1", name="OpenAiCUA", host="127.0.0.1", port=5002, timeout=120),
-    ApifiedWebAgent(id="1", name="AutoppiaAgent", host="127.0.0.1", port=5003, timeout=120),
+    # ApifiedWebAgent(id="1", name="AnthropicCUA",
+    #                 host="127.0.0.1", port=5001, timeout=120),
+    # ApifiedWebAgent(id="1", name="OpenAiCUA",
+    #                 host="127.0.0.1", port=5002, timeout=120),
+    # ApifiedWebAgent(id="1", name="AutoppiaAgent",
+    #                 host="127.0.0.1", port=5003, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()
