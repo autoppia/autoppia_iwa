@@ -107,6 +107,7 @@ class EvaluationResult(BaseModel):
     random_clicker_passed_tests_indexes: list[int] = Field(default_factory=list)
     evaluation_time: float = 0.0  # Time taken to evaluate this solution
     stats: EvaluationStats | None = None
+    gif_recording: str | None = Field(None, description="Base64-encoded GIF recording of the browser state after execution")
 
     def model_dump(self, *args, **kwargs):
         base_dump = super().model_dump(*args, **kwargs)
@@ -129,3 +130,4 @@ class EvaluatorConfig(BaseModel):
     normalize_scores: bool = Field(default=True)
     verbose_logging: bool = Field(default=False)  # Default to minimal logging
     debug_mode: bool = Field(default=False)  # Even more minimal logging
+    should_record_gif: bool = Field(default=False, description="Record evaluation on browser executions.")

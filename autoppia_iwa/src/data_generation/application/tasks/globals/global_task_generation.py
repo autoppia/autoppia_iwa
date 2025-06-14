@@ -31,11 +31,10 @@ class GlobalTaskGenerationPipeline:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 
-    async def generate(self, prompts_per_use_case: int = 5) -> list[Task]:
+    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5) -> list[Task]:
         """
         Generate tasks for all use cases in the web project.
         """
-        logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each.")
         all_tasks: list[Task] = []
 
         # If there are no use cases, just return empty
@@ -43,7 +42,13 @@ class GlobalTaskGenerationPipeline:
             logger.warning("No use cases found in web project.")
             return all_tasks
 
-        for use_case in self.web_project.use_cases:
+        use_cases = self.web_project.use_cases
+        if num_use_cases:
+            use_cases = random.sample(use_cases, min(num_use_cases, len(use_cases)))
+
+        logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each. Selected {len(use_cases)} use cases.")
+
+        for use_case in use_cases:
             logger.info(f"Generating tasks for use case: {use_case.name}")
             try:
                 tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case)

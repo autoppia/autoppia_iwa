@@ -5,7 +5,7 @@ import time
 from collections import defaultdict
 
 from loguru import logger
-from playwright.async_api import async_playwright
+from playwright.async_api import ViewportSize, async_playwright
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
@@ -21,6 +21,7 @@ from autoppia_iwa.src.evaluation.evaluator.utils import (
     hash_actions,
     initialize_test_results_matrix,
     log_progress,
+    make_gif_from_screenshots,
     run_tests,
 )
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
@@ -143,9 +144,11 @@ class ConcurrentEvaluator(IEvaluator):
                 random_clicker_passed_tests_indexes=[],
                 evaluation_time=0.1,
                 stats=stats,
+                gif_recording="",
             )
 
-        # logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
+        logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
+        evaluation_gif = ""
         try:
             # If simulated, reset the DB first
             browser_setup_start = time.time()
@@ -155,6 +158,13 @@ class ConcurrentEvaluator(IEvaluator):
             stats.browser_setup_time = browser_execution_start - browser_setup_start
 
             execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
+
+            if self.config.should_record_gif:
+                all_screenshots = []
+                for h in execution_history:
+                    all_screenshots.append(h.browser_snapshot.screenshot_before)
+                    all_screenshots.append(h.browser_snapshot.screenshot_after)
+                evaluation_gif = make_gif_from_screenshots(all_screenshots)
             stats.action_execution_times = action_execution_times
 
             # Run tests
@@ -218,6 +228,7 @@ class ConcurrentEvaluator(IEvaluator):
                 random_clicker_passed_tests_indexes=random_clicker_passed,
                 evaluation_time=stats.total_time,
                 stats=stats,
+                gif_recording=evaluation_gif,
             )
 
         except Exception as e:
@@ -236,6 +247,7 @@ class ConcurrentEvaluator(IEvaluator):
                 random_clicker_passed_tests_indexes=[],
                 evaluation_time=0,
                 stats=stats,
+                gif_recording=evaluation_gif,
             )
 
     async def _group_and_evaluate_task_solutions(self, task: Task, task_solutions: list[TaskSolution]) -> list[EvaluationResult]:
@@ -347,6 +359,7 @@ class ConcurrentEvaluator(IEvaluator):
                         random_clicker_passed_tests_indexes=[],
                         evaluation_time=0,
                         stats=error_stats,
+                        gif_recording="",
                     )
                     final_results[idx] = error_result
 
@@ -365,7 +378,7 @@ class ConcurrentEvaluator(IEvaluator):
                 # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
                 context = await browser.new_context(
                     extra_http_headers={"X-WebAgent-Id": web_agent_id},
-                    viewport={"width": browser_specifications.viewport_width, "height": browser_specifications.viewport_height},
+                    viewport=ViewportSize(width=browser_specifications.viewport_width, height=browser_specifications.viewport_height),
                 )
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()

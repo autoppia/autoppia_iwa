@@ -28,7 +28,12 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ==== CONFIGURACIONES ====
 # ==========================
 
-PROJECTS_TO_RUN: list[WebProject] = [demo_web_projects[0], demo_web_projects[1]]
+# Manualmente selecciona los proyectos de demo
+PROJECTS_TO_RUN: list[WebProject] = [
+    demo_web_projects[0],
+    demo_web_projects[1],
+    demo_web_projects[2],
+]
 
 PROMPT_PER_USE_CASE_CONST: int = 1
 PLOT_BENCHMARK_RESULTS: bool = False
@@ -51,9 +56,15 @@ config = BenchmarkConfig(
 
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
-# Agents
+# Agentes
 AGENTS: list[IWebAgent] = [
-    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=7000, timeout=120),
+    ApifiedWebAgent(id="1", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
+    # ApifiedWebAgent(id="1", name="AnthropicCUA",
+    #                 host="127.0.0.1", port=5001, timeout=120),
+    # ApifiedWebAgent(id="1", name="OpenAiCUA",
+    #                 host="127.0.0.1", port=5002, timeout=120),
+    # ApifiedWebAgent(id="1", name="AutoppiaAgent",
+    #                 host="127.0.0.1", port=5003, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()
@@ -76,14 +87,7 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 @visualize_list_of_evaluations(visualizer)
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
     try:
-        evaluator = ConcurrentEvaluator(
-            web_project=web_project,
-            config=EvaluatorConfig(
-                # save_results_in_db=False,
-                enable_grouping_tasks=False,
-                chunk_size=20,
-            ),
-        )
+        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20))
         return await evaluator.evaluate_task_solutions(task, task_solutions)
     except Exception:
         traceback.print_exc()

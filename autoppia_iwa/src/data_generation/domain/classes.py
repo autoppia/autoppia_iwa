@@ -48,6 +48,7 @@ class Task(BaseModel):
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     success_criteria: str | None = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
     use_case: UseCase | None = None
+    should_record: bool = False
 
     class Config:
         extra = "allow"
@@ -187,4 +188,5 @@ class TaskGenerationConfig(BaseModel):
 
     # Task quantity controls
     prompts_per_use_case: int = 1  # Number of task variations to generate per use case
+    num_use_cases: int = 3  # Number of use_cases to consider for global task generation
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline

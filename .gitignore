@@ -35,3 +35,4 @@ stress_test.log
 
 data/solutions_cache/*
 data/tasks_cache/*
+*.webm

@@ -1,4 +1,5 @@
-import time
+import json
+from contextlib import suppress
 from typing import Any
 
 import aiohttp
@@ -11,7 +12,13 @@ from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 class BackendDemoWebService:
     """
     Service for interacting with the backend of demo web endpoints.
-    Stores the web_project on initialization and uses its backend_url for API calls.
+    Manages API calls and event operations efficiently.
+
+    Features:
+    - Automatic JSON parser selection (orjson if available)
+    - Thread-safe aiohttp session management
+    - Error handling and logging
+    - Support for both real and demo web projects
     """
 
     def __init__(self, web_project: WebProject) -> None:
@@ -25,62 +32,89 @@ class BackendDemoWebService:
         self.web_project: WebProject = web_project
         self.base_url = web_project.backend_url
 
+        # Configure JSON parser (prefer orjson for performance)
+        self._configure_json_parser()
+
+    def _configure_json_parser(self) -> None:
+        """Configure the JSON parser, preferring orjson if available."""
+        self._json_parser = json
+        self._json_decode_error = json.JSONDecodeError
+        self._read_mode = "r"
+
+        with suppress(ImportError):
+            import orjson
+
+            self._json_parser = orjson
+            self._json_decode_error = orjson.JSONDecodeError  # type: ignore
+            self._read_mode = "rb"
+            logger.debug("Using orjson for faster JSON processing")
+
     async def _get_session(self) -> aiohttp.ClientSession:
         """
         Lazy creation of aiohttp session, re-using it if open.
         """
         if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession()
+            self._session = aiohttp.ClientSession(json_serialize=self._json_parser.dumps)
+            logger.debug("Created new aiohttp session")
         return self._session
 
     async def close(self) -> None:
         """
-        Explicitly close the underlying aiohttp session if it's still open.
-        Recommended to call once on application shutdown.
+        Close the underlying aiohttp session if it exists.
+        Safe to call multiple times.
         """
-        if self._session and not self._session.closed:
-            try:
+        if self._session is not None:
+            with suppress(Exception):
                 await self._session.close()
                 self._session = None
-                logger.debug("Session closed successfully")
-            except Exception as e:
-                logger.error(f"Error closing session: {e}")
-
-    def __del__(self):
-        """Warn if the session was not closed."""
-        if self._session and not self._session.closed:
-            print("Warning: Unclosed ClientSession detected. Please call `close()` explicitly.")
+                logger.debug("Closed aiohttp session")
 
     async def get_backend_events(self, web_agent_id: str) -> list[BackendEvent]:
         """
-        Fetch recent events from the backend for the specified web_agent_id.
+        Get events for a specific web agent.
 
         Args:
-            web_agent_id (str): ID of the web agent to filter events for.
+            web_agent_id: The agent ID to get events for
 
         Returns:
-            List[BackendEvent]: List of events from the backend or an empty list if any failure occurs.
+            List of BackendEvent objects for the specified agent
         """
         if self.web_project.is_web_real:
             return []
 
-        endpoint = f"{self.base_url}events/list/"
-        headers = {"X-WebAgent-Id": web_agent_id}
+        if ":8002" in self.base_url or ":8003" in self.base_url:
+            try:
+                endpoint = "http://localhost:8090/get_events/"
+                params = {"web_url": self.base_url, "web_agent_id": web_agent_id}
+                session = await self._get_session()
+
+                async with session.get(endpoint, params=params) as response:
+                    response.raise_for_status()
+                    events_data = await response.json(loads=self._json_parser.loads)
+                    print(events_data, [BackendEvent(**event.get("data", {})) for event in events_data])
+                    return [BackendEvent(**event.get("data", {})) for event in events_data]
+
+            except Exception as e:
+                logger.warning(f"Failed to get events from API: {e}. Falling back to file cache.")
 
         try:
+            endpoint = f"{self.base_url}events/list/"
+            headers = {"X-WebAgent-Id": web_agent_id}
             session = await self._get_session()
+
             async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()  # Raise on 4xx/5xx
-                events_data = await response.json()
+                events_data = await response.json(loads=self._json_parser.loads)
                 # print(events_data, [BackendEvent(**event) for event in events_data])
                 return [BackendEvent(**event) for event in events_data]
         except ClientError as e:
             logger.error(f"Network error while fetching backend events: {e}")
+        except self._json_decode_error as e:
+            logger.error(f"Error parsing JSON response from network: {e}")
         except ValueError as e:
-            logger.error(f"Error parsing JSON response: {e}")
+            logger.error(f"Error parsing JSON response (ValueError): {e}")
         except Exception as e:
             logger.error(f"Unexpected error fetching backend events: {e}")
-
         return []
 
     async def reset_web_agent_events(self, web_agent_id: str) -> bool:
@@ -98,48 +132,33 @@ class BackendDemoWebService:
 
         endpoint = f"{self.base_url}events/reset/"
         headers = {"X-WebAgent-Id": web_agent_id}
+        session = await self._get_session()
 
         try:
-            session = await self._get_session()
             async with session.delete(endpoint, headers=headers, timeout=10) as response:
-                # Try to parse the body for a success message
-                try:
-                    response_json = await response.json()
-                    msg = response_json.get("message", "")
-                    if "have been deleted successfully" in msg:
-                        logger.info(f"Successfully reset events for web_agent '{web_agent_id}'.")
-                        return True
-                except Exception:
-                    # Fall back to standard checks below
-                    pass
-
-                # Raise on status >= 400
-                response.raise_for_status()
-
                 if response.status in (200, 204):
-                    logger.info(f"Successfully reset events for web_agent '{web_agent_id}'.")
-                    return True
-                else:
-                    logger.warning(f"Reset operation completed with unexpected status: {response.status}")
+                    logger.info(f"Successfully reset events for web_agent '{web_agent_id}'. Status: {response.status}")
                     return True
 
+                try:
+                    response_json = await response.json(loads=self._json_parser.loads)
+                    msg = response_json.get("message", "")
+                    if "have been deleted successfully" in msg.lower():
+                        logger.info(f"Backend confirmed successful reset for '{web_agent_id}' (via message). Status: {response.status}")
+                        return True
+                    else:
+                        logger.error(f"Reset operation returned non-success status {response.status} with message: '{msg}'")
+
+                except Exception as json_parse_error:
+                    logger.error(f"Reset operation failed for '{web_agent_id}'. Status: {response.status}. Could not parse JSON response body: {json_parse_error}")
+
+                response.raise_for_status()
         except ClientError as e:
-            # If the error message itself indicates success, handle it
-            if "have been deleted successfully" in str(e):
-                logger.info(f"Successfully reset events for web_agent '{web_agent_id}' despite error.")
-                return True
-
-            error_message = f"Failed to reset events for web_agent '{web_agent_id}': {e}"
-            logger.error(error_message)
-            return False
-
+            logger.error(f"Network or HTTP error resetting events for web_agent '{web_agent_id}' at {endpoint}: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error resetting events: {e}")
-            return False
+            logger.error(f"Unexpected error resetting events for web_agent '{web_agent_id}': {e}")
 
-        finally:
-            if session:
-                await session.close()
+        return False
 
     async def reset_all_events(self) -> bool:
         """
@@ -152,9 +171,9 @@ class BackendDemoWebService:
             return False
 
         endpoint = f"{self.base_url}events/reset/all/"
+        session = await self._get_session()
 
         try:
-            session = await self._get_session()
             async with session.delete(endpoint, timeout=10) as response:
                 response.raise_for_status()
 
@@ -185,33 +204,35 @@ class BackendDemoWebService:
             bool: True if reset was successful, False otherwise.
         """
         logger.info("Starting Reset Database")
-        start_time = time.time()
         if self.web_project.is_web_real:
             logger.info("Not resetting DB as its real website")
             return False
 
-        # If user supplies an explicit endpoint, use that; else use the default
-        endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
+        if ":8002" in self.base_url or ":8003" in self.base_url:
+            try:
+                endpoint = "http://localhost:8090/reset_events/"
+                params = {"web_url": self.base_url}
+                session = await self._get_session()
 
+                async with session.delete(endpoint, params=params) as response:
+                    if response.status in (200, 202):
+                        logger.info("Database reset via API successful")
+                        return True
+            except Exception as e:
+                logger.warning(f"API reset failed: {e}. Falling back to file reset.")
+
+        endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
+        session = await self._get_session()
         try:
-            session = await self._get_session()
             async with session.post(endpoint, timeout=30) as response:
                 response.raise_for_status()
 
                 try:
-                    response_json = await response.json()
-                    status = response_json.get("status")
-                    message = response_json.get("message", "")
-
-                    if status == "success":
-                        logger.info(f"Database reset initiated: {message}. Lasted: {time.time() - start_time}")
+                    response_data = await response.json(loads=self._json_parser.loads)
+                    if response_data.get("status") == "success":
+                        logger.info(f"Database reset: {response_data.get('message')}")
                         return True
-                    else:
-                        logger.warning(f"Database reset failed: {message} Lasted: {time.time() - start_time}")
-                        return False
-
                 except Exception:
-                    # If we can't parse JSON, check status code
                     if response.status in (200, 202):
                         logger.info("Database reset initiated successfully.")
                         return True
@@ -259,6 +280,5 @@ class BackendDemoWebService:
         except ClientError as e:
             logger.error(f"Failed to send {event_name} event: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error while sending {event_name} event: {e}")
-
+            logger.error(f"Unexpected error sending {event_name} event: {e}")
         return False

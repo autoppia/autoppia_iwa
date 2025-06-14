@@ -31,12 +31,13 @@ class ApifiedWebAgent(IWebAgent):
                     # Extract data
                     actions_data = response_json.get("actions", [])
                     web_agent_id = response_json.get("web_agent_id", "unknown")
+                    recording_str = response_json.get("recording", "")
 
                 # Rebuild
                 rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
                 # print(f"Rebuilt Actions: {rebuilt_actions}")
 
-                return TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id)
+                return TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
             except Exception as e:
                 print(f"Error during HTTP request: {e}")
                 # print(traceback.format_exc())
