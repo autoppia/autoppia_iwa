@@ -193,4 +193,5 @@ class TaskGenerationConfig(BaseModel):
     # Task quantity controls
     prompts_per_url: int = 20  # Maximum tasks to return per URL
     prompts_per_use_case: int = 1  # Number of task variations to generate per use case
+    num_use_cases: int  # Number of use_cases to consider for global task generation
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline
