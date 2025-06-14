@@ -14,5 +14,4 @@ demo_web_projects: list[WebProject] = [
     cinema_project,
     books_project,
     omnizone_project,
-    # dining_project,
 ]
