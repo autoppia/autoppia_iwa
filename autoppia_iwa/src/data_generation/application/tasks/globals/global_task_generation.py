@@ -89,11 +89,10 @@ class GlobalTaskGenerationPipeline:
 
         # Call the LLM (with retry logic) and parse the list of strings result
         prompt_list = await self._call_llm_with_retry(llm_prompt, additional_system_prompt=additional_system_prompt)
-        print(prompt_list)
         # For each prompt string, create a Task
         # We'll fetch the HTML and screenshot just once for all tasks
         url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
-        html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(url)
+        html, clean_html, screenshot, screenshot_desc = "", "", "", ""  # await get_html_and_screenshot(url)
 
         tasks: list[Task] = []
         for prompt_text in prompt_list:
