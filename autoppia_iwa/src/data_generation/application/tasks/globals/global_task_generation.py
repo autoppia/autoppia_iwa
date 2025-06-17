@@ -13,7 +13,6 @@ from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from autoppia_iwa.src.shared.utils import transform_image_into_base64
-from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot
 
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 

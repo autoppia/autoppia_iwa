@@ -67,9 +67,9 @@ class TaskGenerationPipeline:
 
                 for task in global_tasks_with_tests:
                     # print("Prompt: ", task.prompt)
-                    for i, _test in enumerate(task.tests):
+                    for _i, _test in enumerate(task.tests):
                         # print(f"Test: {i}")
-                        from pprint import pprint
+                        pass
 
                         # pprint(_test.model_dump())
 
