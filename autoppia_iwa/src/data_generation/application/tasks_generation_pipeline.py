@@ -66,12 +66,12 @@ class TaskGenerationPipeline:
                 all_tasks.extend(global_tasks_with_tests)
 
                 for task in global_tasks_with_tests:
-                    print("Prompt: ", task.prompt)
+                    # print("Prompt: ", task.prompt)
                     for i, _test in enumerate(task.tests):
-                        print(f"Test: {i}")
+                        # print(f"Test: {i}")
                         from pprint import pprint
 
-                        pprint(_test.model_dump())
+                        # pprint(_test.model_dump())
 
             # Apply final task limit if configured
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:
