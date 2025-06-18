@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import asyncio
 import time
 import traceback
@@ -15,7 +16,12 @@ from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig, setup_logging
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
+from autoppia_iwa.src.shared.utils_entrypoints.results import (
+    plot_results,
+    plot_task_comparison,
+    print_performance_statistics,
+    save_results_to_json,
+)
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_list_of_evaluations, visualize_task
@@ -24,28 +30,23 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
-# ==========================
-# ==== CONFIGURACIONES ====
-# ==========================
+# =========================================================
+# CONFIGURATION
+# =========================================================
 
-# Manualmente selecciona los proyectos de demo
 PROJECTS_TO_RUN: list[WebProject] = [
     demo_web_projects[0],
-    demo_web_projects[1],
-    demo_web_projects[2],
 ]
 
-PROMPT_PER_USE_CASE_CONST: int = 1
-PLOT_BENCHMARK_RESULTS: bool = False
-USE_CACHED_TASKS_CONST: bool = False
-USE_CACHED_SOLUTIONS_CONST: bool = False
-EVALUATE_REAL_TASKS_CONST: bool = False
+PROMPT_PER_USE_CASE_CONST = 1
+PLOT_BENCHMARK_RESULTS = False
+USE_CACHED_TASKS_CONST = False
+USE_CACHED_SOLUTIONS_CONST = False
+EVALUATE_REAL_TASKS_CONST = False
 LOG_FILE = "benchmark.log"
 
-# Logging
 setup_logging(LOG_FILE)
 
-# Benchmark config
 config = BenchmarkConfig(
     projects_to_run=PROJECTS_TO_RUN,
     prompt_per_use_case=PROMPT_PER_USE_CASE_CONST,
@@ -56,22 +57,25 @@ config = BenchmarkConfig(
 
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 
-# Agentes
 AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="1", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
-    # ApifiedWebAgent(id="1", name="AnthropicCUA",
-    #                 host="127.0.0.1", port=5001, timeout=120),
-    # ApifiedWebAgent(id="1", name="OpenAiCUA",
-    #                 host="127.0.0.1", port=5002, timeout=120),
-    # ApifiedWebAgent(id="1", name="AutoppiaAgent",
-    #                 host="127.0.0.1", port=5003, timeout=120),
+    ApifiedWebAgent(id="2", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="3", name="BrowserUseAgent", host="127.0.0.1", port=5000, timeout=120),
 ]
 
+# Semaphore to cap concurrent agent calls at 3
+SEM = asyncio.Semaphore(3)
+
 visualizer = SubnetVisualizer()
+
+# =========================================================
+# TASK AND EVALUATION HELPERS
+# =========================================================
 
 
 @visualize_task(visualizer)
 async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
+    """Generate test tasks for a given demo project."""
     if config.evaluate_real_tasks and tasks_data:
         task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
         return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
@@ -86,6 +90,7 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 
 @visualize_list_of_evaluations(visualizer)
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
+    """Run the evaluator for all solutions of a task."""
     try:
         evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20))
         return await evaluator.evaluate_task_solutions(task, task_solutions)
@@ -94,48 +99,66 @@ async def evaluate_multiple_solutions(web_project, task, task_solutions, validat
         return []
 
 
-async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent, task: Task, timing_metrics: TimingMetrics) -> TaskSolution | None:
-    logger.info(f"---\nGenerating solution for Agent: {agent.name} | Task: {task.id} (Project: {demo_project.name})")
-    backend_service = BackendDemoWebService(demo_project)
+async def generate_solution_for_task(
+    demo_project: WebProject,
+    agent: IWebAgent,
+    task: Task,
+    timing_metrics: TimingMetrics,
+) -> TaskSolution | None:
+    """Ask a single agent to solve a single task (concurrency limited by SEM)."""
+    async with SEM:  # <-- limits parallelism to 3 agents at a time
+        logger.info(f"--- Generating solution | Agent: {agent.name} | Task: {task.id} | Project: {demo_project.name}")
+        backend_service = BackendDemoWebService(demo_project)
 
-    try:
-        await backend_service.reset_database()
+        try:
+            await backend_service.reset_database()
 
-        if config.use_cached_solutions:
-            cached_solution = await solution_cache.load_solution(task.id, agent.id)
-            if cached_solution and cached_solution.actions:
-                logger.info(f"Loaded cached solution ({len(cached_solution.actions)} actions).")
-                return cached_solution
-            logger.warning(f"No cached solution found for {task.id}, generating a new one.")
+            if config.use_cached_solutions:
+                cached_solution = await solution_cache.load_solution(task.id, agent.id)
+                if cached_solution and cached_solution.actions:
+                    logger.info(f"Loaded cached solution ({len(cached_solution.actions)} actions).")
+                    return cached_solution
 
-        start_time = time.time()
-        prepared_task = task.prepare_for_agent(agent.id)
-        solution = await agent.solve_task(prepared_task)
-        task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
-        timing_metrics.record_solution_time(agent.id, task.id, time.time() - start_time)
+            start_time = time.time()
+            prepared_task = task.prepare_for_agent(agent.id)
+            solution = await agent.solve_task(prepared_task)
 
-        logger.info(f"Generated solution with {len(task_solution.actions)} actions.")
-        if solution_cache.save_solution(task_solution, agent.id, agent.name):
-            logger.info("Solution cached successfully.")
+            task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
+            timing_metrics.record_solution_time(agent.id, task.id, time.time() - start_time)
 
-        return task_solution
-    except Exception as e:
-        logger.error(f"Error generating solution for Task {task.id} on project {demo_project.name}: {e!r}")
-        return None
-    finally:
-        await backend_service.close()
+            logger.info(f"Generated solution with {len(task_solution.actions)} actions.")
+            if solution_cache.save_solution(task_solution, agent.id, agent.name):
+                logger.info("Solution cached successfully.")
+
+            return task_solution
+        except Exception as e:
+            logger.error(f"Error generating solution for Task {task.id}: {e!r}")
+            return None
+        finally:
+            await backend_service.close()
 
 
 async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics):
+    """Evaluate every task for a project against all agents, max 3 in parallel."""
     final_results = {}
+
     for task in tasks:
         logger.info(f"\n=== Processing Task {task.id} for Project {demo_project.name} ===")
-        solutions_for_this_task = []
-        for agent in AGENTS:
-            sol = await generate_solution_for_task(demo_project, agent, task, timing_metrics)
-            solutions_for_this_task.append(sol)
 
-        evaluation_results = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task, "test_visualizer")
+        # Build one coroutine per agent and run them concurrently
+        coroutines = [generate_solution_for_task(demo_project, agent, task, timing_metrics) for agent in AGENTS]
+        solutions_for_this_task = await asyncio.gather(*coroutines, return_exceptions=True)
+
+        # Replace exceptions with None to keep list aligned
+        clean_solutions = []
+        for sol in solutions_for_this_task:
+            if isinstance(sol, Exception):
+                logger.error(f"Agent coroutine raised: {sol!r}")
+                clean_solutions.append(None)
+            else:
+                clean_solutions.append(sol)
+
+        evaluation_results = await evaluate_multiple_solutions(demo_project, task, clean_solutions, "test_visualizer")
         for eval_result in evaluation_results:
             final_results.setdefault(eval_result.web_agent_id, {})[task.id] = {
                 "score": eval_result.final_score,
@@ -149,6 +172,9 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
         save_results_to_json(final_results, AGENTS, timing_metrics, str(config.output_dir))
 
 
+# =========================================================
+# MAIN ENTRY
+# =========================================================
 async def main():
     logger.info("Starting evaluation...")
     try:
@@ -157,14 +183,12 @@ async def main():
         timing_metrics.start()
 
         if not config.evaluate_real_tasks:
-            logger.info("Mode: Evaluating demo web projects.")
             await initialize_demo_webs_projects(demo_web_projects)
             projects_to_run = config.projects_to_run
-
             logger.info(f"Will run {len(projects_to_run)} project(s): {[p.name for p in projects_to_run]}")
 
             for project in projects_to_run:
-                logger.info(f"===== Starting evaluation for project: {project.name} (ID: {project.id}) =====")
+                logger.info(f"===== Starting evaluation for project: {project.name} ({project.id}) =====")
                 tasks = await generate_tasks(project)
                 if tasks:
                     await run_evaluation(project, tasks, timing_metrics)
@@ -178,14 +202,14 @@ async def main():
             for td in tasks_data:
                 project = real_projects.get(td.id)
                 if project:
-                    logger.info(f"===== Starting evaluation for real task project: {project.name} =====")
+                    logger.info(f"===== Starting evaluation for real project: {project.name} =====")
                     tasks = await generate_tasks(project, td)
                     if tasks:
                         await run_evaluation(project, tasks, timing_metrics)
                     else:
                         logger.warning(f"No tasks generated for real project {project.name}. Skipping.")
                 else:
-                    logger.warning(f"Could not find a matching project for real task ID: {td.id}")
+                    logger.warning(f"Could not find project for real task ID: {td.id}")
 
         logger.info("Evaluation process complete!")
     except Exception as e:
