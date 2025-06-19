@@ -57,8 +57,9 @@ class Task(BaseModel):
         arbitrary_types_allowed = True
 
     def __init__(self, **data):
+        original_prompt = data.get("original_prompt", data.get("prompt", ""))
         super().__init__(**data)
-        object.__setattr__(self, "_original_prompt", data.get("prompt", ""))
+        object.__setattr__(self, "_original_prompt", original_prompt)
 
     @property
     def prompt_with_relevant_data(self) -> str:
@@ -148,6 +149,8 @@ class Task(BaseModel):
                 "interactive_elements",  # Remove interactive elements
             }
         )
+
+        cleaned["original_prompt"] = self.original_prompt
 
         # Remove any None values to make the output cleaner
         return {k: v for k, v in cleaned.items() if v is not None}

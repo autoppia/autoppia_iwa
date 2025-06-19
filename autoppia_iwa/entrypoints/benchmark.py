@@ -191,7 +191,7 @@ def replace_web_agent_id_in_actions(actions: list[BaseAction], web_agent_id: str
             if hasattr(action, field):
                 value = getattr(action, field)
                 if isinstance(value, str) and "<web_agent_id>" in value:
-                    setattr(action, field, value.replace("<web_agent_id>", str(web_agent_id)))
+                    setattr(action, field, value.replace("<web_agent_id>", str(web_agent_id)).replace("your_book_id", str(web_agent_id)))
     return actions
 
 
