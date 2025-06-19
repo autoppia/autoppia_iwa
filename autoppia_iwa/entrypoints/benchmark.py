@@ -14,6 +14,7 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig, setup_logging
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import (
@@ -122,8 +123,9 @@ async def generate_solution_for_task(
             start_time = time.time()
             prepared_task = task.prepare_for_agent(agent.id)
             solution = await agent.solve_task(prepared_task)
-
-            task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
+            solution_action = solution.actions
+            processed_task_actions = replace_web_agent_id_in_actions(solution_action, agent.id)
+            task_solution = TaskSolution(task_id=task.id, actions=processed_task_actions or [], web_agent_id=agent.id)
             timing_metrics.record_solution_time(agent.id, task.id, time.time() - start_time)
 
             logger.info(f"Generated solution with {len(task_solution.actions)} actions.")
@@ -170,6 +172,27 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
         plot_results(final_results, AGENTS, timing_metrics, str(config.output_dir))
         plot_task_comparison(final_results, AGENTS, tasks, str(config.output_dir))
         save_results_to_json(final_results, AGENTS, timing_metrics, str(config.output_dir))
+
+
+def replace_web_agent_id_in_actions(actions: list[BaseAction], web_agent_id: str) -> list[BaseAction]:
+    """
+    Replaces occurrences of '<web_agent_id>' in the text, url, or value fields of each action
+    with the provided web_agent_id.
+
+    Args:
+        actions: List of BaseAction instances (e.g., NavigateAction, TypeAction, ClickAction).
+        web_agent_id: The integer ID to substitute for the <web_agent_id> placeholder.
+
+    Returns:
+        List of updated BaseAction instances.
+    """
+    for action in actions:
+        for field in ["text", "url", "value"]:
+            if hasattr(action, field):
+                value = getattr(action, field)
+                if isinstance(value, str) and "<web_agent_id>" in value:
+                    setattr(action, field, value.replace("<web_agent_id>", str(web_agent_id)))
+    return actions
 
 
 # =========================================================
