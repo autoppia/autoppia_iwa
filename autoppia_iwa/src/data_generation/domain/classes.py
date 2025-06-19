@@ -3,7 +3,7 @@
 import uuid
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 # Import your test classes:
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
@@ -50,15 +50,25 @@ class Task(BaseModel):
     use_case: UseCase | None = None
     should_record: bool = False
 
+    _original_prompt: str = PrivateAttr()
+
     class Config:
         extra = "allow"
         arbitrary_types_allowed = True
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        object.__setattr__(self, "_original_prompt", data.get("prompt", ""))
 
     @property
     def prompt_with_relevant_data(self) -> str:
         if self.relevant_data:
             return f"{self.prompt}\n Relevant data you may need: {self.relevant_data}"
         return self.prompt
+
+    @property
+    def original_prompt(self) -> str:
+        return self._original_prompt
 
     def model_dump(self, *args, **kwargs) -> dict:
         # Example override to hide screenshot if needed
@@ -118,9 +128,9 @@ class Task(BaseModel):
 
         if "use_case" in data:
             data["use_case"] = UseCase.deserialize(data["use_case"])
-
-        # # Create the Task object
-        return cls(**data)
+        task = cls(**data)
+        object.__setattr__(task, "_original_prompt", data.get("prompt", ""))
+        return task
 
     def clean_task(self) -> dict:
         """
