@@ -36,8 +36,10 @@ class ApifiedWebAgent(IWebAgent):
                 # Rebuild
                 rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
                 # print(f"Rebuilt Actions: {rebuilt_actions}")
+                task_solution = TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
+                task_solution.replace_web_agent_id_in_actions()
 
-                return TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
+                return task_solution
             except Exception as e:
                 print(f"Error during HTTP request: {e}")
                 # print(traceback.format_exc())
