@@ -92,7 +92,7 @@ class SubnetVisualizer:
             actions_table = Table(show_header=True, header_style="bold", box=box.SIMPLE_HEAD, expand=True)
             actions_table.add_column("#", style="dim", width=4)
             actions_table.add_column("Type", style="cyan", width=18)
-            actions_table.add_column("Details", style="green")
+            actions_table.add_column("Details", style="green", overflow="fold", no_wrap=False)
 
             for idx, action in enumerate(actions):
                 action_type = type(action).__name__ if hasattr(action, "__class__") else "Unknown"
@@ -221,9 +221,7 @@ class SubnetVisualizer:
             exclude_keys = ["type"]
             for key, value in action_dict.items():
                 if key not in exclude_keys and value:
-                    if isinstance(value, str) and len(value) > 30:
-                        value = f"'{value[:27]}...'"
-                    elif isinstance(value, str):
+                    if isinstance(value, str):
                         value = f"'{value}'"
                     details += f"{key}={value}, "
             details = details.rstrip(", ")
@@ -232,9 +230,7 @@ class SubnetVisualizer:
             vars_dict = vars(action)
             for key, value in vars_dict.items():
                 if not key.startswith("_") and value:
-                    if isinstance(value, str) and len(value) > 30:
-                        value = f"'{value[:27]}...'"
-                    elif isinstance(value, str):
+                    if isinstance(value, str):
                         value = f"'{value}'"
                     details += f"{key}={value}, "
             details = details.rstrip(", ")
@@ -300,8 +296,6 @@ class SubnetVisualizer:
                 all_attrs = []
                 for attr_name, attr_value in vars(test).items():
                     if not attr_name.startswith("_") and attr_value and attr_name not in ["type"]:
-                        if isinstance(attr_value, str) and len(attr_value) > 30:
-                            attr_value = attr_value[:27] + "..."
                         all_attrs.append(f"{attr_name}='{attr_value}'")
 
                 description = ", ".join(all_attrs) if all_attrs else f"Test type {test_type}"
