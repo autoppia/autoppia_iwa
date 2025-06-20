@@ -107,6 +107,17 @@ class BaseTaskTest(BaseModel, ITest):
         except ValidationError as e:
             raise ValueError(f"Failed to deserialize data: {e}") from e
 
+    def assign_web_agent_id(self, web_agent_id: str) -> None:
+        """
+        Assigns a web agent ID to relevant fields within the test.
+        This method can be overridden by subclasses if they need to process
+        the web agent ID.
+
+        Args:
+            web_agent_id: The ID of the web agent.
+        """
+        pass
+
 
 class CheckUrlTest(BaseTaskTest):
     """
@@ -243,6 +254,25 @@ class CheckEventTest(BaseTaskTest):
                 return True
 
         return False
+
+    def assign_web_agent_id(self, web_agent_id: str) -> None:
+        """
+        Assigns the web agent ID within the event criteria dictionary.
+
+        Args:
+            web_agent_id: The ID of the web agent.
+        """
+        if isinstance(self.event_criteria, dict):
+            for _field_name, criteria_detail in self.event_criteria.items():
+                # Check if the criteria_detail is itself a dictionary
+                if isinstance(criteria_detail, dict) and "value" in criteria_detail and isinstance(criteria_detail["value"], str) and "<web_agent_id>" in criteria_detail["value"]:
+                    criteria_detail["value"] = criteria_detail["value"].replace("<web_agent_id>", web_agent_id)
+        elif isinstance(self.event_criteria, list):
+            for criteria_item in self.event_criteria:
+                if isinstance(criteria_item, dict):
+                    for _field_name, criteria_detail in criteria_item.items():
+                        if isinstance(criteria_detail, dict) and "value" in criteria_detail and isinstance(criteria_detail["value"], str) and "<web_agent_id>" in criteria_detail["value"]:
+                            criteria_detail["value"] = criteria_detail["value"].replace("<web_agent_id>", web_agent_id)
 
 
 class JudgeBaseOnHTML(BaseTaskTest):

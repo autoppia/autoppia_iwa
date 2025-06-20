@@ -169,6 +169,12 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Run tests
             test_start_time = time.time()
+
+            if hasattr(task, "tests") and isinstance(task.tests, list):
+                for test_item in task.tests:
+                    if hasattr(test_item, "assign_web_agent_id"):
+                        test_item.assign_web_agent_id(web_agent_id)
+
             test_results_matrix = await run_tests(self.web_project, task, execution_history)
             stats.test_execution_time = time.time() - test_start_time
 
