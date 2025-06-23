@@ -2,6 +2,7 @@ import asyncio
 import base64
 import time
 import traceback
+from collections import defaultdict
 
 from loguru import logger
 
@@ -38,6 +39,9 @@ PROJECTS_TO_RUN: list[WebProject] = [
     # demo_web_projects[3],
 ]
 
+# Number of times to run the benchmark for each project to get average scores
+NUM_RUNS_CONST: int = 3
+
 PROMPT_PER_USE_CASE_CONST: int = 1
 PLOT_BENCHMARK_RESULTS: bool = False
 SAVE_EVALUATION_RESULTS: bool = False
@@ -70,9 +74,9 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 AGENTS: list[IWebAgent] = [
     # ApifiedWebAgent(id="1", name="AnthropicBrowserUseAgent", host="127.0.0.1", port=5000, timeout=240),
     # ApifiedWebAgent(id="2", name="OpenAIBrowserUseAgent", host="127.0.0.1", port=5005, timeout=240),
-    ApifiedWebAgent(id="3", name="OpenAICUA", host="127.0.0.1", port=5010, timeout=400),
+    # ApifiedWebAgent(id="3", name="OpenAICUA", host="127.0.0.1", port=5020, timeout=400),
     # ApifiedWebAgent(id="4", name="AnthropicCUA", host="127.0.0.1", port=5010, timeout=240),
-    # ApifiedWebAgent(id="5", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=240),
+    ApifiedWebAgent(id="5", name="AutoppiaAgent", host="127.0.0.1", port=7000, timeout=120),
 ]
 
 visualizer = SubnetVisualizer()
@@ -134,7 +138,7 @@ async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent,
         await backend_service.close()
 
 
-async def save_recordings(evaluation_results: list, task: Task):
+async def save_recordings(evaluation_results: list, task: Task, run_number: int):
     for result in evaluation_results:
         if result.gif_recording:
             web_agent_name = "unknown_agent"
@@ -146,28 +150,36 @@ async def save_recordings(evaluation_results: list, task: Task):
             agent_dir = RECORDINGS_DIR / web_agent_name
             agent_dir.mkdir(exist_ok=True)
 
-            recording_path = agent_dir / f"{task.id}.gif"
+            recording_path = agent_dir / f"{task.id}_run_{run_number}.gif"
             with open(recording_path, "wb") as f:
                 f.write(base64.b64decode(result.gif_recording))
             logger.info(f"Saved recording to: {recording_path}")
 
 
-async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics):
+async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics, run_number: int) -> dict:
     final_results = {}
     for task in tasks:
-        logger.info(f"\n=== Processing Task {task.id} for Project {demo_project.name} ===")
+        logger.info(f"\n=== Processing Task {task.id} for Project {demo_project.name} | Run {run_number} ===")
         solutions_for_this_task = []
         for agent in AGENTS:
             sol = await generate_solution_for_task(demo_project, agent, task, timing_metrics)
             solutions_for_this_task.append(sol)
 
         evaluation_results = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task, "test_visualizer")
-        await save_recordings(evaluation_results, task)
+        await save_recordings(evaluation_results, task, run_number)
 
         for eval_result in evaluation_results:
+            # Safely get the use case name
+            use_case_name = "Unknown Use Case"
+            try:
+                use_case_name = task.use_case.name
+            except AttributeError:
+                logger.warning(f"Task with ID {task.id} does not have a 'use_case.name' attribute.")
+
             final_results.setdefault(eval_result.web_agent_id, {})[task.id] = {
                 "score": eval_result.final_score,
                 "evaluation_result": eval_result,
+                "task_use_case": use_case_name,
             }
 
     print_performance_statistics(final_results, AGENTS, timing_metrics)
@@ -176,6 +188,61 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
         plot_task_comparison(final_results, AGENTS, tasks, str(config.output_dir))
     if SAVE_EVALUATION_RESULTS:
         save_results_to_json(final_results, AGENTS, timing_metrics, str(config.output_dir))
+    return final_results
+
+
+# --- NEW: Replaces previous statistics function with a more detailed one ---
+def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent], project: WebProject):
+    """
+    Aggregates and displays detailed statistics, grouped by use case and then by agent.
+    """
+    logger.info(f"\n\n{'=' * 25} FINAL STATISTICS for Project: {project.name} {'=' * 25}")
+
+    # {(agent_id, use_case_name): [list of scores]}
+    use_case_scores = defaultdict(list)
+    all_use_cases = set()
+
+    # Step 1: Aggregate all scores from all runs
+    for run_result in all_results:
+        for agent_id, task_results in run_result.items():
+            for _task_id, result_details in task_results.items():
+                use_case_name = result_details.get("task_use_case")
+                score = result_details.get("score")
+                if use_case_name and score is not None:
+                    aggregation_key = (agent_id, use_case_name)
+                    use_case_scores[aggregation_key].append(score)
+                    all_use_cases.add(use_case_name)
+
+    # Step 2: Display the results grouped by use case
+    for use_case in sorted(list(all_use_cases)):
+        logger.info(f"\n--- Use Case: {use_case} ---")
+        for agent in agents:
+            scores = use_case_scores.get((agent.id, use_case), [])
+            total_attempts = len(scores)
+
+            if total_attempts > 0:
+                successful_attempts = sum(1 for s in scores if s == 1.0)
+                average_score = sum(scores) / total_attempts
+                success_rate = successful_attempts / total_attempts
+                logger.info(f"    Agent: {agent.name:<20} | Avg Score: {average_score:.2f} | Success Rate: {success_rate:>7.2%} ({successful_attempts}/{total_attempts} successful)")
+            else:
+                logger.info(f"    Agent: {agent.name:<20} | No results for this use case.")
+
+    # Step 3: Display the overall agent summary
+    logger.info(f"\n{'-' * 70}\n--- Overall Agent Performance for {project.name} ---")
+    for agent in agents:
+        total_scores = [score for key, scores in use_case_scores.items() if key[0] == agent.id for score in scores]
+        total_attempts = len(total_scores)
+
+        if total_attempts > 0:
+            successful_attempts = sum(1 for s in total_scores if s == 1.0)
+            average_score = sum(total_scores) / total_attempts
+            success_rate = successful_attempts / total_attempts
+            logger.info(f"    Agent: {agent.name:<20} | Avg Score: {average_score:.2f} | Success Rate: {success_rate:>7.2%} ({successful_attempts}/{total_attempts} successful)")
+        else:
+            logger.info(f"    Agent: {agent.name:<20} | No results for this agent.")
+
+    logger.info(f"\n{'=' * 80}\n")
 
 
 async def main():
@@ -183,7 +250,7 @@ async def main():
     try:
         AppBootstrap()
         timing_metrics = TimingMetrics()
-        timing_metrics.start()
+        # timing_metrics.start()
 
         if not config.evaluate_real_tasks:
             logger.info("Mode: Evaluating demo web projects.")
@@ -193,14 +260,29 @@ async def main():
             logger.info(f"Will run {len(projects_to_run)} project(s): {[p.name for p in projects_to_run]}")
 
             for project in projects_to_run:
-                logger.info(f"===== Starting evaluation for project: {project.name} (ID: {project.id}) =====")
-                tasks = await generate_tasks(project)
-                if tasks:
-                    for t in tasks:
-                        t.should_record = RETURN_EVALUATION_GIF
-                    await run_evaluation(project, tasks, timing_metrics)
+                logger.info(f"\n===== Starting evaluation for project: {project.name} (ID: {project.id}) =====")
+
+                project_results = []
+                for i in range(NUM_RUNS_CONST):
+                    run_number = i + 1
+                    timing_metrics.start()
+
+                    # Generate new tasks for each run to test generalization
+                    tasks = await generate_tasks(project)
+                    if tasks:
+                        for t in tasks:
+                            t.should_record = RETURN_EVALUATION_GIF
+
+                        evaluation = await run_evaluation(project, tasks, timing_metrics, run_number)
+                        project_results.append(evaluation)
+                    else:
+                        logger.warning(f"No tasks generated for project {project.name} on run {run_number}. Skipping run.")
+
+                if project_results:
+                    show_per_use_case_statistics(project_results, AGENTS, project)
                 else:
-                    logger.warning(f"No tasks generated for project {project.name}. Skipping.")
+                    logger.warning(f"No results were collected for project {project.name}. Cannot show statistics.")
+
         else:
             logger.info("Mode: Evaluating real tasks.")
             tasks_data = load_real_tasks(1)
@@ -215,7 +297,10 @@ async def main():
                         # Set recording flag for all tasks
                         for t in tasks:
                             t.should_record = RETURN_EVALUATION_GIF
-                        await run_evaluation(project, tasks, timing_metrics)
+                        # For real tasks, we still do one run
+                        results = await run_evaluation(project, tasks, timing_metrics, 1)
+                        # Call the new function for real tasks as well
+                        show_per_use_case_statistics([results], AGENTS, project)
                     else:
                         logger.warning(f"No tasks generated for real project {project.name}. Skipping.")
                 else:
