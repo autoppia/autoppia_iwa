@@ -1,16 +1,18 @@
+from __future__ import annotations
+
 import asyncio
 import base64
 import json
-import os
 import time
-import traceback
 from collections import defaultdict
 
 from loguru import logger
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import (
+    LocalTestGenerationPipeline,
+)
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
@@ -18,380 +20,232 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig, setup_logging
+from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import (
+    BenchmarConfig,
+    setup_logging,
+)
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
+from autoppia_iwa.src.shared.utils_entrypoints.results import (
+    plot_results,
+    plot_task_comparison,
+    print_performance_statistics,
+    save_results_to_json,
+)
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
-from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
-from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_list_of_evaluations, visualize_task
-from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_real_tasks
+from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_web_project
+from autoppia_iwa.src.shared.visualizator import (
+    SubnetVisualizer,
+    visualize_list_of_evaluations,
+    visualize_task,
+)
+from autoppia_iwa.src.shared.web_voyager_utils import TaskData
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
-# ==============================
-# ====== CONFIGURATIONS =======
-# ==============================
+# ---------------------------------------------------------------------------
+# Configuration & globals
+# ---------------------------------------------------------------------------
 
-# Manually select the demo projects
-PROJECTS_TO_RUN: list[WebProject] = [
-    demo_web_projects[0],
-    demo_web_projects[1],
-    demo_web_projects[2],
-    # demo_web_projects[3],
-]
+PROJECTS_TO_RUN: list[WebProject] = [demo_web_projects[0]]
+AGENTS: list[IWebAgent] = [ApifiedWebAgent(id="3", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=120)]
 
-# Number of times to run the benchmark for each project to get average scores
-NUM_RUNS_CONST: int = 2
+config = BenchmarConfig(projects_to_run=PROJECTS_TO_RUN, agents=AGENTS)
 
-PROMPT_PER_USE_CASE_CONST: int = 1
-# Limit the number of use cases to evaluate (optional)
-# Use case totals per project:
-# - Web1: 12
-# - Web2: 15
-# - Web3: 9
-# Important: If set to "all", all the available use cases will be evaluated
-NUM_OF_USE_CASES: int | str = "all"
-
-PLOT_BENCHMARK_RESULTS: bool = False
-SAVE_EVALUATION_RESULTS: bool = False
-USE_CACHED_TASKS_CONST: bool = False
-USE_CACHED_SOLUTIONS_CONST: bool = False
-EVALUATE_REAL_TASKS_CONST: bool = False
-
-RETURN_EVALUATION_GIF: bool = False
-RECORDINGS_DIR = PROJECT_BASE_DIR / "recordings"
-LOG_FILE = "benchmark.log"
-
-# Ensure recordings directory exists
-RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
-
-# Logging
-setup_logging(LOG_FILE)
-
-# Benchmark config
-config = BenchmarkConfig(
-    projects_to_run=PROJECTS_TO_RUN,
-    prompt_per_use_case=PROMPT_PER_USE_CASE_CONST,
-    use_cached_tasks=USE_CACHED_TASKS_CONST,
-    use_cached_solutions=USE_CACHED_SOLUTIONS_CONST,
-    evaluate_real_tasks=EVALUATE_REAL_TASKS_CONST,
-    num_of_use_cases=NUM_OF_USE_CASES,
-)
-
+setup_logging("benchmark.log")
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
-
-# Agents
-AGENTS: list[IWebAgent] = [
-    # ApifiedWebAgent(id="1", name="AnthropicBrowserUseAgent", host="127.0.0.1", port=5000, timeout=240),
-    # ApifiedWebAgent(id="2", name="OpenAIBrowserUseAgent", host="127.0.0.1", port=5005, timeout=240),
-    # ApifiedWebAgent(id="3", name="OpenAICUA", host="127.0.0.1", port=5020, timeout=400),
-    # ApifiedWebAgent(id="4", name="AnthropicCUA", host="127.0.0.1", port=5010, timeout=240),
-    ApifiedWebAgent(id="5", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=120),
-]
-
-# Semaphore to cap concurrent agent calls at 3
-# SEM = asyncio.Semaphore(3)
-
 visualizer = SubnetVisualizer()
+SEM = asyncio.Semaphore(config.max_parallel_agent_calls)
 
-# =========================================================
-# TASK AND EVALUATION HELPERS
-# =========================================================
+# ---------------------------------------------------------------------------
+# Task generation
+# ---------------------------------------------------------------------------
 
 
 @visualize_task(visualizer)
-async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
-    """Generate test tasks for a given demo project."""
-    if config.evaluate_real_tasks and tasks_data:
-        task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
-        return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
+async def generate_tasks(project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
+    """Generate (or load cached) tasks for a given project."""
 
-    if not demo_project.use_cases:
-        logger.warning(f"Project '{demo_project.name}' has no use cases. Skipping task generation.")
+    if config.evaluate_real_tasks and tasks_data:
+        single = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
+        return await LocalTestGenerationPipeline(project).add_tests_to_tasks([single])
+
+    if not project.use_cases:
+        logger.warning(f"Project '{project.name}' has no use cases, skipping.")
         return []
 
-    # Determine how many use cases to use
-    if isinstance(config.num_of_use_cases, str) and config.num_of_use_cases.lower() == "all":
-        number_of_use_cases = len(demo_project.use_cases)
-    elif isinstance(config.num_of_use_cases, int):
-        if config.num_of_use_cases > len(demo_project.use_cases):
-            logger.warning(f"NUM_OF_USE_CASES ({config.num_of_use_cases}) exceeds available use cases in project '{demo_project.name}' ({len(demo_project.use_cases)}). Using all instead.")
-            number_of_use_cases = len(demo_project.use_cases)
-        else:
-            number_of_use_cases = config.num_of_use_cases
-    else:
-        logger.warning("Invalid config.num_of_use_cases value; defaulting to all use cases.")
-        number_of_use_cases = len(demo_project.use_cases)
-
-    # Generate tasks
-    return await generate_tasks_for_project(
-        demo_project,
+    return await generate_tasks_for_web_project(
+        project,
         config.use_cached_tasks,
         str(config.tasks_cache_dir),
         prompts_per_use_case=config.prompt_per_use_case,
-        num_of_use_cases=number_of_use_cases,
+        num_of_use_cases=getattr(config, "num_of_use_cases", 1),
     )
 
 
+# ---------------------------------------------------------------------------
+# Solution & evaluation helpers
+# ---------------------------------------------------------------------------
+
+
+aSYNC_GIF_RUN = "benchmark_run"
+
+
+def _gif_path(agent_name: str, task_id: str, run_no: int) -> str:
+    return str(config.recordings_dir / agent_name / f"{task_id}_run_{run_no}.gif")
+
+
+async def _save_gif(b64: str, task_id: str, agent_name: str, run_no: int) -> None:
+    path = config.recordings_dir / agent_name
+    path.mkdir(exist_ok=True)
+    with open(_gif_path(agent_name, task_id, run_no), "wb") as fh:
+        fh.write(base64.b64decode(b64))
+    logger.info(f"GIF saved for {agent_name} → {task_id}")
+
+
 @visualize_list_of_evaluations(visualizer)
-async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
-    try:
-        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20))
-        evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
+async def evaluate_multiple_solutions(
+    project: WebProject,
+    task: Task,
+    sols: list[TaskSolution],
+    validator_id: str | None = None,
+):
+    evaluator = ConcurrentEvaluator(project, EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20))
+    results = await evaluator.evaluate_task_solutions(task, sols)
 
-        # Save recordings if they exist
-        if RETURN_EVALUATION_GIF:
-            for result in evaluation_results:
-                if result.gif_recording:
-                    # Get agent name
-                    web_agent_name = "unknown_agent"
-                    for agent in AGENTS:
-                        if agent.id == result.web_agent_id:
-                            web_agent_name = agent.name
-                            break
-
-                    # Create directory structure
-                    agent_dir = RECORDINGS_DIR / web_agent_name
-                    os.makedirs(agent_dir, exist_ok=True)
-
-                    # Save GIF
-                    recording_path = agent_dir / f"{task.id}.gif"
-                    with open(recording_path, "wb") as f:
-                        f.write(base64.b64decode(result.gif_recording))
-                    logger.info(f"Saved recording to: {recording_path}")
-
-        return evaluation_results
-    except Exception:
-        traceback.print_exc()
-        return []
+    if config.return_evaluation_gif:
+        for res in results:
+            if res.gif_recording:
+                agent = next((a.name for a in config.agents if a.id == res.web_agent_id), "unknown")
+                await _save_gif(res.gif_recording, task.id, agent, 0)
+    return results
 
 
-async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent, task: Task, timing_metrics: TimingMetrics) -> TaskSolution | None:
-    logger.info(f"---\nGenerating solution for Agent: {agent.name} | Task: {task.id} (Project: {demo_project.name})")
-    backend_service = BackendDemoWebService(demo_project)
+async def generate_solution(project: WebProject, agent: IWebAgent, task: Task, timing: TimingMetrics):
+    async with SEM:
+        backend = BackendDemoWebService(project)
+        await backend.reset_database()
+        try:
+            if config.use_cached_solutions:
+                cached = await solution_cache.load_solution(task.id, agent.id)
+                if cached and cached.actions:
+                    return cached
 
-    try:
-        await backend_service.reset_database()
-
-        if config.use_cached_solutions:
-            cached_solution = await solution_cache.load_solution(task.id, agent.id)
-            if cached_solution and cached_solution.actions:
-                logger.info(f"Loaded cached solution ({len(cached_solution.actions)} actions).")
-                return cached_solution
-            logger.warning(f"No cached solution found for {task.id}, generating a new one.")
-
-        start_time = time.time()
-        prepared_task = task.prepare_for_agent(agent.id)
-        solution = await agent.solve_task(prepared_task)
-        task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
-        task_solution.actions = task_solution.replace_web_agent_id()
-        timing_metrics.record_solution_time(agent.id, task.id, time.time() - start_time)
-
-        logger.info(f"Generated solution with {len(task_solution.actions)} actions.")
-        if solution_cache.save_solution(task_solution, agent.id, agent.name):
-            logger.info("Solution cached successfully.")
-
-        return task_solution
-    except Exception as e:
-        logger.error(f"Error generating solution for Task {task.id} on project {demo_project.name}: {e!r}")
-        return None
-    finally:
-        await backend_service.close()
+            start = time.time()
+            prepared = task.prepare_for_agent(agent.id)
+            sol = await agent.solve_task(prepared)
+            task_sol = TaskSolution(task_id=task.id, actions=sol.actions or [], web_agent_id=agent.id)
+            task_sol.actions = task_sol.replace_web_agent_id()
+            timing.record_solution_time(agent.id, task.id, time.time() - start)
+            solution_cache.save_solution(task_sol, agent.id, agent.name)
+            return task_sol
+        except Exception as exc:
+            logger.error(f"{agent.name} failed on {task.id}: {exc!r}")
+            return None
+        finally:
+            await backend.close()
 
 
-async def save_recordings(evaluation_results: list, task: Task, run_number: int):
-    for result in evaluation_results:
-        if result.gif_recording:
-            web_agent_name = "unknown_agent"
-            for agent in AGENTS:
-                if agent.id == result.web_agent_id:
-                    web_agent_name = agent.name
-                    break
-
-            agent_dir = RECORDINGS_DIR / web_agent_name
-            agent_dir.mkdir(exist_ok=True)
-
-            recording_path = agent_dir / f"{task.id}_run_{run_number}.gif"
-            with open(recording_path, "wb") as f:
-                f.write(base64.b64decode(result.gif_recording))
-            logger.info(f"Saved recording to: {recording_path}")
-
-
-async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics, run_number: int):
-    final_results = {}
+async def run_evaluation(project: WebProject, tasks: list[Task], timing: TimingMetrics, run_no: int):
+    aggregated: dict[str, dict[str, dict]] = {}
     for task in tasks:
-        logger.info(f"\n=== Processing Task {task.id} for Project {demo_project.name} ===")
+        sols = await asyncio.gather(*[generate_solution(project, ag, task, timing) for ag in config.agents])
+        eval_res = await evaluate_multiple_solutions(project, task, sols, aSYNC_GIF_RUN)
+        for ev in eval_res:
+            uc = getattr(task.use_case, "name", "Unknown")
+            aggregated.setdefault(ev.web_agent_id, {})[task.id] = {"score": ev.final_score, "task_use_case": uc}
 
-        # Build one coroutine per agent and run them concurrently
-        coroutines = [generate_solution_for_task(demo_project, agent, task, timing_metrics) for agent in AGENTS]
-        solutions_for_this_task = await asyncio.gather(*coroutines, return_exceptions=True)
+    print_performance_statistics(aggregated, config.agents, timing)
+    if config.plot_benchmark_results:
+        plot_results(aggregated, config.agents, timing, str(config.output_dir))
+        plot_task_comparison(aggregated, config.agents, tasks, str(config.output_dir))
+    if config.save_evaluation_results:
+        save_results_to_json(aggregated, config.agents, timing, str(config.output_dir))
+    return aggregated
 
-        # Replace exceptions with None to keep list aligned
-        clean_solutions = []
-        for sol in solutions_for_this_task:
-            if isinstance(sol, Exception):
-                logger.error(f"Agent coroutine raised: {sol!r}")
-                clean_solutions.append(None)
-            else:
-                clean_solutions.append(sol)
 
-        evaluation_results = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task, "test_visualizer")
-        await save_recordings(evaluation_results, task, run_number)
+# ---------------------------------------------------------------------------
+# Stats helper
+# ---------------------------------------------------------------------------
 
-        for eval_result in evaluation_results:
-            # Safely get the use case name
-            use_case_name = "Unknown Use Case"
-            try:
-                use_case_name = task.use_case.name
-            except AttributeError:
-                logger.warning(f"Task with ID {task.id} does not have a 'use_case.name' attribute.")
 
-            final_results.setdefault(eval_result.web_agent_id, {})[task.id] = {
-                "score": eval_result.final_score,
-                "evaluation_result": eval_result,
-                "task_use_case": use_case_name,
+def show_stats(all_runs: list[dict], project: WebProject) -> None:
+    """Aggregate success rates (per agent & overall) and write JSON."""
+
+    per_agent: defaultdict[str, defaultdict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+    for run in all_runs:
+        for aid, td in run.items():
+            agent_name = next((a.name for a in config.agents if a.id == aid), aid)
+            for res in td.values():
+                per_agent[agent_name][res["task_use_case"].upper()].append(res["score"])
+
+    logger.info(f"\n=== SUMMARY for {project.name} ===")
+    overall_success = overall_total = 0
+    for agent in config.agents:
+        scores = [s for lst in per_agent[agent.name].values() for s in lst]
+        success = sum(1 for s in scores if s == 1.0)
+        total = len(scores)
+        rate = success / total * 100 if total else 0.0
+        overall_success += success
+        overall_total += total
+        logger.info(f"{agent.name:<20} | {rate:6.2f}% ({success}/{total})")
+
+    overall_rate = overall_success / overall_total * 100 if overall_total else 0.0
+    logger.info(f"{'OVERALL':<20} | {overall_rate:6.2f}% ({overall_success}/{overall_total})")
+
+    json_ready = {
+        "agents": {
+            ag: {
+                uc: {
+                    "success_count": sum(1 for s in scores if s == 1.0),
+                    "total": len(scores),
+                    "success_rate": round(sum(1 for s in scores if s == 1.0) / len(scores), 3) if scores else 0,
+                }
+                for uc, scores in uc_dict.items()
             }
+            for ag, uc_dict in per_agent.items()
+        },
+        "overall": {
+            "success_count": overall_success,
+            "total": overall_total,
+            "success_rate": round(overall_success / overall_total, 3) if overall_total else 0,
+        },
+    }
 
-    print_performance_statistics(final_results, AGENTS, timing_metrics)
-    if PLOT_BENCHMARK_RESULTS:
-        plot_results(final_results, AGENTS, timing_metrics, str(config.output_dir))
-        plot_task_comparison(final_results, AGENTS, tasks, str(config.output_dir))
-    if SAVE_EVALUATION_RESULTS:
-        save_results_to_json(final_results, AGENTS, timing_metrics, str(config.output_dir))
-    return final_results
+    file_stub = project.name.lower().replace(" ", "_")
+    if file_stub == "autoppia_cinema":
+        file_stub = "autoppia_cinama"  # user-requested spelling
+    out_path = PROJECT_BASE_DIR / f"{file_stub}_stats.json"
+    out_path.write_text(json.dumps(json_ready, indent=2))
+    logger.info(f"Stats written to {out_path}")
 
 
-def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent], project: WebProject, save_json: bool = True):
-    """
-    Aggregates and displays detailed statistics, grouped by use case and then by agent.
-    """
-    logger.info(f"\n\n{'=' * 25} FINAL STATISTICS for Project: {project.name} {'=' * 25}")
+# ---------------------------------------------------------------------------
+# Main entrypoint
+# ---------------------------------------------------------------------------
 
-    # {(agent_id, use_case_name): [list of scores]}
-    use_case_scores = defaultdict(list)
-    all_use_cases = set()
 
-    # Step 1: Aggregate all scores from all runs
-    for run_result in all_results:
-        for agent_id, task_results in run_result.items():
-            for _task_id, result_details in task_results.items():
-                use_case_name = result_details.get("task_use_case", "Unknown")
-                score = result_details.get("score")
-                if score is not None:
-                    use_case_scores[(agent_id, use_case_name)].append(score)
-                    all_use_cases.add(use_case_name)
+async def main() -> None:
+    logger.info("Starting benchmark …")
+    AppBootstrap()
+    timing = TimingMetrics()
 
-    stats_summary = {"project": project.name, "use_cases": {}, "overall": {}}
+    await initialize_demo_webs_projects(demo_web_projects)
 
-    for use_case in sorted(all_use_cases):
-        stats_summary["use_cases"][use_case] = {}
-        logger.info(f"\n--- Use Case: {use_case} ---")
-        for agent in agents:
-            scores = use_case_scores.get((agent.id, use_case), [])
-            total = len(scores)
-            if total > 0:
-                success = sum(1 for s in scores if s == 1.0)
-                success_rate = success / total
-                stats_summary["use_cases"][use_case][agent.name] = {"success_rate": round(success_rate, 3), "success_count": success, "total": total}
-                logger.info(f"    Agent: {agent.name:<20} | Success Rate: {success_rate:>7.2%} ({success}/{total})")
+    for proj in config.projects_to_run:
+        all_runs: list[dict] = []
+        for run_idx in range(1, config.num_runs + 1):
+            timing.start()
+            tasks = await generate_tasks(proj)
+            for t in tasks:
+                t.should_record = config.return_evaluation_gif
+            if tasks:
+                all_runs.append(await run_evaluation(proj, tasks, timing, run_idx))
             else:
-                stats_summary["use_cases"][use_case][agent.name] = {"success_rate": None, "success_count": 0, "total": 0}
-                logger.info(f"    Agent: {agent.name:<20} | No results for this use case.")
+                logger.warning(f"No tasks for {proj.name}  skipping run")
+        show_stats(all_runs, proj)
 
-    # Overall agent stats
-    logger.info(f"\n{'-' * 70}\n--- Overall Agent Performance for {project.name} ---")
-    for agent in agents:
-        all_scores = [s for (aid, _), scores in use_case_scores.items() if aid == agent.id for s in scores]
-        total = len(all_scores)
-        if total > 0:
-            success = sum(1 for s in all_scores if s == 1.0)
-            success_rate = success / total
-            stats_summary["overall"][agent.name] = {"success_rate": round(success_rate, 3), "success_count": success, "total": total}
-            logger.info(f"    Agent: {agent.name:<20} | | Success Rate: {success_rate:>7.2%} ({success}/{total})")
-        else:
-            stats_summary["overall"][agent.name] = {"success_rate": None, "success_count": 0, "total": 0}
-            logger.info(f"    Agent: {agent.name:<20} | No results for this agent.")
-
-    logger.info(f"\n{'=' * 80}\n")
-
-    if save_json:
-        output_path = PROJECT_BASE_DIR / f"{project.name.lower().replace(' ', '_')}_use_case_stats.json"
-        with open(output_path, "w") as f:
-            json.dump(stats_summary, f, indent=4)
-        logger.info(f"Saved use-case statistics to {output_path}")
-
-    return stats_summary
-
-
-# =========================================================
-# MAIN ENTRY
-# =========================================================
-async def main():
-    logger.info("Starting evaluation...")
-    try:
-        AppBootstrap()
-        timing_metrics = TimingMetrics()
-        timing_metrics.start()
-
-        if not config.evaluate_real_tasks:
-            logger.info("Mode: Evaluating demo web projects.")
-            await initialize_demo_webs_projects(demo_web_projects)
-            projects_to_run = config.projects_to_run
-
-            logger.info(f"Will run {len(projects_to_run)} project(s): {[p.name for p in projects_to_run]}")
-
-            for project in projects_to_run:
-                logger.info(f"\n===== Starting evaluation for project: {project.name} (ID: {project.id}) =====")
-
-                project_results = []
-                for i in range(NUM_RUNS_CONST):
-                    run_number = i + 1
-                    timing_metrics.start()
-
-                    # Generate new tasks for each run to test generalization
-                    tasks = await generate_tasks(project)
-                    if tasks:
-                        for t in tasks:
-                            t.should_record = RETURN_EVALUATION_GIF
-
-                        evaluation = await run_evaluation(project, tasks, timing_metrics, run_number)
-                        project_results.append(evaluation)
-                    else:
-                        logger.warning(f"No tasks generated for project {project.name} on run {run_number}. Skipping run.")
-
-                if project_results:
-                    show_per_use_case_statistics(project_results, AGENTS, project)
-                else:
-                    logger.warning(f"No results were collected for project {project.name}. Cannot show statistics.")
-
-        else:
-            logger.info("Mode: Evaluating real tasks.")
-            tasks_data = load_real_tasks(1)
-            real_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
-
-            for td in tasks_data:
-                project = real_projects.get(td.id)
-                if project:
-                    logger.info(f"===== Starting evaluation for real task project: {project.name} =====")
-                    tasks = await generate_tasks(project, td)
-                    if tasks:
-                        # Set recording flag for all tasks
-                        for t in tasks:
-                            t.should_record = RETURN_EVALUATION_GIF
-                        # For real tasks, we still do one run
-                        results = await run_evaluation(project, tasks, timing_metrics, 1)
-                        # Call the new function for real tasks as well
-                        show_per_use_case_statistics([results], AGENTS, project)
-                    else:
-                        logger.warning(f"No tasks generated for real project {project.name}. Skipping.")
-                else:
-                    logger.warning(f"Could not find a matching project for real task ID: {td.id}")
-
-        logger.info("Evaluation process complete!")
-    except Exception as e:
-        logger.exception(f"Unexpected error in main execution: {e}")
-        traceback.print_exc()
+    logger.success("Benchmark finished ✔")
 
 
 if __name__ == "__main__":

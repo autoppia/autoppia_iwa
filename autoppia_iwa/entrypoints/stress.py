@@ -15,7 +15,7 @@ from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 
 # Local imports (within the same "entrypoints" directory)
-from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
+from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_web_project
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
@@ -79,7 +79,7 @@ async def main():
     logger.info(f"Using project: {demo_project.name}")
 
     # Generate or load tasks for the project
-    tasks = await generate_tasks_for_project(
+    tasks = await generate_tasks_for_web_project(
         demo_project,
         use_cached_tasks=USE_CACHED_TASKS,
         task_cache_dir=TASKS_CACHE_DIR,

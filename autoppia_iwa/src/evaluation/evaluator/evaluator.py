@@ -93,15 +93,6 @@ class ConcurrentEvaluator(IEvaluator):
                 if r and r.stats:
                     self.evaluation_stats.append(r.stats)
 
-            # (Opcional) Reporte final
-            # display_batch_evaluation_summary(
-            #     task_id=task.id,
-            #     evaluation_stats=self.evaluation_stats,
-            #     debug_mode=self.config.debug_mode,
-            #     action_type_timing=self.action_type_timing,
-            #     errors=self.errors,
-            # )
-
             return results
         finally:
             if self.backend_demo_webs_service:

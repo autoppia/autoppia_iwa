@@ -41,7 +41,7 @@ def load_tasks_from_json() -> list[Task] | None:
 # ============================================================
 
 
-async def generate_tasks_for_project(demo_project: WebProject) -> list[Task]:
+async def generate_tasks_for_web_project(demo_project: WebProject) -> list[Task]:
     """
     Generates tasks for the given demo project.
     If USE_CACHED_TASKS is True, attempts to load from the project-specific cache first.
@@ -84,7 +84,7 @@ class TestActionsGeneration(unittest.IsolatedAsyncioTestCase):
         web_project = (await initialize_demo_webs_projects(demo_web_projects))[0]
 
         # Create the task configuration
-        self.tasks = await generate_tasks_for_project(web_project)
+        self.tasks = await generate_tasks_for_web_project(web_project)
 
     async def test_new_actions_generation(self):
         """Test that actions are generated correctly from a goal and URL."""

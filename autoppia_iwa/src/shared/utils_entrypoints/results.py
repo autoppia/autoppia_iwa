@@ -40,8 +40,8 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
         # Compute statistics on the agent's scores
         score_stats = compute_statistics(agent_scores)
 
-        output_data["agents"][agent.id] = {
-            "name": agent.name,
+        output_data["agents"][agent.name] = {
+            "agent-id": agent.id,
             "score_statistics": score_stats,
             "avg_solution_time": timing_metrics.get_avg_solution_time(agent.id),
             "avg_evaluation_time": timing_metrics.get_avg_evaluation_time(agent.id),

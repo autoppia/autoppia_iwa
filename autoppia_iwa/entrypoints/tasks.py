@@ -7,7 +7,7 @@ from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_project
+from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_web_project
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
@@ -59,7 +59,7 @@ async def main():
     logger.info(f"Using project: {demo_project.name}")
 
     # Generate or load tasks for the project
-    tasks = await generate_tasks_for_project(
+    tasks = await generate_tasks_for_web_project(
         demo_project,
         use_cached_tasks=USE_CACHED_TASKS,
         task_cache_dir=TASKS_CACHE_DIR,

@@ -44,7 +44,7 @@ async def load_tasks_from_json() -> list[Task] | None:
 # ============================================================
 
 
-async def generate_tasks_for_project(demo_project: WebProject) -> list[Task]:
+async def generate_tasks_for_web_project(demo_project: WebProject) -> list[Task]:
     """
     Generates tasks for the given demo project.
     If USE_CACHED_TASKS is True, attempts to load from the project-specific cache first.
@@ -86,7 +86,7 @@ class TestTaskTestGenerationWithWebAnalysis(unittest.IsolatedAsyncioTestCase):
     async def _generate_tests_for_web_project(self) -> list[Task]:
         """Helper method to generate tasks and test cases."""
         web_project = await initialize_demo_webs_projects(demo_web_projects)
-        tasks = await generate_tasks_for_project(web_project[0])
+        tasks = await generate_tasks_for_web_project(web_project[0])
 
         test_generator = LocalTestGenerationPipeline(web_project=web_project[0], llm_service=self.llm_service)
         tasks_with_tests = await test_generator.add_tests_to_tasks(tasks=tasks)
