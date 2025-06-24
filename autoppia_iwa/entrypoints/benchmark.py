@@ -1,5 +1,21 @@
 from __future__ import annotations
 
+"""
+Benchmark runner for Autoppia demo-web projects.
+
+Highlights
+----------
+* Usa `BenchmarConfig` de benchmark_utils (debe exponer num_of_use_cases,
+  max_parallel_agent_calls, etc.).
+* Genera tareas con generate_tasks_for_web_project y reenvía num_of_use_cases.
+* Todos los logs son f-strings (sin guiones tipográficos).
+* JSON de estadísticas:
+    agents -> use_cases -> métricas  +  agents -> overall.
+    Incluye avg_solution_time en cada nivel.
+    Guarda como autoppia_cinama_stats.json cuando el proyecto se llama
+    “Autoppia Cinema”.
+"""
+
 import asyncio
 import base64
 import json
@@ -48,7 +64,15 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ---------------------------------------------------------------------------
 
 PROJECTS_TO_RUN: list[WebProject] = [demo_web_projects[0]]
-AGENTS: list[IWebAgent] = [ApifiedWebAgent(id="3", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=120)]
+AGENTS: list[IWebAgent] = [
+    ApifiedWebAgent(
+        id="3",
+        name="AutoppiaAgent",
+        host="127.0.0.1",
+        port=5000,
+        timeout=120,
+    )
+]
 
 config = BenchmarConfig(projects_to_run=PROJECTS_TO_RUN, agents=AGENTS)
 
@@ -64,10 +88,13 @@ SEM = asyncio.Semaphore(config.max_parallel_agent_calls)
 
 @visualize_task(visualizer)
 async def generate_tasks(project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
-    """Generate (or load cached) tasks for a given project."""
-
+    """Generate (or load cached) tasks for a project."""
     if config.evaluate_real_tasks and tasks_data:
-        single = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
+        single = Task(
+            url=tasks_data.web,
+            prompt=tasks_data.ques,
+            is_web_real=True,
+        )
         return await LocalTestGenerationPipeline(project).add_tests_to_tasks([single])
 
     if not project.use_cases:
@@ -87,8 +114,7 @@ async def generate_tasks(project: WebProject, tasks_data: TaskData | None = None
 # Solution & evaluation helpers
 # ---------------------------------------------------------------------------
 
-
-aSYNC_GIF_RUN = "benchmark_run"
+ASYNC_GIF_RUN = "benchmark_run"
 
 
 def _gif_path(agent_name: str, task_id: str, run_no: int) -> str:
@@ -100,7 +126,7 @@ async def _save_gif(b64: str, task_id: str, agent_name: str, run_no: int) -> Non
     path.mkdir(exist_ok=True)
     with open(_gif_path(agent_name, task_id, run_no), "wb") as fh:
         fh.write(base64.b64decode(b64))
-    logger.info(f"GIF saved for {agent_name} → {task_id}")
+    logger.info(f"GIF saved for {agent_name} -> {task_id}")
 
 
 @visualize_list_of_evaluations(visualizer)
@@ -110,18 +136,29 @@ async def evaluate_multiple_solutions(
     sols: list[TaskSolution],
     validator_id: str | None = None,
 ):
-    evaluator = ConcurrentEvaluator(project, EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20))
+    evaluator = ConcurrentEvaluator(
+        project,
+        EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20),
+    )
     results = await evaluator.evaluate_task_solutions(task, sols)
 
     if config.return_evaluation_gif:
         for res in results:
             if res.gif_recording:
-                agent = next((a.name for a in config.agents if a.id == res.web_agent_id), "unknown")
-                await _save_gif(res.gif_recording, task.id, agent, 0)
+                agent_name = next(
+                    (a.name for a in config.agents if a.id == res.web_agent_id),
+                    "unknown",
+                )
+                await _save_gif(res.gif_recording, task.id, agent_name, 0)
     return results
 
 
-async def generate_solution(project: WebProject, agent: IWebAgent, task: Task, timing: TimingMetrics):
+async def generate_solution(
+    project: WebProject,
+    agent: IWebAgent,
+    task: Task,
+    timing: TimingMetrics,
+):
     async with SEM:
         backend = BackendDemoWebService(project)
         await backend.reset_database()
@@ -132,13 +169,17 @@ async def generate_solution(project: WebProject, agent: IWebAgent, task: Task, t
                     return cached
 
             start = time.time()
-            prepared = task.prepare_for_agent(agent.id)
-            sol = await agent.solve_task(prepared)
-            task_sol = TaskSolution(task_id=task.id, actions=sol.actions or [], web_agent_id=agent.id)
-            task_sol.actions = task_sol.replace_web_agent_id()
+            prepared_task = task.prepare_for_agent(agent.id)
+            solution = await agent.solve_task(prepared_task)
+            task_solution = TaskSolution(
+                task_id=task.id,
+                actions=solution.actions or [],
+                web_agent_id=agent.id,
+            )
+            task_solution.actions = task_solution.replace_web_agent_id()
             timing.record_solution_time(agent.id, task.id, time.time() - start)
-            solution_cache.save_solution(task_sol, agent.id, agent.name)
-            return task_sol
+            solution_cache.save_solution(task_solution, agent.id, agent.name)
+            return task_solution
         except Exception as exc:
             logger.error(f"{agent.name} failed on {task.id}: {exc!r}")
             return None
@@ -150,10 +191,13 @@ async def run_evaluation(project: WebProject, tasks: list[Task], timing: TimingM
     aggregated: dict[str, dict[str, dict]] = {}
     for task in tasks:
         sols = await asyncio.gather(*[generate_solution(project, ag, task, timing) for ag in config.agents])
-        eval_res = await evaluate_multiple_solutions(project, task, sols, aSYNC_GIF_RUN)
+        eval_res = await evaluate_multiple_solutions(project, task, sols, ASYNC_GIF_RUN)
         for ev in eval_res:
             uc = getattr(task.use_case, "name", "Unknown")
-            aggregated.setdefault(ev.web_agent_id, {})[task.id] = {"score": ev.final_score, "task_use_case": uc}
+            aggregated.setdefault(ev.web_agent_id, {})[task.id] = {
+                "score": ev.final_score,
+                "task_use_case": uc,
+            }
 
     print_performance_statistics(aggregated, config.agents, timing)
     if config.plot_benchmark_results:
@@ -169,52 +213,83 @@ async def run_evaluation(project: WebProject, tasks: list[Task], timing: TimingM
 # ---------------------------------------------------------------------------
 
 
-def show_stats(all_runs: list[dict], project: WebProject) -> None:
-    """Aggregate success rates (per agent & overall) and write JSON."""
+def show_stats(all_runs: list[dict], project: WebProject, timing: TimingMetrics) -> None:
+    """Compute per-agent & overall success and avg times, then write JSON."""
+    per_agent_scores: defaultdict[str, defaultdict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+    per_agent_times: defaultdict[str, defaultdict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
 
-    per_agent: defaultdict[str, defaultdict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
     for run in all_runs:
-        for aid, td in run.items():
-            agent_name = next((a.name for a in config.agents if a.id == aid), aid)
-            for res in td.values():
-                per_agent[agent_name][res["task_use_case"].upper()].append(res["score"])
+        for agent_id, task_dict in run.items():
+            agent_name = next((a.name for a in config.agents if a.id == agent_id), agent_id)
+            for task_id, res in task_dict.items():
+                uc = res["task_use_case"].upper()
+                per_agent_scores[agent_name][uc].append(res["score"])
+                sol_time = timing.solution_times.get(agent_id, {}).get(task_id, 0)
+                per_agent_times[agent_name][uc].append(sol_time)
 
     logger.info(f"\n=== SUMMARY for {project.name} ===")
+    json_ready = {"agents": {}}
     overall_success = overall_total = 0
+    overall_time_sum = overall_time_count = 0
+
     for agent in config.agents:
-        scores = [s for lst in per_agent[agent.name].values() for s in lst]
-        success = sum(1 for s in scores if s == 1.0)
-        total = len(scores)
-        rate = success / total * 100 if total else 0.0
-        overall_success += success
-        overall_total += total
-        logger.info(f"{agent.name:<20} | {rate:6.2f}% ({success}/{total})")
+        a_name = agent.name
+        agent_uc_block = {}
+        agent_scores_flat: list[float] = []
+        agent_time_flat: list[float] = []
 
-    overall_rate = overall_success / overall_total * 100 if overall_total else 0.0
-    logger.info(f"{'OVERALL':<20} | {overall_rate:6.2f}% ({overall_success}/{overall_total})")
-
-    json_ready = {
-        "agents": {
-            ag: {
-                uc: {
-                    "success_count": sum(1 for s in scores if s == 1.0),
-                    "total": len(scores),
-                    "success_rate": round(sum(1 for s in scores if s == 1.0) / len(scores), 3) if scores else 0,
-                }
-                for uc, scores in uc_dict.items()
+        for uc, scores in per_agent_scores[a_name].items():
+            times = per_agent_times[a_name][uc]
+            success = sum(1 for s in scores if s == 1.0)
+            total = len(scores)
+            avg_time = sum(times) / len(times) if times else 0.0
+            agent_uc_block[uc] = {
+                "success_count": success,
+                "total": total,
+                "success_rate": round(success / total, 3) if total else 0,
+                "avg_solution_time": round(avg_time, 3),
             }
-            for ag, uc_dict in per_agent.items()
-        },
-        "overall": {
-            "success_count": overall_success,
-            "total": overall_total,
-            "success_rate": round(overall_success / overall_total, 3) if overall_total else 0,
-        },
+            agent_scores_flat.extend(scores)
+            agent_time_flat.extend(times)
+
+        succ_all = sum(1 for s in agent_scores_flat if s == 1.0)
+        total_all = len(agent_scores_flat)
+        avg_all_time = sum(agent_time_flat) / len(agent_time_flat) if agent_time_flat else 0.0
+        rate_all = succ_all / total_all if total_all else 0.0
+
+        logger.info(f"{a_name:<20} | {rate_all * 100:6.2f}% ({succ_all}/{total_all}) | avg_time {avg_all_time:.2f}s")
+
+        overall_success += succ_all
+        overall_total += total_all
+        overall_time_sum += sum(agent_time_flat)
+        overall_time_count += len(agent_time_flat)
+
+        json_ready["agents"][a_name] = {
+            "use_cases": agent_uc_block,
+            "overall": {
+                "success_count": succ_all,
+                "total": total_all,
+                "success_rate": round(rate_all, 3),
+                "avg_solution_time": round(avg_all_time, 3),
+            },
+        }
+
+    overall_rate = overall_success / overall_total if overall_total else 0.0
+    overall_avg_time = overall_time_sum / overall_time_count if overall_time_count else 0.0
+
+    logger.info(f"{'OVERALL':<20} | {overall_rate * 100:6.2f}% ({overall_success}/{overall_total}) | avg_time {overall_avg_time:.2f}s")
+
+    # root-level overall for convenience
+    json_ready["overall"] = {
+        "success_count": overall_success,
+        "total": overall_total,
+        "success_rate": round(overall_rate, 3),
+        "avg_solution_time": round(overall_avg_time, 3),
     }
 
     file_stub = project.name.lower().replace(" ", "_")
     if file_stub == "autoppia_cinema":
-        file_stub = "autoppia_cinama"  # user-requested spelling
+        file_stub = "autoppia_cinama"
     out_path = PROJECT_BASE_DIR / f"{file_stub}_stats.json"
     out_path.write_text(json.dumps(json_ready, indent=2))
     logger.info(f"Stats written to {out_path}")
@@ -226,7 +301,7 @@ def show_stats(all_runs: list[dict], project: WebProject) -> None:
 
 
 async def main() -> None:
-    logger.info("Starting benchmark …")
+    logger.info("Starting benchmark ...")
     AppBootstrap()
     timing = TimingMetrics()
 
@@ -242,8 +317,8 @@ async def main() -> None:
             if tasks:
                 all_runs.append(await run_evaluation(proj, tasks, timing, run_idx))
             else:
-                logger.warning(f"No tasks for {proj.name}  skipping run")
-        show_stats(all_runs, proj)
+                logger.warning(f"No tasks for {proj.name} - skipping run")
+        show_stats(all_runs, proj, timing)
 
     logger.success("Benchmark finished ✔")
 
