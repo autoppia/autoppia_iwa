@@ -84,7 +84,7 @@ class BackendDemoWebService:
 
         if ":8002" in self.base_url or ":8003" in self.base_url:
             try:
-                endpoint = "http://localhost:8080/get_events/"
+                endpoint = "http://localhost:8090/get_events/"
                 params = {"web_url": self.base_url, "web_agent_id": web_agent_id}
                 session = await self._get_session()
 
@@ -210,7 +210,7 @@ class BackendDemoWebService:
 
         if ":8002" in self.base_url or ":8003" in self.base_url:
             try:
-                endpoint = "http://localhost:8080/reset_events/"
+                endpoint = "http://localhost:8090/reset_events/"
                 params = {"web_url": self.base_url}
                 session = await self._get_session()
 
