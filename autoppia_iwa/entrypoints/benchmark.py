@@ -45,13 +45,15 @@ PROJECTS_TO_RUN: list[WebProject] = [
 NUM_RUNS_CONST: int = 1
 
 PROMPT_PER_USE_CASE_CONST: int = 1
+NUM_OF_USE_CASES = 15
+
 PLOT_BENCHMARK_RESULTS: bool = False
 SAVE_EVALUATION_RESULTS: bool = False
 USE_CACHED_TASKS_CONST: bool = False
 USE_CACHED_SOLUTIONS_CONST: bool = False
 EVALUATE_REAL_TASKS_CONST: bool = False
 
-RETURN_EVALUATION_GIF: bool = True
+RETURN_EVALUATION_GIF: bool = False
 RECORDINGS_DIR = PROJECT_BASE_DIR / "recordings"
 LOG_FILE = "benchmark.log"
 
@@ -68,6 +70,7 @@ config = BenchmarkConfig(
     use_cached_tasks=USE_CACHED_TASKS_CONST,
     use_cached_solutions=USE_CACHED_SOLUTIONS_CONST,
     evaluate_real_tasks=EVALUATE_REAL_TASKS_CONST,
+    num_of_use_cases=NUM_OF_USE_CASES,
 )
 
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
@@ -103,6 +106,7 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
         config.use_cached_tasks,
         str(config.tasks_cache_dir),
         prompts_per_use_case=config.prompt_per_use_case,
+        num_of_use_cases=config.num_of_use_cases,
     )
 
 
