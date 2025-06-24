@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import json
 import time
 import traceback
 from collections import defaultdict
@@ -34,8 +35,8 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # Manually select the demo projects
 PROJECTS_TO_RUN: list[WebProject] = [
     demo_web_projects[0],
-    # demo_web_projects[1],
-    # demo_web_projects[2],
+    demo_web_projects[1],
+    demo_web_projects[2],
     # demo_web_projects[3],
 ]
 
@@ -76,7 +77,7 @@ AGENTS: list[IWebAgent] = [
     # ApifiedWebAgent(id="2", name="OpenAIBrowserUseAgent", host="127.0.0.1", port=5005, timeout=240),
     # ApifiedWebAgent(id="3", name="OpenAICUA", host="127.0.0.1", port=5020, timeout=400),
     # ApifiedWebAgent(id="4", name="AnthropicCUA", host="127.0.0.1", port=5010, timeout=240),
-    ApifiedWebAgent(id="5", name="AutoppiaAgent", host="127.0.0.1", port=7000, timeout=120),
+    ApifiedWebAgent(id="5", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 # Semaphore to cap concurrent agent calls at 3
@@ -230,7 +231,7 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
 
 
 # --- NEW: Replaces previous statistics function with a more detailed one ---
-def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent], project: WebProject):
+def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent], project: WebProject, save_json: bool = True):
     """
     Aggregates and displays detailed statistics, grouped by use case and then by agent.
     """
@@ -244,43 +245,54 @@ def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent
     for run_result in all_results:
         for agent_id, task_results in run_result.items():
             for _task_id, result_details in task_results.items():
-                use_case_name = result_details.get("task_use_case")
+                use_case_name = result_details.get("task_use_case", "Unknown")
                 score = result_details.get("score")
-                if use_case_name and score is not None:
-                    aggregation_key = (agent_id, use_case_name)
-                    use_case_scores[aggregation_key].append(score)
+                if score is not None:
+                    use_case_scores[(agent_id, use_case_name)].append(score)
                     all_use_cases.add(use_case_name)
 
-    # Step 2: Display the results grouped by use case
-    for use_case in sorted(list(all_use_cases)):
+    stats_summary = {"project": project.name, "use_cases": {}, "overall": {}}
+
+    for use_case in sorted(all_use_cases):
+        stats_summary["use_cases"][use_case] = {}
         logger.info(f"\n--- Use Case: {use_case} ---")
         for agent in agents:
             scores = use_case_scores.get((agent.id, use_case), [])
-            total_attempts = len(scores)
-
-            if total_attempts > 0:
-                successful_attempts = sum(1 for s in scores if s == 1.0)
-                average_score = sum(scores) / total_attempts
-                success_rate = successful_attempts / total_attempts
-                logger.info(f"    Agent: {agent.name:<20} | Avg Score: {average_score:.2f} | Success Rate: {success_rate:>7.2%} ({successful_attempts}/{total_attempts} successful)")
+            total = len(scores)
+            if total > 0:
+                success = sum(1 for s in scores if s == 1.0)
+                avg_score = sum(scores) / total
+                success_rate = success / total
+                stats_summary["use_cases"][use_case][agent.name] = {"avg_score": round(avg_score, 3), "success_rate": round(success_rate, 3), "success_count": success, "total": total}
+                logger.info(f"    Agent: {agent.name:<20} | Avg Score: {avg_score:.2f} | Success Rate: {success_rate:>7.2%} ({success}/{total})")
             else:
+                stats_summary["use_cases"][use_case][agent.name] = {"avg_score": None, "success_rate": None, "success_count": 0, "total": 0}
                 logger.info(f"    Agent: {agent.name:<20} | No results for this use case.")
 
-    # Step 3: Display the overall agent summary
+    # Overall agent stats
     logger.info(f"\n{'-' * 70}\n--- Overall Agent Performance for {project.name} ---")
     for agent in agents:
-        total_scores = [score for key, scores in use_case_scores.items() if key[0] == agent.id for score in scores]
-        total_attempts = len(total_scores)
-
-        if total_attempts > 0:
-            successful_attempts = sum(1 for s in total_scores if s == 1.0)
-            average_score = sum(total_scores) / total_attempts
-            success_rate = successful_attempts / total_attempts
-            logger.info(f"    Agent: {agent.name:<20} | Avg Score: {average_score:.2f} | Success Rate: {success_rate:>7.2%} ({successful_attempts}/{total_attempts} successful)")
+        all_scores = [s for (aid, _), scores in use_case_scores.items() if aid == agent.id for s in scores]
+        total = len(all_scores)
+        if total > 0:
+            success = sum(1 for s in all_scores if s == 1.0)
+            avg_score = sum(all_scores) / total
+            success_rate = success / total
+            stats_summary["overall"][agent.name] = {"avg_score": round(avg_score, 3), "success_rate": round(success_rate, 3), "success_count": success, "total": total}
+            logger.info(f"    Agent: {agent.name:<20} | Avg Score: {avg_score:.2f} | Success Rate: {success_rate:>7.2%} ({success}/{total})")
         else:
+            stats_summary["overall"][agent.name] = {"avg_score": None, "success_rate": None, "success_count": 0, "total": 0}
             logger.info(f"    Agent: {agent.name:<20} | No results for this agent.")
 
     logger.info(f"\n{'=' * 80}\n")
+
+    if save_json:
+        output_path = PROJECT_BASE_DIR / f"{project.name.lower().replace(' ', '_')}_use_case_stats.json"
+        with open(output_path, "w") as f:
+            json.dump(stats_summary, f, indent=4)
+        logger.info(f"Saved use-case statistics to {output_path}")
+
+    return stats_summary
 
 
 def replace_web_agent_id_in_actions(actions: list[BaseAction], web_agent_id: str) -> list[BaseAction]:
