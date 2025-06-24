@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import json
+import os
 import time
 import traceback
 from collections import defaultdict
@@ -17,6 +18,7 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig, setup_logging
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
@@ -108,7 +110,7 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
 @visualize_list_of_evaluations(visualizer)
 async def evaluate_multiple_solutions(web_project, task, task_solutions, validator_id):
     try:
-        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20))
+        evaluator = ConcurrentEvaluator(web_project=web_project, config=EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20))
         evaluation_results = await evaluator.evaluate_task_solutions(task, task_solutions)
 
         # Save recordings if they exist
@@ -188,7 +190,7 @@ async def save_recordings(evaluation_results: list, task: Task, run_number: int)
             logger.info(f"Saved recording to: {recording_path}")
 
 
-async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics):
+async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_metrics: TimingMetrics, run_number: int):
     final_results = {}
     for task in tasks:
         logger.info(f"\n=== Processing Task {task.id} for Project {demo_project.name} ===")
@@ -205,7 +207,9 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
                 clean_solutions.append(None)
             else:
                 clean_solutions.append(sol)
-        await save_recordings(evaluation_results, task)
+
+        evaluation_results = await evaluate_multiple_solutions(demo_project, task, solutions_for_this_task, "test_visualizer")
+        await save_recordings(evaluation_results, task, run_number)
 
         for eval_result in evaluation_results:
             # Safely get the use case name
