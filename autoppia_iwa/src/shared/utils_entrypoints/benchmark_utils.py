@@ -19,7 +19,7 @@ class BenchmarkConfig:
     evaluate_real_tasks: bool = False
 
     prompt_per_use_case: int = 1
-    num_of_use_cases: int = 1
+    num_of_use_cases: int | str = 1
 
     # Paths
     base_dir: Path = field(default_factory=lambda: PROJECT_BASE_DIR.parent)

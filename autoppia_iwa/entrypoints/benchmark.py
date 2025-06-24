@@ -35,9 +35,9 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # Manually select the demo projects
 PROJECTS_TO_RUN: list[WebProject] = [
-    # demo_web_projects[0],
+    demo_web_projects[0],
     demo_web_projects[1],
-    # demo_web_projects[2],
+    demo_web_projects[2],
     # demo_web_projects[3],
 ]
 
@@ -50,7 +50,8 @@ PROMPT_PER_USE_CASE_CONST: int = 1
 # - Web1: 12
 # - Web2: 15
 # - Web3: 9
-NUM_OF_USE_CASES: int = 2
+# Important: If set to "all", all the available use cases will be evaluated
+NUM_OF_USE_CASES: int | str = "all"
 
 PLOT_BENCHMARK_RESULTS: bool = False
 SAVE_EVALUATION_RESULTS: bool = False
@@ -106,12 +107,30 @@ async def generate_tasks(demo_project: WebProject, tasks_data: TaskData | None =
         task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
         return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
 
+    if not demo_project.use_cases:
+        logger.warning(f"Project '{demo_project.name}' has no use cases. Skipping task generation.")
+        return []
+
+    # Determine how many use cases to use
+    if isinstance(config.num_of_use_cases, str) and config.num_of_use_cases.lower() == "all":
+        number_of_use_cases = len(demo_project.use_cases)
+    elif isinstance(config.num_of_use_cases, int):
+        if config.num_of_use_cases > len(demo_project.use_cases):
+            logger.warning(f"NUM_OF_USE_CASES ({config.num_of_use_cases}) exceeds available use cases in project '{demo_project.name}' ({len(demo_project.use_cases)}). Using all instead.")
+            number_of_use_cases = len(demo_project.use_cases)
+        else:
+            number_of_use_cases = config.num_of_use_cases
+    else:
+        logger.warning("Invalid config.num_of_use_cases value; defaulting to all use cases.")
+        number_of_use_cases = len(demo_project.use_cases)
+
+    # Generate tasks
     return await generate_tasks_for_project(
         demo_project,
         config.use_cached_tasks,
         str(config.tasks_cache_dir),
         prompts_per_use_case=config.prompt_per_use_case,
-        num_of_use_cases=config.num_of_use_cases,
+        num_of_use_cases=number_of_use_cases,
     )
 
 
