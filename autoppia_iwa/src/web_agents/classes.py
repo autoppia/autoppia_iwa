@@ -26,6 +26,6 @@ class TaskSolution(BaseModel):
                 if hasattr(action, field):
                     value = getattr(action, field)
                     if isinstance(value, str) and ("<web_agent_id>" in value or "your_book_id" in value):
-                        new_val = value.replace("<web_agent_id>", str(self.web_agent_id)).replace("your_book_id", str(self.web_agent_id))
+                        new_val = value.replace("<web_agent_id>", str(self.web_agent_id)).replace("<your_book_id>", str(self.web_agent_id))
                         setattr(action, field, new_val)
         return self.actions
