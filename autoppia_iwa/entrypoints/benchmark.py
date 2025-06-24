@@ -18,7 +18,6 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import BenchmarkConfig, setup_logging
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
@@ -36,14 +35,14 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 # Manually select the demo projects
 PROJECTS_TO_RUN: list[WebProject] = [
-    demo_web_projects[0],
+    # demo_web_projects[0],
     demo_web_projects[1],
-    demo_web_projects[2],
+    # demo_web_projects[2],
     # demo_web_projects[3],
 ]
 
 # Number of times to run the benchmark for each project to get average scores
-NUM_RUNS_CONST: int = 10
+NUM_RUNS_CONST: int = 1
 
 PROMPT_PER_USE_CASE_CONST: int = 1
 PLOT_BENCHMARK_RESULTS: bool = False
@@ -158,6 +157,7 @@ async def generate_solution_for_task(demo_project: WebProject, agent: IWebAgent,
         prepared_task = task.prepare_for_agent(agent.id)
         solution = await agent.solve_task(prepared_task)
         task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
+        task_solution.actions = task_solution.replace_web_agent_id()
         timing_metrics.record_solution_time(agent.id, task.id, time.time() - start_time)
 
         logger.info(f"Generated solution with {len(task_solution.actions)} actions.")
@@ -297,27 +297,6 @@ def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent
         logger.info(f"Saved use-case statistics to {output_path}")
 
     return stats_summary
-
-
-def replace_web_agent_id_in_actions(actions: list[BaseAction], web_agent_id: str) -> list[BaseAction]:
-    """
-    Replaces occurrences of '<web_agent_id>' in the text, url, or value fields of each action
-    with the provided web_agent_id.
-
-    Args:
-        actions: List of BaseAction instances (e.g., NavigateAction, TypeAction, ClickAction).
-        web_agent_id: The integer ID to substitute for the <web_agent_id> placeholder.
-
-    Returns:
-        List of updated BaseAction instances.
-    """
-    for action in actions:
-        for field in ["text", "url", "value"]:
-            if hasattr(action, field):
-                value = getattr(action, field)
-                if isinstance(value, str) and "<web_agent_id>" in value:
-                    setattr(action, field, value.replace("<web_agent_id>", str(web_agent_id)).replace("your_book_id", str(web_agent_id)))
-    return actions
 
 
 # =========================================================
