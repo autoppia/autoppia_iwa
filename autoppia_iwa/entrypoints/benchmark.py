@@ -29,9 +29,9 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
-# ==========================
-# ==== CONFIGURATIONS ====
-# ==========================
+# ==============================
+# ====== CONFIGURATIONS =======
+# ==============================
 
 # Manually select the demo projects
 PROJECTS_TO_RUN: list[WebProject] = [
@@ -42,10 +42,15 @@ PROJECTS_TO_RUN: list[WebProject] = [
 ]
 
 # Number of times to run the benchmark for each project to get average scores
-NUM_RUNS_CONST: int = 1
+NUM_RUNS_CONST: int = 2
 
 PROMPT_PER_USE_CASE_CONST: int = 1
-NUM_OF_USE_CASES = 15
+# Limit the number of use cases to evaluate (optional)
+# Use case totals per project:
+# - Web1: 12
+# - Web2: 15
+# - Web3: 9
+NUM_OF_USE_CASES: int = 2
 
 PLOT_BENCHMARK_RESULTS: bool = False
 SAVE_EVALUATION_RESULTS: bool = False
@@ -85,7 +90,7 @@ AGENTS: list[IWebAgent] = [
 ]
 
 # Semaphore to cap concurrent agent calls at 3
-SEM = asyncio.Semaphore(3)
+# SEM = asyncio.Semaphore(3)
 
 visualizer = SubnetVisualizer()
 
