@@ -944,21 +944,39 @@ class ShoppingCartEvent(Event):
         if criteria.name is not None and not validate_criterion(self.book_name, criteria.name):
             return False
         if criteria.genre is not None:
-            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.book_genres):
-                return False
-            else:
-                if (
-                    (criteria.genre.operator == ComparisonOperator.EQUALS and not any(criteria.genre.value.lower() == genre.lower() for genre in self.book_genres))
-                    or (criteria.genre.operator == ComparisonOperator.CONTAINS and not any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
-                    or (criteria.genre.operator == ComparisonOperator.NOT_CONTAINS and any(criteria.genre.value.lower() in genre.lower() for genre in self.book_genres))
-                    or (
-                        criteria.genre.operator == ComparisonOperator.IN_LIST
-                        and not any(genre.lower() in [v.lower() if isinstance(v, str) else v for v in criteria.genre.value] for genre in self.book_genres)
-                    )
-                ):
+            genre_values = [genre.lower() for genre in self.book_genres]
+
+            if isinstance(criteria.genre, str):
+                if not any(criteria.genre.lower() in g for g in genre_values):
                     return False
-        if criteria.price is not None and not validate_criterion(self.price, criteria.price):
-            return False
+            else:
+                op = criteria.genre.operator
+                val = criteria.genre.value
+                val_lower = val.lower() if isinstance(val, str) else val
+
+                if op == ComparisonOperator.EQUALS:
+                    if not any(g == val_lower for g in genre_values):
+                        return False
+                elif op == ComparisonOperator.NOT_EQUALS:
+                    if any(g == val_lower for g in genre_values):
+                        return False
+                elif op == ComparisonOperator.CONTAINS:
+                    if not any(val_lower in g for g in genre_values):
+                        return False
+                elif op == ComparisonOperator.NOT_CONTAINS:
+                    if any(val_lower in g for g in genre_values):
+                        return False
+                elif op == ComparisonOperator.IN_LIST:
+                    val_list = [v.lower() if isinstance(v, str) else v for v in val]
+                    if not any(g in val_list for g in genre_values):
+                        return False
+                elif op == ComparisonOperator.NOT_IN_LIST:
+                    val_list = [v.lower() if isinstance(v, str) else v for v in val]
+                    if any(g in val_list for g in genre_values):
+                        return False
+
+        # if criteria.price is not None and not validate_criterion(self.price, criteria.price):
+        #     return False
         if criteria.rating is not None and not validate_criterion(self.book_rating, criteria.rating):
             return False
         return not (criteria.year is not None and not validate_criterion(self.book_year, criteria.year))
