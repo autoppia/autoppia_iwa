@@ -41,7 +41,7 @@ PROJECTS_TO_RUN: list[WebProject] = [
 ]
 
 # Number of times to run the benchmark for each project to get average scores
-NUM_RUNS_CONST: int = 3
+NUM_RUNS_CONST: int = 10
 
 PROMPT_PER_USE_CASE_CONST: int = 1
 PLOT_BENCHMARK_RESULTS: bool = False
