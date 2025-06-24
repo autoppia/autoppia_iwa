@@ -1174,6 +1174,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 5. If constraints include book_name or quantity, they MUST be referenced directly in the prompt.
 6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+7. Only add a book into the shopping cart, do not include anything like "remove 'The Housemaid' from the shopping cart "...
 
 For example, if the constraints are "book_name equals 'Inception' AND quantity equals 2":
 - CORRECT: "Add 2 copies of Inception to the shopping cart."
