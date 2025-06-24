@@ -238,7 +238,6 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
     return final_results
 
 
-# --- NEW: Replaces previous statistics function with a more detailed one ---
 def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent], project: WebProject, save_json: bool = True):
     """
     Aggregates and displays detailed statistics, grouped by use case and then by agent.
@@ -269,12 +268,11 @@ def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent
             total = len(scores)
             if total > 0:
                 success = sum(1 for s in scores if s == 1.0)
-                avg_score = sum(scores) / total
                 success_rate = success / total
-                stats_summary["use_cases"][use_case][agent.name] = {"avg_score": round(avg_score, 3), "success_rate": round(success_rate, 3), "success_count": success, "total": total}
-                logger.info(f"    Agent: {agent.name:<20} | Avg Score: {avg_score:.2f} | Success Rate: {success_rate:>7.2%} ({success}/{total})")
+                stats_summary["use_cases"][use_case][agent.name] = {"success_rate": round(success_rate, 3), "success_count": success, "total": total}
+                logger.info(f"    Agent: {agent.name:<20} | Success Rate: {success_rate:>7.2%} ({success}/{total})")
             else:
-                stats_summary["use_cases"][use_case][agent.name] = {"avg_score": None, "success_rate": None, "success_count": 0, "total": 0}
+                stats_summary["use_cases"][use_case][agent.name] = {"success_rate": None, "success_count": 0, "total": 0}
                 logger.info(f"    Agent: {agent.name:<20} | No results for this use case.")
 
     # Overall agent stats
@@ -284,12 +282,11 @@ def show_per_use_case_statistics(all_results: list[dict], agents: list[IWebAgent
         total = len(all_scores)
         if total > 0:
             success = sum(1 for s in all_scores if s == 1.0)
-            avg_score = sum(all_scores) / total
             success_rate = success / total
-            stats_summary["overall"][agent.name] = {"avg_score": round(avg_score, 3), "success_rate": round(success_rate, 3), "success_count": success, "total": total}
-            logger.info(f"    Agent: {agent.name:<20} | Avg Score: {avg_score:.2f} | Success Rate: {success_rate:>7.2%} ({success}/{total})")
+            stats_summary["overall"][agent.name] = {"success_rate": round(success_rate, 3), "success_count": success, "total": total}
+            logger.info(f"    Agent: {agent.name:<20} | | Success Rate: {success_rate:>7.2%} ({success}/{total})")
         else:
-            stats_summary["overall"][agent.name] = {"avg_score": None, "success_rate": None, "success_count": 0, "total": 0}
+            stats_summary["overall"][agent.name] = {"success_rate": None, "success_count": 0, "total": 0}
             logger.info(f"    Agent: {agent.name:<20} | No results for this agent.")
 
     logger.info(f"\n{'=' * 80}\n")
