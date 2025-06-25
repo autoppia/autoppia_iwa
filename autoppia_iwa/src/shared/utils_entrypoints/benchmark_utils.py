@@ -23,7 +23,7 @@ class BenchmarConfig:  # name requested by the user
 
     # Prompt generation
     prompt_per_use_case: int = 1
-    num_of_use_cases: int = 3  # set to 0 if you want to run all
+    num_of_use_cases: int = 0  # set to 0 if you want to run all
 
     # Runtime options
     num_runs: int = 1

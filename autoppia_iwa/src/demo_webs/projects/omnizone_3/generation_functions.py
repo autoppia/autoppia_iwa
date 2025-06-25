@@ -44,10 +44,6 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                         source_value = int(source_value)  # Also cast source value to int if it's a quantity field
                     except (ValueError, TypeError):
                         source_value = None  # Invalid source value for int field
-        elif field == "direction":
-            value_pool = ["LEFT", "RIGHT"]
-        elif field == "title":
-            value_pool = ["Featured Products", "Best Sellers", "Electronics", "Kitchenware"]
         elif field == "query":
             all_terms_list = []
             for p in all_products_data:
@@ -436,23 +432,17 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
     direction_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
     title_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
 
-    direction = random.choice(["LEFT", "RIGHT"])
-    title = random.choice(["Technology", "Home", "Electronics", "Kitchen", "Fitness"])
-    complete_title = f"Top Sellers In {title}"
-    data = {"direction": direction, "title": complete_title}
-
     for field in selected_fields:
-        op = None
-        if field == "direction" and direction_operators:
+        if field == "direction":
             op = random.choice(direction_operators)
-        elif field == "title" and title_operators:
+            constraint_value = random.choice(["LEFT", "RIGHT"])
+        elif field == "title":
             op = random.choice(title_operators)
+            title = random.choice(["Technology", "Home", "Electronics", "Kitchen", "Fitness"])
+            constraint_value = f"Top Sellers In {title}"
         else:
             continue
 
-        if op:
-            constraint_value = generate_constraint_value(field, op, data)
-            if constraint_value is not None:
-                constraints_list.append(create_constraint_dict(field, op, constraint_value))
+        constraints_list.append(create_constraint_dict(field, op, constraint_value))
 
     return constraints_list
