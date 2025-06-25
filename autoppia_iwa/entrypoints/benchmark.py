@@ -84,7 +84,7 @@ async def generate_tasks(project: WebProject, tasks_data: TaskData | None = None
         config.use_cached_tasks,
         str(config.tasks_cache_dir),
         prompts_per_use_case=config.prompt_per_use_case,
-        num_of_use_cases=getattr(config, "num_of_use_cases", 1),
+        num_of_use_cases=config.num_of_use_cases,
     )
 
 
