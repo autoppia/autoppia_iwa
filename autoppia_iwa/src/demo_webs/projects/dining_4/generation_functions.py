@@ -181,16 +181,13 @@ def generate_collapse_menu_constraints() -> list[dict[str, Any]]:
 def generate_book_restaurant_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = [
-        ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
-        # ("selected_date", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]),
-        ("time", [ComparisonOperator.EQUALS]),
-        # ("people", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL]),
+        ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]),
+        ("selected_date", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]),
+        ("time", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
+        ("people", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL]),
     ]
 
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    for field, operators in selected_fields:
+    for field, operators in possible_fields:
         operator = random.choice(operators)
         value = _generate_value_for_field(field)
         constraint = create_constraint_dict(field, operator, value)
