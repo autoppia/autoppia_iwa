@@ -22,7 +22,7 @@ class BenchmarkConfig:
     evaluate_real_tasks: bool = False
 
     # Prompt generation
-    prompt_per_use_case: int = 1
+    prompt_per_use_case: int = 3
     num_of_use_cases: int = 0  # set to 0 if you want to run all
 
     # Runtime options
