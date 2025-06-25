@@ -21,7 +21,7 @@ from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import (
-    BenchmarConfig,
+    BenchmarkConfig,
     setup_logging,
 )
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
@@ -54,7 +54,7 @@ PROJECTS_TO_RUN: list[WebProject] = [
 ]
 AGENTS: list[IWebAgent] = [ApifiedWebAgent(id="3", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=120)]
 
-config = BenchmarConfig(projects_to_run=PROJECTS_TO_RUN, agents=AGENTS)
+config = BenchmarkConfig(projects_to_run=PROJECTS_TO_RUN, agents=AGENTS)
 
 setup_logging("benchmark.log")
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))

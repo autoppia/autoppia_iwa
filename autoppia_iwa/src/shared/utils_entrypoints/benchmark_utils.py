@@ -10,7 +10,7 @@ from autoppia_iwa.src.web_agents.base import IWebAgent
 
 
 @dataclass(slots=True)
-class BenchmarConfig:  # name requested by the user
+class BenchmarkConfig:
     """Global benchmark configuration (no inheritance)."""
 
     projects_to_run: list[WebProject] = field(default_factory=list)
@@ -26,7 +26,7 @@ class BenchmarConfig:  # name requested by the user
     num_of_use_cases: int = 0  # set to 0 if you want to run all
 
     # Runtime options
-    num_runs: int = 1
+    num_runs: int = 3
     max_parallel_agent_calls: int = 3
     return_evaluation_gif: bool = False
 

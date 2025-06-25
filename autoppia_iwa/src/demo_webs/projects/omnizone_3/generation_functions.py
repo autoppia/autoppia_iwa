@@ -305,14 +305,10 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
         return []
 
     product = random.choice(PRODUCTS_DATA)
+    selected_id_field = "name"
+    product_key = "title"
 
-    item_identification_fields = ["name"]
-    product_key_map = {"name": "title"}
-
-    selected_id_field = random.choice(item_identification_fields)
-    product_key = product_key_map.get(selected_id_field)
-
-    if product_key and product_key in product:
+    if product_key in product:
         op = None
         if product_key in FIELD_OPERATORS_MAP_PRODUCTS:
             allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[product_key]
