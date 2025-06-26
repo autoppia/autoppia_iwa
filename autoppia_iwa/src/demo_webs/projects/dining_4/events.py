@@ -373,7 +373,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
                 return False
 
             c_year, c_month, c_day = criteria_dt[0], criteria_dt[1], criteria_dt[2]
-            criteria_utc = datetime(int(c_year), int(c_month), int(c_day), 0, 0, 0, 0, tzinfo=UTC)
+            criteria_utc = datetime(int(c_year), int(c_month), int(c_day.split(" ")[0]), 0, 0, 0, 0, tzinfo=UTC)
         return all(
             [
                 # self._validate_field(self.restaurant_id, criteria.restaurant_id),
