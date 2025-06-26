@@ -537,6 +537,6 @@ RESTAURANT_COUNTRIES = [
     {"code": "US", "name": "United States"},
     {"code": "VN", "name": "Vietnam"},
 ]
-RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business meeting", "other"]
+RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
 SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award-winning"]

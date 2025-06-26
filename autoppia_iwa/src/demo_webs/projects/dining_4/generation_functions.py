@@ -227,7 +227,7 @@ def generate_occasion_selected_constraints() -> list[dict[str, Any]]:
     constraints_list.append(create_constraint_dict("restaurant_name", restaurant_op, restaurant_value))
 
     criteria_field = "occasion"
-    allowed_operators = [ComparisonOperator.EQUALS, ComparisonOperator.IN_LIST]
+    allowed_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
 
     op = random.choice(allowed_operators)
     value = _generate_value_for_field(criteria_field)
