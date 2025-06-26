@@ -28,7 +28,6 @@ from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.results import (
     plot_results,
     plot_task_comparison,
-    print_performance_statistics,
     save_results_to_json,
 )
 from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
@@ -49,10 +48,13 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 PROJECTS_TO_RUN: list[WebProject] = [
     demo_web_projects[0],
-    demo_web_projects[1],
-    demo_web_projects[2],
+    # demo_web_projects[1],
+    # demo_web_projects[2],
 ]
-AGENTS: list[IWebAgent] = [ApifiedWebAgent(id="3", name="AutoppiaAgent", host="127.0.0.1", port=5000, timeout=120)]
+AGENTS: list[IWebAgent] = [
+    # ApifiedWebAgent(id="3", name="AutoppiaAgent", host="127.0.0.1", port=7000, timeout=120),
+    ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120)
+]
 
 config = BenchmarkConfig(projects_to_run=PROJECTS_TO_RUN, agents=AGENTS)
 
@@ -162,9 +164,9 @@ async def run_evaluation(project: WebProject, tasks: list[Task], timing: TimingM
         eval_res = await evaluate_multiple_solutions(project, task, sols, ASYNC_GIF_RUN)
         for ev in eval_res:
             uc = getattr(task.use_case, "name", "Unknown")
-            aggregated.setdefault(ev.web_agent_id, {})[task.id] = {"score": ev.final_score, "task_use_case": uc}
+            aggregated.setdefault(ev.web_agent_id, {})[task.id] = {"prompt": task.prompt, "score": ev.final_score, "task_use_case": uc}
 
-    print_performance_statistics(aggregated, config.agents, timing)
+    # print_performance_statistics(aggregated, config.agents, timing)
     if config.plot_benchmark_results:
         plot_results(aggregated, config.agents, timing, str(config.output_dir))
         plot_task_comparison(aggregated, config.agents, tasks, str(config.output_dir))
@@ -242,7 +244,7 @@ def show_stats(all_runs: list[dict], project: WebProject, timing: TimingMetrics)
     # write per-project file
     stub = project.name.lower().replace(" ", "_")
     if stub == "autoppia_cinema":
-        stub = "autoppia_cinama"
+        stub = "autoppia_cinema"
     (PROJECT_BASE_DIR / f"{stub}_stats.json").write_text(json.dumps(json_root, indent=2))
     logger.info(f"Stats written to {stub}_stats.json")
 

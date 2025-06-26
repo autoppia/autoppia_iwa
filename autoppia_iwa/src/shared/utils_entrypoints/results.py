@@ -13,7 +13,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
     """
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(output_dir, f"stress_test_results_{timestamp}.json")
+    filename = os.path.join(output_dir, f"benchmark_results_{timestamp}.json")
 
     output_data = {"timestamp": datetime.now().isoformat(), "total_execution_time": timing_metrics.get_total_time(), "agents": {}}
 
@@ -25,6 +25,8 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
             for task_id, data in results[agent.id].items():
                 agent_scores.append(data["score"])
                 agent_tasks[task_id] = {
+                    "use_case": data["task_use_case"],
+                    "prompt": data["prompt"],
                     "score": data["score"],
                     "solution_time": timing_metrics.solution_times.get(agent.id, {}).get(task_id, 0),
                     "evaluation_time": timing_metrics.evaluation_times.get(agent.id, {}).get(task_id, 0),

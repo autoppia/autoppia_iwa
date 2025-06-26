@@ -22,11 +22,11 @@ class BenchmarkConfig:
     evaluate_real_tasks: bool = False
 
     # Prompt generation
-    prompt_per_use_case: int = 3
+    prompt_per_use_case: int = 1
     num_of_use_cases: int = 0  # set to 0 if you want to run all
 
     # Runtime options
-    num_runs: int = 3
+    num_runs: int = 1
     max_parallel_agent_calls: int = 3
     return_evaluation_gif: bool = False
 
