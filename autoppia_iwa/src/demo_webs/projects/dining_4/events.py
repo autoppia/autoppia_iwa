@@ -365,12 +365,22 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        if isinstance(criteria.selected_date, CriterionValue):
+            raw_value = criteria.selected_date.value
+            if isinstance(raw_value, str):
+                criteria_dt = raw_value.split("-")
+            else:
+                return False
+
+            c_year, c_month, c_day = criteria_dt[0], criteria_dt[1], criteria_dt[2]
+            criteria_utc = datetime(int(c_year), int(c_month), int(c_day), 0, 0, 0, 0, tzinfo=UTC)
         return all(
             [
                 # self._validate_field(self.restaurant_id, criteria.restaurant_id),
                 self._validate_field(self.restaurant_name, criteria.restaurant_name),
                 self._validate_field(self.time, criteria.time),
-                self._validate_field(self.selected_date, criteria.selected_date),
+                # self._validate_field(self.selected_date, criteria.selected_date),
+                self.selected_date.year == criteria_utc.year and self.selected_date.month == criteria_utc.month and self.selected_date.day == criteria_utc.day,
                 self._validate_field(self.people, criteria.people),
             ]
         )
