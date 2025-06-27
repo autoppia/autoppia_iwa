@@ -381,41 +381,29 @@ def generate_checkout_constraints() -> list[dict[str, Any]]:
     return constraints
 
 
-def generate_order_completion_constraints() -> list[dict[str, Any]]:
+def generate_order_completed_constraints() -> list[dict[str, Any]]:
+    """
+    Generate constraints for the ORDER_COMPLETED event,
+    focused on the `items` list with ProductSummary fields like title, id, and quantity.
+    """
     constraints_list = []
-    # Fields available in ValidationCriteria and generators: order_id, affiliation, value, tax, shipping, order_total, currency, coupon
-    available_fields = ["items", "order_total"]
-    selected_fields = random.sample(available_fields, random.randint(1, min(3, len(available_fields))))
 
-    order_numeric_operators = [
-        ComparisonOperator.EQUALS,
-        ComparisonOperator.NOT_EQUALS,
-        ComparisonOperator.GREATER_THAN,
-        ComparisonOperator.LESS_THAN,
-        ComparisonOperator.GREATER_EQUAL,
-        ComparisonOperator.LESS_EQUAL,
-    ]
+    if not PRODUCTS_DATA:
+        return []
 
-    # Mock some plausible order data for calculations and generating values
-    random.randint(1, 10)
-    mock_subtotal = round(random.uniform(20.0, 1000.0), 2)
-    mock_order_total = round(mock_subtotal, 2)
-    mock_order_data = {
-        "items": mock_subtotal,
-        "order_total": mock_order_total,
-    }
+    product = random.choice(PRODUCTS_DATA)
 
-    for field in selected_fields:
-        value = mock_order_data.get(field)  # Get value from mock data
-        if value is None:
-            continue  # Skip if mock data doesn't have it
+    # Choose one or more fields from ProductSummary to apply as criteria
+    product_fields = ["title", "quantity"]
 
-        op = random.choice(order_numeric_operators)
+    for field in product_fields:
+        # Map field to appropriate operators
+        allowed_ops = FIELD_OPERATORS_MAP_PRODUCTS.get(field, [ComparisonOperator.EQUALS])
+        op = ComparisonOperator(random.choice(allowed_ops))
 
-        # Generate constraint value using the mock order data for the specific field
-        constraint_value = generate_constraint_value(field, op, mock_order_data, all_products_data=PRODUCTS_DATA)
-        if constraint_value is not None:
-            constraints_list.append(create_constraint_dict(field, op, constraint_value))  # Use the field name
+        val = generate_constraint_value(field, op, product, all_products_data=PRODUCTS_DATA)
+        if val is not None:
+            constraints_list.append(create_constraint_dict(field, op, val))
 
     return constraints_list
 
