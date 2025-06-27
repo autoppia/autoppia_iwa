@@ -194,11 +194,20 @@ class EditUserEvent(Event):
                         return False
                 elif criteria.favorite_genres.operator == ComparisonOperator.IN_LIST:
                     # For IN_LIST, check if any genre is in the provided list
-                    if not isinstance(criteria.favorite_genres.value, list):
-                        return False
+                    if isinstance(criteria.favorite_genres.value, str):
+                        return self.favorite_genres and self.favorite_genres[0] == criteria.favorite_genres.value
+                    if isinstance(criteria.favorite_genres.value, list):
+                        return self.favorite_genres and self.favorite_genres[0] == criteria.favorite_genres.value[0]
                     if not any(genre.lower() in [v.lower() for v in criteria.favorite_genres.value] for genre in self.favorite_genres):
                         return False
-
+                elif criteria.favorite_genres.operator == ComparisonOperator.NOT_IN_LIST:
+                    # For IN_LIST, check if any genre is in the provided list
+                    if isinstance(criteria.favorite_genres.value, str):
+                        return self.favorite_genres and self.favorite_genres[0] != criteria.favorite_genres.value
+                    if isinstance(criteria.favorite_genres.value, list):
+                        return self.favorite_genres and self.favorite_genres[0] != criteria.favorite_genres.value[0]
+                    if not any(genre.lower() in [v.lower() for v in criteria.favorite_genres.value] for genre in self.favorite_genres):
+                        return False
         return True
 
     @classmethod
