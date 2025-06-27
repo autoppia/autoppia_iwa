@@ -59,20 +59,21 @@ class TaskGenerationPipeline:
             if self.task_config.generate_global_tasks:
                 logger.info("Generating global tasks")
                 global_tasks = await self.global_pipeline.generate(prompts_per_use_case=self.task_config.prompts_per_use_case, num_use_cases=self.task_config.num_use_cases)
+
                 logger.info(f"Generated {len(global_tasks)} global tasks")
 
                 # Add tests to tasks
                 global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
                 all_tasks.extend(global_tasks_with_tests)
 
-                for task in global_tasks_with_tests:
-                    # print("Prompt: ", task.prompt)
-                    for _i, _test in enumerate(task.tests):
-                        # print(f"Test: {_i}")
-                        # from pprint import pprint
+                # for task in global_tasks_with_tests:
+                #     # print("Prompt: ", task.prompt)
+                #     for _i, _test in enumerate(task.tests):
+                #         # print(f"Test: {_i}")
+                #         # from pprint import pprint
 
-                        # pprint(_test.model_dump())
-                        pass
+                #         # pprint(_test.model_dump())
+                #         pass
 
             # Apply final task limit if configured
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:

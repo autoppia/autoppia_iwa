@@ -1,3 +1,5 @@
+from ..shared_data import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
+
 MOVIES_DATA = [
     {
         "id": 1,
@@ -95,7 +97,7 @@ MOVIES_DATA = [
         "name": "The Matrix",
         "desc": "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
         "year": 1999,
-        "director": "Lana Wachowski, Lilly Wachowski",
+        "director": "Lana Wachowski",
         "cast": "Keanu Reeves, Laurence Fishburne, Carrie-Anne Moss",
         "duration": 136,
         "trailer_url": "https://www.youtube.com/watch?v=vKQi3bBA1y8",
@@ -131,7 +133,6 @@ MOVIES_DATA = [
     },
 ]
 
-from ..shared_data import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
 
 FIELD_OPERATORS_MAP_ADD_COMMENT = {
     "movie_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],

@@ -9,6 +9,7 @@ notebooks/
 env/
 venv/
 .idea
+*.json
 data/web_analysis_files/*
 *.gif
 *.egg-info
