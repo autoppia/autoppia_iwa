@@ -164,7 +164,9 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Run tests
             test_start_time = time.time()
+            logger.info(f"Task test: {task.tests}")
             test_results_matrix = await run_tests(self.web_project, task, execution_history)
+            logger.info(f"Test Matrix: {test_results_matrix}")
             stats.test_execution_time = time.time() - test_start_time
 
             # Random clicker baseline
@@ -266,8 +268,8 @@ class ConcurrentEvaluator(IEvaluator):
                 unique_hash = hash_actions(solution.actions) + f"_{idx}"
                 grouped_indices[unique_hash].append(idx)
 
-        # for key, g_indices in grouped_indices.items():
-        #     logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
+        for key, g_indices in grouped_indices.items():
+            logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
 
         # Shuffle grouped tasks for random evaluation order
         grouped_task_list = list(grouped_indices.values())
@@ -328,7 +330,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                     final_results[idx] = cloned
 
-                # logger.info(f"Group evaluation complete for representative web_agent_id: {representative.web_agent_id}")
+                logger.info(f"Group evaluation complete for representative web_agent_id: {representative.web_agent_id}")
             except Exception as e:
                 logger.error(f"Error evaluating group actions: {e}")
                 self.errors.append(str(e))
