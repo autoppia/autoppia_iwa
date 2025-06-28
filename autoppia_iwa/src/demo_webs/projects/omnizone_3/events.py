@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 
 from ..shared_utils import parse_price
 
@@ -443,7 +443,7 @@ class OrderCompletedEvent(Event, BaseEventValidator):
 
     event_name: str = "ORDER_COMPLETED"
 
-    # items: int
+    items: list[ProductSummary] = Field(default_factory=list)
     # total_amount: float
     # tax: float
     # shipping: float
@@ -452,48 +452,87 @@ class OrderCompletedEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         """Criteria for validating order completion events."""
 
-        # items: int | CriterionValue | None = None
+        items: list[ProductSummary] | CriterionValue | None = None
         # total_amount: float | CriterionValue | None = None
         # tax: float | CriterionValue | None = None
         # shipping: float | CriterionValue | None = None
         # order_total: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
+        if not criteria or criteria.items is None:
             return True
 
-        return all(
-            [
-                # self._validate_field(self.items, criteria.items),
-                # self._validate_field(self.total_amount, criteria.total_amount),
-                # self._validate_field(self.tax, criteria.tax),
-                # self._validate_field(self.shipping, criteria.shipping),
-                # self._validate_field(self.order_total, criteria.order_total),
-            ]
-        )
+        # Case 1: Explicit list of ProductSummary items to match exactly
+        if isinstance(criteria.items, list):
+            for expected_item in criteria.items:
+                match_found = any(i.title == expected_item.title and i.quantity == expected_item.quantity and (i.id == expected_item.id if expected_item.id else True) for i in self.items)
+                if not match_found:
+                    return False
+            return True
+
+        # Case 2: Flexible criterion (e.g. item with title="Watch", quantity > 1)
+        elif isinstance(criteria.items, CriterionValue):
+            expected = criteria.items.value
+            operator = criteria.items.operator
+
+            def matches(product: ProductSummary) -> bool:
+                for key, expected_val in expected.items():
+                    actual_val = getattr(product, key, None)
+                    if not validate_criterion(actual_val, CriterionValue(value=expected_val, operator=ComparisonOperator.EQUALS)):
+                        return False
+                return True
+
+            if operator == ComparisonOperator.CONTAINS:
+                return any(matches(item) for item in self.items)
+            elif operator == ComparisonOperator.NOT_CONTAINS:
+                return all(not matches(item) for item in self.items)
+            elif operator == ComparisonOperator.IN_LIST:
+                return any(matches(item) for item in self.items)
+            elif operator == ComparisonOperator.NOT_IN_LIST:
+                return all(not matches(item) for item in self.items)
+            elif operator == ComparisonOperator.EQUALS:
+                # all items should match exactly once (used rarely)
+                return all(matches(item) for item in self.items)
+            elif operator == ComparisonOperator.NOT_EQUALS:
+                return all(not matches(item) for item in self.items)
+            else:
+                return False
+
+        return False  # fallback
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "OrderCompletedEvent":
         """Parse an order completed event from backend data."""
         base_event = Event.parse(backend_event)
-        # data = backend_event.data
+        data = backend_event.data or {}
 
-        # total_amount = float(data.get("totalAmount", data.get("value", 0.0)))
+        # Extract numeric totals
+        # total_amount = float(data.get("totalAmount", 0.0))
         # tax = float(data.get("tax", 0.0))
         # shipping = float(data.get("shipping", 0.0))
         # order_total = float(data.get("orderTotal", 0.0))
-        # items_count = int(data.get("items", 0))
+        # total_items = int(data.get("totalItems", 0))
+
+        # Parse item summaries
+        items_raw = data.get("items", [])
+        items: list[ProductSummary] = []
+
+        for item_data in items_raw:
+            summary = ProductSummary.parse_from_data({**item_data, "productId": item_data.get("id")})
+            if summary:
+                items.append(summary)
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
+            # total_amount=total_amount,
             # tax=tax,
             # shipping=shipping,
             # order_total=order_total,
-            # items=items_count,
-            # total_amount=total_amount,
+            # total_items=total_items,
+            items=items,
         )
 
 
