@@ -11,8 +11,8 @@ sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 
 demo_web_projects: list[WebProject] = [
-    cinema_project,
-    books_project,
-    omnizone_project,
+    # cinema_project,
+    # books_project,
+    # omnizone_project,
     dining_project,
 ]
