@@ -410,8 +410,8 @@ def generate_order_completed_constraints() -> list[dict[str, Any]]:
 
 def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    available_fields = ["direction", "title"]
-    selected_fields = random.sample(available_fields, random.randint(1, len(available_fields)))
+
+    selected_fields = random.choice([["direction"], ["title"], ["direction", "title"]])
 
     direction_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
     title_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
