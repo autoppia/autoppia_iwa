@@ -1,4 +1,4 @@
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 from typing import Any
 
 from dateutil.parser import isoparse
@@ -376,22 +376,49 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if isinstance(criteria.selected_date, CriterionValue):
-            raw_value = criteria.selected_date.value
-            if isinstance(raw_value, str):
-                criteria_dt = raw_value.split("-")
+
+        def validate_selected_date(operator: str, comp_date: date) -> bool:
+            if operator == ComparisonOperator.EQUALS:
+                return self.selected_date == comp_date
+            elif operator == ComparisonOperator.GREATER_THAN:
+                return self.selected_date > comp_date
+            elif operator == ComparisonOperator.LESS_THAN:
+                return self.selected_date < comp_date
+            elif operator == ComparisonOperator.GREATER_EQUAL:
+                return self.selected_date >= comp_date
+            elif operator == ComparisonOperator.LESS_EQUAL:
+                return self.selected_date <= comp_date
             else:
                 return False
 
-            c_year, c_month, c_day = criteria_dt[0], criteria_dt[1], criteria_dt[2]
-            criteria_utc = datetime(int(c_year), int(c_month), int(c_day.split(" ")[0]), 0, 0, 0, 0, tzinfo=UTC)
+        selected_date_valid = True
+        if isinstance(criteria.selected_date, CriterionValue):
+            raw_value = criteria.selected_date.value
+            try:
+                if isinstance(raw_value, str):
+                    parts = raw_value.split("-")
+                    c_year, c_month, c_day = int(parts[0]), int(parts[1]), int(parts[2].split(" ")[0])
+                    criteria_dt = date(c_year, c_month, c_day)
+                elif isinstance(raw_value, date):
+                    criteria_dt = raw_value
+                else:
+                    return False
+
+                selected_date_valid = validate_selected_date(criteria.selected_date.operator, criteria_dt)
+            except Exception as e:
+                logger.error(f"Failed to validate selected_date: {e}")
+                return False
+        else:
+            selected_date_valid = self._validate_field(self.selected_date, criteria.selected_date)
+
         return all(
             [
                 # self._validate_field(self.restaurant_id, criteria.restaurant_id),
                 self._validate_field(self.restaurant_name, criteria.restaurant_name),
                 self._validate_field(self.time, criteria.time),
                 # self._validate_field(self.selected_date, criteria.selected_date),
-                self.selected_date.year == criteria_utc.year and self.selected_date.month == criteria_utc.month and self.selected_date.day == criteria_utc.day,
+                # self.selected_date.year == criteria_utc.year and self.selected_date.month == criteria_utc.month and self.selected_date.day == criteria_utc.day,
+                selected_date_valid,
                 self._validate_field(self.people, criteria.people),
             ]
         )
