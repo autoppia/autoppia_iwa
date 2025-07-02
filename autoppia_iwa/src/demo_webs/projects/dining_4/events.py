@@ -6,7 +6,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from ..base_events import BaseEventValidator, Event
-from ..criterion_helper import CriterionValue
+from ..criterion_helper import ComparisonOperator, CriterionValue
 from ..shared_utils import parse_price
 
 
@@ -61,9 +61,20 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
         else:
             return False
 
-        criteria_utc = criteria_dt.astimezone(UTC)
+        event_dt = self.selected_date
 
-        return self.selected_date.year == criteria_utc.year and self.selected_date.month == criteria_utc.month and self.selected_date.day == criteria_utc.day
+        if criteria.selected_date.operator == ComparisonOperator.EQUALS:
+            return event_dt.year == criteria_dt.year and event_dt.month == criteria_dt.month and event_dt.day == criteria_dt.day
+        elif criteria.selected_date.operator == ComparisonOperator.GREATER_THAN:
+            return event_dt > criteria_dt
+        elif criteria.selected_date.operator == ComparisonOperator.LESS_THAN:
+            return event_dt < criteria_dt
+        elif criteria.selected_date.operator == ComparisonOperator.GREATER_EQUAL:
+            return event_dt >= criteria_dt
+        elif criteria.selected_date.operator == ComparisonOperator.LESS_EQUAL:
+            return event_dt <= criteria_dt
+        else:
+            return False
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "DateDropdownOpenedEvent":
