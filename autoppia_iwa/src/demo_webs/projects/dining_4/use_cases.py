@@ -389,38 +389,56 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 
 BOOK_RESTAURANT_USE_CASE = UseCase(
     name="BOOK_RESTAURANT",
-    description="User initiates a booking for a restaurant with specific details (date, time, people).",
+    description="User initiates a restaurant table booking with specified details like restaurant name, number of people, date, and time.",
     event=BookRestaurantEvent,
     event_source_code=BookRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_book_restaurant_constraints,
+    replace_func=replace_restaurant_placeholders,
     additional_prompt_info=BOOK_RESTAURANT_INFO,
     examples=[
         {
-            "prompt": "I'd like to book a table at 'The Royal Dine' for 2 people on May 16th at 1:30 PM.",
-            "prompt_for_task_generation": "I'd like to book a table at '<restaurant_name>' for <people_count> people on <date_description> at <time_description>.",
+            "prompt": "I'd like to book a table at 'The Royal Dine' for 2 people on 2025-05-16 at 1:30 PM.",
+            "prompt_for_task_generation": "I'd like to book a table at '<restaurant_name>' for <people_count> people on <selected_date> at <selected_time>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_RESTAURANT",
                 "event_criteria": {
                     "restaurant_name": {"value": "The Royal Dine", "operator": "equals"},
                     "people": {"value": 2, "operator": "equals"},
-                    "selected_date": {"value": date(2025, 5, 16).isoformat(), "operator": "equals"},
+                    "selected_date": {"value": "2025-05-16", "operator": "equals"},
                     "time": {"value": "1:30 PM", "operator": "equals"},
                 },
-                "reasoning": "User provides all necessary details to book a restaurant.",
+                "reasoning": "User clearly specifies all booking details, including restaurant name, date, time, and number of people.",
             },
         },
         {
-            "prompt": "Book a table for 3 people on July 18th for dinner at 'Sushi Palace'.",
-            "prompt_for_task_generation": "Book a table for <people_count> people on <date_description> for <meal_time> at '<restaurant_name>'",
-            "tests": {
+            "prompt": "Book a table for 3 people on 2024-07-18 for dinner at 'Sushi Palace' at time '1:30 PM'.",
+            "prompt_for_task_generation": "Book a table for <people_count> people on <selected_date> for <selected_time> at '<restaurant_name>'.",
+            "test": {
                 "type": "CheckEventTest",
                 "event_name": "BOOK_RESTAURANT",
                 "event_criteria": {
                     "restaurant_name": {"value": "Sushi Palace", "operator": "equals"},
                     "people": {"value": 3, "operator": "equals"},
-                    "selected_date": {"value": date(2024, 7, 18).isoformat(), "operator": "equals"},
+                    "selected_date": {"value": "2024-07-18", "operator": "equals"},
+                    "selected_time": {"value": "1:30 PM", "operator": "equals"},
                 },
+                "reasoning": "User specifies restaurant, guest count, and date. Meal time implies evening reservation.",
+            },
+        },
+        {
+            "prompt": "Book a table at 'The Garden Fork' for 5 people on 2025-07-12 at 12:30 PM.",
+            "prompt_for_task_generation": "Book a table at '<restaurant_name>' for <people_count> people on <selected_date> at <selected_time>.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "BOOK_RESTAURANT",
+                "event_criteria": {
+                    "restaurant_name": {"value": "The Garden Fork", "operator": "equals"},
+                    "people": {"value": 5, "operator": "equals"},
+                    "selected_date": {"value": "2025-07-12", "operator": "equals"},
+                    "selected_time": {"value": "12:30 PM", "operator": "equals"},
+                },
+                "reasoning": "Prompt gives full booking context—restaurant name, guest count, date, and time.",
             },
         },
     ],
