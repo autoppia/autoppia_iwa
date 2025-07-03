@@ -329,28 +329,37 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
         ComparisonOperator.LESS_THAN,
         ComparisonOperator.GREATER_THAN,
     ]
-
-    new_qty = random.randint(2, 9)  # avoid edge-only scenarios for better range
     op = random.choice(quantity_operators)
-    constraint_value_new = None
+    value = None
 
     if op == ComparisonOperator.EQUALS:
-        constraint_value_new = new_qty
-    elif op == ComparisonOperator.GREATER_EQUAL:
-        constraint_value_new = random.randint(1, new_qty)
-    elif op == ComparisonOperator.LESS_EQUAL:
-        constraint_value_new = random.randint(new_qty, 10)
-    elif op == ComparisonOperator.GREATER_THAN:
-        constraint_value_new = random.randint(new_qty + 1, 10) if new_qty < 10 else 10
-        if constraint_value_new == 10:
-            constraint_value_new = random.randint(1, 9)
-    elif op == ComparisonOperator.LESS_THAN:
-        constraint_value_new = random.randint(1, new_qty - 1) if new_qty > 1 else 1
+        value = random.randint(1, 10)
 
-    if constraint_value_new is not None:
-        constraints_list.append(create_constraint_dict("new_quantity", op, constraint_value_new))
+    elif op == ComparisonOperator.GREATER_EQUAL:
+        # choose a threshold such that it's ≤ 9 to allow room for GREATER values
+        threshold = random.randint(1, 9)
+        value = threshold
+
+    elif op == ComparisonOperator.LESS_EQUAL:
+        # choose a threshold ≥ 2 to allow some values below it
+        threshold = random.randint(2, 10)
+        value = threshold
+
+    elif op == ComparisonOperator.GREATER_THAN:
+        # choose a threshold < 10
+        threshold = random.randint(1, 9)
+        value = threshold
+
+    elif op == ComparisonOperator.LESS_THAN:
+        # choose a threshold > 1
+        threshold = random.randint(2, 10)
+        value = threshold
+
+    # Ensure final value is always in 1-10 range
+    if value is not None and 1 <= value <= 10:
+        constraints_list.append(create_constraint_dict("new_quantity", op, value))
     else:
-        logger.warning(f"Could not generate valid constraint value for new_quantity with operator {op}.")
+        logger.warning(f"Invalid quantity generated: {value} with operator {op}")
 
     return constraints_list
 
@@ -410,8 +419,8 @@ def generate_order_completed_constraints() -> list[dict[str, Any]]:
 
 def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    available_fields = ["direction", "title"]
-    selected_fields = random.sample(available_fields, random.randint(1, len(available_fields)))
+
+    selected_fields = random.choice([["direction"], ["title"], ["direction", "title"]])
 
     direction_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]
     title_operators = [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]

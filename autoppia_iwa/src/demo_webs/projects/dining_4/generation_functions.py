@@ -180,6 +180,7 @@ def generate_collapse_menu_constraints() -> list[dict[str, Any]]:
 
 def generate_book_restaurant_constraints() -> list[dict[str, Any]]:
     constraints_list = []
+
     possible_fields = [
         ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]),
         ("selected_date", [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]),
@@ -188,9 +189,32 @@ def generate_book_restaurant_constraints() -> list[dict[str, Any]]:
     ]
 
     for field, operators in possible_fields:
-        operator = random.choice(operators)
+        op = random.choice(operators)
         value = _generate_value_for_field(field)
-        constraint = create_constraint_dict(field, operator, value)
+
+        # Validate value is within domain
+        if field == "selected_date":
+            if not isinstance(value, datetime.datetime):
+                continue
+            # Clamp value between min and max of MOCK_DATES
+            min_date = min(MOCK_DATES) if MOCK_DATES else value
+            max_date = max(MOCK_DATES) if MOCK_DATES else value
+            value = max(min(value, max_date), min_date)
+
+        elif field in ["time", "selected_time"]:
+            if value not in RESTAURANT_TIMES:
+                value = random.choice(RESTAURANT_TIMES)
+
+        elif field in ["people", "people_count"]:
+            if value not in RESTAURANT_PEOPLE_COUNTS:
+                value = random.choice(RESTAURANT_PEOPLE_COUNTS)
+
+        elif field == "restaurant_name":
+            restaurant_names = [r["name"] for r in RESTAURANT_DATA]
+            if not any(name in value for name in restaurant_names):
+                value = random.choice(restaurant_names)
+
+        constraint = create_constraint_dict(field, op, value)
         constraints_list.append(constraint)
 
     return constraints_list
@@ -246,11 +270,11 @@ def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
     possible_fields = [
         # ("restaurant_id", [ComparisonOperator.EQUALS]),
         # ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]),
-        ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
-        ("reservation_time", [ComparisonOperator.EQUALS]),
+        ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
+        ("reservation_time", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
         # ("people_count_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
-        ("occasion", [ComparisonOperator.EQUALS, ComparisonOperator.IN_LIST]),
-        ("phone_number", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
+        ("occasion", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
+        ("phone_number", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
     ]
 
     num_constraints = random.randint(2, min(4, len(possible_fields)))

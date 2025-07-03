@@ -29,8 +29,10 @@ def replace_restaurant_placeholders(
         "<price_range>": lambda: restaurant.get("price_range", "moderate"),
         # Date, Time, People placeholders
         "<time_description>": lambda: random.choice(RESTAURANT_TIMES) if RESTAURANT_TIMES else "02:00 PM",
+        "<selected_time>": lambda: random.choice(RESTAURANT_TIMES) if RESTAURANT_TIMES else "02:00 PM",
         "<people_count>": lambda: str(random.choice(RESTAURANT_PEOPLE_COUNTS)) if RESTAURANT_PEOPLE_COUNTS else "2",
         "<date_description>": lambda: generate_mock_date_strings(generate_mock_dates()),
+        "<selected_date>": lambda: generate_mock_date_strings(generate_mock_dates()),
         # Scroll view placeholders
         "<direction>": lambda: random.choice(SCROLL_DIRECTIONS),
         "<count>": lambda: str(random.choice(RESTAURANT_PEOPLE_COUNTS)),

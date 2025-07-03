@@ -500,7 +500,7 @@ RESTAURANT_DATA = [
         "desc": "Enjoy a delightful experience at Pine & Poppy, offering a fusion of flavors in the heart of Hayes Valley.",
     },
 ]
-RESTAURANT_TIMES = ["12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM"]
+RESTAURANT_TIMES = ["12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM"]
 RESTAURANT_PEOPLE_COUNTS = [1, 2, 3, 4, 5, 6, 7, 8]
 RESTAURANT_COUNTRIES = [
     {"code": "AR", "name": "Argentina"},
