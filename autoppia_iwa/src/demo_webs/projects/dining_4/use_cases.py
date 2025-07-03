@@ -467,23 +467,23 @@ COUNTRY_SELECTED_USE_CASE = UseCase(
     additional_prompt_info=COUNTRY_SELECTED_INFO,
     examples=[
         {
-            "prompt": "Select 'India' as the country for my phone number while reserving a table at Sushi Palace.",
+            "prompt": "Select 'India' as the country for my phone number while reserving a table at Zen Sushi.",
             "prompt_for_task_generation": "Select '<country_name>' as the country for my phone number while reserving a table at <restaurant_name>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "COUNTRY_SELECTED",
-                "event_criteria": {"country_code": {"value": "IN", "operator": "equals"}},
-                "reasoning": "User selects India as the country during phone number entry.",
+                "event_criteria": {"country_code": {"value": "IN", "operator": "equals"}, "restaurant_name": {"value": "Zen Sushi", "operator": "equals"}},
+                "reasoning": "User selects India as the country during phone number entry for Zen Sushi.",
             },
         },
         {
-            "prompt": "Choose a country other than United States for my reservation at Pasta Point.",
+            "prompt": "Choose a country other than United States for my reservation at Copper Kitchen.",
             "prompt_for_task_generation": "Choose a country other than <country_name> for my reservation at <restaurant_name>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "COUNTRY_SELECTED",
-                "event_criteria": {"country_name": {"value": "United States", "operator": "not_equals"}},
-                "reasoning": "User selects any country except the specified one.",
+                "event_criteria": {"country_name": {"value": "United States", "operator": "not_equals"}, "restaurant_name": {"value": "Copper Kitchen", "operator": "equals"}},
+                "reasoning": "User selects any country except United States for their reservation at Copper Kitchen.",
             },
         },
     ],
