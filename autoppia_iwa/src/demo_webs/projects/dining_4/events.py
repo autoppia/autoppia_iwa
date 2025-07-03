@@ -453,10 +453,12 @@ class CountrySelectedEvent(Event, BaseEventValidator):
     """Event triggered when a country is selected in a form."""
 
     event_name: str = "COUNTRY_SELECTED"
+    restaurant_name: str
     country_code: str  # e.g., "IN"
     country_name: str  # e.g., "India"
 
     class ValidationCriteria(BaseModel):
+        restaurant_name: str | CriterionValue | None = None
         country_code: str | CriterionValue | None = None
         country_name: str | CriterionValue | None = None
 
@@ -469,6 +471,7 @@ class CountrySelectedEvent(Event, BaseEventValidator):
             return True
         return all(
             [
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
                 self._validate_field(self.country_code, criteria.country_code),
                 self._validate_field(self.country_name, criteria.country_name),
             ]
@@ -485,6 +488,7 @@ class CountrySelectedEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             country_code=data.get("countryCode", ""),
             country_name=data.get("countryName", ""),
+            restaurant_name=data.get("restaurantName", ""),
         )
 
 

@@ -449,11 +449,13 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
 ###############################################################################
 
 COUNTRY_SELECTED_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Indicate the action of **selecting a country** from a list or dropdown.
-2. Specify the country name or code being selected.
-3. Be part of a larger form-filling process, typically for user details or reservation completion.
-4. Lead to the COUNTRY_SELECTED event.
+CRITICAL REQUIREMENTS:
+
+1. Every prompt MUST indicate the action of **selecting a country** from a list or dropdown.
+2. The prompt MUST clearly mention the **country name or country code** being selected.
+3. The prompt MUST be situated in the context of a **larger form-filling** or reservation-related flow (e.g., selecting country for contact or billing details).
+4. The corresponding event MUST lead to the `COUNTRY_SELECTED` event.
+5. If the prompt mentions a restaurant, it should be included **only in the prompt**, **not in the event criteria**.
 """
 
 COUNTRY_SELECTED_USE_CASE = UseCase(
@@ -465,33 +467,23 @@ COUNTRY_SELECTED_USE_CASE = UseCase(
     additional_prompt_info=COUNTRY_SELECTED_INFO,
     examples=[
         {
-            "prompt": "Select 'India' as the country for my phone number.",
-            "prompt_for_task_generation": "Select '<country_name>' as the country for my phone number.",
+            "prompt": "Select 'India' as the country for my phone number while reserving a table at Sushi Palace.",
+            "prompt_for_task_generation": "Select '<country_name>' as the country for my phone number while reserving a table at <restaurant_name>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "COUNTRY_SELECTED",
-                "event_criteria": {"country_code": {"value": "IN", "operator": "equals"}, "country_name": {"value": "India", "operator": "equals"}},
-                "reasoning": "User selects a country from a list.",
+                "event_criteria": {"country_code": {"value": "IN", "operator": "equals"}},
+                "reasoning": "User selects India as the country during phone number entry.",
             },
         },
         {
-            "prompt": "Choose a country other than United States for my reservation details",
-            "prompt_for_task_generation": "Choose a country other than <country_name> for my reservation details",
+            "prompt": "Choose a country other than United States for my reservation at Pasta Point.",
+            "prompt_for_task_generation": "Choose a country other than <country_name> for my reservation at <restaurant_name>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "COUNTRY_SELECTED",
                 "event_criteria": {"country_name": {"value": "United States", "operator": "not_equals"}},
                 "reasoning": "User selects any country except the specified one.",
-            },
-        },
-        {
-            "prompt": "Set my country to one in Europe for the billing address",
-            "prompt_for_task_generation": "Set my country to one in <region> for the billing address",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "COUNTRY_SELECTED",
-                "event_criteria": {"region": {"value": "Europe", "operator": "equals"}},
-                "reasoning": "User selects country from specific region.",
             },
         },
     ],
