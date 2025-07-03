@@ -270,11 +270,11 @@ def generate_reservation_complete_constraints() -> list[dict[str, Any]]:
     possible_fields = [
         # ("restaurant_id", [ComparisonOperator.EQUALS]),
         # ("restaurant_name", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]),
-        ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
-        ("reservation_time", [ComparisonOperator.EQUALS]),
+        ("reservation_date_str", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
+        ("reservation_time", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
         # ("people_count_str", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
-        ("occasion", [ComparisonOperator.EQUALS, ComparisonOperator.IN_LIST]),
-        ("phone_number", [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]),
+        ("occasion", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
+        ("phone_number", [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS]),
     ]
 
     num_constraints = random.randint(2, min(4, len(possible_fields)))
