@@ -9,7 +9,6 @@ from .events import (
     ChangeUserName,
     DeleteMatter,
     DocumentDeleted,
-    DocumentUploaded,
     LogDelete,
     NewCalendarEventAdded,
     NewLogAdded,
@@ -17,7 +16,15 @@ from .events import (
     ViewClientDetails,
     ViewMatterDetails,
 )
-from .generation_functions import generate_add_matter_constraints, generate_view_matter_constraints
+from .generation_functions import (
+    generate_add_matter_constraints,
+    generate_archive_matter_constraints,
+    generate_change_user_name_constraints,
+    generate_document_deleted_constraints,
+    generate_search_client_constraints,
+    generate_view_client_constraints,
+    generate_view_matter_constraints,
+)
 from .replace_functions import replace_placeholders
 
 ###############################################################################
@@ -127,7 +134,7 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
     description="The user archives a matter",
     event=ArchiveMatter,
     event_source_code=ArchiveMatter.get_source_code_of_class(),
-    constraints_generator=generate_view_matter_constraints,
+    constraints_generator=generate_archive_matter_constraints,
     replace_func=replace_placeholders,
     examples=[
         {
@@ -238,39 +245,34 @@ DELETE_MATTER_USE_CASE = UseCase(
 ###############################################################################
 VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
     name="VIEW_CLIENT_DETAILS_USE_CASE",
-    description="The user views the details of different clients.",
+    description="The user views the detail of different clients",
     event=ViewClientDetails,
     event_source_code=ViewClientDetails.get_source_code_of_class(),
-    # constraints_generator=default_constraints_generator,
+    constraints_generator=generate_view_client_constraints,
+    replace_func=replace_placeholders,
     examples=[
         {
-            "prompt": "Go to the Clients page and click on 'Smith & Co.' to view their details.",
-            "prompt_for_task_generation": "Go to the Clients page and click on <client_name> to view their details.",
+            "prompt": "View details of client, whose client name is 'jessica brown'",
+            "prompt_for_task_generation": "Go to the Clients page and click on <clientname> to view the details of that particular client",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_CLIENT_DETAILS",
-                "event_criteria": {"name": {"value": "Smith & Co."}},
-                "reasoning": "This test applies when the task requires viewing details of the client 'Smith & Co.'.",
+                "event_criteria": {"name": {"value": "jessica brown"}, "email": {"value": "jbrown@samplemail.com"}},
+                "reasoning": "This test applies when the task requires to view the detail of a client whose name is 'jessica brown",
             },
         },
         {
-            "prompt": "View details of the client with email 'legal@acmebio.com'.",
-            "prompt_for_task_generation": "View details of the client with email <client_email>.",
+            "prompt": "View client details if its status is 'active', its email is 'team@smithco.com' and matters are not '3'",
+            "prompt_for_task_generation": "View client details if its status is <status>, its email is <email> and matters are <matter>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_CLIENT_DETAILS",
-                "event_criteria": {"email": {"value": "legal@acmebio.com", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires viewing details of a client by their email 'legal@acmebio.com'.",
-            },
-        },
-        {
-            "prompt": "Show me the client who has 4 matters.",
-            "prompt_for_task_generation": "Show me the client who has <number> matters.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_CLIENT_DETAILS",
-                "event_criteria": {"matters": {"value": 4, "operator": "equals"}},
-                "reasoning": "This test applies when the task requires viewing details of a client who has exactly 4 matters, like Peak Ventures.",
+                "event_criteria": {
+                    "status": {"value": "active", "operator": "equals"},
+                    "email": {"value": "team@smithco.com", "operator": "equals"},
+                    "matters": {"value": "3", "operator": "not_equals"},
+                },
+                "reasoning": "This test applies when the task is to view client details if its status is 'active', its email is 'team@smithco.com' and matters are not '3'",
             },
         },
     ],
@@ -285,7 +287,7 @@ SEARCH_CLIENT_USE_CASE = UseCase(
     description="The user searches for clients using a query string.",
     event=SearchClient,
     event_source_code=SearchClient.get_source_code_of_class(),
-    # constraints_generator=default_constraints_generator,
+    constraints_generator=generate_search_client_constraints,
     examples=[
         {
             "prompt": "Search for clients named 'Smith'.",
@@ -322,50 +324,6 @@ SEARCH_CLIENT_USE_CASE = UseCase(
 
 
 ###############################################################################
-# DOCUMENT_UPLOADED_USE_CASE
-###############################################################################
-DOCUMENT_UPLOADED_USE_CASE = UseCase(
-    name="DOCUMENT_UPLOADED_USE_CASE",
-    description="The user uploads a new document.",
-    event=DocumentUploaded,
-    event_source_code=DocumentUploaded.get_source_code_of_class(),
-    # constraints_generator=default_constraints_generator,
-    examples=[
-        {
-            "prompt": "Upload a document named 'New-Contract.pdf'.",
-            "prompt_for_task_generation": "Upload a document named <document_name>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DOCUMENT_UPLOADED",
-                "event_criteria": {"name": {"value": "New-Contract.pdf", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires uploading a document with the name 'New-Contract.pdf'.",
-            },
-        },
-        {
-            "prompt": "Upload a document that is smaller than 100 KB and has a 'Draft' status.",
-            "prompt_for_task_generation": "Upload a document that is smaller than <size> and has a <status> status.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DOCUMENT_UPLOADED",
-                "event_criteria": {"size": {"value": "100 KB", "operator": "less_than"}, "status": {"value": "Draft", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires uploading a document that is less than 100KB and in 'Draft' status.",
-            },
-        },
-        {
-            "prompt": "Upload a document with a 'Signed' status.",
-            "prompt_for_task_generation": "Upload a document with a <status> status.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DOCUMENT_UPLOADED",
-                "event_criteria": {"status": {"value": "Signed", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires uploading a document with a 'Signed' status.",
-            },
-        },
-    ],
-)
-
-
-###############################################################################
 # DOCUMENT_DELETED_USE_CASE
 ###############################################################################
 DOCUMENT_DELETED_USE_CASE = UseCase(
@@ -373,7 +331,7 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
     description="The user deletes an existing document.",
     event=DocumentDeleted,
     event_source_code=DocumentDeleted.get_source_code_of_class(),
-    # constraints_generator=default_constraints_generator,
+    constraints_generator=generate_document_deleted_constraints,
     examples=[
         {
             "prompt": "Delete the document named 'Retainer-Agreement.pdf'.",
@@ -417,7 +375,6 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
     description="The user adds a new event to the calendar.",
     event=NewCalendarEventAdded,
     event_source_code=NewCalendarEventAdded.get_source_code_of_class(),
-    # constraints_generator=default_constraints_generator,
     examples=[
         {
             "prompt": "Add a new calendar event for May 13, 9 AM, labeled 'Team Sync' and colored 'blue'.",
@@ -461,7 +418,6 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
     description="The user adds a new time log entry.",
     event=NewLogAdded,
     event_source_code=NewLogAdded.get_source_code_of_class(),
-    # constraints_generator=default_constraints_generator,
     examples=[
         {
             "prompt": "Add a new time log for 'Estate Planning' matter, 2 hours, marked as 'Billable'.",
@@ -510,7 +466,6 @@ LOG_DELETE_USE_CASE = UseCase(
     description="The user deletes an existing time log entry.",
     event=LogDelete,
     event_source_code=LogDelete.get_source_code_of_class(),
-    # constraints_generator=default_constraints_generator,
     examples=[
         {
             "prompt": "Delete the time log for 'Estate Planning' that recorded 2 hours.",
@@ -554,7 +509,7 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
     description="The user changes their name in the application.",
     event=ChangeUserName,
     event_source_code=ChangeUserName.get_source_code_of_class(),
-    # constraints_generator=default_constraints_generator,
+    constraints_generator=generate_change_user_name_constraints,
     examples=[
         {
             "prompt": "Change my user name to 'Muhammad Ali'.",
@@ -598,7 +553,6 @@ ALL_USE_CASES = [
     VIEW_MATTER_USE_CASE,
     SEARCH_CLIENT_USE_CASE,
     VIEW_CLIENT_DETAILS_USE_CASE,
-    DOCUMENT_UPLOADED_USE_CASE,
     DOCUMENT_DELETED_USE_CASE,
     NEW_CALENDAR_EVENT_ADDED_USE_CASE,
     NEW_LOG_ADDED_USE_CASE,

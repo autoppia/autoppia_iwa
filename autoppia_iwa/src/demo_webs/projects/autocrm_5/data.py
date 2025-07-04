@@ -72,6 +72,7 @@ CALENDAR_DATA = [
         "color": "zinc",
     },
 ]
+# TODO: Need to add more data to make it variable and complex
 CLIENT_DATA = [
     {
         "id": "CL-101",

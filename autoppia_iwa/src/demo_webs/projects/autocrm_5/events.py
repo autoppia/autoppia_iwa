@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
@@ -103,6 +103,7 @@ class ViewMatterDetails(Event, BaseEventValidator):
         name: str | CriterionValue | None = None
         client: str | CriterionValue | None = None
         status: str | CriterionValue | None = None
+        updated: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -198,13 +199,13 @@ class ArchiveMatter(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ArchiveMatter":
         base_event = Event.parse(backend_event)
-        [Matter(**m) for m in backend_event.data.get("archiveed", [])]
+        # archived_matters = [Matter(**m) for m in backend_event.data.get("archived", [])]
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            matter=Matter(**backend_event.data),
+            # matter=archived_matters,
         )
 
 
@@ -270,40 +271,6 @@ class SearchClient(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             query=backend_event.data.get("query", ""),
-        )
-
-
-class DocumentUploaded(Event, BaseEventValidator):
-    """Event triggered when a document is uploaded"""
-
-    event_name: str = "DOCUMENT_UPLOADED"
-    document: Document
-
-    class ValidationCriteria(BaseModel):
-        name: str | CriterionValue | None = None
-        size: str | CriterionValue | None = None
-        status: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.document.name, criteria.name),
-                self._validate_field(self.document.size, criteria.size),
-                self._validate_field(self.document.status, criteria.status),
-            ],
-        )
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "DocumentUploaded":
-        base_event = Event.parse(backend_event)
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            document=Document(**backend_event.data),
         )
 
 
@@ -451,7 +418,7 @@ class LogDelete(Event, BaseEventValidator):
 
 
 class ChangeUserName(Event, BaseEventValidator):
-    """Event triggered when user changes their name"""
+    """Event triggered when the user changes their name"""
 
     event_name: str = "CHANGE_USER_NAME"
     new_name: str
@@ -492,7 +459,6 @@ EVENTS = [
     DeleteMatter,
     ViewClientDetails,
     SearchClient,
-    DocumentUploaded,
     DocumentDeleted,
     NewCalendarEventAdded,
     NewLogAdded,
@@ -507,7 +473,6 @@ BACKEND_EVENT_TYPES = {
     "DELETE_MATTER": DeleteMatter,
     "VIEW_CLIENT_DETAILS": ViewClientDetails,
     "SEARCH_CLIENT": SearchClient,
-    "DOCUMENT_UPLOADED": DocumentUploaded,
     "DOCUMENT_DELETED": DocumentDeleted,
     "NEW_CALENDAR_EVENT_ADDED": NewCalendarEventAdded,
     "NEW_LOG_ADDED": NewLogAdded,
