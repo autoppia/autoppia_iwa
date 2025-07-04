@@ -475,26 +475,26 @@ class OrderCompletedEvent(Event, BaseEventValidator):
             expected = criteria.items.value
             operator = criteria.items.operator
 
-            def matches(product: ProductSummary) -> bool:
+            def matches(product: ProductSummary, operator: ComparisonOperator) -> bool:
                 for key, expected_val in expected.items():
                     actual_val = getattr(product, key, None)
-                    if not validate_criterion(actual_val, CriterionValue(value=expected_val, operator=ComparisonOperator.EQUALS)):
+                    if not validate_criterion(actual_val, CriterionValue(value=expected_val, operator=operator)):
                         return False
                 return True
 
             if operator == ComparisonOperator.CONTAINS:
-                return any(matches(item) for item in self.items)
+                return any(matches(item, ComparisonOperator.CONTAINS) for item in self.items)
             elif operator == ComparisonOperator.NOT_CONTAINS:
-                return all(not matches(item) for item in self.items)
+                return all(matches(item, ComparisonOperator.NOT_CONTAINS) for item in self.items)
             elif operator == ComparisonOperator.IN_LIST:
-                return any(matches(item) for item in self.items)
+                return any(matches(item, ComparisonOperator.IN_LIST) for item in self.items)
             elif operator == ComparisonOperator.NOT_IN_LIST:
-                return all(not matches(item) for item in self.items)
+                return all(matches(item, ComparisonOperator.NOT_IN_LIST) for item in self.items)
             elif operator == ComparisonOperator.EQUALS:
                 # all items should match exactly once (used rarely)
-                return all(matches(item) for item in self.items)
+                return all(matches(item, ComparisonOperator.EQUALS) for item in self.items)
             elif operator == ComparisonOperator.NOT_EQUALS:
-                return all(not matches(item) for item in self.items)
+                return all(matches(item, ComparisonOperator.NOT_EQUALS) for item in self.items)
             else:
                 return False
 

@@ -155,22 +155,22 @@ SEARCH_PRODUCT_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Look up Wireless Earbuds",
+            "prompt": "Search for products that contain 'fPlu'",
             "prompt_for_task_generation": "Look up <query>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_PRODUCT",
-                "event_criteria": {"query": {"value": "Wireless Earbuds"}},
+                "event_criteria": {"query": {"value": "fPlu", "operator": "contains"}},
                 "reasoning": "Search with specific product specifications.",
             },
         },
         {
-            "prompt": "Search for products by KitchenAid",
-            "prompt_for_task_generation": "Search for <query>",
+            "prompt": "Look up products which contain 'example'",
+            "prompt_for_task_generation": "Look up products which contain <query>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_PRODUCT",
-                "event_criteria": {"query": {"value": "products by KitchenAid"}},
+                "event_criteria": {"query": {"value": "example"}},
                 "reasoning": "Search with brand name included.",
             },
         },

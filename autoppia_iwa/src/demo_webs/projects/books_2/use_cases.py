@@ -36,6 +36,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Be sure to add instruction to register using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
 2. Only phrase it like: "Register with the following username:<username>,email:<email> and password:<password>" etc
 3. Avoid mentioning anything other than mentioned above.
+All email must finish with @gmail.com, so pay attention to the constraints.
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 

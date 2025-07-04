@@ -37,7 +37,7 @@ REGISTRATION_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Be sure to add instruction to register using username '<username>', email <email> and password '<password> (**strictly** containing the username, email and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-
+All email must finish with @gmail.com, so pay attention to the constraints.
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 REGISTRATION_USE_CASE = UseCase(
@@ -1130,16 +1130,16 @@ ADD_COMMENT_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    FILM_DETAIL_USE_CASE,
-    LOGIN_USE_CASE,
+    # FILM_DETAIL_USE_CASE,
+    # LOGIN_USE_CASE,
     DELETE_FILM_USE_CASE,
-    LOGOUT_USE_CASE,
-    FILTER_FILM_USE_CASE,
-    SEARCH_FILM_USE_CASE,
-    CONTACT_USE_CASE,
-    REGISTRATION_USE_CASE,
-    ADD_COMMENT_USE_CASE,
-    EDIT_FILM_USE_CASE,
-    ADD_FILM_USE_CASE,
-    EDIT_USER_PROFILE_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # FILTER_FILM_USE_CASE,
+    # SEARCH_FILM_USE_CASE,
+    # CONTACT_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
+    # EDIT_FILM_USE_CASE,
+    # ADD_FILM_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,
 ]

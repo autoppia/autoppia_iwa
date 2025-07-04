@@ -38,10 +38,12 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                         value_pool.append(float(val))
 
             if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"]:
-                value_pool = [int(v) for v in value_pool if v is not None]  # Ensure integers for quantity/count fields
+                # Ensure integers for quantity/count fields
+                value_pool = [int(v) for v in value_pool if v is not None]
                 if source_value is not None:
                     try:
-                        source_value = int(source_value)  # Also cast source value to int if it's a quantity field
+                        # Also cast source value to int if it's a quantity field
+                        source_value = int(source_value)
                     except (ValueError, TypeError):
                         source_value = None  # Invalid source value for int field
         elif field == "query":
@@ -74,7 +76,8 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
     elif operator in [ComparisonOperator.NOT_EQUALS]:
         if source_value is not None:
             other_values = list(set(v for v in valid_pool if v != source_value))
-            generated_value = random.choice(other_values) if other_values else None  # Return None if no other value can be found
+            # Return None if no other value can be found
+            generated_value = random.choice(other_values) if other_values else None
         elif valid_pool:
             generated_value = random.choice(valid_pool)
         else:
@@ -133,7 +136,8 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                 end = random.randint(start + min_len, len(string_source))
                 generated_value = string_source[start:end]
             else:
-                generated_value = string_source  # Use whole string if too short for meaningful substring
+                # Use whole string if too short for meaningful substring
+                generated_value = string_source
             if not generated_value:  # Fallback if empty string
                 generated_value = "keyword"
 
@@ -180,14 +184,16 @@ def generate_autozone_products_constraints() -> list[dict[str, Any]]:
     applicable_criteria_fields = [
         cf
         for cf in mappable_criteria_fields
-        if criteria_to_product_key[cf] in PRODUCTS_DATA[0]  # Check if product data contains the key
+        # Check if product data contains the key
+        if criteria_to_product_key[cf] in PRODUCTS_DATA[0]
     ]
 
     if not applicable_criteria_fields:
         return []
 
     selected_criteria_fields = random.sample(applicable_criteria_fields, random.randint(1, min(3, len(applicable_criteria_fields))))
-    product = random.choice(PRODUCTS_DATA)  # Product guaranteed to exist due to earlier check
+    # Product guaranteed to exist due to earlier check
+    product = random.choice(PRODUCTS_DATA)
 
     for criteria_field in selected_criteria_fields:
         product_key = criteria_to_product_key.get(criteria_field)
@@ -215,7 +221,10 @@ def generate_autozone_products_constraints() -> list[dict[str, Any]]:
 
 def generate_search_query_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    query_operators = [ComparisonOperator.EQUALS, ComparisonOperator.CONTAINS]
+    query_operators = [
+        ComparisonOperator.EQUALS,
+        ComparisonOperator.CONTAINS,
+    ]
 
     if query_operators:
         op = random.choice(query_operators)
@@ -224,7 +233,8 @@ def generate_search_query_constraints() -> list[dict[str, Any]]:
         if constraint_value is not None:
             constraints_list.append(create_constraint_dict("query", op, constraint_value))
 
-    return constraints_list if constraints_list else [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]  # Fallback
+    # Fallback
+    return constraints_list if constraints_list else [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
 
 
 def generate_cart_operation_constraints() -> list[dict[str, Any]]:
