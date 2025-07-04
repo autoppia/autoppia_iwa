@@ -69,7 +69,6 @@ class AddNewMatter(Event, BaseEventValidator):
         name: str | CriterionValue | None = None
         client: str | CriterionValue | None = None
         status: str | CriterionValue | None = None
-        updated: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -79,7 +78,6 @@ class AddNewMatter(Event, BaseEventValidator):
                 self._validate_field(self.matter.name, criteria.name),
                 self._validate_field(self.matter.client, criteria.client),
                 self._validate_field(self.matter.status, criteria.status),
-                self._validate_field(self.matter.updated, criteria.updated),
             ]
         )
 
@@ -105,7 +103,6 @@ class ViewMatterDetails(Event, BaseEventValidator):
         name: str | CriterionValue | None = None
         client: str | CriterionValue | None = None
         status: str | CriterionValue | None = None
-        updated: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -115,7 +112,6 @@ class ViewMatterDetails(Event, BaseEventValidator):
                 self._validate_field(self.matter.name, criteria.name),
                 self._validate_field(self.matter.client, criteria.client),
                 self._validate_field(self.matter.status, criteria.status),
-                self._validate_field(self.matter.updated, criteria.updated),
             ]
         )
 
@@ -135,7 +131,7 @@ class DeleteMatter(Event, BaseEventValidator):
     """Event triggered when a matter is deleted"""
 
     event_name: str = "DELETE_MATTER"
-    matter: Matter
+    matter: list[Matter] = Field(default_factory=list)
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
@@ -146,24 +142,29 @@ class DeleteMatter(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.matter.name, criteria.name),
-                self._validate_field(self.matter.client, criteria.client),
-                self._validate_field(self.matter.status, criteria.status),
-                self._validate_field(self.matter.updated, criteria.updated),
-            ]
+
+        return any(  # at least one of the deleted matters satisfies all criteria.
+            all(
+                [
+                    self._validate_field(m.name, criteria.name),
+                    self._validate_field(m.client, criteria.client),
+                    self._validate_field(m.status, criteria.status),
+                    self._validate_field(m.updated, criteria.updated),
+                ]
+            )
+            for m in self.deleted
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "DeleteMatter":
         base_event = Event.parse(backend_event)
+        deleted_matters = [Matter(**m) for m in backend_event.data.get("deleted", [])]
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            matter=Matter(**backend_event.data),
+            matter=deleted_matters,
         )
 
 
@@ -171,8 +172,8 @@ class ArchiveMatter(Event, BaseEventValidator):
     """Event triggered when a matter is archived"""
 
     event_name: str = "ARCHIVE_MATTER"
-    # matters: list[Matter] = Field(default_factory=list)
-    matter: Matter
+    matters: list[Matter] = Field(default_factory=list)
+    # matter: Matter
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
@@ -182,18 +183,22 @@ class ArchiveMatter(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-
-        return all(
-            [
-                self._validate_field(self.matter.name, criteria.name),
-                self._validate_field(self.matter.client, criteria.client),
-                self._validate_field(self.matter.status, criteria.status),
-            ]
+        return any(  # at least one of the deleted matters satisfies all criteria.
+            all(
+                [
+                    self._validate_field(m.name, criteria.name),
+                    self._validate_field(m.client, criteria.client),
+                    self._validate_field(m.status, criteria.status),
+                    # self._validate_field(m.updated, criteria.updated),
+                ]
+            )
+            for m in self.deleted
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ArchiveMatter":
         base_event = Event.parse(backend_event)
+        [Matter(**m) for m in backend_event.data.get("archiveed", [])]
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -387,7 +392,6 @@ class NewLogAdded(Event, BaseEventValidator):
             [
                 self._validate_field(self.log.hours, criteria.hours),
                 self._validate_field(self.log.status, criteria.status),
-                # (criteria.min_hours is None or self.log.hours >= criteria.min_hours),
             ],
         )
 
