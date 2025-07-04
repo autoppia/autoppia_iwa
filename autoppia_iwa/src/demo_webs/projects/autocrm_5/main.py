@@ -7,7 +7,7 @@ from .events import EVENTS
 
 FRONTEND_PORT_INDEX = 4
 BACKEND_PORT_INDEX = 4
-dining_project = WebProject(
+crm_project = WebProject(
     id="crm",
     name="Autoppia CRM",
     frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),
