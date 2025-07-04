@@ -440,7 +440,7 @@ Examples include: "First, authenticate with...", "Initiate session using...", "A
 
 For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
 - CORRECT: "First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2014 and that is authored by 'Wes Anderson'."
-
+If you specify the name of the book then dont specify the author or year, just use the name of the book.
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
