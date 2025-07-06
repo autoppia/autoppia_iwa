@@ -551,11 +551,14 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 2. Include carousel section title if specified in constraints
 3. Must specify direction (left/right) if required
 4. Should not include product selection actions
+5. Dont mention two conditions about same field, like direction ( example "Scroll left in the carousel where the direction is 'RIGHT'") - this is not allowed.
+
 
 For example:
 - CORRECT: "Scroll right in the 'Featured Products' carousel"
 - INCORRECT: "View details for product in carousel" (wrong action)
 - INCORRECT: "Show me carousel items" (no scroll action)
+- INCORRECT: Scroll left in the carousel where the direction is NOT 'LEFT'    (you cannot specify twice same direction)
 """
 
 CAROUSEL_SCROLL_USE_CASE = UseCase(
@@ -614,13 +617,13 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
-    PRODUCT_DETAIL_USE_CASE,
-    SEARCH_PRODUCT_USE_CASE,
-    ADD_TO_CART_USE_CASE,
-    VIEW_CART_USE_CASE,
+    # PRODUCT_DETAIL_USE_CASE,
+    # SEARCH_PRODUCT_USE_CASE,
+    # ADD_TO_CART_USE_CASE,
+    # VIEW_CART_USE_CASE,
     CAROUSEL_SCROLL_USE_CASE,
-    QUANTITY_CHANGE_USE_CASE,
-    PROCEED_TO_CHECKOUT_USE_CASE,
-    CHECKOUT_STARTED_USE_CASE,
-    ORDER_COMPLETION_USE_CASE,
+    # QUANTITY_CHANGE_USE_CASE,
+    # PROCEED_TO_CHECKOUT_USE_CASE,
+    # CHECKOUT_STARTED_USE_CASE,
+    # ORDER_COMPLETION_USE_CASE,
 ]

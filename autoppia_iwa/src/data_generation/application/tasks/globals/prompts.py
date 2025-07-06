@@ -52,7 +52,7 @@ Be clear with constraints, especially when referring to CONTAINS or NOT CONTAINS
 {constraints_info}
 
 Do not generate the constraint for this prompt if the constraint set above does not contains the constraints.
-
+DO NOT ADD TWO CONSTRAINTS ABOUT THE SAME FIELD, LIKE DIRECTION (EXAMPLE: "Scroll left in the carousel where the direction is 'RIGHT'") - THIS IS NOT ALLOWED.
 ## ADDITIONAL INFO
 {additional_prompt_info}
 
