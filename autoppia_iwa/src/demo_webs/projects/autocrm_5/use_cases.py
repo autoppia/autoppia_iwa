@@ -35,7 +35,7 @@ from .replace_functions import replace_placeholders
 
 
 VIEW_MATTER_USE_CASE = UseCase(
-    name="VIEW_MATTER_USE_CASE",
+    name="VIEW_MATTER_DETAILS",
     description="The user views the detail of different matters",
     event=ViewMatterDetails,
     event_source_code=ViewMatterDetails.get_source_code_of_class(),
@@ -91,7 +91,7 @@ VIEW_MATTER_USE_CASE = UseCase(
 
 
 ADD_NEW_MATTER_USE_CASE = UseCase(
-    name="ADD_NEW_MATTER_USE_CASE",
+    name="ADD_NEW_MATTER",
     description="The user adds a new matter, specifying details such as matter name, client name and status of matter",
     event=AddNewMatter,
     event_source_code=AddNewMatter.get_source_code_of_class(),
@@ -144,7 +144,7 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
 
 
 ARCHIVE_MATTER_USE_CASE = UseCase(
-    name="ARCHIVE_MATTER_USE_CASE",
+    name="ARCHIVE_MATTER",
     description="The user archives a matter",
     event=ArchiveMatter,
     event_source_code=ArchiveMatter.get_source_code_of_class(),
@@ -195,7 +195,7 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
 )
 
 DELETE_MATTER_USE_CASE = UseCase(
-    name="ARCHIVE_MATTER_USE_CASE",
+    name="DELETE_MATTER",
     description="The user deletes a matter",
     event=DeleteMatter,
     event_source_code=DeleteMatter.get_source_code_of_class(),
@@ -258,7 +258,7 @@ DELETE_MATTER_USE_CASE = UseCase(
 # VIEW_CLIENT_DETAILS_USE_CASE
 ###############################################################################
 VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
-    name="VIEW_CLIENT_DETAILS_USE_CASE",
+    name="VIEW_CLIENT_DETAILS",
     description="The user views the detail of different clients",
     event=ViewClientDetails,
     event_source_code=ViewClientDetails.get_source_code_of_class(),
@@ -297,7 +297,7 @@ VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
 # SEARCH_CLIENT_USE_CASE
 ###############################################################################
 SEARCH_CLIENT_USE_CASE = UseCase(
-    name="SEARCH_CLIENT_USE_CASE",
+    name="SEARCH_CLIENT",
     description="The user searches for clients using a query string.",
     event=SearchClient,
     event_source_code=SearchClient.get_source_code_of_class(),
@@ -341,7 +341,7 @@ SEARCH_CLIENT_USE_CASE = UseCase(
 # DOCUMENT_DELETED_USE_CASE
 ###############################################################################
 DOCUMENT_DELETED_USE_CASE = UseCase(
-    name="DOCUMENT_DELETED_USE_CASE",
+    name="DOCUMENT_DELETED",
     description="The user deletes an existing document.",
     event=DocumentDeleted,
     event_source_code=DocumentDeleted.get_source_code_of_class(),
@@ -386,7 +386,7 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
 # NEW_CALENDAR_EVENT_ADDED_USE_CASE
 ###############################################################################
 NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
-    name="NEW_CALENDAR_EVENT_ADDED_USE_CASE",
+    name="NEW_CALENDAR_EVENT_ADDED",
     description="The user adds a new event to the calendar.",
     event=NewCalendarEventAdded,
     event_source_code=NewCalendarEventAdded.get_source_code_of_class(),
@@ -431,7 +431,7 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
 # NEW_LOG_ADDED_USE_CASE
 ###############################################################################
 NEW_LOG_ADDED_USE_CASE = UseCase(
-    name="NEW_LOG_ADDED_USE_CASE",
+    name="NEW_LOG_ADDED",
     description="The user adds a new time log entry.",
     event=NewLogAdded,
     event_source_code=NewLogAdded.get_source_code_of_class(),
@@ -481,7 +481,7 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
 # LOG_DELETE_USE_CASE
 ###############################################################################
 LOG_DELETE_USE_CASE = UseCase(
-    name="LOG_DELETE_USE_CASE",
+    name="LOG_DELETE",
     description="The user deletes an existing time log entry.",
     event=LogDelete,
     event_source_code=LogDelete.get_source_code_of_class(),
@@ -530,7 +530,7 @@ CHANGE_USER_NAME_EXTRA_INFO = """
 # CHANGE_USER_NAME_USE_CASE
 ###############################################################################
 CHANGE_USER_NAME_USE_CASE = UseCase(
-    name="CHANGE_USER_NAME_USE_CASE",
+    name="CHANGE_USER_NAME",
     description="The user changes their name in the application.",
     event=ChangeUserName,
     event_source_code=ChangeUserName.get_source_code_of_class(),
