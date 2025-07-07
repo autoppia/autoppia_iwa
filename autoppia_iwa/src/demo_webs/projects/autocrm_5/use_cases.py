@@ -99,33 +99,44 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
     replace_func=replace_placeholders,
     examples=[
         {
-            "prompt": "Click on 'New Matter' button to create new matter, add 'new', 'emma' and 'active'",
-            "prompt_for_task_generation": "Click on 'New Matter' button to create new matter, add <matter_name>, <client_name> and <matter_status>",
+            "prompt": "Create a matter named 'new', with client 'emma' and status 'active'.",
+            "prompt_for_task_generation": "Create a matter named '<matter_name>', with client '<client_name>' and status '<matter_status>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
-                "event_criteria": {"name": {"value": "new", "operator": "equals"}, "client": {"value": "emma", "operator": "equals"}, "status": {"value": "active", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires to add a new matter with matter name as 'new', client name as 'emma' and status set as 'active'",
+                "event_criteria": {
+                    "name": {"value": "new", "operator": "equals"},
+                    "client": {"value": "emma", "operator": "equals"},
+                    "status": {"value": "active", "operator": "equals"},
+                },
+                "reasoning": "This test applies when the task requires adding a new matter named 'new', with client 'emma' and status set to 'active'.",
             },
         },
         {
-            "prompt": "Create a new matter with matter name as 'dummy', client name as 'anonymous' and status as 'archived'",
-            "prompt_for_task_generation": "Create a new matter with matter name as '<matter_name>', client name as '<client_name>' and status as '<matter_status>'",
+            "prompt": "Create a matter with the name 'dummy', client 'anonymous', and status 'archived'.",
+            "prompt_for_task_generation": "Create a matter with the name '<matter_name>', client '<client_name>', and status '<matter_status>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
-                "event_criteria": {"name": {"value": "new", "operator": "equals"}, "client": {"value": "emma", "operator": "equals"}, "status": {"value": "archived", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires to add a new matter with matter name as 'new', client name as 'emma' and status set as 'active'",
+                "event_criteria": {
+                    "name": {"value": "dummy", "operator": "equals"},
+                    "client": {"value": "anonymous", "operator": "equals"},
+                    "status": {"value": "archived", "operator": "equals"},
+                },
+                "reasoning": "This test applies when the task requires adding a new matter with name 'dummy', client 'anonymous', and status 'archived'.",
             },
         },
         {
-            "prompt": "Add matter where the matter name is not equal to 'IP Filing' and client name is equals to 'Services & Co.'",
-            "prompt_for_task_generation": "Add matter where the matter name is not equal to '<matter_name>' and client name is equals to '<client_name>'",
+            "prompt": "Add a new matter where the name is not 'IP Filing' and the client is 'Services & Co.'.",
+            "prompt_for_task_generation": "Add a new matter where the name is not '<matter_name>' and the client is '<client_name>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
-                "event_criteria": {"name": {"value": "IP Filing", "operator": "not_equals"}, "client": {"value": "Services & Co.", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires to add matter where the matter name is not equal to 'IP Filing' and client is 'Services $ Co.'",
+                "event_criteria": {
+                    "name": {"value": "IP Filing", "operator": "not_equals"},
+                    "client": {"value": "Services & Co.", "operator": "equals"},
+                },
+                "reasoning": "This test applies when the task requires adding a matter where the name is not 'IP Filing' and the client is 'Services & Co.'.",
             },
         },
     ],
