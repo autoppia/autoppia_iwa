@@ -21,6 +21,8 @@ from .generation_functions import (
     generate_archive_matter_constraints,
     generate_change_user_name_constraints,
     generate_document_deleted_constraints,
+    generate_new_calendar_event_constraints,
+    generate_new_log_added_constraints,
     generate_search_client_constraints,
     generate_view_client_constraints,
     generate_view_matter_constraints,
@@ -38,6 +40,7 @@ VIEW_MATTER_USE_CASE = UseCase(
     event=ViewMatterDetails,
     event_source_code=ViewMatterDetails.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
+    replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Go to the Matters page and click on 'Estate Planning' to view the details of that particular matter",
@@ -332,6 +335,7 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
     event=DocumentDeleted,
     event_source_code=DocumentDeleted.get_source_code_of_class(),
     constraints_generator=generate_document_deleted_constraints,
+    replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Delete the document named 'Retainer-Agreement.pdf'.",
@@ -375,10 +379,12 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
     description="The user adds a new event to the calendar.",
     event=NewCalendarEventAdded,
     event_source_code=NewCalendarEventAdded.get_source_code_of_class(),
+    constraints_generator=generate_new_calendar_event_constraints,
+    replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Add a new calendar event for May 13, 9 AM, labeled 'Team Sync' and event type 'Filing'.",
-            "prompt_for_task_generation": "Add a new calendar event for <event_date>, <event_time>, labeled <event_label> and colored <event_type>.",
+            "prompt_for_task_generation": "Add a new calendar event for '<event_date>', '<event_time>', labeled '<event_label'> and colored <'event_type>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
@@ -388,7 +394,7 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
         },
         {
             "prompt": "Schedule an event for May 7th at 2:30 PM, with an 'Internal' highlight.",
-            "prompt_for_task_generation": "Schedule an event for <event_date> at <event_time>, with an <event_type> highlight.",
+            "prompt_for_task_generation": "Schedule an event for '<event_date>' at '<event_time>', with an '<event_type>' highlight.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
@@ -398,7 +404,7 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
         },
         {
             "prompt": "Create a calendar event for May 22nd with a 'Matter/Event' color, any time.",
-            "prompt_for_task_generation": "Create a calendar event for <event_date> with a <event_type> color, any time.",
+            "prompt_for_task_generation": "Create a calendar event for '<event_date>' with a '<event_type>' color, any time.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
@@ -418,10 +424,12 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
     description="The user adds a new time log entry.",
     event=NewLogAdded,
     event_source_code=NewLogAdded.get_source_code_of_class(),
+    constraints_generator=generate_new_log_added_constraints,
+    replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Add a new time log for 'Estate Planning' matter, 2 hours, marked as 'Billable'.",
-            "prompt_for_task_generation": "Add a new time log for <matter_name> matter, <log_hours> hours, marked as <log_status>.",
+            "prompt_for_task_generation": "Add a new time log for '<matter_name>' matter, '<log_hours>' hours, marked as '<log_status>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_LOG_ADDED",
@@ -431,7 +439,7 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
         },
         {
             "prompt": "Log 1.5 hours for 'IP Filing' activity with Acme Biotech, with a 'Billed' status.",
-            "prompt_for_task_generation": "Log <log_hours> hours for <matter_name> activity with <log_client>, with a <log_status> status.",
+            "prompt_for_task_generation": "Log <log_hours> hours for '<matter_name>' activity with '<log_client>', with a '<log_status>' status.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_LOG_ADDED",
@@ -446,7 +454,7 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
         },
         {
             "prompt": "Create a time log entry with more than 2 hours for 'Peak Ventures'.",
-            "prompt_for_task_generation": "Create a time log entry with more than <log_hours> hours for <client_name>.",
+            "prompt_for_task_generation": "Create a time log entry with more than '<log_hours>' hours for '<log_client>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_LOG_ADDED",
@@ -466,10 +474,12 @@ LOG_DELETE_USE_CASE = UseCase(
     description="The user deletes an existing time log entry.",
     event=LogDelete,
     event_source_code=LogDelete.get_source_code_of_class(),
+    constraints_generator=generate_new_log_added_constraints,
+    replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Delete the time log for 'Estate Planning' that recorded 2 hours.",
-            "prompt_for_task_generation": "Delete the time log for <matter_name> that recorded <log_hours> hours.",
+            "prompt_for_task_generation": "Delete the time log for '<matter_name>' that recorded '<log_hours>' hours.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",
@@ -479,7 +489,7 @@ LOG_DELETE_USE_CASE = UseCase(
         },
         {
             "prompt": "Remove any time log that is currently 'Billed'.",
-            "prompt_for_task_generation": "Remove any time log that is currently <log_status>.",
+            "prompt_for_task_generation": "Remove any time log that is currently '<log_status>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",
@@ -489,7 +499,7 @@ LOG_DELETE_USE_CASE = UseCase(
         },
         {
             "prompt": "Delete time logs for 'Peak Ventures' with 3 hours and 'Billable' status.",
-            "prompt_for_task_generation": "Delete time logs for <client_name> with <log_hours> hours and <log_status> status.",
+            "prompt_for_task_generation": "Delete time logs for '<log_client>' with <log_hours> hours and '<log_status>' status.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",
@@ -500,7 +510,11 @@ LOG_DELETE_USE_CASE = UseCase(
     ],
 )
 
-
+CHANGE_USER_NAME_EXTRA_INFO = """
+1. Ensure the prompt makes sense and does not contain both a constraint and its contradiction.
+- Correct: "Change my user name to 'Muhammad Ali'"
+- Incorrect: "Change my user name to 'Muhammad Ali' that does NOT contain 'Doe'"
+"""
 ###############################################################################
 # CHANGE_USER_NAME_USE_CASE
 ###############################################################################
@@ -510,10 +524,11 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
     event=ChangeUserName,
     event_source_code=ChangeUserName.get_source_code_of_class(),
     constraints_generator=generate_change_user_name_constraints,
+    replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Change my user name to 'Muhammad Ali'.",
-            "prompt_for_task_generation": "Change my user name to <new_name>.",
+            "prompt_for_task_generation": "Change my user name to '<new_name>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "CHANGE_USER_NAME",
@@ -523,7 +538,7 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
         },
         {
             "prompt": "Update my display name to 'Aisha Khan'.",
-            "prompt_for_task_generation": "Update my display name to <new_name>.",
+            "prompt_for_task_generation": "Update my display name to '<new_name>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "CHANGE_USER_NAME",
@@ -533,7 +548,7 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
         },
         {
             "prompt": "Set my user name to something that is not 'Guest User'.",
-            "prompt_for_task_generation": "Set my user name to something that is not <forbidden_name>.",
+            "prompt_for_task_generation": "Set my user name to something that is not '<forbidden_name>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "CHANGE_USER_NAME",

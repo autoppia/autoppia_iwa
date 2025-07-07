@@ -3,7 +3,7 @@ import random
 import re
 from datetime import date
 
-from .data import CLIENT_DATA, DOCUMENT_DATA, MATTERS_DATA
+from .data import ALLOWED_EVENT_COLORS, CLIENT_DATA, DOCUMENT_DATA, MATTERS_DATA
 
 
 def replace_placeholders(text: str) -> str:
@@ -35,13 +35,6 @@ def replace_placeholders(text: str) -> str:
 
     def get_random_log_status():
         return random.choice(["Billable", "Billed", "Non-billable", "Pending", "Approved", "Rejected"])
-
-    allowed_event_colors = [
-        "Matter/Event",  # originally "forest"
-        "Internal",  # originally "indigo"
-        "Filing",  # originally "blue"
-        "Other",  # originally "zinc"
-    ]
 
     extended_user_names = [
         "Aisha Khan",
@@ -95,7 +88,7 @@ def replace_placeholders(text: str) -> str:
         "<event_date>": [get_random_event_date() for _ in range(10)],
         "<event_time>": [get_random_event_time() for _ in range(10)],
         "<event_label>": [get_random_event_label() for _ in range(10)],
-        "<event_type>": [random.choice(allowed_event_colors) for _ in range(10)],
+        "<event_type>": [random.choice(ALLOWED_EVENT_COLORS) for _ in range(10)],
         # Logs
         "<log_hours>": [get_random_log_hours() for _ in range(10)],
         "<log_status>": [get_random_log_status() for _ in range(10)],

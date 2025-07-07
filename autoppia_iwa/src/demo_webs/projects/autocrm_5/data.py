@@ -179,7 +179,7 @@ DOCUMENT_DATA = [
     {"id": 49, "name": "Expert-Testimony.pdf", "size": "1.7 MB", "version": "v2", "updated": "Today", "status": "Submitted"},
     {"id": 50, "name": "Case-Summary.docx", "size": "76 KB", "version": "v1", "updated": "Yesterday", "status": "Draft"},
 ]
-MATTER_DATA = [
+MATTERS_DATA = [
     {"id": "MAT-0012", "name": "Estate Planning", "status": "Active", "client": "Smith & Co.", "updated": "Today"},
     {"id": "MAT-0011", "name": "Contract Review", "status": "Archived", "client": "Jones Legal", "updated": "2 days ago"},
     {"id": "MAT-0009", "name": "IP Filing", "status": "Active", "client": "Acme Biotech", "updated": "Last week"},
@@ -221,4 +221,10 @@ MATTER_DATA = [
     {"id": "MAT-0054", "name": "Asset Sale", "status": "Active", "client": "Theodore Lee", "updated": "Today"},
     {"id": "MAT-0055", "name": "Outsourcing Agreement", "status": "Archived", "client": "Ravi Gupta", "updated": "2d ago"},
     {"id": "MAT-0056", "name": "Joint Patent Filing", "status": "Active", "client": "Meera Shah", "updated": "3w ago"},
+]
+ALLOWED_EVENT_COLORS = [
+    "Matter/Event",  # originally "forest"
+    "Internal",  # originally "indigo"
+    "Filing",  # originally "blue"
+    "Other",  # originally "zinc"
 ]
