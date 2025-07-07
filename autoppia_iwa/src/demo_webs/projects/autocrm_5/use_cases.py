@@ -41,7 +41,7 @@ VIEW_MATTER_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Go to the Matters page and click on 'Estate Planning' to view the details of that particular matter",
-            "prompt_for_task_generation": "Go to the Matters page and click on <mattername> to view the details of that particular matter",
+            "prompt_for_task_generation": "Go to the Matters page and click on <matter_name> to view the details of that particular matter",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_MATTER_DETAILS",
@@ -51,7 +51,7 @@ VIEW_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "View details of matter, whose client name is 'Jones Legal'",
-            "prompt_for_task_generation": "View details of matter, whose client name is 'Jones Legal'",
+            "prompt_for_task_generation": "View details of matter, whose client name is '<client_name>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_MATTER_DETAILS",
@@ -61,7 +61,7 @@ VIEW_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "View matter details if its status is not updated Today",
-            "prompt_for_task_generation": "View matter details if its status is not updated <status>",
+            "prompt_for_task_generation": "View matter details if its status is not updated '<matter_status>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_MATTER_DETAILS",
@@ -71,7 +71,7 @@ VIEW_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "view those matters for which the status is active",
-            "prompt_for_task_generation": "view those matters for which the status is <status>",
+            "prompt_for_task_generation": "view those matters for which the status is '<matter_status>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_MATTER_DETAILS",
@@ -97,7 +97,7 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Click on 'New Matter' button to create new matter, add 'new', 'emma' and 'active'",
-            "prompt_for_task_generation": "Click on 'New Matter' button to create new matter, add <mattername>, <clientname> and <status>",
+            "prompt_for_task_generation": "Click on 'New Matter' button to create new matter, add <matter_name>, <client_name> and <matter_status>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
@@ -106,8 +106,8 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Create a new matter with matter name as 'dummy', client name as 'anonymus' and status as 'archived'",
-            "prompt_for_task_generation": "Create a new matter with matter name as <mattername>, client name as <clientname> and status as <status>",
+            "prompt": "Create a new matter with matter name as 'dummy', client name as 'anonymous' and status as 'archived'",
+            "prompt_for_task_generation": "Create a new matter with matter name as '<matter_name>', client name as '<client_name>' and status as '<matter_status>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
@@ -116,8 +116,8 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Add matter where the matter name is not equal to 'IP Filing' and client is 'Services & Co.'",
-            "prompt_for_task_generation": "Add matter where the matter name is not equal to <mattername> and client is <clientname>",
+            "prompt": "Add matter where the matter name is not equal to 'IP Filing' and client name is equals to 'Services & Co.'",
+            "prompt_for_task_generation": "Add matter where the matter name is not equal to '<matter_name>' and client name is equals to '<client_name>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
@@ -138,8 +138,8 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
     replace_func=replace_placeholders,
     examples=[
         {
-            "prompt": "archive the matter whose status is set to 'active'",
-            "prompt_for_task_generation": "archive the matter whose status is set to <status>",
+            "prompt": "Archive the matter whose status is set to 'active'",
+            "prompt_for_task_generation": "Archive the matter whose status is set to <matter_status>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ARCHIVE_MATTER",
@@ -148,8 +148,8 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "archive the matter where status is set to 'active' and 'on hold'",
-            "prompt_for_task_generation": "archive the matter whose status is set to <status> and <status>",
+            "prompt": "Archive the matter where status is set to 'active' and 'on hold'",
+            "prompt_for_task_generation": "Archive the matter whose status is set to '<matter_status>' and '<matter_status>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ARCHIVE_MATTER",
@@ -158,8 +158,8 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "archive the 'Estate Planning' matter and its not updated 'now'",
-            "prompt_for_task_generation": "archive the <mattername> matter and its not updated <updated>",
+            "prompt": "Archive the 'Estate Planning' matter and its not updated 'now'",
+            "prompt_for_task_generation": "Archive the '<matter_name>' matter and its not updated <updated_at>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ARCHIVE_MATTER",
@@ -168,8 +168,8 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "archive the matter where matter name is 'dummy' or the client name is 'Smith & Co.'",
-            "prompt_for_task_generation": "archive the matter where matter name is <mattername> or the client name is '<clientname>'>",
+            "prompt": "Archive the matter where matter name is 'dummy' or the client name is 'Smith & Co.'",
+            "prompt_for_task_generation": "Archive the matter where matter name is '<matter_name>' or the client name is '<client_name>'>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ARCHIVE_MATTER",
@@ -182,7 +182,7 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
 
 DELETE_MATTER_USE_CASE = UseCase(
     name="ARCHIVE_MATTER_USE_CASE",
-    description="The user archives a matter",
+    description="The user deletes a matter",
     event=DeleteMatter,
     event_source_code=DeleteMatter.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
@@ -190,7 +190,7 @@ DELETE_MATTER_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Delete the matter whose status is set to 'active'",
-            "prompt_for_task_generation": "Delete the matter whose status is set to <status>",
+            "prompt_for_task_generation": "Delete the matter whose status is set to <matter_status>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_MATTER",
@@ -200,7 +200,7 @@ DELETE_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "Delete the matter where status is set to 'active' and 'on hold'",
-            "prompt_for_task_generation": "Delete the matter whose status is set to <status> and <status>",
+            "prompt_for_task_generation": "Delete the matter whose status is set to <matter_status> and <matter_status>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_MATTER",
@@ -210,7 +210,7 @@ DELETE_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "Delete the 'Estate Planning' matter and its not updated 'now'",
-            "prompt_for_task_generation": "Delete the <mattername> matter and its not updated <updated>",
+            "prompt_for_task_generation": "Delete the '<matter_name>' matter and its not updated '<updated_at>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_MATTER",
@@ -220,7 +220,7 @@ DELETE_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "Delete the matter where matter name is 'dummy' or the client name is 'Smith & Co.'",
-            "prompt_for_task_generation": "Delete the matter where matter name is <mattername> or the client name is '<clientname>'>",
+            "prompt_for_task_generation": "Delete the matter where matter name is '<matter_name>' or the client name is '<client_name>'>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_MATTER",
@@ -230,7 +230,7 @@ DELETE_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "Delete the matter where status is set to 'archived'",
-            "prompt_for_task_generation": "Delete the matter whose status is set to <status> and <status>",
+            "prompt_for_task_generation": "Delete the matter whose status is set to <matter_status>",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DELETE_MATTER",
@@ -252,8 +252,8 @@ VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
     replace_func=replace_placeholders,
     examples=[
         {
-            "prompt": "View details of client, whose client name is 'jessica brown'",
-            "prompt_for_task_generation": "Go to the Clients page and click on <clientname> to view the details of that particular client",
+            "prompt": "View details of client, whose client name is 'jessica brown' and email is 'jbrown@samplemail.com'",
+            "prompt_for_task_generation": "View details of client, whose client name is '<client_name>' and email is '<client_email>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_CLIENT_DETAILS",
@@ -263,7 +263,7 @@ VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
         },
         {
             "prompt": "View client details if its status is 'active', its email is 'team@smithco.com' and matters are not '3'",
-            "prompt_for_task_generation": "View client details if its status is <status>, its email is <email> and matters are <matter>",
+            "prompt_for_task_generation": "View client details if its status is '<client_status>', its email is '<client_email>' and matters are '<client_matter>'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_CLIENT_DETAILS",
@@ -311,7 +311,7 @@ SEARCH_CLIENT_USE_CASE = UseCase(
         },
         {
             "prompt": "Search for clients, excluding those matching 'Ventures'.",
-            "prompt_for_task_generation": "Search for clients, excluding those matching <excluded_query>.",
+            "prompt_for_task_generation": "Search for clients, excluding those matching <query>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "SEARCH_CLIENT",
@@ -335,7 +335,7 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Delete the document named 'Retainer-Agreement.pdf'.",
-            "prompt_for_task_generation": "Delete the document named <document_name>.",
+            "prompt_for_task_generation": "Delete the document named '<document_name>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DOCUMENT_DELETED",
@@ -345,7 +345,7 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
         },
         {
             "prompt": "Remove any document that is marked as 'Draft'.",
-            "prompt_for_task_generation": "Remove any document that is marked as <status>.",
+            "prompt_for_task_generation": "Remove any document that is marked as '<document_status>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DOCUMENT_DELETED",
@@ -355,7 +355,7 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
         },
         {
             "prompt": "Delete the document 'Patent-Application.pdf' if its status is 'Submitted'.",
-            "prompt_for_task_generation": "Delete the document <document_name> if its status is <status>.",
+            "prompt_for_task_generation": "Delete the document '<document_name>' if its status is '<document_status>'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "DOCUMENT_DELETED",
@@ -377,32 +377,32 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
     event_source_code=NewCalendarEventAdded.get_source_code_of_class(),
     examples=[
         {
-            "prompt": "Add a new calendar event for May 13, 9 AM, labeled 'Team Sync' and colored 'blue'.",
-            "prompt_for_task_generation": "Add a new calendar event for <date>, <time>, labeled <label> and colored <color>.",
+            "prompt": "Add a new calendar event for May 13, 9 AM, labeled 'Team Sync' and event type 'Filing'.",
+            "prompt_for_task_generation": "Add a new calendar event for <event_date>, <event_time>, labeled <event_label> and colored <event_type>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
-                "event_criteria": {"date": {"value": "2025-05-13", "operator": "equals"}, "time": {"value": "09:00am", "operator": "equals"}, "color": {"value": "blue", "operator": "equals"}},
+                "event_criteria": {"date": {"value": "2025-05-13", "operator": "equals"}, "time": {"value": "09:00am", "operator": "equals"}, "event_type": {"value": "Filing", "operator": "equals"}},
                 "reasoning": "This test applies when the task requires adding a calendar event on May 13, 9 AM, with a blue color.",
             },
         },
         {
-            "prompt": "Schedule an event for May 7th at 2:30 PM, with an 'indigo' highlight.",
-            "prompt_for_task_generation": "Schedule an event for <date> at <time>, with an <color> highlight.",
+            "prompt": "Schedule an event for May 7th at 2:30 PM, with an 'Internal' highlight.",
+            "prompt_for_task_generation": "Schedule an event for <event_date> at <event_time>, with an <event_type> highlight.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
-                "event_criteria": {"date": {"value": "2025-05-07", "operator": "equals"}, "time": {"value": "2:30pm", "operator": "equals"}, "color": {"value": "indigo", "operator": "equals"}},
+                "event_criteria": {"date": {"value": "2025-05-07", "operator": "equals"}, "time": {"value": "2:30pm", "operator": "equals"}, "event_type": {"value": "Internal", "operator": "equals"}},
                 "reasoning": "This test applies when the task requires adding a calendar event on May 7th, 2:30 PM, with an indigo color.",
             },
         },
         {
-            "prompt": "Create a calendar event for May 22nd with a 'zinc' color, any time.",
-            "prompt_for_task_generation": "Create a calendar event for <date> with a <color> color, any time.",
+            "prompt": "Create a calendar event for May 22nd with a 'Matter/Event' color, any time.",
+            "prompt_for_task_generation": "Create a calendar event for <event_date> with a <event_type> color, any time.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
-                "event_criteria": {"date": {"value": "2025-05-22", "operator": "equals"}, "color": {"value": "zinc", "operator": "equals"}},
+                "event_criteria": {"date": {"value": "2025-05-22", "operator": "equals"}, "event_type": {"value": "Matter/Event", "operator": "equals"}},
                 "reasoning": "This test applies when the task requires adding a calendar event for May 22nd with a zinc color.",
             },
         },
@@ -421,7 +421,7 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Add a new time log for 'Estate Planning' matter, 2 hours, marked as 'Billable'.",
-            "prompt_for_task_generation": "Add a new time log for <matter_name> matter, <hours> hours, marked as <status>.",
+            "prompt_for_task_generation": "Add a new time log for <matter_name> matter, <log_hours> hours, marked as <log_status>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_LOG_ADDED",
@@ -431,7 +431,7 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
         },
         {
             "prompt": "Log 1.5 hours for 'IP Filing' activity with Acme Biotech, with a 'Billed' status.",
-            "prompt_for_task_generation": "Log <hours> hours for <matter> activity with <client>, with a <status> status.",
+            "prompt_for_task_generation": "Log <log_hours> hours for <matter_name> activity with <log_client>, with a <log_status> status.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_LOG_ADDED",
@@ -446,7 +446,7 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
         },
         {
             "prompt": "Create a time log entry with more than 2 hours for 'Peak Ventures'.",
-            "prompt_for_task_generation": "Create a time log entry with more than <hours> hours for <client>.",
+            "prompt_for_task_generation": "Create a time log entry with more than <log_hours> hours for <client_name>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_LOG_ADDED",
@@ -469,7 +469,7 @@ LOG_DELETE_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Delete the time log for 'Estate Planning' that recorded 2 hours.",
-            "prompt_for_task_generation": "Delete the time log for <matter> that recorded <hours> hours.",
+            "prompt_for_task_generation": "Delete the time log for <matter_name> that recorded <log_hours> hours.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",
@@ -479,7 +479,7 @@ LOG_DELETE_USE_CASE = UseCase(
         },
         {
             "prompt": "Remove any time log that is currently 'Billed'.",
-            "prompt_for_task_generation": "Remove any time log that is currently <status>.",
+            "prompt_for_task_generation": "Remove any time log that is currently <log_status>.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",
@@ -489,7 +489,7 @@ LOG_DELETE_USE_CASE = UseCase(
         },
         {
             "prompt": "Delete time logs for 'Peak Ventures' with 3 hours and 'Billable' status.",
-            "prompt_for_task_generation": "Delete time logs for <client> with <hours> hours and <status> status.",
+            "prompt_for_task_generation": "Delete time logs for <client_name> with <log_hours> hours and <log_status> status.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",

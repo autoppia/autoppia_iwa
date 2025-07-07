@@ -41,7 +41,7 @@ class CalendarEvent(BaseModel):
     date: str
     label: str
     time: str
-    color: str
+    event_type: str
 
 
 class TimeLog(BaseModel):
@@ -317,7 +317,7 @@ class NewCalendarEventAdded(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         date: str | CriterionValue | None = None
         time: str | CriterionValue | None = None
-        color: str | CriterionValue | None = None
+        event_type: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
