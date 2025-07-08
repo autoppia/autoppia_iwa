@@ -103,7 +103,7 @@ class ViewMatterDetails(Event, BaseEventValidator):
         name: str | CriterionValue | None = None
         client: str | CriterionValue | None = None
         status: str | CriterionValue | None = None
-        updated: str | CriterionValue | None = None
+        # updated: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
