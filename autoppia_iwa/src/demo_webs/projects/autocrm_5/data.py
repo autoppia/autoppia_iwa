@@ -1,3 +1,5 @@
+from ..shared_data import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
+
 DEMO_LOGS = [
     {"id": 1, "matter": "Estate Planning", "client": "Smith & Co.", "date": "2025-05-19", "hours": 2, "description": "Consultation", "status": "Billable"},
     {"id": 2, "matter": "IP Filing", "client": "Acme Biotech", "date": "2025-05-18", "hours": 1.5, "description": "Draft application", "status": "Billed"},
@@ -228,3 +230,42 @@ ALLOWED_EVENT_COLORS = [
     "Filing",  # originally "blue"
     "Other",  # originally "zinc"
 ]
+# AutoCRM (Web 5)
+FIELD_OPERATORS_MAP_MATTER = {
+    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "client": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "status": [EQUALS, NOT_EQUALS, IN_LIST, NOT_IN_LIST],
+    "updated": [EQUALS, NOT_EQUALS, IN_LIST, NOT_IN_LIST],
+}
+
+FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER = {
+    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "email": [EQUALS, NOT_EQUALS],
+    "status": [EQUALS, NOT_EQUALS],
+    "matters": [EQUALS, NOT_EQUALS],
+}
+
+FIELD_OPERATORS_MAP_CHANGE_USER_NAME = {
+    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+}
+
+FIELD_OPERATORS_MAP_DOCUMENT = {
+    "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "size": [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN],
+    "version": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "updated": [EQUALS, NOT_EQUALS],
+    "status": [EQUALS, NOT_EQUALS, IN_LIST, NOT_IN_LIST],
+}
+FIELD_OPERATORS_MAP_CALENDAR = {
+    "label": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "date": [EQUALS, NOT_EQUALS],
+    "time": [EQUALS, NOT_EQUALS],
+    "event_type": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+}
+
+FIELD_OPERATORS_MAP_LOG = {
+    "matter": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "client": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "hours": [EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
+    "status": [EQUALS, NOT_EQUALS],
+}

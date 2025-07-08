@@ -282,6 +282,9 @@ class DocumentDeleted(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         # id: str | CriterionValue | None = None
+        size: str | CriterionValue | None = None
+        version: str | CriterionValue | None = None
+        updated: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         status: str | CriterionValue | None = None
 
@@ -292,6 +295,9 @@ class DocumentDeleted(Event, BaseEventValidator):
             [
                 # self._validate_field(self.document.id, criteria.id),
                 self._validate_field(self.document.name, criteria.name),
+                self._validate_field(self.document.size, criteria.size),
+                self._validate_field(self.document.version, criteria.version),
+                self._validate_field(self.document.updated, criteria.updated),
                 self._validate_field(self.document.status, criteria.status),
             ],
         )
@@ -315,6 +321,7 @@ class NewCalendarEventAdded(Event, BaseEventValidator):
     event_data: CalendarEvent
 
     class ValidationCriteria(BaseModel):
+        label: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
         time: str | CriterionValue | None = None
         event_type: str | CriterionValue | None = None
@@ -324,9 +331,10 @@ class NewCalendarEventAdded(Event, BaseEventValidator):
             return True
         return all(
             [
+                self._validate_field(self.event_data.label, criteria.label),
                 self._validate_field(self.event_data.date, criteria.date),
                 self._validate_field(self.event_data.time, criteria.time),
-                self._validate_field(self.event_data.color, criteria.color),
+                self._validate_field(self.event_data.event_type, criteria.event_type),
             ],
         )
 
@@ -349,6 +357,11 @@ class NewLogAdded(Event, BaseEventValidator):
     log: TimeLog
 
     class ValidationCriteria(BaseModel):
+        # id: str | CriterionValue | None = None
+        matter: str | CriterionValue | None = None
+        # client: str | CriterionValue | None = None
+        # date: str | CriterionValue | None = None
+        description: str | CriterionValue | None = None
         hours: float | CriterionValue | None = None
         status: str | CriterionValue | None = None
 
@@ -357,6 +370,11 @@ class NewLogAdded(Event, BaseEventValidator):
             return True
         return all(
             [
+                # self._validate_field(self.log.id, criteria.id),
+                self._validate_field(self.log.matter, criteria.matter),
+                # self._validate_field(self.log.client, criteria.client),
+                # self._validate_field(self.log.date, criteria.date),
+                self._validate_field(self.log.description, criteria.description),
                 self._validate_field(self.log.hours, criteria.hours),
                 self._validate_field(self.log.status, criteria.status),
             ],
@@ -391,6 +409,10 @@ class LogDelete(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         # id: str | CriterionValue | None = None
+        matter: str | CriterionValue | None = None
+        # client: str|CriterionValue|None = None
+        # date: str|CriterionValue|None = None
+        description: str | CriterionValue | None = None
         hours: float | CriterionValue | None = None
         status: str | CriterionValue | None = None
 
@@ -400,6 +422,10 @@ class LogDelete(Event, BaseEventValidator):
         return all(
             [
                 # self._validate_field(self.log.id, criteria.id),
+                self._validate_field(self.log.matter, criteria.matter),
+                # self._validate_field(self.log.client, criteria.client),
+                # self._validate_field(self.log.date, criteria.date),
+                self._validate_field(self.log.description, criteria.description),
                 self._validate_field(self.log.hours, criteria.hours),
                 self._validate_field(self.log.status, criteria.status),
             ],

@@ -4,16 +4,20 @@ from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
 
-from ..shared_data import (
+from ..shared_utils import create_constraint_dict
+from .data import (
+    ALLOWED_EVENT_COLORS,
+    CLIENT_DATA,
+    DEMO_LOGS,
+    DOCUMENT_DATA,
     FIELD_OPERATORS_MAP_CALENDAR,
     FIELD_OPERATORS_MAP_CHANGE_USER_NAME,
     FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER,
     FIELD_OPERATORS_MAP_DOCUMENT,
     FIELD_OPERATORS_MAP_LOG,
     FIELD_OPERATORS_MAP_MATTER,
+    MATTERS_DATA,
 )
-from ..shared_utils import create_constraint_dict
-from .data import ALLOWED_EVENT_COLORS, CLIENT_DATA, DEMO_LOGS, DOCUMENT_DATA, MATTERS_DATA
 
 
 def _generate_value_for_matter_field(
@@ -312,7 +316,55 @@ def _generate_value_for_log_field(field: str, operator: ComparisonOperator, all_
 
 
 def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
-    fields = list(FIELD_OPERATORS_MAP_CALENDAR.keys())
+    fields = ["label", "date", "time", "event_type"]
+    ALLOWED_EVENT_LABELS = [
+        "Client Meeting",
+        "Sales Call",
+        "Follow-up Call",
+        "Lead Qualification",
+        "Product Demo",
+        "Contract Review",
+        "Proposal Sent",
+        "Negotiation Meeting",
+        "Deal Closed",
+        "Customer Onboarding",
+        "Account Review",
+        "Renewal Discussion",
+        "Upsell Opportunity",
+        "Cross-sell Discussion",
+        "Support Call",
+        "Customer Feedback Session",
+        "Billing Discussion",
+        "Churn Risk Review",
+        "QBR Meeting",  # Quarterly Business Review
+        "Welcome Call",
+        "Lead Assignment",
+        "Marketing Campaign Review",
+        "Email Outreach Scheduled",
+        "Pipeline Review",
+        "CRM Data Cleanup",
+        "Client Training Session",
+        "Technical Walkthrough",
+        "Internal Strategy Sync",
+        "Team Performance Review",
+        "Monthly Sales Review",
+        "Weekly Client Check-in",
+        "Cold Outreach Call",
+        "Warm Lead Follow-up",
+        "Trial Expiry Notification",
+        "Subscription Renewal",
+        "Invoice Review",
+        "NDA Signing",
+        "Kickoff Call",
+        "Client Escalation",
+        "Feature Discussion",
+        "CSAT Follow-up",  # Customer Satisfaction follow-up
+        "Implementation Review",
+        "Introductory Meeting",
+        "Decision Maker Call",
+        "Referral Discussion",
+    ]
+
     selected_fields = random.sample(fields, random.randint(1, len(fields)))
     constraints = []
     for field in selected_fields:
@@ -326,6 +378,8 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
             value = f"{hour}:{minute:02d}{'am' if hour < 12 else 'pm'}"
         elif field == "event_type":
             value = random.choice(ALLOWED_EVENT_COLORS)
+        elif field == "label":
+            value = random.choice(ALLOWED_EVENT_LABELS)
         else:
             value = "N/A"
 
