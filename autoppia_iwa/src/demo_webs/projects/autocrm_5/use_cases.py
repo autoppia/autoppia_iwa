@@ -40,46 +40,66 @@ VIEW_MATTER_USE_CASE = UseCase(
     event=ViewMatterDetails,
     event_source_code=ViewMatterDetails.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
-    replace_func=replace_placeholders,
+    # replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Go to the Matters page and click on 'Estate Planning' to view the details of that particular matter",
-            "prompt_for_task_generation": "Go to the Matters page and click on <matter_name> to view the details of that particular matter",
+            "prompt_for_task_generation": "Go to the Matters page and click on 'Estate Planning' to view the details of that particular matter",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_MATTER_DETAILS",
                 "event_criteria": {"name": {"value": "Estate Planning"}},
-                "reasoning": "This test applies when the task requires to view the detail of a matter whose name is 'Estate Planning'",
+                "reasoning": "This test applies when the task requires viewing the detail of a matter whose name is 'Estate Planning'.",
             },
         },
         {
-            "prompt": "View details of matter, whose client name is 'Jones Legal'",
-            "prompt_for_task_generation": "View details of matter, whose client name is '<client_name>'",
+            "prompt": "View details of the matter whose client name is 'Jones Legal'",
+            "prompt_for_task_generation": "View details of the matter whose client name is 'Jones Legal'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_MATTER_DETAILS",
                 "event_criteria": {"client": {"value": "Jones Legal"}},
-                "reasoning": "This test applies when the task requires to view the detail of a matter whose client name is 'Jones Legal'",
+                "reasoning": "This test applies when the task requires viewing the detail of a matter whose client is 'Jones Legal'.",
             },
         },
         {
-            "prompt": "View matter details if its status is not updated Today",
-            "prompt_for_task_generation": "View matter details if its status is not updated '<matter_status>'",
+            "prompt": "View matter details if its updated date is not 'Today'",
+            "prompt_for_task_generation": "View matter details if its updated date is not 'Today'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_MATTER_DETAILS",
                 "event_criteria": {"updated": {"value": "Today", "operator": "not_equals"}},
-                "reasoning": "This test applies when the task is to view matter details if its status is not updated Today",
+                "reasoning": "This test applies when the task is to view matter details that were not updated today.",
             },
         },
         {
-            "prompt": "view those matters for which the status is active",
-            "prompt_for_task_generation": "view those matters for which the status is '<matter_status>'",
+            "prompt": "View those matters for which the status is 'Active'",
+            "prompt_for_task_generation": "View those matters for which the status is 'Active'",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "VIEW_MATTER_DETAILS",
-                "event_criteria": {"status": {"value": "active"}},
-                "reasoning": "This test applies when the task requires to view those matters for which the status is 'active'",
+                "event_criteria": {"status": {"value": "Active"}},
+                "reasoning": "This test applies when the task requires viewing matters that are marked as 'Active'.",
+            },
+        },
+        {
+            "prompt": "View matter details for any of the following statuses: 'Active', 'On Hold'",
+            "prompt_for_task_generation": "View matter details for any of the following statuses: 'Active', 'On Hold'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "VIEW_MATTER_DETAILS",
+                "event_criteria": {"status": {"value": ["Active", "On Hold"], "operator": "in_list"}},
+                "reasoning": "This test applies when the task is to view matters with status either 'Active' or 'On Hold'.",
+            },
+        },
+        {
+            "prompt": "View matter details excluding matters with status 'Archived' or 'On Hold'",
+            "prompt_for_task_generation": "View matter details excluding matters with status 'Archived' or 'On Hold'",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "VIEW_MATTER_DETAILS",
+                "event_criteria": {"status": {"value": ["Archived", "On Hold"], "operator": "not_in_list"}},
+                "reasoning": "This test applies when the task is to exclude matters with status 'Archived' or 'On Hold'.",
             },
         },
     ],
@@ -582,10 +602,10 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    ADD_NEW_MATTER_USE_CASE,
+    # ADD_NEW_MATTER_USE_CASE,
     # DELETE_MATTER_USE_CASE,
     # ARCHIVE_MATTER_USE_CASE,
-    # VIEW_MATTER_USE_CASE,
+    VIEW_MATTER_USE_CASE,
     # SEARCH_CLIENT_USE_CASE,
     # VIEW_CLIENT_DETAILS_USE_CASE,
     # DOCUMENT_DELETED_USE_CASE,

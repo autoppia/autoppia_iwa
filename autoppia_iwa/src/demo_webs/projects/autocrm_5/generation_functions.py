@@ -82,8 +82,10 @@ def generate_view_matter_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
     possible_fields = ["name", "client", "status", "updated"]
-    num_constraints = random.randint(1, len(possible_fields))
+    num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
+
+    matter_data = random.choice(MATTERS_DATA)
 
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
@@ -93,7 +95,44 @@ def generate_view_matter_constraints() -> list[dict[str, Any]]:
         op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
 
-        value = _generate_value_for_matter_field(field, operator)
+        value = None
+        field_value = matter_data.get(field)
+
+        if operator == ComparisonOperator.EQUALS:
+            value = field_value
+
+        elif operator == ComparisonOperator.NOT_EQUALS:
+            valid = [v[field] for v in MATTERS_DATA if v[field] != field_value]
+            if valid:
+                value = random.choice(valid)
+
+        elif operator == ComparisonOperator.CONTAINS:
+            if isinstance(field_value, str) and len(field_value) > 2:
+                start = random.randint(0, max(0, len(field_value) - 2))
+                end = random.randint(start + 1, len(field_value))
+                value = field_value[start:end]
+            else:
+                value = field_value
+
+        elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+            invalid_substrings = [v[field] for v in MATTERS_DATA if isinstance(v[field], str) and field_value not in v[field]]
+            if invalid_substrings:
+                value = random.choice(invalid_substrings)
+
+        elif operator == ComparisonOperator.IN_LIST:
+            all_values = list({v[field] for v in MATTERS_DATA})
+            random.shuffle(all_values)
+            value = random.sample(all_values, min(2, len(all_values)))
+            if not value or field_value not in value:
+                value = [field_value]
+
+        elif operator == ComparisonOperator.NOT_IN_LIST:
+            all_values = list({v[field] for v in MATTERS_DATA})
+            if field_value in all_values:
+                all_values.remove(field_value)
+            if all_values:
+                value = random.sample(all_values, min(2, len(all_values)))
+
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
