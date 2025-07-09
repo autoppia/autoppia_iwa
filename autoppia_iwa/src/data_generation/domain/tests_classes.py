@@ -14,7 +14,7 @@ from openai.types.chat import ChatCompletion
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
-from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
@@ -26,7 +26,7 @@ from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
 
 class ITest(ABC):
     @abstractmethod
-    async def _execute_test(
+    async def _execute_partial_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -59,12 +59,22 @@ class BaseTaskTest(BaseModel, ITest):
         total_iterations: int,
     ) -> bool:
         """
-        Executes the test by delegating to the _execute_test method.
+        Executes the test by delegating to the _execute_partial_test method.
         """
 
-        return await self._execute_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iterations)
+        return await self._execute_partial_test(web_project, current_iteration, prompt, snapshot, browser_snapshots, total_iterations)
 
-    async def _execute_test(
+    async def execute_global_test(
+        self,
+        backend_events: list[BackendEvent],
+    ) -> bool:
+        """
+        Executes the test by delegating to the _execute_partial_test method.
+        """
+
+        return await self._execute_global_test(backend_events)
+
+    async def _execute_partial_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -72,6 +82,15 @@ class BaseTaskTest(BaseModel, ITest):
         snapshot: BrowserSnapshot,
         browser_snapshots: list[BrowserSnapshot],
         total_iterations: int,
+    ) -> bool:
+        """
+        Must be overridden by subclasses.
+        """
+        raise NotImplementedError("Method not implemented")
+
+    async def _execute_global_test(
+        self,
+        backend_events: list[BackendEvent],
     ) -> bool:
         """
         Must be overridden by subclasses.
@@ -118,7 +137,7 @@ class CheckUrlTest(BaseTaskTest):
     match_type: Literal["exact", "contains", "regex"] = "contains"
     description: str = Field(default="Check if browser navigated to URL")
 
-    async def _execute_test(
+    async def _execute_partial_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -172,7 +191,7 @@ class FindInHtmlTest(BaseTaskTest):
         text = soup.get_text(separator=" ", strip=True)
         return re.sub(r"\s+", " ", text).strip()
 
-    async def _execute_test(
+    async def _execute_partial_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -209,7 +228,7 @@ class CheckEventTest(BaseTaskTest):
     event_criteria: dict = Field(default_factory=dict)
     description: str = Field(default="Check if specific event was triggered")
 
-    async def _execute_test(
+    async def _execute_partial_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -244,13 +263,41 @@ class CheckEventTest(BaseTaskTest):
 
         return False
 
+    async def _execute_global_test(
+        self,
+        backend_events: list[BackendEvent],
+    ) -> bool:
+        """
+        Execute the test on the given snapshots by checking for specific events.
+        """
+        from autoppia_iwa.src.demo_webs.projects.base_events import Event
+
+        parsed_events: list[Event] = Event.parse_all(backend_events)
+        valid_events: list[Event] = []
+        for event in parsed_events:
+            if event.event_name == self.event_name:
+                valid_events.append(event)
+
+        for event in valid_events:
+            validation_model = event.ValidationCriteria
+            try:
+                parsed_criteria = validation_model(**self.event_criteria)
+            except ValidationError as e:
+                print(f"Invalid validation criteria: {e}")
+                return False
+
+            if event.validate_criteria(parsed_criteria):
+                return True
+
+        return False
+
 
 class JudgeBaseOnHTML(BaseTaskTest):
     type: Literal["JudgeBaseOnHTML"] = "JudgeBaseOnHTML"
     success_criteria: str
     description: str = Field(default="Judge based on HTML changes")
 
-    async def _execute_test(
+    async def _execute_partial_test(
         self,
         web_project: WebProject,
         current_iteration: int,
@@ -334,7 +381,7 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
     success_criteria: str
     description: str = Field(default="Judge based on screenshot changes")
 
-    async def _execute_test(
+    async def _execute_partial_test(
         self,
         web_project: WebProject,
         current_iteration: int,

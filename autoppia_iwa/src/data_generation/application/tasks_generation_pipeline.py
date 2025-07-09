@@ -63,6 +63,7 @@ class TaskGenerationPipeline:
                 logger.info(f"Generated {len(global_tasks)} global tasks")
 
                 # Add tests to tasks
+
                 global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
                 all_tasks.extend(global_tasks_with_tests)
 

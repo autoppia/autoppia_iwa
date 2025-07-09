@@ -80,7 +80,8 @@ def generate_contact_constraints() -> list:
         return "TestValue"
 
     num_constraints = random.randint(1, 4)
-    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())  # ["name", "email", "subject", "message"]
+    # ["name", "email", "subject", "message"]
+    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())
     constraints_list = []
 
     for _ in range(num_constraints):
@@ -628,25 +629,6 @@ def generate_edit_profile_constraints():
     # Sample data for generating realistic values
     random_names = ["John", "Emma", "Michael", "Sophia", "James", "Olivia", "William", "Ava", "Benjamin", "Isabella", "Lucas", "Mia", "Henry", "Charlotte", "Alexander"]
 
-    random_locations = ["New York, USA", "London, UK", "Tokyo, Japan", "Paris, France", "Sydney, Australia", "Toronto, Canada", "Berlin, Germany", "Rome, Italy", "Madrid, Spain", "Seoul, South Korea"]
-
-    random_websites = [
-        "https://bookcritics.example.com",
-        "https://bookreviews.example.net",
-        "https://cinephileworld.example.org",
-        "https://bookjournals.example.io",
-        "https://bookfans.example.co",
-        "https://bookmakers.example.site",
-    ]
-
-    random_bios = [
-        "Passionate about independent books and literary fiction.",
-        "Avid reader with a love for classic literature.",
-        "Book enthusiast exploring diverse genres and authors.",
-        "Literary critic specializing in contemporary novels and poetry.",
-        "Story lover and aspiring writer.",
-    ]
-
     all_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
 
     # Generar constraints
@@ -666,15 +648,13 @@ def generate_edit_profile_constraints():
         operator_str = choice(valid_operators)
         operator = ComparisonOperator(operator_str)
 
-        if field == "first_name" or field == "last_name":
-            value = choice(random_names) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
-        elif field == "bio":
-            value = choice(random_bios) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
-        elif field == "location":
-            value = choice(random_locations) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
-        elif field == "website":
-            # Website only uses EQUALS operator
-            value = choice(random_websites)
+        if field == "first_name" or field == "last_name" or field == "bio" or field == "location" or field == "website":
+            value = (
+                choice(random_names)
+                if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS, ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]
+                else choice(random_text_elements)
+            )
+
         elif field == "favorite_genres":
             # For favorite_genres, only use EQUALS with a single genre
             value = choice(all_genres)

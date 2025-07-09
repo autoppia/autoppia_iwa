@@ -22,7 +22,7 @@ from autoppia_iwa.src.evaluation.evaluator.utils import (
     initialize_test_results_matrix,
     log_progress,
     make_gif_from_screenshots,
-    run_tests,
+    run_global_tests,
 )
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -164,7 +164,12 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Run tests
             test_start_time = time.time()
-            test_results_matrix = await run_tests(self.web_project, task, execution_history)
+            backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
+            test_results_matrix = await run_global_tests(task, backend_events=backend_events)
+
+            # test_results_matrix = await run_partial_tests(self.web_project, task, execution_history, web_agent_id)
+            logger.info(f"TEST RESULT MATRIX={test_results_matrix}, web_Agent_id {web_agent_id}...")
+
             stats.test_execution_time = time.time() - test_start_time
 
             # Random clicker baseline

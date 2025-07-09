@@ -954,6 +954,19 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                 "reasoning": "Ensures the last name is updated.",
             },
         },
+        {
+            "prompt": "Login for the following username:user<web_agent_id> and password:password123. Modify yourprofile to ensure that your location does NOT contain the word 'a' and that your website contains 'https://cinephileworld.example.org'    ",
+            "prompt_for_task_generation": "Login for the following username:user<web_agent_id> and password:password123. Modify yourprofile to ensure that your location does NOT contain the word 'a' and that your website contains <website>  ",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "EDIT_USER",
+                "event_criteria": {
+                    "location": {"value": "a", "operator": "not_caontains"},
+                    "website": {"value": "https://cinephileworld.example.or", "operator": "contains"},
+                },
+                "reasoning": "Ensures the last name is updated.",
+            },
+        },
     ],
 )
 

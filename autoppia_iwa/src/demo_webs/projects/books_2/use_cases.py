@@ -454,7 +454,7 @@ ADD_BOOK_USE_CASE = UseCase(
     additional_prompt_info=ADD_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password 'password123'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
+            "prompt": "First, authenticate with username '<username>' and password 'PASSWORD'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
             "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book '<book>' authored by '<author>'",
             "test": {
                 "type": "CheckEventTest",
@@ -467,7 +467,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Initiate session using '<username>' as the username and 'password123' as the secret. Then, add the book 'AI Superpowers' released in 2018",
+            "prompt": "Initiate session using '<username>' as the username and 'PASSWORD' as the secret. Then, add the book 'AI Superpowers' released in 2018",
             "prompt_for_task_generation": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book '<book>' released in <year>",
             "test": {
                 "type": "CheckEventTest",
@@ -480,7 +480,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "After successful login with '<username>' and 'password123', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
+            "prompt": "After successful login with '<username>' and 'PASSWORD', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
             "prompt_for_task_generation": "After successful login with '<username>' and '<password>', add the book '<book>' with genres <genre> and <genre>",
             "test": {
                 "type": "CheckEventTest",
@@ -493,7 +493,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Once logged in as '<username>' with the password 'password123', add the book 'The Midnight Library' with a page_count under 320 pages",
+            "prompt": "Once logged in as '<username>' with the password 'PASSWORD', add the book 'The Midnight Library' with a page_count under 320 pages",
             "prompt_for_task_generation": "Once logged in as '<username>' with the password '<password>', add the book '<book>' with a page_count under <page_count> pages",
             "test": {
                 "type": "CheckEventTest",
@@ -506,7 +506,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Having authenticated with '<username>' and 'password123', add the book 'The Art of Learning' with rating not 4.8.",
+            "prompt": "Having authenticated with '<username>' and 'PASSWORD', add the book 'The Art of Learning' with rating not 4.8.",
             "prompt_for_task_generation": "Having authenticated with '<username>' and '<password>', add the book '<book>' with rating not equal to <rating>",
             "test": {
                 "type": "CheckEventTest",
@@ -519,7 +519,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "Upon logging in with username '<username>' and the secret 'password123', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
+            "prompt": "Upon logging in with username '<username>' and the secret 'PASSWORD', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
             "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: '<author>', '<author>', or '<author>'",
             "test": {
                 "type": "CheckEventTest",
@@ -532,7 +532,7 @@ ADD_BOOK_USE_CASE = UseCase(
             },
         },
         {
-            "prompt": "With credentials '<username>' and 'password123' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
+            "prompt": "With credentials '<username>' and 'PASSWORD' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
             "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by '<author>'",
             "test": {
                 "type": "CheckEventTest",
@@ -922,6 +922,19 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                 "event_criteria": {
                     "username": {"value": "<username>", "operator": "equals"},
                     "first_name": {"value": "John", "operator": "equals"},
+                },
+                "reasoning": "Ensures the new first name is recorded.",
+            },
+        },
+        {
+            "prompt": "Login for the following username:user1 and password:pass123.Modify your profile to include the word 'cinema' in your first name and ensure that your website does NOT contain 'https://cinephileworld.example.org'.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your profile to include the word 'cinema' in your <first_name> and ensure that your website does NOT contain <website>.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "EDIT_USER_BOOK",
+                "event_criteria": {
+                    "website": {"value": "https://cinephileworld.example.org'", "operator": "not_contains"},
+                    "first_name": {"value": "cinema", "operator": "contains"},
                 },
                 "reasoning": "Ensures the new first name is recorded.",
             },

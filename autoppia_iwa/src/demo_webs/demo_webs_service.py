@@ -105,6 +105,8 @@ class BackendDemoWebService:
             async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()  # Raise on 4xx/5xx
                 events_data = await response.json(loads=self._json_parser.loads)
+                logger.info(f"FETCH events for {web_agent_id}: {len(events_data)} encontrados")
+
                 # print(events_data, [BackendEvent(**event) for event in events_data])
                 return [BackendEvent(**event) for event in events_data]
         except ClientError as e:
