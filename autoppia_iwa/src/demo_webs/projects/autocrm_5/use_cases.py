@@ -96,11 +96,11 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
     event=AddNewMatter,
     event_source_code=AddNewMatter.get_source_code_of_class(),
     constraints_generator=generate_add_matter_constraints,
-    replace_func=replace_placeholders,
+    # replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Create a matter named 'new', with client 'emma' and status 'active'.",
-            "prompt_for_task_generation": "Create a matter named '<matter_name>', with client '<client_name>' and status '<matter_status>'.",
+            "prompt_for_task_generation": "Create a matter named 'new', with client 'emma' and status 'active'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
@@ -114,7 +114,7 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "Create a matter with the name 'dummy', client 'anonymous', and status 'archived'.",
-            "prompt_for_task_generation": "Create a matter with the name '<matter_name>', client '<client_name>', and status '<matter_status>'.",
+            "prompt_for_task_generation": "Create a matter with the name 'dummy', client 'anonymous', and status 'archived'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
@@ -128,7 +128,7 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
         },
         {
             "prompt": "Add a new matter where the name is not 'IP Filing' and the client is 'Services & Co.'.",
-            "prompt_for_task_generation": "Add a new matter where the name is not '<matter_name>' and the client is '<client_name>'.",
+            "prompt_for_task_generation": "Add a new matter where the name is not 'IP Filing' and the client is 'Services & Co.'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
@@ -574,14 +574,14 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     ADD_NEW_MATTER_USE_CASE,
-    DELETE_MATTER_USE_CASE,
-    ARCHIVE_MATTER_USE_CASE,
-    VIEW_MATTER_USE_CASE,
-    SEARCH_CLIENT_USE_CASE,
-    VIEW_CLIENT_DETAILS_USE_CASE,
-    DOCUMENT_DELETED_USE_CASE,
-    NEW_CALENDAR_EVENT_ADDED_USE_CASE,
-    NEW_LOG_ADDED_USE_CASE,
-    LOG_DELETE_USE_CASE,
-    CHANGE_USER_NAME_USE_CASE,
+    # DELETE_MATTER_USE_CASE,
+    # ARCHIVE_MATTER_USE_CASE,
+    # VIEW_MATTER_USE_CASE,
+    # SEARCH_CLIENT_USE_CASE,
+    # VIEW_CLIENT_DETAILS_USE_CASE,
+    # DOCUMENT_DELETED_USE_CASE,
+    # NEW_CALENDAR_EVENT_ADDED_USE_CASE,
+    # NEW_LOG_ADDED_USE_CASE,
+    # LOG_DELETE_USE_CASE,
+    # CHANGE_USER_NAME_USE_CASE,
 ]

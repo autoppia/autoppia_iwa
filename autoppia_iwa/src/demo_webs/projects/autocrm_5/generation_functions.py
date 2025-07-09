@@ -134,17 +134,9 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
             "Robert Miles",
         ],
         "status": [
-            "active",
-            "archived",
-            "on hold",
-            "pending",
-            "closed",
-            "under review",
-            "in progress",
-            "awaiting approval",
-            "reopened",
-            "draft",
-            "cancelled",
+            "Active",
+            "Archived",
+            "On hold",
         ],
     }
 
