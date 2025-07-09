@@ -579,10 +579,17 @@ LOG_DELETE_USE_CASE = UseCase(
 )
 
 CHANGE_USER_NAME_EXTRA_INFO = """
-1. Ensure the prompt makes sense and does not contain both a constraint and its contradiction.
-- Correct: "Change my user name to 'Muhammad Ali'"
-- Incorrect: "Change my user name to 'Muhammad Ali' that does NOT contain 'Doe'"
-"""
+Critical Requirements:
+1. Do not specify more than one constraint for the same field — 'name' — in a single request.
+
+Examples:
+- CORRECT: "Change my user name to 'Muhammad Ali'"
+- INCORRECT: "Change my user name to 'Muhammad Ali' that does NOT contain 'Doe'"
+- CORRECT: "Change my user name to 'Emily Rose'"
+- CORRECT: "Change my user name that does NOT contain 'Evans'"
+- INCORRECT: "Change my user name to 'Emily Rose' that does NOT contain 'Evans'"
+""".strip()
+
 ###############################################################################
 # CHANGE_USER_NAME_USE_CASE
 ###############################################################################
@@ -593,6 +600,7 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
     event_source_code=ChangeUserName.get_source_code_of_class(),
     constraints_generator=generate_change_user_name_constraints,
     replace_func=replace_placeholders,
+    additional_prompt_info=CHANGE_USER_NAME_EXTRA_INFO,
     examples=[
         {
             "prompt": "Change my user name to 'Muhammad Ali'.",

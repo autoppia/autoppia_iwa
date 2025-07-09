@@ -19,69 +19,54 @@ from .data import (
 )
 
 
-def _generate_value_for_client_field(field: str, operator: ComparisonOperator, all_clients: list[dict[str, Any]] = CLIENT_DATA) -> Any:
-    values = [c[field] for c in all_clients if field in c]
-    values = list(set(values))  # Get unique values
-
-    if not values:
-        return None
-
-    if operator in [ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]:
-        chosen_value: str = str(random.choice(values))
-        if len(chosen_value) > 5:
-            start = random.randint(0, max(0, len(chosen_value) - 2))
-            end = random.randint(start + 1, len(chosen_value))
-            return chosen_value[start:end]
-        return chosen_value
-    elif operator in [ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN]:
-        if values and all(isinstance(v, int | float) for v in values):
-            base_num = random.choice(values)
-            delta = random.randint(1, 3)
-            if operator == ComparisonOperator.GREATER_THAN:
-                return base_num - delta
-            else:  # LESS_THAN
-                return base_num + delta
-        return random.choice(values)  # Fallback
-    else:  # EQUALS, NOT_EQUALS
-        return random.choice(values)
-
-
-def _generate_constraint_value(operator, field_value, field):
+def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
     value = None
+
     if operator == ComparisonOperator.EQUALS:
-        value = field_value
+        return field_value
 
     elif operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[field] for v in MATTERS_DATA if v[field] != field_value]
-        if valid:
-            value = random.choice(valid)
+        valid = [v[field] for v in dataset if v.get(field) != field_value]
+        return random.choice(valid) if valid else None
 
-    elif operator == ComparisonOperator.CONTAINS:
-        if isinstance(field_value, str) and len(field_value) > 2:
+    elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        if len(field_value) > 2:
             start = random.randint(0, max(0, len(field_value) - 2))
             end = random.randint(start + 1, len(field_value))
-            value = field_value[start:end]
-        else:
-            value = field_value
+            return field_value[start:end]
+        return field_value
 
     elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        invalid_substrings = [v[field] for v in MATTERS_DATA if isinstance(v[field], str) and field_value not in v[field]]
-        if invalid_substrings:
-            value = random.choice(invalid_substrings)
+        valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
+        return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = list({v[field] for v in MATTERS_DATA})
+        all_values = list({v.get(field) for v in dataset if field in v})
+        if not all_values:
+            return [field_value]
         random.shuffle(all_values)
-        value = random.sample(all_values, min(2, len(all_values)))
-        if not value or field_value not in value:
-            value = [field_value]
+        subset = random.sample(all_values, min(2, len(all_values)))
+        if field_value not in subset:
+            subset.append(field_value)
+        return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v[field] for v in MATTERS_DATA})
+        all_values = list({v.get(field) for v in dataset if field in v})
         if field_value in all_values:
             all_values.remove(field_value)
-        if all_values:
-            value = random.sample(all_values, min(2, len(all_values)))
+        return random.sample(all_values, min(2, len(all_values))) if all_values else []
+
+    elif operator in {ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+        numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
+        if numeric_values:
+            base = random.choice(numeric_values)
+            delta = random.uniform(1, 3)
+            if operator == ComparisonOperator.GREATER_THAN:
+                return base - delta
+            elif operator == ComparisonOperator.LESS_THAN:
+                return base + delta
+            elif operator == ComparisonOperator.GREATER_EQUAL or operator == ComparisonOperator.LESS_EQUAL:
+                return base
     return value
 
 
@@ -103,7 +88,7 @@ def generate_view_matter_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(op_str)
 
         field_value = matter_data.get(field)
-        value = _generate_constraint_value(operator, field_value, field)
+        value = _generate_constraint_value(operator, field_value, field, dataset=MATTERS_DATA)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -172,6 +157,8 @@ def generate_view_client_constraints() -> list[dict[str, Any]]:
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
+    sample_client = random.choice(CLIENT_DATA)
+
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
         if not allowed_ops:
@@ -180,9 +167,12 @@ def generate_view_client_constraints() -> list[dict[str, Any]]:
         op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
 
-        value = _generate_value_for_client_field(field, operator)
-        constraint = create_constraint_dict(field, operator, value)
-        constraints_list.append(constraint)
+        field_value = sample_client.get(field)
+        value = _generate_constraint_value(operator, field_value, field, dataset=CLIENT_DATA)
+
+        if value is not None:
+            constraint = create_constraint_dict(field, operator, value)
+            constraints_list.append(constraint)
 
     return constraints_list
 
@@ -195,9 +185,13 @@ def generate_search_client_constraints() -> list[dict[str, Any]]:
     op_str = random.choice(allowed_ops)
     operator = ComparisonOperator(op_str)
 
-    value = _generate_value_for_client_field(field, operator)
-    constraint = create_constraint_dict(field, operator, value)
-    constraints_list.append(constraint)
+    sample_client = random.choice(CLIENT_DATA)
+    field_value = sample_client.get(field)
+
+    value = _generate_constraint_value(operator, field_value, field, dataset=CLIENT_DATA)
+    if value is not None:
+        constraint = create_constraint_dict(field, operator, value)
+        constraints_list.append(constraint)
 
     return constraints_list
 

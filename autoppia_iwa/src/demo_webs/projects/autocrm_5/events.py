@@ -459,7 +459,6 @@ class ChangeUserName(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.new_name, criteria.name),
-                (criteria.min_length is None or len(self.new_name) >= criteria.min_length),
             ],
         )
 
