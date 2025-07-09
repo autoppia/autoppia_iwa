@@ -143,10 +143,7 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     possible_fields = list(sample_values.keys())
 
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    for field in selected_fields:
+    for field in possible_fields:
         op_str = random.choice(FIELD_OPERATORS_MAP_MATTER[field])
         operator = ComparisonOperator(op_str)
         value = random.choice(sample_values[field])

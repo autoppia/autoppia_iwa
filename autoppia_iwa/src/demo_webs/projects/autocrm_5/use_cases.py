@@ -88,7 +88,15 @@ VIEW_MATTER_USE_CASE = UseCase(
 ###############################################################################
 # ADD_USE_CASE
 ###############################################################################
+ADD_NEW_MATTER_EXTRA_INFO = """
+Critical Requirements:
+1. Do not specify more than one constraint for the same field — name, status, or client — in a single request.
 
+✔️ CORRECT: Create a matter with the name 'New Matter', with client 'John Doe', and status that is NOT in the list ['Archived'].
+✔️ CORRECT: Create a matter with the name that is NOT 'Acquisition Deal', with client 'John Doe', and status that is NOT in the list ['Archived'].
+✔️ CORRECT: Create a matter with the name that is NOT 'Acquisition Deal', status that is NOT in the list ['Archived'], and client that does NOT contain 'Client'.
+❌ INCORRECT: Create a matter with the name 'New Matter' that is NOT 'Acquisition Deal', with client 'John Doe', and status that is NOT in the list ['Archived'], and where the client does NOT contain 'Confidential Client'. (Multiple constraints for the same fields)
+""".strip()
 
 ADD_NEW_MATTER_USE_CASE = UseCase(
     name="ADD_NEW_MATTER",
@@ -97,46 +105,47 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
     event_source_code=AddNewMatter.get_source_code_of_class(),
     constraints_generator=generate_add_matter_constraints,
     # replace_func=replace_placeholders,
+    additional_prompt_info=ADD_NEW_MATTER_EXTRA_INFO,
     examples=[
         {
-            "prompt": "Create a matter named 'new', with client 'emma' and status 'active'.",
-            "prompt_for_task_generation": "Create a matter named 'new', with client 'emma' and status 'active'.",
+            "prompt": "Create a matter named 'New Matter', with client 'Acme Co.' and status 'Active'.",
+            "prompt_for_task_generation": "Create a matter named 'New Matter', with client 'Acme Co.' and status 'Active'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
                 "event_criteria": {
-                    "name": {"value": "new", "operator": "equals"},
-                    "client": {"value": "emma", "operator": "equals"},
-                    "status": {"value": "active", "operator": "equals"},
+                    "name": {"value": "New Matter", "operator": "equals"},
+                    "client": {"value": "Acme Co.", "operator": "equals"},
+                    "status": {"value": "Active", "operator": "equals"},
                 },
-                "reasoning": "This test applies when the task requires adding a new matter named 'new', with client 'emma' and status set to 'active'.",
+                "reasoning": "This test applies when the task requires adding a new matter named 'New Matter', with client 'Acme Co.', and status set to 'Active'.",
             },
         },
         {
-            "prompt": "Create a matter with the name 'dummy', client 'anonymous', and status 'archived'.",
-            "prompt_for_task_generation": "Create a matter with the name 'dummy', client 'anonymous', and status 'archived'.",
+            "prompt": "Create a matter with the name that contains 'Alpha', client 'Robert Miles', and status NOT 'Archived'.",
+            "prompt_for_task_generation": "Create a matter with the name 'Case Alpha', client 'Robert Miles', and status 'Archived'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
                 "event_criteria": {
-                    "name": {"value": "dummy", "operator": "equals"},
-                    "client": {"value": "anonymous", "operator": "equals"},
-                    "status": {"value": "archived", "operator": "equals"},
+                    "name": {"value": "Alpha", "operator": "contains"},
+                    "client": {"value": "Robert Miles", "operator": "equals"},
+                    "status": {"value": "Archived", "operator": "not_equals"},
                 },
-                "reasoning": "This test applies when the task requires adding a new matter with name 'dummy', client 'anonymous', and status 'archived'.",
+                "reasoning": "This test applies when the task requires adding a new matter with a name containing 'Alpha', client 'Robert Miles', and status not equal to 'Archived'.",
             },
         },
         {
-            "prompt": "Add a new matter where the name is not 'IP Filing' and the client is 'Services & Co.'.",
-            "prompt_for_task_generation": "Add a new matter where the name is not 'IP Filing' and the client is 'Services & Co.'.",
+            "prompt": "Add a new matter where the name is not 'Employment Agreement' and the client is 'Delta Partners'.",
+            "prompt_for_task_generation": "Add a new matter where the name is not 'Employment Agreement' and the client is 'Delta Partners'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "ADD_NEW_MATTER",
                 "event_criteria": {
-                    "name": {"value": "IP Filing", "operator": "not_equals"},
-                    "client": {"value": "Services & Co.", "operator": "equals"},
+                    "name": {"value": "Employment Agreement", "operator": "not_equals"},
+                    "client": {"value": "Delta Partners", "operator": "equals"},
                 },
-                "reasoning": "This test applies when the task requires adding a matter where the name is not 'IP Filing' and the client is 'Services & Co.'.",
+                "reasoning": "This test applies when the task requires adding a matter where the name is not 'Employment Agreement' and the client is 'Delta Partners'.",
             },
         },
     ],
