@@ -70,10 +70,10 @@ def replace_placeholders(text: str) -> str:
 
     placeholder_value_sources = {
         # Matter
-        "<matter_name>": list({m["name"] for m in MATTERS_DATA}),
-        "<matter_status>": list({m["status"] for m in MATTERS_DATA}),
-        "<updated_at>": list({m["updated"] for m in MATTERS_DATA}),
-        "<client_name>": list({m["client"] for m in MATTERS_DATA}),
+        # "<matter_name>": list({m["name"] for m in MATTERS_DATA}),
+        # "<matter_status>": list({m["status"] for m in MATTERS_DATA}),
+        # "<updated_at>": list({m["updated"] for m in MATTERS_DATA}),
+        # "<client_name>": list({m["client"] for m in MATTERS_DATA}),
         # Client
         "<client_email>": list({c["email"] for c in CLIENT_DATA}),
         "<client_status>": list({c["status"] for c in CLIENT_DATA}),

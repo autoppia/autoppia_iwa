@@ -103,7 +103,7 @@ class ViewMatterDetails(Event, BaseEventValidator):
         name: str | CriterionValue | None = None
         client: str | CriterionValue | None = None
         status: str | CriterionValue | None = None
-        # updated: str | CriterionValue | None = None
+        updated: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -113,6 +113,7 @@ class ViewMatterDetails(Event, BaseEventValidator):
                 self._validate_field(self.matter.name, criteria.name),
                 self._validate_field(self.matter.client, criteria.client),
                 self._validate_field(self.matter.status, criteria.status),
+                self._validate_field(self.matter.updated, criteria.updated),
             ]
         )
 
@@ -132,7 +133,7 @@ class DeleteMatter(Event, BaseEventValidator):
     """Event triggered when a matter is deleted"""
 
     event_name: str = "DELETE_MATTER"
-    matter: list[Matter] = Field(default_factory=list)
+    matters: list[Matter] = Field(default_factory=list)
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
@@ -153,7 +154,7 @@ class DeleteMatter(Event, BaseEventValidator):
                     self._validate_field(m.updated, criteria.updated),
                 ]
             )
-            for m in self.deleted
+            for m in self.matters
         )
 
     @classmethod
@@ -165,7 +166,7 @@ class DeleteMatter(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            matter=deleted_matters,
+            matters=deleted_matters,
         )
 
 
@@ -174,12 +175,12 @@ class ArchiveMatter(Event, BaseEventValidator):
 
     event_name: str = "ARCHIVE_MATTER"
     matters: list[Matter] = Field(default_factory=list)
-    # matter: Matter
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
         client: str | CriterionValue | None = None
         status: str | CriterionValue | None = None
+        updated: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -190,22 +191,22 @@ class ArchiveMatter(Event, BaseEventValidator):
                     self._validate_field(m.name, criteria.name),
                     self._validate_field(m.client, criteria.client),
                     self._validate_field(m.status, criteria.status),
-                    # self._validate_field(m.updated, criteria.updated),
+                    self._validate_field(m.updated, criteria.updated),
                 ]
             )
-            for m in self.deleted
+            for m in self.matters
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ArchiveMatter":
         base_event = Event.parse(backend_event)
-        # archived_matters = [Matter(**m) for m in backend_event.data.get("archived", [])]
+        archived_matters = [Matter(**m) for m in backend_event.data.get("archived", [])]
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # matter=archived_matters,
+            matters=archived_matters,
         )
 
 

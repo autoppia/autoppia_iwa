@@ -1,5 +1,4 @@
 import random
-import re
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
@@ -18,37 +17,6 @@ from .data import (
     FIELD_OPERATORS_MAP_MATTER,
     MATTERS_DATA,
 )
-
-
-def _generate_value_for_matter_field(
-    field: str,
-    operator: ComparisonOperator,
-    all_matters: list[dict[str, Any]] = MATTERS_DATA,
-) -> Any:
-    values = [m[field] for m in all_matters if field in m]
-    values = list(set(values))
-
-    if not values:
-        return None
-
-    if operator in [ComparisonOperator.IN_LIST, ComparisonOperator.NOT_IN_LIST]:
-        k_val = min(random.randint(1, 3), len(values))
-        return random.sample(values, k=k_val) if k_val > 0 else [random.choice(values)]
-
-    elif operator in [ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]:
-        chosen_value: str = str(random.choice(values))
-        words = [w for w in re.split(r"[^\w]", chosen_value) if len(w) >= 3]
-
-        if words:
-            return random.choice(words)
-        elif len(chosen_value) >= 3:
-            start = random.randint(0, len(chosen_value) - 3)
-            return chosen_value[start : start + random.randint(3, min(5, len(chosen_value) - start))]
-        else:
-            return chosen_value  # fallback
-
-    else:
-        return random.choice(values)
 
 
 def _generate_value_for_client_field(field: str, operator: ComparisonOperator, all_clients: list[dict[str, Any]] = CLIENT_DATA) -> Any:
@@ -78,6 +46,45 @@ def _generate_value_for_client_field(field: str, operator: ComparisonOperator, a
         return random.choice(values)
 
 
+def _generate_constraint_value(operator, field_value, field):
+    value = None
+    if operator == ComparisonOperator.EQUALS:
+        value = field_value
+
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        valid = [v[field] for v in MATTERS_DATA if v[field] != field_value]
+        if valid:
+            value = random.choice(valid)
+
+    elif operator == ComparisonOperator.CONTAINS:
+        if isinstance(field_value, str) and len(field_value) > 2:
+            start = random.randint(0, max(0, len(field_value) - 2))
+            end = random.randint(start + 1, len(field_value))
+            value = field_value[start:end]
+        else:
+            value = field_value
+
+    elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        invalid_substrings = [v[field] for v in MATTERS_DATA if isinstance(v[field], str) and field_value not in v[field]]
+        if invalid_substrings:
+            value = random.choice(invalid_substrings)
+
+    elif operator == ComparisonOperator.IN_LIST:
+        all_values = list({v[field] for v in MATTERS_DATA})
+        random.shuffle(all_values)
+        value = random.sample(all_values, min(2, len(all_values)))
+        if not value or field_value not in value:
+            value = [field_value]
+
+    elif operator == ComparisonOperator.NOT_IN_LIST:
+        all_values = list({v[field] for v in MATTERS_DATA})
+        if field_value in all_values:
+            all_values.remove(field_value)
+        if all_values:
+            value = random.sample(all_values, min(2, len(all_values)))
+    return value
+
+
 def generate_view_matter_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
@@ -95,43 +102,8 @@ def generate_view_matter_constraints() -> list[dict[str, Any]]:
         op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
 
-        value = None
         field_value = matter_data.get(field)
-
-        if operator == ComparisonOperator.EQUALS:
-            value = field_value
-
-        elif operator == ComparisonOperator.NOT_EQUALS:
-            valid = [v[field] for v in MATTERS_DATA if v[field] != field_value]
-            if valid:
-                value = random.choice(valid)
-
-        elif operator == ComparisonOperator.CONTAINS:
-            if isinstance(field_value, str) and len(field_value) > 2:
-                start = random.randint(0, max(0, len(field_value) - 2))
-                end = random.randint(start + 1, len(field_value))
-                value = field_value[start:end]
-            else:
-                value = field_value
-
-        elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-            invalid_substrings = [v[field] for v in MATTERS_DATA if isinstance(v[field], str) and field_value not in v[field]]
-            if invalid_substrings:
-                value = random.choice(invalid_substrings)
-
-        elif operator == ComparisonOperator.IN_LIST:
-            all_values = list({v[field] for v in MATTERS_DATA})
-            random.shuffle(all_values)
-            value = random.sample(all_values, min(2, len(all_values)))
-            if not value or field_value not in value:
-                value = [field_value]
-
-        elif operator == ComparisonOperator.NOT_IN_LIST:
-            all_values = list({v[field] for v in MATTERS_DATA})
-            if field_value in all_values:
-                all_values.remove(field_value)
-            if all_values:
-                value = random.sample(all_values, min(2, len(all_values)))
+        value = _generate_constraint_value(operator, field_value, field)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -186,30 +158,6 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
         op_str = random.choice(FIELD_OPERATORS_MAP_MATTER[field])
         operator = ComparisonOperator(op_str)
         value = random.choice(sample_values[field])
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
-
-    return constraints_list
-
-
-def generate_archive_matter_constraints() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-
-    possible_fields = ["name", "client", "status", "updated"]
-
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_MAP_MATTER.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-
-        value = _generate_value_for_matter_field(field, operator)
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
