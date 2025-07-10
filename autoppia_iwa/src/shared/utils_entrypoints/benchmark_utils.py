@@ -26,7 +26,7 @@ class BenchmarkConfig:
     num_of_use_cases: int = 0  # set to 0 if you want to run all
 
     # Runtime options
-    num_runs: int = 1
+    num_runs: int = 2
     max_parallel_agent_calls: int = 1
     return_evaluation_gif: bool = False
 

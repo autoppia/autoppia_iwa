@@ -6,6 +6,44 @@ from ..criterion_helper import ComparisonOperator, CriterionValue, validate_crit
 from .data import BOOKS_DATA, FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
 
 
+def generate_registration_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals PASSWORD"
+
+    return parse_constraints_str(constraints_str)
+
+
+def generate_login_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals <web_agent_id> AND password equals PASSWORD"
+
+    return parse_constraints_str(constraints_str)
+
+
+def generate_logout_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals <web_agent_id>"
+    return parse_constraints_str(constraints_str)
+
+
 def generate_book_constraints():
     """
     Generates constraints specifically for book-related use cases.
@@ -20,6 +58,19 @@ def generate_book_constraints():
     if constraints_str:
         return parse_constraints_str(constraints_str)
     return None
+
+
+def generate_search_book_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    books_names = [book["name"] for book in BOOKS_DATA]
+    operators = ["equals", "not_equals"]
+    constraints_str = f"query {choice(operators)} {choice(books_names)}"
+    return parse_constraints_str(constraints_str)
 
 
 def generate_contact_constraints() -> list:
