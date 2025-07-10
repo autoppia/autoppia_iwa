@@ -1,8 +1,10 @@
+from datetime import date, datetime, time
+
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
 
 # =============================================================================
 #                           BASE MODELS
@@ -339,15 +341,103 @@ class NewCalendarEventAdded(Event, BaseEventValidator):
             ],
         )
 
+    def _validate_field(self, actual: str, criterion: str | CriterionValue | None) -> bool:
+        if criterion is None:
+            return True
+
+        if isinstance(criterion, str):
+            return actual == criterion
+
+        if isinstance(criterion, CriterionValue):
+            op = criterion.operator
+            value = criterion.value
+
+            # Check for date
+            if self._is_date(actual) and self._is_date(value):
+                actual_date = date.fromisoformat(actual)
+                value_date = date.fromisoformat(value)
+                return self._apply_operator(actual_date, value_date, op)
+
+            # Check for time
+            if self._is_time(actual) and self._is_time(value):
+                actual_time = self._parse_time(actual)
+                value_time = self._parse_time(value)
+                return self._apply_operator(actual_time, value_time, op)
+
+            # Fallback: string-based comparisons
+            if op == ComparisonOperator.EQUALS:
+                return actual == value
+            elif op == ComparisonOperator.NOT_EQUALS:
+                return actual != value
+            elif op == ComparisonOperator.CONTAINS:
+                return value in actual
+            elif op == ComparisonOperator.NOT_CONTAINS:
+                return value not in actual
+            elif op == ComparisonOperator.GREATER_EQUAL:
+                return actual >= value
+            elif op == ComparisonOperator.LESS_EQUAL:
+                return actual <= value
+        return False
+
+    def _apply_operator(self, actual, value, op: ComparisonOperator) -> bool:
+        if op == ComparisonOperator.EQUALS:
+            return actual == value
+        elif op == ComparisonOperator.NOT_EQUALS:
+            return actual != value
+        elif op == ComparisonOperator.GREATER_EQUAL:
+            return actual >= value
+        elif op == ComparisonOperator.LESS_EQUAL:
+            return actual <= value
+        elif op == ComparisonOperator.GREATER_THAN:
+            return actual > value
+        elif op == ComparisonOperator.LESS_THAN:
+            return actual < value
+        elif op == ComparisonOperator.CONTAINS:
+            return str(value) in str(actual)
+        elif op == ComparisonOperator.NOT_CONTAINS:
+            return str(value) not in str(actual)
+        return False
+
+    def _is_date(self, val: str) -> bool:
+        try:
+            date.fromisoformat(val)
+            return True
+        except ValueError:
+            return False
+
+    def _is_time(self, val: str) -> bool:
+        try:
+            self._parse_time(val)
+            return True
+        except ValueError:
+            return False
+
+    def _parse_time(self, val: str) -> time:
+        val = val.strip().lower()
+        try:
+            return datetime.strptime(val, "%H:%M").time()
+        except ValueError:
+            pass
+        try:
+            return datetime.strptime(val, "%I:%M%p").time()
+        except ValueError as ve:
+            raise ValueError(f"Invalid time format: {val}") from ve
+
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "NewCalendarEventAdded":
         base_event = Event.parse(backend_event)
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            event_data=CalendarEvent(**backend_event.data),
+            event_data=CalendarEvent(
+                label=data.get("label", ""),
+                date=data.get("date", ""),
+                time=data.get("time", ""),
+                event_type=data.get("color", ""),
+            ),
         )
 
 

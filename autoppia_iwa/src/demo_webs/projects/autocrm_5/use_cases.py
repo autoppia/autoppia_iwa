@@ -438,6 +438,15 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
         },
     ],
 )
+NEW_CALENDER_EVENT_EXTRA_INFO = """
+Critical Requirements:
+1. Do not specify more than one constraint for the same field — label, time, date, or event_type — in a single request.
+
+✔️ CORRECT: Add a new calendar event on '2025-05-13' at '9:00am' called 'Team Sync' with an event type 'Filing'.
+✔️ CORRECT: Schedule an event with label that CONTAINS 'Review' at time '2:30pm' and type that is NOT 'Other'.
+✔️ CORRECT: Create a calendar event on a date that is GREATER THAN '2025-05-10' with time that is LESS THAN '3:00pm' and event type 'Internal'.
+❌ INCORRECT: Add a new calendar event on '2025-05-12' at '4:00pm' called 'Project Update' with an event type that CONTAINS 'Internal' and is NOT equal to 'Marketing Campaign Review', scheduled for a date that is GREATER THAN or EQUAL to '2025-05-10' and a time that is GREATER THAN or EQUAL to '3:00pm'. (Multiple constraints for the same fields)
+""".strip()
 
 
 ###############################################################################
@@ -449,36 +458,48 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
     event=NewCalendarEventAdded,
     event_source_code=NewCalendarEventAdded.get_source_code_of_class(),
     constraints_generator=generate_new_calendar_event_constraints,
-    replace_func=replace_placeholders,
+    # replace_func=replace_placeholders,
+    additional_prompt_info=NEW_CALENDER_EVENT_EXTRA_INFO,
     examples=[
         {
-            "prompt": "Add a new calendar event for May 13, 9 AM, labeled 'Team Sync' and event type 'Filing'.",
-            "prompt_for_task_generation": "Add a new calendar event for '<event_date>', '<event_time>', labeled '<event_label'> and colored <'event_type>'.",
+            "prompt": "Add a new calendar event on 2025-05-13 at 9:00am called 'Team Sync' with a Filing type.",
+            "prompt_for_task_generation": "Add a new calendar event on 2025-05-13 at 9:00am called 'Team Sync' with a Filing type.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
-                "event_criteria": {"date": {"value": "2025-05-13", "operator": "equals"}, "time": {"value": "09:00am", "operator": "equals"}, "event_type": {"value": "Filing", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires adding a calendar event on May 13, 9 AM, with a blue color.",
+                "event_criteria": {
+                    "date": {"value": "2025-05-13", "operator": "equals"},
+                    "time": {"value": "9:00am", "operator": "equals"},
+                    "event_type": {"value": "Filing", "operator": "equals"},
+                },
+                "reasoning": "This test applies when a calendar event is added on 2025-05-13 at 9:00am with type 'Filing'.",
             },
         },
         {
-            "prompt": "Schedule an event for May 7th at 2:30 PM, with an 'Internal' highlight.",
-            "prompt_for_task_generation": "Schedule an event for '<event_date>' at '<event_time>', with an '<event_type>' highlight.",
+            "prompt": "Schedule an Internal event on 2025-05-07 at 2:30pm titled 'Internal Review'.",
+            "prompt_for_task_generation": "Schedule an Internal event on 2025-05-07 at 2:30pm titled 'Internal Review'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
-                "event_criteria": {"date": {"value": "2025-05-07", "operator": "equals"}, "time": {"value": "2:30pm", "operator": "equals"}, "event_type": {"value": "Internal", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires adding a calendar event on May 7th, 2:30 PM, with an indigo color.",
+                "event_criteria": {
+                    "date": {"value": "2025-05-07", "operator": "equals"},
+                    "time": {"value": "2:30pm", "operator": "equals"},
+                    "event_type": {"value": "Internal", "operator": "equals"},
+                },
+                "reasoning": "This test applies when a calendar event is added on 2025-05-07 at 2:30pm with type 'Internal'.",
             },
         },
         {
-            "prompt": "Create a calendar event for May 22nd with a 'Matter/Event' color, any time.",
-            "prompt_for_task_generation": "Create a calendar event for '<event_date>' with a '<event_type>' color, any time.",
+            "prompt": "Create a calendar event on 2025-05-22 named 'Staff Meeting' with a Matter/Event color.",
+            "prompt_for_task_generation": "Create a calendar event on 2025-05-22 named 'Staff Meeting' with a Matter/Event color.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_CALENDAR_EVENT_ADDED",
-                "event_criteria": {"date": {"value": "2025-05-22", "operator": "equals"}, "event_type": {"value": "Matter/Event", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires adding a calendar event for May 22nd with a zinc color.",
+                "event_criteria": {
+                    "date": {"value": "2025-05-22", "operator": "equals"},
+                    "event_type": {"value": "Matter/Event", "operator": "equals"},
+                },
+                "reasoning": "This test applies when a calendar event is added on 2025-05-22 with type 'Matter/Event'.",
             },
         },
     ],
@@ -748,8 +769,8 @@ ALL_USE_CASES = [
     # VIEW_CLIENT_DETAILS_USE_CASE,
     # SEARCH_CLIENT_USE_CASE,
     # DOCUMENT_DELETED_USE_CASE,
-    # NEW_CALENDAR_EVENT_ADDED_USE_CASE,
+    NEW_CALENDAR_EVENT_ADDED_USE_CASE,
     # NEW_LOG_ADDED_USE_CASE,
-    LOG_DELETE_USE_CASE,
+    # LOG_DELETE_USE_CASE,
     # CHANGE_USER_NAME_USE_CASE,
 ]

@@ -273,7 +273,7 @@ def generate_document_deleted_constraints() -> list[dict[str, Any]]:
 
 
 def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
-    fields = ["label", "time", "event_type"]
+    fields = ["label", "time", "date", "event_type"]
     ALLOWED_EVENT_LABELS = [
         "Client Meeting",
         "Sales Call",
@@ -322,17 +322,32 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
         "Referral Discussion",
     ]
 
-    selected_fields = random.sample(fields, random.randint(1, len(fields)))
     constraints = []
-    for field in selected_fields:
+    for field in fields:
         op_str = random.choice(FIELD_OPERATORS_MAP_CALENDAR[field])
         operator = ComparisonOperator(op_str)
+
         if field == "date":
-            value = f"2025-05-{random.randint(1, 28):02d}"
+            # Ensure generated date is within a feasible range
+            base_day = random.randint(1, 28)
+            if operator == ComparisonOperator.LESS_THAN:
+                value = f"2025-05-{base_day:02d}"
+                # Prevent dates too far in the past or before system start
+                if base_day < 2:
+                    value = "2025-05-02"
+            elif operator == ComparisonOperator.GREATER_THAN:
+                value = f"2025-05-{base_day:02d}"
+                if base_day > 27:
+                    value = "2025-05-27"
+            else:
+                value = f"2025-05-{base_day:02d}"
+
         elif field == "time":
-            hour = random.choice(range(8, 17))
+            hour = random.randint(8, 16)
             minute = random.choice([0, 30])
-            value = f"{hour}:{minute:02d}{'am' if hour < 12 else 'pm'}"
+            suffix = "am" if hour < 12 else "pm"
+            display_hour = hour if hour <= 12 else hour - 12
+            value = f"{display_hour}:{minute:02d}{suffix}"
         elif field == "event_type":
             value = random.choice(ALLOWED_EVENT_COLORS)
         elif field == "label":
