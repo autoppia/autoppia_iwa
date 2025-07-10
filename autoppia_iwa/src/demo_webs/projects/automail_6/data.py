@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 
 EMAILS_DATA = [
@@ -1040,6 +1041,17 @@ EMAILS_DATA = [
         "attachments": [],  # No attachments mentioned
     },
 ]
+
+EMAILS_DATA_MODIFIED = []
+for email in deepcopy(EMAILS_DATA):
+    if email.get("from"):
+        new_dict = {}
+        for k, v in email["from"].items():
+            new_dict["from_" + k] = v
+        email.pop("from")
+        email.update(new_dict)
+    EMAILS_DATA_MODIFIED.append(email)
+
 from ..shared_data import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
 
-FIELD_OPERATORS_MAP_ADD_COMMENT = {"from_email": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS], "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}
+FIELD_OPERATORS_MAP_VIEW_EMAIL = {"from_email": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS], "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}

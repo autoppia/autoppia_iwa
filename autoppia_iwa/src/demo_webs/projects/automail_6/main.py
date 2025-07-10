@@ -6,7 +6,7 @@ from .use_cases import ALL_USE_CASES
 
 FRONTEND_PORT_INDEX = 1
 BACKEND_PORT_INDEX = 1
-books_project = WebProject(
+automail_project = WebProject(
     id="automail",
     name="Autoppia AutoMail",
     frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),
