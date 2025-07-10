@@ -2,8 +2,7 @@ import random
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from ..shared_data import FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, MOVIES_DATA
+from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER, MOVIES_DATA
 
 
 def generate_film_constraints():
@@ -79,7 +78,8 @@ def generate_contact_constraints() -> list:
         return "TestValue"
 
     num_constraints = random.randint(1, 4)
-    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())  # ["name", "email", "subject", "message"]
+    # ["name", "email", "subject", "message"]
+    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())
     constraints_list = []
 
     for _ in range(num_constraints):

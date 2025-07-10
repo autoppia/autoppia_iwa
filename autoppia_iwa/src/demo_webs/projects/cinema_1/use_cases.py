@@ -886,7 +886,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                     "username": {"value": "user1", "operator": "equals"},
                     "first_name": {"value": "John", "operator": "equals"},
                 },
-                "reasoning": "Ensures the new first name is recorded.",
             },
         },
         {
@@ -899,7 +898,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                     "username": {"value": "filmfan", "operator": "equals"},
                     "bio": {"value": "cinema", "operator": "contains"},
                 },
-                "reasoning": "Ensures the new bio content is recorded.",
             },
         },
         {
@@ -912,7 +910,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                     "username": {"value": "movielover", "operator": "equals"},
                     "location": {"value": "New York, USA", "operator": "equals"},
                 },
-                "reasoning": "Ensures the location is updated.",
             },
         },
         {
@@ -925,7 +922,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                     "username": {"value": "cinephile", "operator": "equals"},
                     "website": {"value": "https://myfilmblog.example.com", "operator": "equals"},
                 },
-                "reasoning": "Ensures the website is updated.",
             },
         },
         {
@@ -938,7 +934,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                     "username": {"value": "director101", "operator": "equals"},
                     "favorite_genres": {"value": "Sci-Fi", "operator": "equals"},
                 },
-                "reasoning": "Ensures the favorite genre is updated.",
             },
         },
         {
@@ -951,7 +946,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                     "username": {"value": "producer", "operator": "equals"},
                     "last_name": {"value": "Smith", "operator": "equals"},
                 },
-                "reasoning": "Ensures the last name is updated.",
             },
         },
         {
@@ -964,7 +958,6 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
                     "location": {"value": "a", "operator": "not_caontains"},
                     "website": {"value": "https://cinephileworld.example.or", "operator": "contains"},
                 },
-                "reasoning": "Ensures the last name is updated.",
             },
         },
     ],
@@ -1144,15 +1137,15 @@ ADD_COMMENT_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     FILM_DETAIL_USE_CASE,
-    LOGIN_USE_CASE,
-    DELETE_FILM_USE_CASE,
-    LOGOUT_USE_CASE,
-    FILTER_FILM_USE_CASE,
-    SEARCH_FILM_USE_CASE,
-    CONTACT_USE_CASE,
-    REGISTRATION_USE_CASE,
-    ADD_COMMENT_USE_CASE,
-    EDIT_FILM_USE_CASE,
-    ADD_FILM_USE_CASE,
-    EDIT_USER_PROFILE_USE_CASE,
+    # LOGIN_USE_CASE,
+    # DELETE_FILM_USE_CASE,
+    # LOGOUT_USE_CASE,
+    # FILTER_FILM_USE_CASE,
+    # SEARCH_FILM_USE_CASE,
+    # CONTACT_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
+    # EDIT_FILM_USE_CASE,
+    # ADD_FILM_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,
 ]

@@ -1,4 +1,3 @@
-import re
 from typing import Any
 
 
@@ -28,12 +27,3 @@ def normalize_test_config(test_config: dict[str, Any]) -> dict[str, Any]:
         # Optionally set a name for specific test types
         if raw_test_type in ["JudgeBaseOnHTML", "OpinionBaseOnScreenshot"]:
             test_config["name"] = raw_test_type
-
-
-def extract_domain(url: str) -> str:
-    """Extract domain from a full URL."""
-    if not url:
-        return ""
-    pattern = re.compile(r"https?://([^/]+)")
-    match = pattern.match(url)
-    return match.group(1).lower() if match else ""
