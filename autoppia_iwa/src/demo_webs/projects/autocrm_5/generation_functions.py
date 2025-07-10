@@ -7,15 +7,15 @@ from ..shared_utils import create_constraint_dict
 from .data import (
     ALLOWED_EVENT_COLORS,
     CLIENT_DATA,
-    DEMO_LOGS,
     DOCUMENT_DATA,
     FIELD_OPERATORS_MAP_CALENDAR,
     FIELD_OPERATORS_MAP_CHANGE_USER_NAME,
     FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER,
     FIELD_OPERATORS_MAP_DOCUMENT,
-    FIELD_OPERATORS_MAP_LOG,
     FIELD_OPERATORS_MAP_MATTER,
+    FIELD_OPERATORS_MAP_NEW_LOG,
     MATTERS_DATA,
+    NEW_LOGS_DATA,
 )
 
 
@@ -56,17 +56,23 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
             all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
 
-    elif operator in {ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+    elif operator in {
+        ComparisonOperator.GREATER_THAN,
+        ComparisonOperator.LESS_THAN,
+        ComparisonOperator.GREATER_EQUAL,
+        ComparisonOperator.LESS_EQUAL,
+    }:
         numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
         if numeric_values:
             base = random.choice(numeric_values)
             delta = random.uniform(1, 3)
             if operator == ComparisonOperator.GREATER_THAN:
-                return base - delta
+                return round(base - delta, 2)
             elif operator == ComparisonOperator.LESS_THAN:
-                return base + delta
-            elif operator == ComparisonOperator.GREATER_EQUAL or operator == ComparisonOperator.LESS_EQUAL:
-                return base
+                return round(base + delta, 2)
+            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                return round(base, 2)
+
     return value
 
 
@@ -264,29 +270,8 @@ def generate_document_deleted_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def _generate_value_for_log_field(field: str, operator: ComparisonOperator, all_logs: list[dict[str, Any]] = DEMO_LOGS) -> Any:
-    values = [log[field] for log in all_logs if field in log]
-    values = list(set(values))
-    if not values:
-        return None
-
-    if operator in [ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]:
-        chosen_value = str(random.choice(values))
-        words = [w for w in chosen_value.split() if len(w) >= 3]
-        return random.choice(words) if words else chosen_value[:3]
-
-    if operator in [ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]:
-        numeric_values = [v for v in values if isinstance(v, int | float)]
-        if numeric_values:
-            base = random.choice(numeric_values)
-            offset = random.uniform(0.5, 1.5)
-            return round(base + offset, 2) if "greater" in operator.value else round(base - offset, 2)
-
-    return random.choice(values)
-
-
 def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
-    fields = ["label", "date", "time", "event_type"]
+    fields = ["label", "time", "event_type"]
     ALLOWED_EVENT_LABELS = [
         "Client Meeting",
         "Sales Call",
@@ -359,16 +344,26 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
 
 
 def generate_new_log_added_constraints() -> list[dict[str, Any]]:
-    fields = ["matter", "client", "hours", "status"]
-    selected_fields = random.sample(fields, random.randint(1, len(fields)))
-    constraints = []
-    for field in selected_fields:
-        op_str = random.choice(FIELD_OPERATORS_MAP_LOG[field])
+    fields = ["matter", "hours", "description"]
+    constraints: list[dict[str, Any]] = []
+
+    log_data = random.choice(NEW_LOGS_DATA)
+
+    for field in fields:
+        allowed_ops = FIELD_OPERATORS_MAP_NEW_LOG.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
-        value = _generate_value_for_log_field(field, operator)
+        field_value = log_data.get(field)
+
+        value = _generate_constraint_value(operator, field_value, field, dataset=NEW_LOGS_DATA)
+
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
             constraints.append(constraint)
+
     return constraints
 
 

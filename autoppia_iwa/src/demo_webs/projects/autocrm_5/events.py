@@ -364,7 +364,7 @@ class NewLogAdded(Event, BaseEventValidator):
         # date: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
         hours: float | CriterionValue | None = None
-        status: str | CriterionValue | None = None
+        # status: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -377,28 +377,19 @@ class NewLogAdded(Event, BaseEventValidator):
                 # self._validate_field(self.log.date, criteria.date),
                 self._validate_field(self.log.description, criteria.description),
                 self._validate_field(self.log.hours, criteria.hours),
-                self._validate_field(self.log.status, criteria.status),
+                # self._validate_field(self.log.status, criteria.status),
             ],
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "NewLogAdded":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            log=TimeLog(
-                # id=str(data["id"]),
-                matter=data["matter"],
-                client=data["client"],
-                date=data["date"],
-                hours=data["hours"],
-                description=data["description"],
-                status=data["status"],
-            ),
+            log=TimeLog(**backend_event.data),
         )
 
 

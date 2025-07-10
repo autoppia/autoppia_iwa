@@ -483,6 +483,14 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
     ],
 )
 
+ADD_NEW_LOG_EXTRA_INFO = """
+Critical Requirements:
+1. Do not specify more than one constraint for the same field — matter, description, or hours — in a single request.
+
+✔️ CORRECT: Add a time log for 'Trademark Filing' with hours NOT EQUAL to '2.5' and a description that is NOT 'Negotiation call'.
+✔️ CORRECT: Add a time log for 'Trademark Filing' with a description that is NOT 'Negotiation call' while ensuring the total hours are less than or equal to '4.5'.
+❌ INCORRECT: Add a time log for 'Trademark Filing' with hours NOT EQUAL to '2.5' and a description that is NOT 'Negotiation call' while ensuring the total hours are less than or equal to '4.5'.
+""".strip()
 
 ###############################################################################
 # NEW_LOG_ADDED_USE_CASE
@@ -493,41 +501,77 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
     event=NewLogAdded,
     event_source_code=NewLogAdded.get_source_code_of_class(),
     constraints_generator=generate_new_log_added_constraints,
-    replace_func=replace_placeholders,
+    # replace_func=replace_placeholders,
+    additional_prompt_info=ADD_NEW_LOG_EXTRA_INFO,
     examples=[
         {
-            "prompt": "Add a new time log for 'Estate Planning' matter, 2 hours, marked as 'Billable'.",
-            "prompt_for_task_generation": "Add a new time log for '<matter_name>' matter, '<log_hours>' hours, marked as '<log_status>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "NEW_LOG_ADDED",
-                "event_criteria": {"matter": {"value": "Estate Planning", "operator": "equals"}, "hours": {"value": 2.0, "operator": "equals"}, "status": {"value": "Billable", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires adding a time log for 'Estate Planning' with 2 hours and 'Billable' status.",
-            },
-        },
-        {
-            "prompt": "Log 1.5 hours for 'IP Filing' activity with Acme Biotech, with a 'Billed' status.",
-            "prompt_for_task_generation": "Log <log_hours> hours for '<matter_name>' activity with '<log_client>', with a '<log_status>' status.",
+            "prompt": "Add a time log for 'Trademark Filing' with 2.5 hours for 'Prepare documents'.",
+            "prompt_for_task_generation": "Add a time log for 'Trademark Filing' with '2.5' hours for 'Prepare documents'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_LOG_ADDED",
                 "event_criteria": {
-                    "hours": {"value": 1.5, "operator": "equals"},
-                    "matter": {"value": "IP Filing", "operator": "equals"},
-                    "client": {"value": "Acme Biotech", "operator": "equals"},
-                    "status": {"value": "Billed", "operator": "equals"},
+                    "matter": {"value": "Trademark Filing", "operator": "equals"},
+                    "hours": {"value": 2.5, "operator": "equals"},
+                    "description": {"value": "Prepare documents", "operator": "equals"},
                 },
-                "reasoning": "This test applies when the task requires adding a specific time log for 'IP Filing' with Acme Biotech.",
+                "reasoning": "This test applies when the task requires logging 2.5 hours for 'Trademark Filing' with the description 'Prepare documents'.",
             },
         },
         {
-            "prompt": "Create a time log entry with more than 2 hours for 'Peak Ventures'.",
-            "prompt_for_task_generation": "Create a time log entry with more than '<log_hours>' hours for '<log_client>'.",
+            "prompt": "Log 3 hours for 'M&A Advice' to record 'Negotiation call'.",
+            "prompt_for_task_generation": "Log 3 hours for 'M&A Advice' to record 'Negotiation call'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "NEW_LOG_ADDED",
-                "event_criteria": {"hours": {"value": 2.0, "operator": "greater_than"}, "client": {"value": "Peak Ventures", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires adding a time log for 'Peak Ventures' with hours greater than 2.",
+                "event_criteria": {
+                    "matter": {"value": "M&A Advice", "operator": "equals"},
+                    "hours": {"value": 3.0, "operator": "equals"},
+                    "description": {"value": "Negotiation call", "operator": "equals"},
+                },
+                "reasoning": "This test applies when logging 3 hours for 'M&A Advice' for a negotiation call.",
+            },
+        },
+        {
+            "prompt": "Create a new log for 'Startup Incorporation' with more than 3 hours for 'Setup docs'.",
+            "prompt_for_task_generation": "Create a new log for 'Startup Incorporation' with more than '3' hours for 'Setup docs'.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "NEW_LOG_ADDED",
+                "event_criteria": {
+                    "matter": {"value": "Startup Incorporation", "operator": "equals"},
+                    "hours": {"value": 3.0, "operator": "greater_than"},
+                    "description": {"value": "Setup docs", "operator": "equals"},
+                },
+                "reasoning": "This test applies when the task requires logging more than 3 hours for 'Startup Incorporation' with description 'Setup docs'.",
+            },
+        },
+        {
+            "prompt": "Log time for 'Tax Advisory' but make sure the hours are not 2.5, use 'Tax analysis' as description.",
+            "prompt_for_task_generation": "Log time for 'Tax Advisory' with hours not equal to '2.5' and description 'Tax analysis'.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "NEW_LOG_ADDED",
+                "event_criteria": {
+                    "matter": {"value": "Tax Advisory", "operator": "equals"},
+                    "hours": {"value": 2.5, "operator": "not_equals"},
+                    "description": {"value": "Tax analysis", "operator": "equals"},
+                },
+                "reasoning": "This test applies when the task requires logging hours for 'Tax Advisory' but not exactly 2.5, with description 'Tax analysis'.",
+            },
+        },
+        {
+            "prompt": "Create a log for 'Trademark Renewal' for less than 1 hour, describing it as 'Online filing'.",
+            "prompt_for_task_generation": "Create a log for 'Trademark Renewal' with less than '1' hour and description 'Online filing'.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "NEW_LOG_ADDED",
+                "event_criteria": {
+                    "matter": {"value": "Trademark Renewal", "operator": "equals"},
+                    "hours": {"value": 1.0, "operator": "less_than"},
+                    "description": {"value": "Online filing", "operator": "equals"},
+                },
+                "reasoning": "This test applies when the task requires logging less than 1 hour for 'Trademark Renewal' with description 'Online filing'.",
             },
         },
     ],
@@ -639,14 +683,14 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     # ADD_NEW_MATTER_USE_CASE,
-    VIEW_MATTER_USE_CASE,
-    DELETE_MATTER_USE_CASE,
+    # VIEW_MATTER_USE_CASE,
+    # DELETE_MATTER_USE_CASE,
     # ARCHIVE_MATTER_USE_CASE,
-    # SEARCH_CLIENT_USE_CASE,
     # VIEW_CLIENT_DETAILS_USE_CASE,
+    # SEARCH_CLIENT_USE_CASE,
     # DOCUMENT_DELETED_USE_CASE,
     # NEW_CALENDAR_EVENT_ADDED_USE_CASE,
-    # NEW_LOG_ADDED_USE_CASE,
+    NEW_LOG_ADDED_USE_CASE,
     # LOG_DELETE_USE_CASE,
     # CHANGE_USER_NAME_USE_CASE,
 ]

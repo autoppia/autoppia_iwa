@@ -38,6 +38,44 @@ DEMO_LOGS = [
     {"id": 35, "matter": "Startup Pitch Deck", "client": "LaunchLeap", "date": "2025-04-14", "hours": 2.3, "description": "Legal feedback", "status": "Billed"},
     {"id": 36, "matter": "Non-Compete Review", "client": "RevoTech", "date": "2025-04-13", "hours": 1.7, "description": "Review & advise", "status": "Billable"},
 ]
+NEW_LOGS_DATA = [
+    {"matter": "Estate Planning", "description": "Consultation", "hours": 2},
+    {"matter": "IP Filing", "description": "Draft application", "hours": 1.5},
+    {"matter": "M&A Advice", "description": "Negotiation call", "hours": 3},
+    {"matter": "Trademark Filing", "description": "Prepare documents", "hours": 2.5},
+    {"matter": "NDA Review", "description": "Review clauses", "hours": 1.2},
+    {"matter": "Shareholder Dispute", "description": "Strategy meeting", "hours": 4},
+    {"matter": "Franchise Agreement", "description": "Legal drafting", "hours": 2.75},
+    {"matter": "Employment Contract", "description": "HR consultation", "hours": 1},
+    {"matter": "Investor Due Diligence", "description": "Risk assessment", "hours": 3.3},
+    {"matter": "Corporate Compliance", "description": "Documentation check", "hours": 2.1},
+    {"matter": "Patent Filing", "description": "Patent search", "hours": 2},
+    {"matter": "Business Sale", "description": "Contract review", "hours": 5},
+    {"matter": "Internal Audit", "description": "Financial review", "hours": 3.5},
+    {"matter": "Trademark Renewal", "description": "Online filing", "hours": 0.8},
+    {"matter": "Merger Strategy", "description": "Planning call", "hours": 4.2},
+    {"matter": "Copyright Dispute", "description": "Case analysis", "hours": 2.9},
+    {"matter": "IP Agreement", "description": "Client call", "hours": 1.1},
+    {"matter": "SaaS Contract", "description": "Contract draft", "hours": 2.6},
+    {"matter": "Annual Return Filing", "description": "Compliance filing", "hours": 3.4},
+    {"matter": "Legal Memo", "description": "Drafting memo", "hours": 1.8},
+    {"matter": "Founder Agreement", "description": "Review terms", "hours": 2.7},
+    {"matter": "Funding Round", "description": "Legal prep", "hours": 4.6},
+    {"matter": "Property Lease", "description": "Lease review", "hours": 2.9},
+    {"matter": "Board Meeting", "description": "Meeting notes", "hours": 1.3},
+    {"matter": "Tax Advisory", "description": "Tax analysis", "hours": 2.5},
+    {"matter": "Startup Incorporation", "description": "Setup docs", "hours": 3.7},
+    {"matter": "Product Licensing", "description": "Review contract", "hours": 2.2},
+    {"matter": "Compliance Review", "description": "Checklist audit", "hours": 1.9},
+    {"matter": "Trademark Filing", "description": "Filing form", "hours": 0.9},
+    {"matter": "Business Valuation", "description": "Valuation call", "hours": 4.5},
+    {"matter": "Policy Drafting", "description": "Drafting policy", "hours": 3.2},
+    {"matter": "Court Filing", "description": "File case", "hours": 2.8},
+    {"matter": "Contract Dispute", "description": "Client discussion", "hours": 1.4},
+    {"matter": "Risk Assessment", "description": "Review & report", "hours": 3},
+    {"matter": "Startup Pitch Deck", "description": "Legal feedback", "hours": 2.3},
+    {"matter": "Non-Compete Review", "description": "Review & advise", "hours": 1.7},
+]
 
 CALENDAR_DATA = [
     {
@@ -258,7 +296,7 @@ FIELD_OPERATORS_MAP_DOCUMENT = {
 }
 FIELD_OPERATORS_MAP_CALENDAR = {
     "label": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "date": [EQUALS, NOT_EQUALS],
+    # "date": [EQUALS, NOT_EQUALS],
     "time": [EQUALS, NOT_EQUALS],
     "event_type": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
 }
@@ -268,4 +306,9 @@ FIELD_OPERATORS_MAP_LOG = {
     "client": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "hours": [EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
     "status": [EQUALS, NOT_EQUALS],
+}
+FIELD_OPERATORS_MAP_NEW_LOG = {
+    "matter": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "description": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "hours": [EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL],
 }
