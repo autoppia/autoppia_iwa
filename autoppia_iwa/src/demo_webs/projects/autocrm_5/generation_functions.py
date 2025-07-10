@@ -7,11 +7,13 @@ from ..shared_utils import create_constraint_dict
 from .data import (
     ALLOWED_EVENT_COLORS,
     CLIENT_DATA,
+    DEMO_LOGS,
     DOCUMENT_DATA,
     FIELD_OPERATORS_MAP_CALENDAR,
     FIELD_OPERATORS_MAP_CHANGE_USER_NAME,
     FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER,
     FIELD_OPERATORS_MAP_DOCUMENT,
+    FIELD_OPERATORS_MAP_LOG,
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
     MATTERS_DATA,
@@ -359,6 +361,30 @@ def generate_new_log_added_constraints() -> list[dict[str, Any]]:
         field_value = log_data.get(field)
 
         value = _generate_constraint_value(operator, field_value, field, dataset=NEW_LOGS_DATA)
+
+        if value is not None:
+            constraint = create_constraint_dict(field, operator, value)
+            constraints.append(constraint)
+
+    return constraints
+
+
+def generate_delete_log_constraints() -> list[dict[str, Any]]:
+    fields = ["matter", "hours", "client", "status"]
+    constraints: list[dict[str, Any]] = []
+
+    log_data = random.choice(DEMO_LOGS)
+
+    for field in fields:
+        allowed_ops = FIELD_OPERATORS_MAP_LOG.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
+        operator = ComparisonOperator(op_str)
+        field_value = log_data.get(field)
+
+        value = _generate_constraint_value(operator, field_value, field, dataset=DEMO_LOGS)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)

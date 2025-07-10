@@ -19,6 +19,7 @@ from .events import (
 from .generation_functions import (
     generate_add_matter_constraints,
     generate_change_user_name_constraints,
+    generate_delete_log_constraints,
     generate_document_deleted_constraints,
     generate_new_calendar_event_constraints,
     generate_new_log_added_constraints,
@@ -586,12 +587,12 @@ LOG_DELETE_USE_CASE = UseCase(
     description="The user deletes an existing time log entry.",
     event=LogDelete,
     event_source_code=LogDelete.get_source_code_of_class(),
-    constraints_generator=generate_new_log_added_constraints,
-    replace_func=replace_placeholders,
+    constraints_generator=generate_delete_log_constraints,
+    # replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Delete the time log for 'Estate Planning' that recorded 2 hours.",
-            "prompt_for_task_generation": "Delete the time log for '<matter_name>' that recorded '<log_hours>' hours.",
+            "prompt_for_task_generation": "Delete the time log for 'Estate Planning' that recorded 2 hours.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",
@@ -601,7 +602,7 @@ LOG_DELETE_USE_CASE = UseCase(
         },
         {
             "prompt": "Remove any time log that is currently 'Billed'.",
-            "prompt_for_task_generation": "Remove any time log that is currently '<log_status>'.",
+            "prompt_for_task_generation": "Remove any time log that is currently 'Billed'.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",
@@ -611,12 +612,70 @@ LOG_DELETE_USE_CASE = UseCase(
         },
         {
             "prompt": "Delete time logs for 'Peak Ventures' with 3 hours and 'Billable' status.",
-            "prompt_for_task_generation": "Delete time logs for '<log_client>' with <log_hours> hours and '<log_status>' status.",
+            "prompt_for_task_generation": "Delete time logs for 'Peak Ventures' with 3 hours and 'Billable' status.",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "LOG_DELETE",
                 "event_criteria": {"client": {"value": "Peak Ventures", "operator": "equals"}, "hours": {"value": 3.0, "operator": "equals"}, "status": {"value": "Billable", "operator": "equals"}},
                 "reasoning": "This test applies when the task requires deleting time logs for 'Peak Ventures' with 3 hours and 'Billable' status.",
+            },
+        },
+        {
+            "prompt": "Delete any log where hours are not equal to 2.5.",
+            "prompt_for_task_generation": "Delete any log where hours are not equal to 2.5.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "LOG_DELETE",
+                "event_criteria": {
+                    "hours": {"value": 2.5, "operator": "not_equals"},
+                },
+                "reasoning": "This test applies when the task requires deleting time logs where the hours are not 2.5.",
+            },
+        },
+        {
+            "prompt": "Delete all logs where the description contains 'memo'.",
+            "prompt_for_task_generation": "Delete all logs where the description contains 'memo'.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "LOG_DELETE",
+                "event_criteria": {"description": {"value": "memo", "operator": "contains"}},
+                "reasoning": "This test applies when the task targets logs whose description contains 'memo'.",
+            },
+        },
+        {
+            "prompt": "Delete logs where the hours are greater than 4.",
+            "prompt_for_task_generation": "Delete logs where the hours are greater than 4.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "LOG_DELETE",
+                "event_criteria": {"hours": {"value": 4.0, "operator": "greater_than"}},
+                "reasoning": "This test applies when the task filters logs with more than 4 hours for deletion.",
+            },
+        },
+        {
+            "prompt": "Delete time logs with less than 1.5 hours for 'LabelLine'.",
+            "prompt_for_task_generation": "Delete time logs with less than 1.5 hours for 'LabelLine'.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "LOG_DELETE",
+                "event_criteria": {
+                    "client": {"value": "LabelLine", "operator": "equals"},
+                    "hours": {"value": 1.5, "operator": "less_than"},
+                },
+                "reasoning": "This test applies when the task requires deleting logs with less than 1.5 hours for the 'LabelLine' client.",
+            },
+        },
+        {
+            "prompt": "Remove time logs for the matter 'Startup Pitch Deck' where the client is not 'LaunchLeap'.",
+            "prompt_for_task_generation": "Remove time logs for the matter 'Startup Pitch Deck' where the client is not 'LaunchLeap'.",
+            "test": {
+                "type": "CheckEventTest",
+                "event_name": "LOG_DELETE",
+                "event_criteria": {
+                    "matter": {"value": "Startup Pitch Deck", "operator": "equals"},
+                    "client": {"value": "LaunchLeap", "operator": "not_equals"},
+                },
+                "reasoning": "This test applies when the client does not match the expected name, for the specific matter.",
             },
         },
     ],
@@ -690,7 +749,7 @@ ALL_USE_CASES = [
     # SEARCH_CLIENT_USE_CASE,
     # DOCUMENT_DELETED_USE_CASE,
     # NEW_CALENDAR_EVENT_ADDED_USE_CASE,
-    NEW_LOG_ADDED_USE_CASE,
-    # LOG_DELETE_USE_CASE,
+    # NEW_LOG_ADDED_USE_CASE,
+    LOG_DELETE_USE_CASE,
     # CHANGE_USER_NAME_USE_CASE,
 ]
