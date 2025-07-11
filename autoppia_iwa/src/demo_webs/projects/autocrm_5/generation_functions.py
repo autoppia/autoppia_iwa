@@ -270,7 +270,7 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
 def generate_document_deleted_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
-    possible_fields = ["name", "size", "version", "status", "updated"]
+    possible_fields = ["name", "size", "version", "status"]  # , "updated"]
     document_data = random.choice(DOCUMENT_DATA)
 
     num_constraints = random.randint(2, len(possible_fields))

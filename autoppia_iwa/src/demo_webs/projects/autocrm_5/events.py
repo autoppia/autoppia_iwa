@@ -287,7 +287,7 @@ class DocumentDeleted(Event, BaseEventValidator):
         # id: str | CriterionValue | None = None
         size: str | CriterionValue | None = None
         version: str | CriterionValue | None = None
-        updated: str | CriterionValue | None = None
+        # updated: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
         status: str | CriterionValue | None = None
 
@@ -300,7 +300,7 @@ class DocumentDeleted(Event, BaseEventValidator):
                 self._validate_field(self.document.name, criteria.name),
                 self._validate_field(self.document.size, criteria.size),
                 self._validate_field(self.document.version, criteria.version),
-                self._validate_field(self.document.updated, criteria.updated),
+                # self._validate_field(self.document.updated, criteria.updated),
                 self._validate_field(self.document.status, criteria.status),
             ],
         )
