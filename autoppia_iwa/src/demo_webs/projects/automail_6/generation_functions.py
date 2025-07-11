@@ -4,7 +4,13 @@ from typing import Any
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
-from .data import EMAILS_DATA_MODIFIED, FIELD_OPERATORS_MAP_VIEW_EMAIL
+from .data import (
+    EMAILS_DATA_MODIFIED,
+    FIELD_OPERATORS_IMPORTANT_MAP,
+    FIELD_OPERATORS_MAP_VIEW_EMAIL,
+    FIELD_OPERATORS_READ_MAP,
+    FIELD_OPERATORS_STARRED_MAP,
+)
 
 # def _generate_value_for_field(field_name, operator):
 #     if field_name == 'subject':
@@ -101,6 +107,70 @@ def generate_view_email_constraints() -> list[dict[str, Any]]:
 
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_VIEW_EMAIL.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
+        operator = ComparisonOperator(op_str)
+
+        field_value = email.get(field)
+        value = _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
+def generate_is_starred_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    possible_fields = list(FIELD_OPERATORS_STARRED_MAP.keys())
+    num_constraints = random.randint(1, len(possible_fields))
+    selected_fields = random.sample(possible_fields, num_constraints)
+
+    email = choice(EMAILS_DATA_MODIFIED)
+
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_STARRED_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
+        operator = ComparisonOperator(op_str)
+
+        field_value = email.get(field)
+        value = _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
+def generate_is_read_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    possible_fields = list(FIELD_OPERATORS_READ_MAP.keys())
+    num_constraints = random.randint(1, len(possible_fields))
+    selected_fields = random.sample(possible_fields, num_constraints)
+    email = choice(EMAILS_DATA_MODIFIED)
+
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_STARRED_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
+        operator = ComparisonOperator(op_str)
+
+        field_value = email.get(field)
+        value = _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
+def generate_is_important_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    possible_fields = list(FIELD_OPERATORS_IMPORTANT_MAP.keys())
+    num_constraints = random.randint(1, len(possible_fields))
+    selected_fields = random.sample(possible_fields, num_constraints)
+    email = choice(EMAILS_DATA_MODIFIED)
+
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_STARRED_MAP.get(field, [])
         if not allowed_ops:
             continue
 

@@ -62,13 +62,13 @@ class StarEmailEvent(Event):
     email_id: str
     subject: str
     from_email: str
-    is_star: bool
+    isStar: bool
 
     class ValidationCriteria(BaseModel):
         email_id: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
         from_email: str | CriterionValue | None = None
-        is_star: bool | CriterionValue | None = None
+        is_starred: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -79,8 +79,8 @@ class StarEmailEvent(Event):
             return validate_criterion(self.subject, criteria.subject)
         if criteria.from_email is not None:
             return validate_criterion(self.from_email, criteria.from_email)
-        if criteria.is_star is not None:
-            return validate_criterion(self.is_star, criteria.is_star)
+        if criteria.is_starred is not None:
+            return validate_criterion(self.isStar, criteria.is_starred)
         return True
 
     @classmethod
@@ -95,30 +95,22 @@ class StarEmailEvent(Event):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            is_star=data.get("isStar", False),
+            isStar=data.get("isStar", False),
         )
 
 
-class MarkEmailAsImportantEvent(Event):
+class MarkEmailAsImportantEvent(ViewEmailEvent):
     event_name: str = "MARK_EMAIL_AS_IMPORTANT"
-    email_id: str
-    subject: str
-    from_email: str
+    is_important: bool
 
-    class ValidationCriteria(BaseModel):
-        email_id: str | CriterionValue | None = None
-        subject: str | CriterionValue | None = None
-        from_email: str | CriterionValue | None = None
+    class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
+        is_important: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        if criteria.email_id is not None:
-            return validate_criterion(self.email_id, criteria.email_id)
-        if criteria.subject is not None:
-            return validate_criterion(self.subject, criteria.subject)
-        if criteria.from_email is not None:
-            return validate_criterion(self.from_email, criteria.from_email)
+        if not self._validate_common(criteria):
+            return False
+        if criteria and criteria.is_important is not None:
+            return validate_criterion(self.is_important, criteria.is_important)
         return True
 
     @classmethod
@@ -133,19 +125,98 @@ class MarkEmailAsImportantEvent(Event):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
+            is_important=data.get("isImportant", False),
         )
 
 
-class MarkAsUnreadEvent(MarkEmailAsImportantEvent):
+class MarkAsUnreadEvent(ViewEmailEvent):
     event_name: str = "MARK_AS_UNREAD"
+    is_read: bool
+
+    class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
+        is_read: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not self._validate_common(criteria):
+            return False
+        if criteria and criteria.is_unread is not None:
+            return validate_criterion(self.is_read, criteria.is_read)
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "MarkAsUnreadEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            email_id=data.get("email_id", ""),
+            subject=data.get("subject", ""),
+            from_email=data.get("from", ""),
+            is_read=data.get("isRead", True),
+        )
 
 
-class DeleteEmailEvent(MarkEmailAsImportantEvent):
+class DeleteEmailEvent(ViewEmailEvent):
     event_name: str = "DELETE_EMAIL"
+    is_deleted: bool
+
+    class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
+        is_deleted: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not self._validate_common(criteria):
+            return False
+        if criteria and criteria.is_deleted is not None:
+            return validate_criterion(self.is_deleted, criteria.is_deleted)
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DeleteEmailEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            email_id=data.get("email_id", ""),
+            subject=data.get("subject", ""),
+            from_email=data.get("from", ""),
+            is_deleted=data.get("isDeleted", False),
+        )
 
 
-class MarkAsSpamEvent(MarkEmailAsImportantEvent):
+class MarkAsSpamEvent(ViewEmailEvent):
     event_name: str = "MARK_AS_SPAM"
+    is_spam: bool
+
+    class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
+        is_spam: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not self._validate_common(criteria):
+            return False
+        if criteria and criteria.is_spam is not None:
+            return validate_criterion(self.is_spam, criteria.is_spam)
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "MarkAsSpamEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            email_id=data.get("email_id", ""),
+            subject=data.get("subject", ""),
+            from_email=data.get("from", ""),
+            is_spam=data.get("isSpam", False),
+        )
 
 
 class AddLabelEvent(Event):

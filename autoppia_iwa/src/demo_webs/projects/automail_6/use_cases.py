@@ -14,7 +14,7 @@ from .events import (
     ThemeChangedEvent,
     ViewEmailEvent,
 )
-from .generation_functions import generate_view_email_constraints
+from .generation_functions import generate_is_important_constraints, generate_is_read_constraints, generate_is_starred_constraints, generate_view_email_constraints
 from .replace_functions import replace_email_placeholders
 
 VIEW_EMAIL_ADDITIONAL_PROMPT_INFO = """
@@ -98,7 +98,7 @@ STAR_EMAIL_USE_CASE = UseCase(
     event=StarEmailEvent,
     event_source_code=StarEmailEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_star_email_constraints,
+    constraints_generator=generate_is_starred_constraints,
     additional_prompt_info=STAR_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -107,7 +107,11 @@ STAR_EMAIL_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"subject": {"value": "<subject>", "operator": "equals"}, "from_email": {"value": "<from_email>", "operator": "equals"}},
+                "event_criteria": {
+                    "subject": {"value": "<subject>", "operator": "equals"},
+                    "from_email": {"value": "<from_email>", "operator": "equals"},
+                    "isStar": {"value": True, "operator": "equals"},
+                },
                 "reasoning": "Confirms the user starred the email using both sender and subject.",
             },
         },
@@ -167,7 +171,7 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     event=MarkEmailAsImportantEvent,
     event_source_code=MarkEmailAsImportantEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_mark_email_as_important_constraints,
+    constraints_generator=generate_is_important_constraints,
     additional_prompt_info=MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -247,7 +251,7 @@ MARK_AS_UNREAD_USE_CASE = UseCase(
     event=MarkAsUnreadEvent,
     event_source_code=MarkAsUnreadEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_mark_as_unread_constraints,
+    constraints_generator=generate_is_read_constraints,
     additional_prompt_info=MARK_AS_UNREAD_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -327,7 +331,7 @@ DELETE_EMAIL_USE_CASE = UseCase(
     event=DeleteEmailEvent,
     event_source_code=DeleteEmailEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_delete_email_constraints,
+    constraints_generator=generate_view_email_constraints,
     additional_prompt_info=DELETE_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -407,7 +411,7 @@ MARK_AS_SPAM_USE_CASE = UseCase(
     event=MarkAsSpamEvent,
     event_source_code=MarkAsSpamEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_mark_as_spam_constraints,
+    constraints_generator=generate_is_important_constraints,
     additional_prompt_info=MARK_AS_SPAM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -974,12 +978,12 @@ SEARCH_EMAIL_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    VIEW_EMAIL_USE_CASE,
+    # VIEW_EMAIL_USE_CASE,
     # STAR_EMAIL_USE_CASE,
     # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
     # MARK_AS_UNREAD_USE_CASE,
-    # DELETE_EMAIL_USE_CASE,
-    # MARK_AS_SPAM_USE_CASE,
+    DELETE_EMAIL_USE_CASE,
+    MARK_AS_SPAM_USE_CASE,
     # ADD_LABEL_USE_CASE,
     # COMPOSE_EMAIL_USE_CASE,
     # SEND_EMAIL_USE_CASE,
