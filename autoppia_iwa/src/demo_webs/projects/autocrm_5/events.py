@@ -492,9 +492,9 @@ class LogDelete(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         # id: str | CriterionValue | None = None
         matter: str | CriterionValue | None = None
-        # client: str|CriterionValue|None = None
+        client: str | CriterionValue | None = None
         # date: str|CriterionValue|None = None
-        description: str | CriterionValue | None = None
+        # description: str | CriterionValue | None = None
         hours: float | CriterionValue | None = None
         status: str | CriterionValue | None = None
 
@@ -505,9 +505,9 @@ class LogDelete(Event, BaseEventValidator):
             [
                 # self._validate_field(self.log.id, criteria.id),
                 self._validate_field(self.log.matter, criteria.matter),
-                # self._validate_field(self.log.client, criteria.client),
+                self._validate_field(self.log.client, criteria.client),
                 # self._validate_field(self.log.date, criteria.date),
-                self._validate_field(self.log.description, criteria.description),
+                # self._validate_field(self.log.description, criteria.description),
                 self._validate_field(self.log.hours, criteria.hours),
                 self._validate_field(self.log.status, criteria.status),
             ],

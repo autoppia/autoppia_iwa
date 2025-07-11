@@ -187,7 +187,7 @@ def generate_view_client_constraints() -> list[dict[str, Any]]:
 
 def generate_search_client_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-
+    field_map = {"name": "query"}
     field = "name"
     allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
     op_str = random.choice(allowed_ops)
@@ -198,7 +198,7 @@ def generate_search_client_constraints() -> list[dict[str, Any]]:
 
     value = _generate_constraint_value(operator, field_value, field, dataset=CLIENT_DATA)
     if value is not None:
-        constraint = create_constraint_dict(field, operator, value)
+        constraint = create_constraint_dict(field_map[field], operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
