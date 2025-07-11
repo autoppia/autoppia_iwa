@@ -58,6 +58,15 @@ class GlobalTestGenerationPipeline:
         """
         constraints: list[dict[str, Any]] = task.use_case.constraints or []
         criteria: dict[str, Any] = {}
+        if constraints is None:
+            test_def = {
+                "type": "CheckEventTest",
+                "event_name": task.use_case.name,
+                "event_criteria": {},
+            }
+
+            check_event_test = CheckEventTest(**test_def)
+            return task.tests.append(check_event_test)
 
         for raw in constraints:
             clean = enum_to_raw_recursive(raw)

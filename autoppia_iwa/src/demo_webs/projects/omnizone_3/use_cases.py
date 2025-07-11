@@ -17,7 +17,6 @@ from .generation_functions import (
     generate_cart_operation_constraints,
     generate_checkout_constraints,
     generate_order_completed_constraints,
-    # generate_order_completion_constraints,
     generate_quantity_change_constraints,
     generate_search_query_constraints,
 )
@@ -54,54 +53,18 @@ PRODUCT_DETAIL_USE_CASE = UseCase(
         {
             "prompt": "Show me details for the Espresso Machine",
             "prompt_for_task_generation": "Show me details for the <product_name>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_DETAIL",
-                "event_criteria": {"item_name": {"value": "Espresso Machine", "operator": "equals"}},
-                "reasoning": "Explicitly requests to view details for a specific product.",
-            },
         },
         {
             "prompt": "View product page for a 'Kitchen' item with rating above 4.6",
             "prompt_for_task_generation": "View product page for a <product_category> item with rating above <rating>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_DETAIL",
-                "event_criteria": {
-                    "item_category": {"value": "Kitchen", "operator": "equals"},
-                    "item_rating": {"value": 4.6, "operator": "greater_than"},
-                },
-                "reasoning": "Requests to view details for products matching category and rating criteria.",
-            },
         },
         {
             "prompt": "Show me the details for the cheapest Electric Kettle",
             "prompt_for_task_generation": "Show me the details for the <price_sort> <product_category>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_DETAIL",
-                "event_criteria": {
-                    "item_category": {"value": "Electric Kettle", "operator": "equals"},
-                    "sort_by": {"value": "price", "operator": "equals"},
-                    "sort_order": {"value": "asc", "operator": "equals"},
-                },
-                "reasoning": "Requests to view details for products matching category with specific sorting.",
-            },
         },
         {
             "prompt": "Display product details for a KitchenAid Stand Mixer between $200 and $300",
             "prompt_for_task_generation": "Display product details for a <brand> <product_name> between <min_price> and <max_price>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_DETAIL",
-                "event_criteria": {
-                    "item_brand": {"value": "KitchenAid", "operator": "equals"},
-                    "item_name": {"value": "Stand Mixer", "operator": "equals"},
-                    "item_price": {"value": 200.00, "operator": "greater_equal"},
-                    # "item_price": {"value": 300.00, "operator": "less_than_or_equal"},
-                },
-                "reasoning": "Requests to view details for products matching multiple criteria.",
-            },
         },
     ],
 )
@@ -137,42 +100,18 @@ SEARCH_PRODUCT_USE_CASE = UseCase(
         {
             "prompt": "Search for kitchen appliances",
             "prompt_for_task_generation": "Search for <query>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_PRODUCT",
-                "event_criteria": {"query": {"value": "kitchen appliances"}},
-                "reasoning": "Explicit search for products matching the query.",
-            },
         },
         {
             "prompt": "Find products matching 'Espresso Machine'",
             "prompt_for_task_generation": "Find products matching '<query>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_PRODUCT",
-                "event_criteria": {"query": {"value": "Espresso Machine"}},
-                "reasoning": "Search with exact phrase match.",
-            },
         },
         {
             "prompt": "Search for products that contain 'fPlu'",
             "prompt_for_task_generation": "Look up <query>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_PRODUCT",
-                "event_criteria": {"query": {"value": "fPlu", "operator": "contains"}},
-                "reasoning": "Search with specific product specifications.",
-            },
         },
         {
             "prompt": "Look up products which contain 'example'",
             "prompt_for_task_generation": "Look up products which contain <query>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_PRODUCT",
-                "event_criteria": {"query": {"value": "example"}},
-                "reasoning": "Search with brand name included.",
-            },
         },
     ],
 )
@@ -205,48 +144,18 @@ ADD_TO_CART_USE_CASE = UseCase(
         {
             "prompt": "Add Air Fryer to my cart",
             "prompt_for_task_generation": "Add <product_name> to my cart",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_TO_CART",
-                "event_criteria": {"item_name": {"value": "Air Fryer", "operator": "equals"}},
-                "reasoning": "Explicit request to add specific product to cart.",
-            },
         },
         {
             "prompt": "Put 2 units of the Stainless Steel Cookware Set in my shopping cart",
             "prompt_for_task_generation": "Put <quantity> units of the <product_name> in my shopping cart",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_TO_CART",
-                "event_criteria": {
-                    "item_name": {"value": "Stainless Steel Cookware Set", "operator": "equals"},
-                    "quantity": {"value": 2, "operator": "equals"},
-                },
-                "reasoning": "Adds specific product with quantity.",
-            },
         },
         {
             "prompt": "Add the Smart Watch to my cart",
             "prompt_for_task_generation": "Add the <product_name> to my cart",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_TO_CART",
-                "event_criteria": {"item_name": {"value": "Smart Watch", "operator": "equals"}},
-                "reasoning": "Adds product by name.",
-            },
         },
         {
             "prompt": "Add three of item kitchen-4 to my cart",
             "prompt_for_task_generation": "Add <quantity> of item <product_reference> to my cart",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_TO_CART",
-                "event_criteria": {
-                    "item_id": {"value": "kitchen-4", "operator": "equals"},
-                    "quantity": {"value": 3, "operator": "equals"},
-                },
-                "reasoning": "Adds product by ID with quantity.",
-            },
         },
     ],
 )
@@ -272,26 +181,23 @@ VIEW_CART_USE_CASE = UseCase(
     event=ViewCartEvent,
     event_source_code=ViewCartEvent.get_source_code_of_class(),
     additional_prompt_info=VIEW_CART_INFO,
+    constraints_generator=None,
     examples=[
         {
             "prompt": "View my shopping cart",
             "prompt_for_task_generation": "View my shopping cart",
-            "test": {"type": "CheckEventTest", "event_name": "VIEW_CART", "event_criteria": {}, "reasoning": "Simple request to view cart contents."},
         },
         {
             "prompt": "Show me what's in my cart right now",
             "prompt_for_task_generation": "Show me what's in my cart right now",
-            "test": {"type": "CheckEventTest", "event_name": "VIEW_CART", "event_criteria": {}, "reasoning": "Alternative phrasing to view cart."},
         },
         {
             "prompt": "Display my current shopping basket contents",
             "prompt_for_task_generation": "Display my current shopping basket contents",
-            "test": {"type": "CheckEventTest", "event_name": "VIEW_CART", "event_criteria": {}, "reasoning": "British English variant for viewing cart."},
         },
         {
             "prompt": "What items do I have in my cart?",
             "prompt_for_task_generation": "What items do I have in my cart?",
-            "test": {"type": "CheckEventTest", "event_name": "VIEW_CART", "event_criteria": {}, "reasoning": "Question format to view cart."},
         },
     ],
 )
@@ -320,27 +226,22 @@ CHECKOUT_STARTED_USE_CASE = UseCase(
         {
             "prompt": "Click on Buy now to procees checkout with my cart items",
             "prompt_for_task_generation": "Click on Buy now to procees checkout with my cart items",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Initiates checkout process with current cart contents by clicking Buy now."},
         },
         {
             "prompt": "Click Buy now to start the checkout process for these items",
             "prompt_for_task_generation": "Click Buy now to start the checkout process for these items",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Initiates checkout with implied cart contents by clicking Buy now."},
         },
         {
             "prompt": "I want to begin checkout for my selected products, click the Buy now button.",
             "prompt_for_task_generation": "I want to begin checkout for my selected products, click the Buy now button.",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Alternative phrasing to start checkout via Buy now."},
         },
         {
             "prompt": "I'm ready to checkout now, click Buy now.",
             "prompt_for_task_generation": "I'm ready to checkout now, click Buy now.",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Simple declaration to start checkout by clicking Buy now."},
         },
         {
             "prompt": "Buy now and take me to the checkout page.",
             "prompt_for_task_generation": "Buy now and take me to the checkout page.",
-            "test": {"type": "CheckEventTest", "event_name": "CHECKOUT_STARTED", "event_criteria": {}, "reasoning": "Direct request to proceed to checkout via Buy now."},
         },
     ],
 )
@@ -370,42 +271,18 @@ ORDER_COMPLETION_USE_CASE = UseCase(
         {
             "prompt": "Complete Buying 2 units of the Apple Watch",
             "prompt_for_task_generation": "Complete Buying <quantity> units of the <product_name>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ORDER_COMPLETED",
-                "event_criteria": {"items": {"operator": "contains", "value": {"title": "Apple Watch", "quantity": 2}}},
-                "reasoning": "Completes order with specific product name and quantity.",
-            },
         },
         {
             "prompt": "Complete the purchase with a product called 'Stainless Steel Cookware Set'",
             "prompt_for_task_generation": "Complete the purchase with a product called <product_name>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ORDER_COMPLETED",
-                "event_criteria": {"items": {"operator": "contains", "value": {"title": "Stainless Steel Cookware Set"}}},
-                "reasoning": "Completes order with specific product name.",
-            },
         },
         {
             "prompt": "Finalize the order with 3 units of 'Smart Watch'",
             "prompt_for_task_generation": "Finalize the order with <quantity> units of '<product_name>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ORDER_COMPLETED",
-                "event_criteria": {"items": {"operator": "contains", "value": {"title": "Smart Watch", "quantity": 3}}},
-                "reasoning": "Completes order with specific product and quantity.",
-            },
         },
         {
             "prompt": "Order a Fitness Tracker and complete the order.",
             "prompt_for_task_generation": "Order a <product_name> and complete the order.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ORDER_COMPLETED",
-                "event_criteria": {"items": {"operator": "contains", "value": {"title": "Fitness Tracker"}}},
-                "reasoning": "Completes order for a single product by name.",
-            },
         },
     ],
 )
@@ -438,27 +315,18 @@ PROCEED_TO_CHECKOUT_USE_CASE = UseCase(
         {
             "prompt": "Proceed to checkout with my current cart items",
             "prompt_for_task_generation": "Proceed to checkout with my current cart items",
-            "test": {"type": "CheckEventTest", "event_name": "PROCEED_TO_CHECKOUT", "event_criteria": {}, "reasoning": "Initiates checkout process with current cart contents."},
         },
         {
             "prompt": "Go to checkout with my 3 items worth $379.97",
             "prompt_for_task_generation": "Go to checkout with my <item_count> items worth <total_amount>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "PROCEED_TO_CHECKOUT",
-                "event_criteria": {"total_amount": {"value": 379.97, "operator": "equals"}},
-                "reasoning": "Proceeds to checkout with specific item count and total amount.",
-            },
         },
         {
             "prompt": "Take me to checkout with these selected products",
             "prompt_for_task_generation": "Take me to checkout with <cart_reference>",
-            "test": {"type": "CheckEventTest", "event_name": "PROCEED_TO_CHECKOUT", "event_criteria": {}, "reasoning": "Alternative phrasing to proceed to checkout."},
         },
         {
             "prompt": "Continue to checkout with the items in my cart",
             "prompt_for_task_generation": "Continue to checkout with the items in my cart",
-            "test": {"type": "CheckEventTest", "event_name": "PROCEED_TO_CHECKOUT", "event_criteria": {}, "reasoning": "Explicit reference to cart items for checkout."},
         },
     ],
 )
@@ -492,51 +360,18 @@ QUANTITY_CHANGE_USE_CASE = UseCase(
         {
             "prompt": "Update quantity of Espresso Machine in my cart from 1 to 2",
             "prompt_for_task_generation": "Update quantity of <product_name> in my cart from <previous_quantity> to <new_quantity>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "QUANTITY_CHANGED",
-                "event_criteria": {
-                    "item_name": {"value": "Espresso Machine", "operator": "equals"},
-                    "new_quantity": {"value": 2, "operator": "equals"},
-                },
-                "reasoning": "Changes quantity of specific product in cart.",
-            },
         },
         {
             "prompt": "Reduce quantity of Wireless Earbuds in my cart to 1",
             "prompt_for_task_generation": "Reduce quantity of <product_name> in my cart to <new_quantity>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "QUANTITY_CHANGED",
-                "event_criteria": {"item_name": {"value": "Wireless Earbuds", "operator": "equals"}, "new_quantity": {"value": 1, "operator": "equals"}},
-                "reasoning": "Reduces quantity of product without specifying previous quantity.",
-            },
         },
         {
             "prompt": "Change the quantity of item kitchen-6 to 3",
             "prompt_for_task_generation": "Change the quantity of <product_id> from <previous_quantity> to <new_quantity>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "QUANTITY_CHANGED",
-                "event_criteria": {
-                    "item_id": {"value": "kitchen-6", "operator": "equals"},
-                    "new_quantity": {"value": 3, "operator": "equals"},
-                },
-                "reasoning": "Changes quantity using product ID reference.",
-            },
         },
         {
             "prompt": "Increase quantity of the Electric Kettle by 5",
             "prompt_for_task_generation": "Increase quantity of <product_name> by <new_quantity>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "QUANTITY_CHANGED",
-                "event_criteria": {
-                    "item_name": {"value": "Electric Kettle", "operator": "equals"},
-                    "new_quantity": {"value": 1, "operator": "equals"},
-                },
-                "reasoning": "Changes quantity by delta using product name.",
-            },
         },
     ],
 )
@@ -572,42 +407,18 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
         {
             "prompt": "Scroll right in the 'Kitchen Appliances' carousel",
             "prompt_for_task_generation": "Scroll <direction> in the '<carousel_title>' carousel",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CAROUSEL_SCROLL",
-                "event_criteria": {"direction": {"value": "RIGHT", "operator": "equals"}, "title": {"value": "Kitchen Appliances", "operator": "equals"}},
-                "reasoning": "Scrolls right in specified carousel section.",
-            },
         },
         {
             "prompt": "Browse more products in the 'Electronics' section",
             "prompt_for_task_generation": "Browse more products in the '<carousel_title>' section",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CAROUSEL_SCROLL",
-                "event_criteria": {"title": {"value": "Electronics", "operator": "equals"}},
-                "reasoning": "Implies scrolling through specified carousel (default direction).",
-            },
         },
         {
             "prompt": "Navigate left in the 'Best Sellers' carousel",
             "prompt_for_task_generation": "Navigate <direction> in the '<carousel_title>' carousel",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CAROUSEL_SCROLL",
-                "event_criteria": {"direction": {"value": "LEFT", "operator": "equals"}, "title": {"value": "Best Sellers", "operator": "equals"}},
-                "reasoning": "Navigates left in specified carousel section.",
-            },
         },
         {
             "prompt": "Show me more items from the 'Featured Products' slider",
             "prompt_for_task_generation": "Show me more items from the '<carousel_title>' slider",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CAROUSEL_SCROLL",
-                "event_criteria": {"title": {"value": "Featured Products", "operator": "equals"}},
-                "reasoning": "Alternative terminology for scrolling through carousel.",
-            },
         },
     ],
 )
