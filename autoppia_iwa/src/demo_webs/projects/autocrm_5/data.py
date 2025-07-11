@@ -1,4 +1,4 @@
-from ..shared_data import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
+from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 
 DEMO_LOGS = [
     {"id": 1, "matter": "Estate Planning", "client": "Smith & Co.", "date": "2025-05-19", "hours": 2, "description": "Consultation", "status": "Billable"},
