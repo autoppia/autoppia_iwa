@@ -1,4 +1,3 @@
-import re
 from typing import Any
 
 
@@ -30,30 +29,22 @@ def normalize_test_config(test_config: dict[str, Any]) -> dict[str, Any]:
             test_config["name"] = raw_test_type
 
 
-def extract_domain(url: str) -> str:
-    """Extract domain from a full URL."""
-    if not url:
-        return ""
-    pattern = re.compile(r"https?://([^/]+)")
-    match = pattern.match(url)
-    return match.group(1).lower() if match else ""
-
-
-def clean_examples(examples):
+def enum_to_raw_recursive(obj: Any) -> Any:
     """
-    Elimina el campo 'prompt_for_task_generation' de cada ejemplo en la lista
+    Recursively replace Enum instances with their `.value`.
     """
-    cleaned_examples = []
+    import enum  # local import to avoid polluting global namespace
 
-    for example in examples:
-        # Crear una copia del ejemplo para no modificar el original
-        cleaned_example = example.copy()
+    if isinstance(obj, enum.Enum):
+        return obj.value
 
-        # Eliminar el campo 'prompt_for_task_generation' si existe
-        if "prompt_for_task_generation" in cleaned_example:
-            del cleaned_example["prompt_for_task_generation"]
+    if isinstance(obj, dict):
+        return {k: enum_to_raw_recursive(v) for k, v in obj.items()}
 
-        # Añadir el ejemplo limpio a la lista de resultados
-        cleaned_examples.append(cleaned_example)
+    if isinstance(obj, list):
+        return [enum_to_raw_recursive(v) for v in obj]
 
-    return cleaned_examples
+    if isinstance(obj, tuple):
+        return tuple(enum_to_raw_recursive(v) for v in obj)
+
+    return obj

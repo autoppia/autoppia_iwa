@@ -17,12 +17,11 @@ from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStat
 from autoppia_iwa.src.evaluation.evaluator.utils import (
     display_single_evaluation_summary,
     generate_feedback,
-    get_random_clicker_performance,
     hash_actions,
     initialize_test_results_matrix,
     log_progress,
     make_gif_from_screenshots,
-    run_tests,
+    run_global_tests,
 )
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -128,11 +127,9 @@ class ConcurrentEvaluator(IEvaluator):
                 web_agent_id=web_agent_id,
                 final_score=0,
                 raw_score=0,
-                random_clicker_score=0,
                 test_results_matrix=test_results_matrix,
                 feedback=None,
                 execution_history=[],
-                random_clicker_passed_tests_indexes=[],
                 evaluation_time=0.1,
                 stats=stats,
                 gif_recording="",
@@ -164,21 +161,13 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Run tests
             test_start_time = time.time()
-            test_results_matrix = await run_tests(self.web_project, task, execution_history)
-            stats.test_execution_time = time.time() - test_start_time
+            backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
+            test_results_matrix = await run_global_tests(task, backend_events=backend_events)
 
-            # Random clicker baseline
-            random_start_time = time.time()
-            random_clicker_passed, random_clicker_score = await get_random_clicker_performance(
-                web_project=self.web_project,
-                task=task,
-                config=self.config,
-                random_clicker_cache=self._random_clicker_cache,
-                backend_demo_webs_service=self.backend_demo_webs_service,
-                evaluate_in_browser_func=self._evaluate_in_browser,
-            )
-            stats.random_clicker_time = time.time() - random_start_time
-            stats.random_clicker_score = random_clicker_score
+            # test_results_matrix = await run_partial_tests(self.web_project, task, execution_history, web_agent_id)
+            logger.info(f"TEST RESULT MATRIX={test_results_matrix}, web_Agent_id {web_agent_id}...")
+
+            stats.test_execution_time = time.time() - test_start_time
 
             # Calculate raw score (# tests passed / total tests)
             raw_score = 0.0
@@ -201,10 +190,6 @@ class ConcurrentEvaluator(IEvaluator):
 
             # Adjust final score relative to random clicker
             final_score = raw_score
-            if self.config.normalize_score_with_random_clicker and num_tests > 0:
-                final_score = max(0, raw_score - random_clicker_score)
-                if self.config.normalize_scores and random_clicker_score < 1.0:
-                    final_score = final_score / (1.0 - random_clicker_score)
 
             stats.final_score = final_score
             stats.total_time = time.time() - stats.start_time
@@ -216,11 +201,9 @@ class ConcurrentEvaluator(IEvaluator):
                 web_agent_id=web_agent_id,
                 final_score=1 if final_score >= 0.25 else final_score,
                 raw_score=raw_score,
-                random_clicker_score=random_clicker_score,
                 test_results_matrix=test_results_matrix,
                 feedback=feedback,
                 execution_history=execution_history,
-                random_clicker_passed_tests_indexes=random_clicker_passed,
                 evaluation_time=stats.total_time,
                 stats=stats,
                 gif_recording=evaluation_gif,
@@ -235,11 +218,9 @@ class ConcurrentEvaluator(IEvaluator):
                 web_agent_id=web_agent_id,
                 final_score=0,
                 raw_score=0,
-                random_clicker_score=0,
                 test_results_matrix=initialize_test_results_matrix(task, len(actions)),
                 feedback=None,
                 execution_history=[],
-                random_clicker_passed_tests_indexes=[],
                 evaluation_time=0,
                 stats=stats,
                 gif_recording=evaluation_gif,
@@ -347,11 +328,9 @@ class ConcurrentEvaluator(IEvaluator):
                         web_agent_id=sol.web_agent_id,
                         final_score=0,
                         raw_score=0,
-                        random_clicker_score=0,
                         test_results_matrix=initialize_test_results_matrix(task, len(sol.actions)),
                         feedback=None,
                         execution_history=[],
-                        random_clicker_passed_tests_indexes=[],
                         evaluation_time=0,
                         stats=error_stats,
                         gif_recording="",

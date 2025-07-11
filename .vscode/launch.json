@@ -15,21 +15,23 @@
         "PYTHONPATH": "${workspaceFolder}"
       }
     },
-    {
-      "name": "Python: pytest",
-      "type": "python",
+     {
+      "name": "Debug Benchmark",
+      "type": "python",          // Usa el depurador integrado de VS Code
       "request": "launch",
-      "module": "pytest",
-      "args": [
-        "-s",
-        "tests/web_analysis/web_structure_extractor/test_analyze_web_elements.py"
-      ],
-      "console": "integratedTerminal",
-      "justMyCode": true,
+      "program": "${workspaceFolder}/autoppia_iwa/entrypoints/benchmark.py",
       "cwd": "${workspaceFolder}",
+
+      // Si tu proyecto necesita variables de entorno, añádelas aquí
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/src"
-      }
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+
+      // Ejecuta en la terminal integrada para ver logs y entrada-salida
+      "console": "integratedTerminal",
+
+      // Ponlo en false si quieres saltar también a dependencias externas
+      "justMyCode": true
     }
   ]
 }

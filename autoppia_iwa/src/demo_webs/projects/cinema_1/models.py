@@ -27,7 +27,7 @@ class Movie(BaseModel):
     id: int | None = None
     name: str = Field(max_length=250)
     desc: str
-    year: int = Field(ge=1900, le=2100)
+    year: int = Field(ge=1, le=9999)
     img: str
     director: str | None = Field(None, max_length=250)
     cast: str | None = None

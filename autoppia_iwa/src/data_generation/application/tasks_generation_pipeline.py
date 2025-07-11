@@ -29,7 +29,7 @@ class TaskGenerationPipeline:
         self.local_pipeline = LocalTaskGenerationPipeline(web_project=web_project)
         self.global_pipeline = GlobalTaskGenerationPipeline(web_project=web_project, llm_service=llm_service)
         self.local_test_pipeline = LocalTestGenerationPipeline(web_project=web_project)
-        self.global_test_pipeline = GlobalTestGenerationPipeline(web_project=web_project)
+        self.global_test_pipeline = GlobalTestGenerationPipeline()
 
     async def generate(self) -> list[Task]:
         """
@@ -80,12 +80,6 @@ class TaskGenerationPipeline:
                 random.shuffle(all_tasks)
                 all_tasks = all_tasks[: self.task_config.final_task_limit]
                 logger.info(f"Applied final task limit: {len(all_tasks)} tasks")
-
-            # Save tasks in DB if configured
-            # if self.task_config.save_task_in_db and all_tasks:
-            #     for task in all_tasks:
-            #         self.synthetic_task_repository.save(task.model_dump())
-            #     logger.info(f"Saved {len(all_tasks)} tasks to database")
 
             # Log completion
             total_time = (datetime.now() - start_time).total_seconds()

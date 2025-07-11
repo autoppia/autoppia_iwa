@@ -10,7 +10,7 @@ from PIL import Image, UnidentifiedImageError
 from playwright.async_api import Page
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationStats, EvaluatorConfig, Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
@@ -41,7 +41,7 @@ def display_single_evaluation_summary(stats: EvaluationStats, debug_mode: bool =
     logger.info(f"Evaluation Results for Agent: {stats.web_agent_id}")
     logger.info(f"{'-' * 60}")
     logger.info(f"Task: {stats.task_id}")
-    logger.info(f"Score: {stats.final_score:.2f} (Raw: {stats.raw_score:.2f}, Random: {stats.random_clicker_score:.2f})")
+    logger.info(f"Score: {stats.final_score:.2f} (Raw: {stats.raw_score:.2f})")
     logger.info(f"Tests Passed: {stats.tests_passed}/{stats.total_tests}")
     logger.info(f"Actions: {stats.action_count} ({', '.join(f'{k}: {v}' for k, v in stats.action_types.items())})")
     logger.info(f"{'-' * 40}")
@@ -186,9 +186,30 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 # TEST / FEEDBACK HELPERS
 # ---------------------------------------------------------------------------------
+async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> list[list[TestResult]]:
+    """
+    Runs all task tests after each action, building a test results matrix.
+
+    Args:
+        web_project: The web project being tested.
+        task (Task): The task being evaluated (contains the list of tests).
+        execution_history (List[ActionExecutionResult]): History of all executed actions.
+
+    Returns:
+        List[List[TestResult]]: A matrix where each row corresponds to an action and
+                                each column to a test, indicating pass/fail results.
+    """
+    test_runner = TestRunner(task.tests)
+    # I did to keep the structure similar to the partial tests
+    test_results_matrix: list[list[TestResult]] = []
+    test_results = await test_runner.run_global_tests(
+        backend_events=backend_events,
+    )
+    test_results_matrix.append(test_results)
+    return test_results_matrix
 
 
-async def run_tests(web_project: WebProject, task: Task, execution_history: list[ActionExecutionResult]) -> list[list[TestResult]]:
+async def run_partial_tests(web_project: WebProject, task: Task, execution_history: list[ActionExecutionResult]) -> list[list[TestResult]]:
     """
     Runs all task tests after each action, building a test results matrix.
 
@@ -210,7 +231,7 @@ async def run_tests(web_project: WebProject, task: Task, execution_history: list
         browser_snapshots.append(snapshot)
 
         # Run the test suite for the current action
-        test_results = await test_runner.run_tests(
+        test_results = await test_runner.run_partial_tests(
             web_project=web_project,
             prompt=task.prompt,
             snapshot=snapshot,
@@ -339,7 +360,7 @@ async def get_random_clicker_performance(
     random_execution_history, _ = await evaluate_in_browser_func(task, random_web_agent_id, random_actions, task.is_web_real)
 
     # Run tests
-    random_test_results = await run_tests(web_project, task, random_execution_history)
+    random_test_results = await run_partial_tests(web_project, task, random_execution_history)
 
     passed_tests: list[int] = []
     random_score = 0.0
@@ -445,7 +466,8 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             # Ensure the image is in a mode compatible with GIF.
             # Converting to RGBA handles various input modes and alpha transparency.
             # Pillow will convert RGBA to P (palette) mode when saving as GIF.
-            if img.mode not in ("L", "P", "RGB"):  # L: Luminance (grayscale), P: Palette, RGB: Truecolor
+            # L: Luminance (grayscale), P: Palette, RGB: Truecolor
+            if img.mode not in ("L", "P", "RGB"):
                 logger.debug(f"Converting image {idx} from mode {img.mode} to RGBA for GIF compatibility.")
                 img = img.convert("RGBA")
             elif img.mode == "P" and "transparency" in img.info:
@@ -459,7 +481,8 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
         except UnicodeEncodeError:
             logger.warning(f"Base64 string at index {idx} contains non-ASCII characters and could not be encoded. Skipping.")
             continue
-        except (base64.binascii.Error, ValueError) as e_b64:  # ValueError for incorrect padding etc.
+        # ValueError for incorrect padding etc.
+        except (base64.binascii.Error, ValueError) as e_b64:
             logger.warning(f"Could not decode base64 string at index {idx}: {e_b64}. Skipping.")
             continue
         except UnidentifiedImageError:
@@ -486,7 +509,8 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             duration=duration_ms,  # Time per frame in milliseconds
             loop=loop_count,  # 0 for infinite loop
             optimize=False,  # Set to True for smaller file size, but longer processing & potential quality loss
-            disposal=1,  # 2: Graphic is to be restored to background color before rendering next frame.
+            # 2: Graphic is to be restored to background color before rendering next frame.
+            disposal=1,
             # Use 1 if frames should not be disposed (e.g., drawn on top of each other).
         )
         raw_gif_bytes = gif_buffer.getvalue()

@@ -25,6 +25,10 @@ from .generation_functions import (
     generate_contact_constraints,
     generate_edit_book_constraints,
     generate_edit_profile_constraints,
+    generate_login_constraints,
+    generate_logout_constraints,
+    generate_registration_constraints,
+    generate_search_book_constraints,
 )
 from .replace_functions import login_replace_func, register_replace_func, replace_book_placeholders
 
@@ -46,37 +50,20 @@ REGISTRATION_USE_CASE = UseCase(
     event=RegistrationEvent,
     event_source_code=RegistrationEvent.get_source_code_of_class(),
     replace_func=register_replace_func,
+    constraints_generator=generate_registration_constraints,
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
             "prompt_for_task_generation": "Register with the following username:<username>,email:<email> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "REGISTRATION_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test applies when the task requires a registration event with a specific username.",
-            },
         },
         {
             "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
             "prompt_for_task_generation": "Create a new account with username:<username>,email:<email> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "REGISTRATION_BOOK",
-                "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires registration with a specific username.",
-            },
         },
         {
             "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
             "prompt_for_task_generation": "Fill the registration form with username:<username>, email:<email> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "REGISTRATION_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test applies when the task requires registration with username specified.",
-            },
         },
     ],
 )
@@ -97,47 +84,24 @@ LOGIN_USE_CASE = UseCase(
     event=LoginEvent,
     event_source_code=LoginEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
+    constraints_generator=generate_login_constraints,
     additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGIN_BOOK",
-                "event_criteria": {"username": {"value": "<username>", "operator": "equals"}},
-                "reasoning": "This test applies when the task requires a login event.",
-            },
         },
         {
             "prompt": "Login with a specific username:<username> and password:<password>",
             "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGIN_BOOK",
-                "event_criteria": {"username": {"value": "<username>", "operator": "contains"}},
-                "reasoning": "This test applies when the task requires a login event with username containing a specific value.",
-            },
         },
         {
             "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
             "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGIN_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test applies when the task requires a login event.",
-            },
         },
         {
             "prompt": "Sign in to the website username:<username> and password:<password>",
             "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGIN_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test applies when the task requires a login event.",
-            },
         },
     ],
 )
@@ -158,57 +122,28 @@ LOGOUT_USE_CASE = UseCase(
     event=LogoutEvent,
     event_source_code=LogoutEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
+    constraints_generator=generate_logout_constraints,
     additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>, then logout",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>, then logout",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGOUT_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test verifies that the system can handle a login followed by logout instruction.",
-            },
         },
         {
             "prompt": "Login with a specific username:<username> and password:<password>, then sign out from the system",
             "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>, then sign out from the system",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGOUT_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test checks if the system recognizes 'sign out' as a logout action after login.",
-            },
         },
         {
             "prompt": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
             "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGOUT_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test verifies logout detection after form-based login phrasing.",
-            },
         },
         {
             "prompt": "Sign in to the website username:<username> and password:<password>, after that please log me out",
             "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>, after that please log me out",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGOUT_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test ensures logout is detected after 'sign in' terminology.",
-            },
         },
         {
             "prompt": "Authenticate with username:<username> and password:<password>, then end my session",
             "prompt_for_task_generation": "Authenticate with username:<username> and password:<password>, then end my session",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "LOGOUT_BOOK",
-                "event_criteria": {"username": {"value": "<username>"}},
-                "reasoning": "This test checks if the system recognizes 'end my session' as a logout request.",
-            },
         },
     ],
 )
@@ -248,95 +183,38 @@ BOOK_DETAIL_USE_CASE = UseCase(
         {
             "prompt": "Navigate to 'The Housemaid Is Watching' book page",
             "prompt_for_task_generation": "Navigate to <book> book page",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {"name": {"value": "The Housemaid Is Watching", "operator": "equals"}},
-                "reasoning": "Explicitly directs the system to navigate to 'The Housemaid Is Watching' book detail page.",
-            },
         },
         {
             "prompt": "Go to the book details page for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
             "prompt_for_task_generation": "Go to the book details page for <book> by <author>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {
-                    "name": {"value": "Art of Computer Programming, the, Volumes 1-4B, Boxed Set", "operator": "equals"},
-                    "author": {"value": "Donald Knuth", "operator": "equals"},
-                },
-                "reasoning": "Explicitly directs the system to go to the 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' book details page, using author as additional criteria.",
-            },
         },
         {
             "prompt": "Navigate directly to a Science book page from 2022",
             "prompt_for_task_generation": "Navigate directly to a <genre> book page from <year>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {"genres": {"value": ["Science"], "operator": "contains"}, "year": {"value": 2022, "operator": "equals"}},
-                "reasoning": "Explicitly instructs the system to navigate to a book detail page that matches both genre and year criteria.",
-            },
         },
         {
             "prompt": "Go directly to a book page with rating above 4.5",
             "prompt_for_task_generation": "Go directly to a book page with rating above <rating>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {"rating": {"value": 4.5, "operator": "greater_than"}},
-                "reasoning": "Explicitly instructs the system to go to a book detail page for a highly-rated book that exceeds the specified rating.",
-            },
         },
         {
             "prompt": "Take me directly to the 'Fourth Wing' book details page",
             "prompt_for_task_generation": "Take me directly to the <book> book details page",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {"name": {"value": "Fourth Wing", "operator": "equals"}},
-                "reasoning": "Explicitly requests direct navigation to the 'Fourth Wing' book detail page.",
-            },
         },
         {
             "prompt": "Navigate to a 'Magazine' book page less than 1000 pages long",
             "prompt_for_task_generation": "Navigate to a <genre> book page less than <page_count> pages long",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {"genres": {"value": ["Magazine"], "operator": "contains"}, "page_count": {"value": 1000, "operator": "less_than"}},
-                "reasoning": "Explicitly directs the system to navigate to a book detail page that matches both genre and page count criteria.",
-            },
         },
         {
             "prompt": "Go to a book details page from the 2010s directed by 'Ron Larson'",
             "prompt_for_task_generation": "Go to a book details page from the <decade> directed by '<author>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {"year": {"value": [2010, 2019], "operator": "between"}, "author": {"value": "Ron Larson", "operator": "contains"}},
-                "reasoning": "Explicitly instructs the system to go to a book detail page matching both decade range and criteria.",
-            },
         },
         {
             "prompt": "Navigate me to a 'Science' book page not written by 'Grant Morrison'",
             "prompt_for_task_generation": "Navigate me to a <genre> book page not written by <author>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {"genres": {"value": ["Science"], "operator": "contains"}, "author": {"value": "Grant Morrison", "operator": "not_equals"}},
-                "reasoning": "Explicitly directs the system to navigate to a Science book detail page excluding those by the specified author.",
-            },
         },
         {
             "prompt": "Go directly to the highest-rated 'Lidia Matticchio Bastianich' book page",
             "prompt_for_task_generation": "Go directly to the highest-rated <author> book page",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "BOOK_DETAIL",
-                "event_criteria": {"author": {"value": "Lidia Matticchio Bastianich", "operator": "equals"}, "rating": {"value": 4.0, "operator": "greater_equal"}},
-                "reasoning": "Explicitly instructs the system to go directly to the book detail page of the highest-rated book by the specified author.",
-            },
         },
     ],
 )
@@ -372,57 +250,28 @@ SEARCH_BOOK_USE_CASE = UseCase(
     event=SearchBookEvent,
     event_source_code=SearchBookEvent.get_source_code_of_class(),
     replace_func=replace_book_placeholders,
+    constraints_generator=generate_search_book_constraints,
     additional_prompt_info=SEARCH_BOOK_INFO,
     examples=[
         {
             "prompt": "Look for the book 'Lidia's Italian-American Kitchen'",
             "prompt_for_task_generation": "Look for the book '<book>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "Lidia's Italian-American Kitchen"}},
-                "reasoning": "This test applies when searching for a specific book title <book>",
-            },
         },
         {
             "prompt": "Find a book called 'Programming Massively Parallel Processors' starring Al Pacino",
             "prompt_for_task_generation": "Find a book called '<book>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "Programming Massively Parallel Processors", "operator": "equals"}},
-                "reasoning": "This test applies when searching for the book <book>.",
-            },
         },
         {
             "prompt": "Search for 'Elementary Statistics' in the book database",
             "prompt_for_task_generation": "Search for '<book>' in the book database",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "Elementary Statistics", "operator": "equals"}},
-                "reasoning": "This test applies when searching for the book <book>.",
-            },
         },
         {
             "prompt": "Look up a book 'Dark Nights: Metal: Dark Knights Rising' featuring Uma Thurman",
             "prompt_for_task_generation": "Look up a book '<book>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "Dark Nights: Metal: Dark Knights Rising"}},
-                "reasoning": "This test applies when searching for <book>.",
-            },
         },
         {
             "prompt": "Find a book called 'Case Files Family Medicine 5th Edition' with Leonardo DiCaprio on the cover",
             "prompt_for_task_generation": "Find a book called '<book>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_BOOK",
-                "event_criteria": {"query": {"value": "Case Files Family Medicine 5th Edition", "operator": "equals"}},
-                "reasoning": "This test applies when searching for the book <book>.",
-            },
         },
     ],
 )
@@ -440,7 +289,7 @@ Examples include: "First, authenticate with...", "Initiate session using...", "A
 
 For example, if the constraints are "year equals 2014 AND author equals 'Wes Anderson'":
 - CORRECT: "First, authenticate with username '<username>' and password '<password>'. Then, add a book whose year equals 2014 and that is authored by 'Wes Anderson'."
-
+If you specify the name of the book then dont specify the author or year, just use the name of the book.
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
@@ -454,96 +303,32 @@ ADD_BOOK_USE_CASE = UseCase(
     additional_prompt_info=ADD_BOOK_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "First, authenticate with username '<username>' and password 'password123'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
+            "prompt": "First, authenticate with username '<username>' and password 'PASSWORD'. Then, add the book 'A Guide to the Good Life' authored by 'William B. Irvine'",
             "prompt_for_task_generation": "First, authenticate with username '<username>' and password '<password>'. Then, add the book '<book>' authored by '<author>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_BOOK",
-                "event_criteria": {
-                    "name": {"value": "A Guide to the Good Life", "operator": "equals"},
-                    "author": {"value": "William B. Irvine", "operator": "equals"},
-                },
-                "reasoning": "Ensures that the book name and exact author match are recorded.",
-            },
         },
         {
-            "prompt": "Initiate session using '<username>' as the username and 'password123' as the secret. Then, add the book 'AI Superpowers' released in 2018",
+            "prompt": "Initiate session using '<username>' as the username and 'PASSWORD' as the secret. Then, add the book 'AI Superpowers' released in 2018",
             "prompt_for_task_generation": "Initiate session using '<username>' as the username and '<password>' as the secret. Then, add the book '<book>' released in <year>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_BOOK",
-                "event_criteria": {
-                    "name": {"value": "AI Superpowers", "operator": "equals"},
-                    "year": {"value": 2018, "operator": "equals"},
-                },
-                "reasoning": "Tests if the correct release year is stored for the book.",
-            },
         },
         {
-            "prompt": "After successful login with '<username>' and 'password123', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
+            "prompt": "After successful login with '<username>' and 'PASSWORD', add the book 'Sapiens: A Brief History of Humankind' with genres History and Anthropology",
             "prompt_for_task_generation": "After successful login with '<username>' and '<password>', add the book '<book>' with genres <genre> and <genre>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Sapiens: A Brief History of Humankind", "operator": "equals"},
-                    "genres": {"value": ["History", "Anthropology"], "operator": "contains"},
-                },
-                "reasoning": "Validates the genre containment logic for multi-genre books.",
-            },
         },
         {
-            "prompt": "Once logged in as '<username>' with the password 'password123', add the book 'The Midnight Library' with a page_count under 320 pages",
+            "prompt": "Once logged in as '<username>' with the password 'PASSWORD', add the book 'The Midnight Library' with a page_count under 320 pages",
             "prompt_for_task_generation": "Once logged in as '<username>' with the password '<password>', add the book '<book>' with a page_count under <page_count> pages",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_BOOK",
-                "event_criteria": {
-                    "name": {"value": "The Midnight Library", "operator": "equals"},
-                    "page_count": {"value": 320, "operator": "less_than"},
-                },
-                "reasoning": "Checks that the book's page_count is handled with a less-than comparison.",
-            },
         },
         {
-            "prompt": "Having authenticated with '<username>' and 'password123', add the book 'The Art of Learning' with rating not 4.8.",
+            "prompt": "Having authenticated with '<username>' and 'PASSWORD', add the book 'The Art of Learning' with rating not 4.8.",
             "prompt_for_task_generation": "Having authenticated with '<username>' and '<password>', add the book '<book>' with rating not equal to <rating>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_BOOK",
-                "event_criteria": {
-                    "name": {"value": "The Art of Learning", "operator": "equals"},
-                    "rating": {"value": 4.8, "operator": "not_equals"},
-                },
-                "reasoning": "Tests exclusion by rating using the not_equals operator.",
-            },
         },
         {
-            "prompt": "Upon logging in with username '<username>' and the secret 'password123', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
+            "prompt": "Upon logging in with username '<username>' and the secret 'PASSWORD', add the book 'The Practicing Mind' from one of these authors: 'Thomas M. Sterner', 'James Clear', or 'Ryan Holiday'",
             "prompt_for_task_generation": "Upon logging in with username '<username>' and the secret '<password>', add a book '<book>' from one of these authors: '<author>', '<author>', or '<author>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_BOOK",
-                "event_criteria": {
-                    "name": {"value": "The Practicing Mind", "operator": "equals"},
-                    "author": {"value": ["Thomas M. Sterner", "James Clear", "Ryan Holiday"], "operator": "in_list"},
-                },
-                "reasoning": "Validates that the author falls within an allowed set of names.",
-            },
         },
         {
-            "prompt": "With credentials '<username>' and 'password123' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
+            "prompt": "With credentials '<username>' and 'PASSWORD' successfully entered, add the book 'Deep Work' with running time at least 450 pages authored by 'Cal Newport'",
             "prompt_for_task_generation": "With credentials '<username>' and '<password>' successfully entered, add the book '<book>' with running time at least <page_count> pages authored by '<author>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Deep Work", "operator": "equals"},
-                    "page_count": {"value": 450, "operator": "greater_equal"},
-                    "author": {"value": "Cal Newport", "operator": "contains"},
-                },
-                "reasoning": "Validates the greater_equal condition on page_count and inclusion of a author member.",
-            },
         },
     ],
 )
@@ -577,74 +362,26 @@ EDIT_BOOK_USE_CASE = UseCase(
         {
             "prompt": "Sign in with username: <username> and password: <password>. After that, update the author of your book to Jamie Oliver.",
             "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. After that, update the author of <your_book> to Jamie Oliver.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {
-                    "author": {"value": "Jamie Oliver", "operator": "equals"},
-                },
-                "reasoning": "Ensures the new author is recorded.",
-            },
         },
         {
             "prompt": "First, log into your account (username: <username>, password: <password>). Then, modify the release year of your book to 2023.",
             "prompt_for_task_generation": "First, log into your account (username: <username>, password: <password>). Then, modify the release year of <your_book> to 2023.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {
-                    "year": {"value": 2023, "operator": "equals"},
-                },
-                "reasoning": "Ensures the new year is recorded.",
-            },
         },
         {
             "prompt": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of your book.",
             "prompt_for_task_generation": "Access your account by entering username: <username> and password: <password>. Once logged in, add 'Baking' to the genres of <your_book>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {
-                    "genres": {"value": "Romance", "operator": "contains"},
-                },
-                "reasoning": "Verifies that the new genre is added.",
-            },
         },
         {
             "prompt": "Using username: <username> and password: <password>, sign into the platform. Then change the rating of your book to 4.9.",
             "prompt_for_task_generation": "Using username: <username> and password: <password>, sign into the platform. Then change the rating of <your_book> to 4.9.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {
-                    "rating": {"value": 4.9, "operator": "equals"},
-                },
-                "reasoning": "Ensures the rating is updated correctly.",
-            },
         },
         {
             "prompt": "Authenticate yourself with username <username> and password <password>. After logging in, edit the page_count of your book to 1000 pages.",
             "prompt_for_task_generation": "Authenticate yourself with username <username> and password <password>. After logging in, edit the page_count of <your_book> to 1000 pages.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {
-                    "page_count": {"value": 1000, "operator": "equals"},
-                },
-                "reasoning": "Ensures that the page_count is updated.",
-            },
         },
         {
             "prompt": "Login credentials: username <username>, password <password>. Sign in first and then modify the author of your book to include Neil Gaiman.",
             "prompt_for_task_generation": "Login credentials: username <username>, password <password>. Sign in first and then modify the author of <your_book> to include 'Neil Gaiman'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_BOOK",
-                "event_criteria": {
-                    "author": {"value": "Neil Gaiman", "operator": "contains"},
-                },
-                "reasoning": "Ensures the author changes are properly logged.",
-            },
         },
     ],
 )
@@ -679,102 +416,42 @@ DELETE_BOOK_USE_CASE = UseCase(
         {
             "prompt": "Log in (username: <username>, password: <password>) and remove '<your_book>'.",
             "prompt_for_task_generation": "Log in (username: <username>, password: <password>) and remove '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Ensures the specified book is deleted after logging in.",
-            },
         },
         {
             "prompt": "After logging in with username: <username> and password: <password>, erase all records of '<your_book>'.",
             "prompt_for_task_generation": "After logging in with username: <username> and password: <password>, erase all records of '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Confirms the targeted book is successfully erased after authentication.",
-            },
         },
         {
             "prompt": "Log in (username: <username>, password: <password>) and permanently delete '<your_book>'.",
             "prompt_for_task_generation": "Log in (username: <username>, password: <password>) and permanently delete '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Verifies that the book is permanently removed from the system.",
-            },
         },
         {
             "prompt": "Sign into your account (username: <username>, password: <password>) and discard '<your_book>'.",
             "prompt_for_task_generation": "Sign into your account (username: <username>, password: <password>) and discard '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Ensures that the book is discarded after successful login.",
-            },
         },
         {
             "prompt": "Initiate a session with username: <username> and password: <password>, then remove '<your_book>'.",
             "prompt_for_task_generation": "Initiate a session with username: <username> and password: <password>, then remove '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Validates the deletion of the specified book during the session.",
-            },
         },
         {
             "prompt": "Once logged in as <username> (password: <password>), delete '<your_book>'.",
             "prompt_for_task_generation": "Once logged in as <username> (password: <password>), delete '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Checks that the selected book is deleted after login.",
-            },
         },
         {
             "prompt": "Begin by signing in with username <username> and password <password>. Then, delete '<your_book>'.",
             "prompt_for_task_generation": "Begin by signing in with username <username> and password <password>. Then, delete '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Ensures deletion of the book after user authentication.",
-            },
         },
         {
             "prompt": "First, log into the system (username: <username>, password: <password>), then discard '<your_book>'.",
             "prompt_for_task_generation": "First, log into the system (username: <username>, password: <password>), then discard '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Confirms successful discarding of the specified book.",
-            },
         },
         {
             "prompt": "Authenticate yourself with username <username> and password <password>. Then, remove '<your_book>'.",
             "prompt_for_task_generation": "Authenticate yourself with username <username> and password <password>. Then, remove '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Verifies that the book removal is correctly processed after login.",
-            },
         },
         {
             "prompt": "Using your credentials (username: <username>, password: <password>), sign in and erase all records of '<your_book>'.",
             "prompt_for_task_generation": "Using your credentials (username: <username>, password: <password>), sign in and erase all records of '<your_book>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_BOOK",
-                "event_criteria": {},
-                "reasoning": "Checks that the system erases the book after proper authentication.",
-            },
         },
     ],
 )
@@ -808,82 +485,30 @@ CONTACT_USE_CASE = UseCase(
         {
             "prompt": "Send a contact form with the subject 'Test Subject'",
             "prompt_for_task_generation": "Send a contact form with the subject 'Test Subject'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CONTACT_BOOK",
-                "event_criteria": {"subject": {"value": "Test Subject"}},
-                "reasoning": "Verify that the contact form was submitted with the specified subject.",
-            },
         },
         {
             "prompt": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
             "prompt_for_task_generation": "Fill out the contact form and include 'Hello, I would like information about your services' in the message",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CONTACT_BOOK",
-                "event_criteria": {"message": {"value": "Hello, I would like information about your services", "operator": "contains"}},
-                "reasoning": "Verify that the contact form was submitted with the specific message content.",
-            },
         },
         {
             "prompt": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
             "prompt_for_task_generation": "Complete the contact form using the email address 'test@example.com' and different value for field name :'jhon'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CONTACT_BOOK",
-                "event_criteria": {"email": {"value": "test@example.com"}, "name": {"value": "jhon", "operator": "not_equals"}},
-                "reasoning": "Verify that the contact form was submitted from the specified email address.",
-            },
         },
         {
             "prompt": "Complete the contact form using the email address different to 'test@example.com'",
             "prompt_for_task_generation": "Complete the contact form using the email address different to 'test@example.com'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CONTACT_BOOK",
-                "event_criteria": {"email": {"value": "test@example.com", "operator": "not_equals"}},
-                "reasoning": "Verify that the contact form was submitted from the specified email address.",
-            },
         },
         {
             "prompt": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
             "prompt_for_task_generation": "Send a contact form with subject 'Partnership Inquiry' and include the phrase 'potential collaboration' in your message",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CONTACT_BOOK",
-                "event_criteria": {"subject": {"value": "Partnership Inquiry"}, "message": {"value": "potential collaboration", "operator": "contains"}},
-                "reasoning": "Verify that the contact form was submitted with both the specified subject and message content.",
-            },
         },
         {
             "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
             "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and message 'Great website, I love the design'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CONTACT_BOOK",
-                "event_criteria": {
-                    "name": {"value": "John Smith"},
-                    "email": {"value": "john@example.com"},
-                    "subject": {"value": "Feedback"},
-                    "message": {"value": "Great website, I love the design", "operator": "contains"},
-                },
-                "reasoning": "Verify that the contact form was submitted with all fields matching the specified values.",
-            },
         },
         {
             "prompt": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
             "prompt_for_task_generation": "Go to the contact page and submit a form with name 'John Smith', email 'john@example.com', subject 'Feedback', and cannot contains any 'e'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "CONTACT_BOOK",
-                "event_criteria": {
-                    "name": {"value": "John Smith"},
-                    "email": {"value": "john@example.com"},
-                    "subject": {"value": "Feedback"},
-                    "message": {"value": "e", "operator": "not_contains"},
-                },
-                "reasoning": "Verify that the contact form was submitted with all fields matching the specified values, and the message does NOT contain 'e'.",
-            },
         },
     ],
 )
@@ -916,80 +541,30 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
         {
             "prompt": "Login for the following username:user1 and password:pass123. Update your first name to John.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your first name to <first_name>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_USER_BOOK",
-                "event_criteria": {
-                    "username": {"value": "<username>", "operator": "equals"},
-                    "first_name": {"value": "John", "operator": "equals"},
-                },
-                "reasoning": "Ensures the new first name is recorded.",
-            },
+        },
+        {
+            "prompt": "Login for the following username:user1 and password:pass123.Modify your profile to include the word 'cinema' in your first name and ensure that your website does NOT contain 'https://cinephileworld.example.org'.",
+            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your profile to include the word 'cinema' in your <first_name> and ensure that your website does NOT contain <website>.",
         },
         {
             "prompt": "Login for the following username:bookfan and password:pass456. Modify your bio to include your passion for bookworm.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your bio to include <bio_content>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_USER_BOOK",
-                "event_criteria": {
-                    "username": {"value": "bookfan", "operator": "equals"},
-                    "bio": {"value": "bookworm", "operator": "contains"},
-                },
-                "reasoning": "Ensures the new bio content is recorded.",
-            },
         },
         {
             "prompt": "Login for the following username:booklover and password:pass789. Change your location to New York, USA.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your location to <location>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_USER_BOOK",
-                "event_criteria": {
-                    "username": {"value": "booklover", "operator": "equals"},
-                    "location": {"value": "New York, USA", "operator": "equals"},
-                },
-                "reasoning": "Ensures the location is updated.",
-            },
         },
         {
             "prompt": "Login for the following username:cinephile and password:pass321. Edit your website to https://mybookblog.example.com.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Edit your website to <website>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_USER_BOOK",
-                "event_criteria": {
-                    "username": {"value": "cinephile", "operator": "equals"},
-                    "website": {"value": "https://mybookblog.example.com", "operator": "equals"},
-                },
-                "reasoning": "Ensures the website is updated.",
-            },
         },
         {
             "prompt": "Login for the following username:author101 and password:pass654. Update your favorite genre to Science.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your favorite genre to <genre>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_USER_BOOK",
-                "event_criteria": {
-                    "username": {"value": "author101", "operator": "equals"},
-                    "favorite_genres": {"value": "Science", "operator": "equals"},
-                },
-                "reasoning": "Ensures the favorite genre is updated.",
-            },
         },
         {
             "prompt": "Login for the following username:producer and password:pass987. Change your last name to Smith.",
             "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your last name to <last_name>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EDIT_USER_BOOK",
-                "event_criteria": {
-                    "username": {"value": "producer", "operator": "equals"},
-                    "last_name": {"value": "Smith", "operator": "equals"},
-                },
-                "reasoning": "Ensures the last name is updated.",
-            },
         },
     ],
 )
@@ -1031,52 +606,22 @@ FILTER_BOOK_USE_CASE = UseCase(
         {
             "prompt": "Filter books released in the year 2005",
             "prompt_for_task_generation": "Filter books released in the year 2005",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "FILTER_BOOK",
-                "event_criteria": {"year": 2005},
-                "reasoning": "Ensures that filtering books by the year 1994 correctly triggers the event.",
-            },
         },
         {
             "prompt": "Filter for Action books",
             "prompt_for_task_generation": "Filter for Action books",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "FILTER_BOOK",
-                "event_criteria": {"genre_name": "Action"},
-                "reasoning": "Ensures that searching for 'Action' genre books correctly triggers the event.",
-            },
         },
         {
             "prompt": "Browse books from 2019 in the Story genre",
             "prompt_for_task_generation": "Browse books from 2019 in the Story genre",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "FILTER_BOOK",
-                "event_criteria": {"year": 2019, "genre_name": "Story"},
-                "reasoning": "Validates that filtering by both year and genre applies correctly.",
-            },
         },
         {
             "prompt": "Filter Screen books from 2022",
             "prompt_for_task_generation": "Filter Screen books from 2022",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "FILTER_BOOK",
-                "event_criteria": {"year": 2022},
-                "reasoning": "Ensures screening books by the year 2022 works independently.",
-            },
         },
         {
             "prompt": "Filter book list to Education genre",
             "prompt_for_task_generation": "Filter book list to Education genre",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "FILTER_BOOK",
-                "event_criteria": {"genre_name": "Education"},
-                "reasoning": "Ensures refining books by the 'Education' genre works independently.",
-            },
         },
     ],
 )
@@ -1112,56 +657,22 @@ ADD_COMMENT_USE_CASE = UseCase(
         {
             "prompt": "Navigate to a book 'Fourth Win' and add a comment 'beautiful book'.",
             "prompt_for_task_generation": "Navigate to a book '<book>' and add a comment '<comment>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT_BOOK",
-                "event_criteria": {"book_name": {"value": "Fourth Win", "operator": "equals"}},
-                "reasoning": "Verifies adding a comment to a specific book.",
-            },
         },
         {
             "prompt": "Write a review for a book, ensuring the commenter is not 'John'.",
             "prompt_for_task_generation": "Write a review for a book, ensuring the commenter is not '<commenter>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT_BOOK",
-                "event_criteria": {"commenter_name": {"value": "John", "operator": "not_equals"}},
-                "reasoning": "Ensures comment can be added with name constraint.",
-            },
         },
         {
             "prompt": "Post a comment containing the word 'masterpiece'.",
             "prompt_for_task_generation": "Post a comment containing the word '<comment>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT_BOOK",
-                "event_criteria": {"content": {"value": "masterpiece", "operator": "contains"}},
-                "reasoning": "Validates comment generation with specific content.",
-            },
         },
         {
             "prompt": "Add a comment for a book not called The Matrix by someone other than 'John'.",
             "prompt_for_task_generation": "Add a comment for a book not called '<book>' by someone other than '<commenter>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT_BOOK",
-                "event_criteria": {"book_name": {"value": "The Matrix", "operator": "not_equals"}, "commenter_name": {"value": "John", "operator": "not_equals"}},
-                "reasoning": "Checks multiple constraints for comment addition.",
-            },
         },
         {
             "prompt": "Write a detailed review for the book 'Elementary Statistics' with a comment that does NOT contain the word 'boring' and ensuring the commenter is not 'David'.",
             "prompt_for_task_generation": "Write a detailed review for the book '<book>' with a comment that does NOT contain the word '<content>' and ensuring the commenter is not '<commenter>'.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_COMMENT_BOOK",
-                "event_criteria": {
-                    "book_name": {"value": "Elementary Statistics", "operator": "equals"},
-                    "content": {"value": "boring", "operator": "not_contains"},
-                    "commenter_name": {"value": "David", "operator": "not_equals"},
-                },
-                "reasoning": "Demonstrates complex constraint combinations for comment generation.",
-            },
         },
     ],
 )
@@ -1198,40 +709,14 @@ SHOPPING_CART_USE_CASE = UseCase(
         {
             "prompt": "Login with username: <username> and password: <password>. After logging in, add 'Fourth Win' to your shopping cart.",
             "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, add '<book>' to your shopping cart.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SHOPPING_CART",
-                "event_criteria": {
-                    "name": {"value": "Fourth Win", "operator": "equals"},
-                },
-                "reasoning": "Verifies that after login, the correct book are added to the cart.",
-            },
         },
         {
             "prompt": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
             "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a book with page_count greater than or equal to <page_count>, with genre '<genre>' into your shopping cart.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SHOPPING_CART",
-                "event_criteria": {
-                    "rating": {"value": 4.0, "operator": "greater_equal"},
-                    "genres": {"value": ["Education"], "operator": "contains"},
-                },
-                "reasoning": "Tests login followed by finding a book based on author and rating.",
-            },
         },
         {
             "prompt": "Authenticate using username: <username> and password: <password>. After that, add a 'Comics' genre book with less than 400 pages to your shopping cart.",
             "prompt_for_task_generation": "Authenticate using username: <username> and password: <password>. After that, add a '<genre>' genre book with less than <page_count> pages to your shopping cart.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SHOPPING_CART",
-                "event_criteria": {
-                    "genres": {"value": ["Comics"], "operator": "contains"},
-                    "page_count": {"value": 400, "operator": "less_than"},
-                },
-                "reasoning": "Ensures a login followed by adding a book based on genre and page count filter.",
-            },
         },
     ],
 )
@@ -1262,54 +747,18 @@ PURCHASE_BOOK_USE_CASE = UseCase(
         {
             "prompt": "First, authenticate with username: <username> and password: <password>. After successful login, purchase the book titled 'Klara and the Sun' from the year 2021.",
             "prompt_for_task_generation": "First, authenticate with username: <username> and password: <password>. After successful login, purchase the book titled <book> from the year <year>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "PURCHASE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Klara and the Sun", "operator": "equals"},
-                    "year": {"value": 2021, "operator": "equals"},
-                },
-                "reasoning": "Ensures login occurs first, then a specific book from a specific year is purchased.",
-            },
         },
         {
             "prompt": "Initiate session using username: <username> and password: <password>. Once logged in, checkout with the 'Elementary Statistics' book priced below $100.",
             "prompt_for_task_generation": "Initiate session using username: <username> and password: <password>. Once logged in, checkout with the <book> book priced below <price>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "PURCHASE_BOOK",
-                "event_criteria": {
-                    "name": {"value": "Elementary Statistics", "operator": "equals"},
-                    "price": {"value": 100, "operator": "less_than"},
-                },
-                "reasoning": "Validates login and ensures the correct book is checked out with a price condition.",
-            },
         },
         {
             "prompt": "Sign in with username: <username> and password: <password>. Then complete buying the order for a 'History' genre book released in 2019.",
             "prompt_for_task_generation": "Sign in with username: <username> and password: <password>. Then complete the order for a '<genre>' genre book released in <year>.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "PURCHASE_BOOK",
-                "event_criteria": {
-                    "genres": {"value": ["History"], "operator": "contains"},
-                    "year": {"value": 2019, "operator": "equals"},
-                },
-                "reasoning": "Tests login followed by purchase filtered by genre and year.",
-            },
         },
         {
             "prompt": "Log in with username: <username> and password: <password>. Then proceed to buy a book in the 'Education' genre with more than 700 pages.",
             "prompt_for_task_generation": "Log in with username: <username> and password: <password>. Then proceed to buy a book in the '<genre>' genre with more than <page_count> pages.",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "PURCHASE_BOOK",
-                "event_criteria": {
-                    "genres": {"value": ["Education"], "operator": "contains"},
-                    "page_count": {"value": 700, "operator": "greater_than"},
-                },
-                "reasoning": "Verifies that after login, a book is purchased based on genre and minimum page count.",
-            },
         },
     ],
 )

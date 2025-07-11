@@ -6,9 +6,8 @@ from typing import Any
 from loguru import logger
 
 from ..criterion_helper import ComparisonOperator
-from ..shared_data import FIELD_OPERATORS_MAP_PRODUCTS
 from ..shared_utils import create_constraint_dict, parse_price
-from .data import PRODUCTS_DATA
+from .data import FIELD_OPERATORS_MAP_PRODUCTS, PRODUCTS_DATA
 
 
 def generate_constraint_value(field: str, operator: ComparisonOperator, product_data_source: dict[str, Any], all_products_data: list[dict[str, Any]] = PRODUCTS_DATA) -> Any:

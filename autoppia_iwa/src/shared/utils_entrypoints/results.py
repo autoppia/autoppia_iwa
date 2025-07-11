@@ -13,8 +13,8 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
     """
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(output_dir, f"benchmark_results_{timestamp}.json")
-
+    prefix = "r-" if _has_zero_score(results) else ""
+    filename = os.path.join(output_dir, f"{prefix}benchmark_results_{timestamp}.json")
     output_data = {"timestamp": datetime.now().isoformat(), "total_execution_time": timing_metrics.get_total_time(), "agents": {}}
 
     for agent in agents:
@@ -30,7 +30,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
                     "score": data["score"],
                     "solution_time": timing_metrics.solution_times.get(agent.id, {}).get(task_id, 0),
                     "evaluation_time": timing_metrics.evaluation_times.get(agent.id, {}).get(task_id, 0),
-                    "has_cached_solution": False,  # Will be updated for browser-use agent later
+                    "has_cached_solution": False,
                 }
 
                 # Add indicator if this is the browser-use agent with cached solution
@@ -215,3 +215,15 @@ def plot_task_comparison(results, agents, tasks, output_dir: str) -> str:
 
     print(f"\nTask comparison chart saved to '{comparison_path}'")
     return comparison_path
+
+
+def _has_zero_score(results: dict) -> bool:
+    """
+    Devuelve True si en el diccionario results hay al menos
+    una entrada con score == 0.0, en cualquier agente o tarea.
+    """
+    for agent_dict in results.values():
+        for task_data in agent_dict.values():
+            if task_data.get("score") == 0.0:
+                return True
+    return False
