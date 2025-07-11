@@ -206,7 +206,7 @@ def generate_search_client_constraints() -> list[dict[str, Any]]:
 
 def _generate_value_for_document_field(field: str, field_value: str, operator: ComparisonOperator, all_documents: list[dict[str, Any]]) -> Any:
     values = [d[field] for d in all_documents if field in d]
-    values = list(set(values))  # Get unique values
+    values = list(set(values))
 
     if not values:
         return None
@@ -215,54 +215,54 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         return field_value
 
     elif operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[field] for v in all_documents if v.get(field) != field_value]
+        valid = [d[field] for d in all_documents if d.get(field) != field_value]
         return random.choice(valid) if valid else random.choice(values)
 
-    elif operator in [
-        ComparisonOperator.GREATER_THAN,
-        ComparisonOperator.LESS_THAN,
-        ComparisonOperator.GREATER_EQUAL,
-        ComparisonOperator.LESS_EQUAL,
-    ]:
-        size_kb = []
-        original_unit = "KB"
-
-        if isinstance(field_value, str):
-            if "MB" in field_value:
-                original_unit = "MB"
-            elif "KB" in field_value:
-                original_unit = "KB"
-
+    elif (
+        operator
+        in [
+            ComparisonOperator.GREATER_THAN,
+            ComparisonOperator.LESS_THAN,
+            ComparisonOperator.GREATER_EQUAL,
+            ComparisonOperator.LESS_EQUAL,
+        ]
+        and field == "size"
+    ):
+        # Extract all sizes in KB and track units
+        size_entries = []
         for s in values:
             try:
-                if isinstance(s, str) and "KB" in s:
-                    size_kb.append(float(s.replace(" KB", "").strip()))
-                elif isinstance(s, str) and "MB" in s:
-                    size_kb.append(float(s.replace(" MB", "").strip()) * 1024)
-            except ValueError:
+                if "KB" in s:
+                    size_entries.append((float(s.replace("KB", "").strip()), "KB"))
+                elif "MB" in s:
+                    mb = float(s.replace("MB", "").strip())
+                    size_entries.append((mb * 1024, "MB"))
+            except Exception:
                 continue
 
-        if size_kb:
-            base = random.choice(size_kb)
-            delta = random.randint(10, 200)
+        if not size_entries:
+            return None
 
-            if operator == ComparisonOperator.GREATER_THAN:
-                new_val_kb = base + delta
-            elif operator == ComparisonOperator.GREATER_EQUAL:
-                new_val_kb = base + random.randint(0, delta)
-            elif operator == ComparisonOperator.LESS_THAN:
-                new_val_kb = max(1, base - delta)
-            elif operator == ComparisonOperator.LESS_EQUAL:
-                new_val_kb = max(1, base - random.randint(0, delta))
-            else:
-                new_val_kb = base
+        # Pick base
+        base_kb, unit = random.choice(size_entries)
+        delta = random.randint(1, 20)
 
-            if original_unit == "MB":
-                return f"{round(new_val_kb / 1024, 2)} MB"
-            else:
-                return f"{int(new_val_kb)} KB"
+        if operator == ComparisonOperator.GREATER_THAN:
+            new_kb = base_kb + delta
+        elif operator == ComparisonOperator.GREATER_EQUAL:
+            new_kb = base_kb + random.randint(0, delta)
+        elif operator == ComparisonOperator.LESS_THAN:
+            new_kb = max(min(kb for kb, _ in size_entries), base_kb - delta)
+        elif operator == ComparisonOperator.LESS_EQUAL:
+            new_kb = max(min(kb for kb, _ in size_entries), base_kb - random.randint(0, delta))
+        else:
+            new_kb = base_kb
 
-        return "100 KB"  # Fallback
+        # Format consistently with original unit
+        if unit == "MB":
+            return f"{round(new_kb / 1024, 2)} MB"
+        else:
+            return f"{int(new_kb)} KB"
 
     return random.choice(values)
 
