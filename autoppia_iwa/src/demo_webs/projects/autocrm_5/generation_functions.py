@@ -204,58 +204,77 @@ def generate_search_client_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def _generate_value_for_document_field(field: str, operator: ComparisonOperator, all_documents: list[dict[str, Any]]) -> Any:
+def _generate_value_for_document_field(field: str, field_value: str, operator: ComparisonOperator, all_documents: list[dict[str, Any]]) -> Any:
     values = [d[field] for d in all_documents if field in d]
     values = list(set(values))  # Get unique values
 
     if not values:
         return None
 
-    if operator in [ComparisonOperator.IN_LIST, ComparisonOperator.NOT_IN_LIST]:
-        k_val = min(random.randint(1, 2), len(values))
-        return random.sample(values, k=k_val) if k_val > 0 else [random.choice(values)]
-    elif operator in [ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS]:
-        chosen_value: str = str(random.choice(values))
-        if len(chosen_value) > 2:
-            start = random.randint(0, max(0, len(chosen_value) - 2))
-            end = random.randint(start + 1, len(chosen_value))
-            return chosen_value[start:end]
-        return chosen_value
-    elif operator in [ComparisonOperator.GREATER_THAN, ComparisonOperator.LESS_THAN]:
-        if field == "size":
-            existing_sizes_kb = []
-            for s in values:
-                if isinstance(s, str) and "KB" in s:
-                    existing_sizes_kb.append(float(s.replace(" KB", "")))
-                elif isinstance(s, str) and "MB" in s:
-                    existing_sizes_kb.append(float(s.replace(" MB", "")) * 1024)
+    if operator == ComparisonOperator.EQUALS:
+        return field_value
 
-            if existing_sizes_kb:
-                base_size_kb = random.choice(existing_sizes_kb)
-                delta_kb = random.randint(10, 200)
-                generated_size_kb = base_size_kb + (delta_kb if operator == ComparisonOperator.GREATER_THAN else -delta_kb)
-                return f"{max(1, int(generated_size_kb))} KB"
-            return "100 KB"  # Fallback
-        # For other numeric-like fields if they appear, handle them generally
-        if values and all(isinstance(v, int | float) for v in values):
-            base_num = random.choice(values)
-            delta = random.randint(1, 3)
-            return base_num + delta if operator == ComparisonOperator.GREATER_THAN else base_num - delta
-        return random.choice(values)  # Fallback for non-numeric or complex types
-    else:  # EQUALS, NOT_EQUALS
-        return random.choice(values)
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        valid = [v[field] for v in all_documents if v.get(field) != field_value]
+        return random.choice(valid) if valid else random.choice(values)
+
+    elif operator in [
+        ComparisonOperator.GREATER_THAN,
+        ComparisonOperator.LESS_THAN,
+        ComparisonOperator.GREATER_EQUAL,
+        ComparisonOperator.LESS_EQUAL,
+    ]:
+        size_kb = []
+        original_unit = "KB"
+
+        if isinstance(field_value, str):
+            if "MB" in field_value:
+                original_unit = "MB"
+            elif "KB" in field_value:
+                original_unit = "KB"
+
+        for s in values:
+            try:
+                if isinstance(s, str) and "KB" in s:
+                    size_kb.append(float(s.replace(" KB", "").strip()))
+                elif isinstance(s, str) and "MB" in s:
+                    size_kb.append(float(s.replace(" MB", "").strip()) * 1024)
+            except ValueError:
+                continue
+
+        if size_kb:
+            base = random.choice(size_kb)
+            delta = random.randint(10, 200)
+
+            if operator == ComparisonOperator.GREATER_THAN:
+                new_val_kb = base + delta
+            elif operator == ComparisonOperator.GREATER_EQUAL:
+                new_val_kb = base + random.randint(0, delta)
+            elif operator == ComparisonOperator.LESS_THAN:
+                new_val_kb = max(1, base - delta)
+            elif operator == ComparisonOperator.LESS_EQUAL:
+                new_val_kb = max(1, base - random.randint(0, delta))
+            else:
+                new_val_kb = base
+
+            if original_unit == "MB":
+                return f"{round(new_val_kb / 1024, 2)} MB"
+            else:
+                return f"{int(new_val_kb)} KB"
+
+        return "100 KB"  # Fallback
+
+    return random.choice(values)
 
 
 def generate_document_deleted_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
     possible_fields = ["name", "size", "version", "status", "updated"]
-    if not possible_fields:
-        return constraints_list
+    document_data = random.choice(DOCUMENT_DATA)
 
-    num_constraints = random.randint(1, min(2, len(possible_fields)))
+    num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
-
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_DOCUMENT.get(field, [])
         if not allowed_ops:
@@ -264,7 +283,10 @@ def generate_document_deleted_constraints() -> list[dict[str, Any]]:
         op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
 
-        value = _generate_value_for_document_field(field, operator, DOCUMENT_DATA)
+        field_value = document_data.get(field)
+
+        value = _generate_value_for_document_field(field, field_value, operator, DOCUMENT_DATA) if field == "size" else _generate_constraint_value(operator, field_value, field, dataset=DOCUMENT_DATA)
+
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
             constraints_list.append(constraint)
