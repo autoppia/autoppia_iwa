@@ -541,6 +541,7 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
         reservation_time: str | CriterionValue | None = None
         people_count: int | CriterionValue | None = None
         occasion: str | CriterionValue | None = None
+        phone_number: str | CriterionValue | None = None
 
         class Config:
             title = "Reservation Complete Validation"

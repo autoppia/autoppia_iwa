@@ -243,11 +243,10 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
 
     product = random.choice(PRODUCTS_DATA)
 
-    item_identification_fields = ["name"]
+    item_identification_fields = "name"
     criterion_alias_to_product_key = {"name": "title"}
 
-    selected_id_field = random.choice(item_identification_fields)
-    product_key = criterion_alias_to_product_key.get(selected_id_field)
+    product_key = criterion_alias_to_product_key.get(item_identification_fields)
 
     if product_key and product_key in product:
         op = None
@@ -260,7 +259,7 @@ def generate_cart_operation_constraints() -> list[dict[str, Any]]:
         if op:
             constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
             if constraint_value is not None:
-                constraints_list.append(create_constraint_dict(selected_id_field, op, constraint_value))
+                constraints_list.append(create_constraint_dict(item_identification_fields, op, constraint_value))
         else:
             logger.warning(f"Could not select operator for product key '{product_key}' in cart operation constraints.")
     else:
