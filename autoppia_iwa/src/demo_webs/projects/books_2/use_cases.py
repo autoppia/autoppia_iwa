@@ -23,6 +23,7 @@ from .generation_functions import (
     generate_book_constraints,
     generate_book_filter_constraints,
     generate_contact_constraints,
+    generate_delete_book_constraints,
     generate_edit_book_constraints,
     generate_edit_profile_constraints,
     generate_login_constraints,
@@ -411,7 +412,7 @@ DELETE_BOOK_USE_CASE = UseCase(
     event_source_code=DeleteBookEvent.get_source_code_of_class(),
     additional_prompt_info=DELETE_BOOK_ADDITIONAL_PROMPT_INFO,
     replace_func=login_replace_func,
-    constraints_generator=False,
+    constraints_generator=generate_delete_book_constraints,
     examples=[
         {
             "prompt": "Log in (username: <username>, password: <password>) and remove '<your_book>'.",
@@ -767,18 +768,18 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    REGISTRATION_USE_CASE,
-    SEARCH_BOOK_USE_CASE,
-    FILTER_BOOK_USE_CASE,
-    CONTACT_USE_CASE,
-    LOGIN_USE_CASE,
-    LOGOUT_USE_CASE,
+    # REGISTRATION_USE_CASE,
+    # SEARCH_BOOK_USE_CASE,
+    # FILTER_BOOK_USE_CASE,
+    # CONTACT_USE_CASE,
+    # LOGIN_USE_CASE,
+    # LOGOUT_USE_CASE,
     DELETE_BOOK_USE_CASE,
-    ADD_BOOK_USE_CASE,
-    ADD_COMMENT_USE_CASE,
-    EDIT_USER_PROFILE_USE_CASE,
-    BOOK_DETAIL_USE_CASE,
-    EDIT_BOOK_USE_CASE,
-    SHOPPING_CART_USE_CASE,
-    PURCHASE_BOOK_USE_CASE,
+    # ADD_BOOK_USE_CASE,
+    # ADD_COMMENT_USE_CASE,
+    # EDIT_USER_PROFILE_USE_CASE,
+    # BOOK_DETAIL_USE_CASE,
+    # EDIT_BOOK_USE_CASE,
+    # SHOPPING_CART_USE_CASE,
+    # PURCHASE_BOOK_USE_CASE,
 ]

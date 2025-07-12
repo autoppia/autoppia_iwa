@@ -60,6 +60,22 @@ def generate_book_constraints():
     return None
 
 
+def generate_delete_book_constraints():
+    """
+    Generates constraints specifically for book-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "id equals <web_agent_id> "
+
+    # Convertir el string a la estructura de datos
+    if constraints_str:
+        return parse_constraints_str(constraints_str)
+    return None
+
+
 def generate_search_book_constraints():
     """
     Generates constraints specifically for film-related use cases.
