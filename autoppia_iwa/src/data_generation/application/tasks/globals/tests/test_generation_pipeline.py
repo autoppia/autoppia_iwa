@@ -28,10 +28,6 @@ class GlobalTestGenerationPipeline:
                 logger.debug("Task %s has no UseCase. Skipping.", task.id)
                 continue
 
-            if not task.use_case.constraints:
-                logger.debug("Task %s: UseCase has no constraints.", task.id)
-                continue
-
             try:
                 self._generate_tests_for_task(task)
             except Exception as exc:
@@ -58,7 +54,7 @@ class GlobalTestGenerationPipeline:
         """
         constraints: list[dict[str, Any]] = task.use_case.constraints or []
         criteria: dict[str, Any] = {}
-        if constraints is None:
+        if not constraints:
             test_def = {
                 "type": "CheckEventTest",
                 "event_name": task.use_case.name,

@@ -181,7 +181,7 @@ VIEW_CART_USE_CASE = UseCase(
     event=ViewCartEvent,
     event_source_code=ViewCartEvent.get_source_code_of_class(),
     additional_prompt_info=VIEW_CART_INFO,
-    constraints_generator=None,
+    constraints_generator=False,
     examples=[
         {
             "prompt": "View my shopping cart",
