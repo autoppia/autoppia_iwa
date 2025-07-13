@@ -232,7 +232,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 2. Avoid ambiguous phrases like "Show details" or "Give me information" that could be confused with other actions
 3. Include ONLY the book title as part of the search
 4. DO NOT include ANY constraints or conditions like author, year, genre, etc.
-
+5. PAY ATTENTION to the constraints, especially when referring to EQUALS or NOT EQUALS.
 For example:
 - CORRECT: "Search for the book 'A Breath of Snow and Ashes' in the database"
 - CORRECT: "Look for the book 'Fourth Wing'"
