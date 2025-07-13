@@ -29,7 +29,7 @@ def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
         if field in ["year", "page_count"]:
             # For integer numeric fields
             value = [int(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else int(value_str)
-        elif field == "rating":
+        elif field in ["price", "rating"]:
             # For float numeric fields
             value = [float(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else float(value_str)
         elif field == "genres":
@@ -85,7 +85,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     """
     import random
 
-    from ..shared_data import FIELD_OPERATORS_MAP_BOOK
+    from .data import FIELD_OPERATORS_MAP_BOOK
     from .generation_functions import generate_constraint_from_solution
 
     # Elegir una película aleatoria como punto de partida

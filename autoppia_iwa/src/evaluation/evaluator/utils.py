@@ -41,7 +41,7 @@ def display_single_evaluation_summary(stats: EvaluationStats, debug_mode: bool =
     logger.info(f"Evaluation Results for Agent: {stats.web_agent_id}")
     logger.info(f"{'-' * 60}")
     logger.info(f"Task: {stats.task_id}")
-    logger.info(f"Score: {stats.final_score:.2f} (Raw: {stats.raw_score:.2f}, Random: {stats.random_clicker_score:.2f})")
+    logger.info(f"Score: {stats.final_score:.2f} (Raw: {stats.raw_score:.2f})")
     logger.info(f"Tests Passed: {stats.tests_passed}/{stats.total_tests}")
     logger.info(f"Actions: {stats.action_count} ({', '.join(f'{k}: {v}' for k, v in stats.action_types.items())})")
     logger.info(f"{'-' * 40}")

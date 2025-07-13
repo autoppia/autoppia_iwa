@@ -1,9 +1,60 @@
 import random
+from random import choice, sample
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from ..shared_data import FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, MOVIES_DATA
+from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER, MOVIES_DATA
+
+
+def generate_registration_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals password123"
+
+    return parse_constraints_str(constraints_str)
+
+
+def generate_login_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals <web_agent_id> AND password equals password123"
+
+    return parse_constraints_str(constraints_str)
+
+
+def generate_logout_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals <web_agent_id>"
+    return parse_constraints_str(constraints_str)
+
+
+def generate_search_film_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    movie_names = [movie["name"] for movie in MOVIES_DATA]
+    operators = ["equals", "not_equals"]
+    constraints_str = f"query {choice(operators)} {choice(movie_names)}"
+    return parse_constraints_str(constraints_str)
 
 
 def generate_film_constraints():
@@ -79,7 +130,8 @@ def generate_contact_constraints() -> list:
         return "TestValue"
 
     num_constraints = random.randint(1, 4)
-    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())  # ["name", "email", "subject", "message"]
+    # ["name", "email", "subject", "message"]
+    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())
     constraints_list = []
 
     for _ in range(num_constraints):
@@ -345,7 +397,7 @@ def generate_add_comment_constraints():
     """
     Genera combinaciones de constraints para añadir comentarios.
     """
-    from random import choice, sample
+    from random import choice
 
     # Películas disponibles
     movies = [movie["name"] for movie in MOVIES_DATA]
@@ -424,7 +476,7 @@ def generate_edit_film_constraints():
     Generates constraints specifically for editing film-related use cases.
     Returns the constraints as structured data.
     """
-    from random import choice, randint, sample, uniform
+    from random import choice, randint, uniform
 
     # Obtener películas disponibles
     movies = MOVIES_DATA
@@ -531,7 +583,7 @@ def generate_add_film_constraints():
     Generates constraints specifically for editing film-related use cases.
     Returns the constraints as structured data.
     """
-    from random import choice, randint, sample, uniform
+    from random import choice, randint, uniform
 
     # Campos editables
     editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]
@@ -631,7 +683,7 @@ def generate_edit_profile_constraints():
     Generates constraints specifically for editing user profiles.
     Returns the constraints as structured data.
     """
-    from random import choice, sample
+    from random import choice
 
     # Editable profile fields (username and email are excluded as mentioned in requirements)
     editable_fields = ["first_name", "last_name", "bio", "location", "website", "favorite_genres"]

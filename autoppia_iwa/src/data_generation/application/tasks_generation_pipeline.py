@@ -29,7 +29,7 @@ class TaskGenerationPipeline:
         self.local_pipeline = LocalTaskGenerationPipeline(web_project=web_project)
         self.global_pipeline = GlobalTaskGenerationPipeline(web_project=web_project, llm_service=llm_service)
         self.local_test_pipeline = LocalTestGenerationPipeline(web_project=web_project)
-        self.global_test_pipeline = GlobalTestGenerationPipeline(web_project=web_project)
+        self.global_test_pipeline = GlobalTestGenerationPipeline()
 
     async def generate(self) -> list[Task]:
         """
@@ -63,17 +63,16 @@ class TaskGenerationPipeline:
                 logger.info(f"Generated {len(global_tasks)} global tasks")
 
                 # Add tests to tasks
-
                 global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
                 all_tasks.extend(global_tasks_with_tests)
 
-                # for task in global_tasks_with_tests:
-                #     # print("Prompt: ", task.prompt)
-                #     for _i, _test in enumerate(task.tests):
-                #         # print(f"Test: {_i}")
-                #         # from pprint import pprint
+                for task in global_tasks_with_tests:
+                    print("Prompt: ", task.prompt)
+                    for _i, _test in enumerate(task.tests):
+                        print(f"Test: {_i}")
+                        from pprint import pprint
 
-                #         # pprint(_test.model_dump())
+                        pprint(_test.model_dump())
                 #         pass
 
             # Apply final task limit if configured
@@ -81,12 +80,6 @@ class TaskGenerationPipeline:
                 random.shuffle(all_tasks)
                 all_tasks = all_tasks[: self.task_config.final_task_limit]
                 logger.info(f"Applied final task limit: {len(all_tasks)} tasks")
-
-            # Save tasks in DB if configured
-            # if self.task_config.save_task_in_db and all_tasks:
-            #     for task in all_tasks:
-            #         self.synthetic_task_repository.save(task.model_dump())
-            #     logger.info(f"Saved {len(all_tasks)} tasks to database")
 
             # Log completion
             total_time = (datetime.now() - start_time).total_seconds()

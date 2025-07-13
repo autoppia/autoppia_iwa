@@ -67,7 +67,6 @@ class EvaluationStats(BaseModel):
 
     # Performance stats
     raw_score: float = 0
-    random_clicker_score: float = 0
     final_score: float = 0
     tests_passed: int = 0
     total_tests: int = 0
@@ -98,13 +97,14 @@ class EvaluationResult(BaseModel):
     """Encapsulates the output of a task evaluation."""
 
     final_score: float = 0
-    test_results_matrix: list[list[TestResult]]  # List of test evaluation results
-    execution_history: list[ActionExecutionResult]  # History of all actions executed
+    # List of test evaluation results
+    test_results_matrix: list[list[TestResult]]
+    # History of all actions executed
+    execution_history: list[ActionExecutionResult]
     feedback: Feedback | None = None  # Feedback generated during the evaluation
     web_agent_id: str | None = None
     raw_score: float = 0.0
-    random_clicker_score: float = 0.0
-    random_clicker_passed_tests_indexes: list[int] = Field(default_factory=list)
+
     evaluation_time: float = 0.0  # Time taken to evaluate this solution
     stats: EvaluationStats | None = None
     gif_recording: str | None = Field(None, description="Base64-encoded GIF recording of the browser state after execution")

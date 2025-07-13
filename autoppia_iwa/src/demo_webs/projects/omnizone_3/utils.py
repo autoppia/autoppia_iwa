@@ -13,7 +13,7 @@ def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | No
     """
     import random
 
-    from ..shared_data import FIELD_OPERATORS_MAP_PRODUCTS
+    from .data import FIELD_OPERATORS_MAP_PRODUCTS
     from .generation_functions import generate_constraint_value
 
     # Elegir una película aleatoria como punto de partida
