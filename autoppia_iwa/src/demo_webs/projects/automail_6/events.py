@@ -62,13 +62,13 @@ class StarEmailEvent(Event):
     email_id: str
     subject: str
     from_email: str
-    isStar: bool
+    isStarred: bool
 
     class ValidationCriteria(BaseModel):
         email_id: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
         from_email: str | CriterionValue | None = None
-        is_starred: bool | CriterionValue | None = None
+        isStarred: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -79,8 +79,8 @@ class StarEmailEvent(Event):
             return validate_criterion(self.subject, criteria.subject)
         if criteria.from_email is not None:
             return validate_criterion(self.from_email, criteria.from_email)
-        if criteria.is_starred is not None:
-            return validate_criterion(self.isStar, criteria.is_starred)
+        if criteria.isStarred is not None:
+            return validate_criterion(self.isStarred, criteria.isStarred)
         return True
 
     @classmethod
@@ -95,7 +95,7 @@ class StarEmailEvent(Event):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            isStar=data.get("isStar", False),
+            isStarred=data.get("isStar", False),
         )
 
 
@@ -155,7 +155,7 @@ class MarkAsUnreadEvent(ViewEmailEvent):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            is_read=data.get("isRead", True),
+            is_read=data.get("isRead", False),
         )
 
 

@@ -14,7 +14,7 @@ from .events import (
     ThemeChangedEvent,
     ViewEmailEvent,
 )
-from .generation_functions import generate_is_important_constraints, generate_is_read_constraints, generate_is_starred_constraints, generate_view_email_constraints
+from .generation_functions import generate_is_important_constraints, generate_is_read_constraints, generate_is_spam_constraints, generate_is_starred_constraints, generate_view_email_constraints
 from .replace_functions import replace_email_placeholders
 
 VIEW_EMAIL_ADDITIONAL_PROMPT_INFO = """
@@ -87,14 +87,22 @@ VIEW_EMAIL_USE_CASE = UseCase(
 
 STAR_EMAIL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. All prompts must start with star, mark, or favorite.
+1.  Use clear action phrases such as:
+   - "mark as starred"
+   - "flag as starred"
+   - "add to favorite"
+
 2. Mention Subject, Email ID, or Sender if available.
-3. Only use natural phrasing and vary wording across prompts.
+3. Examples:
+    Correct: "Mark the email with Subject containing 'g Workshop' as starred."
+    Incorrect: "Mark the email with Subject containing 'g Workshop' as starred where isStarred is NOT equal to True.".
+4. IMPORTANT: Do **NOT** mention isStarred in the prompt.
+5. Only use natural phrasing and vary wording across prompts.
 """
 
 STAR_EMAIL_USE_CASE = UseCase(
     name="STAR_AN_EMAIL",
-    description="The user stars or marks an email as important visually using the star icon.",
+    description="The user stars or unstar, marks or unmarks an email as important visually using the star icon.",
     event=StarEmailEvent,
     event_source_code=StarEmailEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
@@ -110,7 +118,7 @@ STAR_EMAIL_USE_CASE = UseCase(
                 "event_criteria": {
                     "subject": {"value": "<subject>", "operator": "equals"},
                     "from_email": {"value": "<from_email>", "operator": "equals"},
-                    "isStar": {"value": True, "operator": "equals"},
+                    "isStarred": {"value": True, "operator": "equals"},
                 },
                 "reasoning": "Confirms the user starred the email using both sender and subject.",
             },
@@ -121,17 +129,17 @@ STAR_EMAIL_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"from_email": {"value": "<from_email>", "operator": "equals"}},
+                "event_criteria": {"from_email": {"value": "<from_email>", "operator": "equals"}, "isStarred": {"value": True, "operator": "not_equals"}},
                 "reasoning": "Focuses on starring an email based on the sender only.",
             },
         },
         {
-            "prompt": "Star the email titled '<subject>'",
-            "prompt_for_task_generation": "Star the email titled '<subject>'",
+            "prompt": "Mark the email titled '<subject>' as unstarred",
+            "prompt_for_task_generation": "Mark the email titled '<subject>' as unstarred",
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"subject": {"value": "<subject>", "operator": "equals"}},
+                "event_criteria": {"subject": {"value": "<subject>", "operator": "equals"}, "isStarred": {"value": True, "operator": "equals"}},
                 "reasoning": "Ensures the subject is the main identifying field.",
             },
         },
@@ -141,7 +149,7 @@ STAR_EMAIL_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"email_id": {"value": "<email_id>", "operator": "equals"}},
+                "event_criteria": {"email_id": {"value": "<email_id>", "operator": "equals"}, "isStarred": {"value": True, "operator": "not_equals"}},
                 "reasoning": "Uses the unique email ID for targeting the correct email.",
             },
         },
@@ -151,7 +159,7 @@ STAR_EMAIL_USE_CASE = UseCase(
             "test": {
                 "type": "CheckEventTest",
                 "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"subject": {"value": "<subject>", "operator": "contains"}},
+                "event_criteria": {"subject": {"value": "<subject>", "operator": "contains"}, "isStarred": {"value": False, "operator": "equals"}},
                 "reasoning": "Captures cases where the subject partially matches a known topic.",
             },
         },
@@ -159,11 +167,25 @@ STAR_EMAIL_USE_CASE = UseCase(
 )
 
 MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Use phrases like mark as important, flag as important, or set as high priority.
-2. Mention the Subject, Email ID, or Sender if available.
-3. Vary phrasing naturally but retain consistent intent.
+CRITICAL REQUIREMENTS: Every prompt you generate MUST follow these rules:
+
+1. Use clear action phrases such as:
+   - "mark as important"
+   - "flag as important"
+   - "set as high priority"
+
+2. Include at least one identifier for the email:
+   - Subject
+   - Email ID
+   - Sender (from email)
+
+3. Examples:
+    Correct: "Mark the email with Subject containing 'g Workshop' as important."
+    Incorrect: "Mark the email with Subject containing 'g Workshop' as important where isImportant is NOT equal to True."
+4. IMPORTANT: Do **NOT** mention isImportant in the prompt.
+5. Phrase each prompt naturally and vary the wording, but keep the user intent consistent.
 """
+
 
 MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     name="MARK_EMAIL_AS_IMPORTANT",
@@ -411,7 +433,7 @@ MARK_AS_SPAM_USE_CASE = UseCase(
     event=MarkAsSpamEvent,
     event_source_code=MarkAsSpamEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    constraints_generator=generate_is_important_constraints,
+    constraints_generator=generate_is_spam_constraints,
     additional_prompt_info=MARK_AS_SPAM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -982,7 +1004,7 @@ ALL_USE_CASES = [
     # STAR_EMAIL_USE_CASE,
     # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
     # MARK_AS_UNREAD_USE_CASE,
-    DELETE_EMAIL_USE_CASE,
+    # DELETE_EMAIL_USE_CASE,
     MARK_AS_SPAM_USE_CASE,
     # ADD_LABEL_USE_CASE,
     # COMPOSE_EMAIL_USE_CASE,
