@@ -1050,11 +1050,13 @@ for email in deepcopy(EMAILS_DATA):
             new_dict["from_" + k] = v
         email.pop("from")
         email.update(new_dict)
+    if email.get("to"):
+        email["to"] = email["to"][0]["email"]
     EMAILS_DATA_MODIFIED.append(email)
 
-from ..shared_data import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
+from ..operators import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
 
-FIELD_OPERATORS_MAP_VIEW_EMAIL = {
+FIELD_OPERATORS_VIEW_EMAIL_MAP = {
     "from_email": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
 }
@@ -1062,20 +1064,52 @@ FIELD_OPERATORS_MAP_VIEW_EMAIL = {
 FLAGGED_VARIABLES_OPERATORS = [EQUALS, NOT_EQUALS]
 
 FIELD_OPERATORS_STARRED_MAP = {
-    **FIELD_OPERATORS_MAP_VIEW_EMAIL,
+    **FIELD_OPERATORS_VIEW_EMAIL_MAP,
     "isStarred": FLAGGED_VARIABLES_OPERATORS,
 }
 
 FIELD_OPERATORS_IMPORTANT_MAP = {
-    **FIELD_OPERATORS_MAP_VIEW_EMAIL,
+    **FIELD_OPERATORS_VIEW_EMAIL_MAP,
     "isImportant": FLAGGED_VARIABLES_OPERATORS,
 }
 
 FIELD_OPERATORS_IS_READ_MAP = {
-    **FIELD_OPERATORS_MAP_VIEW_EMAIL,
+    **FIELD_OPERATORS_VIEW_EMAIL_MAP,
     "isRead": FLAGGED_VARIABLES_OPERATORS,
 }
+
 FIELD_OPERATORS_IS_SPAM_MAP = {
-    **FIELD_OPERATORS_MAP_VIEW_EMAIL,
+    **FIELD_OPERATORS_VIEW_EMAIL_MAP,
     "isSpam": FLAGGED_VARIABLES_OPERATORS,
 }
+
+
+def get_all_email_words():
+    words = set()
+    for email in EMAILS_DATA_MODIFIED:
+        if email.get("subject"):
+            words.update(email["subject"].split())
+        if email.get("from_email"):
+            words.add(email["from_email"])
+        if email.get("body"):
+            words.update(email["body"].split())
+    return list(words)
+
+
+ALL_EMAIL_WORDS = get_all_email_words()
+
+FIELD_OPERATORS_SEARCH_MAP = {"query": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}
+
+# FIELD_OPERATORS_COMPOSE_EMAIL_MAP = {
+#     'to': [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+#     'subject': [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+#     'body': [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
+# }
+FIELD_OPERATORS_SEND_EMAIL_MAP = {
+    "to": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    # 'body': [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
+}
+
+
+FIELD_OPERATORS_SAVE_AS_DRAFT_MAP = {"to": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS], "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS], "body": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}

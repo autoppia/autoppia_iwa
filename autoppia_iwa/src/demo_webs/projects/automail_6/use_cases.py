@@ -2,7 +2,7 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AddLabelEvent,
-    ComposeEmailEvent,
+    # ComposeEmailEvent,
     DeleteEmailEvent,
     EmailSaveAsDraftEvent,
     MarkAsSpamEvent,
@@ -14,7 +14,16 @@ from .events import (
     ThemeChangedEvent,
     ViewEmailEvent,
 )
-from .generation_functions import generate_is_important_constraints, generate_is_read_constraints, generate_is_spam_constraints, generate_is_starred_constraints, generate_view_email_constraints
+from .generation_functions import (
+    generate_is_important_constraints,
+    generate_is_read_constraints,
+    generate_is_spam_constraints,
+    generate_is_starred_constraints,
+    generate_save_as_draft_constraints,
+    generate_search_email_constraints,
+    generate_send_email_constraints,
+    generate_view_email_constraints,
+)
 from .replace_functions import replace_email_placeholders
 
 VIEW_EMAIL_ADDITIONAL_PROMPT_INFO = """
@@ -311,49 +320,53 @@ ADD_LABEL_USE_CASE = UseCase(
     ],
 )
 
-COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Start with compose, write, draft, or create a new email.
-2. Include at least recipient email (to_email), and optionally subject or body.
-3. Vary language naturally while preserving structure.
-"""
-
-COMPOSE_EMAIL_USE_CASE = UseCase(
-    name="COMPOSE_EMAIL",
-    description="The user starts composing a new email, filling in recipient, subject, or body.",
-    event=ComposeEmailEvent,
-    event_source_code=ComposeEmailEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
-    # constraints_generator=generate_compose_email_constraints,
-    additional_prompt_info=COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO,
-    examples=[
-        {
-            "prompt": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
-            "prompt_for_task_generation": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
-        },
-        {
-            "prompt": "Write a new message to <to_email> with subject '<subject>'",
-            "prompt_for_task_generation": "Write a new message to <to_email> with subject '<subject>'",
-        },
-        {
-            "prompt": "Create a draft email to <to_email>",
-            "prompt_for_task_generation": "Create a draft email to <to_email>",
-        },
-        {
-            "prompt": "Compose a message to <to_email> with the body '<body>'",
-            "prompt_for_task_generation": "Compose a message to <to_email> with the body '<body>'",
-        },
-        {
-            "prompt": "Draft an email for <to_email> about '<subject>'",
-            "prompt_for_task_generation": "Draft an email for <to_email> about '<subject>'",
-        },
-    ],
-)
+# COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO = """
+# CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+# 1. Start with compose, write, draft, or create a new email.
+# 2. Include at least recipient email (to_email), and optionally subject or body.
+# 3. Vary language naturally while preserving structure.
+# """
+#
+# COMPOSE_EMAIL_USE_CASE = UseCase(
+#     name="COMPOSE_EMAIL",
+#     description="The user starts composing a new email, filling in recipient, subject, or body.",
+#     event=ComposeEmailEvent,
+#     event_source_code=ComposeEmailEvent.get_source_code_of_class(),
+#     replace_func=replace_email_placeholders,
+#     # constraints_generator=generate_compose_email_constraints,
+#     additional_prompt_info=COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO,
+#     examples=[
+#         {
+#             "prompt": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
+#             "prompt_for_task_generation": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
+#         },
+#         {
+#             "prompt": "Write a new message to <to_email> with subject '<subject>'",
+#             "prompt_for_task_generation": "Write a new message to <to_email> with subject '<subject>'",
+#         },
+#         {
+#             "prompt": "Create a draft email to <to_email>",
+#             "prompt_for_task_generation": "Create a draft email to <to_email>",
+#         },
+#         {
+#             "prompt": "Compose a message to <to_email> with the body '<body>'",
+#             "prompt_for_task_generation": "Compose a message to <to_email> with the body '<body>'",
+#         },
+#         {
+#             "prompt": "Draft an email for <to_email> about '<subject>'",
+#             "prompt_for_task_generation": "Draft an email for <to_email> about '<subject>'",
+#         },
+#     ],
+# )
 
 SEND_EMAIL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with send, submit, or dispatch an email.
-2. Include at least the recipient email (to_email) and one of subject or body.
+2. Examples:
+    Incorrect: Send an email to 'emma.watson@school.edu', ensuring the recipient does NOT equal 'emma.watson@school.edu'.
+    Correct: Send an email to 'emma.watson@school.edu', ensuring the recipient does NOT equal 'john.wick@school.edu'.
+    Correct: Send an email to 'emma.watson@school.edu'.
+
 3. Phrasing must vary while keeping clear user intent to send.
 """
 
@@ -363,28 +376,28 @@ SEND_EMAIL_USE_CASE = UseCase(
     event=SendEmailEvent,
     event_source_code=SendEmailEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_send_email_constraints,
+    constraints_generator=generate_send_email_constraints,
     additional_prompt_info=SEND_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Send the email to <to_email> with subject '<subject>' and body '<body>'",
-            "prompt_for_task_generation": "Send the email to <to_email> with subject '<subject>' and body '<body>'",
+            "prompt": "Send the email to john.doe@gmail.com with subject 'Project Timeline Update'",
+            "prompt_for_task_generation": "Send the email to john.doe@gmail.com with subject 'Project Timeline Update'",
         },
         {
-            "prompt": "Submit the email to <to_email> with subject '<subject>'",
-            "prompt_for_task_generation": "Submit the email to <to_email> with subject '<subject>'",
+            "prompt": "Submit the email to john.doe@gmail.com with subject 'Project Timeline Update'",
+            "prompt_for_task_generation": "Submit the email to john.doe@gmail.com with subject 'Project Timeline Update'",
         },
         {
-            "prompt": "Send a message to <to_email> saying '<body>'",
-            "prompt_for_task_generation": "Send a message to <to_email> saying '<body>'",
+            "prompt": "Send a message to john.doe@gmail.com",
+            "prompt_for_task_generation": "Send a message to john.doe@gmail.com",
         },
         {
-            "prompt": "Dispatch the email to <to_email>",
-            "prompt_for_task_generation": "Dispatch the email to <to_email>",
+            "prompt": "Dispatch the email to john.doe@gmail.com",
+            "prompt_for_task_generation": "Dispatch the email to john.doe@gmail.com",
         },
         {
-            "prompt": "Send a note to <to_email> regarding '<subject>'",
-            "prompt_for_task_generation": "Send a note to <to_email> regarding '<subject>'",
+            "prompt": "Send a note to john.doe@gmail.com regarding 'Project Timeline Update'",
+            "prompt_for_task_generation": "Send a note to john.doe@gmail.com regarding 'Project Timeline Update'",
         },
     ],
 )
@@ -392,6 +405,11 @@ SEND_EMAIL_USE_CASE = UseCase(
 SAVE_AS_DRAFT_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with save as draft, keep as draft, or similar phrasing.
+Examples:
+    Incorrect: Save the email as a draft addressed to 'recipient@example.com' with the subject does NOT contain 'Training Workshop' and the recipient does NOT contain 'liam.johnson@business.co'.
+    Correct: Save the email as a draft addressed to 'recipient@example.com' with the subject does NOT contain 'Training Workshop' and the recipient does NOT contain 'liam.johnson@business.co'.
+    Correct: Save the email as a draft where email equal to 'recipient@example.com' with the subject does NOT contain 'Training Workshop'.
+
 2. Include recipient (to_email), and optionally subject or body.
 3. Maintain natural and varied user language.
 """
@@ -402,28 +420,48 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
     event=EmailSaveAsDraftEvent,
     event_source_code=EmailSaveAsDraftEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_save_draft_constraints,
+    constraints_generator=generate_save_as_draft_constraints,
     additional_prompt_info=SAVE_AS_DRAFT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Save the email to <to_email> with subject '<subject>' and message '<body>' as draft",
-            "prompt_for_task_generation": "Save the email to <to_email> with subject '<subject>' and message '<body>' as draft",
+            "prompt": "Save the email as draft where email equals jane.doe@example.com",
+            "prompt_for_task_generation": "Save the email as draft where email equals jane.doe@example.com",
         },
         {
-            "prompt": "Keep the email for <to_email> with subject '<subject>' as a draft",
-            "prompt_for_task_generation": "Keep the email for <to_email> with subject '<subject>' as a draft",
+            "prompt": "Save the email as draft where subject contains 'Budget Review Meeting'",
+            "prompt_for_task_generation": "Save the email as draft where subject contains 'Budget Review Meeting'",
         },
         {
-            "prompt": "Save a message to <to_email> as a draft",
-            "prompt_for_task_generation": "Save a message to <to_email> as a draft",
+            "prompt": "Keep the email as draft where email not equals jane.doe@example.com",
+            "prompt_for_task_generation": "Keep the email as draft where email not equals jane.doe@example.com",
         },
         {
-            "prompt": "Save a draft to <to_email> with body '<body>'",
-            "prompt_for_task_generation": "Save a draft to <to_email> with body '<body>'",
+            "prompt": "Save the email as draft where body contains 'Please review the attached budget document.'",
+            "prompt_for_task_generation": "Save the email as draft where body contains 'Please review the attached budget document.'",
         },
         {
-            "prompt": "Keep a draft email for <to_email> about '<subject>'",
-            "prompt_for_task_generation": "Keep a draft email for <to_email> about '<subject>'",
+            "prompt": "Keep the email as draft where email equals jane.doe@example.com and subject equals 'Budget Review Meeting'",
+            "prompt_for_task_generation": "Keep the email as draft where email equals jane.doe@example.com and subject equals 'Budget Review Meeting'",
+        },
+        {
+            "prompt": "Save the email as draft where subject not contains 'Budget Review Meeting'",
+            "prompt_for_task_generation": "Save the email as draft where subject not contains 'Budget Review Meeting'",
+        },
+        {
+            "prompt": "Keep the email as draft where body not contains 'Please review the attached budget document.'",
+            "prompt_for_task_generation": "Keep the email as draft where body not contains 'Please review the attached budget document.'",
+        },
+        {
+            "prompt": "Save the draft where email contains jane.doe@example.com and body contains 'Please review the attached budget document.'",
+            "prompt_for_task_generation": "Save the draft where email contains jane.doe@example.com and body contains 'Please review the attached budget document.'",
+        },
+        {
+            "prompt": "Save as draft any email where recipient contains jane.doe@example.com",
+            "prompt_for_task_generation": "Save as draft any email where recipient contains jane.doe@example.com",
+        },
+        {
+            "prompt": "Keep a draft of the message where subject equals 'Budget Review Meeting' and recipient equals jane.doe@example.com",
+            "prompt_for_task_generation": "Keep a draft of the message where subject equals 'Budget Review Meeting' and recipient equals jane.doe@example.com",
         },
     ],
 )
@@ -480,7 +518,7 @@ SEARCH_EMAIL_USE_CASE = UseCase(
     event=SearchEmailEvent,
     event_source_code=SearchEmailEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_search_email_constraints,
+    constraints_generator=generate_search_email_constraints,
     additional_prompt_info=SEARCH_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -515,11 +553,11 @@ ALL_USE_CASES = [
     # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
     # MARK_AS_UNREAD_USE_CASE,
     # DELETE_EMAIL_USE_CASE,
-    MARK_AS_SPAM_USE_CASE,
+    # MARK_AS_SPAM_USE_CASE,
     # ADD_LABEL_USE_CASE,
     # COMPOSE_EMAIL_USE_CASE,
     # SEND_EMAIL_USE_CASE,
-    # EMAIL_SAVE_AS_DRAFT_USE_CASE,
+    EMAIL_SAVE_AS_DRAFT_USE_CASE,
     # THEME_CHANGED_USE_CASE,
     # SEARCH_EMAIL_USE_CASE,
 ]
