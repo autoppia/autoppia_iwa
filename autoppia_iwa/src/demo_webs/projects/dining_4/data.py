@@ -1,3 +1,5 @@
+from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
+
 RESTAURANT_DATA = [
     {
         "id": "restaurant-1",
@@ -541,7 +543,6 @@ RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
 SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award-winning"]
 
-from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
 
 OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED = {
     "selected_date": [EQUALS, GREATER_EQUAL, LESS_EQUAL],

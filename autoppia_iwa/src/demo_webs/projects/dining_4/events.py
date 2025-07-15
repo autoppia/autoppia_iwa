@@ -63,16 +63,23 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
 
         event_dt = self.selected_date
 
-        if criteria.selected_date.operator == ComparisonOperator.EQUALS:
-            return event_dt.year == criteria_dt.year and event_dt.month == criteria_dt.month and event_dt.day == criteria_dt.day
-        elif criteria.selected_date.operator == ComparisonOperator.GREATER_THAN:
-            return event_dt > criteria_dt
-        elif criteria.selected_date.operator == ComparisonOperator.LESS_THAN:
-            return event_dt < criteria_dt
-        elif criteria.selected_date.operator == ComparisonOperator.GREATER_EQUAL:
-            return event_dt >= criteria_dt
-        elif criteria.selected_date.operator == ComparisonOperator.LESS_EQUAL:
-            return event_dt <= criteria_dt
+        # --- ONLYAAAA-MM-DD -------------------------------------
+        event_date = event_dt.date() if isinstance(event_dt, datetime) else event_dt
+        criteria_date = criteria_dt.date() if isinstance(criteria_dt, datetime) else criteria_dt
+
+        # --- Operador -------------------------------------------------------------
+        op = getattr(criteria.selected_date, "operator", ComparisonOperator.EQUALS)
+
+        if op == ComparisonOperator.EQUALS:
+            return event_date == criteria_date
+        elif op == ComparisonOperator.GREATER_THAN:
+            return event_date > criteria_date
+        elif op == ComparisonOperator.LESS_THAN:
+            return event_date < criteria_date
+        elif op == ComparisonOperator.GREATER_EQUAL:
+            return event_date >= criteria_date
+        elif op == ComparisonOperator.LESS_EQUAL:
+            return event_date <= criteria_date
         else:
             return False
 

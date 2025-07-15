@@ -137,6 +137,8 @@ def _generate_value_for_field(field_name: str) -> Any:
 def generate_constraints_for_single_field(field: str, allowed_operators: dict[str, list[str]]) -> list[dict[str, Any]]:
     op = ComparisonOperator(random.choice(allowed_operators[field]))
     value = _generate_value_for_field(field)
+    # if field == 'selected_date' and isinstance(value, datetime.datetime):
+    #     value = value.date().isoformat()
     if isinstance(value, datetime.datetime):
         value = value.isoformat()
     return [create_constraint_dict(field, op, value)]
