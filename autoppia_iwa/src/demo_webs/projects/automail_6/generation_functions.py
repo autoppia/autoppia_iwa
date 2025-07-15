@@ -109,13 +109,13 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
 
 def generate_view_email_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    possible_fields = list(FIELD_OPERATORS_MAP_VIEW_EMAIL.keys())
+    possible_fields = list(FIELD_OPERATORS_VIEW_EMAIL_MAP.keys())
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
     email = choice(EMAILS_DATA_MODIFIED)
 
     for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_MAP_VIEW_EMAIL.get(field, [])
+        allowed_ops = FIELD_OPERATORS_VIEW_EMAIL_MAP.get(field, [])
         if not allowed_ops:
             continue
 
