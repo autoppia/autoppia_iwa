@@ -35,52 +35,22 @@ VIEW_EMAIL_USE_CASE = UseCase(
         {
             "prompt": "View the email from <from_email> with subject '<subject>'",
             "prompt_for_task_generation": "View the email from <from_email> with subject '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_EMAIL",
-                "event_criteria": {"subject": {"value": "<subject>", "operator": "equals"}, "from_email": {"value": "<from_email>", "operator": "equals"}},
-                "reasoning": "Validates that the user viewed the correct email based on sender and subject.",
-            },
         },
         {
             "prompt": "View the message from <from_email>",
             "prompt_for_task_generation": "View the message from <from_email>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_EMAIL",
-                "event_criteria": {"from_email": {"value": "<from_email>", "operator": "equals"}},
-                "reasoning": "Validates the user opened an email sent by a specific user.",
-            },
         },
         {
             "prompt": "View the email with subject '<subject>'",
             "prompt_for_task_generation": "View the email with subject '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_EMAIL",
-                "event_criteria": {"subject": {"value": "<subject>", "operator": "equals"}},
-                "reasoning": "Applies when the task involves opening an email based on its subject.",
-            },
         },
         {
             "prompt": "View the email with ID <email_id>",
             "prompt_for_task_generation": "View the email with ID <email_id>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_EMAIL",
-                "event_criteria": {"email_id": {"value": "<email_id>", "operator": "equals"}},
-                "reasoning": "Used when the email is uniquely identified by its ID.",
-            },
         },
         {
             "prompt": "View the email that subject is about <subject>",
             "prompt_for_task_generation": "View the email that subject is about <subject>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "VIEW_EMAIL",
-                "event_criteria": {"subject": {"value": "<subject>", "operator": "contains"}},
-                "reasoning": "Used when the email is uniquely identified by its ID.",
-            },
         },
     ],
 )
@@ -112,56 +82,22 @@ STAR_EMAIL_USE_CASE = UseCase(
         {
             "prompt": "Star the email from <from_email> with subject '<subject>'",
             "prompt_for_task_generation": "Star the email from <from_email> with subject '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                    "isStarred": {"value": True, "operator": "equals"},
-                },
-                "reasoning": "Confirms the user starred the email using both sender and subject.",
-            },
         },
         {
             "prompt": "Mark the email from <from_email> as starred",
             "prompt_for_task_generation": "Mark the email from <from_email> as starred",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"from_email": {"value": "<from_email>", "operator": "equals"}, "isStarred": {"value": True, "operator": "not_equals"}},
-                "reasoning": "Focuses on starring an email based on the sender only.",
-            },
         },
         {
             "prompt": "Mark the email titled '<subject>' as unstarred",
             "prompt_for_task_generation": "Mark the email titled '<subject>' as unstarred",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"subject": {"value": "<subject>", "operator": "equals"}, "isStarred": {"value": True, "operator": "equals"}},
-                "reasoning": "Ensures the subject is the main identifying field.",
-            },
         },
         {
             "prompt": "Star the email with ID <email_id>",
             "prompt_for_task_generation": "Star the email with ID <email_id>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"email_id": {"value": "<email_id>", "operator": "equals"}, "isStarred": {"value": True, "operator": "not_equals"}},
-                "reasoning": "Uses the unique email ID for targeting the correct email.",
-            },
         },
         {
             "prompt": "Mark the message about <subject> as favorite",
             "prompt_for_task_generation": "Mark the message about <subject> as favorite",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "STAR_AN_EMAIL",
-                "event_criteria": {"subject": {"value": "<subject>", "operator": "contains"}, "isStarred": {"value": False, "operator": "equals"}},
-                "reasoning": "Captures cases where the subject partially matches a known topic.",
-            },
         },
     ],
 )
@@ -199,63 +135,22 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
         {
             "prompt": "Mark the email from <from_email> with subject '<subject>' as important",
             "prompt_for_task_generation": "Mark the email from <from_email> with subject '<subject>' as important",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_EMAIL_AS_IMPORTANT",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Covers full identification using sender and subject.",
-            },
         },
         {
             "prompt": "Flag the email from <from_email> as important",
             "prompt_for_task_generation": "Flag the email from <from_email> as important",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_EMAIL_AS_IMPORTANT",
-                "event_criteria": {
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Allows sender alone to be the identifier.",
-            },
         },
         {
             "prompt": "Set the message with subject '<subject>' to high priority",
             "prompt_for_task_generation": "Set the message with subject '<subject>' to high priority",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_EMAIL_AS_IMPORTANT",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Focuses only on subject to target the email.",
-            },
         },
         {
             "prompt": "Mark the email with ID <email_id> as important",
             "prompt_for_task_generation": "Mark the email with ID <email_id> as important",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_EMAIL_AS_IMPORTANT",
-                "event_criteria": {
-                    "email_id": {"value": "<email_id>", "operator": "equals"},
-                },
-                "reasoning": "Uses email ID for precision identification.",
-            },
         },
         {
             "prompt": "Mark the message about <subject> as high priority",
             "prompt_for_task_generation": "Mark the message about <subject> as high priority",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_EMAIL_AS_IMPORTANT",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "contains"},
-                },
-                "reasoning": "Matches loosely with a known subject string.",
-            },
         },
     ],
 )
@@ -279,63 +174,22 @@ MARK_AS_UNREAD_USE_CASE = UseCase(
         {
             "prompt": "Mark the email from <from_email> with subject '<subject>' as unread",
             "prompt_for_task_generation": "Mark the email from <from_email> with subject '<subject>' as unread",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_UNREAD",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Uses both sender and subject to identify the target email to be marked unread.",
-            },
         },
         {
             "prompt": "Set the message from <from_email> as unread",
             "prompt_for_task_generation": "Set the message from <from_email> as unread",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_UNREAD",
-                "event_criteria": {
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Sender alone is used for the mark-as-unread action.",
-            },
         },
         {
             "prompt": "Mark the email titled '<subject>' as unread",
             "prompt_for_task_generation": "Mark the email titled '<subject>' as unread",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_UNREAD",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Subject-only targeting to mark an email unread.",
-            },
         },
         {
             "prompt": "Mark the email with ID <email_id> as unread",
             "prompt_for_task_generation": "Mark the email with ID <email_id> as unread",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_UNREAD",
-                "event_criteria": {
-                    "email_id": {"value": "<email_id>", "operator": "equals"},
-                },
-                "reasoning": "Uses email ID for exact targeting of the unread action.",
-            },
         },
         {
             "prompt": "Set the email about <subject> back to unread",
             "prompt_for_task_generation": "Set the email about <subject> back to unread",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_UNREAD",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "contains"},
-                },
-                "reasoning": "Uses partial match on subject to mark unread.",
-            },
         },
     ],
 )
@@ -359,63 +213,22 @@ DELETE_EMAIL_USE_CASE = UseCase(
         {
             "prompt": "Delete the email from <from_email> with subject '<subject>'",
             "prompt_for_task_generation": "Delete the email from <from_email> with subject '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_EMAIL",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Uses both sender and subject to precisely identify which email to delete.",
-            },
         },
         {
             "prompt": "Remove the message from <from_email>",
             "prompt_for_task_generation": "Remove the message from <from_email>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_EMAIL",
-                "event_criteria": {
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Email is deleted based on sender identity only.",
-            },
         },
         {
             "prompt": "Trash the email titled '<subject>'",
             "prompt_for_task_generation": "Trash the email titled '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_EMAIL",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Targeting based solely on the subject of the email.",
-            },
         },
         {
             "prompt": "Delete the email with ID <email_id>",
             "prompt_for_task_generation": "Delete the email with ID <email_id>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_EMAIL",
-                "event_criteria": {
-                    "email_id": {"value": "<email_id>", "operator": "equals"},
-                },
-                "reasoning": "Exact match using email ID to remove a specific message.",
-            },
         },
         {
             "prompt": "Remove the message about <subject>",
             "prompt_for_task_generation": "Remove the message about <subject>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "DELETE_EMAIL",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "contains"},
-                },
-                "reasoning": "Deletes an email using a partial subject match.",
-            },
         },
     ],
 )
@@ -439,63 +252,22 @@ MARK_AS_SPAM_USE_CASE = UseCase(
         {
             "prompt": "Mark the email from <from_email> with subject '<subject>' as spam",
             "prompt_for_task_generation": "Mark the email from <from_email> with subject '<subject>' as spam",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_SPAM",
-                "event_criteria": {
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Targets a specific email for spam based on both sender and subject.",
-            },
         },
         {
             "prompt": "Report the message from <from_email> as junk",
             "prompt_for_task_generation": "Report the message from <from_email> as junk",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_SPAM",
-                "event_criteria": {
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Flags spam based only on the sender.",
-            },
         },
         {
             "prompt": "Move the email titled '<subject>' to spam",
             "prompt_for_task_generation": "Move the email titled '<subject>' to spam",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_SPAM",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Identifies spam using the subject of the email.",
-            },
         },
         {
             "prompt": "Mark the email with ID <email_id> as junk",
             "prompt_for_task_generation": "Mark the email with ID <email_id> as junk",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_SPAM",
-                "event_criteria": {
-                    "email_id": {"value": "<email_id>", "operator": "equals"},
-                },
-                "reasoning": "Marks a specific email as spam using its unique ID.",
-            },
         },
         {
             "prompt": "Flag the message about <subject> as spam",
             "prompt_for_task_generation": "Flag the message about <subject> as spam",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "MARK_AS_SPAM",
-                "event_criteria": {
-                    "subject": {"value": "<subject>", "operator": "contains"},
-                },
-                "reasoning": "Uses partial match on subject for spam flagging.",
-            },
         },
     ],
 )
@@ -519,68 +291,22 @@ ADD_LABEL_USE_CASE = UseCase(
         {
             "prompt": "Add the label '<label>' to the email from <from_email> with subject '<subject>'",
             "prompt_for_task_generation": "Add the label '<label>' to the email from <from_email> with subject '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_LABEL",
-                "event_criteria": {
-                    "label": {"value": "<label>", "operator": "equals"},
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Targets an email with exact sender and subject and applies a specific label.",
-            },
         },
         {
             "prompt": "Tag the email from <from_email> with the '<label>' label",
             "prompt_for_task_generation": "Tag the email from <from_email> with the '<label>' label",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_LABEL",
-                "event_criteria": {
-                    "label": {"value": "<label>", "operator": "equals"},
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Label is added based on sender match.",
-            },
         },
         {
             "prompt": "Add the '<label>' label to the message titled '<subject>'",
             "prompt_for_task_generation": "Add the '<label>' label to the message titled '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_LABEL",
-                "event_criteria": {
-                    "label": {"value": "<label>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Labeling based on exact subject match.",
-            },
         },
         {
             "prompt": "Categorize the email with ID <email_id> under the '<label>' label",
             "prompt_for_task_generation": "Categorize the email with ID <email_id> under the '<label>' label",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_LABEL",
-                "event_criteria": {
-                    "label": {"value": "<label>", "operator": "equals"},
-                    "email_id": {"value": "<email_id>", "operator": "equals"},
-                },
-                "reasoning": "Precise targeting using email ID to apply the label.",
-            },
         },
         {
             "prompt": "Add the '<label>' tag to the message about <subject>",
             "prompt_for_task_generation": "Add the '<label>' tag to the message about <subject>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "ADD_LABEL",
-                "event_criteria": {
-                    "label": {"value": "<label>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "contains"},
-                },
-                "reasoning": "Adds label to an email identified by a partial subject match.",
-            },
         },
     ],
 )
@@ -604,67 +330,22 @@ COMPOSE_EMAIL_USE_CASE = UseCase(
         {
             "prompt": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
             "prompt_for_task_generation": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "COMPOSE_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                    "body": {"value": "<body>", "operator": "equals"},
-                },
-                "reasoning": "Covers full composition with all fields provided.",
-            },
         },
         {
             "prompt": "Write a new message to <to_email> with subject '<subject>'",
             "prompt_for_task_generation": "Write a new message to <to_email> with subject '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "COMPOSE_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Focuses on recipient and subject only.",
-            },
         },
         {
             "prompt": "Create a draft email to <to_email>",
             "prompt_for_task_generation": "Create a draft email to <to_email>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "COMPOSE_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                },
-                "reasoning": "Initiates a composition with only the recipient specified.",
-            },
         },
         {
             "prompt": "Compose a message to <to_email> with the body '<body>'",
             "prompt_for_task_generation": "Compose a message to <to_email> with the body '<body>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "COMPOSE_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "body": {"value": "<body>", "operator": "equals"},
-                },
-                "reasoning": "Composes with recipient and body text only.",
-            },
         },
         {
             "prompt": "Draft an email for <to_email> about '<subject>'",
             "prompt_for_task_generation": "Draft an email for <to_email> about '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "COMPOSE_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "contains"},
-                },
-                "reasoning": "Initiates a draft using partial subject match.",
-            },
         },
     ],
 )
@@ -688,67 +369,22 @@ SEND_EMAIL_USE_CASE = UseCase(
         {
             "prompt": "Send the email to <to_email> with subject '<subject>' and body '<body>'",
             "prompt_for_task_generation": "Send the email to <to_email> with subject '<subject>' and body '<body>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEND_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                    "body": {"value": "<body>", "operator": "equals"},
-                },
-                "reasoning": "Covers full sending scenario using recipient, subject, and body.",
-            },
         },
         {
             "prompt": "Submit the email to <to_email> with subject '<subject>'",
             "prompt_for_task_generation": "Submit the email to <to_email> with subject '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEND_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Covers sending based on recipient and subject only.",
-            },
         },
         {
             "prompt": "Send a message to <to_email> saying '<body>'",
             "prompt_for_task_generation": "Send a message to <to_email> saying '<body>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEND_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "body": {"value": "<body>", "operator": "equals"},
-                },
-                "reasoning": "Focuses on recipient and message body.",
-            },
         },
         {
             "prompt": "Dispatch the email to <to_email>",
             "prompt_for_task_generation": "Dispatch the email to <to_email>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEND_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                },
-                "reasoning": "Covers cases where only the recipient is known and sending is triggered.",
-            },
         },
         {
             "prompt": "Send a note to <to_email> regarding '<subject>'",
             "prompt_for_task_generation": "Send a note to <to_email> regarding '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEND_EMAIL",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "contains"},
-                },
-                "reasoning": "Targets emails based on a partial subject match.",
-            },
         },
     ],
 )
@@ -772,67 +408,22 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
         {
             "prompt": "Save the email to <to_email> with subject '<subject>' and message '<body>' as draft",
             "prompt_for_task_generation": "Save the email to <to_email> with subject '<subject>' and message '<body>' as draft",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EMAIL_SAVE_AS_DRAFT",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                    "body": {"value": "<body>", "operator": "equals"},
-                },
-                "reasoning": "Captures complete draft-saving with recipient, subject, and message.",
-            },
         },
         {
             "prompt": "Keep the email for <to_email> with subject '<subject>' as a draft",
             "prompt_for_task_generation": "Keep the email for <to_email> with subject '<subject>' as a draft",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EMAIL_SAVE_AS_DRAFT",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "equals"},
-                },
-                "reasoning": "Saves a draft based on recipient and subject.",
-            },
         },
         {
             "prompt": "Save a message to <to_email> as a draft",
             "prompt_for_task_generation": "Save a message to <to_email> as a draft",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EMAIL_SAVE_AS_DRAFT",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                },
-                "reasoning": "Captures drafts where only the recipient is known.",
-            },
         },
         {
             "prompt": "Save a draft to <to_email> with body '<body>'",
             "prompt_for_task_generation": "Save a draft to <to_email> with body '<body>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EMAIL_SAVE_AS_DRAFT",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "body": {"value": "<body>", "operator": "equals"},
-                },
-                "reasoning": "Captures a draft email by recipient and message content.",
-            },
         },
         {
             "prompt": "Keep a draft email for <to_email> about '<subject>'",
             "prompt_for_task_generation": "Keep a draft email for <to_email> about '<subject>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "EMAIL_SAVE_AS_DRAFT",
-                "event_criteria": {
-                    "to_email": {"value": "<to_email>", "operator": "equals"},
-                    "subject": {"value": "<subject>", "operator": "contains"},
-                },
-                "reasoning": "Captures partial subject-based draft-saving behavior.",
-            },
         },
     ],
 )
@@ -856,62 +447,22 @@ THEME_CHANGED_USE_CASE = UseCase(
         {
             "prompt": "Switch to dark theme",
             "prompt_for_task_generation": "Switch to dark theme",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "THEME_CHANGED",
-                "event_criteria": {
-                    "theme": {"value": "dark", "operator": "equals"},
-                },
-                "reasoning": "User changed appearance setting to dark mode.",
-            },
         },
         {
             "prompt": "Change the theme to light",
             "prompt_for_task_generation": "Change the theme to light",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "THEME_CHANGED",
-                "event_criteria": {
-                    "theme": {"value": "light", "operator": "equals"},
-                },
-                "reasoning": "User explicitly switched to light mode.",
-            },
         },
         {
             "prompt": "Enable system default theme",
             "prompt_for_task_generation": "Enable system default theme",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "THEME_CHANGED",
-                "event_criteria": {
-                    "theme": {"value": "system", "operator": "equals"},
-                },
-                "reasoning": "Theme is set to follow OS-level appearance settings.",
-            },
         },
         {
             "prompt": "Switch from light to dark theme",
             "prompt_for_task_generation": "Switch from light to dark theme",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "THEME_CHANGED",
-                "event_criteria": {
-                    "theme": {"value": "dark", "operator": "equals"},
-                },
-                "reasoning": "Despite transition context, the resulting theme is dark.",
-            },
         },
         {
             "prompt": "Apply dark mode appearance",
             "prompt_for_task_generation": "Apply dark mode appearance",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "THEME_CHANGED",
-                "event_criteria": {
-                    "theme": {"value": "dark", "operator": "equals"},
-                },
-                "reasoning": "Dark mode is selected using alternate phrasing.",
-            },
         },
     ],
 )
@@ -935,63 +486,22 @@ SEARCH_EMAIL_USE_CASE = UseCase(
         {
             "prompt": "Search for emails with subject containing '<keyword>'",
             "prompt_for_task_generation": "Search for emails with subject containing '<keyword>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_EMAIL",
-                "event_criteria": {
-                    "subject": {"value": "<keyword>", "operator": "contains"},
-                },
-                "reasoning": "Performs a subject-based search with partial keyword match.",
-            },
         },
         {
             "prompt": "Find emails from <from_email>",
             "prompt_for_task_generation": "Find emails from <from_email>",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_EMAIL",
-                "event_criteria": {
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                },
-                "reasoning": "Searches based on sender's email.",
-            },
         },
         {
             "prompt": "Look up messages labeled '<label>'",
             "prompt_for_task_generation": "Look up messages labeled '<label>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_EMAIL",
-                "event_criteria": {
-                    "label": {"value": "<label>", "operator": "equals"},
-                },
-                "reasoning": "Filters emails using a specific user-defined label.",
-            },
         },
         {
             "prompt": "Search for emails mentioning '<body_keyword>'",
             "prompt_for_task_generation": "Search for emails mentioning '<body_keyword>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_EMAIL",
-                "event_criteria": {
-                    "body": {"value": "<body_keyword>", "operator": "contains"},
-                },
-                "reasoning": "Performs a search based on content inside the email body.",
-            },
         },
         {
             "prompt": "Find all emails from <from_email> with subject about '<keyword>'",
             "prompt_for_task_generation": "Find all emails from <from_email> with subject about '<keyword>'",
-            "test": {
-                "type": "CheckEventTest",
-                "event_name": "SEARCH_EMAIL",
-                "event_criteria": {
-                    "from_email": {"value": "<from_email>", "operator": "equals"},
-                    "subject": {"value": "<keyword>", "operator": "contains"},
-                },
-                "reasoning": "Combines sender and subject-based filtering in the search.",
-            },
         },
     ],
 )
