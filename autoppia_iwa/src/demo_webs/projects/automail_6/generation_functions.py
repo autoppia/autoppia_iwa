@@ -4,7 +4,18 @@ from typing import Any
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
-from .data import EMAILS_DATA_MODIFIED, FIELD_OPERATORS_IMPORTANT_MAP, FIELD_OPERATORS_IS_READ_MAP, FIELD_OPERATORS_IS_SPAM_MAP, FIELD_OPERATORS_MAP_VIEW_EMAIL, FIELD_OPERATORS_STARRED_MAP
+from .data import (
+    ALL_EMAIL_WORDS,
+    EMAILS_DATA_MODIFIED,
+    FIELD_OPERATORS_IMPORTANT_MAP,
+    FIELD_OPERATORS_IS_READ_MAP,
+    FIELD_OPERATORS_IS_SPAM_MAP,
+    FIELD_OPERATORS_SAVE_AS_DRAFT_MAP,
+    FIELD_OPERATORS_SEARCH_MAP,
+    FIELD_OPERATORS_SEND_EMAIL_MAP,
+    FIELD_OPERATORS_STARRED_MAP,
+    FIELD_OPERATORS_VIEW_EMAIL_MAP,
+)
 
 # def _generate_value_for_field(field_name, operator):
 #     if field_name == 'subject':
@@ -42,8 +53,12 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
 
     elif operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[field] for v in dataset if v.get(field) != field_value]
-        return random.choice(valid) if valid else None
+        if isinstance(field_value, str):
+            valid = [v[field] for v in dataset if v.get(field) != field_value]
+            return random.choice(valid) if valid else None
+        elif isinstance(field_value, list):
+            valid = [v[field] for v in dataset for f in field_value if v.get(f) != field_value]
+            return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
         if len(field_value) > 2:
@@ -225,5 +240,133 @@ def generate_is_spam_constraints() -> list[dict[str, Any]]:
 
         field_value = email.get(field)
         value = _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
+def _generate_search_constraint_value(operator, value):
+    if operator == ComparisonOperator.EQUALS:
+        return value
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        return choice([word for word in ALL_EMAIL_WORDS if value != word])
+    elif operator == ComparisonOperator.CONTAINS:
+        return choice([word for word in ALL_EMAIL_WORDS if value in word])
+    elif operator == ComparisonOperator.NOT_CONTAINS:
+        return choice([word for word in ALL_EMAIL_WORDS if value not in word])
+
+
+def generate_search_email_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+
+    for field, operators in FIELD_OPERATORS_SEARCH_MAP.items():
+        op_str = random.choice(operators)
+        operator = ComparisonOperator(op_str)
+        field_value = choice(ALL_EMAIL_WORDS)
+
+        value = _generate_search_constraint_value(operator, field_value)
+        constraint = create_constraint_dict(field, operator, value)
+        constraints_list.append(constraint)
+
+    return constraints_list
+
+
+def generate_send_email_constraints() -> list[dict[str, Any]]:
+    list_of_emails = [
+        "alice.smith@example.com",
+        "john.doe@gmail.com",
+        "maria.jones@yahoo.com",
+        "kevin_lee@outlook.com",
+        "nina.patel@company.org",
+        "daniel_choi@webmail.net",
+        "emma.watson@school.edu",
+        "lucas.gray@workplace.io",
+        "olivia.brown@startup.ai",
+        "ethan.miller@techcorp.com",
+        "sophia.morris@researchlab.org",
+        "liam.johnson@business.co",
+        "ava.wilson@healthcare.org",
+        "noah.thomas@banksecure.com",
+        "isabella.clark@freelancer.dev",
+        "elijah.walker@codebase.io",
+        "mia.hall@socialapp.me",
+        "james.young@nonprofit.org",
+        "amelia.king@greenenergy.com",
+        "logan.scott@designhub.net",
+        "harper.adams@newsdaily.com",
+        "sebastian.moore@fintech.ai",
+        "zoe.baker@civicgroup.org",
+        "jackson.evans@customsoft.dev",
+        "charlotte.cox@musicstream.fm",
+    ]
+
+    constraints_list = []
+
+    email = choice(EMAILS_DATA_MODIFIED)
+    selected_fields = ["to"]  # Fixed 'to'
+
+    if random.choice([True, False]):
+        selected_fields.append("subject")
+
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_SEND_EMAIL_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
+        operator = ComparisonOperator(op_str)
+
+        field_value = email.get(field)
+        value = random.choice(list_of_emails) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
+def generate_save_as_draft_constraints() -> list[dict[str, Any]]:
+    list_of_emails = [
+        "alice.smith@example.com",
+        "john.doe@gmail.com",
+        "maria.jones@yahoo.com",
+        "kevin_lee@outlook.com",
+        "nina.patel@company.org",
+        "daniel_choi@webmail.net",
+        "emma.watson@school.edu",
+        "lucas.gray@workplace.io",
+        "olivia.brown@startup.ai",
+        "ethan.miller@techcorp.com",
+        "sophia.morris@researchlab.org",
+        "liam.johnson@business.co",
+        "ava.wilson@healthcare.org",
+        "noah.thomas@banksecure.com",
+        "isabella.clark@freelancer.dev",
+        "elijah.walker@codebase.io",
+        "mia.hall@socialapp.me",
+        "james.young@nonprofit.org",
+        "amelia.king@greenenergy.com",
+        "logan.scott@designhub.net",
+        "harper.adams@newsdaily.com",
+        "sebastian.moore@fintech.ai",
+        "zoe.baker@civicgroup.org",
+        "jackson.evans@customsoft.dev",
+        "charlotte.cox@musicstream.fm",
+    ]
+
+    constraints_list = []
+
+    email = choice(EMAILS_DATA_MODIFIED)
+    selected_fields = ["to"]  # Fixed 'to'
+    possible_fields = ["subject", "body"]
+    num_constraints = random.randint(0, len(possible_fields))
+    selected_fields.extend(random.sample(possible_fields, num_constraints))
+
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_SAVE_AS_DRAFT_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
+        operator = ComparisonOperator(op_str)
+
+        field_value = email.get(field)
+        value = random.choice(list_of_emails) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
         constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
