@@ -3,8 +3,45 @@ from random import choice, randint, sample, uniform
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from ..shared_data import FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .data import BOOKS_DATA, FIELD_OPERATORS_MAP_ADD_COMMENT
+from .data import BOOKS_DATA, FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
+
+
+def generate_registration_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals newuser<web_agent_id> AND email equals newuser<web_agent_id>@gmail.com AND password equals PASSWORD"
+
+    return parse_constraints_str(constraints_str)
+
+
+def generate_login_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals <web_agent_id> AND password equals PASSWORD"
+
+    return parse_constraints_str(constraints_str)
+
+
+def generate_logout_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "username equals <web_agent_id>"
+    return parse_constraints_str(constraints_str)
 
 
 def generate_book_constraints():
@@ -21,6 +58,35 @@ def generate_book_constraints():
     if constraints_str:
         return parse_constraints_str(constraints_str)
     return None
+
+
+def generate_delete_book_constraints():
+    """
+    Generates constraints specifically for book-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    # Generar restricciones frescas basadas en los datos de películas
+    constraints_str = "id equals <web_agent_id> "
+
+    # Convertir el string a la estructura de datos
+    if constraints_str:
+        return parse_constraints_str(constraints_str)
+    return None
+
+
+def generate_search_book_constraints():
+    """
+    Generates constraints specifically for film-related use cases.
+    Returns the constraints as structured data.
+    """
+    from .utils import parse_constraints_str
+
+    books_names = [book["name"] for book in BOOKS_DATA]
+    operators = ["equals", "not_equals"]
+    constraints_str = f"query {choice(operators)} {choice(books_names)}"
+    return parse_constraints_str(constraints_str)
 
 
 def generate_contact_constraints() -> list:
@@ -80,7 +146,8 @@ def generate_contact_constraints() -> list:
         return "TestValue"
 
     num_constraints = random.randint(1, 4)
-    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())  # ["name", "email", "subject", "message"]
+    # ["name", "email", "subject", "message"]
+    fields = list(FIELD_OPERATORS_MAP_CONTACT.keys())
     constraints_list = []
 
     for _ in range(num_constraints):
@@ -646,7 +713,6 @@ def generate_edit_profile_constraints():
         "Literary critic specializing in contemporary novels and poetry.",
         "Story lover and aspiring writer.",
     ]
-
     all_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
 
     # Generar constraints
@@ -669,12 +735,14 @@ def generate_edit_profile_constraints():
         if field == "first_name" or field == "last_name":
             value = choice(random_names) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
         elif field == "bio":
-            value = choice(random_bios) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
+            # For bio, use CONTAINS or NOT_CONTAINS with a random text element
+            value = choice(random_text_elements) if operator.name in [ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS] else choice(random_bios)
         elif field == "location":
+            # For location, use EQUALS or NOT_EQUALS with a random location
             value = choice(random_locations) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
         elif field == "website":
-            # Website only uses EQUALS operator
-            value = choice(random_websites)
+            # For website, use EQUALS or NOT_EQUALS with a random website
+            value = choice(random_websites) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
         elif field == "favorite_genres":
             # For favorite_genres, only use EQUALS with a single genre
             value = choice(all_genres)

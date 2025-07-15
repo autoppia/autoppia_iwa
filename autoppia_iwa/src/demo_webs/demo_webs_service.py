@@ -58,6 +58,15 @@ class BackendDemoWebService:
             logger.debug("Created new aiohttp session")
         return self._session
 
+    def _should_use_proxy_api(self) -> bool:
+        """
+        Determines whether the proxy API (e.g., port 80002, 8003, 8004 ...) should be used based on the base_url port.
+        """
+        from urllib.parse import urlparse
+
+        parsed = urlparse(self.base_url)
+        return bool(parsed.port and parsed.port > 8001)
+
     async def close(self) -> None:
         """
         Close the underlying aiohttp session if it exists.
@@ -82,7 +91,7 @@ class BackendDemoWebService:
         if self.web_project.is_web_real:
             return []
 
-        if ":8002" in self.base_url or ":8003" in self.base_url:
+        if self._should_use_proxy_api():
             try:
                 endpoint = "http://localhost:8090/get_events/"
                 params = {"web_url": self.base_url, "web_agent_id": web_agent_id}
@@ -105,6 +114,8 @@ class BackendDemoWebService:
             async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()  # Raise on 4xx/5xx
                 events_data = await response.json(loads=self._json_parser.loads)
+                logger.info(f"FETCH events for {web_agent_id}: {len(events_data)} encontrados")
+
                 # print(events_data, [BackendEvent(**event) for event in events_data])
                 return [BackendEvent(**event) for event in events_data]
         except ClientError as e:
@@ -208,7 +219,7 @@ class BackendDemoWebService:
             logger.info("Not resetting DB as its real website")
             return False
 
-        if ":8002" in self.base_url or ":8003" in self.base_url:
+        if self._should_use_proxy_api():
             try:
                 endpoint = "http://localhost:8090/reset_events/"
                 params = {"web_url": self.base_url}

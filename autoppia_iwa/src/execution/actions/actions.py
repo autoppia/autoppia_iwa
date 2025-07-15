@@ -11,7 +11,8 @@ from pydantic import Field, model_validator
 from .base import BaseAction, BaseActionWithSelector, Selector
 
 action_logger = logger.bind(action="autoppia_action")
-logger.disable("autoppia_action")  # Disable logging for agent actions execution as its so annoying
+# Disable logging for agent actions execution as its so annoying
+logger.disable("autoppia_action")
 
 
 def log_action(action_name: str):
@@ -70,11 +71,19 @@ class ClickAction(BaseActionWithSelector):
     @log_action("ClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "ClickAction")
+
+        # Hay selector ➜ clic normal (esperamos navegación si la hay)
         if self.selector:
             selector_str = self.get_playwright_selector()
-            await page.click(selector_str)
+
+            # Espera a que la navegación termine SOLO si la hay
+            async with page.expect_navigation(wait_until="networkidle"):
+                await page.click(selector_str)
+
+        # Hay coordenadas ➜ clic directo
         elif self.x is not None and self.y is not None:
             await page.mouse.click(self.x, self.y)
+
         else:
             raise ValueError("Either a selector or (x, y) must be provided.")
 
@@ -203,7 +212,8 @@ class WaitAction(BaseAction):
         if self.selector:
             selector_str = self.selector.to_playwright_selector()
             timeout_ms = self.timeout_seconds * 1000
-            await page.wait_for_selector(selector_str, state="visible", timeout=timeout_ms)  # Wait for visible state
+            # Wait for visible state
+            await page.wait_for_selector(selector_str, state="visible", timeout=timeout_ms)
         elif self.time_seconds is not None:
             wait_ms = self.time_seconds * 1000
             await page.wait_for_timeout(wait_ms)
@@ -246,7 +256,8 @@ class ScrollAction(BaseAction):
             try:
                 if await locator.count() > 0 and await locator.first.is_visible():
                     await locator.first.scroll_into_view_if_needed()
-                    await asyncio.sleep(0.5)  # Allow time for the scroll to complete
+                    # Allow time for the scroll to complete
+                    await asyncio.sleep(0.5)
                     return
             except Exception as e:
                 print(f"Failed to scroll to text '{text}' with locator: {e}")

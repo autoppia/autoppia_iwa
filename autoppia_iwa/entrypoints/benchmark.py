@@ -51,6 +51,7 @@ PROJECTS_TO_RUN: list[WebProject] = [
     # demo_web_projects[1],
     # demo_web_projects[2],
     # demo_web_projects[3],
+    # demo_web_projects[4],
     demo_web_projects[5],
 ]
 AGENTS: list[IWebAgent] = [
