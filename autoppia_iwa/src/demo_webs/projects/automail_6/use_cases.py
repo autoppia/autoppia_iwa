@@ -20,6 +20,7 @@ from .generation_functions import (
     generate_is_starred_constraints,
     generate_save_as_draft_constraints,
     generate_search_email_constraints,
+    generate_send_email_constraints,
     generate_view_email_constraints,
 )
 from .replace_functions import replace_email_placeholders
@@ -360,7 +361,11 @@ ADD_LABEL_USE_CASE = UseCase(
 SEND_EMAIL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with send, submit, or dispatch an email.
-2. Include at least the recipient email (to_email) and one of subject or body.
+2. Examples:
+    Incorrect: Send an email to 'emma.watson@school.edu', ensuring the recipient does NOT equal 'emma.watson@school.edu'.
+    Correct: Send an email to 'emma.watson@school.edu', ensuring the recipient does NOT equal 'john.wick@school.edu'.
+    Correct: Send an email to 'emma.watson@school.edu'.
+
 3. Phrasing must vary while keeping clear user intent to send.
 """
 
@@ -370,28 +375,28 @@ SEND_EMAIL_USE_CASE = UseCase(
     event=SendEmailEvent,
     event_source_code=SendEmailEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_send_email_constraints,
+    constraints_generator=generate_send_email_constraints,
     additional_prompt_info=SEND_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Send the email to <to_email> with subject '<subject>' and body '<body>'",
-            "prompt_for_task_generation": "Send the email to <to_email> with subject '<subject>' and body '<body>'",
+            "prompt": "Send the email to john.doe@gmail.com with subject 'Project Timeline Update'",
+            "prompt_for_task_generation": "Send the email to john.doe@gmail.com with subject 'Project Timeline Update'",
         },
         {
-            "prompt": "Submit the email to <to_email> with subject '<subject>'",
-            "prompt_for_task_generation": "Submit the email to <to_email> with subject '<subject>'",
+            "prompt": "Submit the email to john.doe@gmail.com with subject 'Project Timeline Update'",
+            "prompt_for_task_generation": "Submit the email to john.doe@gmail.com with subject 'Project Timeline Update'",
         },
         {
-            "prompt": "Send a message to <to_email> saying '<body>'",
-            "prompt_for_task_generation": "Send a message to <to_email> saying '<body>'",
+            "prompt": "Send a message to john.doe@gmail.com",
+            "prompt_for_task_generation": "Send a message to john.doe@gmail.com",
         },
         {
-            "prompt": "Dispatch the email to <to_email>",
-            "prompt_for_task_generation": "Dispatch the email to <to_email>",
+            "prompt": "Dispatch the email to john.doe@gmail.com",
+            "prompt_for_task_generation": "Dispatch the email to john.doe@gmail.com",
         },
         {
-            "prompt": "Send a note to <to_email> regarding '<subject>'",
-            "prompt_for_task_generation": "Send a note to <to_email> regarding '<subject>'",
+            "prompt": "Send a note to john.doe@gmail.com regarding 'Project Timeline Update'",
+            "prompt_for_task_generation": "Send a note to john.doe@gmail.com regarding 'Project Timeline Update'",
         },
     ],
 )
@@ -399,6 +404,11 @@ SEND_EMAIL_USE_CASE = UseCase(
 SAVE_AS_DRAFT_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Begin with save as draft, keep as draft, or similar phrasing.
+Examples:
+    Incorrect: Save the email as a draft addressed to 'recipient@example.com' with the subject does NOT contain 'Training Workshop' and the recipient does NOT contain 'liam.johnson@business.co'.
+    Correct: Save the email as a draft addressed to 'recipient@example.com' with the subject does NOT contain 'Training Workshop' and the recipient does NOT contain 'liam.johnson@business.co'.
+    Correct: Save the email as a draft where email equal to 'recipient@example.com' with the subject does NOT contain 'Training Workshop'.
+
 2. Include recipient (to_email), and optionally subject or body.
 3. Maintain natural and varied user language.
 """
