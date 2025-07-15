@@ -2,7 +2,6 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AddLabelEvent,
-    ComposeEmailEvent,
     DeleteEmailEvent,
     EmailSaveAsDraftEvent,
     MarkAsSpamEvent,
@@ -33,24 +32,24 @@ VIEW_EMAIL_USE_CASE = UseCase(
     additional_prompt_info=VIEW_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "View the email from <from_email> with subject '<subject>'",
-            "prompt_for_task_generation": "View the email from <from_email> with subject '<subject>'",
+            "prompt": "View the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
+            "prompt_for_task_generation": "View the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
         },
         {
-            "prompt": "View the message from <from_email>",
-            "prompt_for_task_generation": "View the message from <from_email>",
+            "prompt": "View the message from 'bob.johnson@tech.org'",
+            "prompt_for_task_generation": "View the message from 'bob.johnson@tech.org'",
         },
         {
-            "prompt": "View the email with subject '<subject>'",
-            "prompt_for_task_generation": "View the email with subject '<subject>'",
+            "prompt": "View the email with subject 'Newsletter Subscription'",
+            "prompt_for_task_generation": "View the email with subject 'Newsletter Subscription'",
         },
         {
-            "prompt": "View the email with ID <email_id>",
-            "prompt_for_task_generation": "View the email with ID <email_id>",
+            "prompt": "View the email with ID 'email4'",
+            "prompt_for_task_generation": "View the email with ID 'email4'",
         },
         {
-            "prompt": "View the email that subject is about <subject>",
-            "prompt_for_task_generation": "View the email that subject is about <subject>",
+            "prompt": "View the email that subject is about 'Community Forum Update'",
+            "prompt_for_task_generation": "View the email that subject is about 'Community Forum Update'",
         },
     ],
 )
@@ -80,24 +79,24 @@ STAR_EMAIL_USE_CASE = UseCase(
     additional_prompt_info=STAR_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Star the email from <from_email> with subject '<subject>'",
-            "prompt_for_task_generation": "Star the email from <from_email> with subject '<subject>'",
+            "prompt": "Star the email from 'grace.lee@company.com' with subject 'Team Outing Plan'",
+            "prompt_for_task_generation": "Star the email from 'grace.lee@company.com' with subject 'Team Outing Plan'",
         },
         {
-            "prompt": "Mark the email from <from_email> as starred",
-            "prompt_for_task_generation": "Mark the email from <from_email> as starred",
+            "prompt": "Mark the email from 'bob.johnson@tech.org' as starred",
+            "prompt_for_task_generation": "Mark the email from 'bob.johnson@tech.org' as starred",
         },
         {
-            "prompt": "Mark the email titled '<subject>' as unstarred",
-            "prompt_for_task_generation": "Mark the email titled '<subject>' as unstarred",
+            "prompt": "Mark the email titled 'Newsletter Subscription' as unstarred",
+            "prompt_for_task_generation": "Mark the email titled 'Newsletter Subscription' as unstarred",
         },
         {
-            "prompt": "Star the email with ID <email_id>",
-            "prompt_for_task_generation": "Star the email with ID <email_id>",
+            "prompt": "Star the email with ID 'email7'",
+            "prompt_for_task_generation": "Star the email with ID 'email7'",
         },
         {
-            "prompt": "Mark the message about <subject> as favorite",
-            "prompt_for_task_generation": "Mark the message about <subject> as favorite",
+            "prompt": "Mark the message about 'Lunch Plans' as favorite",
+            "prompt_for_task_generation": "Mark the message about 'Lunch Plans' as favorite",
         },
     ],
 )
@@ -133,24 +132,24 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     additional_prompt_info=MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Mark the email from <from_email> with subject '<subject>' as important",
-            "prompt_for_task_generation": "Mark the email from <from_email> with subject '<subject>' as important",
+            "prompt": "Mark the email from 'david.brown@company.com' with subject 'Q2 Report Feedback' as important",
+            "prompt_for_task_generation": "Mark the email from 'david.brown@company.com' with subject 'Q2 Report Feedback' as important",
         },
         {
-            "prompt": "Flag the email from <from_email> as important",
-            "prompt_for_task_generation": "Flag the email from <from_email> as important",
+            "prompt": "Flag the email from 'alice.smith@company.com' as important",
+            "prompt_for_task_generation": "Flag the email from 'alice.smith@company.com' as important",
         },
         {
-            "prompt": "Set the message with subject '<subject>' to high priority",
-            "prompt_for_task_generation": "Set the message with subject '<subject>' to high priority",
+            "prompt": "Set the message with subject 'Project Status Update' to high priority",
+            "prompt_for_task_generation": "Set the message with subject 'Project Status Update' to high priority",
         },
         {
-            "prompt": "Mark the email with ID <email_id> as important",
-            "prompt_for_task_generation": "Mark the email with ID <email_id> as important",
+            "prompt": "Mark the email with ID 'email25' as important",
+            "prompt_for_task_generation": "Mark the email with ID 'email25' as important",
         },
         {
-            "prompt": "Mark the message about <subject> as high priority",
-            "prompt_for_task_generation": "Mark the message about <subject> as high priority",
+            "prompt": "Mark the message about 'Client Proposal Review' as high priority",
+            "prompt_for_task_generation": "Mark the message about 'Client Proposal Review' as high priority",
         },
     ],
 )
@@ -172,24 +171,24 @@ MARK_AS_UNREAD_USE_CASE = UseCase(
     additional_prompt_info=MARK_AS_UNREAD_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Mark the email from <from_email> with subject '<subject>' as unread",
-            "prompt_for_task_generation": "Mark the email from <from_email> with subject '<subject>' as unread",
+            "prompt": "Mark the email from 'emma.davis@yahoo.com' with subject 'Community Forum Update' as unread",
+            "prompt_for_task_generation": "Mark the email from 'emma.davis@yahoo.com' with subject 'Community Forum Update' as unread",
         },
         {
-            "prompt": "Set the message from <from_email> as unread",
-            "prompt_for_task_generation": "Set the message from <from_email> as unread",
+            "prompt": "Set the message from 'carol.white@outlook.com' as unread",
+            "prompt_for_task_generation": "Set the message from 'carol.white@outlook.com' as unread",
         },
         {
-            "prompt": "Mark the email titled '<subject>' as unread",
-            "prompt_for_task_generation": "Mark the email titled '<subject>' as unread",
+            "prompt": "Mark the email titled 'Support Ticket #1234' as unread",
+            "prompt_for_task_generation": "Mark the email titled 'Support Ticket #1234' as unread",
         },
         {
-            "prompt": "Mark the email with ID <email_id> as unread",
-            "prompt_for_task_generation": "Mark the email with ID <email_id> as unread",
+            "prompt": "Mark the email with ID 'email8' as unread",
+            "prompt_for_task_generation": "Mark the email with ID 'email8' as unread",
         },
         {
-            "prompt": "Set the email about <subject> back to unread",
-            "prompt_for_task_generation": "Set the email about <subject> back to unread",
+            "prompt": "Set the email about 'Exclusive Offer: 20% Off' back to unread",
+            "prompt_for_task_generation": "Set the email about 'Exclusive Offer: 20% Off' back to unread",
         },
     ],
 )
@@ -211,24 +210,24 @@ DELETE_EMAIL_USE_CASE = UseCase(
     additional_prompt_info=DELETE_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Delete the email from <from_email> with subject '<subject>'",
-            "prompt_for_task_generation": "Delete the email from <from_email> with subject '<subject>'",
+            "prompt": "Delete the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
+            "prompt_for_task_generation": "Delete the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
         },
         {
-            "prompt": "Remove the message from <from_email>",
-            "prompt_for_task_generation": "Remove the message from <from_email>",
+            "prompt": "Remove the message from 'alice.smith@company.com'",
+            "prompt_for_task_generation": "Remove the message from 'alice.smith@company.com'",
         },
         {
-            "prompt": "Trash the email titled '<subject>'",
-            "prompt_for_task_generation": "Trash the email titled '<subject>'",
+            "prompt": "Trash the email titled 'Project Kickoff Meeting'",
+            "prompt_for_task_generation": "Trash the email titled 'Project Kickoff Meeting'",
         },
         {
-            "prompt": "Delete the email with ID <email_id>",
-            "prompt_for_task_generation": "Delete the email with ID <email_id>",
+            "prompt": "Delete the email with ID 'email1'",
+            "prompt_for_task_generation": "Delete the email with ID 'email1'",
         },
         {
-            "prompt": "Remove the message about <subject>",
-            "prompt_for_task_generation": "Remove the message about <subject>",
+            "prompt": "Remove the message about 'Project Kickoff Meeting'",
+            "prompt_for_task_generation": "Remove the message about 'Project Kickoff Meeting'",
         },
     ],
 )
@@ -250,24 +249,24 @@ MARK_AS_SPAM_USE_CASE = UseCase(
     additional_prompt_info=MARK_AS_SPAM_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Mark the email from <from_email> with subject '<subject>' as spam",
-            "prompt_for_task_generation": "Mark the email from <from_email> with subject '<subject>' as spam",
+            "prompt": "Mark the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting' as spam",
+            "prompt_for_task_generation": "Mark the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting' as spam",
         },
         {
-            "prompt": "Report the message from <from_email> as junk",
-            "prompt_for_task_generation": "Report the message from <from_email> as junk",
+            "prompt": "Report the message from 'alice.smith@company.com' as junk",
+            "prompt_for_task_generation": "Report the message from 'alice.smith@company.com' as junk",
         },
         {
-            "prompt": "Move the email titled '<subject>' to spam",
-            "prompt_for_task_generation": "Move the email titled '<subject>' to spam",
+            "prompt": "Move the email titled 'Project Kickoff Meeting' to spam",
+            "prompt_for_task_generation": "Move the email titled 'Project Kickoff Meeting' to spam",
         },
         {
-            "prompt": "Mark the email with ID <email_id> as junk",
-            "prompt_for_task_generation": "Mark the email with ID <email_id> as junk",
+            "prompt": "Mark the email with ID 'email1' as junk",
+            "prompt_for_task_generation": "Mark the email with ID 'email1' as junk",
         },
         {
-            "prompt": "Flag the message about <subject> as spam",
-            "prompt_for_task_generation": "Flag the message about <subject> as spam",
+            "prompt": "Flag the message about 'Project Kickoff Meeting' as spam",
+            "prompt_for_task_generation": "Flag the message about 'Project Kickoff Meeting' as spam",
         },
     ],
 )
@@ -289,66 +288,66 @@ ADD_LABEL_USE_CASE = UseCase(
     additional_prompt_info=ADD_LABEL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Add the label '<label>' to the email from <from_email> with subject '<subject>'",
-            "prompt_for_task_generation": "Add the label '<label>' to the email from <from_email> with subject '<subject>'",
+            "prompt": "Add the label '<label>' to the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
+            "prompt_for_task_generation": "Add the label '<label>' to the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
         },
         {
-            "prompt": "Tag the email from <from_email> with the '<label>' label",
-            "prompt_for_task_generation": "Tag the email from <from_email> with the '<label>' label",
+            "prompt": "Tag the email from 'alice.smith@company.com' with the '<label>' label",
+            "prompt_for_task_generation": "Tag the email from 'alice.smith@company.com' with the '<label>' label",
         },
         {
-            "prompt": "Add the '<label>' label to the message titled '<subject>'",
-            "prompt_for_task_generation": "Add the '<label>' label to the message titled '<subject>'",
+            "prompt": "Add the '<label>' label to the message titled 'Project Kickoff Meeting'",
+            "prompt_for_task_generation": "Add the '<label>' label to the message titled 'Project Kickoff Meeting'",
         },
         {
-            "prompt": "Categorize the email with ID <email_id> under the '<label>' label",
-            "prompt_for_task_generation": "Categorize the email with ID <email_id> under the '<label>' label",
+            "prompt": "Categorize the email with ID 'email1' under the '<label>' label",
+            "prompt_for_task_generation": "Categorize the email with ID 'email1' under the '<label>' label",
         },
         {
-            "prompt": "Add the '<label>' tag to the message about <subject>",
-            "prompt_for_task_generation": "Add the '<label>' tag to the message about <subject>",
+            "prompt": "Add the '<label>' tag to the message about 'Project Kickoff Meeting'",
+            "prompt_for_task_generation": "Add the '<label>' tag to the message about 'Project Kickoff Meeting'",
         },
     ],
 )
 
-COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Start with compose, write, draft, or create a new email.
-2. Include at least recipient email (to_email), and optionally subject or body.
-3. Vary language naturally while preserving structure.
-"""
-
-COMPOSE_EMAIL_USE_CASE = UseCase(
-    name="COMPOSE_EMAIL",
-    description="The user starts composing a new email, filling in recipient, subject, or body.",
-    event=ComposeEmailEvent,
-    event_source_code=ComposeEmailEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
-    # constraints_generator=generate_compose_email_constraints,
-    additional_prompt_info=COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO,
-    examples=[
-        {
-            "prompt": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
-            "prompt_for_task_generation": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
-        },
-        {
-            "prompt": "Write a new message to <to_email> with subject '<subject>'",
-            "prompt_for_task_generation": "Write a new message to <to_email> with subject '<subject>'",
-        },
-        {
-            "prompt": "Create a draft email to <to_email>",
-            "prompt_for_task_generation": "Create a draft email to <to_email>",
-        },
-        {
-            "prompt": "Compose a message to <to_email> with the body '<body>'",
-            "prompt_for_task_generation": "Compose a message to <to_email> with the body '<body>'",
-        },
-        {
-            "prompt": "Draft an email for <to_email> about '<subject>'",
-            "prompt_for_task_generation": "Draft an email for <to_email> about '<subject>'",
-        },
-    ],
-)
+# COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO = """
+# CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+# 1. Start with compose, write, draft, or create a new email.
+# 2. Include at least recipient email (to_email), and optionally subject or body.
+# 3. Vary language naturally while preserving structure.
+# """
+#
+# COMPOSE_EMAIL_USE_CASE = UseCase(
+#     name="COMPOSE_EMAIL",
+#     description="The user starts composing a new email, filling in recipient, subject, or body.",
+#     event=ComposeEmailEvent,
+#     event_source_code=ComposeEmailEvent.get_source_code_of_class(),
+#     replace_func=replace_email_placeholders,
+#     # constraints_generator=generate_compose_email_constraints,
+#     additional_prompt_info=COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO,
+#     examples=[
+#         {
+#             "prompt": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
+#             "prompt_for_task_generation": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
+#         },
+#         {
+#             "prompt": "Write a new message to <to_email> with subject '<subject>'",
+#             "prompt_for_task_generation": "Write a new message to <to_email> with subject '<subject>'",
+#         },
+#         {
+#             "prompt": "Create a draft email to <to_email>",
+#             "prompt_for_task_generation": "Create a draft email to <to_email>",
+#         },
+#         {
+#             "prompt": "Compose a message to <to_email> with the body '<body>'",
+#             "prompt_for_task_generation": "Compose a message to <to_email> with the body '<body>'",
+#         },
+#         {
+#             "prompt": "Draft an email for <to_email> about '<subject>'",
+#             "prompt_for_task_generation": "Draft an email for <to_email> about '<subject>'",
+#         },
+#     ],
+# )
 
 SEND_EMAIL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
@@ -488,8 +487,8 @@ SEARCH_EMAIL_USE_CASE = UseCase(
             "prompt_for_task_generation": "Search for emails with subject containing '<keyword>'",
         },
         {
-            "prompt": "Find emails from <from_email>",
-            "prompt_for_task_generation": "Find emails from <from_email>",
+            "prompt": "Find emails from 'alice.smith@company.com'",
+            "prompt_for_task_generation": "Find emails from 'alice.smith@company.com'",
         },
         {
             "prompt": "Look up messages labeled '<label>'",
@@ -500,8 +499,8 @@ SEARCH_EMAIL_USE_CASE = UseCase(
             "prompt_for_task_generation": "Search for emails mentioning '<body_keyword>'",
         },
         {
-            "prompt": "Find all emails from <from_email> with subject about '<keyword>'",
-            "prompt_for_task_generation": "Find all emails from <from_email> with subject about '<keyword>'",
+            "prompt": "Find all emails from 'alice.smith@company.com' with subject about '<keyword>'",
+            "prompt_for_task_generation": "Find all emails from 'alice.smith@company.com' with subject about '<keyword>'",
         },
     ],
 )
