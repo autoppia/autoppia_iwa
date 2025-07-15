@@ -13,7 +13,15 @@ from .events import (
     ThemeChangedEvent,
     ViewEmailEvent,
 )
-from .generation_functions import generate_is_important_constraints, generate_is_read_constraints, generate_is_spam_constraints, generate_is_starred_constraints, generate_view_email_constraints
+from .generation_functions import (
+    generate_is_important_constraints,
+    generate_is_read_constraints,
+    generate_is_spam_constraints,
+    generate_is_starred_constraints,
+    generate_save_as_draft_constraints,
+    generate_search_email_constraints,
+    generate_view_email_constraints,
+)
 from .replace_functions import replace_email_placeholders
 
 VIEW_EMAIL_ADDITIONAL_PROMPT_INFO = """
@@ -401,28 +409,48 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
     event=EmailSaveAsDraftEvent,
     event_source_code=EmailSaveAsDraftEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_save_draft_constraints,
+    constraints_generator=generate_save_as_draft_constraints,
     additional_prompt_info=SAVE_AS_DRAFT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Save the email to <to_email> with subject '<subject>' and message '<body>' as draft",
-            "prompt_for_task_generation": "Save the email to <to_email> with subject '<subject>' and message '<body>' as draft",
+            "prompt": "Save the email as draft where email equals jane.doe@example.com",
+            "prompt_for_task_generation": "Save the email as draft where email equals jane.doe@example.com",
         },
         {
-            "prompt": "Keep the email for <to_email> with subject '<subject>' as a draft",
-            "prompt_for_task_generation": "Keep the email for <to_email> with subject '<subject>' as a draft",
+            "prompt": "Save the email as draft where subject contains 'Budget Review Meeting'",
+            "prompt_for_task_generation": "Save the email as draft where subject contains 'Budget Review Meeting'",
         },
         {
-            "prompt": "Save a message to <to_email> as a draft",
-            "prompt_for_task_generation": "Save a message to <to_email> as a draft",
+            "prompt": "Keep the email as draft where email not equals jane.doe@example.com",
+            "prompt_for_task_generation": "Keep the email as draft where email not equals jane.doe@example.com",
         },
         {
-            "prompt": "Save a draft to <to_email> with body '<body>'",
-            "prompt_for_task_generation": "Save a draft to <to_email> with body '<body>'",
+            "prompt": "Save the email as draft where body contains 'Please review the attached budget document.'",
+            "prompt_for_task_generation": "Save the email as draft where body contains 'Please review the attached budget document.'",
         },
         {
-            "prompt": "Keep a draft email for <to_email> about '<subject>'",
-            "prompt_for_task_generation": "Keep a draft email for <to_email> about '<subject>'",
+            "prompt": "Keep the email as draft where email equals jane.doe@example.com and subject equals 'Budget Review Meeting'",
+            "prompt_for_task_generation": "Keep the email as draft where email equals jane.doe@example.com and subject equals 'Budget Review Meeting'",
+        },
+        {
+            "prompt": "Save the email as draft where subject not contains 'Budget Review Meeting'",
+            "prompt_for_task_generation": "Save the email as draft where subject not contains 'Budget Review Meeting'",
+        },
+        {
+            "prompt": "Keep the email as draft where body not contains 'Please review the attached budget document.'",
+            "prompt_for_task_generation": "Keep the email as draft where body not contains 'Please review the attached budget document.'",
+        },
+        {
+            "prompt": "Save the draft where email contains jane.doe@example.com and body contains 'Please review the attached budget document.'",
+            "prompt_for_task_generation": "Save the draft where email contains jane.doe@example.com and body contains 'Please review the attached budget document.'",
+        },
+        {
+            "prompt": "Save as draft any email where recipient contains jane.doe@example.com",
+            "prompt_for_task_generation": "Save as draft any email where recipient contains jane.doe@example.com",
+        },
+        {
+            "prompt": "Keep a draft of the message where subject equals 'Budget Review Meeting' and recipient equals jane.doe@example.com",
+            "prompt_for_task_generation": "Keep a draft of the message where subject equals 'Budget Review Meeting' and recipient equals jane.doe@example.com",
         },
     ],
 )
@@ -479,7 +507,7 @@ SEARCH_EMAIL_USE_CASE = UseCase(
     event=SearchEmailEvent,
     event_source_code=SearchEmailEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_search_email_constraints,
+    constraints_generator=generate_search_email_constraints,
     additional_prompt_info=SEARCH_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
