@@ -39,10 +39,22 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
 
     elif operator == ComparisonOperator.NOT_EQUALS:
+        if field == "direction":
+            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "section_title":
+            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
+            return random.choice(valid) if valid else None
         valid = [v[field] for v in dataset if v.get(field) != field_value]
         return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        if field == "direction":
+            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "section_title":
+            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
+            return random.choice(valid) if valid else None
         if len(field_value) > 2:
             start = random.randint(0, max(0, len(field_value) - 2))
             end = random.randint(start + 1, len(field_value))
@@ -50,6 +62,12 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
 
     elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        if field == "direction":
+            valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "section_title":
+            valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
+            return random.choice(valid) if valid else None
         valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
         return random.choice(valid) if valid else None
 

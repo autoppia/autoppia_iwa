@@ -412,7 +412,7 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
 SCROLL_VIEW_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Explicitly mention **scrolling or navigating** a generic list or page section.
-2. Specify the direction of scroll (e.g., "right", "left", "down", "up") if applicable.
+2. Specify the direction of scroll ("right", "left") if applicable.
 3. May mention the number of items now visible if that's a direct consequence of the scroll action being described.
 4. Lead to the SCROLL_VIEW event.
 """
@@ -427,19 +427,15 @@ SCROLL_VIEW_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Scroll right to see more available time slots.",
-            "prompt_for_task_generation": "Scroll <direction> to see more <content_description>.",
+            "prompt_for_task_generation": "Scroll <direction> to see more <section_title>.",
         },
         {
-            "prompt": "Navigate to the next set of 7 restaurants by scrolling right.",
-            "prompt_for_task_generation": "Navigate to the next set of <count> <item_type> by scrolling <direction>.",
+            "prompt": "Scroll left in the page section where the section_title does NOT contain 'Introducing OpenDinning Icons'",
+            "prompt_for_task_generation": "Scroll left in the page section where the <section_title> does NOT contain  <section_title> ",
         },
         {
-            "prompt": "Scroll not right repeatedly to load more search results",
-            "prompt_for_task_generation": "Scroll <direction> repeatedly to load more search results",
-        },
-        {
-            "prompt": "Swipe left to view additional restaurant photos",
-            "prompt_for_task_generation": "Swipe <direction> to view additional <content_type>",
+            "prompt": "Scroll to the right in the list where the section title does NOT contain 'Award-winning'",
+            "prompt_for_task_generation": "Scroll to the <direction> in the list where the section title does NOT contain <section_title>.",
         },
     ],
 )
@@ -450,13 +446,13 @@ SCROLL_VIEW_USE_CASE = UseCase(
 ###############################################################################
 
 ALL_USE_CASES = [
+    VIEW_RESTAURANT_USE_CASE,
+    VIEW_FULL_MENU_USE_CASE,
+    COLLAPSE_MENU_USE_CASE,
     DATE_DROPDOWN_OPENED_USE_CASE,
     TIME_DROPDOWN_OPENED_USE_CASE,
     PEOPLE_DROPDOWN_OPENED_USE_CASE,
     SEARCH_RESTAURANT_USE_CASE,
-    VIEW_RESTAURANT_USE_CASE,
-    VIEW_FULL_MENU_USE_CASE,
-    COLLAPSE_MENU_USE_CASE,
     BOOK_RESTAURANT_USE_CASE,
     COUNTRY_SELECTED_USE_CASE,
     OCCASION_SELECTED_USE_CASE,
