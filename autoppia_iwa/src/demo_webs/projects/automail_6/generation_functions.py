@@ -7,6 +7,7 @@ from ..shared_utils import create_constraint_dict
 from .data import (
     ALL_EMAIL_WORDS,
     EMAILS_DATA_MODIFIED,
+    FIELD_OPERATORS_CREATE_LABEL_MAP,
     FIELD_OPERATORS_IMPORTANT_MAP,
     FIELD_OPERATORS_IS_READ_MAP,
     FIELD_OPERATORS_IS_SPAM_MAP,
@@ -365,8 +366,38 @@ def generate_save_as_draft_constraints() -> list[dict[str, Any]]:
 
         op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
-
         field_value = email.get(field)
         value = random.choice(list_of_emails) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
         constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
+def _get_labels_and_colors(email_data: list[dict[str, Any]]) -> tuple:
+    labels = set()
+    colors = set()
+    for email in email_data:
+        if email.get("labels"):
+            labels.update([lbl["name"] for lbl in email["labels"] if lbl.get("name")])
+            colors.update([lbl["color"] for lbl in email["labels"] if lbl.get("color")])
+    return list(labels), list(colors)
+
+
+def generate_create_label_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    num_constraints = random.randint(1, len(FIELD_OPERATORS_CREATE_LABEL_MAP))
+    possible_fields = random.sample(list(FIELD_OPERATORS_CREATE_LABEL_MAP.keys()), num_constraints)
+    labels, colors = _get_labels_and_colors(EMAILS_DATA_MODIFIED)
+    labels_and_colors = [{"label_name": label, "label_color": color} for label, color in zip(labels, colors, strict=False)]
+    # possible_fields = ['label_name']
+    for field in possible_fields:
+        allowed_ops = FIELD_OPERATORS_CREATE_LABEL_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
+        operator = ComparisonOperator(op_str)
+        field_value = choice(labels_and_colors).get(field)
+        value = _generate_constraint_value(operator, field_value, field, labels_and_colors)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+
     return constraints_list

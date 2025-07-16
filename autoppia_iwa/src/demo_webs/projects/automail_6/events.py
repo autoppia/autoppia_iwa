@@ -258,6 +258,39 @@ class AddLabelEvent(Event):
         )
 
 
+class CreateLabelEvent(Event):
+    event_name: str = "CREATE_LABEL"
+    label_name: str
+    label_color: str
+
+    class ValidationCriteria(BaseModel):
+        label_id: str | CriterionValue | None = None
+        label_name: str | CriterionValue | None = None
+        label_color: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        if criteria.label_name is not None:
+            return validate_criterion(self.label_name, criteria.label_name)
+        if criteria.label_color is not None:
+            return validate_criterion(self.label_color, criteria.label_color)
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "CreateLabelEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            label_name=data.get("label_name", ""),
+            label_color=data.get("label_color", ""),
+        )
+
+
 # ---------------------------------------------------------------------------
 # Compose / Send / Draft
 # ---------------------------------------------------------------------------
@@ -432,6 +465,7 @@ EVENTS = [
     DeleteEmailEvent,
     MarkAsSpamEvent,
     AddLabelEvent,
+    CreateLabelEvent,
     ComposeEmailEvent,
     SendEmailEvent,
     EmailSaveAsDraftEvent,
@@ -446,6 +480,7 @@ BACKEND_EVENT_TYPES = {
     "DELETE_EMAIL": DeleteEmailEvent,
     "MARK_AS_SPAM": MarkAsSpamEvent,
     "ADD_LABEL": AddLabelEvent,
+    "CREATE_LABEL": CreateLabelEvent,
     "COMPOSE_EMAIL": ComposeEmailEvent,
     "SEND_EMAIL": SendEmailEvent,
     "EMAIL_SAVE_AS_DRAFT": EmailSaveAsDraftEvent,

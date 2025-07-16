@@ -2,6 +2,7 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AddLabelEvent,
+    CreateLabelEvent,
     DeleteEmailEvent,
     EmailSaveAsDraftEvent,
     MarkAsSpamEvent,
@@ -14,6 +15,7 @@ from .events import (
     ViewEmailEvent,
 )
 from .generation_functions import (
+    generate_create_label_constraints,
     generate_is_important_constraints,
     generate_is_read_constraints,
     generate_is_spam_constraints,
@@ -129,7 +131,6 @@ CRITICAL REQUIREMENTS: Every prompt you generate MUST follow these rules:
 4. IMPORTANT: Do **NOT** mention isImportant in the prompt.
 5. Phrase each prompt naturally and vary the wording, but keep the user intent consistent.
 """
-
 
 MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     name="MARK_EMAIL_AS_IMPORTANT",
@@ -293,7 +294,7 @@ ADD_LABEL_USE_CASE = UseCase(
     event=AddLabelEvent,
     event_source_code=AddLabelEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_add_label_constraints,
+    constraints_generator=generate_create_label_constraints,
     additional_prompt_info=ADD_LABEL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -315,6 +316,45 @@ ADD_LABEL_USE_CASE = UseCase(
         {
             "prompt": "Add the '<label>' tag to the message about 'Project Kickoff Meeting'",
             "prompt_for_task_generation": "Add the '<label>' tag to the message about 'Project Kickoff Meeting'",
+        },
+    ],
+)
+
+CREATE_LABEL_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Start with phrases like create label, add label, or make a new label.
+2. Include the label name and optionally the color.
+3. Use natural and varied language for user instructions.
+"""
+
+CREATE_LABEL_USE_CASE = UseCase(
+    name="CREATE_LABEL",
+    description="The user creates a new label with a specific name and optional color.",
+    event=CreateLabelEvent,
+    event_source_code=CreateLabelEvent.get_source_code_of_class(),
+    replace_func=replace_email_placeholders,  # Can be changed if label-specific logic is needed
+    constraints_generator=generate_create_label_constraints,  # Can be added if needed later
+    additional_prompt_info=CREATE_LABEL_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Create a label named 'Work' with color 'blue'",
+            "prompt_for_task_generation": "Create a label named 'Work' with color 'blue'",
+        },
+        {
+            "prompt": "Add a new label called 'Personal' and make it green",
+            "prompt_for_task_generation": "Add a new label called 'Personal' and make it green",
+        },
+        {
+            "prompt": "Make a label titled 'Finance' using the color yellow",
+            "prompt_for_task_generation": "Make a label titled 'Finance' using the color yellow",
+        },
+        {
+            "prompt": "Create a tag labeled 'Important' in red",
+            "prompt_for_task_generation": "Create a tag labeled 'Important' in red",
+        },
+        {
+            "prompt": "Add the label 'Travel' with a purple color",
+            "prompt_for_task_generation": "Add the label 'Travel' with a purple color",
         },
     ],
 )
@@ -552,8 +592,9 @@ ALL_USE_CASES = [
     # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
     # MARK_AS_UNREAD_USE_CASE,
     # DELETE_EMAIL_USE_CASE,
-    MARK_AS_SPAM_USE_CASE,
+    # MARK_AS_SPAM_USE_CASE,
     # ADD_LABEL_USE_CASE,
+    CREATE_LABEL_USE_CASE,
     # COMPOSE_EMAIL_USE_CASE,
     # SEND_EMAIL_USE_CASE,
     # EMAIL_SAVE_AS_DRAFT_USE_CASE,
