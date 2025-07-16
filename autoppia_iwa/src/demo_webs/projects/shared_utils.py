@@ -63,18 +63,15 @@ def create_constraint_dict(field: str, operator: ComparisonOperator, value: Any)
 
 def generate_mock_dates():
     """
-    Generates a list of mock dates strictly in the future within the same month,
-    with time set to 19:00.
+    Generates a list of mock dates strictly in the future for the next 20 days,
+    with time set to 19:00. Dates may cross into the next month.
     """
     today = datetime.datetime.now(datetime.UTC).replace(hour=0, minute=0, second=0, microsecond=0)
-    current_month = today.month
     mock_dates_raw = []
 
-    # Add future dates starting from tomorrow
-    for i in range(1, 15):  # next 14 days
+    for i in range(1, 21):  # next 20 days
         future_date = today + datetime.timedelta(days=i)
-        if future_date.month == current_month:
-            mock_dates_raw.append(future_date.replace(hour=19, minute=0, second=0, microsecond=0))
+        mock_dates_raw.append(future_date.replace(hour=19, minute=0, second=0, microsecond=0))
 
     return sorted(list(set(mock_dates_raw)))
 
