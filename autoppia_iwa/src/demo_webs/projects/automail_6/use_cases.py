@@ -15,6 +15,7 @@ from .events import (
     ViewEmailEvent,
 )
 from .generation_functions import (
+    generate_add_label_constraints,
     generate_create_label_constraints,
     generate_is_important_constraints,
     generate_is_read_constraints,
@@ -23,6 +24,7 @@ from .generation_functions import (
     generate_save_as_draft_constraints,
     generate_search_email_constraints,
     generate_send_email_constraints,
+    generate_theme_changed_constraints,
     generate_view_email_constraints,
 )
 from .replace_functions import replace_email_placeholders
@@ -294,7 +296,7 @@ ADD_LABEL_USE_CASE = UseCase(
     event=AddLabelEvent,
     event_source_code=AddLabelEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    constraints_generator=generate_create_label_constraints,
+    constraints_generator=generate_add_label_constraints,
     additional_prompt_info=ADD_LABEL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -508,8 +510,13 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
 THEME_CHANGED_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Clearly indicate a change in theme (e.g., switch to dark/light/system).
-2. Mention the specific theme being applied.
-3. Phrasing can vary but must reflect intent to change appearance.
+2. IMPORTANT: Use ONE THEME NAME and mention ONLY ONCE.
+ Examples:
+    Correct: Change the application theme to 'system'.
+    Correct: Change the application theme equal to 'system'.
+    Correct: Apply the application theme NOT equal to 'dark'.
+    Incorrect: Change the application theme to 'system' where the theme is equal to 'system'.
+    Incorrect: Apply the application theme to 'system' where the theme is not equal to 'dark'.
 """
 
 THEME_CHANGED_USE_CASE = UseCase(
@@ -518,7 +525,7 @@ THEME_CHANGED_USE_CASE = UseCase(
     event=ThemeChangedEvent,
     event_source_code=ThemeChangedEvent.get_source_code_of_class(),
     replace_func=replace_email_placeholders,
-    # constraints_generator=generate_theme_changed_constraints,
+    constraints_generator=generate_theme_changed_constraints,
     additional_prompt_info=THEME_CHANGED_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -526,16 +533,16 @@ THEME_CHANGED_USE_CASE = UseCase(
             "prompt_for_task_generation": "Switch to dark theme",
         },
         {
-            "prompt": "Change the theme to light",
-            "prompt_for_task_generation": "Change the theme to light",
+            "prompt": "Change the application theme other than 'dark'",
+            "prompt_for_task_generation": "Change the application theme other than 'dark'",
         },
         {
             "prompt": "Enable system default theme",
             "prompt_for_task_generation": "Enable system default theme",
         },
         {
-            "prompt": "Switch from light to dark theme",
-            "prompt_for_task_generation": "Switch from light to dark theme",
+            "prompt": "Change the application theme NOT equal to 'system'",
+            "prompt_for_task_generation": "Change the application theme NOT equal to 'system'",
         },
         {
             "prompt": "Apply dark mode appearance",
@@ -594,10 +601,10 @@ ALL_USE_CASES = [
     # DELETE_EMAIL_USE_CASE,
     # MARK_AS_SPAM_USE_CASE,
     # ADD_LABEL_USE_CASE,
-    CREATE_LABEL_USE_CASE,
+    # CREATE_LABEL_USE_CASE,
     # COMPOSE_EMAIL_USE_CASE,
     # SEND_EMAIL_USE_CASE,
     # EMAIL_SAVE_AS_DRAFT_USE_CASE,
-    # THEME_CHANGED_USE_CASE,
+    THEME_CHANGED_USE_CASE,
     # SEARCH_EMAIL_USE_CASE,
 ]

@@ -3,10 +3,12 @@ from random import choice
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator
+from ..operators import EQUALS, NOT_EQUALS
 from ..shared_utils import create_constraint_dict
 from .data import (
     ALL_EMAIL_WORDS,
     EMAILS_DATA_MODIFIED,
+    FIELD_OPERATORS_ADD_LABEL_MAP,
     FIELD_OPERATORS_CREATE_LABEL_MAP,
     FIELD_OPERATORS_IMPORTANT_MAP,
     FIELD_OPERATORS_IS_READ_MAP,
@@ -399,5 +401,54 @@ def generate_create_label_constraints() -> list[dict[str, Any]]:
         field_value = choice(labels_and_colors).get(field)
         value = _generate_constraint_value(operator, field_value, field, labels_and_colors)
         constraints_list.append(create_constraint_dict(field, operator, value))
+
+    return constraints_list
+
+
+def generate_add_label_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    num_constraints = random.randint(1, len(FIELD_OPERATORS_ADD_LABEL_MAP))
+    possible_fields = random.sample(list(FIELD_OPERATORS_ADD_LABEL_MAP.keys()), num_constraints)
+
+    labels, colors = _get_labels_and_colors(EMAILS_DATA_MODIFIED)
+    label_ids = [lbl.get("id") for email in EMAILS_DATA_MODIFIED for lbl in email.get("labels", []) if lbl.get("id")]
+    label_names = labels
+    actions = ["added", "removed"]  # Define allowed actions if known
+
+    # Construct a mock dataset to draw from
+    dataset = [{"label_id": lid, "label_name": name, "action": choice(actions)} for lid, name in zip(label_ids, label_names, strict=False)]
+
+    for field in possible_fields:
+        allowed_ops = FIELD_OPERATORS_ADD_LABEL_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        op_str = random.choice(allowed_ops)
+        operator = ComparisonOperator(op_str)
+
+        # Pick a random field value from dataset
+        field_value = choice(dataset).get(field)
+        value = _generate_constraint_value(operator, field_value, field, dataset)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+
+    return constraints_list
+
+
+def generate_theme_changed_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    themes = ["light", "dark", "system"]
+    field = "theme"
+    allowed_ops = [EQUALS, NOT_EQUALS]
+
+    if not allowed_ops:
+        return constraints_list
+
+    op_str = random.choice(allowed_ops)
+    operator = ComparisonOperator(op_str)
+
+    field_value = random.choice(themes)
+    value = field_value if operator == ComparisonOperator.EQUALS else random.choice([theme for theme in themes if theme != field_value])
+
+    constraints_list.append(create_constraint_dict(field, operator, value))
 
     return constraints_list
