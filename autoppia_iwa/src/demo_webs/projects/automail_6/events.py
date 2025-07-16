@@ -230,6 +230,7 @@ class AddLabelEvent(Event):
         label_id: str | CriterionValue | None = None
         label_name: str | CriterionValue | None = None
         action: str | CriterionValue | None = None
+        email_ids: list[str]
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -238,6 +239,8 @@ class AddLabelEvent(Event):
             return validate_criterion(self.label_id, criteria.label_id)
         if criteria.label_name is not None:
             return validate_criterion(self.label_name, criteria.label_name)
+        if criteria.email_ids is not None:
+            return validate_criterion(self.email_ids, criteria.email_ids)
         if criteria.action is not None:
             return validate_criterion(self.action, criteria.action)
         return True

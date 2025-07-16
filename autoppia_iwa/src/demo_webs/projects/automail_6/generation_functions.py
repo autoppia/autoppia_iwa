@@ -386,11 +386,11 @@ def _get_labels_and_colors(email_data: list[dict[str, Any]]) -> tuple:
 
 def generate_create_label_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    num_constraints = random.randint(1, len(FIELD_OPERATORS_CREATE_LABEL_MAP))
-    possible_fields = random.sample(list(FIELD_OPERATORS_CREATE_LABEL_MAP.keys()), num_constraints)
+    # num_constraints = random.randint(1, len(FIELD_OPERATORS_CREATE_LABEL_MAP))
+    # possible_fields = random.sample(list(FIELD_OPERATORS_CREATE_LABEL_MAP.keys()), num_constraints)
     labels, colors = _get_labels_and_colors(EMAILS_DATA_MODIFIED)
     labels_and_colors = [{"label_name": label, "label_color": color} for label, color in zip(labels, colors, strict=False)]
-    # possible_fields = ['label_name']
+    possible_fields = ["label_name"]
     for field in possible_fields:
         allowed_ops = FIELD_OPERATORS_CREATE_LABEL_MAP.get(field, [])
         if not allowed_ops:
@@ -407,29 +407,56 @@ def generate_create_label_constraints() -> list[dict[str, Any]]:
 
 def generate_add_label_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    num_constraints = random.randint(1, len(FIELD_OPERATORS_ADD_LABEL_MAP))
-    possible_fields = random.sample(list(FIELD_OPERATORS_ADD_LABEL_MAP.keys()), num_constraints)
+    actions = ["added", "removed"]
 
-    labels, colors = _get_labels_and_colors(EMAILS_DATA_MODIFIED)
-    label_ids = [lbl.get("id") for email in EMAILS_DATA_MODIFIED for lbl in email.get("labels", []) if lbl.get("id")]
-    label_names = labels
-    actions = ["added", "removed"]  # Define allowed actions if known
+    # Step 1: Choose an action
+    selected_action = choice(actions)
 
-    # Construct a mock dataset to draw from
-    dataset = [{"label_id": lid, "label_name": name, "action": choice(actions)} for lid, name in zip(label_ids, label_names, strict=False)]
+    # Step 2: Build real dataset from EMAILS_DATA_MODIFIED
+    full_dataset = []
+    for email in EMAILS_DATA_MODIFIED:
+        from_email = email.get("from", {}).get("email")
+        subject = email.get("subject")
+        labels = email.get("labels", [])
 
-    for field in possible_fields:
+        for label in labels:
+            label_name = label.get("name")
+            if label_name:
+                full_dataset.append({"action": "added", "label_name": label_name, "email_ids": from_email, "subject": subject})
+
+    # Step 3: Filter dataset by selected action
+    filtered_dataset = [item for item in full_dataset if item["action"] == selected_action]
+    if not filtered_dataset:
+        return []
+
+    # Step 4: Ensure either email or subject is present in the selected item
+    selected_item = choice(filtered_dataset)
+    while not selected_item.get("email_ids") and not selected_item.get("subject"):
+        selected_item = choice(filtered_dataset)
+
+    # Step 5: Always include action + label_name
+    base_fields = ["action", "label_name"]
+
+    # Conditionally include email_ids or subject or both
+    optional_fields = []
+    if selected_item.get("email_ids"):
+        optional_fields.append("email_ids")
+    if selected_item.get("subject"):
+        optional_fields.append("subject")
+
+    final_fields = base_fields + optional_fields
+    for field in final_fields:
         allowed_ops = FIELD_OPERATORS_ADD_LABEL_MAP.get(field, [])
         if not allowed_ops:
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator_str = choice(allowed_ops)
+        operator = ComparisonOperator(operator_str)
+        field_value = selected_item.get(field)
 
-        # Pick a random field value from dataset
-        field_value = choice(dataset).get(field)
-        value = _generate_constraint_value(operator, field_value, field, dataset)
-        constraints_list.append(create_constraint_dict(field, operator, value))
+        value = _generate_constraint_value(operator, field_value, field, filtered_dataset)
+        constraint = create_constraint_dict(field, operator, value)
+        constraints_list.append(constraint)
 
     return constraints_list
 

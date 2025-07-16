@@ -282,12 +282,24 @@ MARK_AS_SPAM_USE_CASE = UseCase(
         },
     ],
 )
-
 ADD_LABEL_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Begin with phrases like add label, categorize, or tag.
-2. Must include label name AND either Subject, Email ID, or Sender.
-3. Wording can vary, but the action and identifiers must remain consistent.
+CRITICAL REQUIREMENTS: EVERY prompt you generate MUST follow these rules:
+
+1. The action MUST be reflected explicitly:
+   - Use phrases like: "Add label", "Tag", or "Categorize" ONLY when action is 'added'.
+   - Use phrases like: "Remove label", "Untag", or "Uncategorize" ONLY when action is 'removed'.
+
+4. Wording can vary (e.g., "Tag", "Categorize", "Untag", "Remove the label"), but it must follow the above structure and remain natural.
+
+✅ Correct:
+- Add the label 'Finance' to the email from 'john.doe@corp.com'
+- Remove the label 'Travel' from the email with subject 'Trip Plan'
+- Categorize the email from 'nina@design.io' with the 'Project' label
+
+❌ Incorrect:
+- Add label to an email where the action equals 'added'
+- Remove label where subject is 'Meeting Notes'
+- Apply the label_name not equal to 'Updates'
 """
 
 ADD_LABEL_USE_CASE = UseCase(
@@ -300,24 +312,24 @@ ADD_LABEL_USE_CASE = UseCase(
     additional_prompt_info=ADD_LABEL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Add the label '<label>' to the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
-            "prompt_for_task_generation": "Add the label '<label>' to the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
+            "prompt": "Add the label 'Work' to the email from 'alice.smith@company.com'",
+            "prompt_for_task_generation": "Add the label 'Work' to the email from 'alice.smith@company.com'",
         },
         {
-            "prompt": "Tag the email from 'alice.smith@company.com' with the '<label>' label",
-            "prompt_for_task_generation": "Tag the email from 'alice.smith@company.com' with the '<label>' label",
+            "prompt": "Remove the label 'Finance' from the email from 'henry.moore@tech.org'",
+            "prompt_for_task_generation": "Remove the label 'Finance' from the email from 'henry.moore@tech.org'",
         },
         {
-            "prompt": "Add the '<label>' label to the message titled 'Project Kickoff Meeting'",
-            "prompt_for_task_generation": "Add the '<label>' label to the message titled 'Project Kickoff Meeting'",
+            "prompt": "Tag the email from 'john.doe@office.com' with the 'Project' label",
+            "prompt_for_task_generation": "Tag the email from 'john.doe@office.com' with the 'Project' label",
         },
         {
-            "prompt": "Categorize the email with ID 'email1' under the '<label>' label",
-            "prompt_for_task_generation": "Categorize the email with ID 'email1' under the '<label>' label",
+            "prompt": "Uncategorize the email with subject 'Travel Itinerary' by removing the label 'Travel'",
+            "prompt_for_task_generation": "Uncategorize the email with subject 'Travel Itinerary' by removing the label 'Travel'",
         },
         {
-            "prompt": "Add the '<label>' tag to the message about 'Project Kickoff Meeting'",
-            "prompt_for_task_generation": "Add the '<label>' tag to the message about 'Project Kickoff Meeting'",
+            "prompt": "Categorize the email from 'nina.chen@design.io' with the label 'Updates'",
+            "prompt_for_task_generation": "Categorize the email from 'nina.chen@design.io' with the label 'Updates'",
         },
     ],
 )
@@ -334,8 +346,8 @@ CREATE_LABEL_USE_CASE = UseCase(
     description="The user creates a new label with a specific name and optional color.",
     event=CreateLabelEvent,
     event_source_code=CreateLabelEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,  # Can be changed if label-specific logic is needed
-    constraints_generator=generate_create_label_constraints,  # Can be added if needed later
+    replace_func=replace_email_placeholders,
+    constraints_generator=generate_create_label_constraints,
     additional_prompt_info=CREATE_LABEL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -600,11 +612,11 @@ ALL_USE_CASES = [
     # MARK_AS_UNREAD_USE_CASE,
     # DELETE_EMAIL_USE_CASE,
     # MARK_AS_SPAM_USE_CASE,
-    # ADD_LABEL_USE_CASE,
+    ADD_LABEL_USE_CASE,
     # CREATE_LABEL_USE_CASE,
     # COMPOSE_EMAIL_USE_CASE,
     # SEND_EMAIL_USE_CASE,
     # EMAIL_SAVE_AS_DRAFT_USE_CASE,
-    THEME_CHANGED_USE_CASE,
+    # THEME_CHANGED_USE_CASE,
     # SEARCH_EMAIL_USE_CASE,
 ]
