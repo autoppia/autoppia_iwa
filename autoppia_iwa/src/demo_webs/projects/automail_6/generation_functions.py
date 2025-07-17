@@ -141,11 +141,10 @@ def _boolean_constraints_value(value, operator: ComparisonOperator) -> bool:
 def generate_is_starred_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     email = choice(EMAILS_DATA_MODIFIED)
-    fixed_field = "isStarred"
+    fixed_field = "is_starred"
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_STARRED_MAP[fixed_field]))
-    field_value = email[fixed_field]
-    flagged_value = _boolean_constraints_value(field_value, op)
-    constraints_list.append(create_constraint_dict(fixed_field, op, flagged_value))
+    field_value = email.get(fixed_field, False) is not True
+    constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_STARRED_MAP if item != fixed_field]
     num_constraints = random.randint(1, len(possible_fields))
@@ -169,11 +168,10 @@ def generate_is_read_constraints() -> list[dict[str, Any]]:
     constraints_list = []
 
     email = choice(EMAILS_DATA_MODIFIED)
-    fixed_field = "isRead"
+    fixed_field = "is_read"
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_IS_READ_MAP[fixed_field]))
-    field_value = email[fixed_field]
-    flagged_value = _boolean_constraints_value(field_value, op)
-    constraints_list.append(create_constraint_dict(fixed_field, op, flagged_value))
+    field_value = email[fixed_field] is not True
+    constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_IS_READ_MAP if item != fixed_field]
     num_constraints = random.randint(1, len(possible_fields))
@@ -195,12 +193,11 @@ def generate_is_read_constraints() -> list[dict[str, Any]]:
 
 def generate_is_important_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    fixed_field = "isImportant"
+    fixed_field = "is_important"
     email = choice(EMAILS_DATA_MODIFIED)
-    op = ComparisonOperator(choice(FIELD_OPERATORS_IMPORTANT_MAP[fixed_field]))
-    field_value = email[fixed_field]
-    flagged_value = _boolean_constraints_value(field_value, op)
-    constraints_list.append(create_constraint_dict(fixed_field, op, flagged_value))
+    op = ComparisonOperator(random.choice(FIELD_OPERATORS_IMPORTANT_MAP[fixed_field]))
+    field_value = email[fixed_field] is not True
+    constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_IMPORTANT_MAP if item != fixed_field]
     num_constraints = random.randint(1, len(possible_fields))
@@ -222,7 +219,7 @@ def generate_is_important_constraints() -> list[dict[str, Any]]:
 
 def generate_is_spam_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    fixed_field = "isSpam"
+    fixed_field = "is_spam"
     email = choice(EMAILS_DATA_MODIFIED)
     op = ComparisonOperator(choice(FIELD_OPERATORS_IS_SPAM_MAP[fixed_field]))
     field_value = email[fixed_field]
@@ -415,23 +412,26 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
     # Step 2: Build real dataset from EMAILS_DATA_MODIFIED
     full_dataset = []
     for email in EMAILS_DATA_MODIFIED:
-        from_email = email.get("from", {}).get("email")
+        # from_email = email.get("from", {}).get("email")
         subject = email.get("subject")
         labels = email.get("labels", [])
+        body = email.get("body")
+        if not labels:
+            full_dataset.append({"action": "removed", "label_name": "", "body": body, "subject": subject})
 
         for label in labels:
             label_name = label.get("name")
             if label_name:
-                full_dataset.append({"action": "added", "label_name": label_name, "email_ids": from_email, "subject": subject})
+                full_dataset.append({"action": "added", "label_name": label_name, "body": body, "subject": subject})
 
     # Step 3: Filter dataset by selected action
-    filtered_dataset = [item for item in full_dataset if item["action"] == selected_action]
+    filtered_dataset = [item for item in full_dataset if item.get("action", "removed") == selected_action]
     if not filtered_dataset:
         return []
 
     # Step 4: Ensure either email or subject is present in the selected item
     selected_item = choice(filtered_dataset)
-    while not selected_item.get("email_ids") and not selected_item.get("subject"):
+    while not selected_item.get("body") and not selected_item.get("subject"):
         selected_item = choice(filtered_dataset)
 
     # Step 5: Always include action + label_name
@@ -439,10 +439,13 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
 
     # Conditionally include email_ids or subject or both
     optional_fields = []
-    if selected_item.get("email_ids"):
-        optional_fields.append("email_ids")
     if selected_item.get("subject"):
         optional_fields.append("subject")
+    if selected_item.get("body"):
+        optional_fields.append("body")
+
+    num_constraints = random.randint(1, len(optional_fields))
+    optional_fields = random.sample(optional_fields, num_constraints)
 
     final_fields = base_fields + optional_fields
     for field in final_fields:

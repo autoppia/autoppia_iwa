@@ -62,7 +62,7 @@ class StarEmailEvent(Event):
     email_id: str
     subject: str
     from_email: str
-    isStarred: bool
+    is_starred: bool
 
     class ValidationCriteria(BaseModel):
         email_id: str | CriterionValue | None = None
@@ -80,7 +80,7 @@ class StarEmailEvent(Event):
         if criteria.from_email is not None:
             return validate_criterion(self.from_email, criteria.from_email)
         if criteria.isStarred is not None:
-            return validate_criterion(self.isStarred, criteria.isStarred)
+            return validate_criterion(self.is_starred, criteria.isStarred)
         return True
 
     @classmethod
@@ -95,7 +95,7 @@ class StarEmailEvent(Event):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            isStarred=data.get("isStar", False),
+            is_starred=data.get("is_star", False),
         )
 
 
@@ -125,7 +125,7 @@ class MarkEmailAsImportantEvent(ViewEmailEvent):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            is_important=data.get("isImportant", False),
+            is_important=data.get("is_important", False),
         )
 
 
@@ -155,7 +155,7 @@ class MarkAsUnreadEvent(ViewEmailEvent):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            is_read=data.get("isRead", False),
+            is_read=data.get("is_read", False),
         )
 
 
@@ -185,7 +185,7 @@ class DeleteEmailEvent(ViewEmailEvent):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            is_deleted=data.get("isDeleted", False),
+            is_deleted=data.get("is_deleted", False),
         )
 
 
@@ -215,7 +215,7 @@ class MarkAsSpamEvent(ViewEmailEvent):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            is_spam=data.get("isSpam", False),
+            is_spam=data.get("is_spam", False),
         )
 
 

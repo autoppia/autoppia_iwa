@@ -118,9 +118,14 @@ MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENTS: Every prompt you generate MUST follow these rules:
 
 1. Use clear action phrases such as:
-   - "mark as important"
-   - "flag as important"
+   - "mark as important" or "mark as not important"
+   - "flag as important or not important"
    - "set as high priority"
+
+ The **is_important** MUST be reflected explicitly:
+    IMPORTANT:
+   - Use phrases like: "mark as important", or "flag as important", ONLY when 'is_important' is True.
+   - Use phrases like: "mark as not important", ONLY when 'is_important' is False.
 
 2. Include at least one identifier for the email:
    - Subject
@@ -168,7 +173,15 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
 
 MARK_AS_UNREAD_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Start with 'mark as unread', 'set as unread', or equivalent natural phrasing.
+1. Start with 'mark as read', 'mark as unread', or equivalent natural phrasing.
+
+ The **is_read** MUST be reflected explicitly:
+    IMPORTANT:
+   - Use phrases like: "mark as read", or "flag as read", ONLY when 'is_read' is True.
+   - Use phrases like: "mark as unread", ONLY when 'is_read' is False.
+
+2. Do **NOT** mention is_read in the prompt.
+
 2. Mention the Subject, Email ID, or Sender if available.
 3. Vary wording across prompts but keep meaning intact.
 """
@@ -285,11 +298,12 @@ MARK_AS_SPAM_USE_CASE = UseCase(
 ADD_LABEL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENTS: EVERY prompt you generate MUST follow these rules:
 
-1. The action MUST be reflected explicitly:
-   - Use phrases like: "Add label", "Tag", or "Categorize" ONLY when action is 'added'.
+1. The **action** MUST be reflected explicitly:
+    IMPORTANT: Do **NOT** mention 'action equal added' or 'action equals removed' in the prompt, instead use:
+   - Use phrases like: "Add label", "Tag", or "Categorize" ONLY when action 'added'.
    - Use phrases like: "Remove label", "Untag", or "Uncategorize" ONLY when action is 'removed'.
 
-4. Wording can vary (e.g., "Tag", "Categorize", "Untag", "Remove the label"), but it must follow the above structure and remain natural.
+2. Wording can vary (e.g., "Tag", "Categorize", "Untag", "Remove the label"), but it must follow the above structure and remain natural.
 
 ✅ Correct:
 - Add the label 'Finance' to the email from 'john.doe@corp.com'
@@ -609,10 +623,10 @@ ALL_USE_CASES = [
     # VIEW_EMAIL_USE_CASE,
     # STAR_EMAIL_USE_CASE,
     # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
-    # MARK_AS_UNREAD_USE_CASE,
+    MARK_AS_UNREAD_USE_CASE,
     # DELETE_EMAIL_USE_CASE,
     # MARK_AS_SPAM_USE_CASE,
-    ADD_LABEL_USE_CASE,
+    # ADD_LABEL_USE_CASE,
     # CREATE_LABEL_USE_CASE,
     # COMPOSE_EMAIL_USE_CASE,
     # SEND_EMAIL_USE_CASE,
