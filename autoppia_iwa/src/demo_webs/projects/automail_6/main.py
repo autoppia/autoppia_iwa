@@ -4,8 +4,8 @@ from ...utils import get_backend_url, get_frontend_url
 from .events import EVENTS
 from .use_cases import ALL_USE_CASES
 
-FRONTEND_PORT_INDEX = 1
-BACKEND_PORT_INDEX = 1
+FRONTEND_PORT_INDEX = 5
+BACKEND_PORT_INDEX = 5
 automail_project = WebProject(
     id="automail",
     name="Autoppia AutoMail",

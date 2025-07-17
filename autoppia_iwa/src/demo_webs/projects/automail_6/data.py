@@ -1483,6 +1483,13 @@ for email in deepcopy(EMAILS_DATA):
         email.update(new_dict)
     if email.get("to"):
         email["to"] = email["to"][0]["email"]
+
+    email["is_spam"] = False
+    for lbl in email.get("labels", []):
+        if lbl.get("id") == "spam":
+            email["is_spam"] = True
+            break
+
     EMAILS_DATA_MODIFIED.append(email)
 
 from ..operators import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
