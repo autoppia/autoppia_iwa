@@ -31,16 +31,17 @@ from .replace_functions import replace_email_placeholders
 
 VIEW_EMAIL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. All prompt must start with view.
-2. Must mention Subject and Email ID if its available.
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+1. Each prompt must begin with the word 'View'.
+2. Always mention the Subject and Email if they are available.
+3. If only the email or only the subject is provided, mention just that one.
+
+ALL prompts must strictly follow this structure, using slightly different wording but maintaining the EXACT same constraint criteria.
 """
 VIEW_EMAIL_USE_CASE = UseCase(
     name="VIEW_EMAIL",
     description="The user selects an email to view and read its contents.",
     event=ViewEmailEvent,
     event_source_code=ViewEmailEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
     constraints_generator=generate_view_email_constraints,
     additional_prompt_info=VIEW_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -55,10 +56,6 @@ VIEW_EMAIL_USE_CASE = UseCase(
         {
             "prompt": "View the email with subject 'Newsletter Subscription'",
             "prompt_for_task_generation": "View the email with subject 'Newsletter Subscription'",
-        },
-        {
-            "prompt": "View the email with ID 'email4'",
-            "prompt_for_task_generation": "View the email with ID 'email4'",
         },
         {
             "prompt": "View the email that subject is about 'Community Forum Update'",
@@ -387,44 +384,6 @@ CREATE_LABEL_USE_CASE = UseCase(
     ],
 )
 
-# COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO = """
-# CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-# 1. Start with compose, write, draft, or create a new email.
-# 2. Include at least recipient email (to_email), and optionally subject or body.
-# 3. Vary language naturally while preserving structure.
-# """
-#
-# COMPOSE_EMAIL_USE_CASE = UseCase(
-#     name="COMPOSE_EMAIL",
-#     description="The user starts composing a new email, filling in recipient, subject, or body.",
-#     event=ComposeEmailEvent,
-#     event_source_code=ComposeEmailEvent.get_source_code_of_class(),
-#     replace_func=replace_email_placeholders,
-#     # constraints_generator=generate_compose_email_constraints,
-#     additional_prompt_info=COMPOSE_EMAIL_ADDITIONAL_PROMPT_INFO,
-#     examples=[
-#         {
-#             "prompt": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
-#             "prompt_for_task_generation": "Compose an email to <to_email> with subject '<subject>' and message '<body>'",
-#         },
-#         {
-#             "prompt": "Write a new message to <to_email> with subject '<subject>'",
-#             "prompt_for_task_generation": "Write a new message to <to_email> with subject '<subject>'",
-#         },
-#         {
-#             "prompt": "Create a draft email to <to_email>",
-#             "prompt_for_task_generation": "Create a draft email to <to_email>",
-#         },
-#         {
-#             "prompt": "Compose a message to <to_email> with the body '<body>'",
-#             "prompt_for_task_generation": "Compose a message to <to_email> with the body '<body>'",
-#         },
-#         {
-#             "prompt": "Draft an email for <to_email> about '<subject>'",
-#             "prompt_for_task_generation": "Draft an email for <to_email> about '<subject>'",
-#         },
-#     ],
-# )
 
 SEND_EMAIL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
@@ -588,7 +547,6 @@ SEARCH_EMAIL_USE_CASE = UseCase(
     description="The user performs a search query to locate emails based on specific keywords, sender, subject, or label.",
     event=SearchEmailEvent,
     event_source_code=SearchEmailEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
     constraints_generator=generate_search_email_constraints,
     additional_prompt_info=SEARCH_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -619,8 +577,8 @@ SEARCH_EMAIL_USE_CASE = UseCase(
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
-    SEARCH_EMAIL_USE_CASE,
-    # VIEW_EMAIL_USE_CASE,
+    # SEARCH_EMAIL_USE_CASE,
+    VIEW_EMAIL_USE_CASE,
     # STAR_EMAIL_USE_CASE,
     # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
     # MARK_AS_UNREAD_USE_CASE,
