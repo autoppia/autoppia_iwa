@@ -580,8 +580,7 @@ THEME_CHANGED_USE_CASE = UseCase(
 SEARCH_EMAIL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Indicate a search or lookup (e.g., search for, find, look up).
-2. Must include keywords from subject, sender, or label.
-3. Clearly describe the search target in a natural way.
+2. Clearly describe the search target in a natural way.
 """
 
 SEARCH_EMAIL_USE_CASE = UseCase(
@@ -593,13 +592,25 @@ SEARCH_EMAIL_USE_CASE = UseCase(
     constraints_generator=generate_search_email_constraints,
     additional_prompt_info=SEARCH_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {"prompt": "Search for emails with subject containing 'Weekly Newsletter'", "prompt_for_task_generation": "Search for emails with subject containing 'Weekly Newsletter'"},
-        {"prompt": "Find emails from 'levi.brooks@org.com'", "prompt_for_task_generation": "Find emails from 'levi.brooks@org.com'"},
-        {"prompt": "Look up messages with subject containing 'Team Feedback Request'", "prompt_for_task_generation": "Look up messages with subject containing 'Team Feedback Request'"},
-        {"prompt": "Search for emails mentioning 'system upgrade is scheduled'", "prompt_for_task_generation": "Search for emails mentioning 'system upgrade is scheduled'"},
         {
-            "prompt": "Find all emails from 'asher.gordon@org.com' with subject about 'Project Timeline Review'",
-            "prompt_for_task_generation": "Find all emails from 'asher.gordon@org.com' with subject about 'Project Timeline Review'",
+            "prompt": "Search for query containing 'Weekly Newsletter'",
+            "prompt_for_task_generation": "Search for query containing 'Weekly Newsletter'",
+        },
+        {
+            "prompt": "Find emails from 'levi.brooks@org.com'",
+            "prompt_for_task_generation": "Find emails from 'levi.brooks@org.com'",
+        },
+        {
+            "prompt": "Look up messages containing 'Team Feedback Request'",
+            "prompt_for_task_generation": "Look up messages containing 'Team Feedback Request'",
+        },
+        {
+            "prompt": "Search for emails mentioning 'system upgrade is scheduled'",
+            "prompt_for_task_generation": "Search for emails mentioning 'system upgrade is scheduled'",
+        },
+        {
+            "prompt": "Find email from 'asher.gordon@org.com'.",
+            "prompt_for_task_generation": "Find email from 'asher.gordon@org.com'.",
         },
     ],
 )
