@@ -593,25 +593,13 @@ SEARCH_EMAIL_USE_CASE = UseCase(
     constraints_generator=generate_search_email_constraints,
     additional_prompt_info=SEARCH_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
+        {"prompt": "Search for emails with subject containing 'Weekly Newsletter'", "prompt_for_task_generation": "Search for emails with subject containing 'Weekly Newsletter'"},
+        {"prompt": "Find emails from 'levi.brooks@org.com'", "prompt_for_task_generation": "Find emails from 'levi.brooks@org.com'"},
+        {"prompt": "Look up messages with subject containing 'Team Feedback Request'", "prompt_for_task_generation": "Look up messages with subject containing 'Team Feedback Request'"},
+        {"prompt": "Search for emails mentioning 'system upgrade is scheduled'", "prompt_for_task_generation": "Search for emails mentioning 'system upgrade is scheduled'"},
         {
-            "prompt": "Search for emails with subject containing '<keyword>'",
-            "prompt_for_task_generation": "Search for emails with subject containing '<keyword>'",
-        },
-        {
-            "prompt": "Find emails from 'alice.smith@company.com'",
-            "prompt_for_task_generation": "Find emails from 'alice.smith@company.com'",
-        },
-        {
-            "prompt": "Look up messages labeled '<label>'",
-            "prompt_for_task_generation": "Look up messages labeled '<label>'",
-        },
-        {
-            "prompt": "Search for emails mentioning '<body_keyword>'",
-            "prompt_for_task_generation": "Search for emails mentioning '<body_keyword>'",
-        },
-        {
-            "prompt": "Find all emails from 'alice.smith@company.com' with subject about '<keyword>'",
-            "prompt_for_task_generation": "Find all emails from 'alice.smith@company.com' with subject about '<keyword>'",
+            "prompt": "Find all emails from 'asher.gordon@org.com' with subject about 'Project Timeline Review'",
+            "prompt_for_task_generation": "Find all emails from 'asher.gordon@org.com' with subject about 'Project Timeline Review'",
         },
     ],
 )
