@@ -1,15 +1,15 @@
 from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue, validate_criterion
+from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
+from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
 # =============================================================================
 #                            USER EVENTS
 # =============================================================================
 
 
-class ViewEmailEvent(Event):
+class ViewEmailEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_EMAIL"
     email_id: str
     subject: str
@@ -23,18 +23,15 @@ class ViewEmailEvent(Event):
         from_email: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this registration event meets the criteria.
-        """
         if not criteria:
             return True
-        if criteria.email_id is not None:
-            return validate_criterion(self.email_id, criteria.email_id)
-        if criteria.subject is not None:
-            return validate_criterion(self.subject, criteria.subject)
-        if criteria.from_email is not None:
-            return validate_criterion(self.from_email, criteria.from_email)
-        return True
+        return all(
+            [
+                self._validate_field(self.email_id, criteria.email_id),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.from_email, criteria.from_email),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ViewEmailEvent":
@@ -57,7 +54,7 @@ class ViewEmailEvent(Event):
         )
 
 
-class StarEmailEvent(Event):
+class StarEmailEvent(Event, BaseEventValidator):
     event_name: str = "STAR_AN_EMAIL"
     email_id: str
     subject: str
@@ -73,15 +70,14 @@ class StarEmailEvent(Event):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.email_id is not None:
-            return validate_criterion(self.email_id, criteria.email_id)
-        if criteria.subject is not None:
-            return validate_criterion(self.subject, criteria.subject)
-        if criteria.from_email is not None:
-            return validate_criterion(self.from_email, criteria.from_email)
-        if criteria.isStarred is not None:
-            return validate_criterion(self.is_starred, criteria.isStarred)
-        return True
+        return all(
+            [
+                self._validate_field(self.email_id, criteria.email_id),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.from_email, criteria.from_email),
+                self._validate_field(self.is_starred, criteria.isStarred),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "StarEmailEvent":
@@ -99,7 +95,7 @@ class StarEmailEvent(Event):
         )
 
 
-class MarkEmailAsImportantEvent(ViewEmailEvent):
+class MarkEmailAsImportantEvent(ViewEmailEvent, BaseEventValidator):
     event_name: str = "MARK_EMAIL_AS_IMPORTANT"
     is_important: bool
 
@@ -107,11 +103,16 @@ class MarkEmailAsImportantEvent(ViewEmailEvent):
         is_important: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not self._validate_common(criteria):
-            return False
-        if criteria and criteria.is_important is not None:
-            return validate_criterion(self.is_important, criteria.is_important)
-        return True
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
+                self._validate_field(self.subject, getattr(criteria, "subject", None)),
+                self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
+                self._validate_field(self.is_important, getattr(criteria, "is_important", None)),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "MarkEmailAsImportantEvent":
@@ -129,7 +130,7 @@ class MarkEmailAsImportantEvent(ViewEmailEvent):
         )
 
 
-class MarkAsUnreadEvent(ViewEmailEvent):
+class MarkAsUnreadEvent(ViewEmailEvent, BaseEventValidator):
     event_name: str = "MARK_AS_UNREAD"
     is_read: bool
 
@@ -137,11 +138,16 @@ class MarkAsUnreadEvent(ViewEmailEvent):
         is_read: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not self._validate_common(criteria):
-            return False
-        if criteria and criteria.is_unread is not None:
-            return validate_criterion(self.is_read, criteria.is_read)
-        return True
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
+                self._validate_field(self.subject, getattr(criteria, "subject", None)),
+                self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
+                self._validate_field(self.is_read, getattr(criteria, "is_read", None)),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "MarkAsUnreadEvent":
@@ -159,7 +165,7 @@ class MarkAsUnreadEvent(ViewEmailEvent):
         )
 
 
-class DeleteEmailEvent(ViewEmailEvent):
+class DeleteEmailEvent(ViewEmailEvent, BaseEventValidator):
     event_name: str = "DELETE_EMAIL"
     is_deleted: bool
 
@@ -167,11 +173,16 @@ class DeleteEmailEvent(ViewEmailEvent):
         is_deleted: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not self._validate_common(criteria):
-            return False
-        if criteria and criteria.is_deleted is not None:
-            return validate_criterion(self.is_deleted, criteria.is_deleted)
-        return True
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
+                self._validate_field(self.subject, getattr(criteria, "subject", None)),
+                self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
+                self._validate_field(self.is_deleted, getattr(criteria, "is_deleted", None)),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "DeleteEmailEvent":
@@ -189,7 +200,7 @@ class DeleteEmailEvent(ViewEmailEvent):
         )
 
 
-class MarkAsSpamEvent(ViewEmailEvent):
+class MarkAsSpamEvent(ViewEmailEvent, BaseEventValidator):
     event_name: str = "MARK_AS_SPAM"
     is_spam: bool
 
@@ -197,11 +208,16 @@ class MarkAsSpamEvent(ViewEmailEvent):
         is_spam: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not self._validate_common(criteria):
-            return False
-        if criteria and criteria.is_spam is not None:
-            return validate_criterion(self.is_spam, criteria.is_spam)
-        return True
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
+                self._validate_field(self.subject, getattr(criteria, "subject", None)),
+                self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
+                self._validate_field(self.is_spam, getattr(criteria, "is_spam", None)),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "MarkAsSpamEvent":
@@ -219,7 +235,7 @@ class MarkAsSpamEvent(ViewEmailEvent):
         )
 
 
-class AddLabelEvent(Event):
+class AddLabelEvent(Event, BaseEventValidator):
     event_name: str = "ADD_LABEL"
     label_id: str
     label_name: str
@@ -230,20 +246,19 @@ class AddLabelEvent(Event):
         label_id: str | CriterionValue | None = None
         label_name: str | CriterionValue | None = None
         action: str | CriterionValue | None = None
-        email_ids: list[str]
+        email_ids: list[str] | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.label_id is not None:
-            return validate_criterion(self.label_id, criteria.label_id)
-        if criteria.label_name is not None:
-            return validate_criterion(self.label_name, criteria.label_name)
-        if criteria.email_ids is not None:
-            return validate_criterion(self.email_ids, criteria.email_ids)
-        if criteria.action is not None:
-            return validate_criterion(self.action, criteria.action)
-        return True
+        return all(
+            [
+                self._validate_field(self.label_id, criteria.label_id),
+                self._validate_field(self.label_name, criteria.label_name),
+                self._validate_field(self.email_ids, criteria.email_ids),
+                self._validate_field(self.action, criteria.action),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "AddLabelEvent":
@@ -261,7 +276,7 @@ class AddLabelEvent(Event):
         )
 
 
-class CreateLabelEvent(Event):
+class CreateLabelEvent(Event, BaseEventValidator):
     event_name: str = "CREATE_LABEL"
     label_name: str
     label_color: str
@@ -274,11 +289,12 @@ class CreateLabelEvent(Event):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.label_name is not None:
-            return validate_criterion(self.label_name, criteria.label_name)
-        if criteria.label_color is not None:
-            return validate_criterion(self.label_color, criteria.label_color)
-        return True
+        return all(
+            [
+                self._validate_field(self.label_name, criteria.label_name),
+                self._validate_field(self.label_color, criteria.label_color),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "CreateLabelEvent":
@@ -299,7 +315,7 @@ class CreateLabelEvent(Event):
 # ---------------------------------------------------------------------------
 
 
-class ComposeEmailEvent(Event):
+class ComposeEmailEvent(Event, BaseEventValidator):
     event_name: str = "COMPOSE_EMAIL"
     action: str
 
@@ -309,9 +325,7 @@ class ComposeEmailEvent(Event):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.action is not None:
-            return validate_criterion(self.action, criteria.action)
-        return True
+        return self._validate_field(self.action, criteria.action)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ComposeEmailEvent":
@@ -325,7 +339,7 @@ class ComposeEmailEvent(Event):
         )
 
 
-class SendEmailEvent(Event):
+class SendEmailEvent(Event, BaseEventValidator):
     event_name: str = "SEND_EMAIL"
     to: list[str]
     subject: str
@@ -337,11 +351,12 @@ class SendEmailEvent(Event):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.to is not None:
-            return validate_criterion(self.to, criteria.to)
-        if criteria.subject is not None:
-            return validate_criterion(self.subject, criteria.subject)
-        return True
+        return all(
+            [
+                self._validate_field(self.to, criteria.to),
+                self._validate_field(self.subject, criteria.subject),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SendEmailEvent":
@@ -357,7 +372,7 @@ class SendEmailEvent(Event):
         )
 
 
-class EmailSaveAsDraftEvent(Event):
+class EmailSaveAsDraftEvent(Event, BaseEventValidator):
     event_name: str = "EMAIL_SAVE_AS_DRAFT"
     to: list[str]
     subject: str
@@ -368,19 +383,19 @@ class EmailSaveAsDraftEvent(Event):
         subject: str | CriterionValue | None = None
         body_length: int | CriterionValue | None = None
         attachments_count: int | CriterionValue | None = None
+        to: list[str] | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.to is not None:
-            return validate_criterion(self.to, criteria.to)
-        if criteria.subject is not None:
-            return validate_criterion(self.subject, criteria.subject)
-        if criteria.body_length is not None:
-            return validate_criterion(self.body_length, criteria.body_length)
-        if criteria.attachments_count is not None:
-            return validate_criterion(self.attachments_count, criteria.attachments_count)
-        return True
+        return all(
+            [
+                self._validate_field(self.to, criteria.to),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.body_length, criteria.body_length),
+                self._validate_field(self.attachments_count, criteria.attachments_count),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EmailSaveAsDraftEvent":
@@ -403,7 +418,7 @@ class EmailSaveAsDraftEvent(Event):
 # ---------------------------------------------------------------------------
 
 
-class ThemeChangedEvent(Event):
+class ThemeChangedEvent(Event, BaseEventValidator):
     event_name: str = "THEME_CHANGED"
     theme: str
 
@@ -413,9 +428,7 @@ class ThemeChangedEvent(Event):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.theme is not None:
-            return validate_criterion(self.theme, criteria.theme)
-        return True
+        return self._validate_field(self.theme, criteria.theme)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ThemeChangedEvent":
@@ -434,7 +447,7 @@ class ThemeChangedEvent(Event):
 # ---------------------------------------------------------------------------
 
 
-class SearchEmailEvent(Event):
+class SearchEmailEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH_EMAIL"
     query: str
 
@@ -444,9 +457,7 @@ class SearchEmailEvent(Event):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        if criteria.query is not None:
-            return validate_criterion(self.query, criteria.query)
-        return True
+        return self._validate_field(self.query, criteria.query)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SearchEmailEvent":
