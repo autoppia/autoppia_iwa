@@ -265,7 +265,7 @@ COLLAPSE_MENU_USE_CASE = UseCase(
 BOOK_RESTAURANT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Clearly state the intention to **book a table** or make a reservation.
-2. Include the restaurant name (or ID).
+2. Include the restaurant name (or ID). ONLY INCLUDES RESTAURANT NAMES IN THE LIST.
 3. Specify the desired date, time, and number of guests for the booking.
 4. Lead to the BOOK_RESTAURANT event, which signifies initiating this step.
 """
@@ -276,7 +276,6 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
     event=BookRestaurantEvent,
     event_source_code=BookRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_book_restaurant_constraints,
-    replace_func=replace_restaurant_placeholders,
     additional_prompt_info=BOOK_RESTAURANT_INFO,
     examples=[
         {

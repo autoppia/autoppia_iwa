@@ -45,6 +45,13 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         elif field == "section_title":
             valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
             return random.choice(valid) if valid else None
+        elif field == "selected_time":
+            valid = [v for v in RESTAURANT_TIMES if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "people_count":
+            valid = [v for v in RESTAURANT_PEOPLE_COUNTS if v != field_value]
+            return random.choice(valid) if valid else None
+
         valid = [v[field] for v in dataset if v.get(field) != field_value]
         return random.choice(valid) if valid else None
 
@@ -124,7 +131,7 @@ def _generate_value_for_field(field_name: str) -> Any:
         return random.choice(RESTAURANT_PEOPLE_COUNTS)
     elif field_name == "query":
         return random.choice(MOCK_RESTAURANT_QUERIES)
-    elif field_name == "restaurant_name":
+    elif field_name == "restaurant_name" or field_name == "name":
         return random.choice(RESTAURANT_DATA)["name"] if RESTAURANT_DATA else "Default Restaurant"
     elif field_name == "action":
         return random.choice(MOCK_RESTAURANT_ACTIONS)
@@ -192,9 +199,9 @@ def generate_collapse_menu_constraints():
 
 def generate_book_restaurant_constraints():
     return _generate_constraints_for_fields(
-        all_fields=["restaurant_name", "people_count", "selected_date", "selected_time"],
+        all_fields=["name", "people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_BOOK_RESTAURANT,
-        required_fields=["restaurant_name", "people_count", "selected_date", "selected_time"],
+        required_fields=["name", "people_count", "selected_date", "selected_time"],
         validate_dates=True,
     )
 

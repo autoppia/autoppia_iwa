@@ -1,9 +1,10 @@
+from collections.abc import Callable
 from datetime import date, datetime
 from typing import Any
 
 from dateutil.parser import isoparse
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from ..base_events import BaseEventValidator, Event
 from ..criterion_helper import ComparisonOperator, CriterionValue
@@ -363,92 +364,93 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     """Event triggered when a restaurant booking is attempted or made (prior to completion details)."""
 
     event_name: str = "BOOK_RESTAURANT"
-    # restaurant_id: str
     restaurant_name: str
-    time: str  # e.g., "1:30 PM"
-    selected_date: date  # e.g., "2025-05-16"
+    time: str  # e.g. "1:30 PM"
+    selected_date: date  # e.g. Date(2025, 5, 16)
     people: int
 
+    # --------------------------- ValidationCriteria ---------------------------
+
     class ValidationCriteria(BaseModel):
-        # restaurant_id: str | CriterionValue | None = None
-        restaurant_name: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         time: str | CriterionValue | None = None
         selected_date: date | CriterionValue | None = None
         people: int | CriterionValue | None = None
+
+        # ── coerción de datetime ISO-8601 (con hora) a date ──
+        @field_validator("selected_date", mode="before")
+        @classmethod
+        def coerce_datetime_to_date(cls, v):
+            if isinstance(v, str) and "T" in v:
+                return datetime.fromisoformat(v).date()
+            return v
 
         class Config:
             title = "Book Restaurant Validation"
             description = "Validates a restaurant booking action."
 
+    # ----------------------- instancia: validación ---------------------------
+
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        """Return True if this event matches the provided criteria object."""
         if not criteria:
             return True
 
-        def validate_selected_date(operator: str, comp_date: date) -> bool:
-            if operator == ComparisonOperator.EQUALS:
-                return self.selected_date == comp_date
-            elif operator == ComparisonOperator.GREATER_THAN:
-                return self.selected_date > comp_date
-            elif operator == ComparisonOperator.LESS_THAN:
-                return self.selected_date < comp_date
-            elif operator == ComparisonOperator.GREATER_EQUAL:
-                return self.selected_date >= comp_date
-            elif operator == ComparisonOperator.LESS_EQUAL:
-                return self.selected_date <= comp_date
-            else:
-                return False
+        # tabla de comparación para fechas
+        comp_table: dict[str, Callable[[date, date], bool]] = {
+            ComparisonOperator.EQUALS: lambda s, c: s == c,
+            ComparisonOperator.GREATER_THAN: lambda s, c: s >= c,
+            ComparisonOperator.GREATER_EQUAL: lambda s, c: s >= c,
+            ComparisonOperator.LESS_THAN: lambda s, c: s <= c,
+            ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
+        }
 
-        selected_date_valid = True
+        # --- selected_date ---
         if isinstance(criteria.selected_date, CriterionValue):
-            raw_value = criteria.selected_date.value
-            try:
-                if isinstance(raw_value, str):
-                    parts = raw_value.split("-")
-                    c_year, c_month, c_day = int(parts[0]), int(parts[1]), int(parts[2].split(" ")[0])
-                    criteria_dt = date(c_year, c_month, c_day)
-                elif isinstance(raw_value, date):
-                    criteria_dt = raw_value
-                else:
-                    return False
+            op = criteria.selected_date.operator
+            comp_date = criteria.selected_date.value
+            if isinstance(comp_date, str):
+                comp_date = datetime.fromisoformat(comp_date).date() if "T" in comp_date else date.fromisoformat(comp_date)
 
-                selected_date_valid = validate_selected_date(criteria.selected_date.operator, criteria_dt)
-            except Exception as e:
-                logger.error(f"Failed to validate selected_date: {e}")
-                return False
+            try:
+                selected_date_valid = comp_table[op](self.selected_date, comp_date)
+            except KeyError:
+                logger.error("Unknown comparison operator for selected_date: %s", op)
+                selected_date_valid = False
         else:
-            selected_date_valid = self._validate_field(self.selected_date, criteria.selected_date)
+            selected_date_valid = criteria.selected_date is None or self._validate_field(self.selected_date, criteria.selected_date)
 
         return all(
             [
-                # self._validate_field(self.restaurant_id, criteria.restaurant_id),
-                self._validate_field(self.restaurant_name, criteria.restaurant_name),
-                self._validate_field(self.time, criteria.time),
-                # self._validate_field(self.selected_date, criteria.selected_date),
-                # self.selected_date.year == criteria_utc.year and self.selected_date.month == criteria_utc.month and self.selected_date.day == criteria_utc.day,
+                criteria.name is None or self._validate_field(self.restaurant_name, criteria.name),
+                criteria.time is None or self._validate_field(self.time, criteria.time),
                 selected_date_valid,
-                self._validate_field(self.people, criteria.people),
+                criteria.people is None or self._validate_field(self.people, criteria.people),
             ]
         )
 
+    # ----------------------- clase: parseo desde backend ---------------------
+
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "BookRestaurantEvent":
+        """Build a BookRestaurantEvent from a raw BackendEvent dict."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
 
-        parsed_date = None
-        date_str = data.get("date")
+        date_str: str | None = data.get("date")
+        parsed_date: date | None = None
         if date_str:
             try:
-                parsed_date = date.fromisoformat(date_str)
+                # admite tanto "YYYY-MM-DD" como "YYYY-MM-DDTHH:MM:SSZ"
+                parsed_date = datetime.fromisoformat(date_str).date() if "T" in date_str else date.fromisoformat(date_str)
             except ValueError:
-                logger.warning(f"Could not parse date string for BookRestaurantEvent: {date_str}")
+                logger.warning("Could not parse date string '%s' for BookRestaurantEvent", date_str, exc_info=True)
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # restaurant_id=data.get("restaurantId", ""),
             restaurant_name=data.get("restaurantName", ""),
             time=data.get("time", ""),
             selected_date=parsed_date,
