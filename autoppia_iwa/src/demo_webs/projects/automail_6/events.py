@@ -165,13 +165,13 @@ class MarkAsUnreadEvent(ViewEmailEvent, BaseEventValidator):
         )
 
 
-class DeleteEmailEvent(ViewEmailEvent, BaseEventValidator):
+class DeleteEmailEvent(Event, BaseEventValidator):
     event_name: str = "DELETE_EMAIL"
     email_id: str
     subject: str
     from_email: str
 
-    class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
+    class ValidationCriteria(Event.ValidationCriteria):
         """Criteria for validating delete email events"""
 
         email_id: str | CriterionValue | None = None
