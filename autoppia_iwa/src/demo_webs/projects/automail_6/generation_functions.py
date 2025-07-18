@@ -206,7 +206,7 @@ def generate_is_important_constraints() -> list[dict[str, Any]]:
     selected_fields = random.sample(possible_fields, num_constraints)
 
     for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_STARRED_MAP.get(field, [])
+        allowed_ops = FIELD_OPERATORS_IMPORTANT_MAP.get(field, [])
         if not allowed_ops:
             continue
 
@@ -230,12 +230,12 @@ def generate_is_spam_constraints() -> list[dict[str, Any]]:
     op = ComparisonOperator(choice(FIELD_OPERATORS_IS_SPAM_MAP[fixed_field]))
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
-    possible_fields = [item for item in FIELD_OPERATORS_IMPORTANT_MAP if item != fixed_field]
+    possible_fields = [item for item in FIELD_OPERATORS_IS_SPAM_MAP if item != fixed_field]
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
     for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_STARRED_MAP.get(field, [])
+        allowed_ops = FIELD_OPERATORS_IS_SPAM_MAP.get(field, [])
         if not allowed_ops:
             continue
 
@@ -274,35 +274,36 @@ def generate_search_email_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_send_email_constraints() -> list[dict[str, Any]]:
-    list_of_emails = [
-        "alice.smith@example.com",
-        "john.doe@gmail.com",
-        "maria.jones@yahoo.com",
-        "kevin_lee@outlook.com",
-        "nina.patel@company.org",
-        "daniel_choi@webmail.net",
-        "emma.watson@school.edu",
-        "lucas.gray@workplace.io",
-        "olivia.brown@startup.ai",
-        "ethan.miller@techcorp.com",
-        "sophia.morris@researchlab.org",
-        "liam.johnson@business.co",
-        "ava.wilson@healthcare.org",
-        "noah.thomas@banksecure.com",
-        "isabella.clark@freelancer.dev",
-        "elijah.walker@codebase.io",
-        "mia.hall@socialapp.me",
-        "james.young@nonprofit.org",
-        "amelia.king@greenenergy.com",
-        "logan.scott@designhub.net",
-        "harper.adams@newsdaily.com",
-        "sebastian.moore@fintech.ai",
-        "zoe.baker@civicgroup.org",
-        "jackson.evans@customsoft.dev",
-        "charlotte.cox@musicstream.fm",
-    ]
+LIST_OF_EMAILS = [
+    "alice.smith@example.com",
+    "john.doe@gmail.com",
+    "maria.jones@yahoo.com",
+    "kevin_lee@outlook.com",
+    "nina.patel@company.org",
+    "daniel_choi@webmail.net",
+    "emma.watson@school.edu",
+    "lucas.gray@workplace.io",
+    "olivia.brown@startup.ai",
+    "ethan.miller@techcorp.com",
+    "sophia.morris@researchlab.org",
+    "liam.johnson@business.co",
+    "ava.wilson@healthcare.org",
+    "noah.thomas@banksecure.com",
+    "isabella.clark@freelancer.dev",
+    "elijah.walker@codebase.io",
+    "mia.hall@socialapp.me",
+    "james.young@nonprofit.org",
+    "amelia.king@greenenergy.com",
+    "logan.scott@designhub.net",
+    "harper.adams@newsdaily.com",
+    "sebastian.moore@fintech.ai",
+    "zoe.baker@civicgroup.org",
+    "jackson.evans@customsoft.dev",
+    "charlotte.cox@musicstream.fm",
+]
 
+
+def generate_send_email_constraints() -> list[dict[str, Any]]:
     constraints_list = []
 
     email = choice(EMAILS_DATA_MODIFIED)
@@ -320,40 +321,12 @@ def generate_send_email_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(op_str)
 
         field_value = email.get(field)
-        value = random.choice(list_of_emails) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
+        value = random.choice(LIST_OF_EMAILS) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
         constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
 
 def generate_save_as_draft_constraints() -> list[dict[str, Any]]:
-    list_of_emails = [
-        "alice.smith@example.com",
-        "john.doe@gmail.com",
-        "maria.jones@yahoo.com",
-        "kevin_lee@outlook.com",
-        "nina.patel@company.org",
-        "daniel_choi@webmail.net",
-        "emma.watson@school.edu",
-        "lucas.gray@workplace.io",
-        "olivia.brown@startup.ai",
-        "ethan.miller@techcorp.com",
-        "sophia.morris@researchlab.org",
-        "liam.johnson@business.co",
-        "ava.wilson@healthcare.org",
-        "noah.thomas@banksecure.com",
-        "isabella.clark@freelancer.dev",
-        "elijah.walker@codebase.io",
-        "mia.hall@socialapp.me",
-        "james.young@nonprofit.org",
-        "amelia.king@greenenergy.com",
-        "logan.scott@designhub.net",
-        "harper.adams@newsdaily.com",
-        "sebastian.moore@fintech.ai",
-        "zoe.baker@civicgroup.org",
-        "jackson.evans@customsoft.dev",
-        "charlotte.cox@musicstream.fm",
-    ]
-
     constraints_list = []
 
     email = choice(EMAILS_DATA_MODIFIED)
@@ -370,7 +343,7 @@ def generate_save_as_draft_constraints() -> list[dict[str, Any]]:
         op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
         field_value = email.get(field)
-        value = random.choice(list_of_emails) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
+        value = random.choice(LIST_OF_EMAILS) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
         constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
