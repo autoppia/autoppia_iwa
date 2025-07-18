@@ -167,20 +167,25 @@ class MarkAsUnreadEvent(ViewEmailEvent, BaseEventValidator):
 
 class DeleteEmailEvent(ViewEmailEvent, BaseEventValidator):
     event_name: str = "DELETE_EMAIL"
-    is_deleted: bool
+    email_id: str
+    subject: str
+    from_email: str
 
     class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
-        is_deleted: bool | CriterionValue | None = None
+        """Criteria for validating delete email events"""
+
+        email_id: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        from_email: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
-                self._validate_field(self.subject, getattr(criteria, "subject", None)),
-                self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
-                self._validate_field(self.is_deleted, getattr(criteria, "is_deleted", None)),
+                self._validate_field(self.email_id, criteria.email_id),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.from_email, criteria.from_email),
             ]
         )
 
@@ -196,7 +201,6 @@ class DeleteEmailEvent(ViewEmailEvent, BaseEventValidator):
             email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            is_deleted=data.get("is_deleted", False),
         )
 
 

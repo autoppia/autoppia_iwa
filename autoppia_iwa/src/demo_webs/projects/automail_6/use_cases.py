@@ -84,7 +84,7 @@ STAR_EMAIL_USE_CASE = UseCase(
     description="The user stars or unstar, marks or unmarks an email as important visually using the star icon.",
     event=StarEmailEvent,
     event_source_code=StarEmailEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
+    # replace_func=replace_email_placeholders,
     constraints_generator=generate_is_starred_constraints,
     additional_prompt_info=STAR_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -141,7 +141,7 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     description="The user flags an email as important or gives it high priority.",
     event=MarkEmailAsImportantEvent,
     event_source_code=MarkEmailAsImportantEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
+    # replace_func=replace_email_placeholders,
     constraints_generator=generate_is_important_constraints,
     additional_prompt_info=MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -187,7 +187,7 @@ MARK_AS_UNREAD_USE_CASE = UseCase(
     description="The user marks an already read email as unread.",
     event=MarkAsUnreadEvent,
     event_source_code=MarkAsUnreadEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
+    # replace_func=replace_email_placeholders,
     constraints_generator=generate_is_read_constraints,
     additional_prompt_info=MARK_AS_UNREAD_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -226,7 +226,7 @@ DELETE_EMAIL_USE_CASE = UseCase(
     description="The user deletes an email, sending it to the trash or bin.",
     event=DeleteEmailEvent,
     event_source_code=DeleteEmailEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
+    # replace_func=replace_email_placeholders,
     constraints_generator=generate_view_email_constraints,
     additional_prompt_info=DELETE_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -580,8 +580,8 @@ ALL_USE_CASES = [
     # VIEW_EMAIL_USE_CASE,
     # STAR_EMAIL_USE_CASE,
     # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
-    MARK_AS_UNREAD_USE_CASE,
-    # DELETE_EMAIL_USE_CASE,
+    # MARK_AS_UNREAD_USE_CASE,
+    DELETE_EMAIL_USE_CASE,
     # MARK_AS_SPAM_USE_CASE,
     # ADD_LABEL_USE_CASE,
     # CREATE_LABEL_USE_CASE,
