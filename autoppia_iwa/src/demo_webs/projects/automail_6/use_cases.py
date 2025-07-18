@@ -171,16 +171,15 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
 MARK_AS_UNREAD_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Start with 'mark as read', 'mark as unread', or equivalent natural phrasing.
-
  The **is_read** MUST be reflected explicitly:
     IMPORTANT:
    - Use phrases like: "mark as read", or "flag as read", ONLY when 'is_read' is True.
    - Use phrases like: "mark as unread", ONLY when 'is_read' is False.
 
 2. Do **NOT** mention is_read in the prompt.
-
 2. Mention the Subject, Email ID, or Sender if available.
 3. Vary wording across prompts but keep meaning intact.
+4. Make sure the constraints for the fields are mentioned like contains, not_contains, equals, not_equals, etc.
 """
 
 MARK_AS_UNREAD_USE_CASE = UseCase(
@@ -578,15 +577,14 @@ SEARCH_EMAIL_USE_CASE = UseCase(
 ###############################################################################
 ALL_USE_CASES = [
     # SEARCH_EMAIL_USE_CASE,
-    VIEW_EMAIL_USE_CASE,
+    # VIEW_EMAIL_USE_CASE,
     # STAR_EMAIL_USE_CASE,
     # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
-    # MARK_AS_UNREAD_USE_CASE,
+    MARK_AS_UNREAD_USE_CASE,
     # DELETE_EMAIL_USE_CASE,
     # MARK_AS_SPAM_USE_CASE,
     # ADD_LABEL_USE_CASE,
     # CREATE_LABEL_USE_CASE,
-    # COMPOSE_EMAIL_USE_CASE,
     # SEND_EMAIL_USE_CASE,
     # EMAIL_SAVE_AS_DRAFT_USE_CASE,
     # THEME_CHANGED_USE_CASE,
