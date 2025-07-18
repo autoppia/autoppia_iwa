@@ -166,11 +166,13 @@ def generate_is_starred_constraints() -> list[dict[str, Any]]:
 
 def generate_is_read_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-
-    email = choice(EMAILS_DATA_MODIFIED)
     fixed_field = "is_read"
+    field_value = False
+
+    email = next((e for e in EMAILS_DATA_MODIFIED if e.get(fixed_field) is True), None)
+    if not email:
+        email = choice(EMAILS_DATA_MODIFIED)
     op = ComparisonOperator(choice(FIELD_OPERATORS_IS_READ_MAP[fixed_field]))
-    field_value = choice([e[fixed_field] for e in EMAILS_DATA_MODIFIED if e[fixed_field] is True]) if any(e[fixed_field] is True for e in EMAILS_DATA_MODIFIED) else None
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_IS_READ_MAP if item != fixed_field]
@@ -178,7 +180,7 @@ def generate_is_read_constraints() -> list[dict[str, Any]]:
     selected_fields = random.sample(possible_fields, num_constraints)
 
     for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_STARRED_MAP.get(field, [])
+        allowed_ops = FIELD_OPERATORS_IS_READ_MAP.get(field, [])
         if not allowed_ops:
             continue
 
@@ -220,11 +222,13 @@ def generate_is_important_constraints() -> list[dict[str, Any]]:
 def generate_is_spam_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     fixed_field = "is_spam"
-    email = choice(EMAILS_DATA_MODIFIED)
+    field_value = True
+
+    email = next((e for e in EMAILS_DATA_MODIFIED if e.get(fixed_field) is True), None)
+    if not email:
+        email = choice(EMAILS_DATA_MODIFIED)
     op = ComparisonOperator(choice(FIELD_OPERATORS_IS_SPAM_MAP[fixed_field]))
-    field_value = choice([e[fixed_field] for e in EMAILS_DATA_MODIFIED if e[fixed_field] is not True]) if any(e[fixed_field] is not True for e in EMAILS_DATA_MODIFIED) else None
-    flagged_value = _boolean_constraints_value(field_value, op)
-    constraints_list.append(create_constraint_dict(fixed_field, op, flagged_value))
+    constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_IMPORTANT_MAP if item != fixed_field]
     num_constraints = random.randint(1, len(possible_fields))
