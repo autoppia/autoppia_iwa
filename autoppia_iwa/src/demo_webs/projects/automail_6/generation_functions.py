@@ -169,8 +169,8 @@ def generate_is_read_constraints() -> list[dict[str, Any]]:
 
     email = choice(EMAILS_DATA_MODIFIED)
     fixed_field = "is_read"
-    op = ComparisonOperator(random.choice(FIELD_OPERATORS_IS_READ_MAP[fixed_field]))
-    field_value = email[fixed_field] is not True
+    op = ComparisonOperator(choice(FIELD_OPERATORS_IS_READ_MAP[fixed_field]))
+    field_value = choice([e[fixed_field] for e in EMAILS_DATA_MODIFIED if e[fixed_field] is True]) if any(e[fixed_field] is True for e in EMAILS_DATA_MODIFIED) else None
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_IS_READ_MAP if item != fixed_field]
@@ -222,7 +222,7 @@ def generate_is_spam_constraints() -> list[dict[str, Any]]:
     fixed_field = "is_spam"
     email = choice(EMAILS_DATA_MODIFIED)
     op = ComparisonOperator(choice(FIELD_OPERATORS_IS_SPAM_MAP[fixed_field]))
-    field_value = email[fixed_field]
+    field_value = choice([e[fixed_field] for e in EMAILS_DATA_MODIFIED if e[fixed_field] is not True]) if any(e[fixed_field] is not True for e in EMAILS_DATA_MODIFIED) else None
     flagged_value = _boolean_constraints_value(field_value, op)
     constraints_list.append(create_constraint_dict(fixed_field, op, flagged_value))
 
