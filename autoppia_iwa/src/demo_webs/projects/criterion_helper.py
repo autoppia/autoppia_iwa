@@ -34,6 +34,8 @@ def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bo
         True if the criterion is met, False otherwise
     """
     if not isinstance(criterion, CriterionValue):
+        if isinstance(actual_value, bool) and isinstance(criterion, bool):
+            return actual_value is criterion
         if isinstance(actual_value, str) and isinstance(criterion, str):
             return criterion.lower() in actual_value.lower()
         return actual_value == criterion
@@ -85,6 +87,11 @@ def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bo
     elif criterion.operator == ComparisonOperator.IN_LIST:
         if actual_value is None or not isinstance(criterion.value, list):
             return False
+        # Handle boolean values
+        if isinstance(actual_value, bool):
+            return actual_value in criterion.value
+        if any(isinstance(v, bool) for v in criterion.value):
+            return actual_value in criterion.value
         if isinstance(actual_value, str):
             return actual_value.lower() in [v.lower() if isinstance(v, str) else v for v in criterion.value]
         return actual_value in criterion.value
@@ -92,6 +99,11 @@ def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bo
     elif criterion.operator == ComparisonOperator.NOT_IN_LIST:
         if actual_value is None or not isinstance(criterion.value, list):
             return False
+        # Handle boolean values
+        if isinstance(actual_value, bool):
+            return actual_value not in criterion.value
+        if any(isinstance(v, bool) for v in criterion.value):
+            return actual_value not in criterion.value
         if isinstance(actual_value, str):
             return actual_value.lower() not in [v.lower() if isinstance(v, str) else v for v in criterion.value]
         return actual_value not in criterion.value

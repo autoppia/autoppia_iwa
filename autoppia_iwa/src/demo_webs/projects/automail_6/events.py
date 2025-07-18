@@ -100,7 +100,7 @@ class MarkEmailAsImportantEvent(ViewEmailEvent, BaseEventValidator):
     is_important: bool
 
     class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
-        is_important: str | CriterionValue | None = None
+        is_important: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -135,7 +135,7 @@ class MarkAsUnreadEvent(ViewEmailEvent, BaseEventValidator):
     is_read: bool
 
     class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
-        is_read: str | CriterionValue | None = None
+        is_read: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -170,7 +170,7 @@ class DeleteEmailEvent(ViewEmailEvent, BaseEventValidator):
     is_deleted: bool
 
     class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
-        is_deleted: str | CriterionValue | None = None
+        is_deleted: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -205,7 +205,7 @@ class MarkAsSpamEvent(ViewEmailEvent, BaseEventValidator):
     is_spam: bool
 
     class ValidationCriteria(ViewEmailEvent.ValidationCriteria):
-        is_spam: str | CriterionValue | None = None
+        is_spam: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
