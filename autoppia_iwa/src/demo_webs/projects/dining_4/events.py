@@ -372,10 +372,10 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     # --------------------------- ValidationCriteria ---------------------------
 
     class ValidationCriteria(BaseModel):
-        name: str | CriterionValue | None = None
-        time: str | CriterionValue | None = None
+        restaurant_name: str | CriterionValue | None = None
+        selected_time: str | CriterionValue | None = None
         selected_date: date | CriterionValue | None = None
-        people: int | CriterionValue | None = None
+        people_count: int | CriterionValue | None = None
 
         # ── coerción de datetime ISO-8601 (con hora) a date ──
         @field_validator("selected_date", mode="before")
@@ -422,10 +422,10 @@ class BookRestaurantEvent(Event, BaseEventValidator):
 
         return all(
             [
-                criteria.name is None or self._validate_field(self.restaurant_name, criteria.name),
-                criteria.time is None or self._validate_field(self.time, criteria.time),
+                criteria.restaurant_name is None or self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                criteria.selected_time is None or self._validate_field(self.time, criteria.selected_time),
                 selected_date_valid,
-                criteria.people is None or self._validate_field(self.people, criteria.people),
+                criteria.people_count is None or self._validate_field(self.people, criteria.people_count),
             ]
         )
 

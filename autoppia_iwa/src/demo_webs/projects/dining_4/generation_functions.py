@@ -37,7 +37,8 @@ MOCK_SPECIAL_REQUESTS = ["window seat", "allergies: nuts", "quiet table"]
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
     if operator == ComparisonOperator.EQUALS:
         return field_value
-
+    if field == "restaurant_name":
+        field = "name"
     elif operator == ComparisonOperator.NOT_EQUALS:
         if field == "direction":
             valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
@@ -199,9 +200,9 @@ def generate_collapse_menu_constraints():
 
 def generate_book_restaurant_constraints():
     return _generate_constraints_for_fields(
-        all_fields=["name", "people_count", "selected_date", "selected_time"],
+        all_fields=["restaurant_name", "people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_BOOK_RESTAURANT,
-        required_fields=["name", "people_count", "selected_date", "selected_time"],
+        required_fields=["restaurant_name", "people_count", "selected_date", "selected_time"],
         validate_dates=True,
     )
 
