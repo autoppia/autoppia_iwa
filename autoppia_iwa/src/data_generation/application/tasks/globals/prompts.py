@@ -48,10 +48,20 @@ If constraints are "director contains 'd Cop' AND duration less_equal 178":
 
 Be clear with constraints, especially when referring to CONTAINS or NOT CONTAINS.
 
+YOU HAVE TO MENTION ALWAYS THE FIELD WHICH APPEARS IN THE CONSTRAINT
+✅ CORRECT:
+Please book a table for 1 person at a restaurant which cuisine is Mexican on '2025-07-21'  at '1:00 PM'.
+Please book a table for 2 person at a restaurant with name "Oak Beer" on '2025-07-21'  at '1:00 PM'.
+
+❌ INCORRECT:
+Please book a table for 1 person at a Mexican on '2025-07-21'  at '1:00 PM'.
+Please book a table for 2 person at a "Oak Beer" restaurant on '2025-07-21'  at '1:00 PM'.
+
 ## CURRENT CONSTRAINT SET
 {constraints_info}
 
 Do not generate the constraint for this prompt if the constraint set above does not contains the constraints.
+BE SPECIFIC WITH CONSTRAINTS TRY TO MENTION ALWAYS THE FIELD OF THE CONSTRAINT for instance NAME, DESCRIPTION ETC
 DO NOT ADD TWO CONSTRAINTS ABOUT THE SAME FIELD, LIKE DIRECTION (EXAMPLE: "Scroll left in the carousel where the direction is 'RIGHT'") - THIS IS NOT ALLOWED.
 ## ADDITIONAL INFO
 {additional_prompt_info}

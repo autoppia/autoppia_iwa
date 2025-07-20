@@ -1,4 +1,4 @@
-from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
+from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
 
 RESTAURANT_DATA = [
     {
@@ -543,7 +543,7 @@ RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
 SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award-winning"]
 
-
+CUSINE = ["Japanese", "Mexican", "American"]
 OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED = {
     "selected_date": [EQUALS, GREATER_EQUAL, LESS_EQUAL],
 }
@@ -564,44 +564,34 @@ OPERATORS_ALLOWED_FOR_RESTAURANT = {
     "name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "desc": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "rating": [EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL, LESS_THAN, GREATER_THAN],
-    "review": [EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL, LESS_THAN, GREATER_THAN],
+    "reviews": [EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL, LESS_THAN, GREATER_THAN],
+    "bookings": [EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL, LESS_THAN, GREATER_THAN],
     "cuisine": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
 }
 
 
 OPERATORS_ALLOWED_BOOK_RESTAURANT = {
-    "restaurant_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "people_count": [EQUALS, GREATER_EQUAL],
     "selected_date": [EQUALS, GREATER_EQUAL, LESS_EQUAL],
     "selected_time": [EQUALS, NOT_EQUALS],
 }
 
 OPERATORS_ALLOWED_COUNTRY_SELECTED = {
-    "restaurant_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "people_count": [EQUALS, GREATER_EQUAL],
-    "selected_date": [EQUALS, GREATER_EQUAL, LESS_EQUAL],
-    "selected_time": [EQUALS, NOT_EQUALS],
-    "country_name": [EQUALS, CONTAINS],
-    "country_code": [EQUALS],
+    **OPERATORS_ALLOWED_BOOK_RESTAURANT,
+    "country_name": [EQUALS, NOT_EQUALS],
+    "country_code": [EQUALS, NOT_EQUALS],
 }
 
 OPERATORS_ALLOWED_OCCASION_SELECTED = {
-    "restaurant_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "people_count": [EQUALS, GREATER_EQUAL],
-    "selected_date": [EQUALS, GREATER_EQUAL, LESS_EQUAL],
-    "selected_time": [EQUALS],
-    "occasion_type": [EQUALS, NOT_EQUALS, IN_LIST],
+    **OPERATORS_ALLOWED_BOOK_RESTAURANT,
+    "occasion_type": [EQUALS, NOT_EQUALS],
 }
 
 OPERATORS_ALLOWED_RESERVATION_COMPLETE = {
-    "restaurant_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "people_count": [EQUALS, GREATER_EQUAL],
-    "selected_date": [EQUALS, GREATER_EQUAL, LESS_EQUAL, NOT_EQUALS],
-    "selected_time": [EQUALS, NOT_EQUALS],
-    "country_name": [EQUALS, CONTAINS],
-    "country_code": [EQUALS],
-    "phone_number": [EQUALS, NOT_EQUALS],
-    "occasion_type": [EQUALS, NOT_EQUALS],
+    **OPERATORS_ALLOWED_OCCASION_SELECTED,
+    "country_name": [EQUALS, NOT_EQUALS],
+    "country_code": [EQUALS, NOT_EQUALS],
+    "phone_number": [EQUALS],
 }
 
 OPERATORS_ALLOWED_SCROLL_VIEW = {

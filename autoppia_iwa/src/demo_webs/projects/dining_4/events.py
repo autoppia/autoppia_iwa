@@ -199,10 +199,20 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_RESTAURANT"
     restaurant_id: str
     restaurant_name: str
+    desc: str
+    rating: int
+    reviews: int
+    bookings: int
+    cuisine: str
 
     class ValidationCriteria(BaseModel):
         restaurant_id: str | CriterionValue | None = None
         restaurant_name: str | CriterionValue | None = None
+        desc: str | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
+        reviews: int | CriterionValue | None = None
+        bookings: int | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
 
         class Config:
             title = "View Restaurant Validation"
@@ -215,6 +225,10 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.restaurant_id, criteria.restaurant_id),
                 self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
             ]
         )
 
@@ -229,6 +243,11 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             restaurant_id=data.get("restaurantId", ""),
             restaurant_name=data.get("restaurantName", ""),
+            desc=data.get("desc", ""),
+            rating=data.get("rating", 0),
+            cuisine=data.get("cuisine", ""),
+            reviews=data.get("reviews", 0),
+            bookings=data.get("bookings", 0),
         )
 
 
@@ -238,6 +257,11 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_FULL_MENU"
     restaurant_id: str
     restaurant_name: str
+    desc: str
+    rating: int
+    reviews: int
+    bookings: int
+    cuisine: str
     action: str
     time: str  # e.g. "1:00 PM"
     selected_date: date  # e.g. "2024-07-18"
@@ -251,6 +275,11 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
         time: str | CriterionValue | None = None
         selected_date: date | CriterionValue | None = None
         people: int | CriterionValue | None = None
+        desc: str | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
+        reviews: int | CriterionValue | None = None
+        bookings: int | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
 
         class Config:
             title = "View Full Menu Validation"
@@ -267,6 +296,10 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
                 self._validate_field(self.time, criteria.time),
                 self._validate_field(self.selected_date, criteria.selected_date),
                 self._validate_field(self.people, criteria.people),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
             ]
         )
 
@@ -294,6 +327,11 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
             action=data.get("action", ""),
             time=data.get("time", ""),
             selected_date=parsed_date,
+            desc=data.get("desc", ""),
+            rating=data.get("rating", 0),
+            cuisine=data.get("cuisine", ""),
+            reviews=data.get("reviews", 0),
+            bookings=data.get("bookings", 0),
             people=int(data.get("people", 0)),
             menu=[MenuCategory.parse_from_data(cat_data) for cat_data in menu_data if isinstance(cat_data, dict)],
         )
@@ -305,6 +343,11 @@ class CollapseMenuEvent(Event, BaseEventValidator):
     event_name: str = "COLLAPSE_MENU"
     restaurant_id: str
     restaurant_name: str
+    desc: str
+    rating: int
+    reviews: int
+    bookings: int
+    cuisine: str
     action: str
     time: str
     selected_date: date  # e.g. "2024-07-18"
@@ -312,9 +355,14 @@ class CollapseMenuEvent(Event, BaseEventValidator):
     menu: list[MenuCategory]
 
     class ValidationCriteria(BaseModel):
+        action: str | CriterionValue | None = None
         restaurant_id: str | CriterionValue | None = None
         restaurant_name: str | CriterionValue | None = None
-        action: str | CriterionValue | None = None
+        desc: str | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
+        reviews: int | CriterionValue | None = None
+        bookings: int | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
 
         class Config:
             title = "Collapse Menu Validation"
@@ -328,6 +376,11 @@ class CollapseMenuEvent(Event, BaseEventValidator):
                 self._validate_field(self.restaurant_id, criteria.restaurant_id),
                 self._validate_field(self.restaurant_name, criteria.restaurant_name),
                 self._validate_field(self.action, criteria.action),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
             ]
         )
 
@@ -365,6 +418,11 @@ class BookRestaurantEvent(Event, BaseEventValidator):
 
     event_name: str = "BOOK_RESTAURANT"
     restaurant_name: str
+    desc: str
+    rating: int
+    reviews: int
+    bookings: int
+    cuisine: str
     time: str  # e.g. "1:30 PM"
     selected_date: date  # e.g. Date(2025, 5, 16)
     people: int
@@ -373,6 +431,11 @@ class BookRestaurantEvent(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         restaurant_name: str | CriterionValue | None = None
+        desc: str | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
+        reviews: int | CriterionValue | None = None
+        bookings: int | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
         selected_time: str | CriterionValue | None = None
         selected_date: date | CriterionValue | None = None
         people_count: int | CriterionValue | None = None
@@ -399,13 +462,14 @@ class BookRestaurantEvent(Event, BaseEventValidator):
         # tabla de comparación para fechas
         comp_table: dict[str, Callable[[date, date], bool]] = {
             ComparisonOperator.EQUALS: lambda s, c: s == c,
-            ComparisonOperator.GREATER_THAN: lambda s, c: s >= c,
+            ComparisonOperator.NOT_EQUALS: lambda s, c: s != c,
+            ComparisonOperator.GREATER_THAN: lambda s, c: s > c,
             ComparisonOperator.GREATER_EQUAL: lambda s, c: s >= c,
-            ComparisonOperator.LESS_THAN: lambda s, c: s <= c,
+            ComparisonOperator.LESS_THAN: lambda s, c: s < c,
             ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
         }
 
-        # --- selected_date ---
+        # --- selected_date --
         if isinstance(criteria.selected_date, CriterionValue):
             op = criteria.selected_date.operator
             comp_date = criteria.selected_date.value
@@ -419,15 +483,23 @@ class BookRestaurantEvent(Event, BaseEventValidator):
                 selected_date_valid = False
         else:
             selected_date_valid = criteria.selected_date is None or self._validate_field(self.selected_date, criteria.selected_date)
-
-        return all(
+        result = all(
             [
-                criteria.restaurant_name is None or self._validate_field(self.restaurant_name, criteria.restaurant_name),
-                criteria.selected_time is None or self._validate_field(self.time, criteria.selected_time),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
+                self._validate_field(self.time, criteria.selected_time),
                 selected_date_valid,
-                criteria.people_count is None or self._validate_field(self.people, criteria.people_count),
+                self._validate_field(self.people, criteria.people_count),
             ]
         )
+
+        if not result:
+            print("AY")
+        return result
 
     # ----------------------- clase: parseo desde backend ---------------------
 
@@ -455,6 +527,11 @@ class BookRestaurantEvent(Event, BaseEventValidator):
             time=data.get("time", ""),
             selected_date=parsed_date,
             people=int(data.get("people", 0)),
+            desc=data.get("desc", ""),
+            rating=data.get("rating", 0),
+            cuisine=data.get("cuisine", ""),
+            reviews=data.get("reviews", 0),
+            bookings=data.get("bookings", 0),
         )
 
 
@@ -465,11 +542,21 @@ class CountrySelectedEvent(Event, BaseEventValidator):
     restaurant_name: str
     country_code: str  # e.g., "IN"
     country_name: str  # e.g., "India"
+    desc: str
+    rating: int
+    reviews: int
+    bookings: int
+    cuisine: str
 
     class ValidationCriteria(BaseModel):
-        restaurant_name: str | CriterionValue | None = None
         country_code: str | CriterionValue | None = None
         country_name: str | CriterionValue | None = None
+        restaurant_name: str | CriterionValue | None = None
+        desc: str | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
+        reviews: int | CriterionValue | None = None
+        bookings: int | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
 
         class Config:
             title = "Country Selected Validation"
@@ -483,6 +570,10 @@ class CountrySelectedEvent(Event, BaseEventValidator):
                 self._validate_field(self.restaurant_name, criteria.restaurant_name),
                 self._validate_field(self.country_code, criteria.country_code),
                 self._validate_field(self.country_name, criteria.country_name),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
             ]
         )
 
@@ -498,6 +589,11 @@ class CountrySelectedEvent(Event, BaseEventValidator):
             country_code=data.get("countryCode", ""),
             country_name=data.get("countryName", ""),
             restaurant_name=data.get("restaurantName", ""),
+            desc=data.get("desc", ""),
+            rating=data.get("rating", 0),
+            cuisine=data.get("cuisine", ""),
+            reviews=data.get("reviews", 0),
+            bookings=data.get("bookings", 0),
         )
 
 
@@ -506,9 +602,21 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
 
     event_name: str = "OCCASION_SELECTED"
     occasion: str  # e.g., "birthday"
+    restaurant_name: str
+    desc: str | CriterionValue | None = None
+    rating: int | CriterionValue | None = None
+    reviews: int | CriterionValue | None = None
+    bookings: int | CriterionValue | None = None
+    cuisine: str | CriterionValue | None = None
 
     class ValidationCriteria(BaseModel):
         occasion: str | CriterionValue | None = None
+        restaurant_name: str | CriterionValue | None = None
+        desc: str | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
+        reviews: int | CriterionValue | None = None
+        bookings: int | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
 
         class Config:
             title = "Occasion Selected Validation"
@@ -529,6 +637,12 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             occasion=data.get("occasion", ""),
+            desc=data.get("desc", ""),
+            restaurant_name=data.get("restaurantName", ""),
+            rating=data.get("rating", 0),
+            cuisine=data.get("cuisine", ""),
+            reviews=data.get("reviews", 0),
+            bookings=data.get("bookings", 0),
         )
 
 
@@ -551,6 +665,9 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
         people_count: int | CriterionValue | None = None
         occasion: str | CriterionValue | None = None
         phone_number: str | CriterionValue | None = None
+        country_name: str | CriterionValue | None = None
+        country_code: str | CriterionValue | None = None
+        special_request: str | None = None
 
         class Config:
             title = "Reservation Complete Validation"
@@ -565,6 +682,9 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
                 self._validate_field(self.reservation_time, criteria.reservation_time),
                 self._validate_field(self.people_count, criteria.people_count),
                 self._validate_field(self.occasion, criteria.occasion),
+                self._validate_field(self.special_request, criteria.special_request),
+                self._validate_field(self.country_name, criteria.country_name),
+                self._validate_field(self.country_code, criteria.country_code),
             ]
         )
 

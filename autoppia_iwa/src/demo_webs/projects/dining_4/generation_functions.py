@@ -6,11 +6,11 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
+    CUSINE,
     OPERATORS_ALLOWED_BOOK_RESTAURANT,
     OPERATORS_ALLOWED_COUNTRY_SELECTED,
     OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED,
     OPERATORS_ALLOWED_FOR_RESTAURANT,
-    OPERATORS_ALLOWED_OCCASION_SELECTED,
     OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED,
     OPERATORS_ALLOWED_RESERVATION_COMPLETE,
     OPERATORS_ALLOWED_SCROLL_VIEW,
@@ -39,6 +39,8 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
     if field == "restaurant_name":
         field = "name"
+    if field == "rating":
+        return random.choice([2, 3])
     elif operator == ComparisonOperator.NOT_EQUALS:
         if field == "direction":
             valid = [v for v in SCROLL_DIRECTIONS if v != field_value]
@@ -51,6 +53,15 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
             return random.choice(valid) if valid else None
         elif field == "people_count":
             valid = [v for v in RESTAURANT_PEOPLE_COUNTS if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "occasion_type":
+            valid = [v for v in RESTAURANT_OCCASIONS if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "country_name":
+            valid = [v["name"] for v in RESTAURANT_COUNTRIES if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "country_code":
+            valid = [v["code"] for v in RESTAURANT_COUNTRIES if v != field_value]
             return random.choice(valid) if valid else None
 
         valid = [v[field] for v in dataset if v.get(field) != field_value]
@@ -152,22 +163,28 @@ def _generate_value_for_field(field_name: str) -> Any:
         return random.choice(SCROLL_DIRECTIONS)
     elif field_name == "section_title":
         return random.choice(SCROLL_SECTIONS_TITLES)
+    elif field_name == "desc":
+        return "Enjoy a delightful experience at"
+    elif field_name == "cuisine":
+        return random.choice(CUSINE)
+    elif field_name == "rating":
+        return random.choice([2, 3, 4])
 
     print(f"Warning: No specific mock value generator for field '{field_name}'. Using default string.")
     return "mock_value"
 
 
 # --- Constraint Generators ---
+def generate_view_restaurant_constraints():
+    return generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
 
 
-def generate_constraints_for_single_field(field: str, allowed_operators: dict[str, list[str]]) -> list[dict[str, Any]]:
-    op = ComparisonOperator(random.choice(allowed_operators[field]))
-    value = _generate_value_for_field(field)
-    # if field == 'selected_date' and isinstance(value, datetime.datetime):
-    #     value = value.date().isoformat()
-    if isinstance(value, datetime.datetime):
-        value = value.isoformat()
-    return [create_constraint_dict(field, op, value)]
+def generate_view_full_menu_constraints():
+    return generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
+
+
+def generate_collapse_menu_constraints():
+    return generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
 
 
 def generate_date_dropdown_opened_constraints():
@@ -186,55 +203,67 @@ def generate_search_restaurant_constraints():
     return generate_constraints_for_single_field("query", OPERATORS_ALLOWED_SEARCH_RESTAURANT)
 
 
-def generate_view_restaurant_constraints():
-    return _generate_constraints_for_fields(all_fields=["name", "desc", "rating", "review", "cuisine"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_optional=3)
-
-
-def generate_view_full_menu_constraints():
-    return _generate_constraints_for_fields(all_fields=["name", "desc", "rating", "review", "cuisine"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_optional=3)
-
-
-def generate_collapse_menu_constraints():
-    return _generate_constraints_for_fields(all_fields=["name", "desc", "rating", "review", "cuisine"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT)
+def generate_constraints_for_single_field(field: str, allowed_operators: dict[str, list[str]]) -> list[dict[str, Any]]:
+    op = ComparisonOperator(random.choice(allowed_operators[field]))
+    value = _generate_value_for_field(field)
+    # if field == 'selected_date' and isinstance(value, datetime.datetime):
+    #     value = value.date().isoformat()
+    if isinstance(value, datetime.datetime):
+        value = value.isoformat()
+    return [create_constraint_dict(field, op, value)]
 
 
 def generate_book_restaurant_constraints():
-    return _generate_constraints_for_fields(
-        all_fields=["restaurant_name", "people_count", "selected_date", "selected_time"],
+    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+    booking_contraints = _generate_constraints_for_fields(
+        all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_BOOK_RESTAURANT,
-        required_fields=["restaurant_name", "people_count", "selected_date", "selected_time"],
+        required_fields=["people_count", "selected_date", "selected_time"],
         validate_dates=True,
     )
+    all_constraints = restaurant_constraints + booking_contraints
+    return all_constraints
 
 
 def generate_country_selected_constraints():
+    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
     country_field = random.choice(["country_name", "country_code"])
-    return _generate_constraints_for_fields(
-        all_fields=["restaurant_name", "people_count", "selected_date", "selected_time", "country_name", "country_code"],
+    booking_contraints = _generate_constraints_for_fields(
+        all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
         required_fields=[country_field],
-        max_optional=3,
         validate_dates=True,
     )
+    all_constraints = restaurant_constraints + booking_contraints
+
+    return all_constraints
 
 
 def generate_occasion_selected_constraints():
-    return _generate_constraints_for_fields(
-        all_fields=["restaurant_name", "people_count", "selected_date", "selected_time", "occasion_type"],
-        allowed_ops=OPERATORS_ALLOWED_OCCASION_SELECTED,
+    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+    booking_contraints = _generate_constraints_for_fields(
+        all_fields=["people_count", "selected_date", "selected_time"],
+        allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
         required_fields=["occasion_type"],
-        max_optional=3,
         validate_dates=True,
     )
+    all_constraints = restaurant_constraints + booking_contraints
+
+    return all_constraints
 
 
 def generate_reservation_complete_constraints():
-    return _generate_constraints_for_fields(
-        all_fields=["restaurant_name", "people_count", "selected_date", "selected_time", "country_name", "country_code", "phone_number", "occasion_type"],
+    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+    booking_contraints = _generate_constraints_for_fields(
+        all_fields=["people_count", "country_code", "phone_number", "occasion_typeselected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_RESERVATION_COMPLETE,
-        max_optional=random.randint(2, 4),
+        required_fields=["occasion_type"],
         validate_dates=True,
+        max_optional=3,
     )
+    all_constraints = restaurant_constraints + booking_contraints
+
+    return all_constraints
 
 
 def generate_scroll_view_constraints():
@@ -279,4 +308,106 @@ def _generate_constraints_for_fields(
         constraint = create_constraint_dict(field, op, value)
         constraints.append(constraint)
 
+    return constraints
+
+
+# ─────────────────── helpers ──────────────────────
+def _substring(s: str) -> str:
+    start = random.randint(0, len(s) - 1)
+    end = random.randint(start + 1, len(s))
+    return s[start:end]
+
+
+def _random_string_not_in(s: str, length: int = 6) -> str:
+    letters = "abcdefghijklmnopqrstuvwxyz"
+    out = "".join(random.choice(letters) for _ in range(length))
+    while out in s:
+        out = "".join(random.choice(letters) for _ in range(length))
+    return out
+
+
+# ─────────────────────── main generator ───────────────────
+def generate_restaurant_constraints(
+    *,
+    dataset: list[dict[str, Any]] = RESTAURANT_DATA,
+    fields: list[str],
+    allowed_ops: dict[str, list[str]],
+    max_constraints: int = 3,
+) -> list[dict[str, Any]]:
+    """
+    Devuelve entre 1 y `max_constraints` constraints; todos usan campos de `fields`
+    y, por construcción, los cumple al menos un registro del `dataset`.
+
+    Parameters
+    ----------
+    dataset : list[dict]
+        Lista de dicts con los datos.
+    fields : list[str]
+        Subconjunto de campos a usar (p.ej. ["name", "desc"]).
+    allowed_ops : dict[str, list[ComparisonOperator]]
+        Operadores permitidos por campo.
+    max_constraints : int
+        Máximo de constraints a generar (mínimo 1).
+
+    Returns
+    -------
+    list[dict] con claves: ``field``, ``operator``, ``value``.
+    """
+    if not dataset:
+        raise ValueError("dataset cannot be empty")
+    if not fields:
+        raise ValueError("fields cannot be empty")
+
+    # 1️⃣ Registro “solución”
+    target = random.choice(dataset)
+
+    # 2️⃣ Campos que existen en target y están en `fields`
+    candidate_fields = [f for f in fields if f in target and f in allowed_ops]
+    if not candidate_fields:
+        raise ValueError("None of the requested fields exist in both dataset and allowed_ops")
+
+    n = random.randint(1, min(max_constraints, len(candidate_fields)))
+    chosen_fields = random.sample(candidate_fields, n)
+
+    constraints: list[dict[str, Any]] = []
+
+    # 3️⃣ Genera un constraint por campo
+    for field in chosen_fields:
+        op: ComparisonOperator = random.choice(allowed_ops[field])
+        tgt_val = target[field]
+
+        # Valor compatible con el operador para que target lo satisfaga
+        if op == ComparisonOperator.EQUALS:
+            value = tgt_val
+
+        elif op == ComparisonOperator.NOT_EQUALS:
+            value = _random_string_not_in(tgt_val) if isinstance(tgt_val, str) else tgt_val + 1
+
+        elif op == ComparisonOperator.CONTAINS:
+            value = _substring(tgt_val) if isinstance(tgt_val, str) else str(tgt_val)
+
+        elif op == ComparisonOperator.NOT_CONTAINS:
+            value = _random_string_not_in(tgt_val) if isinstance(tgt_val, str) else "xyz"
+
+        elif op in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.GREATER_THAN}:
+            value = tgt_val - 1
+
+        elif op in {ComparisonOperator.LESS_EQUAL, ComparisonOperator.LESS_THAN}:
+            value = tgt_val + 1
+
+        elif op == ComparisonOperator.IN_LIST:
+            value = [tgt_val, _random_string_not_in(str(tgt_val))]
+
+        elif op == ComparisonOperator.NOT_IN_LIST:
+            value = [_random_string_not_in(str(tgt_val))]
+
+        else:  # fallback improbable
+            value = tgt_val
+
+        # Fechas → ISO
+        if isinstance(value, datetime.date | datetime.datetime):
+            value = value.isoformat()
+
+        constraints.append({"field": field, "operator": ComparisonOperator(op), "value": value})
+        print(target, constraints)
     return constraints

@@ -44,36 +44,6 @@ def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
     return constraints
 
 
-def generate_and_add_constraints_to_use_case(use_case, data: list[dict], constraints_generator=None):
-    """
-    Generates constraints and adds them to a use case.
-
-    Args:
-        use_case: The use case to add constraints to
-        data: The data to use for constraint generation (books, products, etc.)
-        constraints_generator: Custom constraint generator function (optional)
-
-    Returns:
-        The same use case, now with constraints
-    """
-
-    # If no generator is provided, use the default one
-    if constraints_generator is None:
-        constraints_generator = build_constraints_info
-
-    # Generate the constraints string
-    constraints_str = constraints_generator(data)
-
-    if constraints_str:
-        # Parse the constraints string into structured data
-        constraints = parse_constraints_str(constraints_str)
-
-        # Add the constraints to the use case
-        use_case.add_constraints(constraints)
-
-    return use_case
-
-
 def build_constraints_info(data: list[dict], max_attempts: int = 10) -> str | None:
     """
     Genera 1..3 constraints que existan en la base de películas

@@ -27,7 +27,6 @@ from .generation_functions import (
     generate_view_full_menu_constraints,
     generate_view_restaurant_constraints,
 )
-from .replace_functions import replace_restaurant_placeholders
 
 ###############################################################################
 # DATE_DROPDOWN_OPENED_USE_CASE
@@ -77,7 +76,6 @@ TIME_DROPDOWN_OPENED_USE_CASE = UseCase(
     event_source_code=TimeDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=TIME_DROPDOWN_OPENED_INFO,
     constraints_generator=generate_time_dropdown_opened_constraints,
-    replace_func=replace_restaurant_placeholders,
     examples=[
         {
             "prompt": "Click on the time field to choose a reservation time.",
@@ -104,7 +102,6 @@ PEOPLE_DROPDOWN_OPENED_USE_CASE = UseCase(
     event_source_code=PeopleDropdownOpenedEvent.get_source_code_of_class(),
     additional_prompt_info=PEOPLE_DROPDOWN_OPENED_INFO,
     constraints_generator=generate_people_dropdown_opened_constraints,
-    replace_func=replace_restaurant_placeholders,
     examples=[
         {
             "prompt": "Open the guest number selection for my table.",
@@ -176,7 +173,6 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
     additional_prompt_info=VIEW_RESTAURANT_INFO,
-    replace_func=replace_restaurant_placeholders,
     examples=[
         {
             "prompt": "Show me details for 'The Royal Dine'",
@@ -265,9 +261,10 @@ COLLAPSE_MENU_USE_CASE = UseCase(
 BOOK_RESTAURANT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Clearly state the intention to **book a table** or make a reservation.
-2. Include the restaurant name (or ID). ONLY INCLUDES RESTAURANT NAMES IN THE LIST.
-3. Specify the desired date, time, and number of guests for the booking.
-4. Lead to the BOOK_RESTAURANT event, which signifies initiating this step.
+2. ONLY INCLUDES RESTAURANT NAMES IN THE LIST IF THE NAME ARE IN THE CONSTRAINTS. YOU CANNOT SAY A NAME IF NOT ARE IN THE CONSTRAINTS
+3. Specify the desired date, time, and number of guests for the booking. BE SC
+4. DO NOT CONFUSE DESC with NAME. If the constraints mention DESC (description) just include the constriants do not use name if it is not specified in the prompt
+5. IF NAME IS IN CONSTRAINTS SPECIFY CLEARLY YOU CANNOT SAY Book a table in a restaurant that does NOT contain 'qpehvk'. ONLY IF NAME IS IN CONSTRAINTS, an dthen you have to specify NAME
 """
 
 BOOK_RESTAURANT_USE_CASE = UseCase(
@@ -279,16 +276,16 @@ BOOK_RESTAURANT_USE_CASE = UseCase(
     additional_prompt_info=BOOK_RESTAURANT_INFO,
     examples=[
         {
-            "prompt": "I'd like to book a table at 'The Royal Dine' for 2 people on 2025-05-16 at 1:30 PM.",
-            "prompt_for_task_generation": "I'd like to book a table at '<restaurant_name>' for <people_count> people on <selected_date> at <selected_time>.",
+            "prompt": "I'd like to book a table at the restaurant which name 'The Royal Dine' for 2 people on 2025-05-16 at 1:30 PM.",
+            "prompt_for_task_generation": "I'd like to book a table at the restaurant which name'<restaurant_name>' for <people_count> people on <selected_date> at <selected_time>.",
         },
         {
-            "prompt": "Book a table for 3 people on 2024-07-18 for dinner at 'Sushi Palace' at time '1:30 PM'.",
-            "prompt_for_task_generation": "Book a table for <people_count> people on <selected_date> for <selected_time> at '<restaurant_name>'.",
+            "prompt": "Book a table for 3 people on 2024-07-18 for dinner at the restaurant which name 'Sushi Palace' at time '1:30 PM'.",
+            "prompt_for_task_generation": "Book a table for <people_count> people on <selected_date> for <selected_time> at the restaurant which name '<restaurant_name>'.",
         },
         {
-            "prompt": "Book a table at 'The Garden Fork' for 5 people on 2025-07-12 at 12:30 PM.",
-            "prompt_for_task_generation": "Book a table at '<restaurant_name>' for <people_count> people on <selected_date> at <selected_time>.",
+            "prompt": "Book a table for 7 or more people on '2025-08-06' at a time that is NOT '12:30 PM' with a rating of 5 or less.",
+            "prompt_for_task_generation": "Book a table for <people_count> or more people on <selected_date> at a time that is NOT <selected_time> with a rating of <rating> or less.",
         },
     ],
 )
@@ -369,7 +366,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Clearly indicate the **final confirmation or completion** of a restaurant reservation.
 2. May involve providing final details like contact information (email, phone) or special requests if these are part of the final step.
 3. Lead to the RESERVATION_COMPLETE event.
-4. Always generate a placeholder for restaurant name as '<restaurant_name>'.
+4. Only provide a restauant name if its mentioned in the constraints
 """
 
 RESERVATION_COMPLETE_USE_CASE = UseCase(
@@ -379,7 +376,6 @@ RESERVATION_COMPLETE_USE_CASE = UseCase(
     event_source_code=ReservationCompleteEvent.get_source_code_of_class(),
     additional_prompt_info=RESERVATION_COMPLETE_INFO,
     constraints_generator=generate_reservation_complete_constraints,
-    replace_func=replace_restaurant_placeholders,
     examples=[
         {
             "prompt": "Complete my reservation for 'The Royal Dine' on July 18th at 1:30 PM for 2 people. My phone is 123, it's for a birthday, and special request is 'a quiet table'.",
@@ -452,9 +448,9 @@ ALL_USE_CASES = [
     TIME_DROPDOWN_OPENED_USE_CASE,
     PEOPLE_DROPDOWN_OPENED_USE_CASE,
     SEARCH_RESTAURANT_USE_CASE,
+    SCROLL_VIEW_USE_CASE,
     BOOK_RESTAURANT_USE_CASE,
     COUNTRY_SELECTED_USE_CASE,
     OCCASION_SELECTED_USE_CASE,
-    SCROLL_VIEW_USE_CASE,
     RESERVATION_COMPLETE_USE_CASE,
 ]
