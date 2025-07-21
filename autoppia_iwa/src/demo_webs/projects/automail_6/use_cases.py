@@ -27,7 +27,6 @@ from .generation_functions import (
     generate_theme_changed_constraints,
     generate_view_email_constraints,
 )
-from .replace_functions import replace_email_placeholders
 
 VIEW_EMAIL_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
@@ -84,7 +83,6 @@ STAR_EMAIL_USE_CASE = UseCase(
     description="The user stars or unstar, marks or unmarks an email as important visually using the star icon.",
     event=StarEmailEvent,
     event_source_code=StarEmailEvent.get_source_code_of_class(),
-    # replace_func=replace_email_placeholders,
     constraints_generator=generate_is_starred_constraints,
     additional_prompt_info=STAR_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -141,7 +139,6 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     description="The user flags an email as important or gives it high priority.",
     event=MarkEmailAsImportantEvent,
     event_source_code=MarkEmailAsImportantEvent.get_source_code_of_class(),
-    # replace_func=replace_email_placeholders,
     constraints_generator=generate_is_important_constraints,
     additional_prompt_info=MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -187,7 +184,6 @@ MARK_AS_UNREAD_USE_CASE = UseCase(
     description="The user marks an already read email as unread.",
     event=MarkAsUnreadEvent,
     event_source_code=MarkAsUnreadEvent.get_source_code_of_class(),
-    # replace_func=replace_email_placeholders,
     constraints_generator=generate_is_read_constraints,
     additional_prompt_info=MARK_AS_UNREAD_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -226,7 +222,6 @@ DELETE_EMAIL_USE_CASE = UseCase(
     description="The user deletes an email, sending it to the trash or bin.",
     event=DeleteEmailEvent,
     event_source_code=DeleteEmailEvent.get_source_code_of_class(),
-    # replace_func=replace_email_placeholders,
     constraints_generator=generate_view_email_constraints,
     additional_prompt_info=DELETE_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -265,7 +260,6 @@ MARK_AS_SPAM_USE_CASE = UseCase(
     description="The user flags an email as spam or junk to move it out of the inbox.",
     event=MarkAsSpamEvent,
     event_source_code=MarkAsSpamEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
     constraints_generator=generate_is_spam_constraints,
     additional_prompt_info=MARK_AS_SPAM_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -298,6 +292,7 @@ CRITICAL REQUIREMENTS: EVERY prompt you generate MUST follow these rules:
     IMPORTANT: Do **NOT** mention 'action equal added' or 'action equals removed' in the prompt, instead use:
    - Use phrases like: "Add label", "Tag", or "Categorize" ONLY when action 'added'.
    - Use phrases like: "Remove label", "Untag", or "Uncategorize" ONLY when action is 'removed'.
+   Note: DO NOT mention action in the prompt instead start your prompt with the action verb directly like 'Add', 'Remove' etc.
 
 2. Wording can vary (e.g., "Tag", "Categorize", "Untag", "Remove the label"), but it must follow the above structure and remain natural.
 
@@ -310,14 +305,19 @@ CRITICAL REQUIREMENTS: EVERY prompt you generate MUST follow these rules:
 - Add label to an email where the action equals 'added'
 - Remove label where subject is 'Meeting Notes'
 - Apply the label_name not equal to 'Updates'
-"""
+
+3. Do not mention any constraint twice in a single request:
+
+Correct:  Remove the label from the email with subject 'Lunch Plans', the label_name is NOT 'Work', the body contains 'k''
+Correct:  Remove the label from the email that is NOT 'Work', the body contains 'k', and the subject equals 'Lunch Plans'
+Incorrect:  Remove the label from the email with subject 'Lunch Plans' where the action is 'removed', the label_name is NOT 'Work', the body contains 'k', and the subject equals 'Lunch Plans' (Mentioned subject twice, and mentioned 'where the action is 'Removed'.)
+""".strip()
 
 ADD_LABEL_USE_CASE = UseCase(
     name="ADD_LABEL",
     description="The user adds a label to an email to categorize or organize it.",
     event=AddLabelEvent,
     event_source_code=AddLabelEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
     constraints_generator=generate_add_label_constraints,
     additional_prompt_info=ADD_LABEL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -356,7 +356,6 @@ CREATE_LABEL_USE_CASE = UseCase(
     description="The user creates a new label with a specific name and optional color.",
     event=CreateLabelEvent,
     event_source_code=CreateLabelEvent.get_source_code_of_class(),
-    # replace_func=replace_email_placeholders,
     constraints_generator=generate_create_label_constraints,
     additional_prompt_info=CREATE_LABEL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -400,7 +399,6 @@ SEND_EMAIL_USE_CASE = UseCase(
     description="The user sends an email that has been composed, with the provided recipient, subject, and/or body.",
     event=SendEmailEvent,
     event_source_code=SendEmailEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
     constraints_generator=generate_send_email_constraints,
     additional_prompt_info=SEND_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -444,7 +442,6 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
     description="The user saves a composed email as a draft without sending it.",
     event=EmailSaveAsDraftEvent,
     event_source_code=EmailSaveAsDraftEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
     constraints_generator=generate_save_as_draft_constraints,
     additional_prompt_info=SAVE_AS_DRAFT_ADDITIONAL_PROMPT_INFO,
     examples=[
@@ -508,7 +505,6 @@ THEME_CHANGED_USE_CASE = UseCase(
     description="The user changes the application theme (e.g., dark, light, system default).",
     event=ThemeChangedEvent,
     event_source_code=ThemeChangedEvent.get_source_code_of_class(),
-    replace_func=replace_email_placeholders,
     constraints_generator=generate_theme_changed_constraints,
     additional_prompt_info=THEME_CHANGED_ADDITIONAL_PROMPT_INFO,
     examples=[

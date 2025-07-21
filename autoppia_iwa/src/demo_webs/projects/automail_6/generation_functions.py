@@ -356,9 +356,7 @@ def generate_create_label_constraints() -> list[dict[str, Any]]:
 
 def generate_add_label_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    actions = ["removed"]
-    # actions = ["added", "removed"]
-    removable_labels = ["Starred", "Important", "Work", "Personal"]
+    actions = ["added"]
 
     # Step 1: Choose an action
     selected_action = choice(actions)
@@ -377,30 +375,8 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
             if label_name:
                 full_dataset.append({"action": "added", "label_name": label_name, "body": body, "subject": subject})
 
-    # For 'removed', only allow removable_labels that were previously 'added'
-    if selected_action == "removed":
-        added_labels = {item["label_name"] for item in full_dataset if item["action"] == "added"}
-        removable = list(set(removable_labels) & added_labels)
-        if not removable:
-            return []
-        # Create a dataset for removed actions
-        full_dataset_removed = []
-        for label_name in removable:
-            # Find an example email with this label to get subject/body
-            example = next((item for item in full_dataset if item["label_name"] == label_name), None)
-            if example:
-                full_dataset_removed.append(
-                    {
-                        "action": "removed",
-                        "label_name": label_name,
-                        "body": example.get("body"),
-                        "subject": example.get("subject"),
-                    }
-                )
-        full_dataset = full_dataset_removed
-
     # Step 3: Filter dataset by selected action
-    filtered_dataset = [item for item in full_dataset if item.get("action", "removed") == selected_action]
+    filtered_dataset = [item for item in full_dataset if item.get("action") == selected_action]
     if not filtered_dataset:
         return []
 
