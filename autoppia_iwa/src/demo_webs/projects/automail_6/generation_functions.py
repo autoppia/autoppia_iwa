@@ -389,7 +389,6 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
     # Step 2: Build real dataset from EMAILS_DATA_MODIFIED
     full_dataset = []
     for email in EMAILS_DATA_MODIFIED:
-        # from_email = email.get("from", {}).get("email")
         subject = email.get("subject")
         labels = email.get("labels", [])
         body = email.get("body")
@@ -406,7 +405,7 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
     if not filtered_dataset:
         return []
 
-    # Step 4: Ensure either email or subject is present in the selected item
+    # Step 4: Ensure either body or subject is present in the selected item
     selected_item = choice(filtered_dataset)
     while not selected_item.get("body") and not selected_item.get("subject"):
         selected_item = choice(filtered_dataset)
@@ -414,15 +413,18 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
     # Step 5: Always include action + label_name
     base_fields = ["action", "label_name"]
 
-    # Conditionally include email_ids or subject or both
+    # Conditionally include subject or body or both
     optional_fields = []
     if selected_item.get("subject"):
         optional_fields.append("subject")
     if selected_item.get("body"):
         optional_fields.append("body")
 
-    num_constraints = random.randint(1, len(optional_fields))
-    optional_fields = random.sample(optional_fields, num_constraints)
+    if optional_fields:
+        num_constraints = random.randint(1, len(optional_fields))
+        optional_fields = random.sample(optional_fields, num_constraints)
+    else:
+        optional_fields = []
 
     final_fields = base_fields + optional_fields
     for field in final_fields:

@@ -4,9 +4,17 @@ from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
+
 # =============================================================================
 #                            USER EVENTS
 # =============================================================================
+class Email(BaseModel):
+    body: str
+    subject: str
+
+    class Config:
+        title = "Email"
+        description = "Email from adding a label to a single email or bulk of emails"
 
 
 class ViewEmailEvent(Event, BaseEventValidator):
@@ -241,41 +249,57 @@ class MarkAsSpamEvent(ViewEmailEvent, BaseEventValidator):
 
 class AddLabelEvent(Event, BaseEventValidator):
     event_name: str = "ADD_LABEL"
-    label_id: str
+    # label_id: str
     label_name: str
-    email_ids: list[str]
+    emails: list[Email] | None = None
     action: str
 
     class ValidationCriteria(BaseModel):
-        label_id: str | CriterionValue | None = None
+        # label_id: str | CriterionValue | None = None
         label_name: str | CriterionValue | None = None
         action: str | CriterionValue | None = None
-        email_ids: list[str] | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        body: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.label_id, criteria.label_id),
-                self._validate_field(self.label_name, criteria.label_name),
-                self._validate_field(self.email_ids, criteria.email_ids),
-                self._validate_field(self.action, criteria.action),
-            ]
-        )
+
+        # Validate label_name and action first
+        if not self._validate_field(self.label_name, criteria.label_name):
+            return False
+        if not self._validate_field(self.action, criteria.action):
+            return False
+
+        # Validate subject/body for emails if criteria present
+        if (criteria.subject or criteria.body) and self.emails:
+            for email in self.emails:
+                if not isinstance(email, Email):
+                    continue
+                if criteria.subject and not self._validate_field(email.subject, criteria.subject):
+                    return False
+                if criteria.body and not self._validate_field(email.body, criteria.body):
+                    return False
+
+        return True
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "AddLabelEvent":
         base = Event.parse(backend_event)
         data = backend_event.data
+        emails = []
+        if "emails" in data and isinstance(data["emails"], list):
+            emails = [Email(**e) for e in data["emails"]]
+        elif "email_ids" in data and isinstance(data["email_ids"], list):
+            emails = [Email(subject="", body="") for _ in data["email_ids"]]
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            label_id=data.get("label_id", ""),
+            # label_id=data.get("label_id", ""),
             label_name=data.get("label_name", ""),
-            email_ids=data.get("email_ids", []),
+            emails=emails,
             action=data.get("action", ""),
         )
 
