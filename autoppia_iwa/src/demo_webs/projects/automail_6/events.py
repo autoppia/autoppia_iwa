@@ -371,18 +371,21 @@ class SendEmailEvent(Event, BaseEventValidator):
     event_name: str = "SEND_EMAIL"
     to: list[str]
     subject: str
+    body: str
 
     class ValidationCriteria(BaseModel):
-        to: list[str] | CriterionValue | None = None
+        to: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
+        body: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.to, criteria.to),
+                any(self._validate_field(_to, criteria.to) for _to in self.to),
                 self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.body, criteria.body),
             ]
         )
 
@@ -397,6 +400,7 @@ class SendEmailEvent(Event, BaseEventValidator):
             user_id=base.user_id,
             to=data.get("to", []),
             subject=data.get("subject", ""),
+            body=data.get("body", ""),
         )
 
 
@@ -404,24 +408,21 @@ class EmailSaveAsDraftEvent(Event, BaseEventValidator):
     event_name: str = "EMAIL_SAVE_AS_DRAFT"
     to: list[str]
     subject: str
-    body_length: int
-    attachments_count: int
+    body: str
 
     class ValidationCriteria(BaseModel):
         subject: str | CriterionValue | None = None
-        body_length: int | CriterionValue | None = None
-        attachments_count: int | CriterionValue | None = None
-        to: list[str] | CriterionValue | None = None
+        body: str | CriterionValue | None = None
+        to: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.to, criteria.to),
+                any(self._validate_field(_to, criteria.to) for _to in self.to),
                 self._validate_field(self.subject, criteria.subject),
-                self._validate_field(self.body_length, criteria.body_length),
-                self._validate_field(self.attachments_count, criteria.attachments_count),
+                self._validate_field(self.body, criteria.body),
             ]
         )
 
@@ -436,8 +437,7 @@ class EmailSaveAsDraftEvent(Event, BaseEventValidator):
             user_id=base.user_id,
             to=data.get("to", []),
             subject=data.get("subject", ""),
-            body_length=data.get("body_length", 0),
-            attachments_count=data.get("attachments_count", 0),
+            body=data.get("body", ""),
         )
 
 

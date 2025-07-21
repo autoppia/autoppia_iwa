@@ -21,9 +21,8 @@ from .generation_functions import (
     generate_is_read_constraints,
     generate_is_spam_constraints,
     generate_is_starred_constraints,
-    generate_save_as_draft_constraints,
+    generate_save_as_draft_send_email_constraints,
     generate_search_email_constraints,
-    generate_send_email_constraints,
     generate_theme_changed_constraints,
     generate_view_email_constraints,
 )
@@ -399,7 +398,7 @@ SEND_EMAIL_USE_CASE = UseCase(
     description="The user sends an email that has been composed, with the provided recipient, subject, and/or body.",
     event=SendEmailEvent,
     event_source_code=SendEmailEvent.get_source_code_of_class(),
-    constraints_generator=generate_send_email_constraints,
+    constraints_generator=generate_save_as_draft_send_email_constraints,
     additional_prompt_info=SEND_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -442,7 +441,7 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
     description="The user saves a composed email as a draft without sending it.",
     event=EmailSaveAsDraftEvent,
     event_source_code=EmailSaveAsDraftEvent.get_source_code_of_class(),
-    constraints_generator=generate_save_as_draft_constraints,
+    constraints_generator=generate_save_as_draft_send_email_constraints,
     additional_prompt_info=SAVE_AS_DRAFT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
@@ -579,9 +578,9 @@ ALL_USE_CASES = [
     # MARK_AS_UNREAD_USE_CASE,
     # DELETE_EMAIL_USE_CASE,
     # MARK_AS_SPAM_USE_CASE,
-    ADD_LABEL_USE_CASE,
+    # ADD_LABEL_USE_CASE,
     # CREATE_LABEL_USE_CASE,
-    # SEND_EMAIL_USE_CASE,
+    SEND_EMAIL_USE_CASE,
     # EMAIL_SAVE_AS_DRAFT_USE_CASE,
     # THEME_CHANGED_USE_CASE,
 ]

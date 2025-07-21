@@ -13,9 +13,8 @@ from .data import (
     FIELD_OPERATORS_IMPORTANT_MAP,
     FIELD_OPERATORS_IS_READ_MAP,
     FIELD_OPERATORS_IS_SPAM_MAP,
-    FIELD_OPERATORS_SAVE_AS_DRAFT_MAP,
     FIELD_OPERATORS_SEARCH_MAP,
-    FIELD_OPERATORS_SEND_EMAIL_MAP,
+    FIELD_OPERATORS_SEND_OR_DRAFT_EMAIL_MAP,
     FIELD_OPERATORS_STARRED_MAP,
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
 )
@@ -278,32 +277,8 @@ LIST_OF_EMAILS = [
 ]
 
 
-def generate_send_email_constraints() -> list[dict[str, Any]]:
+def generate_save_as_draft_send_email_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-
-    email = choice(EMAILS_DATA_MODIFIED)
-    selected_fields = ["to"]  # Fixed 'to'
-
-    if random.choice([True, False]):
-        selected_fields.append("subject")
-
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_SEND_EMAIL_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-
-        field_value = email.get(field)
-        value = random.choice(LIST_OF_EMAILS) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
-        constraints_list.append(create_constraint_dict(field, operator, value))
-    return constraints_list
-
-
-def generate_save_as_draft_constraints() -> list[dict[str, Any]]:
-    constraints_list = []
-
     email = choice(EMAILS_DATA_MODIFIED)
     selected_fields = ["to"]  # Fixed 'to'
     possible_fields = ["subject", "body"]
@@ -311,12 +286,11 @@ def generate_save_as_draft_constraints() -> list[dict[str, Any]]:
     selected_fields.extend(random.sample(possible_fields, num_constraints))
 
     for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_SAVE_AS_DRAFT_MAP.get(field, [])
+        allowed_ops = FIELD_OPERATORS_SEND_OR_DRAFT_EMAIL_MAP.get(field, [])
         if not allowed_ops:
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = email.get(field)
         value = random.choice(LIST_OF_EMAILS) if field == "to" else _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
         constraints_list.append(create_constraint_dict(field, operator, value))
