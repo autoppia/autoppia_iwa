@@ -54,6 +54,7 @@ class Selector(BaseModel):
             "data-testid": "[data-testid='{value}']",
             "data-custom": "[data-custom='{value}']",
             "href": "a[href='{value}']",
+            "title": "[title='{value}']",
         }
 
         selector_type = SelectorType(self.type)
