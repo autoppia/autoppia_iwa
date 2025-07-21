@@ -675,10 +675,10 @@ def generate_edit_profile_constraints():
 
     # Short words, letters, and syllables for text fields (for CONTAINS operators)
     random_text_elements = [
-        "e",
-        "a",
-        "o",
-        "x",
+        "el",
+        "al",
+        "ol",
+        "xa",
         "z",  # Single letters
         "car",
         "star",
@@ -739,7 +739,7 @@ def generate_edit_profile_constraints():
             value = choice(random_text_elements) if operator.name in [ComparisonOperator.CONTAINS, ComparisonOperator.NOT_CONTAINS] else choice(random_bios)
         elif field == "location":
             # For location, use EQUALS or NOT_EQUALS with a random location
-            value = choice(random_locations) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)
+            value = choice(random_text_elements) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_locations)
         elif field == "website":
             # For website, use EQUALS or NOT_EQUALS with a random website
             value = choice(random_websites) if operator.name in [ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS] else choice(random_text_elements)

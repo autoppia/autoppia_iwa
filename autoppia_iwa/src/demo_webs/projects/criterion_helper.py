@@ -22,78 +22,80 @@ class CriterionValue(BaseModel):
     operator: ComparisonOperator = ComparisonOperator.EQUALS
 
 
+_STRIP = str.maketrans("", "", ".,")
+
+
+def _normalize(s: str) -> str:
+    """lowercase + sin ',' ni '.' al inicio/fin ni en medio"""
+    return s.translate(_STRIP).lower().strip()
+
+
 def validate_criterion(actual_value: Any, criterion: Any | CriterionValue) -> bool:
     """
-    Validate a single criterion against an actual value
-
-    Args:
-        actual_value: The value from the event to validate
-        criterion: Either a simple value or a CriterionValue with operator
-
-    Returns:
-        True if the criterion is met, False otherwise
+    Validate a single criterion against an actual value.
+    Antes de comparar strings ⇒ se pasa a minúsculas y se quitan ',' y '.'
     """
+    # ───── helper para strings ─────
+    actual_norm = _normalize(actual_value) if isinstance(actual_value, str) else actual_value
+
     if not isinstance(criterion, CriterionValue):
         if isinstance(actual_value, str) and isinstance(criterion, str):
-            return criterion.lower() in actual_value.lower()
+            return _normalize(criterion) in actual_norm
         return actual_value == criterion
 
-    if criterion.operator == ComparisonOperator.EQUALS:
-        if isinstance(actual_value, str) and isinstance(criterion.value, str):
-            return actual_value.lower() == criterion.value.lower()
-        return actual_value == criterion.value
+    val = criterion.value
+    val_norm = _normalize(val) if isinstance(val, str) else val
 
-    elif criterion.operator == ComparisonOperator.NOT_EQUALS:
-        if isinstance(actual_value, str) and isinstance(criterion.value, str):
-            return actual_value.lower() != criterion.value.lower()
-        return actual_value != criterion.value
+    op = criterion.operator
 
-    elif criterion.operator == ComparisonOperator.CONTAINS:
+    if op == ComparisonOperator.EQUALS:
+        if isinstance(actual_value, str) and isinstance(val, str):
+            return actual_norm == val_norm
+        return actual_value == val
+
+    if op == ComparisonOperator.NOT_EQUALS:
+        if isinstance(actual_value, str) and isinstance(val, str):
+            return actual_norm != val_norm
+        return actual_value != val
+
+    if op == ComparisonOperator.CONTAINS:
         if isinstance(actual_value, list):
-            return any((isinstance(item, str) and isinstance(criterion.value, str) and criterion.value.lower() in item.lower()) or (item == criterion.value) for item in actual_value)
-        if isinstance(actual_value, str) and isinstance(criterion.value, str):
-            return criterion.value.lower() in actual_value.lower()
+            return any((_normalize(item) if isinstance(item, str) else item) == val_norm or (isinstance(item, str) and val_norm in _normalize(item)) for item in actual_value)
+        if isinstance(actual_value, str) and isinstance(val, str):
+            return val_norm in actual_norm
         return False
 
-    elif criterion.operator == ComparisonOperator.NOT_CONTAINS:
+    if op == ComparisonOperator.NOT_CONTAINS:
         if isinstance(actual_value, list):
-            return all((isinstance(item, str) and isinstance(criterion.value, str) and criterion.value.lower() not in item.lower()) or (item != criterion.value) for item in actual_value)
-        if isinstance(actual_value, str) and isinstance(criterion.value, str):
-            return criterion.value.lower() not in actual_value.lower()
+            return all((_normalize(item) if isinstance(item, str) else item) != val_norm and not (isinstance(item, str) and val_norm in _normalize(item)) for item in actual_value)
+        if isinstance(actual_value, str) and isinstance(val, str):
+            return val_norm not in actual_norm
         return False
 
-    elif criterion.operator == ComparisonOperator.GREATER_THAN:
-        if actual_value is None:
-            return False
-        return actual_value > criterion.value
+    if op == ComparisonOperator.GREATER_THAN:
+        return actual_value is not None and actual_value > val
 
-    elif criterion.operator == ComparisonOperator.LESS_THAN:
-        if actual_value is None:
-            return False
-        return actual_value < criterion.value
+    if op == ComparisonOperator.LESS_THAN:
+        return actual_value is not None and actual_value < val
 
-    elif criterion.operator == ComparisonOperator.GREATER_EQUAL:
-        if actual_value is None:
-            return False
-        return actual_value >= criterion.value
+    if op == ComparisonOperator.GREATER_EQUAL:
+        return actual_value is not None and actual_value >= val
 
-    elif criterion.operator == ComparisonOperator.LESS_EQUAL:
-        if actual_value is None:
-            return False
-        return actual_value <= criterion.value
+    if op == ComparisonOperator.LESS_EQUAL:
+        return actual_value is not None and actual_value <= val
 
-    elif criterion.operator == ComparisonOperator.IN_LIST:
-        if actual_value is None or not isinstance(criterion.value, list):
+    if op == ComparisonOperator.IN_LIST:
+        if actual_value is None or not isinstance(val, list):
             return False
         if isinstance(actual_value, str):
-            return actual_value.lower() in [v.lower() if isinstance(v, str) else v for v in criterion.value]
-        return actual_value in criterion.value
+            return actual_norm in [_normalize(v) if isinstance(v, str) else v for v in val]
+        return actual_value in val
 
-    elif criterion.operator == ComparisonOperator.NOT_IN_LIST:
-        if actual_value is None or not isinstance(criterion.value, list):
+    if op == ComparisonOperator.NOT_IN_LIST:
+        if actual_value is None or not isinstance(val, list):
             return False
         if isinstance(actual_value, str):
-            return actual_value.lower() not in [v.lower() if isinstance(v, str) else v for v in criterion.value]
-        return actual_value not in criterion.value
+            return actual_norm not in [_normalize(v) if isinstance(v, str) else v for v in val]
+        return actual_value not in val
 
     return False
