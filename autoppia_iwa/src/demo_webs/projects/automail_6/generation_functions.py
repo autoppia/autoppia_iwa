@@ -20,34 +20,6 @@ from .data import (
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
 )
 
-# def _generate_value_for_field(field_name, operator):
-#     if field_name == 'subject':
-#         if operator == ComparisonOperator.EQUALS:
-#             return random.choice([email['subject'] for email in EMAILS_DATA if field_name == email['subject']])
-#         elif operator == ComparisonOperator.NOT_EQUALS:
-#             return random.choice([email['subject'] for email in EMAILS_DATA if field_name != email['subject']])
-#         elif operator == ComparisonOperator.CONTAINS:
-#             return random.choice([email['subject'] for email in EMAILS_DATA if field_name in email['subject']])
-#         elif operator == ComparisonOperator.NOT_CONTAINS:
-#             return random.choice([email['subject'] for email in EMAILS_DATA if field_name not in email['subject']])
-#
-#     if field_name == 'from_email':
-#         email = None
-#         if operator == ComparisonOperator.EQUALS:
-#             email = random.choice([email for email in EMAILS_DATA if field_name == email['from']['email']])
-#         elif operator == ComparisonOperator.NOT_EQUALS:
-#             email = random.choice([email for email in EMAILS_DATA if field_name != email['from']['email']])
-#         elif operator == ComparisonOperator.CONTAINS:
-#             email = random.choice([email for email in EMAILS_DATA if field_name in email['from']['email']])
-#         elif operator == ComparisonOperator.NOT_CONTAINS:
-#             email = random.choice([email for email in EMAILS_DATA if field_name not in email['from']['email']])
-#
-#         if email:
-#             return email['from']['email']
-#
-#     print(f"Warning: No specific mock value generator for field '{field_name}'. Using default string.")
-#     return "mock_value"
-
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
     value = None
@@ -71,8 +43,11 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
 
     elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
-        return random.choice(valid) if valid else None
+        alphabet = "abcdefghijklmnopqrstuvwxyz"
+        while True:
+            test_str = "".join(random.choice(alphabet) for _ in range(3))
+            if test_str.lower() not in field_value.lower():
+                return test_str
 
     elif operator == ComparisonOperator.IN_LIST:
         all_values = list({v.get(field) for v in dataset if field in v})
@@ -381,7 +356,9 @@ def generate_create_label_constraints() -> list[dict[str, Any]]:
 
 def generate_add_label_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    actions = ["added", "removed"]
+    actions = ["removed"]
+    # actions = ["added", "removed"]
+    removable_labels = ["Starred", "Important", "Work", "Personal"]
 
     # Step 1: Choose an action
     selected_action = choice(actions)
@@ -393,12 +370,34 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
         labels = email.get("labels", [])
         body = email.get("body")
         if not labels:
-            full_dataset.append({"action": "removed", "label_name": "", "body": body, "subject": subject})
+            continue
 
         for label in labels:
             label_name = label.get("name")
             if label_name:
                 full_dataset.append({"action": "added", "label_name": label_name, "body": body, "subject": subject})
+
+    # For 'removed', only allow removable_labels that were previously 'added'
+    if selected_action == "removed":
+        added_labels = {item["label_name"] for item in full_dataset if item["action"] == "added"}
+        removable = list(set(removable_labels) & added_labels)
+        if not removable:
+            return []
+        # Create a dataset for removed actions
+        full_dataset_removed = []
+        for label_name in removable:
+            # Find an example email with this label to get subject/body
+            example = next((item for item in full_dataset if item["label_name"] == label_name), None)
+            if example:
+                full_dataset_removed.append(
+                    {
+                        "action": "removed",
+                        "label_name": label_name,
+                        "body": example.get("body"),
+                        "subject": example.get("subject"),
+                    }
+                )
+        full_dataset = full_dataset_removed
 
     # Step 3: Filter dataset by selected action
     filtered_dataset = [item for item in full_dataset if item.get("action", "removed") == selected_action]
@@ -407,7 +406,7 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
 
     # Step 4: Ensure either body or subject is present in the selected item
     selected_item = choice(filtered_dataset)
-    while not selected_item.get("body") and not selected_item.get("subject"):
+    while not selected_item.get("body") and not selected_item.get("subject") and not selected_item.get("label_name"):
         selected_item = choice(filtered_dataset)
 
     # Step 5: Always include action + label_name
