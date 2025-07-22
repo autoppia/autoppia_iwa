@@ -19,14 +19,14 @@ class Email(BaseModel):
 
 class ViewEmailEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_EMAIL"
-    email_id: str
+    # email_id: str
     subject: str
     from_email: str
 
     class ValidationCriteria(BaseModel):
         """Criteria for validating registration events"""
 
-        email_id: str | CriterionValue | None = None
+        # email_id: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
         from_email: str | CriterionValue | None = None
 
@@ -35,7 +35,7 @@ class ViewEmailEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.email_id, criteria.email_id),
+                # self._validate_field(self.email_id, criteria.email_id),
                 self._validate_field(self.subject, criteria.subject),
                 self._validate_field(self.from_email, criteria.from_email),
             ]
@@ -48,7 +48,7 @@ class ViewEmailEvent(Event, BaseEventValidator):
         """
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        email_id = data.get("email_id", "")
+        # email_id = data.get("email_id", "")
         subject = data.get("subject", "")
         from_email = data.get("from", "")
         return cls(
@@ -56,7 +56,7 @@ class ViewEmailEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            email_id=email_id,
+            # email_id=email_id,
             subject=subject,
             from_email=from_email,
         )
@@ -64,26 +64,26 @@ class ViewEmailEvent(Event, BaseEventValidator):
 
 class StarEmailEvent(Event, BaseEventValidator):
     event_name: str = "STAR_AN_EMAIL"
-    email_id: str
+    # email_id: str
     subject: str
     from_email: str
     is_starred: bool
 
     class ValidationCriteria(BaseModel):
-        email_id: str | CriterionValue | None = None
+        # email_id: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
         from_email: str | CriterionValue | None = None
-        isStarred: bool | CriterionValue | None = None
+        is_starred: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.email_id, criteria.email_id),
+                # self._validate_field(self.email_id, criteria.email_id),
                 self._validate_field(self.subject, criteria.subject),
                 self._validate_field(self.from_email, criteria.from_email),
-                self._validate_field(self.is_starred, criteria.isStarred),
+                self._validate_field(self.is_starred, criteria.is_starred),
             ]
         )
 
@@ -96,7 +96,7 @@ class StarEmailEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            email_id=data.get("email_id", ""),
+            # email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
             is_starred=data.get("is_star", False),
@@ -115,7 +115,7 @@ class MarkEmailAsImportantEvent(ViewEmailEvent, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
+                # self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
                 self._validate_field(self.subject, getattr(criteria, "subject", None)),
                 self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
                 self._validate_field(self.is_important, getattr(criteria, "is_important", None)),
@@ -131,7 +131,7 @@ class MarkEmailAsImportantEvent(ViewEmailEvent, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            email_id=data.get("email_id", ""),
+            # email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
             is_important=data.get("is_important", False),
@@ -150,7 +150,7 @@ class MarkAsUnreadEvent(ViewEmailEvent, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
+                # self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
                 self._validate_field(self.subject, getattr(criteria, "subject", None)),
                 self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
                 self._validate_field(self.is_read, getattr(criteria, "is_read", None)),
@@ -166,7 +166,7 @@ class MarkAsUnreadEvent(ViewEmailEvent, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            email_id=data.get("email_id", ""),
+            # email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
             is_read=data.get("is_read", False),
@@ -175,14 +175,14 @@ class MarkAsUnreadEvent(ViewEmailEvent, BaseEventValidator):
 
 class DeleteEmailEvent(Event, BaseEventValidator):
     event_name: str = "DELETE_EMAIL"
-    email_id: str
+    # email_id: str
     subject: str
     from_email: str
 
     class ValidationCriteria(Event.ValidationCriteria):
         """Criteria for validating delete email events"""
 
-        email_id: str | CriterionValue | None = None
+        # email_id: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
         from_email: str | CriterionValue | None = None
 
@@ -191,7 +191,7 @@ class DeleteEmailEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.email_id, criteria.email_id),
+                # self._validate_field(self.email_id, criteria.email_id),
                 self._validate_field(self.subject, criteria.subject),
                 self._validate_field(self.from_email, criteria.from_email),
             ]
@@ -206,7 +206,7 @@ class DeleteEmailEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            email_id=data.get("email_id", ""),
+            # email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
         )
@@ -224,7 +224,7 @@ class MarkAsSpamEvent(ViewEmailEvent, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
+                # self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
                 self._validate_field(self.subject, getattr(criteria, "subject", None)),
                 self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
                 self._validate_field(self.is_spam, getattr(criteria, "is_spam", None)),
@@ -240,7 +240,7 @@ class MarkAsSpamEvent(ViewEmailEvent, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            email_id=data.get("email_id", ""),
+            # email_id=data.get("email_id", ""),
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
             is_spam=data.get("is_spam", False),
@@ -290,8 +290,8 @@ class AddLabelEvent(Event, BaseEventValidator):
         emails = []
         if "emails" in data and isinstance(data["emails"], list):
             emails = [Email(**e) for e in data["emails"]]
-        elif "email_ids" in data and isinstance(data["email_ids"], list):
-            emails = [Email(subject="", body="") for _ in data["email_ids"]]
+        # elif "email_ids" in data and isinstance(data["email_ids"], list):
+        #     emails = [Email(subject="", body="") for _ in data["email_ids"]]
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
@@ -307,12 +307,12 @@ class AddLabelEvent(Event, BaseEventValidator):
 class CreateLabelEvent(Event, BaseEventValidator):
     event_name: str = "CREATE_LABEL"
     label_name: str
-    label_color: str
+    # label_color: str
 
     class ValidationCriteria(BaseModel):
         label_id: str | CriterionValue | None = None
         label_name: str | CriterionValue | None = None
-        label_color: str | CriterionValue | None = None
+        # label_color: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -320,7 +320,7 @@ class CreateLabelEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.label_name, criteria.label_name),
-                self._validate_field(self.label_color, criteria.label_color),
+                # self._validate_field(self.label_color, criteria.label_color),
             ]
         )
 
@@ -334,37 +334,13 @@ class CreateLabelEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             label_name=data.get("label_name", ""),
-            label_color=data.get("label_color", ""),
+            # label_color=data.get("label_color", ""),
         )
 
 
 # ---------------------------------------------------------------------------
-# Compose / Send / Draft
+# Send / Draft
 # ---------------------------------------------------------------------------
-
-
-class ComposeEmailEvent(Event, BaseEventValidator):
-    event_name: str = "COMPOSE_EMAIL"
-    action: str
-
-    class ValidationCriteria(BaseModel):
-        action: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return self._validate_field(self.action, criteria.action)
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "ComposeEmailEvent":
-        base = Event.parse(backend_event)
-        return cls(
-            event_name=base.event_name,
-            timestamp=base.timestamp,
-            web_agent_id=base.web_agent_id,
-            user_id=base.user_id,
-            action=backend_event.data.get("action", ""),
-        )
 
 
 class SendEmailEvent(Event, BaseEventValidator):
@@ -508,7 +484,6 @@ EVENTS = [
     MarkAsSpamEvent,
     AddLabelEvent,
     CreateLabelEvent,
-    ComposeEmailEvent,
     SendEmailEvent,
     EmailSaveAsDraftEvent,
     ThemeChangedEvent,
@@ -523,7 +498,6 @@ BACKEND_EVENT_TYPES = {
     "MARK_AS_SPAM": MarkAsSpamEvent,
     "ADD_LABEL": AddLabelEvent,
     "CREATE_LABEL": CreateLabelEvent,
-    "COMPOSE_EMAIL": ComposeEmailEvent,
     "SEND_EMAIL": SendEmailEvent,
     "EMAIL_SAVE_AS_DRAFT": EmailSaveAsDraftEvent,
     "THEME_CHANGED": ThemeChangedEvent,
