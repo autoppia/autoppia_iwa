@@ -454,3 +454,32 @@ class MessageHostEvent(Event, BaseEventValidator):
 #         base_event = Event.parse(backend_event)
 #         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp,
 #                    web_agent_id=base_event.web_agent_id, user_id=base_event.user_id)
+
+
+# =============================================================================
+#                    AVAILABLE EVENTS AND USE CASES
+# =============================================================================
+
+EVENTS = [
+    SearchHotelEvent,
+    SearchClearedEvent,
+    ViewHotelEvent,
+    ReserveHotelEvent,
+    IncreaseNumberOfGuestsEvent,
+    DecreaseNumberOfGuestsEvent,
+    EditCheckInOutDatesEvent,
+    ConfirmAndPayEvent,
+    MessageHostEvent,
+]
+
+BACKEND_EVENT_TYPES = {
+    "SEARCH_HOTEL_EVENT": SearchHotelEvent,
+    "SEARCH_CLEARED_EVENT": SearchClearedEvent,
+    "VIEW_HOTEL_EVENT": ViewHotelEvent,
+    "RESERVE_HOTEL_EVENT": ReserveHotelEvent,
+    "INCREASE_NUMBER_OF_GUESTS_EVENT": IncreaseNumberOfGuestsEvent,
+    "DECREASE_NUMBER_OF_GUESTS_EVENT": DecreaseNumberOfGuestsEvent,
+    "EDIT_CHECK_IN_OUT_DATES": EditCheckInOutDatesEvent,
+    "CONFIRM_AND_PAY": ConfirmAndPayEvent,
+    "MESSAGE_HOST": MessageHostEvent,
+}
