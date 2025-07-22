@@ -117,7 +117,7 @@ def generate_is_starred_constraints() -> list[dict[str, Any]]:
     email = choice(EMAILS_DATA_MODIFIED)
     fixed_field = "is_starred"
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_STARRED_MAP[fixed_field]))
-    field_value = email.get(fixed_field, False) is not True
+    field_value = not email.get(fixed_field, False)
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_STARRED_MAP if item != fixed_field]
