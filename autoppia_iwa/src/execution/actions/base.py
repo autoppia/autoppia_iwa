@@ -73,6 +73,8 @@ class Selector(BaseModel):
                 # Basic sanitization: remove leading '.' if present
                 clean_classes = [cls.lstrip(".") for cls in classes]
                 return "".join(f".{cls}" for cls in clean_classes)
+            elif self.attribute == "custom":
+                return self.value
             elif self.attribute in ATTRIBUTE_FORMATS:
                 # Use predefined formats for common attributes
                 return ATTRIBUTE_FORMATS[self.attribute].format(value=self.value)
