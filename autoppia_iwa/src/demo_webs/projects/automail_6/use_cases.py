@@ -114,23 +114,19 @@ CRITICAL REQUIREMENTS: Every prompt you generate MUST follow these rules:
 1. Use clear action phrases such as:
    - "mark as important" or "mark as not important"
    - "flag as important or not important"
-   - "set as high priority"
 
  The **is_important** MUST be reflected explicitly:
     IMPORTANT:
    - Use phrases like: "mark as important", or "flag as important", ONLY when 'is_important' is True.
    - Use phrases like: "mark as not important", ONLY when 'is_important' is False.
 
-2. Include at least one identifier for the email:
-   - Subject
-   - Email ID
-   - Sender (from email)
-
-3. Examples:
+2. If the criteria specify that the email is NOT equal to a particular address, the prompt MUST mention that explicitly, e.g., "Mark the email with subject containing 'Coffee Catch-U' that is NOT from 'me@gmail.com' as important."
+   Examples:
     Correct: "Mark the email with Subject containing 'g Workshop' as important."
-    Incorrect: "Mark the email with Subject containing 'g Workshop' as important where isImportant is NOT equal to True."
-4. IMPORTANT: Do **NOT** mention isImportant in the prompt.
-5. Phrase each prompt naturally and vary the wording, but keep the user intent consistent.
+    Correct: "Mark the email with subject containing 'Coffee Catch-U' that is NOT from 'me@gmail.com' as important."
+    Incorrect: "Mark the email from 'me@gmail.com' that has a subject containing 'Coffee Catch-U' as important." (if the criteria is not_equals)
+3. IMPORTANT: Do **NOT** mention isImportant/is_important in the prompt.
+4. Phrase each prompt naturally and vary the wording, but keep the user intent consistent.
 """
 
 MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
@@ -574,13 +570,13 @@ ALL_USE_CASES = [
     # SEARCH_EMAIL_USE_CASE,
     # VIEW_EMAIL_USE_CASE,
     # STAR_EMAIL_USE_CASE,
-    # MARK_EMAIL_AS_IMPORTANT_USE_CASE,
+    MARK_EMAIL_AS_IMPORTANT_USE_CASE,
     # MARK_AS_UNREAD_USE_CASE,
     # DELETE_EMAIL_USE_CASE,
     # MARK_AS_SPAM_USE_CASE,
     # ADD_LABEL_USE_CASE,
     # CREATE_LABEL_USE_CASE,
-    SEND_EMAIL_USE_CASE,
+    # SEND_EMAIL_USE_CASE,
     # EMAIL_SAVE_AS_DRAFT_USE_CASE,
     # THEME_CHANGED_USE_CASE,
 ]

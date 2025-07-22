@@ -172,7 +172,7 @@ def generate_is_important_constraints() -> list[dict[str, Any]]:
     fixed_field = "is_important"
     email = choice(EMAILS_DATA_MODIFIED)
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_IMPORTANT_MAP[fixed_field]))
-    field_value = email[fixed_field] is not True
+    field_value = not email[fixed_field]
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_IMPORTANT_MAP if item != fixed_field]
@@ -237,8 +237,7 @@ def generate_search_email_constraints() -> list[dict[str, Any]]:
     constraints_list = []
 
     for field, operators in FIELD_OPERATORS_SEARCH_MAP.items():
-        op_str = random.choice(operators)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(operators))
         field_value = choice(ALL_EMAIL_WORDS)
 
         value = _generate_search_constraint_value(operator, field_value)
@@ -282,7 +281,7 @@ def generate_save_as_draft_send_email_constraints() -> list[dict[str, Any]]:
     email = choice(EMAILS_DATA_MODIFIED)
     selected_fields = ["to"]  # Fixed 'to'
     possible_fields = ["subject", "body"]
-    num_constraints = random.randint(0, len(possible_fields))
+    num_constraints = random.randint(1, len(possible_fields))
     selected_fields.extend(random.sample(possible_fields, num_constraints))
 
     for field in selected_fields:
@@ -309,8 +308,6 @@ def _get_labels_and_colors(email_data: list[dict[str, Any]]) -> tuple:
 
 def generate_create_label_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    # num_constraints = random.randint(1, len(FIELD_OPERATORS_CREATE_LABEL_MAP))
-    # possible_fields = random.sample(list(FIELD_OPERATORS_CREATE_LABEL_MAP.keys()), num_constraints)
     labels, colors = _get_labels_and_colors(EMAILS_DATA_MODIFIED)
     labels_and_colors = [{"label_name": label, "label_color": color} for label, color in zip(labels, colors, strict=False)]
     possible_fields = ["label_name"]
@@ -319,8 +316,7 @@ def generate_create_label_constraints() -> list[dict[str, Any]]:
         if not allowed_ops:
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = choice(labels_and_colors).get(field)
         value = _generate_constraint_value(operator, field_value, field, labels_and_colors)
         constraints_list.append(create_constraint_dict(field, operator, value))
@@ -401,10 +397,9 @@ def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     if not allowed_ops:
         return constraints_list
 
-    op_str = random.choice(allowed_ops)
-    operator = ComparisonOperator(op_str)
+    operator = ComparisonOperator(random.choice(allowed_ops))
 
-    field_value = random.choice(themes)
+    field_value = choice(themes)
     value = field_value if operator == ComparisonOperator.EQUALS else random.choice([theme for theme in themes if theme != field_value])
 
     constraints_list.append(create_constraint_dict(field, operator, value))
