@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from dateutil import parser
 from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
@@ -12,8 +13,8 @@ def parse_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
+        return parser.isoparse(value)
+    except (ValueError, TypeError):
         return None
 
 
@@ -177,12 +178,101 @@ class ViewHotelEvent(Event, BaseEventValidator):
         )
 
 
-class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator):
+class HotelInfo(BaseModel):
+    # hotel_id: str
+    title: str
+    location: str
+    image: str
+    price: int
+    rating: float
+    reviews: int
+    guests: int
+    datesFrom: datetime
+    datesTo: datetime
+    baths: int
+    bedrooms: int
+    beds: int
+    host_name: str
+    host_since: int
+    # host_avatar: str
+    amenities: list[dict[str, str]]
+
+    class ValidationCriteria(BaseModel):
+        # hotel_id: Optional[Union[str, CriterionValue]] = None
+        title: str | CriterionValue | None = None
+        location: str | CriterionValue | None = None
+        image: str | CriterionValue | None = None
+        price: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        reviews: int | CriterionValue | None = None
+        guests: int | CriterionValue | None = None
+        datesFrom: datetime | CriterionValue | None = None
+        datesTo: datetime | CriterionValue | None = None
+        baths: int | CriterionValue | None = None
+        bedrooms: int | CriterionValue | None = None
+        beds: int | CriterionValue | None = None
+        host_name: str | CriterionValue | None = None
+        host_since: int | CriterionValue | None = None
+        # host_avatar: Optional[Union[str, CriterionValue]] = None
+        amenities: list[dict[str, str]] | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                # self._validate_field(self.hotel_id, criteria.hotel_id),
+                self._validate_field(self.title, criteria.title),
+                self._validate_field(self.location, criteria.location),
+                self._validate_field(self.image, criteria.image),
+                self._validate_field(self.price, criteria.price),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.guests, criteria.guests),
+                self._validate_field(self.datesFrom, criteria.datesFrom),
+                self._validate_field(self.datesTo, criteria.datesTo),
+                self._validate_field(self.baths, criteria.baths),
+                self._validate_field(self.bedrooms, criteria.bedrooms),
+                self._validate_field(self.beds, criteria.beds),
+                self._validate_field(self.host_name, criteria.host_name),
+                self._validate_field(self.host_since, criteria.host_since),
+                # self._validate_field(self.host_avatar, criteria.host_avatar),
+                self._validate_field(self.amenities, criteria.amenities),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, data) -> "HotelInfo":
+        # base = Event.parse(backend_event)
+        # data = backend_event.data
+        data = data.get("hotel", {})
+        return cls(
+            hotel_id=data.get("id"),
+            title=data.get("title"),
+            location=data.get("location"),
+            image=data.get("image"),
+            price=data.get("price"),
+            rating=data.get("rating"),
+            reviews=data.get("reviews"),
+            guests=data.get("guests"),
+            datesFrom=parse_datetime(data.get("datesFrom")),
+            datesTo=parse_datetime(data.get("datesTo")),
+            baths=data.get("baths"),
+            bedrooms=data.get("bedrooms"),
+            beds=data.get("beds"),
+            host_name=data.get("name"),
+            host_since=data.get("since"),
+            # host_avatar=data.get("avatar"),
+            amenities=data.get("amenities", []),
+        )
+
+
+class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "INCREASE_NUMBER_OF_GUESTS"
     from_guests: int
     to_guests: int
 
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
         """Criteria for validating increase guests events"""
 
         from_guests: int | CriterionValue | None = None
@@ -195,31 +285,34 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.from_guests, criteria.from_guests),
                 self._validate_field(self.to_guests, criteria.to_guests),
+                super()._validate_criteria(criteria),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "IncreaseNumberOfGuestsEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        from_guests = data.get("from", 0)
-        to_guests = data.get("to", 0)
+        hotel_info = HotelInfo.parse(backend_event.data)
+
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            from_guests=from_guests,
-            to_guests=to_guests,
+            from_guests=backend_event.data.get("from", 0),
+            to_guests=backend_event.data.get("to", 0),
+            **hotel_info.dict(),
         )
 
 
-class DecreaseNumberOfGuestsEvent(Event, BaseEventValidator):
+class DecreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "DECREASE_NUMBER_OF_GUESTS"
     from_guests: int
     to_guests: int
 
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
+        """Criteria for validating decrease guests events"""
+
         from_guests: int | CriterionValue | None = None
         to_guests: int | CriterionValue | None = None
 
@@ -230,12 +323,14 @@ class DecreaseNumberOfGuestsEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.from_guests, criteria.from_guests),
                 self._validate_field(self.to_guests, criteria.to_guests),
+                super()._validate_criteria(criteria),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "DecreaseNumberOfGuestsEvent":
         base_event = Event.parse(backend_event)
+        hotel_info = HotelInfo.parse(backend_event.data)
         data = backend_event.data
         from_guests = data.get("from", 0)
         to_guests = data.get("to", 0)
@@ -246,19 +341,20 @@ class DecreaseNumberOfGuestsEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             from_guests=from_guests,
             to_guests=to_guests,
+            **hotel_info.dict(),
         )
 
 
-class ReserveHotelEvent(Event, BaseEventValidator):
+class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user reserves a hotel"""
 
     event_name: str = "RESERVE_HOTEL"
     hotel_id: str | None = None
     guests: int | None = None
-    date_from: datetime | None = None
-    date_to: datetime | None = None
+    checkin: datetime | None = None
+    checkout: datetime | None = None
 
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
         hotel_id: str | CriterionValue | None = None
         guests: int | CriterionValue | None = None
         date_from: datetime | None = None
@@ -275,6 +371,7 @@ class ReserveHotelEvent(Event, BaseEventValidator):
                 self._validate_field(self.guests, criteria.guests),
                 date_from_valid,
                 date_to_valid,
+                super()._validate_criteria(criteria),
             ]
         )
 
@@ -282,6 +379,7 @@ class ReserveHotelEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "ReserveHotelEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
+        hotel_info = HotelInfo.parse(data)
 
         return cls(
             event_name=base_event.event_name,
@@ -290,12 +388,13 @@ class ReserveHotelEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             hotel_id=data.get("id"),
             guests=data.get("guests"),
-            date_from=parse_datetime(data.get("checkin")),
-            date_to=parse_datetime(data.get("checkout")),
+            checkin=parse_datetime(data.get("checkin")),
+            checkout=parse_datetime(data.get("checkout")),
+            **hotel_info.dict(),
         )
 
 
-class EditCheckInOutDatesEvent(Event, BaseEventValidator):
+class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "EDIT_CHECK_IN_OUT_DATES"
     checkin: datetime
     checkout: datetime
