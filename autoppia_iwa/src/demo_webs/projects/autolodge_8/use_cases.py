@@ -11,6 +11,8 @@ from .events import (
     ViewHotelEvent,
 )
 from .generation_functions import (
+    generate_confirm_and_pay_constraints,
+    generate_edit_checkin_checkout_constraints,
     generate_increase_guests_constraints,
     generate_message_host_constraints,
     generate_reserve_hotel_constraints,
@@ -36,7 +38,7 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
    - Destination or area (e.g., 'Murree', 'beachside', 'city center')
    - Travel dates (check-in and check-out)
    - Guest details: number of adults, children, infants, or pets
-3. DO NOT include any other interactions like hotel selection, booking, or viewing details — just the search intent.
+3. DO NOT include any other interactions like hotel selection, booking, or viewing details - just the search intent.
 """
 
 SEARCH_HOTEL_USE_CASE = UseCase(
@@ -130,7 +132,7 @@ VIEW_HOTEL_USE_CASE = UseCase(
             "prompt_for_task_generation": "View hotel in Murree with 5-star rating and free breakfast.",
         },
         {
-            "prompt": "Open the second hotel from the list — the one hosted by Fatima since 2018, I think.",
+            "prompt": "Open the second hotel from the list - the one hosted by Fatima since 2018, I think.",
             "prompt_for_task_generation": "View hotel hosted by Fatima since 2018.",
         },
         {
@@ -142,7 +144,7 @@ VIEW_HOTEL_USE_CASE = UseCase(
             "prompt_for_task_generation": "View hotel in Lahore with price under 12000 and rating above 4.5.",
         },
         {
-            "prompt": "Show me the villa hosted by someone with great reviews — the one that says 'hosted since 2016'.",
+            "prompt": "Show me the villa hosted by someone with great reviews - the one that says 'hosted since 2016'.",
             "prompt_for_task_generation": "View hotel hosted since 2016 with high host rating.",
         },
         {
@@ -162,9 +164,8 @@ VIEW_HOTEL_USE_CASE = UseCase(
 
 INCREASE_NUMBER_OF_GUESTS_INFO = """
 CRITICAL REQUIREMENT:
-1. Increase the guest by increment
-Trigger this event when a user increases the number of guests for their hotel reservation or search.
-This could happen through an explicit action (e.g., 'add more people') or a contextual update (e.g., 'make it 3 guests instead of 2').
+1. Mention increment of guests only in prompt.
+2. Do NOT any details other than number of guests.
 """
 
 INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
@@ -180,11 +181,11 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
             "prompt_for_task_generation": "Increase guests from 2 to 3.",
         },
         {
-            "prompt": "Increase number of guests from 2 to 3.",
-            "prompt_for_task_generation": "Increase number of guests from 2 to 3.",
+            "prompt": "Increase number of guests to 3.",
+            "prompt_for_task_generation": "Increase number of guests to 3.",
         },
         {
-            "prompt": "We're 4 now, can you update that?",
+            "prompt": "Increase guest count to 4.",
             "prompt_for_task_generation": "Increase guest count to 4.",
         },
         {
@@ -193,14 +194,14 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
         },
         {
             "prompt": "Need to include my cousin too, so now it's 6 people.",
-            "prompt_for_task_generation": "Increase guests from 5 to 6.",
+            "prompt_for_task_generation": "Need to include my cousin too, so now it's 6 people.",
         },
         {
-            "prompt": "Btw, we're adding 2 more friends.",
-            "prompt_for_task_generation": "Increase guests by 2.",
+            "prompt": "Btw, we're adding 2 more friends. Increase guests by 2. ",
+            "prompt_for_task_generation": "Btw, we're adding 2 more friends. Increase guests by 2. ",
         },
         {
-            "prompt": "Oh I forgot about the kids — we're 2 adults and 2 children.",
+            "prompt": "Oh I forgot about the kids - we're 2 adults and 2 children.",
             "prompt_for_task_generation": "Increase number of guests to 4.",
         },
     ],
@@ -235,7 +236,7 @@ DECREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
             "prompt_for_task_generation": "Decrease guest count to 3.",
         },
         {
-            "prompt": "My brother isn't coming anymore — we're now 2.",
+            "prompt": "My brother isn't coming anymore - we're now 2.",
             "prompt_for_task_generation": "Decrease guests from 3 to 2.",
         },
         {
@@ -291,7 +292,7 @@ RESERVE_HOTEL_USE_CASE = UseCase(
             "prompt_for_task_generation": "Reserve currently viewed hotel.",
         },
         {
-            "prompt": "Finalize this hotel for the Eid holidays — 4 people, 10th to 14th May.",
+            "prompt": "Finalize this hotel for the Eid holidays - 4 people, 10th to 14th May.",
             "prompt_for_task_generation": "Reserve hotel from May 10th to 14th for 4 guests.",
         },
         {
@@ -317,6 +318,7 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     description="Triggered when a user edits the check-in or check-out dates of a reservation or search.",
     event=EditCheckInOutDatesEvent,
     event_source_code=EditCheckInOutDatesEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_checkin_checkout_constraints,
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
     examples=[
         {
@@ -340,7 +342,7 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
             "prompt_for_task_generation": "Set check-in to the 5th and check-out two days later.",
         },
         {
-            "prompt": "Change only the check-out — we'll stay one extra night.",
+            "prompt": "Change only the check-out - we'll stay one extra night.",
             "prompt_for_task_generation": "Extend check-out by one day.",
         },
         {
@@ -355,9 +357,8 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
 ###############################################################################
 
 CONFIRM_AND_PAY_INFO = """
-    Trigger this event when the user confirms a reservation and proceeds to payment.
-The user may explicitly mention proceeding to payment or imply it by confirming all details
-(e.g., 'Yes, go ahead and book it', 'Looks perfect, pay now', or 'Use my saved card to pay').
+CRITICAL REQUIREMENT:
+1. Start the prompt with details confirmation
 """
 
 CONFIRM_AND_PAY_USE_CASE = UseCase(
@@ -365,43 +366,44 @@ CONFIRM_AND_PAY_USE_CASE = UseCase(
     description="Triggered when the user confirms booking details and initiates payment.",
     event=ConfirmAndPayEvent,
     event_source_code=ConfirmAndPayEvent.get_source_code_of_class(),
+    constraints_generator=generate_confirm_and_pay_constraints,
     additional_prompt_info=CONFIRM_AND_PAY_INFO,
     examples=[
         {
-            "prompt": "Confirm and pay with Visa ending in 4242.",
-            "prompt_for_task_generation": "Proceed to payment and confirm booking using saved Visa card.",
+            "prompt": "Everything looks great - the beach house in Malibu from Aug 15-19 for 2 guests. Use my Visa ending in 4242 to confirm and pay.",
+            "prompt_for_task_generation": "Everything looks great - the beach house in Malibu from Aug 15-19 for 2 guests. Use my Visa ending in 4242 to confirm and pay.",
         },
         {
-            "prompt": "All looks good, go ahead and book it.",
-            "prompt_for_task_generation": "Confirm and pay for the reservation.",
+            "prompt": "Confirm the apartment in NYC, Aug 10 to 13, 3 guests. Pay with my Mastercard ending in 1234.",
+            "prompt_for_task_generation": "Confirm the apartment in NYC, Aug 10 to 13, 3 guests. Pay with my Mastercard ending in 1234.",
         },
         {
-            "prompt": "Use my Mastercard ending in 1234 to complete the payment.",
-            "prompt_for_task_generation": "Proceed to payment using specified card.",
+            "prompt": "The mountain cabin from Sept 2 to 5 for 4 guests looks perfect. Go ahead and charge my PayPal.",
+            "prompt_for_task_generation": "The mountain cabin from Sept 2 to 5 for 4 guests looks perfect. Go ahead and charge my PayPal.",
         },
         {
-            "prompt": "Book now — check-in on August 15, check-out August 19, 2 guests.",
-            "prompt_for_task_generation": "Confirm and pay for reservation with provided dates and guest info.",
+            "prompt": "Book the downtown loft for 2 guests from July 25-28. Pay in PKR using my saved card.",
+            "prompt_for_task_generation": "Book the downtown loft for 2 guests from July 25-28. Pay in PKR using my saved card.",
         },
         {
-            "prompt": "Let's finalize the booking and pay the full amount.",
-            "prompt_for_task_generation": "Confirm booking and process full payment.",
+            "prompt": "Confirm the booking - Lakeview Villa, August 12-15, 5 guests. Complete the payment now.",
+            "prompt_for_task_generation": "Confirm the booking - Lakeview Villa, August 12-15, 5 guests. Complete the payment now.",
         },
         {
-            "prompt": "Reserve the beach house and pay via PayPal.",
-            "prompt_for_task_generation": "Confirm booking and initiate payment using PayPal.",
+            "prompt": "Looks good: Santorini Suite, Sept 10-14, 2 guests. Finalize and charge my card.",
+            "prompt_for_task_generation": "Looks good: Santorini Suite, Sept 10-14, 2 guests. Finalize and charge my card.",
         },
         {
-            "prompt": "That's the one — book it and charge my card.",
-            "prompt_for_task_generation": "Confirm listing and charge user's card to complete booking.",
+            "prompt": "Confirm all details - 3 nights in Dubai, 2 guests, Sept 20-23. Proceed to payment with saved Visa.",
+            "prompt_for_task_generation": "Confirm all details - 3 nights in Dubai, 2 guests, Sept 20-23. Proceed to payment with saved Visa.",
         },
         {
-            "prompt": "I want to pay in PKR and confirm everything.",
-            "prompt_for_task_generation": "Confirm and pay with PKR as selected country/currency.",
+            "prompt": "Confirm the treehouse stay from Aug 30 to Sept 2 for 2. Pay with Apple Pay.",
+            "prompt_for_task_generation": "Confirm the treehouse stay from Aug 30 to Sept 2 for 2. Pay with Apple Pay.",
         },
         {
-            "prompt": "Apply my saved card and go ahead.",
-            "prompt_for_task_generation": "Use stored payment details to confirm and pay.",
+            "prompt": "Yes, confirm this listing for 1 guest, July 29-Aug 1. Go ahead and apply my saved card.",
+            "prompt_for_task_generation": "Yes, confirm this listing for 1 guest, July 29-Aug 1. Go ahead and apply my saved card.",
         },
     ],
 )
@@ -469,8 +471,8 @@ ALL_USE_CASES = [
     # VIEW_HOTEL_USE_CASE,
     # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     # DECREASE_NUMBER_OF_GUESTS_USE_CASE,
-    RESERVE_HOTEL_USE_CASE,
+    # RESERVE_HOTEL_USE_CASE,
     # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
-    # CONFIRM_AND_PAY_USE_CASE,
+    CONFIRM_AND_PAY_USE_CASE,
     # MESSAGE_HOST_USE_CASE
 ]

@@ -1,3 +1,7 @@
+from datetime import datetime
+
+from dateutil import parser
+
 from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 
 REGION_HOTELS = [
@@ -1059,6 +1063,15 @@ FEATURED_HOTELS = [
 ]
 
 
+def parse_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return parser.isoparse(value)
+    except (ValueError, TypeError):
+        return None
+
+
 def get_modify_data(hotels_data=None):
     if hotels_data is None:
         hotels_data = FEATURED_HOTELS + DASHBOARD_HOTELS + REGION_HOTELS
@@ -1068,7 +1081,10 @@ def get_modify_data(hotels_data=None):
         new_dict = {}
         for k, v in hotel.items():
             if isinstance(v, str):
-                new_dict[k] = v
+                if k in ["datesFrom", "datesTo"]:
+                    new_dict[k] = parse_datetime(v)
+                else:
+                    new_dict[k] = v
             elif isinstance(v, dict):
                 for nk, nv in v.items():
                     new_dict[k + "_" + nk] = nv
@@ -1086,6 +1102,7 @@ HOTELS_DATA_MODIFIED = get_modify_data()
 
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
+ARRAY_OPERATORS = [EQUALS, NOT_EQUALS, IN_LIST, NOT_IN_LIST]
 
 FIELD_OPERATORS_SEARCH_HOTEL_MAP = {
     "search_term": STRING_OPERATORS,
@@ -1114,14 +1131,54 @@ FIELD_OPERATORS_VIEW_HOTEL_MAP = {
 
 FIELD_OPERATORS_GUESTS_CHANGE_MAP = {"from_guests": [EQUALS, GREATER_EQUAL, GREATER_THAN], "to_guests": [EQUALS, LESS_EQUAL, LESS_THAN]}
 
-FIELD_OPERATORS_INCREASE_GUESTS_MAP = {"from_guests": LOGICAL_OPERATORS, "to_guests": LOGICAL_OPERATORS}
+FIELD_OPERATORS_INCREASE_GUESTS_MAP = {
+    # "from_guests": [EQUALS, GREATER_EQUAL, GREATER_THAN],
+    "to_guests": [EQUALS, LESS_EQUAL, LESS_THAN],
+    "title": STRING_OPERATORS,
+    "location": [EQUALS],
+    # "image": STRING_OPERATORS,
+    "price": [EQUALS],
+    "rating": [EQUALS],
+    "reviews": [EQUALS],
+    "guests": [EQUALS],
+    "datesFrom": [EQUALS],
+    "datesTo": [EQUALS],
+    "baths": [EQUALS],
+    "bedrooms": [EQUALS],
+    "beds": [EQUALS],
+    "host_name": [EQUALS],
+    "host_since": [EQUALS],
+    # "host_avatar": STRING_OPERATORS,
+    "amenities": [EQUALS],
+}
+
 FIELD_OPERATORS_DECREASE_GUESTS_MAP = {"from_guests": LOGICAL_OPERATORS, "to_guests": LOGICAL_OPERATORS}
 
 FIELD_OPERATORS_RESERVE_HOTEL_MAP = {
     # "hotel_id": LOGICAL_OPERATORS,
     "guests": LOGICAL_OPERATORS,
-    "date_from": [EQUALS, GREATER_THAN, LESS_THAN],
-    "date_to": [EQUALS, GREATER_THAN, LESS_THAN],
+    "checkin": [EQUALS, GREATER_THAN, LESS_THAN],
+    "checkout": [EQUALS, GREATER_THAN, LESS_THAN],
+}
+FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP = {
+    "checkin": LOGICAL_OPERATORS,
+    "checkout": LOGICAL_OPERATORS,
+    "source": STRING_OPERATORS,
+}
+FIELD_OPERATORS_CONFIRM_AND_PAY_MAP = {
+    "checkin": LOGICAL_OPERATORS,  # datetime
+    "checkout": LOGICAL_OPERATORS,  # datetime
+    "guests": LOGICAL_OPERATORS,  # int
+    "listingTitle": STRING_OPERATORS,  # str
+    "pricePerNight": LOGICAL_OPERATORS,  # int
+    "nights": LOGICAL_OPERATORS,  # int
+    "priceSubtotal": LOGICAL_OPERATORS,  # int
+    "cleaningFee": LOGICAL_OPERATORS,  # int
+    "serviceFee": LOGICAL_OPERATORS,  # int
+    "total": LOGICAL_OPERATORS,  # int
+    "paymentMethod": STRING_OPERATORS,  # str
+    "country": STRING_OPERATORS,  # str
+    # "source": STRING_OPERATORS,              # str
 }
 
 FIELD_OPERATORS_MESSAGE_HOST_MAP = {
