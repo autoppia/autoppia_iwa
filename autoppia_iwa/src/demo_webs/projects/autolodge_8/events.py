@@ -164,46 +164,6 @@ class ViewHotelEvent(Event, BaseEventValidator):
         )
 
 
-class ReserveHotelEvent(Event, BaseEventValidator):
-    """Event triggered when a user reserves a hotel"""
-
-    event_name: str = "RESERVE_HOTEL"
-    hotel_id: str | None = None
-    guests: int | None = None
-    date_from: datetime | None = None
-    date_to: datetime | None = None
-
-    class ValidationCriteria(BaseModel):
-        hotel_id: str | CriterionValue | None = None
-        guests: int | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.hotel_id, criteria.hotel_id),
-                self._validate_field(self.guests, criteria.guests),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "ReserveHotelEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            hotel_id=data.get("id"),
-            guests=data.get("guests"),
-            date_from=parse_datetime(data.get("checkin")),
-            date_to=parse_datetime(data.get("checkout")),
-        )
-
-
 class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator):
     event_name: str = "INCREASE_NUMBER_OF_GUESTS"
     from_guests: int
@@ -273,6 +233,50 @@ class DecreaseNumberOfGuestsEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             from_guests=from_guests,
             to_guests=to_guests,
+        )
+
+
+class ReserveHotelEvent(Event, BaseEventValidator):
+    """Event triggered when a user reserves a hotel"""
+
+    event_name: str = "RESERVE_HOTEL"
+    hotel_id: str | None = None
+    guests: int | None = None
+    date_from: datetime | None = None
+    date_to: datetime | None = None
+
+    class ValidationCriteria(BaseModel):
+        hotel_id: str | CriterionValue | None = None
+        guests: int | CriterionValue | None = None
+        date_from: datetime | None = None
+        date_to: datetime | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.hotel_id, criteria.hotel_id),
+                self._validate_field(self.guests, criteria.guests),
+                self._validate_field(self.date_from, criteria.date_from),
+                self._validate_field(self.date_to, criteria.date_to),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ReserveHotelEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            hotel_id=data.get("id"),
+            guests=data.get("guests"),
+            date_from=parse_datetime(data.get("checkin")),
+            date_to=parse_datetime(data.get("checkout")),
         )
 
 
@@ -476,9 +480,9 @@ BACKEND_EVENT_TYPES = {
     "SEARCH_HOTEL_EVENT": SearchHotelEvent,
     "SEARCH_CLEARED_EVENT": SearchClearedEvent,
     "VIEW_HOTEL_EVENT": ViewHotelEvent,
-    "RESERVE_HOTEL_EVENT": ReserveHotelEvent,
     "INCREASE_NUMBER_OF_GUESTS_EVENT": IncreaseNumberOfGuestsEvent,
     "DECREASE_NUMBER_OF_GUESTS_EVENT": DecreaseNumberOfGuestsEvent,
+    "RESERVE_HOTEL_EVENT": ReserveHotelEvent,
     "EDIT_CHECK_IN_OUT_DATES": EditCheckInOutDatesEvent,
     "CONFIRM_AND_PAY": ConfirmAndPayEvent,
     "MESSAGE_HOST": MessageHostEvent,
