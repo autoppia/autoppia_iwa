@@ -217,7 +217,7 @@ def generate_constraint_from_solution(book: dict, field: str, operator: Comparis
     """
     constraint = {"field": field, "operator": operator}
 
-    if field == "name" or field == "author":
+    if field == "name" or field == "author" or field == "desc":
         if operator == ComparisonOperator.EQUALS:
             constraint["value"] = book[field]
         elif operator == ComparisonOperator.NOT_EQUALS:
