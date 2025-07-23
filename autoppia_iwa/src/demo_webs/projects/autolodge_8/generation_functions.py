@@ -3,6 +3,8 @@ from datetime import datetime
 from random import choice
 from typing import Any
 
+from loguru import logger
+
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
 
 from ..shared_utils import create_constraint_dict
@@ -107,8 +109,6 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
         "pets": random.randint(0, 1),
     }
 
-    sample_dates = {"dateFrom": "2025-07-25", "dateTo": "2025-07-28"}
-
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_SEARCH_HOTEL_MAP.get(field, [])
         if not allowed_ops:
@@ -120,9 +120,11 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
         if field == "search_term":
             value = sample_hotel.get("location") or sample_hotel.get("title")
         elif field in ["date_from", "date_to"]:
-            value = sample_dates.get(field)
+            value = sample_hotel.get(field)
+            if not value:
+                logger.warning(f"Field {field} is empty!")
         else:
-            value = sample_guests.get(field, 0)
+            value = sample_guests.get(field)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
