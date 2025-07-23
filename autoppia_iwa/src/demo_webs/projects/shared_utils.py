@@ -85,3 +85,44 @@ def generate_mock_date_strings(dates: list):
         if isinstance(d, datetime.datetime | datetime.date):
             date_strings.append(d.strftime("%b %d"))
     return sorted(list(set(date_strings)))
+
+
+def validate_date_field(field_value, criterion):
+    """
+    Validates a date field against a criterion, independent of any class context.
+    Handles ComparisonOperator and CriterionValue, and supports string, date, and datetime inputs.
+    Returns True if the field matches the criterion, False otherwise.
+    """
+    from datetime import date, datetime
+
+    from .criterion_helper import ComparisonOperator, CriterionValue
+
+    comp_table = {
+        ComparisonOperator.EQUALS: lambda s, c: s == c,
+        ComparisonOperator.NOT_EQUALS: lambda s, c: s != c,
+        ComparisonOperator.GREATER_THAN: lambda s, c: s > c,
+        ComparisonOperator.GREATER_EQUAL: lambda s, c: s >= c,
+        ComparisonOperator.LESS_THAN: lambda s, c: s < c,
+        ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
+    }
+    if isinstance(criterion, CriterionValue):
+        op = criterion.operator
+        comp_date = criterion.value
+        if isinstance(comp_date, str):
+            comp_date = datetime.fromisoformat(comp_date).date() if "T" in comp_date else date.fromisoformat(comp_date)
+        try:
+            field_date = field_value
+            if isinstance(field_date, str):
+                field_date = datetime.fromisoformat(field_date).date() if "T" in field_date else date.fromisoformat(field_date)
+            elif isinstance(field_date, datetime):
+                field_date = field_date.date()
+            return comp_table[op](field_date, comp_date)
+        except KeyError:
+            logger.error("Unknown comparison operator for date field: %s", op)
+            return False
+        except Exception as e:
+            logger.error(f"Error validating date field: {e}")
+            return False
+    else:
+        # Fallback: direct equality or None check
+        return criterion is None or field_value == criterion

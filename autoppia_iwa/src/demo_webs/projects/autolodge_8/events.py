@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.projects.shared_utils import validate_date_field
 
 
 def parse_datetime(value: str | None) -> datetime | None:
@@ -40,11 +41,13 @@ class SearchHotelEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        date_from_valid = validate_date_field(self.date_from, criteria.date_from)
+        date_to_valid = validate_date_field(self.date_to, criteria.date_to)
         return all(
             [
                 self._validate_field(self.search_term, criteria.search_term),
-                self._validate_field(self.date_from, criteria.date_from),
-                self._validate_field(self.date_to, criteria.date_to),
+                date_from_valid,
+                date_to_valid,
                 self._validate_field(self.adults, criteria.adults),
                 self._validate_field(self.children, criteria.children),
                 self._validate_field(self.infants, criteria.infants),
@@ -93,7 +96,13 @@ class SearchClearedEvent(Event, BaseEventValidator):
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
 
-        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, source=data.get("source"))
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            source=data.get("source"),
+        )
 
 
 class ViewHotelEvent(Event, BaseEventValidator):
@@ -125,6 +134,8 @@ class ViewHotelEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        date_from_valid = self.validate_date_field(self.date_from, criteria.date_from)
+        date_to_valid = self.validate_date_field(self.date_to, criteria.date_to)
         return all(
             [
                 self._validate_field(self.hotel_id, criteria.hotel_id),
@@ -132,6 +143,8 @@ class ViewHotelEvent(Event, BaseEventValidator):
                 self._validate_field(self.location, criteria.location),
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.price, criteria.price),
+                date_from_valid,
+                date_to_valid,
                 self._validate_field(self.guests, criteria.guests),
                 self._validate_field(self.host_name, criteria.host_name),
             ]
@@ -254,12 +267,14 @@ class ReserveHotelEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        date_from_valid = validate_date_field(self.date_from, criteria.date_from)
+        date_to_valid = validate_date_field(self.date_to, criteria.date_to)
         return all(
             [
                 self._validate_field(self.hotel_id, criteria.hotel_id),
                 self._validate_field(self.guests, criteria.guests),
-                self._validate_field(self.date_from, criteria.date_from),
-                self._validate_field(self.date_to, criteria.date_to),
+                date_from_valid,
+                date_to_valid,
             ]
         )
 
@@ -294,10 +309,12 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        checkin_valid = validate_date_field(self.checkin, criteria.checkin)
+        checkout_valid = validate_date_field(self.checkout, criteria.checkout)
         return all(
             [
-                self._validate_field(self.checkin, criteria.checkin),
-                self._validate_field(self.checkout, criteria.checkout),
+                checkin_valid,
+                checkout_valid,
                 self._validate_field(self.source, criteria.source),
             ]
         )
@@ -357,10 +374,12 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+        checkin_valid = validate_date_field(self.checkin, criteria.checkin)
+        checkout_valid = validate_date_field(self.checkout, criteria.checkout)
         return all(
             [
-                self._validate_field(self.checkin, criteria.checkin),
-                self._validate_field(self.checkout, criteria.checkout),
+                checkin_valid,
+                checkout_valid,
                 self._validate_field(self.guests, criteria.guests),
                 self._validate_field(self.listing_title, criteria.listingTitle),
                 self._validate_field(self.price_per_night, criteria.pricePerNight),
