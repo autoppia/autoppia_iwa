@@ -69,27 +69,35 @@ class ClickAction(BaseActionWithSelector):
             logger.warning("Both 'selector' and coordinates (x, y) provided for ClickAction. Selector will be prioritized.")
         return values
 
+    # ------------------------------------------------------------------
+
     @log_action("ClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "ClickAction")
 
-        # --- click por selector -------------------------------------------------
+        # ---------- click por selector ----------------------------------------
         if self.selector:
             sel = self.get_playwright_selector()
 
-            # 1. pre registramos posible navegación
-            nav_future = page.wait_for_event("framenavigated")
+            # 1) Pre registramos posible navegación como tarea cancelable
+            nav_task = asyncio.create_task(page.wait_for_event("framenavigated"))
 
-            # 2. clic (sin esperar navegación)
+            # 2) Clic sin bloqueo implícito de Playwright
             await page.click(sel, no_wait_after=True)
 
-            # 3. si ocurre navegación eesperamos al DOM
-            with contextlib.suppress(asyncio.TimeoutError):
-                await asyncio.wait_for(nav_future, timeout=1)
+            # 3) Damos  máx. para detectar si hubo navegación
+            try:
+                await asyncio.wait_for(nav_task, timeout=1)
+                # Hubo navegación -> esperamos al menos a domcontentloaded
                 await page.wait_for_load_state("domcontentloaded")
+            except TimeoutError:
+                # No hubo navegación -> cancelamos para evitar warnings
+                nav_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await nav_task
             return
 
-        # --- click por coordenadas ---------------------------------------------
+        # ---------- click por coordenadas -------------------------------------
         if self.x is not None and self.y is not None:
             await page.mouse.click(self.x, self.y)
             return
