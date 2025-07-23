@@ -40,7 +40,8 @@ class PlaywrightBrowserExecutor:
 
         try:
             # Capture state before action execution
-            snapshot_before = await self._capture_snapshot()
+            snapshot_before = {"html": "", "screenshot": "", "url": "", "error": ""}
+            # await self._capture_snapshot()
             start_time = datetime.now()
 
             # Execute the action
@@ -50,7 +51,8 @@ class PlaywrightBrowserExecutor:
             # Capture backend events and updated browser state
             await self.page.wait_for_load_state("domcontentloaded")
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
-            snapshot_after = await self._capture_snapshot()
+            # await self._capture_snapshot()
+            snapshot_after = {"html": "", "screenshot": "", "url": "", "error": ""}
 
             # Create a detailed browser snapshot
             browser_snapshot = BrowserSnapshot(

@@ -1,5 +1,6 @@
 # actions.py
 import asyncio
+import contextlib
 import json
 from functools import wraps
 from typing import Annotated, Any, Literal
@@ -72,20 +73,28 @@ class ClickAction(BaseActionWithSelector):
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "ClickAction")
 
-        # Hay selector ➜ clic normal (esperamos navegación si la hay)
+        # --- click por selector -------------------------------------------------
         if self.selector:
-            selector_str = self.get_playwright_selector()
+            sel = self.get_playwright_selector()
 
-            # Espera a que la navegación termine SOLO si la hay
-            async with page.expect_navigation(wait_until="networkidle"):
-                await page.click(selector_str)
+            # 1. pre registramos posible navegación
+            nav_future = page.wait_for_event("framenavigated")
 
-        # Hay coordenadas ➜ clic directo
-        elif self.x is not None and self.y is not None:
+            # 2. clic (sin esperar navegación)
+            await page.click(sel, no_wait_after=True)
+
+            # 3. si ocurre navegación eesperamos al DOM
+            with contextlib.suppress(asyncio.TimeoutError):
+                await asyncio.wait_for(nav_future, timeout=1)
+                await page.wait_for_load_state("domcontentloaded")
+            return
+
+        # --- click por coordenadas ---------------------------------------------
+        if self.x is not None and self.y is not None:
             await page.mouse.click(self.x, self.y)
+            return
 
-        else:
-            raise ValueError("Either a selector or (x, y) must be provided.")
+        raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 class DoubleClickAction(BaseActionWithSelector):
