@@ -10,7 +10,14 @@ from .events import (
     SearchHotelEvent,
     ViewHotelEvent,
 )
-from .generation_functions import generate_search_hotel_constraints
+from .generation_functions import (
+    generate_increase_guests_constraints,
+    generate_message_host_constraints,
+    generate_reserve_hotel_constraints,
+    generate_search_cleared_constraints,
+    generate_search_hotel_constraints,
+    generate_view_hotel_constraints,
+)
 
 # from .replace_functions import replace_hotel_placeholders
 
@@ -77,7 +84,7 @@ SEARCH_CLEARED_USE_CASE = UseCase(
     description="Triggered when the user clears the hotel search input.",
     event=SearchClearedEvent,
     event_source_code=SearchClearedEvent.get_source_code_of_class(),
-    # constraints_generator=None,
+    constraints_generator=generate_search_cleared_constraints,
     additional_prompt_info=SEARCH_CLEARED_INFO,
     examples=[
         {
@@ -115,6 +122,7 @@ VIEW_HOTEL_USE_CASE = UseCase(
     description="Triggered when the user views a specific hotel listing with detailed information.",
     event=ViewHotelEvent,
     event_source_code=ViewHotelEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_hotel_constraints,
     additional_prompt_info=VIEW_HOTEL_INFO,
     examples=[
         {
@@ -148,50 +156,13 @@ VIEW_HOTEL_USE_CASE = UseCase(
     ],
 )
 
-RESERVE_HOTEL_INFO = """
-Trigger this event when a user attempts to reserve or book a hotel. This includes phrases that express intent
-to confirm a booking for specific dates and guest counts. It can happen after viewing hotel details or during checkout.
-"""
-
-RESERVE_HOTEL_USE_CASE = UseCase(
-    name="RESERVE_HOTEL",
-    description="Triggered when the user confirms a reservation or booking for a hotel.",
-    event=ReserveHotelEvent,
-    event_source_code=ReserveHotelEvent.get_source_code_of_class(),
-    additional_prompt_info=RESERVE_HOTEL_INFO,
-    examples=[
-        {
-            "prompt": "Book this hotel from 5th to 9th August for 2 people.",
-            "prompt_for_task_generation": "Reserve hotel from 5th to 9th August for 2 guests.",
-        },
-        {
-            "prompt": "Reserve the mountain view cottage we just looked at for 3 guests, next weekend.",
-            "prompt_for_task_generation": "Reserve hotel for 3 guests for the upcoming weekend.",
-        },
-        {
-            "prompt": "I want to confirm my stay from Sept 1st to Sept 4th, just me.",
-            "prompt_for_task_generation": "Reserve hotel for 1 guest from September 1st to 4th.",
-        },
-        {
-            "prompt": "Can you lock that in for us? We're two adults and one kid, check-in Friday, check-out Sunday.",
-            "prompt_for_task_generation": "Reserve hotel for 3 guests from Friday to Sunday.",
-        },
-        {
-            "prompt": "Yes, this one looks good. Go ahead and book it.",
-            "prompt_for_task_generation": "Reserve currently viewed hotel.",
-        },
-        {
-            "prompt": "Finalize this hotel for the Eid holidays — 4 people, 10th to 14th May.",
-            "prompt_for_task_generation": "Reserve hotel from May 10th to 14th for 4 guests.",
-        },
-        {
-            "prompt": "I want to stay here for three nights starting next Thursday. We're 2 people.",
-            "prompt_for_task_generation": "Reserve hotel for 2 guests starting next Thursday for 3 nights.",
-        },
-    ],
-)
+###############################################################################
+# INCREASE_NUMBER_OF_GUESTS_USE_CASE
+###############################################################################
 
 INCREASE_NUMBER_OF_GUESTS_INFO = """
+CRITICAL REQUIREMENT:
+1. Increase the guest by increment
 Trigger this event when a user increases the number of guests for their hotel reservation or search.
 This could happen through an explicit action (e.g., 'add more people') or a contextual update (e.g., 'make it 3 guests instead of 2').
 """
@@ -201,6 +172,7 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     description="Triggered when the user increases the number of guests for a booking or search.",
     event=IncreaseNumberOfGuestsEvent,
     event_source_code=IncreaseNumberOfGuestsEvent.get_source_code_of_class(),
+    constraints_generator=generate_increase_guests_constraints,
     additional_prompt_info=INCREASE_NUMBER_OF_GUESTS_INFO,
     examples=[
         {
@@ -208,8 +180,8 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
             "prompt_for_task_generation": "Increase guests from 2 to 3.",
         },
         {
-            "prompt": "Add one more person to the booking.",
-            "prompt_for_task_generation": "Increase number of guests by 1.",
+            "prompt": "Increase number of guests from 2 to 3.",
+            "prompt_for_task_generation": "Increase number of guests from 2 to 3.",
         },
         {
             "prompt": "We're 4 now, can you update that?",
@@ -233,6 +205,11 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
         },
     ],
 )
+
+###############################################################################
+# DECREASE_NUMBER_OF_GUESTS_USE_CASE
+###############################################################################
+
 DECREASE_NUMBER_OF_GUESTS_INFO = """
 Trigger this event when a user decreases the number of guests for a hotel booking or search.
 This can be directly stated (e.g., 'make it 2 guests instead of 3') or implied (e.g., 'just me now').
@@ -275,6 +252,59 @@ DECREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
         },
     ],
 )
+
+###############################################################################
+# RESERVE_HOTEL_USE_CASE
+###############################################################################
+
+RESERVE_HOTEL_INFO = """
+Trigger this event when a user attempts to reserve or book a hotel. This includes phrases that express intent
+to confirm a booking for specific dates and guest counts. It can happen after viewing hotel details or during checkout.
+"""
+
+RESERVE_HOTEL_USE_CASE = UseCase(
+    name="RESERVE_HOTEL",
+    description="Triggered when the user confirms a reservation or booking for a hotel.",
+    event=ReserveHotelEvent,
+    event_source_code=ReserveHotelEvent.get_source_code_of_class(),
+    constraints_generator=generate_reserve_hotel_constraints,
+    additional_prompt_info=RESERVE_HOTEL_INFO,
+    examples=[
+        {
+            "prompt": "Book this hotel from 5th to 9th August for 2 people.",
+            "prompt_for_task_generation": "Reserve hotel from 5th to 9th August for 2 guests.",
+        },
+        {
+            "prompt": "Reserve the mountain view cottage we just looked at for 3 guests, next weekend.",
+            "prompt_for_task_generation": "Reserve hotel for 3 guests for the upcoming weekend.",
+        },
+        {
+            "prompt": "I want to confirm my stay from Sept 1st to Sept 4th, just me.",
+            "prompt_for_task_generation": "Reserve hotel for 1 guest from September 1st to 4th.",
+        },
+        {
+            "prompt": "Can you lock that in for us? We're two adults and one kid, check-in Friday, check-out Sunday.",
+            "prompt_for_task_generation": "Reserve hotel for 3 guests from Friday to Sunday.",
+        },
+        {
+            "prompt": "Yes, this one looks good. Go ahead and book it.",
+            "prompt_for_task_generation": "Reserve currently viewed hotel.",
+        },
+        {
+            "prompt": "Finalize this hotel for the Eid holidays — 4 people, 10th to 14th May.",
+            "prompt_for_task_generation": "Reserve hotel from May 10th to 14th for 4 guests.",
+        },
+        {
+            "prompt": "I want to stay here for three nights starting next Thursday. We're 2 people.",
+            "prompt_for_task_generation": "Reserve hotel for 2 guests starting next Thursday for 3 nights.",
+        },
+    ],
+)
+
+###############################################################################
+# EDIT_CHECK_IN_OUT_DATES_USE_CASE
+###############################################################################
+
 
 EDIT_CHECK_IN_OUT_DATES_INFO = """
 Trigger this event when a user modifies their hotel check-in or check-out dates.
@@ -319,6 +349,11 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
         },
     ],
 )
+
+###############################################################################
+# CONFIRM_AND_PAY_USE_CASE
+###############################################################################
+
 CONFIRM_AND_PAY_INFO = """
     Trigger this event when the user confirms a reservation and proceeds to payment.
 The user may explicitly mention proceeding to payment or imply it by confirming all details
@@ -371,6 +406,11 @@ CONFIRM_AND_PAY_USE_CASE = UseCase(
     ],
 )
 
+###############################################################################
+# MESSAGE_HOST_USE_CASE
+###############################################################################
+
+
 MESSAGE_HOST_INFO = """
 Trigger this event when the user wants to send a message or ask a question to the host before or after booking.
 Users may directly type or say their message (e.g., 'Ask if late check-in is allowed', or 'Tell John I'll arrive early').
@@ -381,6 +421,7 @@ MESSAGE_HOST_USE_CASE = UseCase(
     description="Triggered when the user sends a message to the host.",
     event=MessageHostEvent,
     event_source_code=MessageHostEvent.get_source_code_of_class(),
+    constraints_generator=generate_message_host_constraints,
     additional_prompt_info=MESSAGE_HOST_INFO,
     examples=[
         {
@@ -423,12 +464,12 @@ MESSAGE_HOST_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    SEARCH_HOTEL_USE_CASE,
+    # SEARCH_HOTEL_USE_CASE,
     # SEARCH_CLEARED_USE_CASE,
     # VIEW_HOTEL_USE_CASE,
-    # RESERVE_HOTEL_USE_CASE,
     # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     # DECREASE_NUMBER_OF_GUESTS_USE_CASE,
+    RESERVE_HOTEL_USE_CASE,
     # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
     # CONFIRM_AND_PAY_USE_CASE,
     # MESSAGE_HOST_USE_CASE

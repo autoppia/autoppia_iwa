@@ -1,4 +1,4 @@
-from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
+from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 
 REGION_HOTELS = [
     {
@@ -1058,13 +1058,74 @@ FEATURED_HOTELS = [
     },
 ]
 
+
+def get_modify_data(hotels_data=None):
+    if hotels_data is None:
+        hotels_data = FEATURED_HOTELS + DASHBOARD_HOTELS + REGION_HOTELS
+
+    modified_data = []
+    for hotel in hotels_data:
+        new_dict = {}
+        for k, v in hotel.items():
+            if isinstance(v, str):
+                new_dict[k] = v
+            elif isinstance(v, dict):
+                for nk, nv in v.items():
+                    new_dict[k + "_" + nk] = nv
+            elif isinstance(v, list):
+                if k == "amenities":
+                    new_dict["amenities"] = [sv["title"] for sv in v if sv.get("title")]
+            else:
+                new_dict[k] = v
+
+        modified_data.append(new_dict)
+    return modified_data
+
+
+HOTELS_DATA_MODIFIED = get_modify_data()
+
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
+STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
+
 FIELD_OPERATORS_SEARCH_HOTEL_MAP = {
-    "search_term": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
-    "date_from": LOGICAL_OPERATORS,
-    "date_to": LOGICAL_OPERATORS,
+    "search_term": STRING_OPERATORS,
+    "dateFrom": LOGICAL_OPERATORS,
+    "dateTo": LOGICAL_OPERATORS,
     "adults": LOGICAL_OPERATORS,
     "children": LOGICAL_OPERATORS,
     "infants": LOGICAL_OPERATORS,
     "pets": LOGICAL_OPERATORS,
+}
+
+FIELD_OPERATORS_VIEW_HOTEL_MAP = {
+    # 'id': LOGICAL_OPERATORS,
+    "title": STRING_OPERATORS,
+    "location": STRING_OPERATORS,
+    "rating": LOGICAL_OPERATORS,
+    "price": LOGICAL_OPERATORS,
+    "dateFrom": LOGICAL_OPERATORS,
+    "dateTo": LOGICAL_OPERATORS,
+    "guests": LOGICAL_OPERATORS,
+    "host_name": STRING_OPERATORS,
+    "host_since": LOGICAL_OPERATORS,
+    # 'host_avatar': STRING_OPERATORS,
+    "amenities": [IN_LIST, NOT_IN_LIST, EQUALS, NOT_EQUALS],
+}
+
+FIELD_OPERATORS_GUESTS_CHANGE_MAP = {"from_guests": [EQUALS, GREATER_EQUAL, GREATER_THAN], "to_guests": [EQUALS, LESS_EQUAL, LESS_THAN]}
+
+FIELD_OPERATORS_INCREASE_GUESTS_MAP = {"from_guests": LOGICAL_OPERATORS, "to_guests": LOGICAL_OPERATORS}
+FIELD_OPERATORS_DECREASE_GUESTS_MAP = {"from_guests": LOGICAL_OPERATORS, "to_guests": LOGICAL_OPERATORS}
+
+FIELD_OPERATORS_RESERVE_HOTEL_MAP = {
+    # "hotel_id": LOGICAL_OPERATORS,
+    "guests": LOGICAL_OPERATORS,
+    "date_from": [EQUALS, GREATER_THAN, LESS_THAN],
+    "date_to": [EQUALS, GREATER_THAN, LESS_THAN],
+}
+
+FIELD_OPERATORS_MESSAGE_HOST_MAP = {
+    "message": STRING_OPERATORS,
+    "host_name": STRING_OPERATORS,
+    "source": STRING_OPERATORS,
 }
