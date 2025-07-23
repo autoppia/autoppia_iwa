@@ -79,19 +79,19 @@ class ClickAction(BaseActionWithSelector):
         if self.selector:
             sel = self.get_playwright_selector()
 
-            # 1) Pre registramos posible navegación como tarea cancelable
+            # 1) Registramos posible navegación como tarea cancelable
             nav_task = asyncio.create_task(page.wait_for_event("framenavigated"))
 
-            # 2) Clic sin bloqueo implícito de Playwright
+            # 2) Click sin espera implícita de navegación
             await page.click(sel, no_wait_after=True)
 
-            # 3) Damos  máx. para detectar si hubo navegación
+            # 3) Damos hasta s para detectar navegación
             try:
-                await asyncio.wait_for(nav_task, timeout=1)
-                # Hubo navegación -> esperamos al menos a domcontentloaded
+                await asyncio.wait_for(nav_task, timeout=3)  # ← 3 segundos
+                # Hubo navegación → esperamos DOM mínimo
                 await page.wait_for_load_state("domcontentloaded")
             except TimeoutError:
-                # No hubo navegación -> cancelamos para evitar warnings
+                # No hubo navegación → cancelamos tarea para evitar warnings
                 nav_task.cancel()
                 with contextlib.suppress(asyncio.CancelledError):
                     await nav_task
