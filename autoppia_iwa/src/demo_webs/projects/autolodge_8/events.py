@@ -247,7 +247,7 @@ class HotelInfo(BaseModel):
         # data = backend_event.data
         data = data.get("hotel", {})
         return cls(
-            hotel_id=data.get("id"),
+            # hotel_id=data.get("id"),
             title=data.get("title"),
             location=data.get("location"),
             image=data.get("image"),
@@ -301,7 +301,7 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
             user_id=base_event.user_id,
             from_guests=backend_event.data.get("from", 0),
             to_guests=backend_event.data.get("to", 0),
-            **hotel_info.dict(),
+            **hotel_info.model_dump(),
         )
 
 
@@ -341,7 +341,7 @@ class DecreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
             user_id=base_event.user_id,
             from_guests=from_guests,
             to_guests=to_guests,
-            **hotel_info.dict(),
+            **hotel_info.model_dump(),
         )
 
 
@@ -390,7 +390,7 @@ class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
             guests=data.get("guests"),
             checkin=parse_datetime(data.get("checkin")),
             checkout=parse_datetime(data.get("checkout")),
-            **hotel_info.dict(),
+            **hotel_info.model_dump(),
         )
 
 
@@ -521,16 +521,16 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
         )
 
 
-class MessageHostEvent(Event, BaseEventValidator):
+class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "MESSAGE_HOST"
     message: str
     host_name: str
-    source: str
+    # source: str
 
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
         message: str | CriterionValue | None = None
         hostName: str | CriterionValue | None = None
-        source: str | CriterionValue | None = None
+        # source: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -539,7 +539,8 @@ class MessageHostEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.message, criteria.message),
                 self._validate_field(self.host_name, criteria.hostName),
-                self._validate_field(self.source, criteria.source),
+                # self._validate_field(self.source, criteria.source),
+                super()._validate_criteria(criteria),
             ]
         )
 
@@ -547,6 +548,7 @@ class MessageHostEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "MessageHostEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        hotel = HotelInfo.parse(data)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -554,28 +556,9 @@ class MessageHostEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             message=data.get("message", ""),
             host_name=data.get("hostName", ""),
-            source=data.get("source", ""),
+            # source=data.get("source", ""),
+            **hotel.model_dunp(),
         )
-
-
-# class BackToAllHotelsEvent(Event):
-#     """Event triggered when a user navigates back to the list of all hotels"""
-#
-#     event_name: str = "BACK_TO_ALL_HOTELS"
-#
-#     class ValidationCriteria(BaseModel):
-#         """No specific fields for this event, but placeholder for extensibility"""
-#
-#         pass
-#
-#     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-#         return True  # No data to validate for this event
-#
-#     @classmethod
-#     def parse(cls, backend_event: "BackendEvent") -> "BackToAllHotelsEvent":
-#         base_event = Event.parse(backend_event)
-#         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp,
-#                    web_agent_id=base_event.web_agent_id, user_id=base_event.user_id)
 
 
 # =============================================================================
@@ -594,14 +577,4 @@ EVENTS = [
     MessageHostEvent,
 ]
 
-BACKEND_EVENT_TYPES = {
-    "SEARCH_HOTEL_EVENT": SearchHotelEvent,
-    "SEARCH_CLEARED_EVENT": SearchClearedEvent,
-    "VIEW_HOTEL_EVENT": ViewHotelEvent,
-    "INCREASE_NUMBER_OF_GUESTS_EVENT": IncreaseNumberOfGuestsEvent,
-    "DECREASE_NUMBER_OF_GUESTS_EVENT": DecreaseNumberOfGuestsEvent,
-    "RESERVE_HOTEL_EVENT": ReserveHotelEvent,
-    "EDIT_CHECK_IN_OUT_DATES": EditCheckInOutDatesEvent,
-    "CONFIRM_AND_PAY": ConfirmAndPayEvent,
-    "MESSAGE_HOST": MessageHostEvent,
-}
+BACKEND_EVENT_TYPES = {event.event_name: event for event in EVENTS}

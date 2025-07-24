@@ -200,7 +200,7 @@ def generate_search_cleared_constraints() -> list[dict[str, Any]]:
 def generate_view_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     possible_fields = list(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys())
-    num_constraints = random.randint(1, len(possible_fields))
+    num_constraints = random.randint(3, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
     hotel = choice(HOTELS_DATA_MODIFIED)
 
@@ -444,18 +444,17 @@ def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
 def generate_message_host_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
-    possible_fields = ["message", "host_name", "source"]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
+    constraint_list_for_view = generate_view_hotel_constraints()
 
+    possible_fields = ["message", "host_name"]  # , "source"]
     sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
     sample_data = {
         "host_name": sample_hotel.get("host_name", ""),
         "message": f"Hello {sample_hotel.get('host_name', '')}, is your place available?",
-        "source": "message_host_section",
+        # "source": "message_host_section",
     }
 
-    for field in selected_fields:
+    for field in possible_fields:
         allowed_ops = FIELD_OPERATORS_MESSAGE_HOST_MAP.get(field, [])
         if not allowed_ops:
             continue
@@ -467,5 +466,5 @@ def generate_message_host_constraints() -> list[dict[str, Any]]:
 
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
-
+    constraints_list.extend(constraint_list_for_view)
     return constraints_list
