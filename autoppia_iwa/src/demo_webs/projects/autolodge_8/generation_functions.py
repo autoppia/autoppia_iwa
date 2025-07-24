@@ -12,7 +12,6 @@ from .data import (
     DASHBOARD_HOTELS,
     FIELD_OPERATORS_CONFIRM_AND_PAY_MAP,
     FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP,
-    FIELD_OPERATORS_GUESTS_CHANGE_MAP,
     FIELD_OPERATORS_INCREASE_GUESTS_MAP,
     FIELD_OPERATORS_MESSAGE_HOST_MAP,
     FIELD_OPERATORS_RESERVE_HOTEL_MAP,
@@ -149,52 +148,52 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_search_cleared_constraints() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-
-    field = "source"
-    possible_sources = ["location", "date", "guests"]
-
-    allowed_ops = [
-        ComparisonOperator.EQUALS.value,
-        ComparisonOperator.NOT_EQUALS.value,
-        ComparisonOperator.CONTAINS.value,
-        ComparisonOperator.NOT_CONTAINS.value,
-    ]
-
-    operator_str = random.choice(allowed_ops)
-    operator = ComparisonOperator(operator_str)
-
-    source_value = random.choice(possible_sources)
-
-    if operator == ComparisonOperator.EQUALS:
-        value = source_value
-
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        value = random.choice([s for s in possible_sources if s != source_value])
-
-    elif operator == ComparisonOperator.CONTAINS:
-        # Substring of the selected source
-        if len(source_value) > 3:
-            start = random.randint(0, len(source_value) - 2)
-            end = random.randint(start + 1, len(source_value))
-            value = source_value[start:end]
-        else:
-            value = source_value
-
-    elif operator == ComparisonOperator.NOT_CONTAINS:
-        # Substring not in any of the source values
-        alphabet = "abcdefghijklmnopqrstuvwxyz"
-        while True:
-            random_substring = "".join(random.choices(alphabet, k=3))
-            if all(random_substring not in s for s in possible_sources):
-                value = random_substring
-                break
-
-    constraint = create_constraint_dict(field, operator, value)
-    constraints_list.append(constraint)
-
-    return constraints_list
+# def generate_search_cleared_constraints() -> list[dict[str, Any]]:
+#     constraints_list: list[dict[str, Any]] = []
+#
+#     field = "source"
+#     possible_sources = ["location", "date", "guests"]
+#
+#     allowed_ops = [
+#         ComparisonOperator.EQUALS.value,
+#         ComparisonOperator.NOT_EQUALS.value,
+#         ComparisonOperator.CONTAINS.value,
+#         ComparisonOperator.NOT_CONTAINS.value,
+#     ]
+#
+#     operator_str = random.choice(allowed_ops)
+#     operator = ComparisonOperator(operator_str)
+#
+#     source_value = random.choice(possible_sources)
+#
+#     if operator == ComparisonOperator.EQUALS:
+#         value = source_value
+#
+#     elif operator == ComparisonOperator.NOT_EQUALS:
+#         value = random.choice([s for s in possible_sources if s != source_value])
+#
+#     elif operator == ComparisonOperator.CONTAINS:
+#         # Substring of the selected source
+#         if len(source_value) > 3:
+#             start = random.randint(0, len(source_value) - 2)
+#             end = random.randint(start + 1, len(source_value))
+#             value = source_value[start:end]
+#         else:
+#             value = source_value
+#
+#     elif operator == ComparisonOperator.NOT_CONTAINS:
+#         # Substring not in any of the source values
+#         alphabet = "abcdefghijklmnopqrstuvwxyz"
+#         while True:
+#             random_substring = "".join(random.choices(alphabet, k=3))
+#             if all(random_substring not in s for s in possible_sources):
+#                 value = random_substring
+#                 break
+#
+#     constraint = create_constraint_dict(field, operator, value)
+#     constraints_list.append(constraint)
+#
+#     return constraints_list
 
 
 def generate_view_hotel_constraints() -> list[dict[str, Any]]:
@@ -261,7 +260,8 @@ def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
 
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
-
+    view_hotel_constraints = generate_view_hotel_constraints()
+    constraints_list.extend(view_hotel_constraints)
     return constraints_list
 
 
@@ -303,33 +303,33 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_decrease_guests_constraints() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-
-    # Always decrement by 1
-    from_guests = random.randint(2, 5)  # to_guests must remain ≥1
-    to_guests = from_guests - 1
-
-    sample_event_data = {
-        "from_guests": from_guests,
-        "to_guests": to_guests,
-    }
-
-    possible_fields = ["from_guests", "to_guests"]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_GUESTS_CHANGE_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        value = sample_event_data[field]
-        constraint = create_constraint_dict(field, operator, value)
-        constraints_list.append(constraint)
-
-    return constraints_list
+# def generate_decrease_guests_constraints() -> list[dict[str, Any]]:
+#     constraints_list: list[dict[str, Any]] = []
+#
+#     # Always decrement by 1
+#     from_guests = random.randint(2, 5)  # to_guests must remain ≥1
+#     to_guests = from_guests - 1
+#
+#     sample_event_data = {
+#         "from_guests": from_guests,
+#         "to_guests": to_guests,
+#     }
+#
+#     possible_fields = ["from_guests", "to_guests"]
+#     num_constraints = random.randint(1, len(possible_fields))
+#     selected_fields = random.sample(possible_fields, num_constraints)
+#
+#     for field in selected_fields:
+#         allowed_ops = FIELD_OPERATORS_GUESTS_CHANGE_MAP.get(field, [])
+#         if not allowed_ops:
+#             continue
+#
+#         operator = ComparisonOperator(random.choice(allowed_ops))
+#         value = sample_event_data[field]
+#         constraint = create_constraint_dict(field, operator, value)
+#         constraints_list.append(constraint)
+#
+#     return constraints_list
 
 
 def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
