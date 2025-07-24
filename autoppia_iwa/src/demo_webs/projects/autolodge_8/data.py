@@ -1134,28 +1134,12 @@ FIELD_OPERATORS_GUESTS_CHANGE_MAP = {"from_guests": [EQUALS, GREATER_EQUAL, GREA
 FIELD_OPERATORS_INCREASE_GUESTS_MAP = {
     # "from_guests": [EQUALS, GREATER_EQUAL, GREATER_THAN],
     "to_guests": [EQUALS, LESS_EQUAL, LESS_THAN],
-    "title": STRING_OPERATORS,
-    "location": [EQUALS],
-    # "image": STRING_OPERATORS,
-    "price": [EQUALS],
-    "rating": [EQUALS],
-    "reviews": [EQUALS],
-    "guests": [EQUALS],
-    "datesFrom": [EQUALS],
-    "datesTo": [EQUALS],
-    "baths": [EQUALS],
-    "bedrooms": [EQUALS],
-    "beds": [EQUALS],
-    "host_name": [EQUALS],
-    "host_since": [EQUALS],
-    # "host_avatar": STRING_OPERATORS,
-    "amenities": [EQUALS],
+    **FIELD_OPERATORS_VIEW_HOTEL_MAP,
 }
 
 FIELD_OPERATORS_DECREASE_GUESTS_MAP = {"from_guests": LOGICAL_OPERATORS, "to_guests": LOGICAL_OPERATORS}
 
 FIELD_OPERATORS_RESERVE_HOTEL_MAP = {
-    # "hotel_id": LOGICAL_OPERATORS,
     "guests": LOGICAL_OPERATORS,
     "checkin": [EQUALS, GREATER_THAN, LESS_THAN],
     "checkout": [EQUALS, GREATER_THAN, LESS_THAN],

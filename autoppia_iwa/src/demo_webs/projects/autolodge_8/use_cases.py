@@ -177,10 +177,6 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     additional_prompt_info=INCREASE_NUMBER_OF_GUESTS_INFO,
     examples=[
         {
-            "prompt": "Actually, it's going to be 3 of us, not 2.",
-            "prompt_for_task_generation": "Increase guests from 2 to 3.",
-        },
-        {
             "prompt": "Increase number of guests to 3.",
             "prompt_for_task_generation": "Increase number of guests to 3.",
         },
@@ -471,8 +467,8 @@ ALL_USE_CASES = [
     # VIEW_HOTEL_USE_CASE,
     # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     # DECREASE_NUMBER_OF_GUESTS_USE_CASE,
-    # RESERVE_HOTEL_USE_CASE,
+    RESERVE_HOTEL_USE_CASE,
     # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
-    CONFIRM_AND_PAY_USE_CASE,
+    # CONFIRM_AND_PAY_USE_CASE,
     # MESSAGE_HOST_USE_CASE
 ]

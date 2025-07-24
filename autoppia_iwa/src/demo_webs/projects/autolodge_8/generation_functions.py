@@ -274,10 +274,7 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
     from_guests = 1
     to_guests = random.randint(from_guests + 1, max_value)
 
-    sample_event_data = {
-        "from_guests": from_guests,
-        "to_guests": to_guests,
-    }
+    sample_event_data = {"from_guests": from_guests, "to_guests": to_guests}
     sample_event_data.update(hotel)
 
     selected_fields = ["to_guests"]
@@ -296,7 +293,10 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
         actual_value = sample_event_data.get(field)
         if not actual_value:
             continue
-        value = _generate_num_of_guests_field_value(operator, actual_value, field, max_value)
+        if field == "to_guests":
+            value = _generate_num_of_guests_field_value(operator, actual_value, field, max_value)
+        else:
+            value = _generate_constraint_value(operator, actual_value, field, HOTELS_DATA_MODIFIED)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 

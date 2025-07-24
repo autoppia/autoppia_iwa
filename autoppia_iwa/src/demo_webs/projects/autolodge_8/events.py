@@ -269,13 +269,13 @@ class HotelInfo(BaseModel):
 
 class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "INCREASE_NUMBER_OF_GUESTS"
-    from_guests: int
+    # from_guests: int
     to_guests: int
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
         """Criteria for validating increase guests events"""
 
-        from_guests: int | CriterionValue | None = None
+        # from_guests: int | CriterionValue | None = None
         to_guests: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -283,7 +283,7 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
             return True
         return all(
             [
-                self._validate_field(self.from_guests, criteria.from_guests),
+                # self._validate_field(self.from_guests, criteria.from_guests),
                 self._validate_field(self.to_guests, criteria.to_guests),
                 super()._validate_criteria(criteria),
             ]
@@ -299,7 +299,7 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            from_guests=backend_event.data.get("from", 0),
+            # from_guests=backend_event.data.get("from", 0),
             to_guests=backend_event.data.get("to", 0),
             **hotel_info.model_dump(),
         )
@@ -577,4 +577,14 @@ EVENTS = [
     MessageHostEvent,
 ]
 
-BACKEND_EVENT_TYPES = {event.event_name: event for event in EVENTS}
+BACKEND_EVENT_TYPES = {
+    "SEARCH_HOTEL": SearchHotelEvent,
+    "SEARCH_CLEARED": SearchClearedEvent,
+    "VIEW_HOTEL": ViewHotelEvent,
+    "RESERVE_HOTEL": ReserveHotelEvent,
+    "INCREASE_NUMBER_OF_GUESTS": IncreaseNumberOfGuestsEvent,
+    "DECREASE_NUMBER_OF_GUESTS": DecreaseNumberOfGuestsEvent,
+    "EDIT_CHECK_IN_OUT_DATES": EditCheckInOutDatesEvent,
+    "CONFIRM_AND_PAY": ConfirmAndPayEvent,
+    "MESSAGE_HOST": MessageHostEvent,
+}
