@@ -9,7 +9,6 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 
 from ..shared_utils import create_constraint_dict
 from .data import (
-    DASHBOARD_HOTELS,
     FIELD_OPERATORS_CONFIRM_AND_PAY_MAP,
     FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP,
     FIELD_OPERATORS_INCREASE_GUESTS_MAP,
@@ -18,7 +17,6 @@ from .data import (
     FIELD_OPERATORS_SEARCH_HOTEL_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
     HOTELS_DATA_MODIFIED,
-    REGION_HOTELS,
     parse_datetime,
 )
 
@@ -43,10 +41,10 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
 
     elif operator == ComparisonOperator.NOT_EQUALS:
         if isinstance(field_value, str):
-            valid = [v[field] for v in dataset if v.get(field) != field_value]
+            valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
             return random.choice(valid) if valid else None
         elif isinstance(field_value, list):
-            valid = [v[field] for v in dataset for f in field_value if v.get(f) != field_value]
+            valid = [v[f] for v in dataset for f in field_value if v.get(f) and v.get(f) != field_value]
             return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
@@ -114,7 +112,7 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
-    sample_hotel = random.choice(REGION_HOTELS + DASHBOARD_HOTELS)
+    sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
 
     # Dummy guests and date ranges to simulate constraint values
     sample_guests = {
@@ -369,8 +367,7 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
 def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
-    # Choose a sample hotel from REGION_HOTELS
-    hotel = random.choice(REGION_HOTELS)
+    hotel = random.choice(HOTELS_DATA_MODIFIED)
 
     # Basic mapping of field keys
     field_mapping = {
@@ -443,14 +440,25 @@ def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
 
 def generate_message_host_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-
+    msgs_list = [
+        "Is your place available for the selected dates?",
+        "Can you tell me more about the amenities?",
+        "Do you allow pets in your property?",
+        "What is the check-in time?",
+        "Is there parking available nearby?",
+        "Can I get a late checkout?",
+        "Are there any restaurants close to the property?",
+        "Is Wi-Fi included in the price?",
+        "How far is the property from the city center?",
+        "Is there a washing machine available for guests?",
+    ]
     constraint_list_for_view = generate_view_hotel_constraints()
 
     possible_fields = ["message", "host_name"]  # , "source"]
     sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
     sample_data = {
         "host_name": sample_hotel.get("host_name", ""),
-        "message": f"Hello {sample_hotel.get('host_name', '')}, is your place available?",
+        "message": random.choice(msgs_list),
         # "source": "message_host_section",
     }
 
