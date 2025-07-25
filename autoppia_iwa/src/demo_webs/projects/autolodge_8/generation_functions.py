@@ -227,7 +227,8 @@ def _generate_num_of_guests_field_value(operator: str, actual_value: int, field:
             return max_value if max_value > 1 else 2
     elif operator == ComparisonOperator.LESS_EQUAL:
         val = random.randint(1, actual_value)
-        return max(1, min(val, max_value))
+        v_val = max(1, min(val, max_value))
+        return v_val if v_val < max_value else max_value - 1
     elif operator == ComparisonOperator.GREATER_THAN:
         if actual_value < max_value:
             val = random.randint(actual_value + 1, max_value)
@@ -249,7 +250,6 @@ def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str,
     hotel = choice(HOTELS_DATA_MODIFIED)
 
     for field in selected_fields:
-        # for field in possible_fields:
         operator = ComparisonOperator(choice(FIELD_OPERATORS_VIEW_HOTEL_MAP[field]))
         field_value = hotel.get(field)
         if field_value is None:
