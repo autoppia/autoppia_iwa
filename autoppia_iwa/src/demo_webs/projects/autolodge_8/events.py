@@ -142,7 +142,7 @@ class HotelInfo(BaseModel):
         # host_avatar: str | CriterionValue | None = None
         amenities: list[dict[str, str]] | None = None
 
-    def _validate_criteria(self, criteria: "HotelInfo.ValidationCriteria" | None = None) -> bool:
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
