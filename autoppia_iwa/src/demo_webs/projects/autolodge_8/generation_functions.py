@@ -288,6 +288,9 @@ def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str,
                 field_value = hotel_amenities
         else:
             field_value = _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
+            if field_value is None:
+                continue
+
         constraint = create_constraint_dict(field, operator, field_value)
         constraints_list.append(constraint)
     return constraints_list, hotel

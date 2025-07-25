@@ -147,9 +147,14 @@ class HotelInfo(BaseModel):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
+
+        date_from_valid = validate_date_field(self.datesFrom, criteria.datesFrom)
+        date_to_valid = validate_date_field(self.datesTo, criteria.datesTo)
         return all(
             [
                 # self._validate_field(self.hotel_id, criteria.hotel_id),
+                date_to_valid,
+                date_from_valid,
                 self._validate_field(self.title, criteria.title),
                 self._validate_field(self.location, criteria.location),
                 self._validate_field(self.price, criteria.price),
@@ -157,8 +162,6 @@ class HotelInfo(BaseModel):
                 self._validate_field(self.reviews, criteria.reviews),
                 self._validate_field(self.guests, criteria.guests),
                 self._validate_field(self.max_guests, criteria.max_guests),
-                self._validate_field(self.datesFrom, criteria.datesFrom),
-                self._validate_field(self.datesTo, criteria.datesTo),
                 self._validate_field(self.baths, criteria.baths),
                 self._validate_field(self.bedrooms, criteria.bedrooms),
                 self._validate_field(self.beds, criteria.beds),
@@ -210,9 +213,6 @@ class ViewHotelEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user views a hotel listing"""
 
     event_name: str = "VIEW_HOTEL"
-    # hotel_id: str | None = None
-    date_from: datetime | None = None
-    date_to: datetime | None = None
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
         pass
@@ -220,28 +220,12 @@ class ViewHotelEvent(Event, BaseEventValidator, HotelInfo):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        date_from_valid = self._validate_field(self.date_from, criteria.datesFrom)
-        date_to_valid = self._validate_field(self.date_to, criteria.datesTo)
-        return all(
-            [
-                # self._validate_field(self.hotel_id, criteria.hotel_id),
-                self._validate_field(self.title, criteria.title),
-                self._validate_field(self.location, criteria.location),
-                self._validate_field(self.rating, criteria.rating),
-                self._validate_field(self.price, criteria.price),
-                date_from_valid,
-                date_to_valid,
-                self._validate_field(self.guests, criteria.guests),
-                self._validate_field(self.host_name, criteria.host_name),
-                self._validate_field(self.amenities, criteria.amenities),
-            ]
-        )
+        return HotelInfo._validate_criteria(self, criteria)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ViewHotelEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-        dates = data.get("dates", {})
         hotel_info = HotelInfo.parse({"hotel": data})
 
         return cls(
@@ -249,8 +233,6 @@ class ViewHotelEvent(Event, BaseEventValidator, HotelInfo):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            date_from=parse_datetime(dates.get("from")),
-            date_to=parse_datetime(dates.get("to")),
             **hotel_info.model_dump(),
         )
 
