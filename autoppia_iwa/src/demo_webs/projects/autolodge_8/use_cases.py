@@ -169,6 +169,7 @@ INCREASE_NUMBER_OF_GUESTS_INFO = """
 CRITICAL REQUIREMENT:
 1. Mention increment of guests only in prompt.
 2. Do NOT any details other than number of guests.
+3. Start prompt with "Increase number of guests to X" or similar phrases.
 """
 
 INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
@@ -307,9 +308,10 @@ RESERVE_HOTEL_USE_CASE = UseCase(
 
 
 EDIT_CHECK_IN_OUT_DATES_INFO = """
-Trigger this event when a user modifies their hotel check-in or check-out dates.
-Changes may be expressed explicitly (e.g., 'change check-in to August 3rd') or implicitly
-(e.g., 'make it a day earlier' or 'we'll leave on Sunday instead').
+CRITICAL REQUIREMENTS:
+1. The prompt should clearly confirm the updated check-in and/or check-out dates.
+2. Use explicit phrases such as 'Change check-in to...', 'Update check-out date...', or similar.
+3. Do not include unrelated booking or payment actions in this prompt.
 """
 
 EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
