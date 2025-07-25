@@ -114,6 +114,7 @@ class HotelInfo(BaseModel):
     rating: float
     reviews: int
     guests: int
+    max_guests: int
     datesFrom: datetime
     datesTo: datetime
     baths: int
@@ -122,7 +123,7 @@ class HotelInfo(BaseModel):
     host_name: str
     # host_since: int
     # host_avatar: str
-    amenities: list[dict[str, str]]
+    amenities: list[str]
 
     class ValidationCriteria(BaseModel):
         # hotel_id: str | CriterionValue | None = None
@@ -132,6 +133,7 @@ class HotelInfo(BaseModel):
         rating: float | CriterionValue | None = None
         reviews: int | CriterionValue | None = None
         guests: int | CriterionValue | None = None
+        max_guests: int | CriterionValue | None = None
         datesFrom: datetime | CriterionValue | None = None
         datesTo: datetime | CriterionValue | None = None
         baths: int | CriterionValue | None = None
@@ -140,7 +142,7 @@ class HotelInfo(BaseModel):
         host_name: str | CriterionValue | None = None
         # host_since: int | CriterionValue | None = None
         # host_avatar: str | CriterionValue | None = None
-        amenities: list[dict[str, str]] | None = None
+        amenities: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -154,6 +156,7 @@ class HotelInfo(BaseModel):
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.reviews, criteria.reviews),
                 self._validate_field(self.guests, criteria.guests),
+                self._validate_field(self.max_guests, criteria.max_guests),
                 self._validate_field(self.datesFrom, criteria.datesFrom),
                 self._validate_field(self.datesTo, criteria.datesTo),
                 self._validate_field(self.baths, criteria.baths),
@@ -169,6 +172,8 @@ class HotelInfo(BaseModel):
     @classmethod
     def parse(cls, data) -> "HotelInfo":
         data = data.get("hotel", {})
+        host = data.get("host", {})
+        amenities = [a.get("title") for a in data.get("amenities", []) if isinstance(a, dict)]
         return cls(
             # hotel_id=data.get("id"),
             title=data.get("title"),
@@ -177,15 +182,16 @@ class HotelInfo(BaseModel):
             rating=data.get("rating"),
             reviews=data.get("reviews"),
             guests=data.get("guests"),
+            max_guests=data.get("maxGuests"),
             datesFrom=parse_datetime(data.get("datesFrom")),
             datesTo=parse_datetime(data.get("datesTo")),
             baths=data.get("baths", 0),
             bedrooms=data.get("bedrooms", 0),
             beds=data.get("beds", 0),
-            host_name=data.get("name", data.get("host")),
-            # host_since=data.get("since"),
-            # host_avatar=data.get("avatar"),
-            amenities=data.get("amenities", []),
+            host_name=host.get("name"),
+            # host_since=host.get("since"),
+            # host_avatar=host.get("avatar"),
+            amenities=amenities,
         )
 
 
@@ -496,11 +502,12 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "MESSAGE_HOST"
     message: str
     host_name: str
+
     # source: str
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
         message: str | CriterionValue | None = None
-        hostName: str | CriterionValue | None = None
+        host_name: str | CriterionValue | None = None
         # source: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -509,7 +516,7 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
         return all(
             [
                 self._validate_field(self.message, criteria.message),
-                self._validate_field(self.host_name, criteria.hostName),
+                self._validate_field(self.host_name, criteria.host_name),
                 # self._validate_field(self.source, criteria.source),
                 super()._validate_criteria(criteria),
             ]
@@ -526,9 +533,9 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             message=data.get("message", ""),
-            host_name=data.get("hostName", ""),
+            # host_name=data.get("hostName", ""),
             # source=data.get("source", ""),
-            **hotel.model_dunp(),
+            **hotel.model_dump(),
         )
 
 

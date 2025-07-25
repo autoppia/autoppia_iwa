@@ -1171,7 +1171,7 @@ FIELD_OPERATORS_VIEW_HOTEL_MAP = {
     "host_name": STRING_OPERATORS,
     "host_since": LOGICAL_OPERATORS,
     # 'host_avatar': STRING_OPERATORS,
-    "amenities": [IN_LIST, NOT_IN_LIST, EQUALS, NOT_EQUALS],
+    "amenities": [IN_LIST, NOT_IN_LIST],
 }
 
 FIELD_OPERATORS_GUESTS_CHANGE_MAP = {"from_guests": [EQUALS, GREATER_EQUAL, GREATER_THAN], "to_guests": [EQUALS, LESS_EQUAL, LESS_THAN]}

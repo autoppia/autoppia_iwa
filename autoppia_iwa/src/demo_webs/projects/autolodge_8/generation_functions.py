@@ -23,6 +23,8 @@ from .data import (
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
     value = None
+    if field == "amenities" and isinstance(field_value, list):
+        field_value = choice(field_value) if field_value else ""
 
     # Handle datetime comparisons
     if isinstance(field_value, datetime):
@@ -62,7 +64,16 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
                 return test_str
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = []
+        for v in dataset:
+            if field in v:
+                val = v.get(field)
+                if isinstance(val, list):
+                    all_values.extend(val)
+                elif val is not None:
+                    all_values.append(val)
+        all_values = list(set(all_values))
+
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -72,7 +83,16 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = []
+        for v in dataset:
+            if field in v:
+                val = v.get(field)
+                if isinstance(val, list):
+                    all_values.extend(val)
+                elif val is not None:
+                    all_values.append(val)
+        all_values = list(set(all_values))
+
         if field_value in all_values:
             all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
@@ -387,6 +407,7 @@ def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
         "card_number": lambda _: random.choice(["4111111111111111", "5500000000000004", "340000000000009", "30000000000004"]),
         "expiration": lambda _: random.choice(["12/25", "01/27", "06/26", "11/24"]),
         "cvv": lambda _: random.choice(["123", "456", "789", "321"]),
+        "zipcode": lambda _: random.choice(["12345", "67890", "54321", "98765"]),
     }
 
     # Select fields randomly
