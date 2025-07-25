@@ -114,9 +114,12 @@ SEARCH_HOTEL_USE_CASE = UseCase(
 
 
 VIEW_HOTEL_INFO = """
-Trigger this event when the user opens or clicks on a specific hotel listing to view more details,
-such as the hotel name, price, rating, location, host info, and amenities.
-This can happen during browsing, from search results, or through filters.
+Make sure to mention all constraints in the prompt.
+CRITICAL REQUIREMENT:
+1. If the constraints contain amenities, be sure to include them, especially for `in_list` and `not_in_list` operators, and mention them like:
+   Examples:
+   Constraint: {'amenities': {'operator': 'in_list', 'value': ['Memory foam mattress', 'Historic charm']}}
+   Prompt: "Retrieve details of a hotel that has amenities in the list ['Memory foam mattress', 'Historic charm']."
 """
 
 VIEW_HOTEL_USE_CASE = UseCase(
