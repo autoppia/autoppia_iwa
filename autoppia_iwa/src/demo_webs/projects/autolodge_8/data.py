@@ -1112,6 +1112,8 @@ def parse_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
+        if isinstance(value, datetime):
+            return value
         return parser.isoparse(value)
     except (ValueError, TypeError):
         return None
@@ -1207,8 +1209,12 @@ FIELD_OPERATORS_CONFIRM_AND_PAY_MAP = {
     # "serviceFee": LOGICAL_OPERATORS,  # int
     "total": LOGICAL_OPERATORS,  # int
     "paymentMethod": STRING_OPERATORS,  # str
-    "country": STRING_OPERATORS,  # str
-    # "source": STRING_OPERATORS,              # str
+    # "source": STRING_OPERATORS,  # str,
+    "card_number": [EQUALS, NOT_EQUALS],
+    "expiration": [EQUALS, NOT_EQUALS],
+    "cvv": [EQUALS, NOT_EQUALS],
+    "zipcode": [EQUALS, NOT_EQUALS],
+    "country": [EQUALS, NOT_EQUALS],
 }
 
 FIELD_OPERATORS_MESSAGE_HOST_MAP = {

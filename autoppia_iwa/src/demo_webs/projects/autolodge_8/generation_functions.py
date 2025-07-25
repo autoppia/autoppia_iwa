@@ -409,77 +409,89 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
 def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
+    payment_methods = ["VISA", "MasterCard", "PayPal"]
+    card_numbers = ["4111111111111111", "5500000000000004", "340000000000009", "30000000000004"]
+    expiration = ["12/25", "01/27", "06/26", "11/24"]
+    cvv = ["123", "456", "789", "321"]
+    zipcode = ["12345", "67890", "54321", "98765"]
+    countries = ["United States", "Canada", " United Kingdom", "Australia", "Germany", "France", "India", "Japan"]
+
     hotel = random.choice(HOTELS_DATA_MODIFIED)
 
-    # Basic mapping of field keys
+    # Basic field mapping
     field_mapping = {
         "checkin": "datesFrom",
         "checkout": "datesTo",
         "guests": "guests",
         "listingTitle": "title",
         "pricePerNight": "price",
-        "nights": None,  # We'll compute this
-        "priceSubtotal": None,  # compute
-        # "cleaningFee": None,  # assume constant for demo
-        # "serviceFee": None,  # assume constant for demo
-        "total": None,  # compute
-        "country": lambda h: h["location"].split(",")[-1].strip(),
-        # 'source': lambda h: random.choice(['mobile', 'web']),
-        "paymentMethod": lambda _: random.choice(["VISA", "MasterCard", "PayPal"]),
-        "card_number": lambda _: random.choice(["4111111111111111", "5500000000000004", "340000000000009", "30000000000004"]),
-        "expiration": lambda _: random.choice(["12/25", "01/27", "06/26", "11/24"]),
-        "cvv": lambda _: random.choice(["123", "456", "789", "321"]),
-        "zipcode": lambda _: random.choice(["12345", "67890", "54321", "98765"]),
+        "nights": None,
+        "priceSubtotal": None,
     }
 
-    # Select fields randomly
-    selected_fields = ["guests"]
-    possible_fields = list(FIELD_OPERATORS_CONFIRM_AND_PAY_MAP.keys())
-    possible_fields = [f for f in possible_fields if f not in selected_fields]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields.extend(random.sample(possible_fields, num_constraints))
+    sample_data = {
+        "total": lambda h: ((h["datesTo"] - h["datesFrom"]).days * h["price"] + 15 + 34),
+        "paymentMethod": lambda _: random.choice(payment_methods),
+        "card_number": lambda _: random.choice(card_numbers),
+        "expiration": lambda _: random.choice(expiration),
+        "cvv": lambda _: random.choice(cvv),
+        "zipcode": lambda _: random.choice(zipcode),
+        "country": lambda _: random.choice(countries),
+    }
+
+    # Initial required fields
+    selected_fields = ["checkin", "checkout", "guests", "card_number", "expiration", "cvv", "zipcode", "country"]
+
+    # Additional confirm-and-pay fields
+    extra_confirm_fields = list(FIELD_OPERATORS_CONFIRM_AND_PAY_MAP.keys())
+    extra_confirm_fields = [f for f in extra_confirm_fields if f not in selected_fields]
+    confirm_sample_count = random.randint(1, len(extra_confirm_fields))
+    selected_fields += random.sample(extra_confirm_fields, confirm_sample_count)
+
+    # Random view-hotel fields
+    hotel_sample_count = random.randint(2, len(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys()))
+    selected_fields += random.sample(list(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys()), hotel_sample_count)
+
+    # Merge operator maps
+    field_operators = {**FIELD_OPERATORS_CONFIRM_AND_PAY_MAP, **FIELD_OPERATORS_VIEW_HOTEL_MAP}
 
     # Generate constraints
     for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_CONFIRM_AND_PAY_MAP.get(field, [])
+        allowed_ops = field_operators.get(field, [])
         if not allowed_ops:
             continue
 
         operator = ComparisonOperator(random.choice(allowed_ops))
-
         value = None
-        mapped = field_mapping.get(field)
 
-        if isinstance(mapped, str):
-            value = hotel.get(mapped)
-        elif callable(mapped):
-            value = mapped(hotel)
+        # Value from sample_data
+        if field in sample_data:
+            value = sample_data[field](hotel)
 
-        elif field in ["nights", "priceSubtotal", "total"]:
-            checkin = parse_datetime(hotel["datesFrom"])
-            checkout = parse_datetime(hotel["datesTo"])
-            nights = (checkout - checkin).days
-            price_per_night = hotel["price"]
-            cleaning_fee = 15
-            service_fee = 34
-            subtotal = nights * price_per_night
-            total = subtotal + cleaning_fee + service_fee
+        # Value from mapped hotel field
+        elif field in field_mapping:
+            mapped = field_mapping[field]
+            if isinstance(mapped, str):
+                value = hotel.get(mapped)
+            elif field in ["checkin", "checkout"]:
+                raw_date = hotel.get(field_mapping[field])
+                value = parse_datetime(raw_date)
 
-            if field == "nights":
-                value = nights
-            elif field == "priceSubtotal":
-                value = subtotal
-            elif field == "total":
-                value = total
+        elif field in hotel:
+            value = hotel[field]
+            value = _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
 
-        elif field in ["checkin", "checkout"]:
-            value = parse_datetime(hotel.get(field_mapping.get(field)))
+        # Computed values
+        if field == "nights":
+            nights = (parse_datetime(hotel["datesTo"]) - parse_datetime(hotel["datesFrom"])).days
+            value = nights
+        elif field == "priceSubtotal":
+            nights = (parse_datetime(hotel["datesTo"]) - parse_datetime(hotel["datesFrom"])).days
+            value = nights * hotel["price"]
 
-        if value is None:
-            continue
-
-        constraint = create_constraint_dict(field, operator, value)
-        constraints_list.append(constraint)
+        if value is not None:
+            constraint = create_constraint_dict(field, operator, value)
+            constraints_list.append(constraint)
 
     return constraints_list
 
