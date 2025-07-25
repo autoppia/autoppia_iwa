@@ -378,12 +378,15 @@ def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
         "pricePerNight": "price",
         "nights": None,  # We'll compute this
         "priceSubtotal": None,  # compute
-        "cleaningFee": None,  # assume constant for demo
-        "serviceFee": None,  # assume constant for demo
+        # "cleaningFee": None,  # assume constant for demo
+        # "serviceFee": None,  # assume constant for demo
         "total": None,  # compute
         "country": lambda h: h["location"].split(",")[-1].strip(),
         # 'source': lambda h: random.choice(['mobile', 'web']),
         "paymentMethod": lambda _: random.choice(["VISA", "MasterCard", "PayPal"]),
+        "card_number": lambda _: random.choice(["4111111111111111", "5500000000000004", "340000000000009", "30000000000004"]),
+        "expiration": lambda _: random.choice(["12/25", "01/27", "06/26", "11/24"]),
+        "cvv": lambda _: random.choice(["123", "456", "789", "321"]),
     }
 
     # Select fields randomly

@@ -1202,8 +1202,8 @@ FIELD_OPERATORS_CONFIRM_AND_PAY_MAP = {
     "pricePerNight": LOGICAL_OPERATORS,  # int
     "nights": LOGICAL_OPERATORS,  # int
     "priceSubtotal": LOGICAL_OPERATORS,  # int
-    "cleaningFee": LOGICAL_OPERATORS,  # int
-    "serviceFee": LOGICAL_OPERATORS,  # int
+    # "cleaningFee": LOGICAL_OPERATORS,  # int
+    # "serviceFee": LOGICAL_OPERATORS,  # int
     "total": LOGICAL_OPERATORS,  # int
     "paymentMethod": STRING_OPERATORS,  # str
     "country": STRING_OPERATORS,  # str

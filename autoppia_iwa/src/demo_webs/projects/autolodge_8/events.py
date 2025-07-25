@@ -416,8 +416,8 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
     price_per_night: int
     nights: int
     price_subtotal: int
-    cleaning_fee: int
-    service_fee: int
+    # cleaning_fee: int
+    # service_fee: int
     total: int
     payment_method: str
     card_number: str
@@ -434,8 +434,8 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
         pricePerNight: int | CriterionValue | None = None
         nights: int | CriterionValue | None = None
         priceSubtotal: int | CriterionValue | None = None
-        cleaningFee: int | CriterionValue | None = None
-        serviceFee: int | CriterionValue | None = None
+        # cleaningFee: int | CriterionValue | None = None
+        # serviceFee: int | CriterionValue | None = None
         total: int | CriterionValue | None = None
         paymentMethod: str | CriterionValue | None = None
         country: str | CriterionValue | None = None
@@ -455,8 +455,8 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
                 self._validate_field(self.price_per_night, criteria.pricePerNight),
                 self._validate_field(self.nights, criteria.nights),
                 self._validate_field(self.price_subtotal, criteria.priceSubtotal),
-                self._validate_field(self.cleaning_fee, criteria.cleaningFee),
-                self._validate_field(self.service_fee, criteria.serviceFee),
+                # self._validate_field(self.cleaning_fee, criteria.cleaningFee),
+                # self._validate_field(self.service_fee, criteria.serviceFee),
                 self._validate_field(self.total, criteria.total),
                 self._validate_field(self.payment_method, criteria.paymentMethod),
                 self._validate_field(self.country, criteria.country),
@@ -480,8 +480,8 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
             price_per_night=data.get("pricePerNight"),
             nights=data.get("nights"),
             price_subtotal=data.get("priceSubtotal"),
-            cleaning_fee=data.get("cleaningFee"),
-            service_fee=data.get("serviceFee"),
+            # cleaning_fee=data.get("cleaningFee"),
+            # service_fee=data.get("serviceFee"),
             total=data.get("total"),
             payment_method=data.get("paymentMethod", ""),
             card_number=data.get("cardNumber", ""),
