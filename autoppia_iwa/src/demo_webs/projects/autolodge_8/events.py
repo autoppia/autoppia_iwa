@@ -173,7 +173,18 @@ class HotelInfo(BaseModel):
     def parse(cls, data) -> "HotelInfo":
         data = data.get("hotel", {})
         host = data.get("host", {})
-        amenities = [a.get("title") for a in data.get("amenities", []) if isinstance(a, dict)]
+        amenities = []
+        for a in data.get("amenities", []):
+            if isinstance(a, dict):
+                if "title" in a:
+                    amenities.append(a["title"])
+            elif isinstance(a, list):
+                amenities.extend(a)
+
+            elif isinstance(a, str):
+                amenities.append(a)
+        date_from = data.get("dateFrom") or (data.get("dates") or {}).get("from")
+        date_to = data.get("datesTo") or (data.get("dates") or {}).get("to")
         return cls(
             # hotel_id=data.get("id"),
             title=data.get("title"),
@@ -182,9 +193,9 @@ class HotelInfo(BaseModel):
             rating=data.get("rating"),
             reviews=data.get("reviews"),
             guests=data.get("guests"),
-            max_guests=data.get("maxGuests"),
-            datesFrom=parse_datetime(data.get("datesFrom")),
-            datesTo=parse_datetime(data.get("datesTo")),
+            max_guests=data.get("maxGuests", 0),
+            datesFrom=parse_datetime(date_from),
+            datesTo=parse_datetime(date_to),
             baths=data.get("baths", 0),
             bedrooms=data.get("bedrooms", 0),
             beds=data.get("beds", 0),
@@ -502,7 +513,6 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "MESSAGE_HOST"
     message: str
     host_name: str
-
     # source: str
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):

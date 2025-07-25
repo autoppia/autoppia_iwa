@@ -257,6 +257,35 @@ def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str,
         if field == "guests":
             max_guests = hotel.get("maxGuests") or hotel.get("guests") or 1
             field_value = _generate_num_of_guests_field_value(operator, field_value, field, max_guests)
+        elif field == "amenities":
+            hotel_amenities = hotel.get("amenities", [])
+            all_amenities = set()
+            for h in HOTELS_DATA_MODIFIED:
+                all_amenities.update(h.get("amenities", []))
+            hotel_amenities_set = set(hotel_amenities)
+            available_amenities = list(all_amenities - hotel_amenities_set)
+
+            if operator == ComparisonOperator.CONTAINS:
+                if hotel_amenities:
+                    field_value = random.choice(hotel_amenities)
+                else:
+                    continue  # Cannot create this constraint
+            elif operator == ComparisonOperator.NOT_CONTAINS:
+                field_value = random.choice(available_amenities) if available_amenities else "Non-existent amenity"
+            elif operator == ComparisonOperator.IN_LIST:
+                if hotel_amenities:
+                    num_amenities = min(len(hotel_amenities), random.randint(1, 2))
+                    field_value = random.sample(hotel_amenities, num_amenities)
+                else:
+                    continue  # Cannot create this constraint
+            elif operator == ComparisonOperator.NOT_IN_LIST:
+                if available_amenities:
+                    num_amenities = min(len(available_amenities), random.randint(1, 3))
+                    field_value = random.sample(available_amenities, num_amenities)
+                else:
+                    field_value = ["Non-existent amenity"]
+            else:
+                field_value = hotel_amenities
         else:
             field_value = _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
         constraint = create_constraint_dict(field, operator, field_value)
