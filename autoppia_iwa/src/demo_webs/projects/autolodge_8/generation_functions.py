@@ -214,7 +214,34 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
 #     return constraints_list
 
 
-def generate_view_hotel_constraints() -> list[dict[str, Any]]:
+def _generate_num_of_guests_field_value(operator: str, actual_value: int, field: str, max_value: int) -> int:
+    if operator == ComparisonOperator.EQUALS:
+        return actual_value
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        return random.choice([val for val in range(1, max_value + 1) if val != actual_value])
+    elif operator == ComparisonOperator.LESS_THAN:
+        if actual_value > 1:
+            val = random.randint(1, actual_value - 1)
+            return max(1, min(val, max_value))
+        else:
+            return max_value if max_value > 1 else 2
+    elif operator == ComparisonOperator.LESS_EQUAL:
+        val = random.randint(1, actual_value)
+        return max(1, min(val, max_value))
+    elif operator == ComparisonOperator.GREATER_THAN:
+        if actual_value < max_value:
+            val = random.randint(actual_value + 1, max_value)
+            return max(1, min(val, max_value))
+        else:
+            return max_value - 1
+    elif operator == ComparisonOperator.GREATER_EQUAL:
+        val = random.randint(actual_value, max_value)
+        return max(1, min(val, max_value))
+    else:
+        return max(1, min(actual_value, max_value))
+
+
+def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     possible_fields = list(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys())
     num_constraints = random.randint(3, len(possible_fields))
@@ -222,36 +249,30 @@ def generate_view_hotel_constraints() -> list[dict[str, Any]]:
     hotel = choice(HOTELS_DATA_MODIFIED)
 
     for field in selected_fields:
+        # for field in possible_fields:
         operator = ComparisonOperator(choice(FIELD_OPERATORS_VIEW_HOTEL_MAP[field]))
         field_value = hotel.get(field)
         if field_value is None:
             continue
-        field_value = _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
+        if field == "guests":
+            max_guests = hotel.get("maxGuests") or hotel.get("guests") or 1
+            field_value = _generate_num_of_guests_field_value(operator, field_value, field, max_guests)
+        else:
+            field_value = _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
         constraint = create_constraint_dict(field, operator, field_value)
         constraints_list.append(constraint)
+    return constraints_list, hotel
+
+
+def generate_view_hotel_constraints() -> list[dict[str, Any]]:
+    constraints_list, _ = __generate_view_hotel_constraints()
 
     return constraints_list
 
 
-def _generate_num_of_guests_field_value(operator: str, actual_value: int, field: str, max_value: int) -> int:
-    if operator == ComparisonOperator.EQUALS:
-        return actual_value
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        return random.choice([val for val in range(1, max_value + 1) if val != actual_value])
-    elif operator == ComparisonOperator.LESS_THAN:
-        return random.randint(1, actual_value - 1) if actual_value > 1 else 1
-    elif operator == ComparisonOperator.LESS_EQUAL:
-        return random.randint(1, actual_value)
-    elif operator == ComparisonOperator.GREATER_THAN:
-        return random.randint(actual_value + 1, max_value) if actual_value < max_value else max_value
-    elif operator == ComparisonOperator.GREATER_EQUAL:
-        return random.randint(actual_value, max_value)
-    else:
-        return actual_value
-
-
 def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
+    view_hotel_constraints = generate_view_hotel_constraints()
 
     selected_fields = ["guests"]
     possible_fields = list(FIELD_OPERATORS_RESERVE_HOTEL_MAP.keys())
@@ -260,10 +281,12 @@ def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
     selected_fields.extend(random.sample(possible_fields, num_constraints))
 
     hotel = random.choice(HOTELS_DATA_MODIFIED)
-    max_guests = hotel.get("guests") or hotel.get("maxGuests") or 1
+    max_guests = hotel.get("maxGuests") or hotel.get("guests") or 1
     field_map = {"checkin": "datesFrom", "checkout": "datesTo"}
 
     for field in selected_fields:
+        if field == "guests" and any(f.get("field") == "guests" for f in view_hotel_constraints):
+            continue
         allowed_ops = FIELD_OPERATORS_RESERVE_HOTEL_MAP.get(field, [])
         if not allowed_ops:
             continue
@@ -271,14 +294,13 @@ def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(random.choice(allowed_ops))
         field = field_map.get(field, field)
 
-        value = random.randint(1, max_guests) if field == "guests" else hotel.get(field)
+        value = random.randint(1, max_guests) if field == "guests" else hotel.get(field, hotel.get("maxGuests", 1))
 
-        if not value:
+        if value is None:
             continue
 
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
-    view_hotel_constraints = generate_view_hotel_constraints()
     constraints_list.extend(view_hotel_constraints)
     return constraints_list
 
@@ -476,27 +498,23 @@ def generate_message_host_constraints() -> list[dict[str, Any]]:
         "How far is the property from the city center?",
         "Is there a washing machine available for guests?",
     ]
-    constraint_list_for_view = generate_view_hotel_constraints()
+    constraint_list_for_view, hotel_dict = __generate_view_hotel_constraints()
 
-    possible_fields = ["message", "host_name"]  # , "source"]
-    sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
-    sample_data = {
-        "host_name": sample_hotel.get("host_name", ""),
-        "message": random.choice(msgs_list),
-        # "source": "message_host_section",
-    }
+    selected_fields = ["message", "host_name"]
+    sample_data = {"host_name": hotel_dict.get("host_name", ""), "message": random.choice(msgs_list)}
 
-    for field in possible_fields:
+    for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MESSAGE_HOST_MAP.get(field, [])
         if not allowed_ops:
             continue
 
         operator = ComparisonOperator(random.choice(allowed_ops))
-        value = sample_data[field]
-        if not value:
-            continue
-
-        constraint = create_constraint_dict(field, operator, value)
+        value = sample_data.get(field)
+        constraint = (
+            _generate_constraint_value(operator, value, field, [{"message": msg} for msg in msgs_list])
+            if field == "message"
+            else _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
+        )
         constraints_list.append(constraint)
     constraints_list.extend(constraint_list_for_view)
     return constraints_list
