@@ -560,12 +560,13 @@ def generate_message_host_constraints() -> list[dict[str, Any]]:
             continue
 
         operator = ComparisonOperator(random.choice(allowed_ops))
-        value = sample_data.get(field)
-        constraint = (
-            _generate_constraint_value(operator, value, field, [{"message": msg} for msg in msgs_list])
+        field_value = sample_data.get(field)
+        value = (
+            _generate_constraint_value(operator, field_value, field, [{"message": msg} for msg in msgs_list])
             if field == "message"
-            else _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
+            else _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
         )
-        constraints_list.append(constraint)
+
+        constraints_list.append(create_constraint_dict(field, operator, value))
     constraints_list.extend(constraint_list_for_view)
     return constraints_list
