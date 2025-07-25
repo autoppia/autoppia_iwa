@@ -1208,7 +1208,7 @@ FIELD_OPERATORS_CONFIRM_AND_PAY_MAP = {
     # "cleaningFee": LOGICAL_OPERATORS,  # int
     # "serviceFee": LOGICAL_OPERATORS,  # int
     "total": LOGICAL_OPERATORS,  # int
-    "paymentMethod": STRING_OPERATORS,  # str
+    # "paymentMethod": STRING_OPERATORS,  # str
     # "source": STRING_OPERATORS,  # str,
     "card_number": [EQUALS, NOT_EQUALS],
     "expiration": [EQUALS, NOT_EQUALS],

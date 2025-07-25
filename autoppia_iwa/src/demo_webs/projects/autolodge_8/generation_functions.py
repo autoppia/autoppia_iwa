@@ -438,7 +438,7 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
 def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
-    payment_methods = ["VISA", "MasterCard", "PayPal"]
+    # payment_methods = ["VISA", "MasterCard", "PayPal"]
     card_numbers = ["4111111111111111", "5500000000000004", "340000000000009", "30000000000004"]
     expiration = ["12/25", "01/27", "06/26", "11/24"]
     cvv = ["123", "456", "789", "321"]
@@ -460,7 +460,7 @@ def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
 
     sample_data = {
         "total": lambda h: ((h["datesTo"] - h["datesFrom"]).days * h["price"] + 15 + 34),
-        "paymentMethod": lambda _: random.choice(payment_methods),
+        # "paymentMethod": lambda _: random.choice(payment_methods),
         "card_number": lambda _: random.choice(card_numbers),
         "expiration": lambda _: random.choice(expiration),
         "cvv": lambda _: random.choice(cvv),
