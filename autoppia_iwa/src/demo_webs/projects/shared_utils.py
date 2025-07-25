@@ -105,17 +105,26 @@ def validate_date_field(field_value, criterion):
         ComparisonOperator.LESS_THAN: lambda s, c: s < c,
         ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
     }
+
+    def to_date(val):
+        if isinstance(val, str):
+            try:
+                return datetime.fromisoformat(val).date() if "T" in val else date.fromisoformat(val)
+            except Exception:
+                return None
+        elif isinstance(val, datetime):
+            return val.date()
+        elif isinstance(val, date):
+            return val
+        return None
+
     if isinstance(criterion, CriterionValue):
         op = criterion.operator
-        comp_date = criterion.value
-        if isinstance(comp_date, str):
-            comp_date = datetime.fromisoformat(comp_date).date() if "T" in comp_date else date.fromisoformat(comp_date)
+        comp_date = to_date(criterion.value)
+        field_date = to_date(field_value)
+        if comp_date is None or field_date is None:
+            return False
         try:
-            field_date = field_value
-            if isinstance(field_date, str):
-                field_date = datetime.fromisoformat(field_date).date() if "T" in field_date else date.fromisoformat(field_date)
-            elif isinstance(field_date, datetime):
-                field_date = field_date.date()
             return comp_table[op](field_date, comp_date)
         except KeyError:
             logger.error("Unknown comparison operator for date field: %s", op)
@@ -123,6 +132,11 @@ def validate_date_field(field_value, criterion):
         except Exception as e:
             logger.error(f"Error validating date field: {e}")
             return False
+    elif isinstance(criterion, datetime) and isinstance(field_value, datetime):
+        return comp_table[ComparisonOperator.EQUALS](field_value, criterion)
+    elif isinstance(criterion, date) and isinstance(field_value, datetime):
+        return comp_table[ComparisonOperator.EQUALS](field_value.date(), criterion)
+    elif isinstance(criterion, datetime) and isinstance(field_value, date):
+        return comp_table[ComparisonOperator.EQUALS](field_value, criterion.date())
     else:
-        # Fallback: direct equality or None check
         return criterion is None or field_value == criterion
