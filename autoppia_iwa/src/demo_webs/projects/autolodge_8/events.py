@@ -255,7 +255,7 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
             [
                 # self._validate_field(self.from_guests, criteria.from_guests),
                 self._validate_field(self.to_guests, criteria.to_guests),
-                super()._validate_criteria(criteria),
+                HotelInfo._validate_criteria(self, criteria),
             ]
         )
 
@@ -319,13 +319,11 @@ class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user reserves a hotel"""
 
     event_name: str = "RESERVE_HOTEL"
-    hotel_id: str | None = None
     guests: int | None = None
     checkin: datetime | None = None
     checkout: datetime | None = None
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
-        hotel_id: str | CriterionValue | None = None
         guests: int | CriterionValue | None = None
         date_from: datetime | None = None
         date_to: datetime | None = None
@@ -337,11 +335,10 @@ class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
         date_to_valid = validate_date_field(self.date_to, criteria.date_to)
         return all(
             [
-                self._validate_field(self.hotel_id, criteria.hotel_id),
                 self._validate_field(self.guests, criteria.guests),
                 date_from_valid,
                 date_to_valid,
-                super()._validate_criteria(criteria),
+                HotelInfo._validate_criteria(self, criteria),
             ]
         )
 
@@ -356,7 +353,6 @@ class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            hotel_id=data.get("id"),
             guests=data.get("guests"),
             checkin=parse_datetime(data.get("checkin")),
             checkout=parse_datetime(data.get("checkout")),
@@ -385,6 +381,7 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
                 checkin_valid,
                 checkout_valid,
                 self._validate_field(self.source, criteria.source),
+                HotelInfo._validate_criteria(self, criteria),
             ]
         )
 
@@ -395,6 +392,8 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
         checkin = parse_datetime(data.get("checkin"))
         checkout = parse_datetime(data.get("checkout"))
         source = data.get("source", "")
+        hotel_info = HotelInfo.parse(data)
+
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -403,6 +402,7 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
             checkin=checkin,
             checkout=checkout,
             source=source,
+            **hotel_info.model_dump(),
         )
 
 
@@ -418,12 +418,12 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
     # cleaning_fee: int
     # service_fee: int
     total: int
-    payment_method: str
+    # payment_method: str
     card_number: str
     expiration: str
     cvv: str
     country: str
-    source: str
+    # source: str
 
     class ValidationCriteria(BaseModel):
         checkin: datetime | CriterionValue | None = None
@@ -436,9 +436,12 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
         # cleaningFee: int | CriterionValue | None = None
         # serviceFee: int | CriterionValue | None = None
         total: int | CriterionValue | None = None
-        paymentMethod: str | CriterionValue | None = None
+        # paymentMethod: str | CriterionValue | None = None
         country: str | CriterionValue | None = None
-        source: str | CriterionValue | None = None
+        # source: str | CriterionValue | None = None
+        cardNumber: str | CriterionValue | None = None
+        cvv: str | CriterionValue | None = None
+        expiration: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -457,9 +460,12 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
                 # self._validate_field(self.cleaning_fee, criteria.cleaningFee),
                 # self._validate_field(self.service_fee, criteria.serviceFee),
                 self._validate_field(self.total, criteria.total),
-                self._validate_field(self.payment_method, criteria.paymentMethod),
+                # self._validate_field(self.payment_method, criteria.paymentMethod),
                 self._validate_field(self.country, criteria.country),
-                self._validate_field(self.source, criteria.source),
+                # self._validate_field(self.source, criteria.source),
+                self._validate_field(self.card_number, criteria.cardNumber),
+                self._validate_field(self.expiration, criteria.expiration),
+                self._validate_field(self.cvv, criteria.cvv),
             ]
         )
 
@@ -482,12 +488,12 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
             # cleaning_fee=data.get("cleaningFee"),
             # service_fee=data.get("serviceFee"),
             total=data.get("total"),
-            payment_method=data.get("paymentMethod", ""),
+            # payment_method=data.get("paymentMethod", ""),
             card_number=data.get("cardNumber", ""),
             expiration=data.get("expiration", ""),
             cvv=data.get("cvv", ""),
             country=data.get("country", ""),
-            source=data.get("source", ""),
+            # source=data.get("source", ""),
         )
 
 

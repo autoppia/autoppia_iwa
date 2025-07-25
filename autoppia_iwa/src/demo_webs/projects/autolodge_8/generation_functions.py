@@ -247,6 +247,13 @@ def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str,
     possible_fields = list(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys())
     num_constraints = random.randint(3, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
+
+    # Ensure both 'datesFrom' and 'datesTo' are present if either is selected
+    if "datesFrom" in selected_fields and "datesTo" not in selected_fields:
+        selected_fields.append("datesTo")
+    elif "datesTo" in selected_fields and "datesFrom" not in selected_fields:
+        selected_fields.append("datesFrom")
+
     hotel = choice(HOTELS_DATA_MODIFIED)
 
     for field in selected_fields:
