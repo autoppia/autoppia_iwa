@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
 from autoppia_iwa.src.demo_webs.projects.shared_utils import validate_date_field
 
 
@@ -142,7 +142,7 @@ class HotelInfo(BaseModel):
         host_name: str | CriterionValue | None = None
         # host_since: int | CriterionValue | None = None
         # host_avatar: str | CriterionValue | None = None
-        amenities: str | CriterionValue | None = None
+        amenities: str | list | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -150,6 +150,35 @@ class HotelInfo(BaseModel):
 
         date_from_valid = validate_date_field(self.datesFrom, criteria.datesFrom)
         date_to_valid = validate_date_field(self.datesTo, criteria.datesTo)
+
+        def validate_amenities(amenities, criteria_amenities):
+            if criteria_amenities is None:
+                return True
+            if isinstance(criteria_amenities, str):
+                return any(criteria_amenities.lower() in a.lower() for a in amenities)
+            elif isinstance(criteria_amenities, list):
+                return all(a in amenities for a in criteria_amenities)
+            elif hasattr(criteria_amenities, "operator"):
+                op = criteria_amenities.operator
+                val = criteria_amenities.value
+                if op == ComparisonOperator.EQUALS:
+                    return any(val.lower() == a.lower() for a in amenities)
+                elif op == ComparisonOperator.CONTAINS:
+                    return any(val.lower() in a.lower() for a in amenities)
+                elif op == ComparisonOperator.NOT_CONTAINS:
+                    return all(val.lower() not in a.lower() for a in amenities)
+                elif op == ComparisonOperator.IN_LIST:
+                    if isinstance(val, str):
+                        return val in amenities
+                    if isinstance(val, list):
+                        return any(a in amenities for a in val)
+                elif op == ComparisonOperator.NOT_IN_LIST:
+                    if isinstance(val, str):
+                        return val not in amenities
+                    if isinstance(val, list):
+                        return all(a not in amenities for a in val)
+            return True
+
         return all(
             [
                 # self._validate_field(self.hotel_id, criteria.hotel_id),
@@ -168,7 +197,7 @@ class HotelInfo(BaseModel):
                 self._validate_field(self.host_name, criteria.host_name),
                 # self._validate_field(self.host_since, criteria.host_since),
                 # self._validate_field(self.host_avatar, criteria.host_avatar),
-                self._validate_field(self.amenities, criteria.amenities),
+                validate_amenities(self.amenities, criteria.amenities),
             ]
         )
 
@@ -183,9 +212,9 @@ class HotelInfo(BaseModel):
                     amenities.append(a["title"])
             elif isinstance(a, list):
                 amenities.extend(a)
-
             elif isinstance(a, str):
                 amenities.append(a)
+
         date_from = data.get("dateFrom") or (data.get("dates") or {}).get("from")
         date_to = data.get("datesTo") or (data.get("dates") or {}).get("to")
         return cls(
@@ -516,7 +545,7 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
                 self._validate_field(self.message, criteria.message),
                 self._validate_field(self.host_name, criteria.host_name),
                 # self._validate_field(self.source, criteria.source),
-                super()._validate_criteria(criteria),
+                HotelInfo._validate_criteria(self, criteria),
             ]
         )
 
