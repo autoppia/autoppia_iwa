@@ -529,13 +529,9 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
 class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "MESSAGE_HOST"
     message: str
-    host_name: str
-    # source: str
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
         message: str | CriterionValue | None = None
-        host_name: str | CriterionValue | None = None
-        # source: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -543,8 +539,6 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
         return all(
             [
                 self._validate_field(self.message, criteria.message),
-                self._validate_field(self.host_name, criteria.host_name),
-                # self._validate_field(self.source, criteria.source),
                 HotelInfo._validate_criteria(self, criteria),
             ]
         )
@@ -560,8 +554,6 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             message=data.get("message", ""),
-            # host_name=data.get("hostName", ""),
-            # source=data.get("source", ""),
             **hotel.model_dump(),
         )
 
