@@ -1,6 +1,5 @@
 import random
 from datetime import datetime, timedelta
-from random import choice
 from typing import Any
 
 from loguru import logger
@@ -21,10 +20,19 @@ from .data import (
 )
 
 
-def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
-    value = None
+def _generate_constraint_value(
+    operator: ComparisonOperator,
+    field_value: Any,
+    field: str,
+    dataset: list[dict[str, Any]],
+) -> Any:
+    """
+    Generate a constraint value for a given operator, field, and dataset.
+    Handles various data types and operators robustly.
+    """
+    # Handle amenities as a list: pick a random amenity if present
     if field == "amenities" and isinstance(field_value, list):
-        field_value = choice(field_value) if field_value else ""
+        field_value = random.choice(field_value) if field_value else ""
 
     # Handle datetime comparisons
     if isinstance(field_value, datetime):
@@ -33,7 +41,11 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
             return field_value - timedelta(days=delta_days)
         elif operator == ComparisonOperator.LESS_THAN:
             return field_value + timedelta(days=delta_days)
-        elif operator == ComparisonOperator.GREATER_EQUAL or operator == ComparisonOperator.LESS_EQUAL or operator == ComparisonOperator.EQUALS:
+        elif operator in {
+            ComparisonOperator.GREATER_EQUAL,
+            ComparisonOperator.LESS_EQUAL,
+            ComparisonOperator.EQUALS,
+        }:
             return field_value
         elif operator == ComparisonOperator.NOT_EQUALS:
             return field_value + timedelta(days=delta_days + 1)
@@ -46,7 +58,15 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
             valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
             return random.choice(valid) if valid else None
         elif isinstance(field_value, list):
-            valid = [v[f] for v in dataset for f in field_value if v.get(f) and v.get(f) != field_value]
+            # For lists, find a value in dataset that is not equal to the list
+            valid = []
+            for v in dataset:
+                val = v.get(field)
+                if val and val != field_value:
+                    if isinstance(val, list):
+                        valid.extend([item for item in val if item not in field_value])
+                    else:
+                        valid.append(val)
             return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
@@ -58,10 +78,11 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
 
     elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
         alphabet = "abcdefghijklmnopqrstuvwxyz"
-        while True:
+        for _ in range(100):
             test_str = "".join(random.choice(alphabet) for _ in range(3))
             if test_str.lower() not in field_value.lower():
                 return test_str
+        return "xyz"  # fallback
 
     elif operator == ComparisonOperator.IN_LIST:
         all_values = []
@@ -103,18 +124,52 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     }:
-        numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
-        if numeric_values:
-            base = random.choice(numeric_values)
-            delta = random.uniform(1, 3)
-            if operator == ComparisonOperator.GREATER_THAN:
-                return round(base - delta, 2)
-            elif operator == ComparisonOperator.LESS_THAN:
-                return round(base + delta, 2)
-            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                return round(base, 2)
+        base = field_value
+        if isinstance(base, int | float):
+            if field == "rating":
+                min_val, max_val = 0.0, 5.0
+                if operator == ComparisonOperator.GREATER_THAN:
+                    if base > min_val:
+                        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
+                        return round(random.uniform(min_dataset, max(base - 0.5, min_dataset)), 2)
+                    else:
+                        return min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
+                elif operator == ComparisonOperator.LESS_THAN:
+                    if base < max_val:
+                        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
+                        return round(random.uniform(min(base + 0.1, max_dataset), max_dataset), 2)
+                    else:
+                        return max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
+                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                    return round(base, 2)
+            elif field == "reviews":
+                min_val, max_val = 0, 1000  # Assume 1000 as a practical upper bound
+                if operator == ComparisonOperator.GREATER_THAN:
+                    if base > min_val:
+                        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=min_val)
+                        return max(min_dataset, base - random.randint(1, min(base, 20)))
+                    else:
+                        return min((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=min_val)
+                elif operator == ComparisonOperator.LESS_THAN:
+                    if base < max_val:
+                        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=max_val)
+                        return min(max_dataset, base + random.randint(1, 20))
+                    else:
+                        return max((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=max_val)
+                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                    return base
+            else:
+                # Generic numeric logic
+                delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
+                if operator == ComparisonOperator.GREATER_THAN:
+                    return base - delta
+                elif operator == ComparisonOperator.LESS_THAN:
+                    return base + delta
+                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                    return base
 
-    return value
+    # Fallback: return None
+    return None
 
 
 def generate_search_hotel_constraints() -> list[dict[str, Any]]:
@@ -218,26 +273,37 @@ def _generate_num_of_guests_field_value(operator: str, actual_value: int, field:
     if operator == ComparisonOperator.EQUALS:
         return actual_value
     elif operator == ComparisonOperator.NOT_EQUALS:
-        return random.choice([val for val in range(1, max_value + 1) if val != actual_value])
+        # Pick any value except the actual one
+        choices = [val for val in range(1, max_value + 1) if val != actual_value]
+        return random.choice(choices) if choices else actual_value + 1
     elif operator == ComparisonOperator.LESS_THAN:
-        if actual_value > 1:
-            val = random.randint(1, actual_value - 1)
-            return max(1, min(val, max_value))
-        else:
-            return max_value if max_value > 1 else 2
-    elif operator == ComparisonOperator.LESS_EQUAL:
-        val = random.randint(1, actual_value)
-        v_val = max(1, min(val, max_value))
-        return v_val if v_val < max_value else max_value - 1
-    elif operator == ComparisonOperator.GREATER_THAN:
+        # actual_value < generated_value
         if actual_value < max_value:
             val = random.randint(actual_value + 1, max_value)
-            return max(1, min(val, max_value))
+            return val
         else:
-            return max_value - 1
+            return max_value + 1
+    elif operator == ComparisonOperator.LESS_EQUAL:
+        # actual_value <= generated_value
+        if actual_value < max_value:
+            val = random.randint(actual_value, max_value)
+            return val
+        else:
+            return max_value
+    elif operator == ComparisonOperator.GREATER_THAN:
+        # actual_value > generated_value
+        if actual_value > 1:
+            val = random.randint(1, actual_value - 1)
+            return val
+        else:
+            return 1
     elif operator == ComparisonOperator.GREATER_EQUAL:
-        val = random.randint(actual_value, max_value)
-        return max(1, min(val, max_value))
+        # actual_value >= generated_value
+        if actual_value > 1:
+            val = random.randint(1, actual_value)
+            return val
+        else:
+            return 1
     else:
         return max(1, min(actual_value, max_value))
 
@@ -254,10 +320,10 @@ def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str,
     elif "datesTo" in selected_fields and "datesFrom" not in selected_fields:
         selected_fields.append("datesFrom")
 
-    hotel = choice(HOTELS_DATA_MODIFIED)
+    hotel = random.choice(HOTELS_DATA_MODIFIED)
 
     for field in selected_fields:
-        operator = ComparisonOperator(choice(FIELD_OPERATORS_VIEW_HOTEL_MAP[field]))
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_VIEW_HOTEL_MAP[field]))
         field_value = hotel.get(field)
         if field_value is None:
             continue
@@ -333,7 +399,7 @@ def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(random.choice(allowed_ops))
         field = field_map.get(field, field)
 
-        value = random.randint(1, max_guests) if field == "guests" else hotel.get(field, hotel.get("maxGuests", 1))
+        value = random.randint(1, max_guests) if field == "guests" else hotel.get(field)
 
         if value is None:
             continue
@@ -347,7 +413,7 @@ def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
 def generate_increase_guests_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
-    hotel = choice(HOTELS_DATA_MODIFIED)
+    hotel = random.choice(HOTELS_DATA_MODIFIED)
     max_value = hotel.get("maxGuests") or hotel.get("guests") or 2  # fallback if missing
 
     from_guests = 1
