@@ -508,8 +508,8 @@ CONFIRM_AND_PAY_USE_CASE = UseCase(
 
 
 MESSAGE_HOST_INFO = """
-Trigger this event when the user wants to send a message or ask a question to the host before or after booking.
-Users may directly type or say their message (e.g., 'Ask if late check-in is allowed', or 'Tell John I'll arrive early').
+CRITICAL REQUIREMENTS:
+1. Use explicit phrases such as 'Message the host ...', 'Send the query to host ...', or similar.
 """
 
 MESSAGE_HOST_USE_CASE = UseCase(
@@ -566,5 +566,7 @@ ALL_USE_CASES = [
     # RESERVE_HOTEL_USE_CASE,
     # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
     # CONFIRM_AND_PAY_USE_CASE,
-    # MESSAGE_HOST_USE_CASE
+    # MESSAGE_HOST_USE_CASE,
+    # SHARE_HOTEL_USE_CASE,
+    # ADD_TO_WISHLIST_INFO,
 ]

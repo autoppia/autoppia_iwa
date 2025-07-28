@@ -365,46 +365,6 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
-# class DecreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
-#     event_name: str = "DECREASE_NUMBER_OF_GUESTS"
-#     from_guests: int
-#     to_guests: int
-#
-#     class ValidationCriteria(HotelInfo.ValidationCriteria):
-#         """Criteria for validating decrease guests events"""
-#
-#         from_guests: int | CriterionValue | None = None
-#         to_guests: int | CriterionValue | None = None
-#
-#     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-#         if not criteria:
-#             return True
-#         return all(
-#             [
-#                 self._validate_field(self.from_guests, criteria.from_guests),
-#                 self._validate_field(self.to_guests, criteria.to_guests),
-#                 super()._validate_criteria(criteria),
-#             ]
-#         )
-#
-#     @classmethod
-#     def parse(cls, backend_event: BackendEvent) -> "DecreaseNumberOfGuestsEvent":
-#         base_event = Event.parse(backend_event)
-#         hotel_info = HotelInfo.parse(backend_event.data)
-#         data = backend_event.data
-#         from_guests = data.get("from", 0)
-#         to_guests = data.get("to", 0)
-#         return cls(
-#             event_name=base_event.event_name,
-#             timestamp=base_event.timestamp,
-#             web_agent_id=base_event.web_agent_id,
-#             user_id=base_event.user_id,
-#             from_guests=from_guests,
-#             to_guests=to_guests,
-#             **hotel_info.model_dump(),
-#         )
-
-
 class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user reserves a hotel"""
 
@@ -633,6 +593,8 @@ EVENTS = [
     EditCheckInOutDatesEvent,
     ConfirmAndPayEvent,
     MessageHostEvent,
+    AddToWishlistEvent,
+    ShareHotelEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -645,4 +607,6 @@ BACKEND_EVENT_TYPES = {
     "EDIT_CHECK_IN_OUT_DATES": EditCheckInOutDatesEvent,
     "CONFIRM_AND_PAY": ConfirmAndPayEvent,
     "MESSAGE_HOST": MessageHostEvent,
+    "ADD_TO_WISHLIST": AddToWishlistEvent,
+    "SHARE_HOTEL": ShareHotelEvent,
 }
