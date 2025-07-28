@@ -1,5 +1,6 @@
 from ...classes import UseCase
 from .events import (
+    AddToWishlistEvent,
     ConfirmAndPayEvent,
     # DecreaseNumberOfGuestsEvent,
     EditCheckInOutDatesEvent,
@@ -8,6 +9,7 @@ from .events import (
     ReserveHotelEvent,
     # SearchClearedEvent,
     SearchHotelEvent,
+    ShareHotelEvent,
     ViewHotelEvent,
 )
 from .generation_functions import (
@@ -157,6 +159,97 @@ VIEW_HOTEL_USE_CASE = UseCase(
         {
             "prompt": "Open the listing that includes free parking, pet-friendly options, and balcony views.",
             "prompt_for_task_generation": "View hotel with free parking, pet-friendly, and balcony view amenities.",
+        },
+    ],
+)
+
+ADD_TO_WISHLIST_INFO = """
+CRITICAL REQUIREMENT:
+1. If constraints include amenities, price, rating, or location, they must be mentioned in the prompt clearly.
+2. Emphasize intent to 'save', 'wishlist', 'mark as favorite', or similar phrasing that implies adding a hotel to the user's wishlist.
+
+Examples:
+Constraint: {'amenities': {'operator': 'in_list', 'value': ['Pool', 'City view']}}
+Prompt: "Add to wishlist a hotel that has a pool and city view."
+"""
+
+ADD_TO_WISHLIST_USE_CASE = UseCase(
+    name="ADD_TO_WISHLIST",
+    description="Triggered when the user adds a hotel listing to their wishlist.",
+    event=AddToWishlistEvent,
+    event_source_code=AddToWishlistEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_hotel_constraints,  # reuse existing hotel constraint generator
+    additional_prompt_info=ADD_TO_WISHLIST_INFO,
+    examples=[
+        {
+            "prompt": "Add that beautiful hotel in Skardu with the river view to my wishlist.",
+            "prompt_for_task_generation": "Add to wishlist hotel in Skardu with river view.",
+        },
+        {
+            "prompt": "I want to save the one in Islamabad with the rooftop pool and gym.",
+            "prompt_for_task_generation": "Add to wishlist hotel in Islamabad with rooftop pool and gym.",
+        },
+        {
+            "prompt": "Mark the luxury villa in Murree with the hot tub as a favorite.",
+            "prompt_for_task_generation": "Add to wishlist luxury villa in Murree with hot tub.",
+        },
+        {
+            "prompt": "Save the hotel near downtown Karachi under 10k per night with great reviews.",
+            "prompt_for_task_generation": "Add to wishlist hotel near downtown Karachi with price under 10000 and high rating.",
+        },
+        {
+            "prompt": "I loved the place with the mountain view and free breakfast - please add it to my list.",
+            "prompt_for_task_generation": "Add to wishlist hotel with mountain view and free breakfast.",
+        },
+        {
+            "prompt": "Bookmark the listing hosted by Ayesha that has 5 stars and private parking.",
+            "prompt_for_task_generation": "Add to wishlist hotel hosted by Ayesha with 5-star rating and private parking.",
+        },
+    ],
+)
+
+SHARE_HOTEL_INFO = """
+CRITICAL REQUIREMENTS:
+1. The prompt should clearly indicate the intent to share a hotel with someone via email or other means.
+2. If the constraints include amenities, price, rating, or location, mention them clearly in the prompt.
+3. If an email is part of the constraint, it should be reflected explicitly (e.g., "share with my friend at abc@example.com").
+
+Examples:
+Constraint: {'email': {'operator': 'equals', 'value': 'friend@example.com'}}
+Prompt: "Share the hotel with friend@example.com."
+"""
+
+SHARE_HOTEL_USE_CASE = UseCase(
+    name="SHARE_HOTEL",
+    description="Triggered when the user shares a hotel listing with someone, typically via email.",
+    event=ShareHotelEvent,
+    event_source_code=ShareHotelEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_hotel_constraints,  # Reuse hotel-based constraints
+    additional_prompt_info=SHARE_HOTEL_INFO,
+    examples=[
+        {
+            "prompt": "Share the Murree hotel with a mountain view and hot tub with sara@example.com.",
+            "prompt_for_task_generation": "Share hotel in Murree with mountain view and hot tub with sara@example.com.",
+        },
+        {
+            "prompt": "Can you send the Skardu riverside hotel listing to my brother at ali123@gmail.com?",
+            "prompt_for_task_generation": "Share hotel in Skardu with river view to ali123@gmail.com.",
+        },
+        {
+            "prompt": "I want to share that 5-star hotel with free breakfast with my travel buddy.",
+            "prompt_for_task_generation": "Share 5-star hotel with free breakfast.",
+        },
+        {
+            "prompt": "Send the listing hosted by Ayesha in Islamabad with a rooftop pool to my email.",
+            "prompt_for_task_generation": "Share hotel in Islamabad hosted by Ayesha with rooftop pool.",
+        },
+        {
+            "prompt": "Forward the Karachi hotel with private parking and gym to omar@gmail.com.",
+            "prompt_for_task_generation": "Share hotel in Karachi with private parking and gym to omar@gmail.com.",
+        },
+        {
+            "prompt": "Let's share that villa in Nathia Gali with jacuzzi and fireplace with my friends.",
+            "prompt_for_task_generation": "Share villa in Nathia Gali with jacuzzi and fireplace.",
         },
     ],
 )
@@ -467,11 +560,11 @@ MESSAGE_HOST_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    # SEARCH_HOTEL_USE_CASE,
+    SEARCH_HOTEL_USE_CASE,
     # VIEW_HOTEL_USE_CASE,
     # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     # RESERVE_HOTEL_USE_CASE,
     # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
-    CONFIRM_AND_PAY_USE_CASE,
+    # CONFIRM_AND_PAY_USE_CASE,
     # MESSAGE_HOST_USE_CASE
 ]
