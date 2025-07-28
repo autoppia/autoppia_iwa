@@ -266,6 +266,67 @@ class ViewHotelEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+class AddToWishlistEvent(Event, BaseEventValidator, HotelInfo):
+    """Event triggered when a user views a hotel listing"""
+
+    event_name: str = "ADD_TO_WISHLIST"
+
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return HotelInfo._validate_criteria(self, criteria)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "AddToWishlistEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        hotel_info = HotelInfo.parse({"hotel": data})
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            **hotel_info.model_dump(),
+        )
+
+
+class ShareHotelEvent(Event, BaseEventValidator, HotelInfo):
+    """Event triggered when a user views a hotel listing"""
+
+    event_name: str = "SHARE_HOTEL"
+    email: str = ""
+
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
+        email: str | CriterionValue | None = None
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+        return all([HotelInfo._validate_criteria(self, criteria), self._validate_field(self.email, criteria.email)])
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ShareHotelEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        email = data.get("email", "")
+        hotel_info = HotelInfo.parse({"hotel": data})
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            email=email,
+            **hotel_info.model_dump(),
+        )
+
+
 class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "INCREASE_NUMBER_OF_GUESTS"
     # from_guests: int
@@ -452,6 +513,7 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
     expiration: str
     cvv: str
     country: str
+
     # source: str
 
     class ValidationCriteria(BaseModel):
@@ -530,6 +592,7 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "MESSAGE_HOST"
     message: str
     host_name: str
+
     # source: str
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
