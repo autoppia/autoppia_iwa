@@ -32,8 +32,8 @@ class SearchHotelEvent(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         search_term: str | CriterionValue | None = None
-        date_from: datetime | CriterionValue | None = None
-        date_to: datetime | CriterionValue | None = None
+        datesFrom: datetime | CriterionValue | None = None
+        datesTo: datetime | CriterionValue | None = None
         adults: int | CriterionValue | None = None
         children: int | CriterionValue | None = None
         infants: int | CriterionValue | None = None
@@ -42,8 +42,8 @@ class SearchHotelEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        date_from_valid = validate_date_field(self.date_from, criteria.date_from)
-        date_to_valid = validate_date_field(self.date_to, criteria.date_to)
+        date_from_valid = validate_date_field(self.date_from, criteria.datesFrom)
+        date_to_valid = validate_date_field(self.date_to, criteria.datesTo)
         return all(
             [
                 self._validate_field(self.search_term, criteria.search_term),
@@ -68,7 +68,7 @@ class SearchHotelEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            search_term=data.get("searchTerm"),
+            search_term=data.get("searchTerm", ""),
             date_from=parse_datetime(date_range.get("from")),
             date_to=parse_datetime(date_range.get("to")),
             adults=guests.get("adults", 0),

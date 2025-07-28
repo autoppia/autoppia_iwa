@@ -172,29 +172,52 @@ def _generate_constraint_value(
     return None
 
 
+def _generate_guests_field_value(operator: str, actual_value: int, field: str, max_value: int) -> int:
+    if operator == ComparisonOperator.EQUALS:
+        return min(actual_value, max_value)
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        choices = [val for val in range(1, max_value + 1) if val != actual_value]
+        return random.choice(choices) if choices else max_value
+    elif operator == ComparisonOperator.LESS_THAN:
+        return max(1, random.randint(1, max_value - 1)) if max_value > 1 else 1
+    elif operator == ComparisonOperator.LESS_EQUAL:
+        return random.randint(1, max_value)
+    elif operator == ComparisonOperator.GREATER_THAN:
+        return random.randint(1, actual_value - 1) if actual_value > 1 else 1
+    elif operator == ComparisonOperator.GREATER_EQUAL:
+        return random.randint(1, actual_value) if actual_value > 1 else 1
+    else:
+        return min(actual_value, max_value)
+
+
 def generate_search_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
     possible_fields = [
         "search_term",
-        "dateFrom",
-        "dateTo",
+        "datesFrom",
+        "datesTo",
         "adults",
         "children",
         "infants",
         "pets",
     ]
+
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
     sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
+    max_guests = sample_hotel.get("maxGuests", 2)
 
-    # Dummy guests and date ranges to simulate constraint values
+    # Generate adults and children such that their sum <= max_guests
+    adults = random.randint(0, max_guests)
+    children = random.randint(0, max_guests - adults)
+
     sample_guests = {
-        "adults": random.randint(1, 4),
-        "children": random.randint(0, 2),
-        "infants": random.randint(0, 1),
-        "pets": random.randint(0, 1),
+        "adults": adults,
+        "children": children,
+        "infants": random.randint(0, 5),
+        "pets": random.randint(0, 5),
     }
 
     for field in selected_fields:
@@ -206,13 +229,34 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(op_str)
 
         if field == "search_term":
-            value = sample_hotel.get("location") or sample_hotel.get("title")
-        elif field in ["date_from", "date_to"]:
+            if sample_hotel.get("location"):
+                new_field = "location"
+                value = sample_hotel.get("location")
+            else:
+                new_field = "title"
+                value = sample_hotel.get("title")
+            if not value:
+                continue
+            value = _generate_constraint_value(operator, value, new_field, HOTELS_DATA_MODIFIED)
+
+        # Todo: fix the constraint logic for dates
+        elif field in ["datesFrom", "datesTo"]:
             value = sample_hotel.get(field)
             if not value:
                 logger.warning(f"Field {field} is empty!")
-        else:
+            value = _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
+
+        elif field in ["adults", "children"]:
+            actual_value = sample_guests.get(field, 0)
+            other_field = "children" if field == "adults" else "adults"
+            other_value = sample_guests.get(other_field, 0)
+
+            # Ensure sum of adults + children ≤ maxGuests
+            value = _generate_num_of_guests_field_value(operator=operator, actual_value=actual_value, field=field, max_value=max_guests - other_value)
+
+        else:  # infants, pets
             value = sample_guests.get(field)
+            value = _generate_guests_field_value(operator, value, field, 5)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
