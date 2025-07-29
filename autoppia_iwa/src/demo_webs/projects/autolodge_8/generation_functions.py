@@ -172,24 +172,6 @@ def _generate_constraint_value(
     return None
 
 
-def _generate_guests_field_value(operator: str, actual_value: int, field: str, max_value: int) -> int:
-    if operator == ComparisonOperator.EQUALS:
-        return min(actual_value, max_value)
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        choices = [val for val in range(1, max_value + 1) if val != actual_value]
-        return random.choice(choices) if choices else max_value
-    elif operator == ComparisonOperator.LESS_THAN:
-        return max(1, random.randint(1, max_value - 1)) if max_value > 1 else 1
-    elif operator == ComparisonOperator.LESS_EQUAL:
-        return random.randint(1, max_value)
-    elif operator == ComparisonOperator.GREATER_THAN:
-        return random.randint(1, actual_value - 1) if actual_value > 1 else 1
-    elif operator == ComparisonOperator.GREATER_EQUAL:
-        return random.randint(1, actual_value) if actual_value > 1 else 1
-    else:
-        return min(actual_value, max_value)
-
-
 def generate_search_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
@@ -258,7 +240,7 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
 
         else:  # infants, pets
             value = sample_guests.get(field)
-            value = _generate_guests_field_value(operator, value, field, 5)
+            value = _generate_num_of_guests_field_value(operator, value, field, max_guests)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
