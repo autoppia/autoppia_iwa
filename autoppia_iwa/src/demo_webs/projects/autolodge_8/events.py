@@ -215,7 +215,7 @@ class HotelInfo(BaseModel):
             elif isinstance(a, str):
                 amenities.append(a)
 
-        date_from = data.get("dateFrom") or (data.get("dates") or {}).get("from")
+        date_from = data.get("dateFrom") or data.get("datesFrom") or (data.get("dates") or {}).get("from")
         date_to = data.get("datesTo") or (data.get("dates") or {}).get("to")
         return cls(
             # hotel_id=data.get("id"),
