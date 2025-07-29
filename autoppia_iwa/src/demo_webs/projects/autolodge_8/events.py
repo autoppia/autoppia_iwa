@@ -579,6 +579,26 @@ class MessageHostEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+class BackToAllHotelsEvent(Event, BaseEventValidator, HotelInfo):
+    event_name: str = "BACK_TO_ALL_HOTELS"
+
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
+        pass  # No fields to validate
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+        return HotelInfo._validate_criteria(self, criteria)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "BackToAllHotelsEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        hotel = HotelInfo.parse(data)
+        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, **hotel.model_dump())
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
@@ -595,6 +615,7 @@ EVENTS = [
     MessageHostEvent,
     AddToWishlistEvent,
     ShareHotelEvent,
+    BackToAllHotelsEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -609,4 +630,5 @@ BACKEND_EVENT_TYPES = {
     "MESSAGE_HOST": MessageHostEvent,
     "ADD_TO_WISHLIST": AddToWishlistEvent,
     "SHARE_HOTEL": ShareHotelEvent,
+    "BACK_TO_ALL_HOTELS": BackToAllHotelsEvent,
 }
