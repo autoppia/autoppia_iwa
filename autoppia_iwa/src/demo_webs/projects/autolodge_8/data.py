@@ -1187,12 +1187,9 @@ FIELD_OPERATORS_INCREASE_GUESTS_MAP = {
 
 
 FIELD_OPERATORS_RESERVE_HOTEL_MAP = {
-    **FIELD_OPERATORS_VIEW_HOTEL_MAP,
+    **{k: v for k, v in FIELD_OPERATORS_VIEW_HOTEL_MAP.items() if k != "guests"},
     "guests_set": LOGICAL_OPERATORS,
 }
-# Important: remove guests for reserve hotel map
-del FIELD_OPERATORS_RESERVE_HOTEL_MAP["guests"]
-
 FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP = {
     "checkin": LOGICAL_OPERATORS,
     "checkout": LOGICAL_OPERATORS,
