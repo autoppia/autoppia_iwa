@@ -360,8 +360,8 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
 ###############################################################################
 
 RESERVE_HOTEL_INFO = """
-Trigger this event when a user attempts to reserve or book a hotel. This includes phrases that express intent
-to confirm a booking for specific dates and guest counts. It can happen after viewing hotel details or during checkout.
+Important:
+1. Begin your request by phrases like: 'Reserve the hotel...', 'Book the hotel for...', or similar.
 """
 
 RESERVE_HOTEL_USE_CASE = UseCase(
