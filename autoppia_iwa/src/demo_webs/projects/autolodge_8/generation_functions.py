@@ -422,7 +422,7 @@ def generate_view_hotel_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
+def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     view_hotel_constraints, sample_hotel = __generate_view_hotel_constraints()
 
@@ -457,6 +457,11 @@ def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     constraints_list.extend(view_hotel_constraints)
+    return constraints_list, sample_hotel
+
+
+def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
+    constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
     return constraints_list
 
 
@@ -604,91 +609,67 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
 
 
 def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
+    reserve_constraints, sample_hotel = _generate_reserve_hotel_constraints()
 
-    # payment_methods = ["VISA", "MasterCard", "PayPal"]
-    card_numbers = ["4111111111111111", "5500000000000004", "340000000000009", "30000000000004"]
-    expiration = ["12/25", "01/27", "06/26", "11/24"]
-    cvv = ["123", "456", "789", "321"]
-    zipcode = ["12345", "67890", "54321", "98765"]
-    countries = ["United States", "Canada", " United Kingdom", "Australia", "Germany", "France", "India", "Japan"]
+    # Payment specific fields
+    payment_fields = ["card_number", "expiration", "cvv", "zipcode", "country"]
 
-    hotel = random.choice(HOTELS_DATA_MODIFIED)
-
-    # Basic field mapping
-    field_mapping = {
-        "checkin": "datesFrom",
-        "checkout": "datesTo",
-        "guests": "guests",
-        "listingTitle": "title",
-        "pricePerNight": "price",
-        "nights": None,
-        "priceSubtotal": None,
+    # Payment field values
+    payment_data = {
+        "card_number": random.choice(["4111111111111111", "5500000000000004", "340000000000009", "30000000000004"]),
+        "expiration": random.choice(["12/25", "01/27", "06/26", "11/24"]),
+        "cvv": random.choice(["123", "456", "789", "321"]),
+        "zipcode": random.choice(["12345", "67890", "54321", "98765"]),
+        "country": random.choice(["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "India", "Japan"]),
     }
 
-    sample_data = {
-        "total": lambda h: ((h["datesTo"] - h["datesFrom"]).days * h["price"] + 15 + 34),
-        # "paymentMethod": lambda _: random.choice(payment_methods),
-        "card_number": lambda _: random.choice(card_numbers),
-        "expiration": lambda _: random.choice(expiration),
-        "cvv": lambda _: random.choice(cvv),
-        "zipcode": lambda _: random.choice(zipcode),
-        "country": lambda _: random.choice(countries),
-    }
+    # Calculate nights and costs
+    dates_from = None
+    dates_to = None
 
-    # Initial required fields
-    selected_fields = ["checkin", "checkout", "guests", "card_number", "expiration", "cvv", "zipcode", "country"]
+    for constraint in reserve_constraints:
+        if constraint["field"] == "datesFrom":
+            dates_from = constraint["value"]
+        elif constraint["field"] == "datesTo":
+            dates_to = constraint["value"]
 
-    # Additional confirm-and-pay fields
-    extra_confirm_fields = list(FIELD_OPERATORS_CONFIRM_AND_PAY_MAP.keys())
-    extra_confirm_fields = [f for f in extra_confirm_fields if f not in selected_fields]
-    confirm_sample_count = random.randint(1, len(extra_confirm_fields))
-    selected_fields += random.sample(extra_confirm_fields, confirm_sample_count)
+    if dates_from and dates_to:
+        nights = (dates_to - dates_from).days
+        price = sample_hotel.get("price", 100)  # Default if missing
+        subtotal = nights * price
+        service_fee = 15
+        taxes = 34
+        total = subtotal + service_fee + taxes
 
-    # Random view-hotel fields
-    hotel_sample_count = random.randint(2, len(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys()))
-    selected_fields += random.sample(list(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys()), hotel_sample_count)
+        # Add derived cost constraints
+        payment_data.update({"nights": nights, "priceSubtotal": subtotal, "serviceFee": service_fee, "taxes": taxes, "total": total})
 
-    # Merge operator maps
-    field_operators = {**FIELD_OPERATORS_CONFIRM_AND_PAY_MAP, **FIELD_OPERATORS_VIEW_HOTEL_MAP}
-
-    # Generate constraints
-    for field in selected_fields:
-        allowed_ops = field_operators.get(field, [])
+    # Create payment constraints
+    payment_constraints = []
+    for field in payment_fields:
+        allowed_ops = FIELD_OPERATORS_CONFIRM_AND_PAY_MAP.get(field, [])
         if not allowed_ops:
             continue
 
         operator = ComparisonOperator(random.choice(allowed_ops))
-        value = None
-
-        # Value from sample_data
-        if field in sample_data:
-            value = sample_data[field](hotel)
-
-        # Value from mapped hotel field
-        elif field in field_mapping:
-            mapped = field_mapping[field]
-            if isinstance(mapped, str):
-                value = hotel.get(mapped)
-            elif field in ["checkin", "checkout"]:
-                raw_date = hotel.get(field_mapping[field])
-                value = parse_datetime(raw_date)
-
-        elif field in hotel:
-            value = hotel[field]
-            value = _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
-
-        # Computed values
-        if field == "nights":
-            nights = (parse_datetime(hotel["datesTo"]) - parse_datetime(hotel["datesFrom"])).days
-            value = nights
-        elif field == "priceSubtotal":
-            nights = (parse_datetime(hotel["datesTo"]) - parse_datetime(hotel["datesFrom"])).days
-            value = nights * hotel["price"]
+        value = payment_data.get(field)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
+            payment_constraints.append(constraint)
+
+    # Add a few cost constraints
+    # cost_fields = ["total", "priceSubtotal"]
+    # for field in cost_fields:
+    #     if field in payment_data:
+    #         allowed_ops = FIELD_OPERATORS_CONFIRM_AND_PAY_MAP.get(field, [])
+    #         if allowed_ops:
+    #             operator = ComparisonOperator(random.choice(allowed_ops))
+    #             constraint = create_constraint_dict(field, operator, payment_data[field])
+    #             payment_constraints.append(constraint)
+
+    # Combine reserve constraints with payment constraints
+    constraints_list = reserve_constraints + payment_constraints
 
     return constraints_list
 
