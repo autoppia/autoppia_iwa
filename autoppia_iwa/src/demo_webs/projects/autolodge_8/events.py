@@ -445,13 +445,13 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
-class ConfirmAndPayEvent(Event, BaseEventValidator):
+class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "CONFIRM_AND_PAY"
-    checkin: datetime
-    checkout: datetime
-    guests: int
-    listing_title: str
-    price_per_night: int
+    # checkin: datetime
+    # checkout: datetime
+    # guests: int
+    # listing_title: str
+    # price_per_night: int
     nights: int
     price_subtotal: int
     # cleaning_fee: int
@@ -463,13 +463,17 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
     cvv: str
     country: str
     # source: str
+    guests_set: int | None = None
+    zipcode: str | None = None
 
-    class ValidationCriteria(BaseModel):
-        checkin: datetime | CriterionValue | None = None
-        checkout: datetime | CriterionValue | None = None
-        guests: int | CriterionValue | None = None
-        listingTitle: str | CriterionValue | None = None
-        pricePerNight: int | CriterionValue | None = None
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
+        """Criteria for validating confirm and pay events"""
+
+        # checkin: datetime | CriterionValue | None = None
+        # checkout: datetime | CriterionValue | None = None
+        # guests: int | CriterionValue | None = None
+        # listingTitle: str | CriterionValue | None = None
+        # pricePerNight: int | CriterionValue | None = None
         nights: int | CriterionValue | None = None
         priceSubtotal: int | CriterionValue | None = None
         # cleaningFee: int | CriterionValue | None = None
@@ -481,19 +485,21 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
         cardNumber: str | CriterionValue | None = None
         cvv: str | CriterionValue | None = None
         expiration: str | CriterionValue | None = None
+        guests_set: int | CriterionValue | None = None
+        zipcode: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        checkin_valid = validate_date_field(self.checkin, criteria.checkin)
-        checkout_valid = validate_date_field(self.checkout, criteria.checkout)
+        # checkin_valid = validate_date_field(self.checkin, criteria.checkin)
+        # checkout_valid = validate_date_field(self.checkout, criteria.checkout)
         return all(
             [
-                checkin_valid,
-                checkout_valid,
-                self._validate_field(self.guests, criteria.guests),
-                self._validate_field(self.listing_title, criteria.listingTitle),
-                self._validate_field(self.price_per_night, criteria.pricePerNight),
+                # checkin_valid,
+                # checkout_valid,
+                # self._validate_field(self.guests, criteria.guests),
+                # self._validate_field(self.listing_title, criteria.listingTitle),
+                # self._validate_field(self.price_per_night, criteria.pricePerNight),
                 self._validate_field(self.nights, criteria.nights),
                 self._validate_field(self.price_subtotal, criteria.priceSubtotal),
                 # self._validate_field(self.cleaning_fee, criteria.cleaningFee),
@@ -505,6 +511,9 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
                 self._validate_field(self.card_number, criteria.cardNumber),
                 self._validate_field(self.expiration, criteria.expiration),
                 self._validate_field(self.cvv, criteria.cvv),
+                self._validate_field(self.guests_set, criteria.guests_set),
+                self._validate_field(self.zipcode, criteria.zipcode),
+                HotelInfo._validate_criteria(self, criteria),
             ]
         )
 
@@ -512,16 +521,17 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "ConfirmAndPayEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
+        hotel = HotelInfo.parse(data)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            checkin=parse_datetime(data.get("checkin")),
-            checkout=parse_datetime(data.get("checkout")),
-            guests=data.get("guests"),
-            listing_title=data.get("listingTitle", ""),
-            price_per_night=data.get("pricePerNight"),
+            # checkin=parse_datetime(data.get("checkin")),
+            # checkout=parse_datetime(data.get("checkout")),
+            # guests=data.get("guests"),
+            # listing_title=data.get("listingTitle", ""),
+            # price_per_night=data.get("pricePerNight"),
             nights=data.get("nights"),
             price_subtotal=data.get("priceSubtotal"),
             # cleaning_fee=data.get("cleaningFee"),
@@ -533,6 +543,9 @@ class ConfirmAndPayEvent(Event, BaseEventValidator):
             cvv=data.get("cvv", ""),
             country=data.get("country", ""),
             # source=data.get("source", ""),
+            guests_set=data.get("guests_set"),
+            zipcode=data.get("zip"),
+            **hotel.model_dump(),
         )
 
 
