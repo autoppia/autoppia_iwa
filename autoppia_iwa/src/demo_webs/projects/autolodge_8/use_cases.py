@@ -41,6 +41,12 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
    - Travel dates (check-in and check-out)
    - Guest details: number of adults, children, infants, or pets
 3. DO NOT include any other interactions like hotel selection, booking, or viewing details - just the search intent.
+4. For constraint of search term, if the operator is 'contains', mention that substring exactly:
+    Example:
+    constraint:{'search_term': {'operator': 'contains', 'value': 'k, Ic'}}},
+    prompt:
+    CORRECT: Search for hotels where the search term CONTAINS 'k, Ic'
+    INCORRECT: Search for hotels where the search term CONTAINS 'k' and 'Ic'
 """
 
 SEARCH_HOTEL_USE_CASE = UseCase(
