@@ -298,11 +298,10 @@ class ShareHotelEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user views a hotel listing"""
 
     event_name: str = "SHARE_HOTEL"
-    email: str = ""
+    email: str
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
         email: str | CriterionValue | None = None
-        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
