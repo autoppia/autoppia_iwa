@@ -394,7 +394,7 @@ class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            guests=data.get("guests_set"),
+            guests_set=data.get("guests_set"),
             **hotel_info.model_dump(),
         )
 
@@ -405,7 +405,7 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
     checkout: datetime
     source: str
 
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
         checkin: datetime | CriterionValue | None = None
         checkout: datetime | CriterionValue | None = None
         source: str | CriterionValue | None = None

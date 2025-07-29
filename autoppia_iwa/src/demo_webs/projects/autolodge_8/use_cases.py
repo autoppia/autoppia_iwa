@@ -421,6 +421,7 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     event=EditCheckInOutDatesEvent,
     event_source_code=EditCheckInOutDatesEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_checkin_checkout_constraints,
+    # constraints_generator=generate_reserve_hotel_constraints,
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
     examples=[
         {
@@ -628,10 +629,10 @@ ALL_USE_CASES = [
     # VIEW_HOTEL_USE_CASE,
     # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     # RESERVE_HOTEL_USE_CASE,
-    # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
+    EDIT_CHECK_IN_OUT_DATES_USE_CASE,
     # CONFIRM_AND_PAY_USE_CASE,
     # MESSAGE_HOST_USE_CASE,
     # SHARE_HOTEL_USE_CASE,
     # ADD_TO_WISHLIST_USE_CASE,
-    BACK_TO_ALL_HOTELS_USE_CASE,
+    # BACK_TO_ALL_HOTELS_USE_CASE,
 ]
