@@ -133,6 +133,10 @@ def validate_date_field(field_value, criterion):
             logger.error(f"Error validating date field: {e}")
             return False
     elif isinstance(criterion, datetime) and isinstance(field_value, datetime):
+        if (field_value.tzinfo is not None) != (criterion.tzinfo is not None):
+            field_dt = field_value.replace(tzinfo=None)
+            crit_dt = criterion.replace(tzinfo=None)
+            return comp_table[ComparisonOperator.EQUALS](field_dt, crit_dt)
         return comp_table[ComparisonOperator.EQUALS](field_value, criterion)
     elif isinstance(criterion, date) and isinstance(field_value, datetime):
         return comp_table[ComparisonOperator.EQUALS](field_value.date(), criterion)
