@@ -14,6 +14,7 @@ from .data import (
     FIELD_OPERATORS_MESSAGE_HOST_MAP,
     FIELD_OPERATORS_RESERVE_HOTEL_MAP,
     FIELD_OPERATORS_SEARCH_HOTEL_MAP,
+    FIELD_OPERATORS_SHARE_HOTEL_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
     HOTELS_DATA_MODIFIED,
     parse_datetime,
@@ -170,6 +171,24 @@ def _generate_constraint_value(
 
     # Fallback: return None
     return None
+
+
+def _generate_guests_field_value(operator: str, actual_value: int, field: str, max_value: int) -> int:
+    if operator == ComparisonOperator.EQUALS:
+        return min(actual_value, max_value)
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        choices = [val for val in range(1, max_value + 1) if val != actual_value]
+        return random.choice(choices) if choices else max_value
+    elif operator == ComparisonOperator.LESS_THAN:
+        return max(1, random.randint(1, max_value - 1)) if max_value > 1 else 1
+    elif operator == ComparisonOperator.LESS_EQUAL:
+        return random.randint(1, max_value)
+    elif operator == ComparisonOperator.GREATER_THAN:
+        return random.randint(1, actual_value - 1) if actual_value > 1 else 1
+    elif operator == ComparisonOperator.GREATER_EQUAL:
+        return random.randint(1, actual_value) if actual_value > 1 else 1
+    else:
+        return min(actual_value, max_value)
 
 
 def generate_search_hotel_constraints() -> list[dict[str, Any]]:
@@ -661,6 +680,59 @@ def generate_message_host_constraints() -> list[dict[str, Any]]:
         value = (
             _generate_constraint_value(operator, field_value, field, [{"message": msg} for msg in msgs_list])
             if field == "message"
+            else _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
+        )
+
+        constraints_list.append(create_constraint_dict(field, operator, value))
+    constraints_list.extend(constraint_list_for_view)
+    return constraints_list
+
+
+def generate_share_hotel_constraints() -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    emails_list = [
+        "alice.smith@example.com",
+        "john.doe@gmail.com",
+        "maria.jones@yahoo.com",
+        "kevin_lee@outlook.com",
+        "nina.patel@company.org",
+        "daniel_choi@webmail.net",
+        "emma.watson@school.edu",
+        "lucas.gray@workplace.io",
+        "olivia.brown@startup.ai",
+        "ethan.miller@techcorp.com",
+        "sophia.morris@researchlab.org",
+        "liam.johnson@business.co",
+        "ava.wilson@healthcare.org",
+        "noah.thomas@banksecure.com",
+        "isabella.clark@freelancer.dev",
+        "elijah.walker@codebase.io",
+        "mia.hall@socialapp.me",
+        "james.young@nonprofit.org",
+        "amelia.king@greenenergy.com",
+        "logan.scott@designhub.net",
+        "harper.adams@newsdaily.com",
+        "sebastian.moore@fintech.ai",
+        "zoe.baker@civicgroup.org",
+        "jackson.evans@customsoft.dev",
+        "charlotte.cox@musicstream.fm",
+    ]
+
+    constraint_list_for_view, hotel_dict = __generate_view_hotel_constraints()
+
+    selected_fields = ["email"]
+    sample_data = {"email": random.choice(emails_list)}
+
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_SHARE_HOTEL_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        field_value = sample_data.get(field)
+        value = (
+            _generate_constraint_value(operator, field_value, field, [{"email": email} for email in emails_list])
+            if field == "email"
             else _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
         )
 

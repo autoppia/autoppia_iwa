@@ -1,6 +1,7 @@
 from ...classes import UseCase
 from .events import (
     AddToWishlistEvent,
+    BackToAllHotelsEvent,
     ConfirmAndPayEvent,
     # DecreaseNumberOfGuestsEvent,
     EditCheckInOutDatesEvent,
@@ -20,6 +21,7 @@ from .generation_functions import (
     generate_reserve_hotel_constraints,
     # generate_search_cleared_constraints,
     generate_search_hotel_constraints,
+    generate_share_hotel_constraints,
     generate_view_hotel_constraints,
 )
 
@@ -230,7 +232,7 @@ SHARE_HOTEL_USE_CASE = UseCase(
     description="Triggered when the user shares a hotel listing with someone, typically via email.",
     event=ShareHotelEvent,
     event_source_code=ShareHotelEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_hotel_constraints,  # Reuse hotel-based constraints
+    constraints_generator=generate_share_hotel_constraints,  # Reuse hotel-based constraints
     additional_prompt_info=SHARE_HOTEL_INFO,
     examples=[
         {
@@ -565,8 +567,62 @@ MESSAGE_HOST_USE_CASE = UseCase(
     ],
 )
 
+###############################################################################
+# BACK_TO_ALL_HOTELS_USE_CASE
+###############################################################################
+
+
+BACK_TO_ALL_HOTELS_INFO = """
+This event is triggered when the user navigates away from a specific hotel detail view
+or a filtered list and returns to the main hotels dashboard screen. It represents
+the user's intent to browse all available hotels from the beginning or reset filters/views.
+"""
+
+BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
+    name="BACK_TO_ALL_HOTELS",
+    description="Triggered when the user goes back to the main hotels dashboard.",
+    event=BackToAllHotelsEvent,
+    event_source_code=BackToAllHotelsEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_hotel_constraints,
+    additional_prompt_info=BACK_TO_ALL_HOTELS_INFO,
+    examples=[
+        {
+            "prompt": "Take me back to the hotel dashboard.",
+            "prompt_for_task_generation": "Return to the main hotels dashboard.",
+        },
+        {
+            "prompt": "Go back to all hotels.",
+            "prompt_for_task_generation": "Navigate to the dashboard showing all hotels.",
+        },
+        {
+            "prompt": "I want to see the full hotel list again.",
+            "prompt_for_task_generation": "Return to the hotels dashboard.",
+        },
+        {
+            "prompt": "Back to the main hotel screen.",
+            "prompt_for_task_generation": "Go back to the hotel dashboard page.",
+        },
+        {
+            "prompt": "Exit this and show me the dashboard.",
+            "prompt_for_task_generation": "Leave this view and go to the main hotels dashboard.",
+        },
+        {
+            "prompt": "Reset and show all hotel options.",
+            "prompt_for_task_generation": "Return to full dashboard with all hotels visible.",
+        },
+        {
+            "prompt": "Go to the homepage for hotels.",
+            "prompt_for_task_generation": "Return to hotels dashboard.",
+        },
+        {
+            "prompt": "Show me the dashboard with all listings.",
+            "prompt_for_task_generation": "Display the main hotels dashboard.",
+        },
+    ],
+)
+
 ALL_USE_CASES = [
-    SEARCH_HOTEL_USE_CASE,
+    # SEARCH_HOTEL_USE_CASE,
     # VIEW_HOTEL_USE_CASE,
     # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     # RESERVE_HOTEL_USE_CASE,
@@ -574,5 +630,6 @@ ALL_USE_CASES = [
     # CONFIRM_AND_PAY_USE_CASE,
     # MESSAGE_HOST_USE_CASE,
     # SHARE_HOTEL_USE_CASE,
-    # ADD_TO_WISHLIST_INFO,
+    # ADD_TO_WISHLIST_USE_CASE,
+    BACK_TO_ALL_HOTELS_USE_CASE,
 ]
