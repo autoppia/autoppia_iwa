@@ -405,35 +405,38 @@ def generate_view_hotel_constraints() -> list[dict[str, Any]]:
 
 def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    view_hotel_constraints = generate_view_hotel_constraints()
+    view_hotel_constraints, sample_hotel = __generate_view_hotel_constraints()
 
-    selected_fields = ["guests", "checkin", "checkout"]
-    possible_fields = list(FIELD_OPERATORS_RESERVE_HOTEL_MAP.keys())
-    possible_fields = [field for field in possible_fields if field not in selected_fields]
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields.extend(random.sample(possible_fields, num_constraints))
+    view_fields = {f.get("field") for f in view_hotel_constraints}
+    selected_fields = ["guests_set"]
+    if "datesTo" not in view_fields:
+        selected_fields.append("datesTo")
+    if "datesFrom" not in view_fields:
+        selected_fields.append("datesFrom")
 
-    hotel = random.choice(HOTELS_DATA_MODIFIED)
-    max_guests = hotel.get("maxGuests") or hotel.get("guests") or 1
-    field_map = {"checkin": "datesFrom", "checkout": "datesTo"}
+    max_guests = sample_hotel.get("maxGuests") or sample_hotel.get("guests") or 1
 
     for field in selected_fields:
-        if field == "guests" and any(f.get("field") == "guests" for f in view_hotel_constraints):
-            continue
         allowed_ops = FIELD_OPERATORS_RESERVE_HOTEL_MAP.get(field, [])
         if not allowed_ops:
             continue
 
         operator = ComparisonOperator(random.choice(allowed_ops))
-        field = field_map.get(field, field)
 
-        value = random.randint(1, max_guests) if field == "guests" else hotel.get(field)
+        if field == "guests_set":
+            field_value = random.randint(1, max_guests)
+            constraint = create_constraint_dict(field, operator, field_value)
+            constraints_list.append(constraint)
+        else:
+            field_value = sample_hotel.get(field)
+            if field_value is None:
+                continue
+            value = _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
+            if value is None:
+                continue
+            constraint = create_constraint_dict(field, operator, value)
+            constraints_list.append(constraint)
 
-        if value is None:
-            continue
-
-        constraint = create_constraint_dict(field, operator, value)
-        constraints_list.append(constraint)
     constraints_list.extend(view_hotel_constraints)
     return constraints_list
 

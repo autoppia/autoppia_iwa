@@ -369,25 +369,17 @@ class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user reserves a hotel"""
 
     event_name: str = "RESERVE_HOTEL"
-    guests: int | None = None
-    checkin: datetime | None = None
-    checkout: datetime | None = None
+    guests_set: int | None = None
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
-        guests: int | CriterionValue | None = None
-        date_from: datetime | None = None
-        date_to: datetime | None = None
+        guests_set: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        date_from_valid = validate_date_field(self.date_from, criteria.date_from)
-        date_to_valid = validate_date_field(self.date_to, criteria.date_to)
         return all(
             [
-                self._validate_field(self.guests, criteria.guests),
-                date_from_valid,
-                date_to_valid,
+                self._validate_field(self.guests_set, criteria.guests_set),
                 HotelInfo._validate_criteria(self, criteria),
             ]
         )
@@ -403,9 +395,7 @@ class ReserveHotelEvent(Event, BaseEventValidator, HotelInfo):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            guests=data.get("guests"),
-            checkin=parse_datetime(data.get("checkin")),
-            checkout=parse_datetime(data.get("checkout")),
+            guests=data.get("guests_set"),
             **hotel_info.model_dump(),
         )
 
