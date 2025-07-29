@@ -573,9 +573,11 @@ MESSAGE_HOST_USE_CASE = UseCase(
 
 
 BACK_TO_ALL_HOTELS_INFO = """
-This event is triggered when the user navigates away from a specific hotel detail view
-or a filtered list and returns to the main hotels dashboard screen. It represents
-the user's intent to browse all available hotels from the beginning or reset filters/views.
+CRITICAL REQUIREMENTS:
+1. Start with explicit navigation phrases like:
+   - "Go back to all hotels..."
+   - "Return to the hotel dashboard..."
+2. Clearly express intent to leave current view and return to main listing
 """
 
 BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
@@ -583,7 +585,7 @@ BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
     description="Triggered when the user goes back to the main hotels dashboard.",
     event=BackToAllHotelsEvent,
     event_source_code=BackToAllHotelsEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_hotel_constraints,
+    constraints_generator=generate_reserve_hotel_constraints,
     additional_prompt_info=BACK_TO_ALL_HOTELS_INFO,
     examples=[
         {
