@@ -407,7 +407,7 @@ def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     view_hotel_constraints = generate_view_hotel_constraints()
 
-    selected_fields = ["guests"]
+    selected_fields = ["guests", "checkin", "checkout"]
     possible_fields = list(FIELD_OPERATORS_RESERVE_HOTEL_MAP.keys())
     possible_fields = [field for field in possible_fields if field not in selected_fields]
     num_constraints = random.randint(1, len(possible_fields))
