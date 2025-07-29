@@ -206,6 +206,9 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
+    # Ensure if 'datesTo' is selected, 'datesFrom' is also selected
+    if "datesTo" in selected_fields and "datesFrom" not in selected_fields:
+        selected_fields.append("datesFrom")
     sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
     max_guests = sample_hotel.get("maxGuests", 2)
 
@@ -239,7 +242,6 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
                 continue
             value = _generate_constraint_value(operator, value, new_field, HOTELS_DATA_MODIFIED)
 
-        # Todo: fix the constraint logic for dates
         elif field in ["datesFrom", "datesTo"]:
             value = sample_hotel.get(field)
             if not value:
