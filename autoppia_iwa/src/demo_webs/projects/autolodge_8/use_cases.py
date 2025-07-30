@@ -413,6 +413,11 @@ CRITICAL REQUIREMENTS:
 1. The prompt should clearly confirm the updated check-in and/or check-out dates.
 2. Use explicit phrases such as 'Change check-in to...', 'Update check-out date...', or similar.
 3. Do not include unrelated booking or payment actions in this prompt.
+4. 'checkin' and 'checkout' dates are actual values that needs to be updated, 'datesFrom' and 'datesTo' are actual available dates to find the hotel.
+Please mention the 'checkin' and 'checkout' dates in the prompt for update only.
+
+{}
+
 """
 
 EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(

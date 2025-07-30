@@ -529,7 +529,7 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
         else:
             # Pick a checkin date between dates_from and (dates_to - 1 day)
             max_offset = total_days - 1  # ensure there is room for checkout
-            offset = random.randint(0, max_offset - 1)  # offset is at most max_offset-1
+            offset = random.randint(1, max_offset - 1)  # offset is at most max_offset-1
             checkin_date = dates_from + timedelta(days=offset)
             # checkin_value = checkin_date.isoformat()
             constraints_list.append(create_constraint_dict("checkin", checkin_op, checkin_date))
