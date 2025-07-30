@@ -421,7 +421,6 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     event=EditCheckInOutDatesEvent,
     event_source_code=EditCheckInOutDatesEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_checkin_checkout_constraints,
-    # constraints_generator=generate_reserve_hotel_constraints,
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
     examples=[
         {

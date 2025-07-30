@@ -447,41 +447,23 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
 
 class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "CONFIRM_AND_PAY"
-    # checkin: datetime
-    # checkout: datetime
-    # guests: int
-    # listing_title: str
-    # price_per_night: int
     nights: int
     price_subtotal: int
-    # cleaning_fee: int
-    # service_fee: int
     total: int
-    # payment_method: str
     card_number: str
     expiration: str
     cvv: str
     country: str
-    # source: str
     guests_set: int | None = None
     zipcode: str | None = None
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
         """Criteria for validating confirm and pay events"""
 
-        # checkin: datetime | CriterionValue | None = None
-        # checkout: datetime | CriterionValue | None = None
-        # guests: int | CriterionValue | None = None
-        # listingTitle: str | CriterionValue | None = None
-        # pricePerNight: int | CriterionValue | None = None
         nights: int | CriterionValue | None = None
         priceSubtotal: int | CriterionValue | None = None
-        # cleaningFee: int | CriterionValue | None = None
-        # serviceFee: int | CriterionValue | None = None
         total: int | CriterionValue | None = None
-        # paymentMethod: str | CriterionValue | None = None
         country: str | CriterionValue | None = None
-        # source: str | CriterionValue | None = None
         cardNumber: str | CriterionValue | None = None
         cvv: str | CriterionValue | None = None
         expiration: str | CriterionValue | None = None
@@ -491,23 +473,12 @@ class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        # checkin_valid = validate_date_field(self.checkin, criteria.checkin)
-        # checkout_valid = validate_date_field(self.checkout, criteria.checkout)
         return all(
             [
-                # checkin_valid,
-                # checkout_valid,
-                # self._validate_field(self.guests, criteria.guests),
-                # self._validate_field(self.listing_title, criteria.listingTitle),
-                # self._validate_field(self.price_per_night, criteria.pricePerNight),
                 self._validate_field(self.nights, criteria.nights),
                 self._validate_field(self.price_subtotal, criteria.priceSubtotal),
-                # self._validate_field(self.cleaning_fee, criteria.cleaningFee),
-                # self._validate_field(self.service_fee, criteria.serviceFee),
                 self._validate_field(self.total, criteria.total),
-                # self._validate_field(self.payment_method, criteria.paymentMethod),
                 self._validate_field(self.country, criteria.country),
-                # self._validate_field(self.source, criteria.source),
                 self._validate_field(self.card_number, criteria.cardNumber),
                 self._validate_field(self.expiration, criteria.expiration),
                 self._validate_field(self.cvv, criteria.cvv),
@@ -527,22 +498,13 @@ class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # checkin=parse_datetime(data.get("checkin")),
-            # checkout=parse_datetime(data.get("checkout")),
-            # guests=data.get("guests"),
-            # listing_title=data.get("listingTitle", ""),
-            # price_per_night=data.get("pricePerNight"),
             nights=data.get("nights"),
             price_subtotal=data.get("priceSubtotal"),
-            # cleaning_fee=data.get("cleaningFee"),
-            # service_fee=data.get("serviceFee"),
             total=data.get("total"),
-            # payment_method=data.get("paymentMethod", ""),
             card_number=data.get("cardNumber", ""),
             expiration=data.get("expiration", ""),
             cvv=data.get("cvv", ""),
             country=data.get("country", ""),
-            # source=data.get("source", ""),
             guests_set=data.get("guests_set"),
             zipcode=data.get("zip"),
             **hotel.model_dump(),

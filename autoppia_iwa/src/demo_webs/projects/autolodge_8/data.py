@@ -1199,15 +1199,9 @@ FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP = {
 }
 FIELD_OPERATORS_CONFIRM_AND_PAY_MAP = {
     **FIELD_OPERATORS_RESERVE_HOTEL_MAP,
-    # "listingTitle": STRING_OPERATORS,  # str
-    # "pricePerNight": LOGICAL_OPERATORS,  # int
     # "nights": LOGICAL_OPERATORS,  # int
     # "priceSubtotal": LOGICAL_OPERATORS,  # int
-    # "cleaningFee": LOGICAL_OPERATORS,  # int
-    # "serviceFee": LOGICAL_OPERATORS,  # int
     # "total": LOGICAL_OPERATORS,  # int
-    # "paymentMethod": STRING_OPERATORS,  # str
-    # "source": STRING_OPERATORS,  # str,
     "card_number": [EQUALS, NOT_EQUALS],
     "expiration": [EQUALS, NOT_EQUALS],
     "cvv": [EQUALS, NOT_EQUALS],

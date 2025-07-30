@@ -173,24 +173,6 @@ def _generate_constraint_value(
     return None
 
 
-def _generate_guests_field_value(operator: str, actual_value: int, field: str, max_value: int) -> int:
-    if operator == ComparisonOperator.EQUALS:
-        return min(actual_value, max_value)
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        choices = [val for val in range(1, max_value + 1) if val != actual_value]
-        return random.choice(choices) if choices else max_value
-    elif operator == ComparisonOperator.LESS_THAN:
-        return max(1, random.randint(1, max_value - 1)) if max_value > 1 else 1
-    elif operator == ComparisonOperator.LESS_EQUAL:
-        return random.randint(1, max_value)
-    elif operator == ComparisonOperator.GREATER_THAN:
-        return random.randint(1, actual_value - 1) if actual_value > 1 else 1
-    elif operator == ComparisonOperator.GREATER_EQUAL:
-        return random.randint(1, actual_value) if actual_value > 1 else 1
-    else:
-        return min(actual_value, max_value)
-
-
 def generate_search_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
@@ -255,11 +237,11 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
             other_value = sample_guests.get(other_field, 0)
 
             # Ensure sum of adults + children ≤ maxGuests
-            value = _generate_num_of_guests_field_value(operator=operator, actual_value=actual_value, field=field, max_value=max_guests - other_value)
+            value = _generate_num_of_guests_field_value(operator=operator, actual_value=actual_value, max_value=max_guests - other_value)
 
         else:  # infants, pets
             value = sample_guests.get(field)
-            value = _generate_num_of_guests_field_value(operator, value, field, max_guests)
+            value = _generate_num_of_guests_field_value(operator, value, max_guests)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -316,7 +298,7 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
 #     return constraints_list
 
 
-def _generate_num_of_guests_field_value(operator: str, actual_value: int, field: str, max_value: int) -> int:
+def _generate_num_of_guests_field_value(operator: str, actual_value: int, max_value: int) -> int:
     if operator == ComparisonOperator.EQUALS:
         return actual_value
     elif operator == ComparisonOperator.NOT_EQUALS:
@@ -376,7 +358,7 @@ def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str,
             continue
         if field == "guests":
             max_guests = hotel.get("maxGuests") or hotel.get("guests") or 1
-            field_value = _generate_num_of_guests_field_value(operator, field_value, field, max_guests)
+            field_value = _generate_num_of_guests_field_value(operator, field_value, max_guests)
         elif field == "amenities":
             hotel_amenities = hotel.get("amenities", [])
             all_amenities = set()
@@ -425,6 +407,7 @@ def generate_view_hotel_constraints() -> list[dict[str, Any]]:
 def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     view_hotel_constraints, sample_hotel = __generate_view_hotel_constraints()
+    view_hotel_constraints = [c for c in view_hotel_constraints if c.get("field") != "guests"]
 
     view_fields = {f.get("field") for f in view_hotel_constraints}
     selected_fields = ["guests_set"]
@@ -443,7 +426,8 @@ def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[st
         operator = ComparisonOperator(random.choice(allowed_ops))
 
         if field == "guests_set":
-            field_value = random.randint(1, max_guests)
+            value = random.randint(1, max_guests)
+            field_value = _generate_num_of_guests_field_value(operator, value, max_guests)
             constraint = create_constraint_dict(field, operator, field_value)
             constraints_list.append(constraint)
         else:
@@ -493,43 +477,11 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
         actual_value = sample_event_data.get(field)
         if not actual_value:
             continue
-        if field == "to_guests":
-            value = _generate_num_of_guests_field_value(operator, actual_value, field, max_value)
-        else:
-            value = _generate_constraint_value(operator, actual_value, field, HOTELS_DATA_MODIFIED)
+        value = _generate_num_of_guests_field_value(operator, actual_value, max_value) if field == "to_guests" else _generate_constraint_value(operator, actual_value, field, HOTELS_DATA_MODIFIED)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
-
-
-# def generate_decrease_guests_constraints() -> list[dict[str, Any]]:
-#     constraints_list: list[dict[str, Any]] = []
-#
-#     # Always decrement by 1
-#     from_guests = random.randint(2, 5)  # to_guests must remain ≥1
-#     to_guests = from_guests - 1
-#
-#     sample_event_data = {
-#         "from_guests": from_guests,
-#         "to_guests": to_guests,
-#     }
-#
-#     possible_fields = ["from_guests", "to_guests"]
-#     num_constraints = random.randint(1, len(possible_fields))
-#     selected_fields = random.sample(possible_fields, num_constraints)
-#
-#     for field in selected_fields:
-#         allowed_ops = FIELD_OPERATORS_GUESTS_CHANGE_MAP.get(field, [])
-#         if not allowed_ops:
-#             continue
-#
-#         operator = ComparisonOperator(random.choice(allowed_ops))
-#         value = sample_event_data[field]
-#         constraint = create_constraint_dict(field, operator, value)
-#         constraints_list.append(constraint)
-#
-#     return constraints_list
 
 
 # Todo: debug dates constriants
@@ -668,7 +620,6 @@ def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
     #             constraint = create_constraint_dict(field, operator, payment_data[field])
     #             payment_constraints.append(constraint)
 
-    # Combine reserve constraints with payment constraints
     constraints_list = reserve_constraints + payment_constraints
 
     return constraints_list
