@@ -1,6 +1,8 @@
 from copy import deepcopy
 from datetime import datetime
 
+from ..operators import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
+
 EMAILS_DATA = [
     {
         "id": "email1",
@@ -1492,7 +1494,21 @@ for email in deepcopy(EMAILS_DATA):
 
     EMAILS_DATA_MODIFIED.append(email)
 
-from ..operators import CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS
+
+def get_all_email_words():
+    words = set()
+    for email in EMAILS_DATA_MODIFIED:
+        if email.get("subject"):
+            words.update(email["subject"].split())
+        if email.get("from_email"):
+            words.add(email["from_email"])
+        if email.get("body"):
+            words.update(email["body"].split())
+    return list(words)
+
+
+ALL_EMAIL_WORDS = get_all_email_words()
+
 
 FIELD_OPERATORS_VIEW_EMAIL_MAP = {
     "from_email": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
@@ -1521,21 +1537,6 @@ FIELD_OPERATORS_IS_SPAM_MAP = {
     "is_spam": FLAGGED_VARIABLES_OPERATORS,
 }
 
-
-def get_all_email_words():
-    words = set()
-    for email in EMAILS_DATA_MODIFIED:
-        if email.get("subject"):
-            words.update(email["subject"].split())
-        if email.get("from_email"):
-            words.add(email["from_email"])
-        if email.get("body"):
-            words.update(email["body"].split())
-    return list(words)
-
-
-ALL_EMAIL_WORDS = get_all_email_words()
-
 FIELD_OPERATORS_SEARCH_MAP = {"query": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}
 
 FIELD_OPERATORS_SEND_OR_DRAFT_EMAIL_MAP = {
@@ -1547,9 +1548,8 @@ FIELD_OPERATORS_SEND_OR_DRAFT_EMAIL_MAP = {
 FIELD_OPERATORS_CREATE_LABEL_MAP = {"label_name": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS], "label_color": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}
 
 FIELD_OPERATORS_ADD_LABEL_MAP = {
-    # "email_ids": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "label_name": [EQUALS, NOT_EQUALS],
     "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "body": [CONTAINS, NOT_CONTAINS],
-    "action": [EQUALS],
+    # "action": [EQUALS],
 }

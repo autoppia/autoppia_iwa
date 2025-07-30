@@ -225,9 +225,8 @@ class MarkAsSpamEvent(ViewEmailEvent, BaseEventValidator):
         return all(
             [
                 # self._validate_field(self.email_id, getattr(criteria, "email_id", None)),
-                self._validate_field(self.subject, getattr(criteria, "subject", None)),
-                self._validate_field(self.from_email, getattr(criteria, "from_email", None)),
-                self._validate_field(self.is_spam, getattr(criteria, "is_spam", None)),
+                ViewEmailEvent._validate_criteria(self, criteria),
+                self._validate_field(self.is_spam, criteria.is_spam),
             ]
         )
 
@@ -252,12 +251,12 @@ class AddLabelEvent(Event, BaseEventValidator):
     # label_id: str
     label_name: str
     emails: list[Email] | None = None
-    action: str
+    # action: str
 
     class ValidationCriteria(BaseModel):
         # label_id: str | CriterionValue | None = None
         label_name: str | CriterionValue | None = None
-        action: str | CriterionValue | None = None
+        # action: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
         body: str | CriterionValue | None = None
 
@@ -267,8 +266,6 @@ class AddLabelEvent(Event, BaseEventValidator):
 
         # Validate label_name and action first
         if not self._validate_field(self.label_name, criteria.label_name):
-            return False
-        if not self._validate_field(self.action, criteria.action):
             return False
 
         # Validate subject/body for emails if criteria present
@@ -300,7 +297,7 @@ class AddLabelEvent(Event, BaseEventValidator):
             # label_id=data.get("label_id", ""),
             label_name=data.get("label_name", ""),
             emails=emails,
-            action=data.get("action", ""),
+            # action=data.get("action", ""),
         )
 
 

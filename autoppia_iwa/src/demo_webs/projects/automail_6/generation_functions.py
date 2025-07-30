@@ -326,12 +326,7 @@ def generate_create_label_constraints() -> list[dict[str, Any]]:
 
 def generate_add_label_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    actions = ["added"]
 
-    # Step 1: Choose an action
-    selected_action = choice(actions)
-
-    # Step 2: Build real dataset from EMAILS_DATA_MODIFIED
     full_dataset = []
     for email in EMAILS_DATA_MODIFIED:
         subject = email.get("subject")
@@ -345,18 +340,15 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
             if label_name:
                 full_dataset.append({"action": "added", "label_name": label_name, "body": body, "subject": subject})
 
-    # Step 3: Filter dataset by selected action
-    filtered_dataset = [item for item in full_dataset if item.get("action") == selected_action]
-    if not filtered_dataset:
+    if not full_dataset:
         return []
 
-    # Step 4: Ensure either body or subject is present in the selected item
-    selected_item = choice(filtered_dataset)
+    selected_item = choice(full_dataset)
     while not selected_item.get("body") and not selected_item.get("subject") and not selected_item.get("label_name"):
-        selected_item = choice(filtered_dataset)
+        selected_item = choice(full_dataset)
 
     # Step 5: Always include action + label_name
-    base_fields = ["action", "label_name"]
+    base_fields = ["label_name"]
 
     # Conditionally include subject or body or both
     optional_fields = []
@@ -377,11 +369,10 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
         if not allowed_ops:
             continue
 
-        operator_str = choice(allowed_ops)
-        operator = ComparisonOperator(operator_str)
+        operator = ComparisonOperator(choice(allowed_ops))
         field_value = selected_item.get(field)
 
-        value = _generate_constraint_value(operator, field_value, field, filtered_dataset)
+        value = _generate_constraint_value(operator, field_value, field, full_dataset)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
