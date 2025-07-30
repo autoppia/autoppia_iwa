@@ -403,12 +403,12 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "EDIT_CHECK_IN_OUT_DATES"
     checkin: datetime
     checkout: datetime
-    source: str
+    # source: str
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
         checkin: datetime | CriterionValue | None = None
         checkout: datetime | CriterionValue | None = None
-        source: str | CriterionValue | None = None
+        # source: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -430,7 +430,7 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
         data = backend_event.data
         checkin = parse_datetime(data.get("checkin"))
         checkout = parse_datetime(data.get("checkout"))
-        source = data.get("source", "")
+        # source = data.get("source", "")
         hotel_info = HotelInfo.parse(data)
 
         return cls(
@@ -440,7 +440,7 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
             user_id=base_event.user_id,
             checkin=checkin,
             checkout=checkout,
-            source=source,
+            # source=source,
             **hotel_info.model_dump(),
         )
 

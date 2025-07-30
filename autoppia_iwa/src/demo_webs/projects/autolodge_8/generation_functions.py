@@ -6,6 +6,7 @@ from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
 
+from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict
 from .data import (
     FIELD_OPERATORS_CONFIRM_AND_PAY_MAP,
@@ -487,12 +488,14 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
 # Todo: debug dates constriants
 def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
+    reserve_constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
 
-    possible_fields = list(FIELD_OPERATORS_RESERVE_HOTEL_MAP.keys())
+    possible_fields = list(FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.keys())
+    possible_fields = [field for field in possible_fields if field not in ["checkin", "checkout"]]
     num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
+    random.sample(possible_fields, num_constraints)
 
-    sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
+    # sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
     # checkin = parse_datetime(sample_hotel.get("datesFrom", "2025-08-01"))
     # checkout = parse_datetime(sample_hotel.get("datesTo", "2025-08-05"))
     # source = "calendar_edit"
@@ -505,8 +508,8 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
 
     dates_from_str = sample_hotel.get("datesFrom", "2025-08-01")
     dates_to_str = sample_hotel.get("datesTo", "2025-08-10")
-    dates_from = parse_datetime(dates_from_str).date()
-    dates_to = parse_datetime(dates_to_str).date()
+    dates_from = parse_datetime(dates_from_str)
+    dates_to = parse_datetime(dates_to_str)
 
     total_days = (dates_to - dates_from).days
     if total_days < 2:
@@ -515,47 +518,67 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     # ----------------------------
     # Generate constraint for "checkin"
     # ----------------------------
-    checkin_allowed_ops = FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.get("datesFrom", [])
+    checkin_date = dates_from
+    checkin_allowed_ops = FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.get("checkin", [])
     if checkin_allowed_ops:
-        checkin_op = ComparisonOperator(random.choice(checkin_allowed_ops))
-        # Pick a checkin date between dates_from and (dates_to - 1 day)
-        max_offset = total_days - 1  # ensure there is room for checkout
-        offset = random.randint(0, max_offset - 1)  # offset is at most max_offset-1
-        checkin_date = dates_from + timedelta(days=offset)
-        checkin_value = checkin_date.isoformat()
-        constraints_list.append(create_constraint_dict("datesFrom", checkin_op, checkin_value))
+        op = random.choice(checkin_allowed_ops)
+        checkin_op = ComparisonOperator(op)
+        if op in [EQUALS, LESS_EQUAL, GREATER_EQUAL]:
+            # checkin_value = dates_from.isoformat()
+            constraints_list.append(create_constraint_dict("checkin", checkin_op, dates_from))
+        else:
+            # Pick a checkin date between dates_from and (dates_to - 1 day)
+            max_offset = total_days - 1  # ensure there is room for checkout
+            offset = random.randint(0, max_offset - 1)  # offset is at most max_offset-1
+            checkin_date = dates_from + timedelta(days=offset)
+            # checkin_value = checkin_date.isoformat()
+            constraints_list.append(create_constraint_dict("checkin", checkin_op, checkin_date))
 
     # ----------------------------
     # Generate constraint for "checkout"
     # ----------------------------
-    checkout_allowed_ops = FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.get("datesTo", [])
+    checkout_allowed_ops = FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.get("checkout", [])
     if checkout_allowed_ops:
-        checkout_op = ComparisonOperator(random.choice(checkout_allowed_ops))
-        # To ensure checkout > checkin, first determine a minimal checkout date.
-        minimal_checkout = checkin_date + timedelta(days=1)
-        remaining_days = (dates_to - minimal_checkout).days
-        if remaining_days < 0:
-            remaining_days = 0
-        offset = random.randint(0, remaining_days)
-        checkout_date = minimal_checkout + timedelta(days=offset)
-        checkout_value = checkout_date.isoformat()
-        constraints_list.append(create_constraint_dict("datesTo", checkout_op, checkout_value))
+        op = random.choice(checkout_allowed_ops)
+        checkout_op = ComparisonOperator(op)
+        if op in [EQUALS, LESS_EQUAL, GREATER_EQUAL]:
+            # checkout_value = dates_to.isoformat()
+            constraints_list.append(create_constraint_dict("checkout", checkout_op, dates_to))
+        else:
+            # To ensure checkout > checkin, first determine a minimal checkout date.
+            minimal_checkout = checkin_date + timedelta(days=1)
+            remaining_days = (dates_to - minimal_checkout).days
+            if remaining_days < 0:
+                remaining_days = 0
+            offset = random.randint(0, remaining_days)
+            checkout_date = minimal_checkout + timedelta(days=offset)
+            # checkout_value = checkout_date.isoformat()
+            constraints_list.append(create_constraint_dict("checkout", checkout_op, checkout_date))
+    # field_map = {
+    #     'guests_set': 'guests',
+    # }
+    # for field in selected_fields:
+    #     if field in ["datesFrom", "datesTo", 'checkin', 'checkout', 'guests_set']:
+    #         continue
+    #     allowed_ops = FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.get(field, [])
+    #     if not allowed_ops:
+    #         continue
+    #
+    #     operator = ComparisonOperator(random.choice(allowed_ops))
+    #
+    #     value = sample_hotel[field]
+    #     if not value:
+    #         continue
+    #     value = _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
+    #     if not value:
+    #         continue
+    #     constraint = create_constraint_dict(field, operator, value)
+    #     constraints_list.append(constraint)
 
-    for field in selected_fields:
-        if field in ["datesFrom", "datesTo"]:
-            continue
-        allowed_ops = FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        value = sample_hotel[field]
-        if not value:
-            continue
-        value = _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
-
-        constraint = create_constraint_dict(field, operator, value)
-        constraints_list.append(constraint)
+    # for c in reserve_constraints_list:
+    #     if c['field'] not in ['datesFrom', 'datesTo', 'guests_set']:
+    #         constraints_list.append(c)
+    constraints_list.extend(reserve_constraints_list)
 
     return constraints_list
 
