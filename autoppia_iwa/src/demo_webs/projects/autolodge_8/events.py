@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from dateutil import parser
 from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
@@ -8,14 +7,7 @@ from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
 from autoppia_iwa.src.demo_webs.projects.shared_utils import validate_date_field
 
-
-def parse_datetime(value: str | None) -> datetime | None:
-    if not value:
-        return None
-    try:
-        return parser.isoparse(value)
-    except (ValueError, TypeError):
-        return None
+from .data import parse_datetime
 
 
 class SearchHotelEvent(Event, BaseEventValidator):

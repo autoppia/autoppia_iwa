@@ -1114,7 +1114,20 @@ def parse_datetime(value: str | None) -> datetime | None:
     try:
         if isinstance(value, datetime):
             return value
-        return parser.isoparse(value)
+        if isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value)
+            except ValueError:
+                pass
+            for sep in ("T", " "):
+                if sep in value:
+                    date_part = value.split(sep)[0]
+                    try:
+                        return datetime.fromisoformat(date_part)
+                    except ValueError:
+                        pass
+            return parser.isoparse(value)
+        return None
     except (ValueError, TypeError):
         return None
 
