@@ -35,6 +35,11 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
             return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        if isinstance(field_value, str) and "\n" in field_value:
+            parts = [part for part in field_value.split("\n") if part.strip()]
+            if parts:
+                field_value = max(parts, key=len)
+                return field_value
         if len(field_value) > 2:
             start = random.randint(0, max(0, len(field_value) - 2))
             end = random.randint(start + 1, len(field_value))
