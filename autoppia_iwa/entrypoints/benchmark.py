@@ -52,7 +52,8 @@ PROJECTS_TO_RUN: list[WebProject] = [
     # demo_web_projects[2],
     # demo_web_projects[3],
     # demo_web_projects[4],
-    demo_web_projects[5],
+    # demo_web_projects[5],
+    demo_web_projects[6],
 ]
 AGENTS: list[IWebAgent] = [
     # ApifiedWebAgent(id="3", name="AutoppiaAgent", host="127.0.0.1", port=7000, timeout=120),
