@@ -260,7 +260,7 @@ class CheckoutItem(BaseModel):
 class OpenCheckoutPageEvent(Event, BaseEventValidator):
     event_name: str = "OPEN_CHECKOUT_PAGE"
     itemCount: int
-    items: List[CheckoutItem]
+    items: list[CheckoutItem]
 
     class ValidationCriteria(BaseModel):
         itemCount: int | CriterionValue | None = None
