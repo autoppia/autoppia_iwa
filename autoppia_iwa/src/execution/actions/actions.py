@@ -68,15 +68,8 @@ class ClickAction(BaseActionWithSelector):
             logger.warning("Both 'selector' and coordinates (x, y) provided for ClickAction. Selector will be prioritized.")
         return values
 
-    # ------------------------------------------------------------------
-
     @log_action("ClickAction")
-    async def execute(
-        self,
-        page: Page | None,
-        backend_service,
-        web_agent_id: str,
-    ):
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "ClickAction")
 
         # ---------- CLICK BY SELECTOR ----------------------------------------
