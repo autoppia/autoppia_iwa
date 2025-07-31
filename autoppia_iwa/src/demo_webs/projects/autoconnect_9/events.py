@@ -43,14 +43,14 @@ class ViewUserProfileEvent(Event, BaseEventValidator):
 
 class ConnectWithUserEvent(Event, BaseEventValidator):
     event_name: str = "CONNECT_WITH_USER"
-    current_username: str
-    current_name: str
+    # current_username: str
+    # current_name: str
     target_username: str
     target_name: str
 
     class ValidationCriteria(BaseModel):
-        current_username: str | CriterionValue | None = None
-        current_name: str | CriterionValue | None = None
+        # current_username: str | CriterionValue | None = None
+        # current_name: str | CriterionValue | None = None
         target_username: str | CriterionValue | None = None
         target_name: str | CriterionValue | None = None
 
@@ -59,8 +59,8 @@ class ConnectWithUserEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.current_username, criteria.current_username),
-                self._validate_field(self.current_name, criteria.current_name),
+                # self._validate_field(self.current_username, criteria.current_username),
+                # self._validate_field(self.current_name, criteria.current_name),
                 self._validate_field(self.target_username, criteria.target_username),
                 self._validate_field(self.target_name, criteria.target_name),
             ]
@@ -69,15 +69,15 @@ class ConnectWithUserEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ConnectWithUserEvent":
         data = backend_event.data or {}
-        current = data.get("currentUser", {})
+        # current = data.get("currentUser", {})
         target = data.get("targetUser", {})
         return cls(
             event_name=backend_event.event_name,
             timestamp=backend_event.timestamp,
             web_agent_id=backend_event.web_agent_id,
             user_id=backend_event.user_id,
-            current_username=current.get("username", ""),
-            current_name=current.get("name", ""),
+            # current_username=current.get("username", ""),
+            # current_name=current.get("name", ""),
             target_username=target.get("username", ""),
             target_name=target.get("name", ""),
         )
@@ -433,3 +433,36 @@ class SearchJobsEvent(Event, BaseEventValidator):
             query=data.get("query", ""),
             result_count=data.get("resultCount", 0),
         )
+
+
+EVENTS = [
+    ViewUserProfileEvent,
+    ConnectWithUserEvent,
+    HomeNavbarEvent,
+    PostStatusEvent,
+    LikePostEvent,
+    CommentOnPostEvent,
+    JobsNavbarEvent,
+    ApplyForJobEvent,
+    ProfileNavbarEvent,
+    SearchUsersEvent,
+    ViewAllRecommendationsEvent,
+    FollowPageEvent,
+    SearchJobsEvent,
+]
+
+BACKEND_EVENT_TYPES = {
+    "VIEW_USER_PROFILE": ViewUserProfileEvent,
+    "CONNECT_WITH_USER": ConnectWithUserEvent,
+    "HOME_NAVBAR": HomeNavbarEvent,
+    "POST_STATUS": PostStatusEvent,
+    "LIKE_POST": LikePostEvent,
+    "COMMENT_ON_POST": CommentOnPostEvent,
+    "JOBS_NAVBAR": JobsNavbarEvent,
+    "APPLY_FOR_JOB": ApplyForJobEvent,
+    "PROFILE_NAVBAR": ProfileNavbarEvent,
+    "SEARCH_USERS": SearchUsersEvent,
+    "VIEW_ALL_RECOMMENDATIONS": ViewAllRecommendationsEvent,
+    "FOLLOW_PAGE": FollowPageEvent,
+    "SEARCH_JOBS": SearchJobsEvent,
+}

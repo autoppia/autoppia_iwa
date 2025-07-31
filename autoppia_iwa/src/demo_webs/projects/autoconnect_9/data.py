@@ -1,3 +1,5 @@
+from autoppia_iwa.src.demo_webs.projects.operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
+
 mockUsers = [
     {
         "username": "johndoe",
@@ -195,7 +197,8 @@ mockPosts = [
         "likes": 2,
         "liked": False,
         "comments": [],
-        "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?fit=crop&w=720&q=80",  # // laptop and notepad
+        "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?fit=crop&w=720&q=80",
+        # // laptop and notepad
     },
     {
         # // Post 7
@@ -213,7 +216,8 @@ mockPosts = [
                 # "timestamp": new Date(Date.now() - 1000 * 60 * 60 * 7.8).toISOString()
             }
         ],
-        "image": "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?fit=crop&w=720&q=80",  # // people collaborating
+        "image": "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?fit=crop&w=720&q=80",
+        # // people collaborating
     },
     {
         # // Post 8
@@ -231,7 +235,8 @@ mockPosts = [
                 # "timestamp": new Date(Date.now() - 1000 * 60 * 60 * 14.5).toISOString()
             }
         ],
-        "image": "https://images.unsplash.com/photo-1503676382389-4809596d5290?fit=crop&w=720&q=80",  # // coffee and code
+        "image": "https://images.unsplash.com/photo-1503676382389-4809596d5290?fit=crop&w=720&q=80",
+        # // coffee and code
     },
     {
         # // Post 9
@@ -276,7 +281,8 @@ mockPosts = [
                 # "timestamp": new Date(Date.now() - 1000 * 60 * 7).toISOString()
             }
         ],
-        "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?fit=crop&w=720&q=80",  # // team celebration
+        "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?fit=crop&w=720&q=80",
+        # // team celebration
     },
     {
         "id": "12",
@@ -327,7 +333,8 @@ mockPosts = [
                 # "timestamp": new Date(Date.now() - 1000 * 60 * 60 * 47.5).toISOString()
             }
         ],
-        "image": "https://images.unsplash.com/photo-1556761175-4b46a572b786?fit=crop&w=720&q=80",  # // startup celebration
+        "image": "https://images.unsplash.com/photo-1556761175-4b46a572b786?fit=crop&w=720&q=80",
+        # // startup celebration
     },
     {
         "id": "16",
@@ -377,3 +384,23 @@ mockJobs = [
         "logo": "https://randomuser.me/api/portraits/lego/2.jpg",
     },
 ]
+
+STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
+LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
+
+FIELD_OPERATORS_VIEW_USER_PROFILE_MAP = {
+    "username": STRING_OPERATORS,
+    "name": STRING_OPERATORS,
+    # "source": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_CONNECT_WITH_USER_MAP = {
+    "target_username": STRING_OPERATORS,
+    "target_name": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_POST_STATUS_MAP = {
+    "user_name": STRING_OPERATORS,
+    "content": STRING_OPERATORS,
+    # "post_id": STRING_OPERATORS,
+}
