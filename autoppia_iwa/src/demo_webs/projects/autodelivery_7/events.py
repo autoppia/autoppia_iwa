@@ -557,3 +557,39 @@ class DeliveryModeEvent(Event, BaseEventValidator):
             user_id=base.user_id,
             mode=backend_event.data.get("mode", ""),
         )
+
+
+EVENTS = [
+    SearchRestaurantEvent,
+    ViewRestaurantEvent,
+    AddToCartModalOpenEvent,
+    ItemIncrementedEvent,
+    ItemDecrementedEvent,
+    AddToCartEvent,
+    OpenCheckoutPageEvent,
+    DropoffPreferenceEvent,
+    PlaceOrderEvent,
+    PickupModeEvent,
+    EmptyCartEvent,
+    DeleteReviewEvent,
+    BackToAllRestaurantsEvent,
+    AddressAddedEvent,
+    DeliveryModeEvent,
+]
+BACKEND_EVENT_TYPES = {
+    "SEARCH_RESTAURANT": SearchRestaurantEvent,
+    "VIEW_RESTAURANT": ViewRestaurantEvent,
+    "ADD_TO_CART_MODAL_OPEN": AddToCartModalOpenEvent,
+    "ITEM_INCREMENTED": ItemIncrementedEvent,
+    "ITEM_DECREMENTED": ItemDecrementedEvent,
+    "ADD_TO_CART": AddToCartEvent,
+    "OPEN_CHECKOUT_PAGE": OpenCheckoutPageEvent,
+    "DROPOFF_PREFERENCE": DropoffPreferenceEvent,
+    "PLACE_ORDER": PlaceOrderEvent,
+    "PICKUP_MODE": PickupModeEvent,
+    "EMPTY_CART": EmptyCartEvent,
+    "DELETE_REVIEW": DeleteReviewEvent,
+    "BACK_TO_ALL_RESTAURANTS": BackToAllRestaurantsEvent,
+    "ADDRESS_ADDED": AddressAddedEvent,
+    "DELIVERY_MODE": DeliveryModeEvent,
+}
