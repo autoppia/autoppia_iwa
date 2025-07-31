@@ -1,13 +1,11 @@
 # actions.py
 import asyncio
-import contextlib
 import json
 from functools import wraps
 from typing import Annotated, Any, Literal
-from playwright.async_api import TimeoutError as PWTimeout
 
 from loguru import logger
-from playwright.async_api import Page
+from playwright.async_api import Page, TimeoutError as PWTimeout
 from pydantic import Field, model_validator
 
 from .base import BaseAction, BaseActionWithSelector, Selector
@@ -23,8 +21,7 @@ def log_action(action_name: str):
     def decorator(func):
         @wraps(func)
         async def wrapper(self, page: Page | None, backend_service, web_agent_id: str):
-            action_logger.debug(
-                f"Executing {action_name} with data: {self.model_dump()}")
+            action_logger.debug(f"Executing {action_name} with data: {self.model_dump()}")
             try:
                 return await func(self, page, backend_service, web_agent_id)
             except Exception as e:
@@ -42,8 +39,7 @@ def log_action(action_name: str):
 def _ensure_page(page: Page | None, action_name: str) -> Page:
     """Checks if the page object is valid, raises ValueError otherwise."""
     if page is None:
-        raise ValueError(
-            f"{action_name} requires a valid Page object, but received None.")
+        raise ValueError(f"{action_name} requires a valid Page object, but received None.")
     return page
 
 
@@ -57,12 +53,9 @@ class ClickAction(BaseActionWithSelector):
 
     type: Literal["ClickAction"] = "ClickAction"
     # Make selector optional if x,y are provided
-    selector: Selector | None = Field(
-        None, description="Selector for the element to click. Required if x, y are not provided.")
-    x: int | None = Field(
-        None, description="X-coordinate for the click, relative to the top-left corner of the viewport.")
-    y: int | None = Field(
-        None, description="Y-coordinate for the click, relative to the top-left corner of the viewport.")
+    selector: Selector | None = Field(None, description="Selector for the element to click. Required if x, y are not provided.")
+    x: int | None = Field(None, description="X-coordinate for the click, relative to the top-left corner of the viewport.")
+    y: int | None = Field(None, description="Y-coordinate for the click, relative to the top-left corner of the viewport.")
 
     @model_validator(mode="before")
     @classmethod
@@ -70,42 +63,32 @@ class ClickAction(BaseActionWithSelector):
         selector = values.get("selector")
         x, y = values.get("x"), values.get("y")
         if selector is None and (x is None or y is None):
-            raise ValueError(
-                "Either 'selector' or both 'x' and 'y' coordinates must be provided for ClickAction.")
+            raise ValueError("Either 'selector' or both 'x' and 'y' coordinates must be provided for ClickAction.")
         if selector is not None and (x is not None or y is not None):
-            logger.warning(
-                "Both 'selector' and coordinates (x, y) provided for ClickAction. Selector will be prioritized.")
+            logger.warning("Both 'selector' and coordinates (x, y) provided for ClickAction. Selector will be prioritized.")
         return values
 
-    # ------------------------------------------------------------------
-
     @log_action("ClickAction")
-    async def execute(
-        self,
-        page: Page | None,
-        backend_service,
-        web_agent_id: str,
-    ):
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "ClickAction")
 
-        # ---------- click por selector ----------------------------------------
+        # ---------- CLICK BY SELECTOR ----------------------------------------
         if self.selector:
             sel = self.get_playwright_selector()
 
-            # click sin bloqueo implícito
+            # Click Without Implicit Blocking
             await page.click(sel, no_wait_after=True)
 
-            # espera condicional de navegación (máx. 3 s)
+            # Conditional navigation waiting (max. 3s)
             try:
-                # 3 000 ms
                 await page.wait_for_event("framenavigated", timeout=3000)
                 await page.wait_for_load_state("domcontentloaded")
             except PWTimeout:
-                # no hubo navegación → seguir
+                # There was no navigation → follow
                 pass
             return
 
-        # ---------- click por coordenadas -------------------------------------
+        # ---------- Click by coordinates-------------------------------------
         if self.x is not None and self.y is not None:
             await page.mouse.click(self.x, self.y)
             return
@@ -129,12 +112,9 @@ class NavigateAction(BaseAction):
     """Navigates the browser to a URL, or goes back/forward in history."""
 
     type: Literal["NavigateAction"] = "NavigateAction"
-    url: str | None = Field(
-        None, description="The URL to navigate to. Required unless go_back or go_forward is true.")
-    go_back: bool = Field(
-        False, description="If true, navigates to the previous page in history.")
-    go_forward: bool = Field(
-        False, description="If true, navigates to the next page in history.")
+    url: str | None = Field(None, description="The URL to navigate to. Required unless go_back or go_forward is true.")
+    go_back: bool = Field(False, description="If true, navigates to the previous page in history.")
+    go_forward: bool = Field(False, description="If true, navigates to the next page in history.")
 
     @model_validator(mode="before")
     @classmethod
@@ -144,8 +124,7 @@ class NavigateAction(BaseAction):
         go_forward = values.get("go_forward", False)
         # Ensure exactly one navigation method is specified
         if sum([bool(url), go_back, go_forward]) != 1:
-            raise ValueError(
-                "NavigateAction requires exactly one of 'url', 'go_back=True', or 'go_forward=True'.")
+            raise ValueError("NavigateAction requires exactly one of 'url', 'go_back=True', or 'go_forward=True'.")
         return values
 
     @log_action("NavigateAction")
@@ -166,8 +145,7 @@ class TypeAction(BaseAction):
 
     type: Literal["TypeAction"] = "TypeAction"
     text: str = Field(..., description="The text to type into the element.")
-    selector: Selector | None = Field(
-        None, description="Selector for the element to type into. Required if 'text' is not provided.")
+    selector: Selector | None = Field(None, description="Selector for the element to type into. Required if 'text' is not provided.")
 
     @model_validator(mode="before")
     @classmethod
@@ -176,12 +154,10 @@ class TypeAction(BaseAction):
         if "value" in values and "text" not in values:
             values["text"] = values.pop("value")
         elif "value" in values and "text" in values and values["value"] != values["text"]:
-            logger.warning(
-                "Both 'text' and 'value' provided to TypeAction. Using 'text'.")
+            logger.warning("Both 'text' and 'value' provided to TypeAction. Using 'text'.")
             values.pop("value")  # Remove the alias field
         if "text" not in values:
-            raise ValueError(
-                "TypeAction requires a 'text' field (or 'value' alias).")
+            raise ValueError("TypeAction requires a 'text' field (or 'value' alias).")
         return values
 
     @log_action("TypeAction")
@@ -198,8 +174,7 @@ class SelectAction(BaseActionWithSelector):
     """Selects an option in a dropdown (<select>) element."""
 
     type: Literal["SelectAction"] = "SelectAction"
-    value: str = Field(...,
-                       description="The value, label, or index of the option to select.")
+    value: str = Field(..., description="The value, label, or index of the option to select.")
 
     @log_action("SelectAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -224,12 +199,9 @@ class WaitAction(BaseAction):
     """Waits for a specific condition: an element to appear or a fixed duration."""
 
     type: Literal["WaitAction"] = "WaitAction"
-    selector: Selector | None = Field(
-        None, description="Selector for an element to wait for. If provided, waits for the element.")
-    time_seconds: float | None = Field(
-        None, description="Duration in seconds to wait. If provided without a selector, pauses execution.")
-    timeout_seconds: float = Field(
-        5.0, description="Maximum time in seconds to wait for the selector.")
+    selector: Selector | None = Field(None, description="Selector for an element to wait for. If provided, waits for the element.")
+    time_seconds: float | None = Field(None, description="Duration in seconds to wait. If provided without a selector, pauses execution.")
+    timeout_seconds: float = Field(5.0, description="Maximum time in seconds to wait for the selector.")
 
     @model_validator(mode="before")
     @classmethod
@@ -237,11 +209,9 @@ class WaitAction(BaseAction):
         selector = values.get("selector")
         time_seconds = values.get("time_seconds")
         if selector is None and time_seconds is None:
-            raise ValueError(
-                "WaitAction requires either 'selector' or 'time_seconds'.")
+            raise ValueError("WaitAction requires either 'selector' or 'time_seconds'.")
         if selector is not None and time_seconds is not None:
-            logger.warning(
-                "Both 'selector' and 'time_seconds' provided for WaitAction. Selector will be prioritized for waiting, 'time_seconds' ignored.")
+            logger.warning("Both 'selector' and 'time_seconds' provided for WaitAction. Selector will be prioritized for waiting, 'time_seconds' ignored.")
         return values
 
     @log_action("WaitAction")
@@ -275,8 +245,7 @@ class ScrollAction(BaseAction):
             elif self.down:
                 await page.evaluate(f"window.scrollBy(0, {value});")
         except Exception as e:
-            print(
-                f"Failed to scroll by value {value}: {e}\n\n\n Retrying with fallback.")
+            print(f"Failed to scroll by value {value}: {e}\n\n\n Retrying with fallback.")
             fallback_value = "window.innerHeight"
             if self.up:
                 await page.evaluate(f"window.scrollBy(0, -{fallback_value});")
@@ -322,14 +291,12 @@ class ScrollAction(BaseAction):
                 else:
                     await self._scroll_to_text(page, self.value)
         except (Exception, ValueError) as e:
-            print(
-                f"ScrollAction failed: {e}. Falling back to keyboard scroll.")
+            print(f"ScrollAction failed: {e}. Falling back to keyboard scroll.")
             try:
                 await page.keyboard.press("PageDown" if self.down else "PageUp")
             except Exception as kb_error:
                 print(f"Keyboard scroll also failed: {kb_error}")
-                raise ValueError(
-                    f"ScrollAction completely failed: {e}") from kb_error
+                raise ValueError(f"ScrollAction completely failed: {e}") from kb_error
 
 
 class SubmitAction(BaseActionWithSelector):
@@ -348,16 +315,14 @@ class AssertAction(BaseAction):
     """Asserts that specific text exists within the page's main frame content."""
 
     type: Literal["AssertAction"] = "AssertAction"
-    text_to_assert: str = Field(
-        ..., description="The text content to check for existence on the page.")
+    text_to_assert: str = Field(..., description="The text content to check for existence on the page.")
 
     @log_action("AssertAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "AssertAction")
         content = await page.content()
         if self.text_to_assert not in content:
-            raise AssertionError(
-                f"'{self.text_to_assert}' not found in page source.")
+            raise AssertionError(f"'{self.text_to_assert}' not found in page source.")
 
 
 class DragAndDropAction(BaseAction):
@@ -377,10 +342,8 @@ class ScreenshotAction(BaseAction):
     """Takes a screenshot of the current page."""
 
     type: Literal["ScreenshotAction"] = "ScreenshotAction"
-    file_path: str = Field(
-        default="", description="The file path where the screenshot should be saved.")
-    full_page: bool = Field(
-        False, description="Whether to capture the full scrollable page.")
+    file_path: str = Field(default="", description="The file path where the screenshot should be saved.")
+    full_page: bool = Field(False, description="Whether to capture the full scrollable page.")
 
     @log_action("ScreenshotAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
@@ -446,25 +409,21 @@ class GetDropDownOptionsAction(BaseActionWithSelector):
 
                 if options and "error" not in options:
                     found_dropdown = True
-                    action_logger.debug(
-                        f"Dropdown found in frame {i} (ID: {options.get('id')}, Name: {options.get('name')})")
+                    action_logger.debug(f"Dropdown found in frame {i} (ID: {options.get('id')}, Name: {options.get('name')})")
 
-                    formatted_options = [
-                        f"{opt['index']}: text={json.dumps(opt['text'])}" for opt in options["options"]]
+                    formatted_options = [f"{opt['index']}: text={json.dumps(opt['text'])}" for opt in options["options"]]
                     all_options.extend(formatted_options)
 
                     # Stop searching after finding the first dropdown with options
                     break
                 elif "error" in options:
-                    action_logger.debug(
-                        f"Frame {i} evaluation error: {options['error']}")
+                    action_logger.debug(f"Frame {i} evaluation error: {options['error']}")
 
             except Exception as e:
                 action_logger.debug(f"Frame {i} evaluate error: {e!s}")
 
         if found_dropdown:
-            msg = "\n".join(all_options) + \
-                "\nUse the exact string in SelectDropDownOptionAction"
+            msg = "\n".join(all_options) + "\nUse the exact string in SelectDropDownOptionAction"
             action_logger.info(msg)
         else:
             action_logger.warning("No dropdown options found in any frame.")
@@ -474,10 +433,8 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
     """Selects a specific option within a <select> dropdown element by its visible text."""
 
     type: Literal["SelectDropDownOptionAction"] = "SelectDropDownOptionAction"
-    text: str = Field(...,
-                      description="The exact visible text of the option to select.")
-    timeout_ms: int = Field(
-        1000, description="Maximum time in milliseconds to wait for the element and option.")
+    text: str = Field(..., description="The exact visible text of the option to select.")
+    timeout_ms: int = Field(1000, description="Maximum time in milliseconds to wait for the element and option.")
 
     @log_action("SelectDropDownOptionAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str) -> bool:
@@ -506,8 +463,7 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
                 # Verify element type
                 tag_name = await select_element.evaluate("el => el.tagName.toLowerCase()")
                 if tag_name != "select":
-                    action_logger.debug(
-                        f"Element at {xpath} is {tag_name}, not SELECT (frame {frame_idx})")
+                    action_logger.debug(f"Element at {xpath} is {tag_name}, not SELECT (frame {frame_idx})")
                     return False
 
                 # Try multiple selection strategies
@@ -518,8 +474,7 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
                         await select_element.select_option(**strategy, timeout=self.timeout_ms)
                         return True
                     except Exception as e:
-                        action_logger.debug(
-                            f"Selection failed with {strategy}: {e!s}")
+                        action_logger.debug(f"Selection failed with {strategy}: {e!s}")
                         last_error = str(e)
                         continue
 
@@ -553,8 +508,7 @@ class SelectDropDownOptionAction(BaseActionWithSelector):
                 last_error = str(e)
 
         if not found:
-            action_logger.error(
-                f"Failed to select option '{self.text}'. Last error: {last_error}")
+            action_logger.error(f"Failed to select option '{self.text}'. Last error: {last_error}")
 
         return found
 
