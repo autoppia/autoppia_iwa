@@ -471,11 +471,11 @@ class DeleteReviewEvent(Event, BaseEventValidator):
 
 class BackToAllRestaurantsEvent(Event, BaseEventValidator):
     event_name: str = "BACK_TO_ALL_RESTAURANTS"
-    fromRestaurantId: str
+    # fromRestaurantId: str
     fromRestaurantName: str
 
     class ValidationCriteria(BaseModel):
-        fromRestaurantId: str | CriterionValue | None = None
+        # fromRestaurantId: str | CriterionValue | None = None
         fromRestaurantName: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -483,7 +483,7 @@ class BackToAllRestaurantsEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.fromRestaurantId, criteria.fromRestaurantId),
+                # self._validate_field(self.fromRestaurantId, criteria.fromRestaurantId),
                 self._validate_field(self.fromRestaurantName, criteria.fromRestaurantName),
             ]
         )
@@ -497,7 +497,7 @@ class BackToAllRestaurantsEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            fromRestaurantId=data.get("fromRestaurantId", ""),
+            # fromRestaurantId=data.get("fromRestaurantId", ""),
             fromRestaurantName=data.get("fromRestaurantName", ""),
         )
 
