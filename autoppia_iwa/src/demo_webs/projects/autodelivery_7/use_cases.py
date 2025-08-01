@@ -17,7 +17,9 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
 )
 
 from .generation_functions import (
+    generate_add_to_cart_constraints,
     generate_add_to_cart_modal_open_constraints,
+    generate_dropoff_option_constraints,
     generate_increment_item_restaurant_constraints,
     generate_search_restaurant_constraints,
     generate_view_restaurant_constraints,
@@ -103,7 +105,7 @@ ADD_TO_CART_USE_CASE = UseCase(
     description="The user adds a menu item to the cart.",
     event=AddToCartEvent,
     event_source_code=AddToCartEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_add_to_cart_constraints,
     examples=[
         {"prompt": "Add 'Margherita Pizza' (Large) to my cart.", "prompt_for_task_generation": "Add '<item_name>' (<size>) to my cart."},
         {"prompt": "Add 'Salmon Nigiri' with no modifications.", "prompt_for_task_generation": "Add '<item_name>' with no modifications."},
@@ -118,7 +120,7 @@ OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
     description="The user opens the checkout page to review their order.",
     event=OpenCheckoutPageEvent,
     event_source_code=OpenCheckoutPageEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=False,
     examples=[
         {"prompt": "Go to the checkout page with 3 items in the cart.", "prompt_for_task_generation": "Go to the checkout page with <item_count> items in the cart."},
         {"prompt": "Open checkout to review 'Margherita Pizza' and 'California Roll'.", "prompt_for_task_generation": "Open checkout to review '<item1>' and '<item2>'."},
@@ -133,7 +135,7 @@ DROPOFF_PREFERENCE_USE_CASE = UseCase(
     description="The user sets a dropoff preference for delivery.",
     event=DropoffPreferenceEvent,
     event_source_code=DropoffPreferenceEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_dropoff_option_constraints,
     examples=[
         {"prompt": "Set dropoff preference to 'Leave at door'.", "prompt_for_task_generation": "Set dropoff preference to '<preference>'."},
         {"prompt": "Choose 'Hand to me' as the dropoff option.", "prompt_for_task_generation": "Choose '<preference>' as the dropoff option."},
@@ -253,7 +255,7 @@ ALL_USE_CASES = [
     VIEW_RESTAURANT_USE_CASE,
     ADD_TO_CART_MODAL_OPEN_USE_CASE,
     ITEM_INCREMENTED_USE_CASE,
-    ITEM_DECREMENTED_USE_CASE,
+    # ITEM_DECREMENTED_USE_CASE,
     ADD_TO_CART_USE_CASE,
     OPEN_CHECKOUT_PAGE_USE_CASE,
     DROPOFF_PREFERENCE_USE_CASE,
