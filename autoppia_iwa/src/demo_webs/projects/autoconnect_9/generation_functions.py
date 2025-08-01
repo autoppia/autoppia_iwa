@@ -5,7 +5,21 @@ from typing import Any
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
-from .data import FIELD_OPERATORS_CONNECT_WITH_USER_MAP, FIELD_OPERATORS_POST_STATUS_MAP, FIELD_OPERATORS_VIEW_USER_PROFILE_MAP, mockUsers
+from .data import (
+    FIELD_OPERATORS_APPLY_FOR_JOB_MAP,
+    FIELD_OPERATORS_COMMENT_ON_POST_MAP,
+    FIELD_OPERATORS_CONNECT_WITH_USER_MAP,
+    FIELD_OPERATORS_FOLLOW_PAGE_MAP,
+    FIELD_OPERATORS_LIKE_POST_MAP,
+    FIELD_OPERATORS_POST_STATUS_MAP,
+    FIELD_OPERATORS_SEARCH_JOBS_MAP,
+    FIELD_OPERATORS_SEARCH_USERS_MAP,
+    FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
+    companies,
+    mockJobs,
+    mockPosts,
+    mockUsers,
+)
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
@@ -104,58 +118,41 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return value
 
 
-def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
+def _generate_constraints(dataset: list[dict], field_operators: dict, field_map: dict | None = None, num_constraints: int | None = None, selected_fields: list | None = None) -> list[dict[str, Any]]:
     """
-    Generates constraints for viewing a user profile based on the provided user profile data.
+    Generates constraints based on the dataset and field operator mapping.
     """
     all_constraints = []
+    sample_data = choice(dataset)
+    possible_fields = list(field_operators.keys())
+    if selected_fields:
+        possible_fields = [f for f in possible_fields if f not in selected_fields]
+    else:
+        selected_fields = []
 
-    dataset = mockUsers
-    user_profile = choice(dataset)
-    operators_allowed = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
+    if num_constraints is None:
+        num_constraints = random.randint(1, len(possible_fields))
 
-    possible_fields = list(operators_allowed.keys())
-    num_constraints = random.randint(1, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
+    selected_fields.extend(random.sample(possible_fields, num_constraints))
+
+    if field_map is None:
+        field_map = {}
 
     for field in selected_fields:
-        allowed_ops = operators_allowed.get(field, [])
+        allowed_ops = field_operators.get(field, [])
         if not allowed_ops:
             continue
-        op = ComparisonOperator(choice(allowed_ops))
-        field_value = user_profile.get(field)
-        if field_value is None:
-            continue
-
-        # Generate a constraint value based on the operator and field value
-        constraint_value = _generate_constraint_value(op, field_value, field, dataset)
-
-        if constraint_value is not None:
-            constraint = create_constraint_dict(field, op, constraint_value)
-            all_constraints.append(constraint)
-
-    return all_constraints
-
-
-def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
-    all_constraints = []
-    dataset = mockUsers
-    user_profile = choice(dataset)
-    operators_allowed = FIELD_OPERATORS_CONNECT_WITH_USER_MAP
-
-    selected_fields = random.sample(list(operators_allowed.keys()), 1)
-    field_map = {
-        "target_name": "name",
-        "target_username": "username",
-    }
-    for field in selected_fields:
-        allowed_ops = operators_allowed.get(field, [])
-        if not allowed_ops:
-            continue
-
         op = ComparisonOperator(choice(allowed_ops))
         new_field = field_map.get(field, field)
-        field_value = user_profile.get(new_field)
+
+        field_value = None
+        if isinstance(new_field, list):
+            for f in new_field:
+                field_value = sample_data.get(f)
+                new_field = f
+                break
+        else:
+            field_value = sample_data.get(new_field)
 
         if field_value is None:
             continue
@@ -170,21 +167,71 @@ def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
+def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
+    """
+    Generates constraints for viewing a user profile based on the provided user profile data.
+    """
+
+    dataset = mockUsers
+    field_operators = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
+    all_constraints = _generate_constraints(dataset, field_operators)
+
+    return all_constraints
+
+
+def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
+    dataset = mockUsers
+    field_operators = FIELD_OPERATORS_CONNECT_WITH_USER_MAP
+    field_map = {
+        "target_name": "name",
+        "target_username": "username",
+    }
+    all_constraints = _generate_constraints(dataset, field_operators, field_map, num_constraints=1)
+    return all_constraints
+
+
+# todo: update like and comment constraints according to event data
+def generate_like_post_constraints():
+    """
+    Generates constraints for liking a post based on the provided post data.
+    """
+    dataset = mockPosts
+    field_operators = FIELD_OPERATORS_LIKE_POST_MAP
+    field_map = {"post_content": "content"}
+
+    all_constraints = _generate_constraints(dataset, field_operators, field_map, num_constraints=1)
+
+    return all_constraints
+
+
+def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
+    """
+    Generates constraints for commenting on a post based on the provided post data.
+    """
+    dataset = mockPosts
+    field_operators = FIELD_OPERATORS_COMMENT_ON_POST_MAP
+    field_map = {"post_content": "content"}
+
+    all_constraints = _generate_constraints(dataset, field_operators, field_map, num_constraints=1)
+
+    return all_constraints
+
+
 sample_post_contents = [
     "Excited to join LinkedIn Lite!",
-    "Just released a minimal LinkedIn clone with Next.js and Tailwind CSS! 🚀",
+    "Just released a minimal LinkedIn clone with Next.js and Tailwind CSS!",
     "Attended a fantastic webinar on remote team collaboration today! Highly recommend it.",
     "Started learning TypeScript this week. Any tips for a React dev?",
     "Just finished a 10k run for charity. Feeling accomplished!",
     "Reading 'Inspired' by Marty Cagan. Game changer for product managers!",
-    "Just launched our summer brand campaign. Feeling proud of the team! 🌞📣",
-    "Migrated 20+ services to Kubernetes today. DevOps win! ⚙️🐳",
-    "Hosting our first DEI panel at PeopleFirst. Let's build inclusive cultures. 🌈",
+    "Just launched our summer brand campaign. Feeling proud of the team!",
+    "Migrated 20+ services to Kubernetes today. DevOps win!",
+    "Hosting our first DEI panel at PeopleFirst. Let's build inclusive cultures.",
     "Experimenting with fine-tuning LLMs on small domain datasets. Results look promising.",
-    "We just hit 10K users on RemoteWorks! 💪 Thank you for believing in us.",
-    "Published a new research paper on GNNs and edge inference. DM for collab. 📄📊",
+    "We just hit 10K users on RemoteWorks! Thank you for believing in us.",
+    "Published a new research paper on GNNs and edge inference. DM for collab.",
     "Launched our beta app today—can't wait for your feedback!",
-    "Tried out the new GPT-4o model. Mind blown 🤯",
+    "Tried out the new GPT-4o model. Mind blown",
     "Remote work has changed how we build products. Flexibility = productivity.",
     "Had a great time mentoring at today's hackathon!",
     "Weekly reminder: take breaks, breathe, and trust your process.",
@@ -197,11 +244,60 @@ sample_post_contents = [
 def generate_post_status_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     field = "content"
-    operators_allowed = FIELD_OPERATORS_POST_STATUS_MAP
-    op = ComparisonOperator(choice(operators_allowed[field]))
+    field_operators = FIELD_OPERATORS_POST_STATUS_MAP
+    op = ComparisonOperator(choice(field_operators[field]))
     field_value = choice(sample_post_contents)
     value = _generate_constraint_value(op, field_value, field, sample_post_contents)
     constraint = create_constraint_dict(field, op, value)
     all_constraints.append(constraint)
+
+    return all_constraints
+
+
+def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
+    dataset = mockJobs
+
+    field_map = {
+        "job_title": "title",
+    }
+
+    field_operators = FIELD_OPERATORS_APPLY_FOR_JOB_MAP
+    all_constraints = _generate_constraints(dataset, field_operators, field_map)
+
+    return all_constraints
+
+
+def generate_search_users_constraints() -> list[dict[str, Any]]:
+    """
+    Generates constraints for searching users based on the provided user profile data.
+    """
+    dataset = mockUsers
+    field_operators = FIELD_OPERATORS_SEARCH_USERS_MAP
+    field_map = {"query": "name"}
+    all_constraints = _generate_constraints(dataset, field_operators, field_map)
+
+    return all_constraints
+
+
+def generate_follow_page_constraints() -> list[dict[str, Any]]:
+    """
+    Generates constraints for following a company page based on the provided user profile data.
+    """
+    dataset = companies
+    field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
+    field_map = {"company": "name"}
+    all_constraints = _generate_constraints(dataset, field_operators, field_map)
+
+    return all_constraints
+
+
+def generate_search_jobs_constraints() -> list[dict[str, Any]]:
+    """
+    Generates constraints for searching jobs based on the provided job data.
+    """
+    dataset = mockJobs
+    field_operators = FIELD_OPERATORS_SEARCH_JOBS_MAP
+    field_map = {"query": ["title", "company"]}
+    all_constraints = _generate_constraints(dataset, field_operators, field_map)
 
     return all_constraints

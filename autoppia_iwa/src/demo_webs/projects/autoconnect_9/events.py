@@ -143,9 +143,10 @@ class PostStatusEvent(Event, BaseEventValidator):
         )
 
 
+# todo: add new attributes according to web event
 class LikePostEvent(Event, BaseEventValidator):
     event_name: str = "LIKE_POST"
-    post_id: str
+    # post_id: str
     user_name: str
     action: str
 
@@ -159,7 +160,7 @@ class LikePostEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.post_id, criteria.post_id),
+                # self._validate_field(self.post_id, criteria.post_id),
                 self._validate_field(self.user_name, criteria.user_name),
                 self._validate_field(self.action, criteria.action),
             ]
@@ -173,12 +174,13 @@ class LikePostEvent(Event, BaseEventValidator):
             timestamp=backend_event.timestamp,
             web_agent_id=backend_event.web_agent_id,
             user_id=backend_event.user_id,
-            post_id=data.get("postId", ""),
+            # post_id=data.get("postId", ""),
             user_name=data.get("userName", ""),
             action=data.get("action", ""),
         )
 
 
+# todo: add new attributes according to web event
 class CommentOnPostEvent(Event, BaseEventValidator):
     event_name: str = "COMMENT_ON_POST"
     post_id: str
@@ -245,13 +247,13 @@ class JobsNavbarEvent(Event, BaseEventValidator):
 
 class ApplyForJobEvent(Event, BaseEventValidator):
     event_name: str = "APPLY_FOR_JOB"
-    job_id: str
+    # job_id: str
     job_title: str
     company: str
     location: str
 
     class ValidationCriteria(BaseModel):
-        job_id: str | CriterionValue | None = None
+        # job_id: str | CriterionValue | None = None
         job_title: str | CriterionValue | None = None
         company: str | CriterionValue | None = None
         location: str | CriterionValue | None = None
@@ -261,7 +263,7 @@ class ApplyForJobEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.job_id, criteria.job_id),
+                # self._validate_field(self.job_id, criteria.job_id),
                 self._validate_field(self.job_title, criteria.job_title),
                 self._validate_field(self.company, criteria.company),
                 self._validate_field(self.location, criteria.location),
@@ -276,7 +278,7 @@ class ApplyForJobEvent(Event, BaseEventValidator):
             timestamp=backend_event.timestamp,
             web_agent_id=backend_event.web_agent_id,
             user_id=backend_event.user_id,
-            job_id=data.get("jobId", ""),
+            # job_id=data.get("jobId", ""),
             job_title=data.get("jobTitle", ""),
             company=data.get("company", ""),
             location=data.get("location", ""),
@@ -374,11 +376,11 @@ class ViewAllRecommendationsEvent(Event, BaseEventValidator):
 class FollowPageEvent(Event, BaseEventValidator):
     event_name: str = "FOLLOW_PAGE"
     company: str
-    action: str
+    # action: str
 
     class ValidationCriteria(BaseModel):
         company: str | CriterionValue | None = None
-        action: str | CriterionValue | None = None
+        # action: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -386,7 +388,7 @@ class FollowPageEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.company, criteria.company),
-                self._validate_field(self.action, criteria.action),
+                # self._validate_field(self.action, criteria.action),
             ]
         )
 
@@ -399,14 +401,14 @@ class FollowPageEvent(Event, BaseEventValidator):
             web_agent_id=backend_event.web_agent_id,
             user_id=backend_event.user_id,
             company=data.get("company", ""),
-            action=data.get("action", ""),
+            # action=data.get("action", ""),
         )
 
 
 class SearchJobsEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH_JOBS"
     query: str
-    result_count: int
+    # result_count: int
 
     class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
