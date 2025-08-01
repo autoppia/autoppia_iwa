@@ -22,6 +22,7 @@ from .generation_functions import (
     generate_address_added_constraints,
     generate_dropoff_option_constraints,
     generate_increment_item_restaurant_constraints,
+    generate_place_order_constraints,
     generate_search_restaurant_constraints,
     generate_view_restaurant_constraints,
 )
@@ -151,7 +152,7 @@ PLACE_ORDER_USE_CASE = UseCase(
     description="The user places an order with delivery or pickup details.",
     event=PlaceOrderEvent,
     event_source_code=PlaceOrderEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_place_order_constraints,
     examples=[
         {"prompt": "Place an order for 'Pizza Palace' to be delivered to 123 Main St.", "prompt_for_task_generation": "Place an order for '<restaurant_name>' to be delivered to <address>."},
         {"prompt": "Order 'Sushi World' for pickup at 5pm.", "prompt_for_task_generation": "Order '<restaurant_name>' for pickup at <time>."},

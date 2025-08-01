@@ -331,7 +331,7 @@ class PlaceOrderEvent(Event, BaseEventValidator, DropoffPreferenceEvent):
     username: str
     phone: str
     address: str
-    mode: str
+    # mode: str
     # deliveryTime: str
     items: list[OrderItem]
     total: float
@@ -340,7 +340,7 @@ class PlaceOrderEvent(Event, BaseEventValidator, DropoffPreferenceEvent):
         username: str | CriterionValue | None = None
         phone: str | CriterionValue | None = None
         address: str | CriterionValue | None = None
-        mode: str | CriterionValue | None = None
+        # mode: str | CriterionValue | None = None
         item: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         quantity: int | CriterionValue | None = None
