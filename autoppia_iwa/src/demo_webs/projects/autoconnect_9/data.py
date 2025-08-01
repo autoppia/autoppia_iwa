@@ -394,6 +394,13 @@ companies = [
     {"name": "Stripe", "desc": "Company • Fintech", "logo": "https://logo.clearbit.com/stripe.com"},
 ]
 
+POSTS_DATA_MODIFIED = []
+for post in mockPosts:
+    modified_post = post.copy()
+    modified_post["name"] = post["user"]["name"]
+    modified_post["username"] = post["user"]["username"]
+    POSTS_DATA_MODIFIED.append(modified_post)
+
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
 
@@ -409,14 +416,15 @@ FIELD_OPERATORS_CONNECT_WITH_USER_MAP = {
 }
 
 FIELD_OPERATORS_LIKE_POST_MAP = {
-    "name": STRING_OPERATORS,
-    "content": STRING_OPERATORS,
+    "poster_name": STRING_OPERATORS,
+    "poster_content": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_COMMENT_ON_POST_MAP = {
     "comment_text": STRING_OPERATORS,
-    "name": STRING_OPERATORS,
-    "content": STRING_OPERATORS,
+    # "name": STRING_OPERATORS,
+    "poster_name": STRING_OPERATORS,
+    "poster_content": STRING_OPERATORS,
 }
 FIELD_OPERATORS_POST_STATUS_MAP = {
     "user_name": STRING_OPERATORS,

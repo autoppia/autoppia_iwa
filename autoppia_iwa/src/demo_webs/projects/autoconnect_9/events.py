@@ -143,17 +143,20 @@ class PostStatusEvent(Event, BaseEventValidator):
         )
 
 
-# todo: add new attributes according to web event
 class LikePostEvent(Event, BaseEventValidator):
     event_name: str = "LIKE_POST"
     # post_id: str
     user_name: str
     action: str
+    poster_name: str
+    poster_content: str
 
     class ValidationCriteria(BaseModel):
         post_id: str | CriterionValue | None = None
         user_name: str | CriterionValue | None = None
         action: str | CriterionValue | None = None
+        poster_name: str | CriterionValue | None = None
+        poster_content: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -161,8 +164,10 @@ class LikePostEvent(Event, BaseEventValidator):
         return all(
             [
                 # self._validate_field(self.post_id, criteria.post_id),
-                self._validate_field(self.user_name, criteria.user_name),
+                # self._validate_field(self.user_name, criteria.user_name),
                 self._validate_field(self.action, criteria.action),
+                self._validate_field(self.poster_name, criteria.poster_name),
+                self._validate_field(self.poster_content, criteria.poster_content),
             ]
         )
 
@@ -177,32 +182,40 @@ class LikePostEvent(Event, BaseEventValidator):
             # post_id=data.get("postId", ""),
             user_name=data.get("userName", ""),
             action=data.get("action", ""),
+            poster_name=data.get("posterName", ""),
+            poster_content=data.get("posterContent", ""),
         )
 
 
 # todo: add new attributes according to web event
 class CommentOnPostEvent(Event, BaseEventValidator):
     event_name: str = "COMMENT_ON_POST"
-    post_id: str
+    # post_id: str
     comment_id: str
     user_name: str
     comment_text: str
+    poster_name: str
+    poster_content: str
 
     class ValidationCriteria(BaseModel):
-        post_id: str | CriterionValue | None = None
-        comment_id: str | CriterionValue | None = None
+        # post_id: str | CriterionValue | None = None
+        # comment_id: str | CriterionValue | None = None
         user_name: str | CriterionValue | None = None
         comment_text: str | CriterionValue | None = None
+        poster_name: str | CriterionValue | None = None
+        poster_content: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.post_id, criteria.post_id),
-                self._validate_field(self.comment_id, criteria.comment_id),
+                # self._validate_field(self.post_id, criteria.post_id),
+                # self._validate_field(self.comment_id, criteria.comment_id),
                 self._validate_field(self.user_name, criteria.user_name),
                 self._validate_field(self.comment_text, criteria.comment_text),
+                self._validate_field(self.poster_name, criteria.poster_name),
+                self._validate_field(self.poster_content, criteria.poster_content),
             ]
         )
 
@@ -214,10 +227,12 @@ class CommentOnPostEvent(Event, BaseEventValidator):
             timestamp=backend_event.timestamp,
             web_agent_id=backend_event.web_agent_id,
             user_id=backend_event.user_id,
-            post_id=data.get("postId", ""),
-            comment_id=data.get("commentId", ""),
+            # post_id=data.get("postId", ""),
+            # comment_id=data.get("commentId", ""),
             user_name=data.get("userName", ""),
             comment_text=data.get("commentText", ""),
+            poster_name=data.get("posterName", ""),
+            poster_content=data.get("posterContent", ""),
         )
 
 
@@ -376,6 +391,7 @@ class ViewAllRecommendationsEvent(Event, BaseEventValidator):
 class FollowPageEvent(Event, BaseEventValidator):
     event_name: str = "FOLLOW_PAGE"
     company: str
+
     # action: str
 
     class ValidationCriteria(BaseModel):
@@ -408,6 +424,7 @@ class FollowPageEvent(Event, BaseEventValidator):
 class SearchJobsEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH_JOBS"
     query: str
+
     # result_count: int
 
     class ValidationCriteria(BaseModel):

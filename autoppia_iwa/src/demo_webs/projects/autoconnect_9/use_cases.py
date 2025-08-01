@@ -91,8 +91,36 @@ LIKE_POST_USE_CASE = UseCase(
     constraints_generator=generate_like_post_constraints,
     examples=[
         {
-            "prompt": "Like the post with ID 'e8hsx779aco' as Alex Smith.",
-            "prompt_for_task_generation": "Like the post with ID '<post_id>' as <user_name>.",
+            "prompt": "Comment 'Great work!' on the post with poster content 'Just released a new app version!'",
+            "prompt_for_task_generation": "Comment 'Great work!' on the post with poster content 'Just released a new app version!'",
+        },
+        {
+            "prompt": "Comment 'Congrats!' on the post where the poster said 'I just got promoted to Senior Developer.'",
+            "prompt_for_task_generation": "Comment 'Congrats!' on the post where the poster said 'I just got promoted to Senior Developer.'",
+        },
+        {
+            "prompt": "Comment 'Very insightful!' on the post with poster content 'Here's what I learned from switching to microservices.'",
+            "prompt_for_task_generation": "Comment 'Very insightful!' on the post with poster content 'Here's what I learned from switching to microservices.'",
+        },
+        {
+            "prompt": "Comment 'Thanks for sharing!' on the post that says '5 tips for improving frontend performance.'",
+            "prompt_for_task_generation": "Comment 'Thanks for sharing!' on the post that says '5 tips for improving frontend performance.'",
+        },
+        {
+            "prompt": "Comment 'Wishing you luck!' on the post with content 'Starting my new role at DevX this Monday!'",
+            "prompt_for_task_generation": "Comment 'Wishing you luck!' on the post with content 'Starting my new role at DevX this Monday!'",
+        },
+        {
+            "prompt": "Comment 'Love this!' on the post that includes the sentence 'Diversity makes us stronger.'",
+            "prompt_for_task_generation": "Comment 'Love this!' on the post that includes the sentence 'Diversity makes us stronger.'",
+        },
+        {
+            "prompt": "Comment 'Well done' on the post where the poster shared 'Finally completed my AWS certification!'",
+            "prompt_for_task_generation": "Comment 'Well done' on the post where the poster shared 'Finally completed my AWS certification!'",
+        },
+        {
+            "prompt": "Comment 'Following this for updates.' on the post with poster content 'Experimenting with fine-tuning LLMs on medical datasets.'",
+            "prompt_for_task_generation": "Comment 'Following this for updates.' on the post with poster content 'Experimenting with fine-tuning LLMs on medical datasets.'",
         },
     ],
 )
@@ -105,8 +133,8 @@ COMMENT_ON_POST_USE_CASE = UseCase(
     constraints_generator=generate_comment_on_post_constraints,
     examples=[
         {
-            "prompt": "Comment 'liked!' on the post with ID 'e8hsx779aco' as Alex Smith.",
-            "prompt_for_task_generation": "Comment '<comment_text>' on the post with ID '<post_id>' as <user_name>.",
+            "prompt": "Comment 'liked!' on the post with poster content '",
+            "prompt_for_task_generation": "Comment 'liked!' on the post with poster content '",
         },
     ],
 )
@@ -251,12 +279,12 @@ ALL_USE_CASES = [
     # HOME_NAVBAR_USE_CASE,
     # POST_STATUS_USE_CASE,
     # LIKE_POST_USE_CASE,
-    # COMMENT_ON_POST_USE_CASE,
+    COMMENT_ON_POST_USE_CASE,
     # JOBS_NAVBAR_USE_CASE,
     # APPLY_FOR_JOB_USE_CASE,
     # PROFILE_NAVBAR_USE_CASE,
     # SEARCH_USERS_USE_CASE,
     # VIEW_ALL_RECOMMENDATIONS_USE_CASE,
-    FOLLOW_PAGE_USE_CASE,
+    # FOLLOW_PAGE_USE_CASE,
     # SEARCH_JOBS_USE_CASE,
 ]

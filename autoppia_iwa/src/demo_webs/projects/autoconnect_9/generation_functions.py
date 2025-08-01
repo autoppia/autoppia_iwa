@@ -15,17 +15,15 @@ from .data import (
     FIELD_OPERATORS_SEARCH_JOBS_MAP,
     FIELD_OPERATORS_SEARCH_USERS_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
+    POSTS_DATA_MODIFIED,
     companies,
     mockJobs,
-    mockPosts,
     mockUsers,
 )
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
     value = None
-    if field == "amenities" and isinstance(field_value, list):
-        field_value = choice(field_value) if field_value else ""
 
     # Handle datetime comparisons
     if isinstance(field_value, datetime):
@@ -152,7 +150,13 @@ def _generate_constraints(dataset: list[dict], field_operators: dict, field_map:
                 new_field = f
                 break
         else:
-            field_value = sample_data.get(new_field)
+            if "." in new_field:
+                # Handle nested fields
+                field_value = _get_nested_value(sample_data, new_field)
+                if field_value is None:
+                    continue
+            else:
+                field_value = sample_data.get(new_field)
 
         if field_value is None:
             continue
@@ -165,6 +169,16 @@ def _generate_constraints(dataset: list[dict], field_operators: dict, field_map:
             all_constraints.append(constraint)
 
     return all_constraints
+
+
+def _get_nested_value(obj, dotted_key, default=None):
+    keys = dotted_key.split(".")
+    for key in keys:
+        if isinstance(obj, dict) and key in obj:
+            obj = obj[key]
+        else:
+            return default
+    return obj
 
 
 def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
@@ -190,29 +204,59 @@ def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-# todo: update like and comment constraints according to event data
 def generate_like_post_constraints():
     """
     Generates constraints for liking a post based on the provided post data.
     """
-    dataset = mockPosts
+    dataset = POSTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_LIKE_POST_MAP
-    field_map = {"post_content": "content"}
+    field_map = {"poster_content": "content", "poster_name": "name"}
 
-    all_constraints = _generate_constraints(dataset, field_operators, field_map, num_constraints=1)
+    all_constraints = _generate_constraints(dataset, field_operators, field_map)
 
     return all_constraints
+
+
+SAMPLE_COMMENTS = [
+    "Congrats on the achievement!",
+    "This is super inspiring",
+    "Thanks for sharing this!",
+    "Great job, keep it up!",
+    "Very insightful post.",
+    "Love your perspective on this.",
+    "Wishing you all the best!",
+    "Amazing update, well done",
+    "Appreciate the transparency.",
+    "This resonates with me a lot.",
+    "Big fan of your work!",
+    "Such a powerful message.",
+    "Excited to see what's next!",
+    "You've earned it, congrats!",
+    "Impressive progress!",
+    "Couldn't agree more.",
+    "Really well said",
+    "This made my day",
+    "Well deserved recognition!",
+    "Always learning something from you!",
+]
 
 
 def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for commenting on a post based on the provided post data.
     """
-    dataset = mockPosts
-    field_operators = FIELD_OPERATORS_COMMENT_ON_POST_MAP
-    field_map = {"post_content": "content"}
+    fixed_field = "comment_text"
+    sample_comments = [{fixed_field: comment} for comment in SAMPLE_COMMENTS]
+    field_operators = FIELD_OPERATORS_COMMENT_ON_POST_MAP.copy()
 
-    all_constraints = _generate_constraints(dataset, field_operators, field_map, num_constraints=1)
+    operators = field_operators.pop(fixed_field)
+    new_field_operators = {fixed_field: operators}
+    all_constraints = _generate_constraints(sample_comments, new_field_operators)
+
+    dataset = POSTS_DATA_MODIFIED
+    field_map = {"poster_content": "content", "poster_name": "name"}
+    constraints = _generate_constraints(dataset, field_operators, field_map)
+    all_constraints.extend(constraints)
 
     return all_constraints
 
