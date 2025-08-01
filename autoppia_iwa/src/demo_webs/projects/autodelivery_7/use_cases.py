@@ -8,7 +8,6 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
     DeliveryModeEvent,
     DropoffPreferenceEvent,
     EmptyCartEvent,
-    ItemDecrementedEvent,
     ItemIncrementedEvent,
     OpenCheckoutPageEvent,
     PickupModeEvent,
@@ -17,12 +16,19 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
     ViewRestaurantEvent,
 )
 
+from .generation_functions import (
+    generate_add_to_cart_modal_open_constraints,
+    generate_increment_item_restaurant_constraints,
+    generate_search_restaurant_constraints,
+    generate_view_restaurant_constraints,
+)
+
 SEARCH_RESTAURANT_USE_CASE = UseCase(
     name="SEARCH_RESTAURANT",
     description="The user searches for restaurants using a query string.",
     event=SearchRestaurantEvent,
     event_source_code=SearchRestaurantEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_search_restaurant_constraints,
     examples=[
         {"prompt": "Search for restaurants serving Italian cuisine.", "prompt_for_task_generation": "Search for restaurants serving <cuisine> cuisine."},
         {"prompt": "Find restaurants with 'Sushi' in their name.", "prompt_for_task_generation": "Find restaurants with '<query>' in their name."},
@@ -37,7 +43,7 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     description="The user views the details of a restaurant.",
     event=ViewRestaurantEvent,
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_view_restaurant_constraints,
     examples=[
         {"prompt": "View details for 'Pizza Palace'.", "prompt_for_task_generation": "View details for '<restaurant_name>'."},
         {"prompt": "Show me the menu of the restaurant with cuisine 'Japanese'.", "prompt_for_task_generation": "Show me the menu of the restaurant with cuisine '<cuisine>'."},
@@ -52,7 +58,7 @@ ADD_TO_CART_MODAL_OPEN_USE_CASE = UseCase(
     description="The user opens the add-to-cart modal for a menu item.",
     event=AddToCartModalOpenEvent,
     event_source_code=AddToCartModalOpenEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_add_to_cart_modal_open_constraints,
     examples=[
         {"prompt": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'.", "prompt_for_task_generation": "Open the add-to-cart modal for '<item_name>' at '<restaurant_name>'."},
         {"prompt": "Show the add-to-cart modal for 'Salmon Nigiri'.", "prompt_for_task_generation": "Show the add-to-cart modal for '<item_name>'."},
@@ -67,7 +73,7 @@ ITEM_INCREMENTED_USE_CASE = UseCase(
     description="The user increases the quantity of a menu item in the cart.",
     event=ItemIncrementedEvent,
     event_source_code=ItemIncrementedEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_increment_item_restaurant_constraints,
     examples=[
         {"prompt": "Increase the quantity of 'Margherita Pizza' to 2.", "prompt_for_task_generation": "Increase the quantity of '<item_name>' to <new_quantity>."},
         {"prompt": "Add one more 'Salmon Nigiri' to my cart.", "prompt_for_task_generation": "Add one more '<item_name>' to my cart."},
@@ -77,20 +83,20 @@ ITEM_INCREMENTED_USE_CASE = UseCase(
     ],
 )
 
-ITEM_DECREMENTED_USE_CASE = UseCase(
-    name="ITEM_DECREMENTED",
-    description="The user decreases the quantity of a menu item in the cart.",
-    event=ItemDecrementedEvent,
-    event_source_code=ItemDecrementedEvent.get_source_code_of_class(),
-    constraints_generator=None,
-    examples=[
-        {"prompt": "Decrease the quantity of 'Pepperoni Pizza' to 1.", "prompt_for_task_generation": "Decrease the quantity of '<item_name>' to <new_quantity>."},
-        {"prompt": "Remove one 'Salmon Nigiri' from my cart.", "prompt_for_task_generation": "Remove one '<item_name>' from my cart."},
-        {"prompt": "Decrement 'California Roll' count in the cart.", "prompt_for_task_generation": "Decrement '<item_name>' count in the cart."},
-        {"prompt": "Set the quantity of 'Margherita Pizza' to 0.", "prompt_for_task_generation": "Set the quantity of '<item_name>' to <new_quantity>."},
-        {"prompt": "Reduce the number of 'Pepperoni Pizza' in my order.", "prompt_for_task_generation": "Reduce the number of '<item_name>' in my order."},
-    ],
-)
+# ITEM_DECREMENTED_USE_CASE = UseCase(
+#     name="ITEM_DECREMENTED",
+#     description="The user decreases the quantity of a menu item in the cart.",
+#     event=ItemDecrementedEvent,
+#     event_source_code=ItemDecrementedEvent.get_source_code_of_class(),
+#     constraints_generator=None,
+#     examples=[
+#         {"prompt": "Decrease the quantity of 'Pepperoni Pizza' to 1.", "prompt_for_task_generation": "Decrease the quantity of '<item_name>' to <new_quantity>."},
+#         {"prompt": "Remove one 'Salmon Nigiri' from my cart.", "prompt_for_task_generation": "Remove one '<item_name>' from my cart."},
+#         {"prompt": "Decrement 'California Roll' count in the cart.", "prompt_for_task_generation": "Decrement '<item_name>' count in the cart."},
+#         {"prompt": "Set the quantity of 'Margherita Pizza' to 0.", "prompt_for_task_generation": "Set the quantity of '<item_name>' to <new_quantity>."},
+#         {"prompt": "Reduce the number of 'Pepperoni Pizza' in my order.", "prompt_for_task_generation": "Reduce the number of '<item_name>' in my order."},
+#     ],
+# )
 
 ADD_TO_CART_USE_CASE = UseCase(
     name="ADD_TO_CART",

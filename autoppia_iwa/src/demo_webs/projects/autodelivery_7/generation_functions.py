@@ -1,0 +1,220 @@
+import random
+from typing import Any
+
+from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+
+from ..shared_utils import create_constraint_dict
+from .data import FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP, FIELD_OPERATORS_SEARCH_RESTAURANT_MAP, FIELD_OPERATORS_VIEW_RESTAURANT_MAP, RESTAURANTS_DATA
+
+
+def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
+    value = None
+
+    if operator == ComparisonOperator.EQUALS:
+        return field_value
+
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        valid = [v[field] for v in dataset if v.get(field) != field_value]
+        return random.choice(valid) if valid else None
+
+    elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        if len(field_value) > 2:
+            start = random.randint(0, max(0, len(field_value) - 2))
+            end = random.randint(start + 1, len(field_value))
+            return field_value[start:end]
+        return field_value
+
+    elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+        valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
+        return random.choice(valid) if valid else None
+
+    elif operator == ComparisonOperator.IN_LIST:
+        all_values = list({v.get(field) for v in dataset if field in v})
+        if not all_values:
+            return [field_value]
+        random.shuffle(all_values)
+        subset = random.sample(all_values, min(2, len(all_values)))
+        if field_value not in subset:
+            subset.append(field_value)
+        return list(set(subset))
+
+    elif operator == ComparisonOperator.NOT_IN_LIST:
+        all_values = list({v.get(field) for v in dataset if field in v})
+        if field_value in all_values:
+            all_values.remove(field_value)
+        return random.sample(all_values, min(2, len(all_values))) if all_values else []
+
+    elif operator in {
+        ComparisonOperator.GREATER_THAN,
+        ComparisonOperator.LESS_THAN,
+        ComparisonOperator.GREATER_EQUAL,
+        ComparisonOperator.LESS_EQUAL,
+    }:
+        numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
+        if numeric_values:
+            base = random.choice(numeric_values)
+            delta = random.uniform(1, 3)
+            if operator == ComparisonOperator.GREATER_THAN:
+                return round(base - delta, 2)
+            elif operator == ComparisonOperator.LESS_THAN:
+                return round(base + delta, 2)
+            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                return round(base, 2)
+
+    return value
+
+
+def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+
+    search_terms = []
+    for item in RESTAURANTS_DATA:
+        if item.get("name"):
+            search_terms.append(item["name"])
+        if item.get("cuisine"):
+            search_terms.append(item["cuisine"])
+        for menu_item in item.get("menu", []):
+            if menu_item.get("name"):
+                search_terms.append(menu_item["name"])
+
+    query = random.choice(search_terms)
+    field = "query"
+    allowed_ops = FIELD_OPERATORS_SEARCH_RESTAURANT_MAP.get(field, [])
+    operator = ComparisonOperator(random.choice(allowed_ops))
+
+    value = _generate_constraint_value(operator, query, field, [{"query": t} for t in search_terms])
+
+    if value is not None:
+        constraint = create_constraint_dict(field, operator, value)
+        constraints_list.append(constraint)
+
+    return constraints_list
+
+
+def __generate_view_restaurant_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    constraints_list = []
+    fields = ["name", "cuisine", "rating"]
+    num_constraints = random.randint(2, len(fields))
+    selected_fields = random.sample(fields, num_constraints)
+    restaurant = random.choice(RESTAURANTS_DATA)
+
+    for field in selected_fields:
+        field_value = restaurant.get(field)
+        allowed_ops = FIELD_OPERATORS_VIEW_RESTAURANT_MAP.get(field, [])
+        if not allowed_ops:
+            return []
+        operator = ComparisonOperator(random.choice(allowed_ops))
+
+        value = _generate_constraint_value(operator, field_value, field, RESTAURANTS_DATA)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list, restaurant
+
+
+def generate_view_restaurant_constraints() -> list[dict]:
+    constraints_list, _ = __generate_view_restaurant_constraints()
+
+    return constraints_list
+
+
+def _get_menu_items() -> list[dict[str, Any]]:
+    menu_items = []
+    for restaurant in RESTAURANTS_DATA:
+        for menu_item in restaurant.get("menu", []):
+            menu_items.append(
+                {
+                    "item": menu_item.get("name"),
+                    "price": menu_item.get("price"),
+                    "size": menu_item.get("size"),
+                    "quantity": random.randint(1, 5),
+                    "restaurant": restaurant.get("name"),
+                }
+            )
+    return menu_items
+
+
+def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    constraints_list = []
+    menu_items = _get_menu_items()
+
+    if not menu_items:
+        return [], {}
+    item = random.choice(menu_items)
+
+    fields = ["item", "price"]
+    num_constraints = random.randint(1, len(fields))
+    selected_fields = random.sample(fields, num_constraints)
+    for field in selected_fields.append("restaurant"):
+        field_value = item.get(field)
+        allowed_ops = FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        value = _generate_constraint_value(operator, field_value, field, menu_items)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list, item
+
+
+def generate_add_to_cart_modal_open_constraints() -> list[dict]:
+    return __generate_add_to_cart_modal_open_constraints()[0]
+
+
+def _get_new_quantity_value(operator: ComparisonOperator) -> int:
+    # new_quantity must be between 2 and 10 (inclusive), can't be 0 or 1
+    if operator == ComparisonOperator.EQUALS:
+        return random.randint(2, 10)
+    elif operator == ComparisonOperator.NOT_EQUALS:
+        # Pick a value not equal to a randomly chosen forbidden value (2-10)
+        forbidden = random.randint(2, 10)
+        choices = [v for v in range(2, 11) if v != forbidden]
+        return random.choice(choices)
+    elif operator == ComparisonOperator.GREATER_THAN:
+        # Must be at least 3 (since can't be 1 or 2)
+        return random.randint(3, 10)
+    elif operator == ComparisonOperator.LESS_THAN:
+        # Must be at most 9 (since can't be 1)
+        return random.randint(2, 9)
+    elif operator == ComparisonOperator.GREATER_EQUAL or operator == ComparisonOperator.LESS_EQUAL:
+        return random.randint(2, 10)
+    else:
+        return random.randint(2, 10)
+
+
+def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    model_constraints, _ = __generate_add_to_cart_modal_open_constraints()
+    field = "new_quantity"
+
+    allowed_ops = FIELD_OPERATORS_VIEW_RESTAURANT_MAP.get(field, [])
+    if not allowed_ops:
+        return []
+    operator = ComparisonOperator(random.choice(allowed_ops))
+    field_value = _get_new_quantity_value(operator)
+    constraints_list.append(create_constraint_dict(field, operator, field_value))
+    constraints_list.extend(model_constraints)
+    return constraints_list
+
+
+def generate_increment_item_restaurant_constraints() -> list[dict]:
+    constraints_list, _ = __generate_add_to_cart_options_constraints()
+    return constraints_list
+
+
+# def generate_add_to_cart_constraints() -> list[dict]:
+#     constraints_list = []
+#     constraints_until_quantity_change, item = __generate_add_to_cart_options_constraints()
+#     item = random.choice(menu_items)
+#     fields = ["item", "price", "size", "quantity", "restaurant"]
+#     num_constraints = random.randint(2, len(fields))
+#     selected_fields = random.sample(fields, num_constraints)
+#     for field in selected_fields:
+#         field_value = item.get(field)
+#         allowed_ops = FIELD_OPERATORS_ADD_TO_CART_MAP.get(field, [])
+#         if not allowed_ops:
+#             continue
+#         operator = ComparisonOperator(random.choice(allowed_ops))
+#         value = _generate_constraint_value(operator, field_value, field, menu_items)
+#         if value is not None:
+#             constraints_list.append(create_constraint_dict(field, operator, value))
+#     return constraints_list

@@ -73,17 +73,17 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
 class AddToCartModalOpenEvent(Event, BaseEventValidator):
     event_name: str = "ADD_TO_CART_MODAL_OPEN"
     # restaurantId: str
-    restaurantName: str
+    restaurant: str
     # itemId: str
-    itemName: str
-    itemPrice: float
+    item: str
+    price: float
 
     class ValidationCriteria(BaseModel):
         # restaurantId: str | CriterionValue | None = None
-        restaurantName: str | CriterionValue | None = None
+        restaurant: str | CriterionValue | None = None
         # itemId: str | CriterionValue | None = None
-        itemName: str | CriterionValue | None = None
-        itemPrice: float | CriterionValue | None = None
+        item: str | CriterionValue | None = None
+        price: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -91,10 +91,10 @@ class AddToCartModalOpenEvent(Event, BaseEventValidator):
         return all(
             [
                 # self._validate_field(self.restaurantId, criteria.restaurantId),
-                self._validate_field(self.restaurantName, criteria.restaurantName),
+                self._validate_field(self.restaurant, criteria.restaurant),
                 # self._validate_field(self.itemId, criteria.itemId),
-                self._validate_field(self.itemName, criteria.itemName),
-                self._validate_field(self.itemPrice, criteria.itemPrice),
+                self._validate_field(self.item, criteria.item),
+                self._validate_field(self.price, criteria.price),
             ]
         )
 
@@ -108,23 +108,23 @@ class AddToCartModalOpenEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             # restaurantId=data.get("restaurantId", ""),
-            restaurantName=data.get("restaurantName", ""),
+            restaurant=data.get("restaurantName", ""),
             # itemId=data.get("itemId", ""),
-            itemName=data.get("itemName", ""),
-            itemPrice=data.get("itemPrice", 0.0),
+            item=data.get("itemName", ""),
+            price=data.get("itemPrice", 0.0),
         )
 
 
 class ItemIncrementedEvent(Event, BaseEventValidator):
     event_name: str = "ITEM_INCREMENTED"
     # itemId: str
-    itemName: str
-    newQuantity: int
+    item: str
+    new_quantity: int
 
     class ValidationCriteria(BaseModel):
         # itemId: str | CriterionValue | None = None
-        itemName: str | CriterionValue | None = None
-        newQuantity: int | CriterionValue | None = None
+        item: str | CriterionValue | None = None
+        new_quantity: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -132,8 +132,8 @@ class ItemIncrementedEvent(Event, BaseEventValidator):
         return all(
             [
                 # self._validate_field(self.itemId, criteria.itemId),
-                self._validate_field(self.itemName, criteria.itemName),
-                self._validate_field(self.newQuantity, criteria.newQuantity),
+                self._validate_field(self.item, criteria.item),
+                self._validate_field(self.new_quantity, criteria.new_quantity),
             ]
         )
 
@@ -147,56 +147,56 @@ class ItemIncrementedEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             # itemId=data.get("itemId", ""),
-            itemName=data.get("itemName", ""),
-            newQuantity=data.get("newQuantity", 0),
+            item=data.get("itemName", ""),
+            new_quantity=data.get("newQuantity", 0),
         )
 
 
-class ItemDecrementedEvent(Event, BaseEventValidator):
-    event_name: str = "ITEM_DECREMENTED"
-    # itemId: str
-    itemName: str
-    newQuantity: int
-
-    class ValidationCriteria(BaseModel):
-        # itemId: str | CriterionValue | None = None
-        itemName: str | CriterionValue | None = None
-        newQuantity: int | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                # self._validate_field(self.itemId, criteria.itemId),
-                self._validate_field(self.itemName, criteria.itemName),
-                self._validate_field(self.newQuantity, criteria.newQuantity),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "ItemDecrementedEvent":
-        base = Event.parse(backend_event)
-        data = backend_event.data
-        return cls(
-            event_name=base.event_name,
-            timestamp=base.timestamp,
-            web_agent_id=base.web_agent_id,
-            user_id=base.user_id,
-            # itemId=data.get("itemId", ""),
-            itemName=data.get("itemName", ""),
-            newQuantity=data.get("newQuantity", 0),
-        )
+# class ItemDecrementedEvent(Event, BaseEventValidator):
+#     event_name: str = "ITEM_DECREMENTED"
+#     # itemId: str
+#     itemName: str
+#     newQuantity: int
+#
+#     class ValidationCriteria(BaseModel):
+#         # itemId: str | CriterionValue | None = None
+#         itemName: str | CriterionValue | None = None
+#         newQuantity: int | CriterionValue | None = None
+#
+#     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+#         if not criteria:
+#             return True
+#         return all(
+#             [
+#                 # self._validate_field(self.itemId, criteria.itemId),
+#                 self._validate_field(self.itemName, criteria.itemName),
+#                 self._validate_field(self.newQuantity, criteria.newQuantity),
+#             ]
+#         )
+#
+#     @classmethod
+#     def parse(cls, backend_event: BackendEvent) -> "ItemDecrementedEvent":
+#         base = Event.parse(backend_event)
+#         data = backend_event.data
+#         return cls(
+#             event_name=base.event_name,
+#             timestamp=base.timestamp,
+#             web_agent_id=base.web_agent_id,
+#             user_id=base.user_id,
+#             # itemId=data.get("itemId", ""),
+#             itemName=data.get("itemName", ""),
+#             newQuantity=data.get("newQuantity", 0),
+#         )
 
 
 class AddToCartEvent(Event, BaseEventValidator):
     event_name: str = "ADD_TO_CART"
     # itemId: str
-    itemName: str
-    basePrice: float
+    item: str
+    base_price: float
     size: str
-    sizePriceMod: float
-    options: list[str]
+    # sizePriceMod: float
+    # options: list[str]
     preferences: str
     quantity: int
     totalPrice: float
@@ -206,8 +206,8 @@ class AddToCartEvent(Event, BaseEventValidator):
         itemName: str | CriterionValue | None = None
         basePrice: float | CriterionValue | None = None
         size: str | CriterionValue | None = None
-        sizePriceMod: float | CriterionValue | None = None
-        options: str | CriterionValue | None = None
+        # sizePriceMod: float | CriterionValue | None = None
+        # options: str | CriterionValue | None = None
         preferences: str | CriterionValue | None = None
         quantity: int | CriterionValue | None = None
         totalPrice: float | CriterionValue | None = None
@@ -221,8 +221,8 @@ class AddToCartEvent(Event, BaseEventValidator):
                 self._validate_field(self.itemName, criteria.itemName),
                 self._validate_field(self.basePrice, criteria.basePrice),
                 self._validate_field(self.size, criteria.size),
-                self._validate_field(self.sizePriceMod, criteria.sizePriceMod),
-                self._validate_field(self.options, criteria.options),
+                # self._validate_field(self.sizePriceMod, criteria.sizePriceMod),
+                # self._validate_field(self.options, criteria.options),
                 self._validate_field(self.preferences, criteria.preferences),
                 self._validate_field(self.quantity, criteria.quantity),
                 self._validate_field(self.totalPrice, criteria.totalPrice),
@@ -242,8 +242,8 @@ class AddToCartEvent(Event, BaseEventValidator):
             itemName=data.get("itemName", ""),
             basePrice=data.get("basePrice", 0.0),
             size=data.get("size", ""),
-            sizePriceMod=data.get("sizePriceMod", 0.0),
-            options=data.get("options", []),
+            # sizePriceMod=data.get("sizePriceMod", 0.0),
+            # options=data.get("options", []),
             preferences=data.get("preferences", ""),
             quantity=data.get("quantity", 0),
             totalPrice=data.get("totalPrice", 0.0),
@@ -564,7 +564,7 @@ EVENTS = [
     ViewRestaurantEvent,
     AddToCartModalOpenEvent,
     ItemIncrementedEvent,
-    ItemDecrementedEvent,
+    # ItemDecrementedEvent,
     AddToCartEvent,
     OpenCheckoutPageEvent,
     DropoffPreferenceEvent,
@@ -581,7 +581,7 @@ BACKEND_EVENT_TYPES = {
     "VIEW_RESTAURANT": ViewRestaurantEvent,
     "ADD_TO_CART_MODAL_OPEN": AddToCartModalOpenEvent,
     "ITEM_INCREMENTED": ItemIncrementedEvent,
-    "ITEM_DECREMENTED": ItemDecrementedEvent,
+    # "ITEM_DECREMENTED": ItemDecrementedEvent,
     "ADD_TO_CART": AddToCartEvent,
     "OPEN_CHECKOUT_PAGE": OpenCheckoutPageEvent,
     "DROPOFF_PREFERENCE": DropoffPreferenceEvent,
