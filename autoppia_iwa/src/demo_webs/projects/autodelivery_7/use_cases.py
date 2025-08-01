@@ -5,12 +5,12 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
     AddToCartModalOpenEvent,
     BackToAllRestaurantsEvent,
     DeleteReviewEvent,
-    DeliveryModeEvent,
+    # DeliveryModeEvent,
     DropoffPreferenceEvent,
     EmptyCartEvent,
     ItemIncrementedEvent,
     OpenCheckoutPageEvent,
-    PickupModeEvent,
+    # PickupModeEvent,
     PlaceOrderEvent,
     SearchRestaurantEvent,
     ViewRestaurantEvent,
@@ -19,6 +19,7 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
 from .generation_functions import (
     generate_add_to_cart_constraints,
     generate_add_to_cart_modal_open_constraints,
+    generate_address_added_constraints,
     generate_dropoff_option_constraints,
     generate_increment_item_restaurant_constraints,
     generate_search_restaurant_constraints,
@@ -160,27 +161,27 @@ PLACE_ORDER_USE_CASE = UseCase(
     ],
 )
 
-PICKUP_MODE_USE_CASE = UseCase(
-    name="PICKUP_MODE",
-    description="The user selects pickup as the order mode.",
-    event=PickupModeEvent,
-    event_source_code=PickupModeEvent.get_source_code_of_class(),
-    constraints_generator=None,
-    examples=[
-        {"prompt": "Switch to pickup mode for my order.", "prompt_for_task_generation": "Switch to pickup mode for my order."},
-        {"prompt": "Select pickup instead of delivery.", "prompt_for_task_generation": "Select pickup instead of delivery."},
-        {"prompt": "Change order mode to pickup.", "prompt_for_task_generation": "Change order mode to pickup."},
-        {"prompt": "Choose pickup for 'Pizza Palace'.", "prompt_for_task_generation": "Choose pickup for '<restaurant_name>'."},
-        {"prompt": "Set my order to be picked up at the restaurant.", "prompt_for_task_generation": "Set my order to be picked up at the restaurant."},
-    ],
-)
+# PICKUP_MODE_USE_CASE = UseCase(
+#     name="PICKUP_MODE",
+#     description="The user selects pickup as the order mode.",
+#     event=PickupModeEvent,
+#     event_source_code=PickupModeEvent.get_source_code_of_class(),
+#     constraints_generator=generate_pickup_mode_constraints,
+#     examples=[
+#         {"prompt": "Switch to pickup mode for my order.", "prompt_for_task_generation": "Switch to pickup mode for my order."},
+#         {"prompt": "Select pickup instead of delivery.", "prompt_for_task_generation": "Select pickup instead of delivery."},
+#         {"prompt": "Change order mode to pickup.", "prompt_for_task_generation": "Change order mode to pickup."},
+#         {"prompt": "Choose pickup for 'Pizza Palace'.", "prompt_for_task_generation": "Choose pickup for '<restaurant_name>'."},
+#         {"prompt": "Set my order to be picked up at the restaurant.", "prompt_for_task_generation": "Set my order to be picked up at the restaurant."},
+#     ],
+# )
 
 EMPTY_CART_USE_CASE = UseCase(
     name="EMPTY_CART",
     description="The user empties their cart.",
     event=EmptyCartEvent,
     event_source_code=EmptyCartEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=False,
     examples=[
         {"prompt": "Empty my cart.", "prompt_for_task_generation": "Empty my cart."},
         {"prompt": "Remove all items from the cart.", "prompt_for_task_generation": "Remove all items from the cart."},
@@ -195,7 +196,7 @@ DELETE_REVIEW_USE_CASE = UseCase(
     description="The user deletes a review they wrote for a restaurant.",
     event=DeleteReviewEvent,
     event_source_code=DeleteReviewEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_view_restaurant_constraints,
     examples=[
         {"prompt": "Delete my review for 'Pizza Palace' written on 2025-06-02.", "prompt_for_task_generation": "Delete my review for '<restaurant_name>' written on <date>."},
         {"prompt": "Remove the review I wrote with a rating of 4.", "prompt_for_task_generation": "Remove the review I wrote with a rating of <rating>."},
@@ -210,7 +211,7 @@ BACK_TO_ALL_RESTAURANTS_USE_CASE = UseCase(
     description="The user navigates back to the list of all restaurants.",
     event=BackToAllRestaurantsEvent,
     event_source_code=BackToAllRestaurantsEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_view_restaurant_constraints,
     examples=[
         {"prompt": "Go back to the list of all restaurants from 'Pizza Palace'.", "prompt_for_task_generation": "Go back to the list of all restaurants from '<from_restaurant_name>'."},
         {"prompt": "Return to all restaurants after viewing 'Sushi World'.", "prompt_for_task_generation": "Return to all restaurants after viewing '<from_restaurant_name>'."},
@@ -225,7 +226,7 @@ ADDRESS_ADDED_USE_CASE = UseCase(
     description="The user adds a new delivery or pickup address.",
     event=AddressAddedEvent,
     event_source_code=AddressAddedEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_address_added_constraints,
     examples=[
         {"prompt": "Add a new delivery address: 456 Oak St.", "prompt_for_task_generation": "Add a new delivery address: <address>."},
         {"prompt": "Set my pickup address to 789 Pine Ave.", "prompt_for_task_generation": "Set my pickup address to <address>."},
@@ -235,20 +236,20 @@ ADDRESS_ADDED_USE_CASE = UseCase(
     ],
 )
 
-DELIVERY_MODE_USE_CASE = UseCase(
-    name="DELIVERY_MODE",
-    description="The user selects delivery as the order mode.",
-    event=DeliveryModeEvent,
-    event_source_code=DeliveryModeEvent.get_source_code_of_class(),
-    constraints_generator=None,
-    examples=[
-        {"prompt": "Switch to delivery mode for my order.", "prompt_for_task_generation": "Switch to delivery mode for my order."},
-        {"prompt": "Select delivery instead of pickup.", "prompt_for_task_generation": "Select delivery instead of pickup."},
-        {"prompt": "Change order mode to delivery.", "prompt_for_task_generation": "Change order mode to delivery."},
-        {"prompt": "Choose delivery for 'Sushi World'.", "prompt_for_task_generation": "Choose delivery for '<restaurant_name>'."},
-        {"prompt": "Set my order to be delivered to my address.", "prompt_for_task_generation": "Set my order to be delivered to my address."},
-    ],
-)
+# DELIVERY_MODE_USE_CASE = UseCase(
+#     name="DELIVERY_MODE",
+#     description="The user selects delivery as the order mode.",
+#     event=DeliveryModeEvent,
+#     event_source_code=DeliveryModeEvent.get_source_code_of_class(),
+#     constraints_generator=None,
+#     examples=[
+#         {"prompt": "Switch to delivery mode for my order.", "prompt_for_task_generation": "Switch to delivery mode for my order."},
+#         {"prompt": "Select delivery instead of pickup.", "prompt_for_task_generation": "Select delivery instead of pickup."},
+#         {"prompt": "Change order mode to delivery.", "prompt_for_task_generation": "Change order mode to delivery."},
+#         {"prompt": "Choose delivery for 'Sushi World'.", "prompt_for_task_generation": "Choose delivery for '<restaurant_name>'."},
+#         {"prompt": "Set my order to be delivered to my address.", "prompt_for_task_generation": "Set my order to be delivered to my address."},
+#     ],
+# )
 
 ALL_USE_CASES = [
     SEARCH_RESTAURANT_USE_CASE,
@@ -260,8 +261,8 @@ ALL_USE_CASES = [
     OPEN_CHECKOUT_PAGE_USE_CASE,
     DROPOFF_PREFERENCE_USE_CASE,
     ADDRESS_ADDED_USE_CASE,
-    DELIVERY_MODE_USE_CASE,
-    PICKUP_MODE_USE_CASE,
+    # DELIVERY_MODE_USE_CASE,
+    # PICKUP_MODE_USE_CASE,
     EMPTY_CART_USE_CASE,
     DELETE_REVIEW_USE_CASE,
     BACK_TO_ALL_RESTAURANTS_USE_CASE,

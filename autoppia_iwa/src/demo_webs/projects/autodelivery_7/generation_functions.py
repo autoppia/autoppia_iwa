@@ -275,8 +275,8 @@ def generate_add_to_cart_constraints() -> list[dict]:
             field_value = None
         if field_value is not None:
             value = _generate_constraint_value(operator, field_value, field, dataset)
-        if value is not None:
-            constraints_list.append(create_constraint_dict(field, operator, value))
+            if value is not None:
+                constraints_list.append(create_constraint_dict(field, operator, value))
     constraints_list.extend(common_add_to_cart_constraints)
     return constraints_list
 
@@ -325,6 +325,19 @@ def generate_address_added_constraints() -> list[dict]:
     constraints_list.append(create_constraint_dict(field, operator, value))
     constraints_list.extend(add_to_cart_constraint)
     return constraints_list
+
+
+# def generate_pickup_mode_constraints() -> list[dict]:
+#     constraints_list = []
+#     add_to_cart_constraint = generate_add_to_cart_constraints()
+#     field = "mode" # pickup mode
+#     operator = random.choice(FIELD_OPERATORS_PICKUP_MODE_MAP[field])
+#     modes=['delivery', 'pickup']
+#     field_value = random.choice(modes)
+#     value = _generate_constraint_value(operator, field_value, field, [{"mode": v} for v in modes])
+#     constraints_list.append(create_constraint_dict(field, operator, value))
+#     constraints_list.extend(add_to_cart_constraint)
+#     return constraints_list
 
 
 # def generate_place_order_constraints() -> list[dict]:

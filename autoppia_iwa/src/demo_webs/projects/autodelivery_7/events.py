@@ -195,6 +195,7 @@ class AddToCartEvent(Event, BaseEventValidator):
     item: str
     price: float
     size: str
+    restaurant: str
     # sizePriceMod: float
     # options: list[str]
     preferences: str
@@ -206,6 +207,7 @@ class AddToCartEvent(Event, BaseEventValidator):
         item: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         size: str | CriterionValue | None = None
+        restaurant: str | CriterionValue | None = None
         # sizePriceMod: float | CriterionValue | None = None
         # options: str | CriterionValue | None = None
         preferences: str | CriterionValue | None = None
@@ -221,6 +223,7 @@ class AddToCartEvent(Event, BaseEventValidator):
                 self._validate_field(self.item, criteria.item),
                 self._validate_field(self.price, criteria.price),
                 self._validate_field(self.size, criteria.size),
+                self._validate_field(self.restaurant, criteria.restaurant),
                 # self._validate_field(self.sizePriceMod, criteria.sizePriceMod),
                 # self._validate_field(self.options, criteria.options),
                 self._validate_field(self.preferences, criteria.preferences),
@@ -242,6 +245,7 @@ class AddToCartEvent(Event, BaseEventValidator):
             item=data.get("itemName", ""),
             price=data.get("basePrice", 0.0),
             size=data.get("size", ""),
+            restaurant=data.get("restaurantName", ""),
             # sizePriceMod=data.get("sizePriceMod", 0.0),
             # options=data.get("options", []),
             preferences=data.get("preferences", ""),
@@ -381,28 +385,30 @@ class PlaceOrderEvent(Event, BaseEventValidator, DropoffPreferenceEvent):
         )
 
 
-class PickupModeEvent(Event, BaseEventValidator):
-    event_name: str = "PICKUP_MODE"
-    mode: str
-
-    class ValidationCriteria(BaseModel):
-        mode: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return self._validate_field(self.mode, criteria.mode)
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "PickupModeEvent":
-        base = Event.parse(backend_event)
-        return cls(
-            event_name=base.event_name,
-            timestamp=base.timestamp,
-            web_agent_id=base.web_agent_id,
-            user_id=base.user_id,
-            mode=backend_event.data.get("mode", ""),
-        )
+# class PickupModeEvent(Event, BaseEventValidator, AddToCartEvent):
+#     event_name: str = "PICKUP_MODE"
+#     mode: str
+#
+#     class ValidationCriteria(AddToCartEvent.ValidationCriteria):
+#         mode: str | CriterionValue | None = None
+#
+#     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+#         if not criteria:
+#             return True
+#         return all([self._validate_field(self.mode, criteria.mode), AddToCartEvent._validate_criteria(self, criteria)])
+#
+#     @classmethod
+#     def parse(cls, backend_event: BackendEvent) -> "PickupModeEvent":
+#         base = Event.parse(backend_event)
+#         cart_data=AddToCartEvent.parse(backend_event)
+#         return cls(
+#             event_name=base.event_name,
+#             timestamp=base.timestamp,
+#             web_agent_id=base.web_agent_id,
+#             user_id=base.user_id,
+#             mode=backend_event.data.get("mode", ""),
+#             **cart_data.model_dump(),
+#         )
 
 
 class EmptyCartEvent(Event, BaseEventValidator):
@@ -503,12 +509,12 @@ class BackToAllRestaurantsEvent(Event, BaseEventValidator):
         )
 
 
-class AddressAddedEvent(Event, BaseEventValidator):
+class AddressAddedEvent(Event, BaseEventValidator, AddToCartEvent):
     event_name: str = "ADDRESS_ADDED"
     address: str
     mode: str
 
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(AddToCartEvent.ValidationCriteria):
         address: str | CriterionValue | None = None
         mode: str | CriterionValue | None = None
 
@@ -519,6 +525,7 @@ class AddressAddedEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.address, criteria.address),
                 self._validate_field(self.mode, criteria.mode),
+                AddToCartEvent._validate_criteria(self, criteria),
             ]
         )
 
@@ -526,6 +533,7 @@ class AddressAddedEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "AddressAddedEvent":
         base = Event.parse(backend_event)
         data = backend_event.data
+        cart_data = AddToCartEvent.parse(backend_event)
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
@@ -533,31 +541,32 @@ class AddressAddedEvent(Event, BaseEventValidator):
             user_id=base.user_id,
             address=data.get("address", ""),
             mode=data.get("mode", ""),
+            **cart_data.model_dump(),
         )
 
 
-class DeliveryModeEvent(Event, BaseEventValidator):
-    event_name: str = "DELIVERY_MODE"
-    mode: str
-
-    class ValidationCriteria(BaseModel):
-        mode: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return self._validate_field(self.mode, criteria.mode)
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "DeliveryModeEvent":
-        base = Event.parse(backend_event)
-        return cls(
-            event_name=base.event_name,
-            timestamp=base.timestamp,
-            web_agent_id=base.web_agent_id,
-            user_id=base.user_id,
-            mode=backend_event.data.get("mode", ""),
-        )
+# class DeliveryModeEvent(Event, BaseEventValidator):
+#     event_name: str = "DELIVERY_MODE"
+#     mode: str
+#
+#     class ValidationCriteria(BaseModel):
+#         mode: str | CriterionValue | None = None
+#
+#     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+#         if not criteria:
+#             return True
+#         return self._validate_field(self.mode, criteria.mode)
+#
+#     @classmethod
+#     def parse(cls, backend_event: BackendEvent) -> "DeliveryModeEvent":
+#         base = Event.parse(backend_event)
+#         return cls(
+#             event_name=base.event_name,
+#             timestamp=base.timestamp,
+#             web_agent_id=base.web_agent_id,
+#             user_id=base.user_id,
+#             mode=backend_event.data.get("mode", ""),
+#         )
 
 
 EVENTS = [
@@ -569,13 +578,13 @@ EVENTS = [
     AddToCartEvent,
     OpenCheckoutPageEvent,
     DropoffPreferenceEvent,
-    PlaceOrderEvent,
-    PickupModeEvent,
+    AddressAddedEvent,
+    # PickupModeEvent,
     EmptyCartEvent,
     DeleteReviewEvent,
     BackToAllRestaurantsEvent,
-    AddressAddedEvent,
-    DeliveryModeEvent,
+    # DeliveryModeEvent,
+    PlaceOrderEvent,
 ]
 BACKEND_EVENT_TYPES = {
     "SEARCH_RESTAURANT": SearchRestaurantEvent,
@@ -587,10 +596,10 @@ BACKEND_EVENT_TYPES = {
     "OPEN_CHECKOUT_PAGE": OpenCheckoutPageEvent,
     "DROPOFF_PREFERENCE": DropoffPreferenceEvent,
     "PLACE_ORDER": PlaceOrderEvent,
-    "PICKUP_MODE": PickupModeEvent,
+    # "PICKUP_MODE": PickupModeEvent,
     "EMPTY_CART": EmptyCartEvent,
     "DELETE_REVIEW": DeleteReviewEvent,
     "BACK_TO_ALL_RESTAURANTS": BackToAllRestaurantsEvent,
     "ADDRESS_ADDED": AddressAddedEvent,
-    "DELIVERY_MODE": DeliveryModeEvent,
+    # "DELIVERY_MODE": DeliveryModeEvent,
 }
