@@ -1101,13 +1101,24 @@ FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP = {
 }
 
 FIELD_OPERATORS_ADD_TO_CART_MAP = {
-    "item": STRING_OPERATORS,
-    "size": STRING_OPERATORS,
-    "options": ARRAY_OPERATORS,
+    **FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP,
+    # "options": ARRAY_OPERATORS,
+    "preferences": ARRAY_OPERATORS,
     "quantity": LOGICAL_OPERATORS,
-    "restaurant": STRING_OPERATORS,
+    "size": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_DROPOFF_OPTION_MAP = {
-    "preference": EQUALITY_OPERATORS,
+    "delivery_preference": EQUALITY_OPERATORS,
+}
+FIELD_OPERATORS_ADDRESS_ADDED_MAP = {**{k: v for k, v in FIELD_OPERATORS_ADD_TO_CART_MAP.items() if k != "restaurant"}, "address": EQUALITY_OPERATORS}
+
+FIELD_OPERATORS_PLACE_ORDER_MAP = {
+    "username": STRING_OPERATORS,
+    "phone": STRING_OPERATORS,
+    "address": STRING_OPERATORS,
+    "mode": STRING_OPERATORS,
+    # "deliveryTime": STRING_OPERATORS,
+    "dropoff": STRING_OPERATORS,
+    "items": [CONTAINS, NOT_CONTAINS],
 }

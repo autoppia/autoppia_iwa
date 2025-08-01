@@ -7,6 +7,7 @@ from ..shared_utils import create_constraint_dict
 from .data import (
     FIELD_OPERATORS_ADD_TO_CART_MAP,
     FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP,
+    FIELD_OPERATORS_ADDRESS_ADDED_MAP,
     FIELD_OPERATORS_DROPOFF_OPTION_MAP,
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
@@ -208,9 +209,9 @@ def _get_new_quantity_value(operator: ComparisonOperator) -> int:
 def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     model_constraints, _ = __generate_add_to_cart_modal_open_constraints()
-    field = "new_quantity"
+    field = "quantity"
 
-    allowed_ops = FIELD_OPERATORS_VIEW_RESTAURANT_MAP.get(field, [])
+    allowed_ops = FIELD_OPERATORS_ADD_TO_CART_MAP.get(field, [])
     if not allowed_ops:
         return []
     operator = ComparisonOperator(random.choice(allowed_ops))
@@ -284,11 +285,101 @@ def generate_dropoff_option_constraints() -> list[dict]:
     constraints_list = []
     dropoffOptions = ["Leave it at my door", "Hand it to me"]
 
-    field = "preference"
+    field = "delivery_preference"
     allowed_ops = FIELD_OPERATORS_DROPOFF_OPTION_MAP[field]
     operator = ComparisonOperator(random.choice(allowed_ops))
     field_value = random.choice(dropoffOptions)
-    dataset = [{"preference": opt} for opt in dropoffOptions]
+    dataset = [{"delivery_preference": opt} for opt in dropoffOptions]
     value = _generate_constraint_value(operator, field_value, field, dataset)
     constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
+
+
+ADDRESSES = [
+    "123 Maple Street, Springfield",
+    "456 Oak Avenue, Metropolis",
+    "789 Pine Road, Riverdale",
+    "101 Elm Drive, Centerville",
+    "202 Birch Lane, Lakeview",
+    "303 Cedar Court, Hilltown",
+    "404 Walnut Blvd, Brookside",
+    "505 Cherry Circle, Fairview",
+    "606 Aspen Way, Greenfield",
+    "707 Willow Place, Sunnyvale",
+]
+
+
+def _get_address_dataset():
+    return [{"address": addr} for addr in ADDRESSES]
+
+
+def generate_address_added_constraints() -> list[dict]:
+    constraints_list = []
+    add_to_cart_constraint = generate_add_to_cart_constraints()
+
+    field = "address"
+    operator = random.choice(FIELD_OPERATORS_ADDRESS_ADDED_MAP[field])
+    field_value = random.choice(ADDRESSES)
+    dataset = _get_address_dataset()
+    value = _generate_constraint_value(operator, field_value, field, dataset)
+    constraints_list.append(create_constraint_dict(field, operator, value))
+    constraints_list.extend(add_to_cart_constraint)
+    return constraints_list
+
+
+# def generate_place_order_constraints() -> list[dict]:
+#     constraints = []
+#     names = [
+#         "Alice Johnson",
+#         "Bob Smith",
+#         "Charlie Lee",
+#         "Diana Patel",
+#         "Ethan Brown",
+#         "Fiona Garcia",
+#         "George Kim",
+#         "Hannah Nguyen",
+#         "Ivan Martinez",
+#         "Julia Chen",
+#     ]
+#
+#     addresses = [
+#         "123 Maple Street, Springfield",
+#         "456 Oak Avenue, Metropolis",
+#         "789 Pine Road, Riverdale",
+#         "101 Elm Drive, Centerville",
+#         "202 Birch Lane, Lakeview",
+#         "303 Cedar Court, Hilltown",
+#         "404 Walnut Blvd, Brookside",
+#         "505 Cherry Circle, Fairview",
+#         "606 Aspen Way, Greenfield",
+#         "707 Willow Place, Sunnyvale",
+#     ]
+#
+#     phones = [
+#         "+1-555-123-4567",
+#         "+1-555-234-5678",
+#         "+1-555-345-6789",
+#         "+1-555-456-7890",
+#         "+1-555-567-8901",
+#         "+1-555-678-9012",
+#         "+1-555-789-0123",
+#         "+1-555-890-1234",
+#         "+1-555-901-2345",
+#         "+1-555-012-3456",
+#     ]
+#
+#     fields = ['name',  'phone', 'address', "mode", 'total']
+#     num_constraints = random.randint(2, len(fields))
+#     selected_fields = random.sample(fields, num_constraints)
+#
+#     for field in selected_fields:
+#         ops = FIELD_OPERATORS_PLACE_ORDER_MAP[field]
+#         operator = random.choice(ops)
+#         value = order_data.get(field)
+#         if value:
+#             constraints.append({
+#                 "field": field,
+#                 "operator": operator.value if hasattr(operator, "value") else operator,
+#                 "value": value,
+#             })
+#     return constraints
