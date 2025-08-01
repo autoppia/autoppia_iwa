@@ -190,7 +190,7 @@ class ItemIncrementedEvent(Event, BaseEventValidator):
 
 
 class AddToCartEvent(Event, BaseEventValidator):
-    event_name: str = "ADD_TO_CART"
+    event_name: str = "ADD_TO_CART_MENU_ITEM"
     # itemId: str
     item: str
     price: float
@@ -583,7 +583,7 @@ BACKEND_EVENT_TYPES = {
     "ADD_TO_CART_MODAL_OPEN": AddToCartModalOpenEvent,
     "ITEM_INCREMENTED": ItemIncrementedEvent,
     # "ITEM_DECREMENTED": ItemDecrementedEvent,
-    "ADD_TO_CART": AddToCartEvent,
+    "ADD_TO_CART_MENU_ITEM": AddToCartEvent,
     "OPEN_CHECKOUT_PAGE": OpenCheckoutPageEvent,
     "DROPOFF_PREFERENCE": DropoffPreferenceEvent,
     "PLACE_ORDER": PlaceOrderEvent,
