@@ -23,6 +23,10 @@ from .generation_functions import (
     generate_view_user_profile_constraints,
 )
 
+ADDITIONAL_PROMPT_INFO = """
+IMPORTANT REQUIREMENTS:
+1. Start prompt with View user profile or view the profile of user"""
+
 VIEW_USER_PROFILE_USE_CASE = UseCase(
     name="VIEW_USER_PROFILE",
     description="The user views another user's profile.",
@@ -278,8 +282,8 @@ ALL_USE_CASES = [
     # CONNECT_WITH_USER_USE_CASE,
     # HOME_NAVBAR_USE_CASE,
     # POST_STATUS_USE_CASE,
-    # LIKE_POST_USE_CASE,
-    COMMENT_ON_POST_USE_CASE,
+    LIKE_POST_USE_CASE,
+    # COMMENT_ON_POST_USE_CASE,
     # JOBS_NAVBAR_USE_CASE,
     # APPLY_FOR_JOB_USE_CASE,
     # PROFILE_NAVBAR_USE_CASE,

@@ -188,7 +188,7 @@ def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
 
     dataset = mockUsers
     field_operators = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
-    all_constraints = _generate_constraints(dataset, field_operators)
+    all_constraints = _generate_constraints(dataset, field_operators, num_constraints=1)
 
     return all_constraints
 
@@ -291,7 +291,9 @@ def generate_post_status_constraints() -> list[dict[str, Any]]:
     field_operators = FIELD_OPERATORS_POST_STATUS_MAP
     op = ComparisonOperator(choice(field_operators[field]))
     field_value = choice(sample_post_contents)
-    value = _generate_constraint_value(op, field_value, field, sample_post_contents)
+    dataset = [{"content": content} for content in sample_post_contents]
+
+    value = _generate_constraint_value(op, field_value, field, dataset)
     constraint = create_constraint_dict(field, op, value)
     all_constraints.append(constraint)
 

@@ -427,7 +427,7 @@ FIELD_OPERATORS_COMMENT_ON_POST_MAP = {
     "poster_content": STRING_OPERATORS,
 }
 FIELD_OPERATORS_POST_STATUS_MAP = {
-    "user_name": STRING_OPERATORS,
+    # "user_name": STRING_OPERATORS,
     "content": STRING_OPERATORS,
     # "post_id": STRING_OPERATORS,
 }
