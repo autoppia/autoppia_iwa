@@ -371,13 +371,13 @@ def generate_place_order_constraints() -> list[dict]:
 
     # Create mock order_data instead of referencing undefined variable
     order_data = {
-        "name": random.choice(names),
+        "username": random.choice(names),
         "phone": random.choice(phones),
         "address": random.choice(ADDRESSES),
         "mode": random.choice(["delivery", "pickup"]),
     }
 
-    fields = ["name", "phone", "address", "mode"]
+    fields = ["username", "phone", "address", "mode"]
     num_constraints = random.randint(2, len(fields))
     selected_fields = random.sample(fields, num_constraints)
 

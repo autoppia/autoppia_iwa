@@ -34,11 +34,11 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
     event_source_code=SearchRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_search_restaurant_constraints,
     examples=[
-        {"prompt": "Search for restaurants serving Italian cuisine.", "prompt_for_task_generation": "Search for restaurants serving <cuisine> cuisine."},
-        {"prompt": "Find restaurants with 'Sushi' in their name.", "prompt_for_task_generation": "Find restaurants with '<query>' in their name."},
-        {"prompt": "Look for pizza places nearby.", "prompt_for_task_generation": "Look for <food_type> places nearby."},
-        {"prompt": "Show me restaurants rated above 4.5.", "prompt_for_task_generation": "Show me restaurants rated above <rating>."},
-        {"prompt": "Find any restaurant that offers delivery in under 45 minutes.", "prompt_for_task_generation": "Find any restaurant that offers delivery in under <minutes> minutes."},
+        {"prompt": "Search for restaurants serving Italian cuisine.", "prompt_for_task_generation": "Search for restaurants serving Italian cuisine."},
+        {"prompt": "Find restaurants with 'Sushi' in their name.", "prompt_for_task_generation": "Find restaurants with 'Sushi' in their name."},
+        {"prompt": "Look for pizza places nearby.", "prompt_for_task_generation": "Look for pizza places nearby."},
+        {"prompt": "Show me restaurants rated above 4.5.", "prompt_for_task_generation": "Show me restaurants rated above 4.5."},
+        {"prompt": "Find any restaurant that offers delivery in under 45 minutes.", "prompt_for_task_generation": "Find any restaurant that offers delivery in under 45 minutes."},
     ],
 )
 
@@ -49,11 +49,14 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
     examples=[
-        {"prompt": "View details for 'Pizza Palace'.", "prompt_for_task_generation": "View details for '<restaurant_name>'."},
-        {"prompt": "Show me the menu of the restaurant with cuisine 'Japanese'.", "prompt_for_task_generation": "Show me the menu of the restaurant with cuisine '<cuisine>'."},
-        {"prompt": "Open the restaurant page for the one rated 4.7.", "prompt_for_task_generation": "Open the restaurant page for the one rated <rating>."},
-        {"prompt": "View the restaurant that has 'Best wood-fired pizzas' in its description.", "prompt_for_task_generation": "View the restaurant that has '<description>' in its description."},
-        {"prompt": "Show details for the featured restaurant.", "prompt_for_task_generation": "Show details for the <featured_status> restaurant."},
+        {"prompt": "View details for 'Pizza Palace'.", "prompt_for_task_generation": "View details for 'Pizza Palace'."},
+        {"prompt": "Show me the menu of the restaurant with cuisine 'Japanese'.", "prompt_for_task_generation": "Show me the menu of the restaurant with cuisine 'Japanese'."},
+        {"prompt": "Open the restaurant page for the one rated 4.7.", "prompt_for_task_generation": "Open the restaurant page for the one rated 4.7."},
+        {
+            "prompt": "View the restaurant that has 'Best wood-fired pizzas' in its description.",
+            "prompt_for_task_generation": "View the restaurant that has 'Best wood-fired pizzas' in its description.",
+        },
+        {"prompt": "Show details for the featured restaurant.", "prompt_for_task_generation": "Show details for the featured restaurant."},
     ],
 )
 
@@ -64,11 +67,11 @@ ADD_TO_CART_MODAL_OPEN_USE_CASE = UseCase(
     event_source_code=AddToCartModalOpenEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_modal_open_constraints,
     examples=[
-        {"prompt": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'.", "prompt_for_task_generation": "Open the add-to-cart modal for '<item_name>' at '<restaurant_name>'."},
-        {"prompt": "Show the add-to-cart modal for 'Salmon Nigiri'.", "prompt_for_task_generation": "Show the add-to-cart modal for '<item_name>'."},
-        {"prompt": "Open the modal to add 'Pepperoni Pizza' (Medium) to cart.", "prompt_for_task_generation": "Open the modal to add '<item_name>' (<size>) to cart."},
-        {"prompt": "Open the add-to-cart modal for an item priced at $12.99.", "prompt_for_task_generation": "Open the add-to-cart modal for an item priced at <item_price>."},
-        {"prompt": "Show the add-to-cart modal for 'California Roll' at any restaurant.", "prompt_for_task_generation": "Show the add-to-cart modal for '<item_name>' at any restaurant."},
+        {"prompt": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'.", "prompt_for_task_generation": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'."},
+        {"prompt": "Show the add-to-cart modal for 'Salmon Nigiri'.", "prompt_for_task_generation": "Show the add-to-cart modal for 'Salmon Nigiri'."},
+        {"prompt": "Open the modal to add 'Pepperoni Pizza' (Medium) to cart.", "prompt_for_task_generation": "Open the modal to add 'Pepperoni Pizza' (Medium) to cart."},
+        {"prompt": "Open the add-to-cart modal for an item priced at $12.99.", "prompt_for_task_generation": "Open the add-to-cart modal for an item priced at $12.99."},
+        {"prompt": "Show the add-to-cart modal for 'California Roll' at any restaurant.", "prompt_for_task_generation": "Show the add-to-cart modal for 'California Roll' at any restaurant."},
     ],
 )
 
@@ -79,11 +82,11 @@ ITEM_INCREMENTED_USE_CASE = UseCase(
     event_source_code=ItemIncrementedEvent.get_source_code_of_class(),
     constraints_generator=generate_increment_item_restaurant_constraints,
     examples=[
-        {"prompt": "Increase the quantity of 'Margherita Pizza' to 2.", "prompt_for_task_generation": "Increase the quantity of '<item_name>' to <new_quantity>."},
-        {"prompt": "Add one more 'Salmon Nigiri' to my cart.", "prompt_for_task_generation": "Add one more '<item_name>' to my cart."},
-        {"prompt": "Increment 'Pepperoni Pizza' count in the cart.", "prompt_for_task_generation": "Increment '<item_name>' count in the cart."},
-        {"prompt": "Set the quantity of 'California Roll' to 3.", "prompt_for_task_generation": "Set the quantity of '<item_name>' to <new_quantity>."},
-        {"prompt": "Increase the number of 'Margherita Pizza' in my order.", "prompt_for_task_generation": "Increase the number of '<item_name>' in my order."},
+        {"prompt": "Increase the quantity of 'Margherita Pizza' to 2.", "prompt_for_task_generation": "Increase the quantity of 'Margherita Pizza' to 2."},
+        {"prompt": "Add one more 'Salmon Nigiri' to my cart.", "prompt_for_task_generation": "Add one more 'Salmon Nigiri' to my cart."},
+        {"prompt": "Increment 'Pepperoni Pizza' count in the cart.", "prompt_for_task_generation": "Increment 'Pepperoni Pizza' count in the cart."},
+        {"prompt": "Set the quantity of 'California Roll' to 3.", "prompt_for_task_generation": "Set the quantity of 'California Roll' to 3."},
+        {"prompt": "Increase the number of 'Margherita Pizza' in my order.", "prompt_for_task_generation": "Increase the number of 'Margherita Pizza' in my order."},
     ],
 )
 
@@ -94,11 +97,11 @@ ITEM_INCREMENTED_USE_CASE = UseCase(
 #     event_source_code=ItemDecrementedEvent.get_source_code_of_class(),
 #     constraints_generator=None,
 #     examples=[
-#         {"prompt": "Decrease the quantity of 'Pepperoni Pizza' to 1.", "prompt_for_task_generation": "Decrease the quantity of '<item_name>' to <new_quantity>."},
-#         {"prompt": "Remove one 'Salmon Nigiri' from my cart.", "prompt_for_task_generation": "Remove one '<item_name>' from my cart."},
-#         {"prompt": "Decrement 'California Roll' count in the cart.", "prompt_for_task_generation": "Decrement '<item_name>' count in the cart."},
-#         {"prompt": "Set the quantity of 'Margherita Pizza' to 0.", "prompt_for_task_generation": "Set the quantity of '<item_name>' to <new_quantity>."},
-#         {"prompt": "Reduce the number of 'Pepperoni Pizza' in my order.", "prompt_for_task_generation": "Reduce the number of '<item_name>' in my order."},
+#         {"prompt": "Decrease the quantity of 'Pepperoni Pizza' to 1.", "prompt_for_task_generation": "Decrease the quantity of 'Pepperoni Pizza' to 1."},
+#         {"prompt": "Remove one 'Salmon Nigiri' from my cart.", "prompt_for_task_generation": "Remove one 'Salmon Nigiri' from my cart."},
+#         {"prompt": "Decrement 'California Roll' count in the cart.", "prompt_for_task_generation": "Decrement 'California Roll' count in the cart."},
+#         {"prompt": "Set the quantity of 'Margherita Pizza' to 0.", "prompt_for_task_generation": "Set the quantity of 'Margherita Pizza' to 0."},
+#         {"prompt": "Reduce the number of 'Pepperoni Pizza' in my order.", "prompt_for_task_generation": "Reduce the number of 'Pepperoni Pizza' in my order."},
 #     ],
 # )
 
@@ -109,11 +112,11 @@ ADD_TO_CART_USE_CASE = UseCase(
     event_source_code=AddToCartEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_constraints,
     examples=[
-        {"prompt": "Add 'Margherita Pizza' (Large) to my cart.", "prompt_for_task_generation": "Add '<item_name>' (<size>) to my cart."},
-        {"prompt": "Add 'Salmon Nigiri' with no modifications.", "prompt_for_task_generation": "Add '<item_name>' with no modifications."},
-        {"prompt": "Add two 'Pepperoni Pizza' (Medium) with 'No Sauce' option.", "prompt_for_task_generation": "Add <quantity> '<item_name>' (<size>) with '<option>' option."},
-        {"prompt": "Add 'California Roll' and set quantity to 3.", "prompt_for_task_generation": "Add '<item_name>' and set quantity to <quantity>."},
-        {"prompt": "Add 'Margherita Pizza' (Small) with 'No Cheese' and 'No Basil'.", "prompt_for_task_generation": "Add '<item_name>' (<size>) with '<option1>' and '<option2>'."},
+        {"prompt": "Add 'Margherita Pizza' (Large) to my cart.", "prompt_for_task_generation": "Add 'Margherita Pizza' (Large) to my cart."},
+        {"prompt": "Add 'Salmon Nigiri' with no modifications.", "prompt_for_task_generation": "Add 'Salmon Nigiri' with no modifications."},
+        {"prompt": "Add two 'Pepperoni Pizza' (Medium) with 'No Sauce' option.", "prompt_for_task_generation": "Add two 'Pepperoni Pizza' (Medium) with 'No Sauce' option."},
+        {"prompt": "Add 'California Roll' and set quantity to 3.", "prompt_for_task_generation": "Add 'California Roll' and set quantity to 3."},
+        {"prompt": "Add 'Margherita Pizza' (Small) with 'No Cheese' and 'No Basil'.", "prompt_for_task_generation": "Add 'Margherita Pizza' (Small) with 'No Cheese' and 'No Basil'."},
     ],
 )
 
@@ -124,11 +127,11 @@ OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
     event_source_code=OpenCheckoutPageEvent.get_source_code_of_class(),
     constraints_generator=False,
     examples=[
-        {"prompt": "Go to the checkout page with 3 items in the cart.", "prompt_for_task_generation": "Go to the checkout page with <item_count> items in the cart."},
-        {"prompt": "Open checkout to review 'Margherita Pizza' and 'California Roll'.", "prompt_for_task_generation": "Open checkout to review '<item1>' and '<item2>'."},
+        {"prompt": "Go to the checkout page with 3 items in the cart.", "prompt_for_task_generation": "Go to the checkout page with 3 items in the cart."},
+        {"prompt": "Open checkout to review 'Margherita Pizza' and 'California Roll'.", "prompt_for_task_generation": "Open checkout to review 'Margherita Pizza' and 'California Roll'."},
         {"prompt": "Proceed to checkout with all current items.", "prompt_for_task_generation": "Proceed to checkout with all current items."},
-        {"prompt": "Open the checkout page after adding 'Pepperoni Pizza'.", "prompt_for_task_generation": "Open the checkout page after adding '<item_name>'."},
-        {"prompt": "Go to checkout with a total of 2 items.", "prompt_for_task_generation": "Go to checkout with a total of <item_count> items."},
+        {"prompt": "Open the checkout page after adding 'Pepperoni Pizza'.", "prompt_for_task_generation": "Open the checkout page after adding 'Pepperoni Pizza'."},
+        {"prompt": "Go to checkout with a total of 2 items.", "prompt_for_task_generation": "Go to checkout with a total of 2 items."},
     ],
 )
 
@@ -139,11 +142,11 @@ DROPOFF_PREFERENCE_USE_CASE = UseCase(
     event_source_code=DropoffPreferenceEvent.get_source_code_of_class(),
     constraints_generator=generate_dropoff_option_constraints,
     examples=[
-        {"prompt": "Set dropoff preference to 'Leave at door'.", "prompt_for_task_generation": "Set dropoff preference to '<preference>'."},
-        {"prompt": "Choose 'Hand to me' as the dropoff option.", "prompt_for_task_generation": "Choose '<preference>' as the dropoff option."},
-        {"prompt": "Select 'Ring bell' for delivery dropoff.", "prompt_for_task_generation": "Select '<preference>' for delivery dropoff."},
-        {"prompt": "Set my delivery dropoff to 'Call on arrival'.", "prompt_for_task_generation": "Set my delivery dropoff to '<preference>'."},
-        {"prompt": "Change dropoff preference to 'Front desk'.", "prompt_for_task_generation": "Change dropoff preference to '<preference>'."},
+        {"prompt": "Set dropoff preference to 'Leave at door'.", "prompt_for_task_generation": "Set dropoff preference to 'Leave at door'."},
+        {"prompt": "Choose 'Hand to me' as the dropoff option.", "prompt_for_task_generation": "Choose 'Hand to me' as the dropoff option."},
+        {"prompt": "Select 'Ring bell' for delivery dropoff.", "prompt_for_task_generation": "Select 'Ring bell' for delivery dropoff."},
+        {"prompt": "Set my delivery dropoff to 'Call on arrival'.", "prompt_for_task_generation": "Set my delivery dropoff to 'Call on arrival'."},
+        {"prompt": "Change dropoff preference to 'Front desk'.", "prompt_for_task_generation": "Change dropoff preference to 'Front desk'."},
     ],
 )
 
@@ -154,11 +157,11 @@ PLACE_ORDER_USE_CASE = UseCase(
     event_source_code=PlaceOrderEvent.get_source_code_of_class(),
     constraints_generator=generate_place_order_constraints,
     examples=[
-        {"prompt": "Place an order for 'Pizza Palace' to be delivered to 123 Main St.", "prompt_for_task_generation": "Place an order for '<restaurant_name>' to be delivered to <address>."},
-        {"prompt": "Order 'Sushi World' for pickup at 5pm.", "prompt_for_task_generation": "Order '<restaurant_name>' for pickup at <time>."},
-        {"prompt": "Order 'Pepperoni Pizza' and 'California Roll' for delivery.", "prompt_for_task_generation": "Order '<item1>' and '<item2>' for delivery."},
-        {"prompt": "Place an order with the dropoff preference 'Leave at door'.", "prompt_for_task_generation": "Place an order with the dropoff preference '<preference>'."},
-        {"prompt": "Order all items in my cart and pay by card.", "prompt_for_task_generation": "Order all items in my cart and pay by <payment_method>."},
+        {"prompt": "Place an order for 'Pizza Palace' to be delivered to 123 Main St.", "prompt_for_task_generation": "Place an order for 'Pizza Palace' to be delivered to 123 Main St."},
+        {"prompt": "Order 'Sushi World' for pickup at 5pm.", "prompt_for_task_generation": "Order 'Sushi World' for pickup at 5pm."},
+        {"prompt": "Order 'Pepperoni Pizza' and 'California Roll' for delivery.", "prompt_for_task_generation": "Order 'Pepperoni Pizza' and 'California Roll' for delivery."},
+        {"prompt": "Place an order with the dropoff preference 'Leave at door'.", "prompt_for_task_generation": "Place an order with the dropoff preference 'Leave at door'."},
+        {"prompt": "Order all items in my cart and pay by card.", "prompt_for_task_generation": "Order all items in my cart and pay by card."},
     ],
 )
 
@@ -172,7 +175,7 @@ PLACE_ORDER_USE_CASE = UseCase(
 #         {"prompt": "Switch to pickup mode for my order.", "prompt_for_task_generation": "Switch to pickup mode for my order."},
 #         {"prompt": "Select pickup instead of delivery.", "prompt_for_task_generation": "Select pickup instead of delivery."},
 #         {"prompt": "Change order mode to pickup.", "prompt_for_task_generation": "Change order mode to pickup."},
-#         {"prompt": "Choose pickup for 'Pizza Palace'.", "prompt_for_task_generation": "Choose pickup for '<restaurant_name>'."},
+#         {"prompt": "Choose pickup for 'Pizza Palace'.", "prompt_for_task_generation": "Choose pickup for 'Pizza Palace'."},
 #         {"prompt": "Set my order to be picked up at the restaurant.", "prompt_for_task_generation": "Set my order to be picked up at the restaurant."},
 #     ],
 # )
@@ -199,11 +202,11 @@ DELETE_REVIEW_USE_CASE = UseCase(
     event_source_code=DeleteReviewEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
     examples=[
-        {"prompt": "Delete my review for 'Pizza Palace' written on 2025-06-02.", "prompt_for_task_generation": "Delete my review for '<restaurant_name>' written on <date>."},
-        {"prompt": "Remove the review I wrote with a rating of 4.", "prompt_for_task_generation": "Remove the review I wrote with a rating of <rating>."},
-        {"prompt": "Delete my comment on 'Sushi World'.", "prompt_for_task_generation": "Delete my comment on '<restaurant_name>'."},
-        {"prompt": "Remove my review from 2025-05-30.", "prompt_for_task_generation": "Remove my review from <date>."},
-        {"prompt": "Delete the review I wrote as 'Marco R.'.", "prompt_for_task_generation": "Delete the review I wrote as '<author_name>'."},
+        {"prompt": "Delete my review for 'Pizza Palace' written on 2025-06-02.", "prompt_for_task_generation": "Delete my review for 'Pizza Palace' written on 2025-06-02."},
+        {"prompt": "Remove the review I wrote with a rating of 4.", "prompt_for_task_generation": "Remove the review I wrote with a rating of 4."},
+        {"prompt": "Delete my comment on 'Sushi World'.", "prompt_for_task_generation": "Delete my comment on 'Sushi World'."},
+        {"prompt": "Remove my review from 2025-05-30.", "prompt_for_task_generation": "Remove my review from 2025-05-30."},
+        {"prompt": "Delete the review I wrote as 'Marco R.'.", "prompt_for_task_generation": "Delete the review I wrote as 'Marco R.'."},
     ],
 )
 
@@ -214,8 +217,8 @@ BACK_TO_ALL_RESTAURANTS_USE_CASE = UseCase(
     event_source_code=BackToAllRestaurantsEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
     examples=[
-        {"prompt": "Go back to the list of all restaurants from 'Pizza Palace'.", "prompt_for_task_generation": "Go back to the list of all restaurants from '<from_restaurant_name>'."},
-        {"prompt": "Return to all restaurants after viewing 'Sushi World'.", "prompt_for_task_generation": "Return to all restaurants after viewing '<from_restaurant_name>'."},
+        {"prompt": "Go back to the list of all restaurants from 'Pizza Palace'.", "prompt_for_task_generation": "Go back to the list of all restaurants from 'Pizza Palace'."},
+        {"prompt": "Return to all restaurants after viewing 'Sushi World'.", "prompt_for_task_generation": "Return to all restaurants after viewing 'Sushi World'."},
         {"prompt": "Navigate back to all restaurants.", "prompt_for_task_generation": "Navigate back to all restaurants."},
         {"prompt": "Back to the main restaurant list.", "prompt_for_task_generation": "Back to the main restaurant list."},
         {"prompt": "Go to all restaurants from any restaurant page.", "prompt_for_task_generation": "Go to all restaurants from any restaurant page."},
@@ -229,11 +232,11 @@ ADDRESS_ADDED_USE_CASE = UseCase(
     event_source_code=AddressAddedEvent.get_source_code_of_class(),
     constraints_generator=generate_address_added_constraints,
     examples=[
-        {"prompt": "Add a new delivery address: 456 Oak St.", "prompt_for_task_generation": "Add a new delivery address: <address>."},
-        {"prompt": "Set my pickup address to 789 Pine Ave.", "prompt_for_task_generation": "Set my pickup address to <address>."},
+        {"prompt": "Add a new delivery address: 456 Oak St.", "prompt_for_task_generation": "Add a new delivery address: 456 Oak St."},
+        {"prompt": "Set my pickup address to 789 Pine Ave.", "prompt_for_task_generation": "Set my pickup address to 789 Pine Ave."},
         {"prompt": "Add an address for delivery mode.", "prompt_for_task_generation": "Add an address for delivery mode."},
         {"prompt": "Add a new address for pickup.", "prompt_for_task_generation": "Add a new address for pickup."},
-        {"prompt": "Save 321 Maple Rd as my delivery address.", "prompt_for_task_generation": "Save <address> as my delivery address."},
+        {"prompt": "Save 321 Maple Rd as my delivery address.", "prompt_for_task_generation": "Save 321 Maple Rd as my delivery address."},
     ],
 )
 
@@ -247,7 +250,7 @@ ADDRESS_ADDED_USE_CASE = UseCase(
 #         {"prompt": "Switch to delivery mode for my order.", "prompt_for_task_generation": "Switch to delivery mode for my order."},
 #         {"prompt": "Select delivery instead of pickup.", "prompt_for_task_generation": "Select delivery instead of pickup."},
 #         {"prompt": "Change order mode to delivery.", "prompt_for_task_generation": "Change order mode to delivery."},
-#         {"prompt": "Choose delivery for 'Sushi World'.", "prompt_for_task_generation": "Choose delivery for '<restaurant_name>'."},
+#         {"prompt": "Choose delivery for 'Sushi World'.", "prompt_for_task_generation": "Choose delivery for 'Sushi World'."},
 #         {"prompt": "Set my order to be delivered to my address.", "prompt_for_task_generation": "Set my order to be delivered to my address."},
 #     ],
 # )
