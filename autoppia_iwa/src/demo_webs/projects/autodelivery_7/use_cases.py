@@ -125,7 +125,7 @@ OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
     description="The user opens the checkout page to review their order.",
     event=OpenCheckoutPageEvent,
     event_source_code=OpenCheckoutPageEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    constraints_generator=generate_add_to_cart_constraints,
     examples=[
         {"prompt": "Go to the checkout page with 3 items in the cart.", "prompt_for_task_generation": "Go to the checkout page with 3 items in the cart."},
         {"prompt": "Open checkout to review 'Margherita Pizza' and 'California Roll'.", "prompt_for_task_generation": "Open checkout to review 'Margherita Pizza' and 'California Roll'."},
