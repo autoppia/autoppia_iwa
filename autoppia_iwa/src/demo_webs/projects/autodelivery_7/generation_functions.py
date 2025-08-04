@@ -319,7 +319,7 @@ def generate_address_added_constraints() -> list[dict]:
     add_to_cart_constraint = generate_add_to_cart_constraints()
 
     field = "address"
-    operator = random.choice(FIELD_OPERATORS_ADDRESS_ADDED_MAP[field])
+    operator = ComparisonOperator(random.choice(FIELD_OPERATORS_ADDRESS_ADDED_MAP[field]))
     field_value = random.choice(ADDRESSES)
     dataset = _get_address_dataset()
     value = _generate_constraint_value(operator, field_value, field, dataset)

@@ -263,35 +263,36 @@ class CheckoutItem(BaseModel):
 
 class OpenCheckoutPageEvent(Event, BaseEventValidator):
     event_name: str = "OPEN_CHECKOUT_PAGE"
-    # itemCount: int
-    # items: list[CheckoutItem]
+    itemCount: int
+    items: list[CheckoutItem]
 
     class ValidationCriteria(BaseModel):
-        pass
-        # itemCount: int | CriterionValue | None = None
-        # items: list | CriterionValue | None = None
+        # pass
+        itemCount: int | CriterionValue | None = None
+        items: list | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        # return all(
-        #     [
-        #         self._validate_field(self.itemCount, criteria.itemCount),
-        #         self._validate_field(self.items, criteria.items),
-        #     ]
-        # )
+        return all(
+            [
+                self._validate_field(self.itemCount, criteria.itemCount),
+                self._validate_field(self.items, criteria.items),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "OpenCheckoutPageEvent":
         base = Event.parse(backend_event)
-        # items = [CheckoutItem(**item) for item in data.get("items", [])]
+        data = backend_event.data
+        items = [CheckoutItem(**item) for item in data.get("items", [])]
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            # itemCount=data.get("itemCount", 0),
-            # items=items,
+            itemCount=data.get("itemCount", 0),
+            items=items,
         )
 
 
@@ -326,17 +327,18 @@ class OrderItem(BaseModel):
     quantity: int
 
 
-class PlaceOrderEvent(Event, BaseEventValidator, DropoffPreferenceEvent):
+class PlaceOrderEvent(Event, BaseEventValidator):
     event_name: str = "PLACE_ORDER"
     username: str
     phone: str
     address: str
     # mode: str
     # deliveryTime: str
+    delivery_preference: str
     items: list[OrderItem]
     total: float
 
-    class ValidationCriteria(DropoffPreferenceEvent.ValidationCriteria):
+    class ValidationCriteria(BaseModel):
         username: str | CriterionValue | None = None
         phone: str | CriterionValue | None = None
         address: str | CriterionValue | None = None
@@ -344,6 +346,7 @@ class PlaceOrderEvent(Event, BaseEventValidator, DropoffPreferenceEvent):
         item: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         quantity: int | CriterionValue | None = None
+        delivery_preference: str | CriterionValue | None = None
         # deliveryTime: str | CriterionValue | None = None
         total: float | CriterionValue | None = None
 
@@ -355,11 +358,11 @@ class PlaceOrderEvent(Event, BaseEventValidator, DropoffPreferenceEvent):
                 self._validate_field(self.username, criteria.username),
                 self._validate_field(self.phone, criteria.phone),
                 self._validate_field(self.address, criteria.address),
-                self._validate_field(self.mode, criteria.mode),
+                # self._validate_field(self.mode, criteria.mode),
                 # self._validate_field(self.deliveryTime, criteria.deliveryTime),
                 # self._validate_field(self.total, criteria.total),
+                self._validate_field(self.delivery_preference, criteria.delivery_preference),
                 any(i for i in self.items if (self._validate_field(i.name, criteria.item) and self._validate_field(i.price, criteria.price and self._validate_field(i.quantity, criteria.quantity)))),
-                DropoffPreferenceEvent._validate_criteria(self, criteria),
             ]
         )
 
@@ -376,10 +379,10 @@ class PlaceOrderEvent(Event, BaseEventValidator, DropoffPreferenceEvent):
             username=data.get("name", ""),
             phone=data.get("phone", ""),
             address=data.get("address", ""),
-            mode=data.get("mode", ""),
+            # mode=data.get("mode", ""),
             # deliveryTime=data.get("deliveryTime", ""),
             # dropoff=data.get("dropoff", ""),
-            delivery_preferences=data.get("dropoff", ""),
+            delivery_preference=data.get("dropoff", ""),
             items=items,
             total=data.get("total", 0.0),
         )
@@ -509,14 +512,28 @@ class BackToAllRestaurantsEvent(Event, BaseEventValidator):
         )
 
 
-class AddressAddedEvent(Event, BaseEventValidator, AddToCartEvent):
+class AddressAddedEvent(Event, BaseEventValidator):
     event_name: str = "ADDRESS_ADDED"
     address: str
     mode: str
+    item: str
+    price: float
+    size: str
+    restaurant: str
+    preferences: str
+    quantity: int
+    totalPrice: float
 
-    class ValidationCriteria(AddToCartEvent.ValidationCriteria):
+    class ValidationCriteria(BaseModel):
         address: str | CriterionValue | None = None
         mode: str | CriterionValue | None = None
+        item: str | CriterionValue | None = None
+        price: float | CriterionValue | None = None
+        size: str | CriterionValue | None = None
+        restaurant: str | CriterionValue | None = None
+        preferences: str | CriterionValue | None = None
+        quantity: int | CriterionValue | None = None
+        totalPrice: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -525,7 +542,13 @@ class AddressAddedEvent(Event, BaseEventValidator, AddToCartEvent):
             [
                 self._validate_field(self.address, criteria.address),
                 self._validate_field(self.mode, criteria.mode),
-                AddToCartEvent._validate_criteria(self, criteria),
+                self._validate_field(self.item, criteria.item),
+                self._validate_field(self.price, criteria.price),
+                self._validate_field(self.size, criteria.size),
+                self._validate_field(self.restaurant, criteria.restaurant),
+                self._validate_field(self.preferences, criteria.preferences),
+                self._validate_field(self.quantity, criteria.quantity),
+                self._validate_field(self.totalPrice, criteria.totalPrice),
             ]
         )
 
@@ -533,7 +556,6 @@ class AddressAddedEvent(Event, BaseEventValidator, AddToCartEvent):
     def parse(cls, backend_event: BackendEvent) -> "AddressAddedEvent":
         base = Event.parse(backend_event)
         data = backend_event.data
-        cart_data = AddToCartEvent.parse(backend_event)
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
@@ -541,7 +563,13 @@ class AddressAddedEvent(Event, BaseEventValidator, AddToCartEvent):
             user_id=base.user_id,
             address=data.get("address", ""),
             mode=data.get("mode", ""),
-            **cart_data.model_dump(),
+            item=data.get("itemName", ""),
+            price=data.get("basePrice", 0.0),
+            size=data.get("size", ""),
+            restaurant=data.get("restaurantName", ""),
+            preferences=data.get("preferences", ""),
+            quantity=data.get("quantity", 0),
+            totalPrice=data.get("totalPrice", 0.0),
         )
 
 
