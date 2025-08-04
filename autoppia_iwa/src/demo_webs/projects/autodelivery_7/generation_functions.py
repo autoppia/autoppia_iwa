@@ -9,6 +9,7 @@ from .data import (
     FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP,
     FIELD_OPERATORS_ADDRESS_ADDED_MAP,
     FIELD_OPERATORS_DROPOFF_OPTION_MAP,
+    FIELD_OPERATORS_INCREMENT_QUANTITY_MAP,
     FIELD_OPERATORS_PLACE_ORDER_MAP,
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
@@ -212,7 +213,7 @@ def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
     model_constraints, _ = __generate_add_to_cart_modal_open_constraints()
     field = "quantity"
 
-    allowed_ops = FIELD_OPERATORS_ADD_TO_CART_MAP.get(field, [])
+    allowed_ops = FIELD_OPERATORS_INCREMENT_QUANTITY_MAP.get(field, [])
     if not allowed_ops:
         return []
     operator = ComparisonOperator(random.choice(allowed_ops))
