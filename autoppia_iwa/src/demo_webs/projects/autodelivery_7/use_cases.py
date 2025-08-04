@@ -42,12 +42,19 @@ SEARCH_RESTAURANT_USE_CASE = UseCase(
     ],
 )
 
+VIEW_RESTAURANT_ADDITIONAL_PROMPT_INFO = """
+"Critical requirement:
+1. The request must start with one of the following: "
+    "View the details...", "Show me the details...", "Open the restaurant page for...",
+    "View the restaurant that has...", or "Show details for the featured restaurant.""".strip()
+
 VIEW_RESTAURANT_USE_CASE = UseCase(
     name="VIEW_RESTAURANT",
     description="The user views the details of a restaurant.",
     event=ViewRestaurantEvent,
     event_source_code=ViewRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
+    additional_prompt_info=VIEW_RESTAURANT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "View details for 'Pizza Palace'.", "prompt_for_task_generation": "View details for 'Pizza Palace'."},
         {"prompt": "Show me the menu of the restaurant with cuisine 'Japanese'.", "prompt_for_task_generation": "Show me the menu of the restaurant with cuisine 'Japanese'."},

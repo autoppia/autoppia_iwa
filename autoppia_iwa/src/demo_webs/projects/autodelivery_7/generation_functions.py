@@ -102,7 +102,7 @@ def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
 
 def __generate_view_restaurant_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list = []
-    fields = ["name", "cuisine", "rating"]
+    fields = ["name", "cuisine", "rating", "description"]
     num_constraints = random.randint(2, len(fields))
     selected_fields = random.sample(fields, num_constraints)
     restaurant = random.choice(RESTAURANTS_DATA)
