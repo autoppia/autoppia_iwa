@@ -66,7 +66,7 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
             # id=data.get("id", ""),
             name=data.get("name", ""),
             cuisine=data.get("cuisine", ""),
-            rating=data.get("rating", 0.0),
+            rating=float(data.get("rating", 0.0)),
         )
 
 
