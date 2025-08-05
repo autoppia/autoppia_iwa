@@ -113,28 +113,14 @@ ITEM_INCREMENTED_USE_CASE = UseCase(
     ],
 )
 
-# ITEM_DECREMENTED_USE_CASE = UseCase(
-#     name="ITEM_DECREMENTED",
-#     description="The user decreases the quantity of a menu item in the cart.",
-#     event=ItemDecrementedEvent,
-#     event_source_code=ItemDecrementedEvent.get_source_code_of_class(),
-#     constraints_generator=None,
-#     examples=[
-#         {"prompt": "Decrease the quantity of 'Pepperoni Pizza' to 1.", "prompt_for_task_generation": "Decrease the quantity of 'Pepperoni Pizza' to 1."},
-#         {"prompt": "Remove one 'Salmon Nigiri' from my cart.", "prompt_for_task_generation": "Remove one 'Salmon Nigiri' from my cart."},
-#         {"prompt": "Decrement 'California Roll' count in the cart.", "prompt_for_task_generation": "Decrement 'California Roll' count in the cart."},
-#         {"prompt": "Set the quantity of 'Margherita Pizza' to 0.", "prompt_for_task_generation": "Set the quantity of 'Margherita Pizza' to 0."},
-#         {"prompt": "Reduce the number of 'Pepperoni Pizza' in my order.", "prompt_for_task_generation": "Reduce the number of 'Pepperoni Pizza' in my order."},
-#     ],
-# )
 ADD_TO_CART_ADDITIONAL_PROMPT_INFO = """
 Critical requirements:
-1. The request must start with one of the following: "Increase the quantity of...", "Add one more...", "Increment...", "Set the quantity of...", or "Increase the number of...".
+1. The request must start with one of the following: "Add to cart ...".
 2. Do not mention a single constraint more than once in the request.
 """
 
 ADD_TO_CART_USE_CASE = UseCase(
-    name="ADD_TO_CART",
+    name="ADD_TO_CART_MENU_ITEM",
     description="The user adds a menu item to the cart.",
     event=AddToCartEvent,
     event_source_code=AddToCartEvent.get_source_code_of_class(),
