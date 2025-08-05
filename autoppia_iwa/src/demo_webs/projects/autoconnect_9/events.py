@@ -147,14 +147,14 @@ class LikePostEvent(Event, BaseEventValidator):
     event_name: str = "LIKE_POST"
     # post_id: str
     user_name: str
-    action: str
+    # action: str
     poster_name: str
     poster_content: str
 
     class ValidationCriteria(BaseModel):
-        post_id: str | CriterionValue | None = None
+        # post_id: str | CriterionValue | None = None
         user_name: str | CriterionValue | None = None
-        action: str | CriterionValue | None = None
+        # action: str | CriterionValue | None = None
         poster_name: str | CriterionValue | None = None
         poster_content: str | CriterionValue | None = None
 
@@ -181,7 +181,7 @@ class LikePostEvent(Event, BaseEventValidator):
             user_id=backend_event.user_id,
             # post_id=data.get("postId", ""),
             user_name=data.get("userName", ""),
-            action=data.get("action", ""),
+            # action=data.get("action", ""),
             poster_name=data.get("posterName", ""),
             poster_content=data.get("posterContent", ""),
         )
@@ -191,7 +191,7 @@ class LikePostEvent(Event, BaseEventValidator):
 class CommentOnPostEvent(Event, BaseEventValidator):
     event_name: str = "COMMENT_ON_POST"
     # post_id: str
-    comment_id: str
+    # comment_id: str
     user_name: str
     comment_text: str
     poster_name: str

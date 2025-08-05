@@ -6,6 +6,7 @@ from typing import Any
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
+    COMPANIES,
     FIELD_OPERATORS_APPLY_FOR_JOB_MAP,
     FIELD_OPERATORS_COMMENT_ON_POST_MAP,
     FIELD_OPERATORS_CONNECT_WITH_USER_MAP,
@@ -16,7 +17,6 @@ from .data import (
     FIELD_OPERATORS_SEARCH_USERS_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
     POSTS_DATA_MODIFIED,
-    companies,
     mockJobs,
     mockUsers,
 )
@@ -145,6 +145,7 @@ def _generate_constraints(dataset: list[dict], field_operators: dict, field_map:
 
         field_value = None
         if isinstance(new_field, list):
+            random.shuffle(new_field)
             for f in new_field:
                 field_value = sample_data.get(f)
                 new_field = f
@@ -300,6 +301,18 @@ def generate_post_status_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
+def generate_follow_page_constraints() -> list[dict[str, Any]]:
+    """
+    Generates constraints for following a company page based on the provided user profile data.
+    """
+    dataset = COMPANIES
+    field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
+    field_map = {"company": "name"}
+    all_constraints = _generate_constraints(dataset, field_operators, field_map)
+
+    return all_constraints
+
+
 def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
     dataset = mockJobs
 
@@ -319,19 +332,7 @@ def generate_search_users_constraints() -> list[dict[str, Any]]:
     """
     dataset = mockUsers
     field_operators = FIELD_OPERATORS_SEARCH_USERS_MAP
-    field_map = {"query": "name"}
-    all_constraints = _generate_constraints(dataset, field_operators, field_map)
-
-    return all_constraints
-
-
-def generate_follow_page_constraints() -> list[dict[str, Any]]:
-    """
-    Generates constraints for following a company page based on the provided user profile data.
-    """
-    dataset = companies
-    field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
-    field_map = {"company": "name"}
+    field_map = {"query": ["name", "title"]}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
 
     return all_constraints
