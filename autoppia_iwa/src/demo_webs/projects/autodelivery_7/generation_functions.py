@@ -331,7 +331,7 @@ def generate_add_to_cart_constraints() -> list[dict]:
 
 
 def generate_dropoff_option_constraints() -> list[dict]:
-    constraints_list = []
+    constraints_list = __generate_add_to_cart_options_constraints()
     dropoffOptions = ["Leave it at my door", "Hand it to me", "Meet outside", "Meet in the lobby", "Call upon arrival", "Text when arriving"]
 
     field = "delivery_preference"
