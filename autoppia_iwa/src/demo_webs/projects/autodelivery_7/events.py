@@ -441,13 +441,13 @@ class EmptyCartEvent(Event, BaseEventValidator):
 class DeleteReviewEvent(Event, BaseEventValidator):
     event_name: str = "DELETE_REVIEW"
     author: str
-    rating: int
+    rating: float
     comment: str
     date: str
 
     class ValidationCriteria(BaseModel):
         author: str | CriterionValue | None = None
-        rating: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
         comment: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
 
@@ -473,7 +473,7 @@ class DeleteReviewEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             author=data.get("author", ""),
-            rating=data.get("rating", 0),
+            rating=float(data.get("rating", 0)),
             comment=data.get("comment", ""),
             date=data.get("date", ""),
         )

@@ -102,6 +102,7 @@ ITEM_INCREMENTED_USE_CASE = UseCase(
     event=ItemIncrementedEvent,
     event_source_code=ItemIncrementedEvent.get_source_code_of_class(),
     constraints_generator=generate_increment_item_restaurant_constraints,
+    additional_prompt_info=ITEM_INCREMENTED_EVENT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "Increase the quantity of 'Margherita Pizza' to 2.", "prompt_for_task_generation": "Increase the quantity of 'Margherita Pizza' to 2."},
         {"prompt": "Add one more 'Salmon Nigiri' to my cart.", "prompt_for_task_generation": "Add one more 'Salmon Nigiri' to my cart."},
