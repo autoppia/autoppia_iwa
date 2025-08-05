@@ -127,6 +127,11 @@ ITEM_INCREMENTED_USE_CASE = UseCase(
 #         {"prompt": "Reduce the number of 'Pepperoni Pizza' in my order.", "prompt_for_task_generation": "Reduce the number of 'Pepperoni Pizza' in my order."},
 #     ],
 # )
+ADD_TO_CART_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Increase the quantity of...", "Add one more...", "Increment...", "Set the quantity of...", or "Increase the number of...".
+2. Do not mention a single constraint more than once in the request.
+"""
 
 ADD_TO_CART_USE_CASE = UseCase(
     name="ADD_TO_CART",
@@ -134,6 +139,7 @@ ADD_TO_CART_USE_CASE = UseCase(
     event=AddToCartEvent,
     event_source_code=AddToCartEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_constraints,
+    additional_prompt_info=ADD_TO_CART_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "Add 'Margherita Pizza' (Large) to my cart.", "prompt_for_task_generation": "Add 'Margherita Pizza' (Large) to my cart."},
         {"prompt": "Add 'Salmon Nigiri' with no modifications.", "prompt_for_task_generation": "Add 'Salmon Nigiri' with no modifications."},
