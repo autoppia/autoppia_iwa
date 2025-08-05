@@ -441,15 +441,23 @@ class EmptyCartEvent(Event, BaseEventValidator):
 class DeleteReviewEvent(Event, BaseEventValidator):
     event_name: str = "DELETE_REVIEW"
     author: str
-    rating: float
+    review_rating: float
     comment: str
     date: str
+    name: str
+    cuisine: str
+    rating: float
+    description: str
 
     class ValidationCriteria(BaseModel):
         author: str | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
+        review_rating: float | CriterionValue | None = None
         comment: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        description: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -460,6 +468,10 @@ class DeleteReviewEvent(Event, BaseEventValidator):
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.comment, criteria.comment),
                 self._validate_field(self.date, criteria.date),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.cuisine, criteria.cuisine),
+                self._validate_field(self.review_rating, criteria.review_rating),
+                self._validate_field(self.description, criteria.description),
             ]
         )
 
@@ -473,9 +485,13 @@ class DeleteReviewEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             author=data.get("author", ""),
-            rating=float(data.get("rating", 0)),
+            review_rating=float(data.get("rating", 0)),
             comment=data.get("comment", ""),
             date=data.get("date", ""),
+            name=data.get("restaurantName", ""),
+            cuisine=data.get("cuisine", ""),
+            rating=float(data.get("restaurantRating", 0.0)),
+            description=data.get("restaurantDescription", ""),
         )
 
 

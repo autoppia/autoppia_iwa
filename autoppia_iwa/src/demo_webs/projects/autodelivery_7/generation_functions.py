@@ -8,6 +8,7 @@ from .data import (
     FIELD_OPERATORS_ADD_TO_CART_MAP,
     FIELD_OPERATORS_ADD_TO_CART_MODAL_OPEN_MAP,
     FIELD_OPERATORS_ADDRESS_ADDED_MAP,
+    FIELD_OPERATORS_DELETE_REVIEW_MAP,
     FIELD_OPERATORS_DROPOFF_OPTION_MAP,
     FIELD_OPERATORS_INCREMENT_QUANTITY_MAP,
     FIELD_OPERATORS_PLACE_ORDER_MAP,
@@ -225,6 +226,52 @@ def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
 
 def generate_increment_item_restaurant_constraints() -> list[dict]:
     constraints_list = __generate_add_to_cart_options_constraints()
+    return constraints_list
+
+
+def __get_delete_review_fields(restaurants):
+    result = []
+    for r in restaurants:
+        base = {
+            "name": r.get("name"),
+            "cuisine": r.get("cuisine"),
+            "rating": r.get("rating"),
+            "description": r.get("description"),
+        }
+        for review in r.get("reviews", []):
+            entry = base.copy()
+            entry.update(
+                {
+                    "review_rating": review.get("rating"),
+                    "author": review.get("author"),
+                    "date": review.get("date"),
+                    "comment": review.get("comment"),
+                }
+            )
+            result.append(entry)
+    return result
+
+
+def generate_delete_review_constraints() -> list[dict]:
+    constraints_list, _ = __generate_view_restaurant_constraints()
+    delete_review_dict = __get_delete_review_fields(RESTAURANTS_DATA)
+
+    fields = ["author", "review_rating", "comment"]  # , "date"]
+    num_constraints = random.randint(1, len(fields))
+    selected_fields = random.sample(fields, num_constraints)
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_DELETE_REVIEW_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        field_values = [d[field] for d in delete_review_dict if field in d]
+        if not field_values:
+            continue
+        field_value = random.choice(field_values)
+        dataset = [{field: d[field]} for d in delete_review_dict if field in d]
+        value = _generate_constraint_value(operator, field_value, field, dataset)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
 

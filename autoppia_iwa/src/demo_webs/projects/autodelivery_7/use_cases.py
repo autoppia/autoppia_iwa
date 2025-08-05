@@ -20,6 +20,7 @@ from .generation_functions import (
     generate_add_to_cart_constraints,
     generate_add_to_cart_modal_open_constraints,
     generate_address_added_constraints,
+    generate_delete_review_constraints,
     generate_dropoff_option_constraints,
     generate_increment_item_restaurant_constraints,
     generate_place_order_constraints,
@@ -237,7 +238,7 @@ BACK_TO_ALL_RESTAURANTS_USE_CASE = UseCase(
     description="The user navigates back to the list of all restaurants.",
     event=BackToAllRestaurantsEvent,
     event_source_code=BackToAllRestaurantsEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_restaurant_constraints,
+    constraints_generator=generate_delete_review_constraints,
     examples=[
         {"prompt": "Go back to the list of all restaurants from 'Pizza Palace'.", "prompt_for_task_generation": "Go back to the list of all restaurants from 'Pizza Palace'."},
         {"prompt": "Return to all restaurants after viewing 'Sushi World'.", "prompt_for_task_generation": "Return to all restaurants after viewing 'Sushi World'."},
