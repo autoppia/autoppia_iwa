@@ -82,6 +82,20 @@ ADD_TO_CART_MODAL_OPEN_USE_CASE = UseCase(
     ],
 )
 
+ITEM_INCREMENTED_EVENT_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Increase the quantity of...", "Add one more...", "Increment...", "Set the quantity of...", or "Increase the number of...".
+2. Do not mention a single constraint more than once in the request.
+
+Correct examples:
+- Increase the quantity of 'Margherita Pizza' to 2 at a restaurant that equals 'Waffle Works'.
+- Add one more 'Salmon Nigiri' to my cart if the price is less than 8.53.
+- Set the quantity of 'California Roll' to 3 where the item is not equal to 'Classic Cheeseburger'.
+
+Incorrect examples:
+- Increase the quantity of 'Margherita Pizza' to 2 at a restaurant that equals 'Waffle Works' where the quantity is less than 8, the item is not equal to 'Classic Cheeseburger', and the price is less than 8.53. (Multiple constraints mentioned more than once)
+- Increase the quantity of 'Margherita Pizza' to 2. Add one more 'Margherita Pizza' to my cart. (Repeated intent)
+"""
 ITEM_INCREMENTED_USE_CASE = UseCase(
     name="ITEM_INCREMENTED",
     description="The user increases the quantity of a menu item in the cart.",
