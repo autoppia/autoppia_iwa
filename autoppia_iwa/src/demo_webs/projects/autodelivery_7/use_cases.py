@@ -135,12 +135,19 @@ ADD_TO_CART_USE_CASE = UseCase(
     ],
 )
 
+OPEN_CHECKOUT_PAGE_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Open checkout page after adding ...", "Add to cart ... and open checkout page.".
+2. Do not mention a single constraint more than once in the request.
+""".strip()
+
 OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
     name="OPEN_CHECKOUT_PAGE",
     description="The user opens the checkout page to review their order.",
     event=OpenCheckoutPageEvent,
     event_source_code=OpenCheckoutPageEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_constraints,
+    additional_prompt_info=OPEN_CHECKOUT_PAGE_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "Go to the checkout page with 3 items in the cart.", "prompt_for_task_generation": "Go to the checkout page with 3 items in the cart."},
         {"prompt": "Open checkout to review 'Margherita Pizza' and 'California Roll'.", "prompt_for_task_generation": "Open checkout to review 'Margherita Pizza' and 'California Roll'."},
