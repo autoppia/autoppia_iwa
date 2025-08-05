@@ -262,21 +262,21 @@ class OpenCheckoutPageEvent(Event, BaseEventValidator):
 class DropoffPreferenceEvent(Event, BaseEventValidator):
     event_name: str = "DROPOFF_PREFERENCE"
     delivery_preference: str
-    address: str
-    name: str
-    phone: str
-    mode: str
-    restaurant_name: str
+    # address: str
+    # name: str
+    # phone: str
+    # mode: str
+    restaurant: str
     items: list[dict]
     cart_total: float
 
     class ValidationCriteria(BaseModel):
         delivery_preference: str | CriterionValue | None = None
-        address: str | CriterionValue | None = None
-        name: str | CriterionValue | None = None
-        phone: str | CriterionValue | None = None
-        mode: str | CriterionValue | None = None
-        restaurant_name: str | CriterionValue | None = None
+        # address: str | CriterionValue | None = None
+        # name: str | CriterionValue | None = None
+        # phone: str | CriterionValue | None = None
+        # mode: str | CriterionValue | None = None
+        restaurant: str | CriterionValue | None = None
         items: list | CriterionValue | None = None
         cart_total: float | CriterionValue | None = None
 
@@ -286,11 +286,11 @@ class DropoffPreferenceEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.delivery_preference, criteria.delivery_preference),
-                self._validate_field(self.address, criteria.address),
-                self._validate_field(self.name, criteria.name),
-                self._validate_field(self.phone, criteria.phone),
-                self._validate_field(self.mode, criteria.mode),
-                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                # self._validate_field(self.address, criteria.address),
+                # self._validate_field(self.name, criteria.name),
+                # self._validate_field(self.phone, criteria.phone),
+                # self._validate_field(self.mode, criteria.mode),
+                self._validate_field(self.restaurant, criteria.restaurant),
                 self._validate_field(self.items, criteria.items),
                 self._validate_field(self.cart_total, criteria.cart_total),
             ]
@@ -306,11 +306,11 @@ class DropoffPreferenceEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             delivery_preference=data.get("selectedPreference", ""),
-            address=data.get("address", ""),
-            name=data.get("name", ""),
-            phone=data.get("phone", ""),
-            mode=data.get("mode", ""),
-            restaurant_name=data.get("restaurantName", ""),
+            # address=data.get("address", ""),
+            # name=data.get("name", ""),
+            # phone=data.get("phone", ""),
+            # mode=data.get("mode", ""),
+            restaurant=data.get("restaurantName", ""),
             items=data.get("items", []),
             cart_total=data.get("cartTotal", 0.0),
         )
