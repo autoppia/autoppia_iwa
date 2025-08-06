@@ -218,7 +218,6 @@ class AddToCartEvent(Event, BaseEventValidator):
 
 
 class CheckoutItem(BaseModel):
-    id: str
     name: str
     quantity: int
     price: float
@@ -226,21 +225,22 @@ class CheckoutItem(BaseModel):
 
 class OpenCheckoutPageEvent(Event, BaseEventValidator):
     event_name: str = "OPEN_CHECKOUT_PAGE"
-    itemCount: int
+    # itemCount: int
     items: list[CheckoutItem]
 
     class ValidationCriteria(BaseModel):
-        # pass
-        itemCount: int | CriterionValue | None = None
-        items: list | CriterionValue | None = None
+        # itemCount: int | CriterionValue | None = None
+        item: str | CriterionValue | None = None
+        quantity: int | CriterionValue | None = None
+        price: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.itemCount, criteria.itemCount),
-                self._validate_field(self.items, criteria.items),
+                # self._validate_field(self.itemCount, criteria.itemCount),
+                any(i for i in self.items if (self._validate_field(i.name, criteria.item) and self._validate_field(i.quantity, criteria.quantity) and self._validate_field(i.price, criteria.price))),
             ]
         )
 
@@ -254,7 +254,7 @@ class OpenCheckoutPageEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            itemCount=data.get("itemCount", 0),
+            # itemCount=data.get("itemCount", 0),
             items=items,
         )
 
