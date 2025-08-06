@@ -61,17 +61,34 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     }:
-        numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
-        if numeric_values:
-            base = random.choice(numeric_values)
-            delta = random.uniform(1, 3)
-            if operator == ComparisonOperator.GREATER_THAN:
-                return round(base - delta, 2)
-            elif operator == ComparisonOperator.LESS_THAN:
-                return round(base + delta, 2)
-            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                return round(base, 2)
+        base = field_value
 
+        if isinstance(base, int | float):
+            if field == "rating":
+                min_val, max_val = 0.0, 5.0
+                if operator == ComparisonOperator.GREATER_THAN:
+                    if base > min_val:
+                        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
+                        return round(random.uniform(min_dataset, max(base - 0.5, min_dataset)), 2)
+                    else:
+                        return min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
+                elif operator == ComparisonOperator.LESS_THAN:
+                    if base < max_val:
+                        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
+                        return round(random.uniform(min(base + 0.1, max_dataset), max_dataset), 2)
+                    else:
+                        return max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
+                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                    return round(base, 2)
+            else:
+                # Generic numeric logic
+                delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
+                if operator == ComparisonOperator.GREATER_THAN:
+                    return base - delta
+                elif operator == ComparisonOperator.LESS_THAN:
+                    return base + delta
+                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                    return base
     return value
 
 
