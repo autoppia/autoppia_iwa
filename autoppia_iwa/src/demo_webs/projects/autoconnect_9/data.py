@@ -703,22 +703,35 @@ FIELD_OPERATORS_POST_STATUS_MAP = {
     # "post_id": STRING_OPERATORS,
 }
 
+FIELD_OPERATORS_SEARCH_USERS_MAP = {
+    "query": STRING_OPERATORS,
+    # 'result_count': LOGICAL_OPERATORS,
+}
+
+FIELD_OPERATORS_FOLLOW_PAGE_MAP = {
+    "company": STRING_OPERATORS,
+    # 'action': STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_VIEW_JOB_MAP = {
+    # 'job_id': STRING_OPERATORS,
+    "job_title": STRING_OPERATORS,
+    "company": STRING_OPERATORS,
+    "location": STRING_OPERATORS,
+}
+
 FIELD_OPERATORS_APPLY_FOR_JOB_MAP = {
     "job_title": STRING_OPERATORS,
     "company": STRING_OPERATORS,
     "location": STRING_OPERATORS,
 }
 
-FIELD_OPERATORS_SEARCH_USERS_MAP = {
-    "query": STRING_OPERATORS,
-    # 'result_count': LOGICAL_OPERATORS,
-}
-
 FIELD_OPERATORS_SEARCH_JOBS_MAP = {
     "query": STRING_OPERATORS,
     # 'result_count': LOGICAL_OPERATORS,
-}
-FIELD_OPERATORS_FOLLOW_PAGE_MAP = {
-    "company": STRING_OPERATORS,
-    # 'action': STRING_OPERATORS,
+    "experience": [EQUALS, NOT_EQUALS],
+    "location": STRING_OPERATORS,
+    "remote": [EQUALS],
+    "salary": [EQUALS, NOT_EQUALS],
+    # "search": STRING_OPERATORS
 }

@@ -1,16 +1,6 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import (
-    ApplyForJobEvent,
-    CommentOnPostEvent,
-    ConnectWithUserEvent,
-    FollowPageEvent,
-    LikePostEvent,
-    PostStatusEvent,
-    SearchJobsEvent,
-    SearchUsersEvent,
-    ViewUserProfileEvent,
-)
+from .events import ApplyForJobEvent, CommentOnPostEvent, ConnectWithUserEvent, FollowPageEvent, LikePostEvent, PostStatusEvent, SearchJobsEvent, SearchUsersEvent, ViewJobEvent, ViewUserProfileEvent
 from .generation_functions import (
     generate_apply_for_job_constraints,
     generate_comment_on_post_constraints,
@@ -20,6 +10,7 @@ from .generation_functions import (
     generate_post_status_constraints,
     generate_search_jobs_constraints,
     generate_search_users_constraints,
+    generate_view_job_constraints,
     generate_view_user_profile_constraints,
 )
 
@@ -276,15 +267,37 @@ SEARCH_JOBS_USE_CASE = UseCase(
         },
     ],
 )
+VIEW_JOB_USE_CASE = UseCase(
+    name="VIEW_JOB",
+    description="The user views a job posting in detail.",
+    event=ViewJobEvent,
+    event_source_code=ViewJobEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_job_constraints,
+    examples=[
+        {
+            "prompt": "View the job posting for 'Senior Frontend Developer' at Tech Innovations.",
+            "prompt_for_task_generation": "View the job posting for 'Senior Frontend Developer' at Tech Innovations.",
+        },
+        {
+            "prompt": "Open the detailed job description for a remote Backend Engineer role.",
+            "prompt_for_task_generation": "Open the detailed job description for a remote Backend Engineer role.",
+        },
+        {
+            "prompt": "Check the job details for a Frontend Developer position located in San Francisco.",
+            "prompt_for_task_generation": "Check the job details for a Frontend Developer position located in San Francisco.",
+        },
+    ],
+)
 
 ALL_USE_CASES = [
     # VIEW_USER_PROFILE_USE_CASE,
     # CONNECT_WITH_USER_USE_CASE,
     # POST_STATUS_USE_CASE,
-    LIKE_POST_USE_CASE,
+    # LIKE_POST_USE_CASE,
     # COMMENT_ON_POST_USE_CASE,
     # SEARCH_USERS_USE_CASE,
     # FOLLOW_PAGE_USE_CASE,
+    # VIEW_JOB_USE_CASE
     # APPLY_FOR_JOB_USE_CASE,
-    # SEARCH_JOBS_USE_CASE,
+    SEARCH_JOBS_USE_CASE,
 ]

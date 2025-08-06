@@ -15,6 +15,7 @@ from .data import (
     FIELD_OPERATORS_POST_STATUS_MAP,
     FIELD_OPERATORS_SEARCH_JOBS_MAP,
     FIELD_OPERATORS_SEARCH_USERS_MAP,
+    FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
     POSTS_DATA_MODIFIED,
     mockJobs,
@@ -342,9 +343,22 @@ def generate_search_jobs_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for searching jobs based on the provided job data.
     """
+    # TODO fix filters constraints
     dataset = mockJobs
     field_operators = FIELD_OPERATORS_SEARCH_JOBS_MAP
     field_map = {"query": ["title", "company"]}
+    all_constraints = _generate_constraints(dataset, field_operators, field_map)
+
+    return all_constraints
+
+
+def generate_view_job_constraints() -> list[dict[str, Any]]:
+    """
+    Generates constraints for viewing a job based on the provided job data.
+    """
+    dataset = mockJobs
+    field_operators = FIELD_OPERATORS_VIEW_JOB_MAP
+    field_map = {"job_title": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
 
     return all_constraints
