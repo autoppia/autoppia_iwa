@@ -195,12 +195,37 @@ PLACE_ORDER_USE_CASE = UseCase(
     ],
 )
 
+EMPTY_CART_EVENT_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Empty my cart...", "Remove all items from the cart...", "Clear my shopping cart...", "Delete everything in my cart...", or "Start a new order by emptying the cart...".
+2. Do not mention a single constraint more than once in the request.
+
+Correct examples:
+- Empty my cart.
+- Remove all items from the cart.
+- Clear my shopping cart.
+- Delete everything in my cart.
+- Start a new order by emptying the cart.
+
+Incorrect examples:
+- Empty my cart and remove all items from the cart. (Repeated intent)
+- Clear my shopping cart where the quantity is less than 8 and the quantity is not equal to 2. (Multiple constraints on the same field)
+
+3. Pay attention to the constraints:
+Example:
+constraints: {'quantity': {'operator': 'less_than', 'value': 8}, 'item': {'operator': 'not_equals', 'value': 'Beef Pho'}, 'restaurant': {'operator': 'contains', 'value': 'P'}}
+Correct:
+"Empty my cart at a restaurant that contains 'P' where the item is not 'Beef Pho' and the quantity is less than 8."
+Incorrect:
+"Empty my cart where the quantity is less than 8 and the quantity is not equal to 2."
+"""
 EMPTY_CART_USE_CASE = UseCase(
     name="EMPTY_CART",
-    description="The user empties their cart.",
+    description="The user empties their cart after adding an item in cart.",
     event=EmptyCartEvent,
     event_source_code=EmptyCartEvent.get_source_code_of_class(),
-    constraints_generator=False,
+    constraints_generator=generate_increment_item_restaurant_constraints,
+    additional_prompt_info=EMPTY_CART_EVENT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "Empty my cart.", "prompt_for_task_generation": "Empty my cart."},
         {"prompt": "Remove all items from the cart.", "prompt_for_task_generation": "Remove all items from the cart."},

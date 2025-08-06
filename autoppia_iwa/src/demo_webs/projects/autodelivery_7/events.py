@@ -412,25 +412,54 @@ class PlaceOrderEvent(Event, BaseEventValidator):
 
 class EmptyCartEvent(Event, BaseEventValidator):
     event_name: str = "EMPTY_CART"
-    message: str
+    # itemId: str
+    item: str
+    price: float
+    quantity: int
+    # restaurantId: str
+    restaurant: str
+    # cartTotal: float
 
     class ValidationCriteria(BaseModel):
-        message: str | CriterionValue | None = None
+        # itemId: str | CriterionValue | None = None
+        item: str | CriterionValue | None = None
+        price: float | CriterionValue | None = None
+        quantity: int | CriterionValue | None = None
+        # restaurantId: str | CriterionValue | None = None
+        restaurant: str | CriterionValue | None = None
+        # cartTotal: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return self._validate_field(self.message, criteria.message)
+        return all(
+            [
+                # self._validate_field(self.itemId, criteria.itemId),
+                self._validate_field(self.item, criteria.item),
+                self._validate_field(self.price, criteria.price),
+                self._validate_field(self.quantity, criteria.quantity),
+                # self._validate_field(self.restaurantId, criteria.restaurantId),
+                self._validate_field(self.restaurant, criteria.restaurant),
+                # self._validate_field(self.cartTotal, criteria.cartTotal),
+            ]
+        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EmptyCartEvent":
         base = Event.parse(backend_event)
+        data = backend_event.data
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            message=backend_event.data.get("message", ""),
+            # itemId=data.get("itemId", ""),
+            item=data.get("itemName", ""),
+            price=data.get("price", 0.0),
+            quantity=data.get("quantity", 0),
+            # restaurantId=data.get("restaurantId", ""),
+            restaurant=data.get("restaurantName", ""),
+            # cartTotal=data.get("cartTotal", 0.0),
         )
 
 
