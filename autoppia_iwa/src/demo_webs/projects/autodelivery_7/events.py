@@ -6,7 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
 
 class SearchRestaurantEvent(Event, BaseEventValidator):
-    event_name: str = "SEARCH_RESTAURANT"
+    event_name: str = "SEARCH_DELIVERY_RESTAURANT"
     query: str
 
     class ValidationCriteria(BaseModel):
@@ -30,7 +30,7 @@ class SearchRestaurantEvent(Event, BaseEventValidator):
 
 
 class ViewRestaurantEvent(Event, BaseEventValidator):
-    event_name: str = "VIEW_RESTAURANT"
+    event_name: str = "VIEW_DELIVERY_RESTAURANT"
     # id: str
     name: str
     cuisine: str
@@ -627,8 +627,8 @@ EVENTS = [
     PlaceOrderEvent,
 ]
 BACKEND_EVENT_TYPES = {
-    "SEARCH_RESTAURANT": SearchRestaurantEvent,
-    "VIEW_RESTAURANT": ViewRestaurantEvent,
+    "SEARCH_DELIVERY_RESTAURANT": SearchRestaurantEvent,
+    "VIEW_DELIVERY_RESTAURANT": ViewRestaurantEvent,
     "ADD_TO_CART_MODAL_OPEN": AddToCartModalOpenEvent,
     "ITEM_INCREMENTED": ItemIncrementedEvent,
     # "ITEM_DECREMENTED": ItemDecrementedEvent,
