@@ -39,7 +39,7 @@ RESTAURANTS_DATA = [
     {
         "id": "2",
         "name": "Sushi World",
-        "description": "Delicious and fresh sushi delivered fast.",
+        "description": "Delicious and fresh sushi delivered fast",
         "image": "/images/sushi-world.jpg",
         "cuisine": "Japanese",
         "rating": 4.5,
@@ -58,7 +58,7 @@ RESTAURANTS_DATA = [
     {
         "id": "3",
         "name": "Curry House",
-        "description": "Authentic Indian curries and sides.",
+        "description": "Authentic Indian curries and sides",
         "image": "/images/curry-house.jpg",
         "cuisine": "Indian",
         "rating": 4.3,
@@ -95,7 +95,7 @@ RESTAURANTS_DATA = [
     {
         "id": "5",
         "name": "Burger Joint",
-        "description": "Juicy burgers, crispy fries, and shakes.",
+        "description": "Juicy burgers, crispy fries, and shakes",
         "image": "/images/burger-joint.jpg",
         "cuisine": "American",
         "rating": 4.1,
@@ -121,7 +121,7 @@ RESTAURANTS_DATA = [
     {
         "id": "6",
         "name": "Green Bowl",
-        "description": "Healthy salads & vegan-friendly bowls.",
+        "description": "Healthy salads & vegan-friendly bowls",
         "image": "/images/green-bowl.jpg",
         "cuisine": "Vegan",
         "rating": 4.8,
@@ -140,7 +140,7 @@ RESTAURANTS_DATA = [
     {
         "id": "7",
         "name": "Dragon Wok",
-        "description": "Chinese favorites with a modern twist.",
+        "description": "Chinese favorites with a modern twist",
         "image": "/images/dragon-wok.jpg",
         "cuisine": "Chinese",
         "rating": 4.4,
@@ -158,7 +158,7 @@ RESTAURANTS_DATA = [
     {
         "id": "8",
         "name": "Pasta Fresca",
-        "description": "Handmade pasta and sauces from scratch.",
+        "description": "Handmade pasta and sauces from scratch",
         "image": "/images/pasta-fresca.jpg",
         "cuisine": "Italian",
         "rating": 4.6,
@@ -176,7 +176,7 @@ RESTAURANTS_DATA = [
     {
         "id": "9",
         "name": "Sweet Corner",
-        "description": "Desserts, cakes, and pastries baked daily.",
+        "description": "Desserts, cakes, and pastries baked daily",
         "image": "/images/sweet-corner.jpg",
         "cuisine": "Desserts",
         "rating": 4.9,
@@ -194,7 +194,7 @@ RESTAURANTS_DATA = [
     {
         "id": "10",
         "name": "Pho Express",
-        "description": "Vietnamese noodle soups and street eats.",
+        "description": "Vietnamese noodle soups and street eats",
         "image": "/images/pho-express.jpg",
         "cuisine": "Vietnamese",
         "rating": 4.5,
@@ -212,7 +212,7 @@ RESTAURANTS_DATA = [
     {
         "id": "11",
         "name": "Bagel Bros",
-        "description": "NY-style bagels, sandwiches, and coffee.",
+        "description": "NY-style bagels, sandwiches, and coffee",
         "image": "/images/bagel-bros.jpg",
         "cuisine": "Breakfast",
         "rating": 4.3,
@@ -230,7 +230,7 @@ RESTAURANTS_DATA = [
     {
         "id": "12",
         "name": "Falafel King",
-        "description": "Middle Eastern wraps, bowls, and salads.",
+        "description": "Middle Eastern wraps, bowls, and salads",
         "image": "/images/falafel-king.jpg",
         "cuisine": "Middle Eastern",
         "rating": 4.7,
@@ -249,7 +249,7 @@ RESTAURANTS_DATA = [
     {
         "id": "13",
         "name": "Steakhouse Prime",
-        "description": "Premium steaks and classic sides.",
+        "description": "Premium steaks and classic sides",
         "image": "/images/steakhouse-prime.jpg",
         "cuisine": "Steakhouse",
         "rating": 4.6,
@@ -267,7 +267,7 @@ RESTAURANTS_DATA = [
     {
         "id": "14",
         "name": "Ramen House",
-        "description": "Hearty Japanese ramen and small plates.",
+        "description": "Hearty Japanese ramen and small plates",
         "image": "/images/ramen-house.jpg",
         "cuisine": "Japanese",
         "rating": 4.4,
@@ -285,7 +285,7 @@ RESTAURANTS_DATA = [
     {
         "id": "15",
         "name": "Greek Taverna",
-        "description": "Traditional Greek cuisine and meze.",
+        "description": "Traditional Greek cuisine and meze",
         "image": "/images/greek-taverna.jpg",
         "cuisine": "Greek",
         "rating": 4.5,
@@ -303,7 +303,7 @@ RESTAURANTS_DATA = [
     {
         "id": "16",
         "name": "BBQ Pit",
-        "description": "Slow-smoked barbecue and southern sides.",
+        "description": "Slow-smoked barbecue and southern sides",
         "image": "/images/bbq-pit.jpg",
         "cuisine": "Barbecue",
         "rating": 4.3,
@@ -321,7 +321,7 @@ RESTAURANTS_DATA = [
     {
         "id": "17",
         "name": "Tapas Bar",
-        "description": "Spanish tapas and sangria.",
+        "description": "Spanish tapas and sangria",
         "image": "/images/tapas-bar.jpg",
         "cuisine": "Spanish",
         "rating": 4.7,
@@ -339,7 +339,7 @@ RESTAURANTS_DATA = [
     {
         "id": "18",
         "name": "Bistro Belle",
-        "description": "French bistro classics and fine wines.",
+        "description": "French bistro classics and fine wines",
         "image": "/images/bistro-belle.jpg",
         "cuisine": "French",
         "rating": 4.6,
@@ -357,7 +357,7 @@ RESTAURANTS_DATA = [
     {
         "id": "19",
         "name": "Kebab Express",
-        "description": "Turkish kebabs and Mediterranean sides.",
+        "description": "Turkish kebabs and Mediterranean sides",
         "image": "/images/kebab-express.jpg",
         "cuisine": "Turkish",
         "rating": 4.4,
@@ -375,7 +375,7 @@ RESTAURANTS_DATA = [
     {
         "id": "20",
         "name": "Deli Central",
-        "description": "Classic deli sandwiches and soups.",
+        "description": "Classic deli sandwiches and soups",
         "image": "/images/deli-central.jpg",
         "cuisine": "Deli",
         "rating": 4.2,
@@ -393,7 +393,7 @@ RESTAURANTS_DATA = [
     {
         "id": "21",
         "name": "Tandoori Nights",
-        "description": "North Indian tandoori and curries.",
+        "description": "North Indian tandoori and curries",
         "image": "/images/tandoori-nights.jpg",
         "cuisine": "Indian",
         "rating": 4.5,
@@ -411,7 +411,7 @@ RESTAURANTS_DATA = [
     {
         "id": "22",
         "name": "Poke Bowl Co.",
-        "description": "Fresh Hawaiian poke bowls.",
+        "description": "Fresh Hawaiian poke bowls",
         "image": "/images/poke-bowl-co.jpg",
         "cuisine": "Hawaiian",
         "rating": 4.7,
@@ -429,7 +429,7 @@ RESTAURANTS_DATA = [
     {
         "id": "23",
         "name": "Waffle Works",
-        "description": "Sweet and savory waffles all day.",
+        "description": "Sweet and savory waffles all day",
         "image": "/images/waffle-works.jpg",
         "cuisine": "Breakfast",
         "rating": 4.3,
@@ -447,7 +447,7 @@ RESTAURANTS_DATA = [
     {
         "id": "24",
         "name": "Souvlaki Stop",
-        "description": "Greek souvlaki and street food.",
+        "description": "Greek souvlaki and street food",
         "image": "/images/souvlaki-stop.jpg",
         "cuisine": "Greek",
         "rating": 4.4,
@@ -465,7 +465,7 @@ RESTAURANTS_DATA = [
     {
         "id": "25",
         "name": "Pho 88",
-        "description": "Vietnamese pho and street eats.",
+        "description": "Vietnamese pho and street eats",
         "image": "/images/pho-88.jpg",
         "cuisine": "Vietnamese",
         "rating": 4.5,
@@ -481,6 +481,7 @@ RESTAURANTS_DATA = [
         "pickupTime": "12 min",
     },
 ]
+
 
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
