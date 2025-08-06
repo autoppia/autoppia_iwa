@@ -96,6 +96,14 @@ Correct examples:
 Incorrect examples:
 - Increase the quantity of 'Margherita Pizza' to 2 at a restaurant that equals 'Waffle Works' where the quantity is less than 8, the item is not equal to 'Classic Cheeseburger', and the price is less than 8.53. (Multiple constraints mentioned more than once)
 - Increase the quantity of 'Margherita Pizza' to 2. Add one more 'Margherita Pizza' to my cart. (Repeated intent)
+
+3. Pay attention to the constraints:
+example:
+constraints: {'quantity': {'operator': 'less_than', 'value': 8}, 'item': {'operator': 'not_equals', 'value': 'Beef Pho'}, 'restaurant': {'operator': 'contains', 'value': ' P'}}
+correct:
+"Increase the quantity to less than 2 at a restaurant that contains 'P' where the item is not 'Beef Pho'."
+incorrect:
+"Increase the quantity of 'Beef Pho' to 2 at a restaurant that contains 'P' where the quantity is less than 8."
 """
 ITEM_INCREMENTED_USE_CASE = UseCase(
     name="ITEM_INCREMENTED",
