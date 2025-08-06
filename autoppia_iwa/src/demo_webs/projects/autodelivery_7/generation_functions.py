@@ -270,9 +270,8 @@ def __get_delete_review_fields(restaurants):
 
 
 def generate_delete_review_constraints() -> list[dict]:
-    constraints_list, _ = __generate_view_restaurant_constraints()
-    delete_review_dict = __get_delete_review_fields(RESTAURANTS_DATA)
-
+    constraints_list, restaurant = __generate_view_restaurant_constraints()
+    delete_review_dict = __get_delete_review_fields([restaurant])
     fields = ["author", "review_rating", "comment"]  # , "date"]
     num_constraints = random.randint(1, len(fields))
     selected_fields = random.sample(fields, num_constraints)
