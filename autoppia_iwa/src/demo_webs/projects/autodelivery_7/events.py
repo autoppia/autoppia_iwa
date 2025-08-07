@@ -290,6 +290,7 @@ class PlaceOrderEvent(Event, BaseEventValidator):
     address: str
     delivery_preference: str
     items: list[CheckoutItem]
+    mode: str
     total: float
 
     class ValidationCriteria(BaseModel):
@@ -299,6 +300,7 @@ class PlaceOrderEvent(Event, BaseEventValidator):
         item: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         quantity: int | CriterionValue | None = None
+        mode: str | CriterionValue | None = None
         delivery_preference: str | CriterionValue | None = None
         total: float | CriterionValue | None = None
 
@@ -312,6 +314,7 @@ class PlaceOrderEvent(Event, BaseEventValidator):
                 self._validate_field(self.phone, criteria.phone),
                 self._validate_field(self.address, criteria.address),
                 self._validate_field(self.delivery_preference, criteria.delivery_preference),
+                self._validate_field(self.mode, criteria.mode),
                 self._validate_field(self.total, criteria.total),
             ]
         )
@@ -341,6 +344,7 @@ class PlaceOrderEvent(Event, BaseEventValidator):
             phone=data.get("phone", ""),
             address=data.get("address", ""),
             delivery_preference=data.get("dropoff", ""),
+            mode=data.get("mode", ""),
             items=items,
             total=data.get("total", 0.0),
         )
