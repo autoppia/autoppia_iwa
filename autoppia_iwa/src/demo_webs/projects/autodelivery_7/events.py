@@ -144,7 +144,7 @@ class AddToCartEvent(Event, BaseEventValidator):
     restaurant: str
     preferences: str
     quantity: int
-    total_price: float  # renamed from totalPrice for consistency
+    total_price: float
 
     class ValidationCriteria(BaseModel):
         item: str | CriterionValue | None = None
@@ -450,7 +450,7 @@ class DeleteReviewEvent(Event, BaseEventValidator):
 
 class BackToAllRestaurantsEvent(Event, BaseEventValidator):
     event_name: str = "BACK_TO_ALL_RESTAURANTS"
-    from_restaurant_name: str  # renamed for snake_case consistency
+    from_restaurant_name: str
 
     class ValidationCriteria(BaseModel):
         from_restaurant_name: str | CriterionValue | None = None
