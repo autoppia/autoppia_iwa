@@ -449,7 +449,17 @@ def generate_place_order_constraints() -> list[dict]:
         ops = FIELD_OPERATORS_PLACE_ORDER_MAP[field]
         operator = ComparisonOperator(random.choice(ops))
         field_value = order_data.get(field)
-        value = _generate_constraint_value(operator, field_value, field, dataset=[{field: v} for v in order_data[field] if v is not None])
+        dataset = []
+        if field == "username":
+            dataset = [{"username": v} for v in names if v is not None]
+        elif field == "phone":
+            dataset = [{"phone": v} for v in phones if v is not None]
+        elif field == "address":
+            dataset = _get_address_dataset()
+        elif field == "mode":
+            dataset = [{"mode": v} for v in ["delivery", "pickup"]]
+
+        value = _generate_constraint_value(operator, field_value, field, dataset)
         if value:
             constraints.append(create_constraint_dict(field, operator, value))
     add_to_cart_constraint = generate_add_to_cart_constraints()
