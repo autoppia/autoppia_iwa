@@ -729,9 +729,9 @@ FIELD_OPERATORS_APPLY_FOR_JOB_MAP = {
 FIELD_OPERATORS_SEARCH_JOBS_MAP = {
     "query": STRING_OPERATORS,
     # 'result_count': LOGICAL_OPERATORS,
-    "experience": [EQUALS, NOT_EQUALS],
-    "location": STRING_OPERATORS,
-    "remote": [EQUALS],
-    "salary": [EQUALS, NOT_EQUALS],
+    # "experience": [EQUALS, NOT_EQUALS],
+    # "location": STRING_OPERATORS,
+    # "remote": [EQUALS],
+    # "salary": [EQUALS, NOT_EQUALS],
     # "search": STRING_OPERATORS
 }

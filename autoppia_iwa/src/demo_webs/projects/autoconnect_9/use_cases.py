@@ -80,10 +80,49 @@ POST_STATUS_USE_CASE = UseCase(
 
 LIKE_POST_USE_CASE = UseCase(
     name="LIKE_POST",
-    description="The user likes a post.",
+    description="The user likes a post",
     event=LikePostEvent,
     event_source_code=LikePostEvent.get_source_code_of_class(),
     constraints_generator=generate_like_post_constraints,
+    examples=[
+        {
+            "prompt": "Like the post where the poster wrote 'I finally got my AWS certification!'",
+            "prompt_for_task_generation": "Like the post where the poster wrote 'I finally got my AWS certification!'",
+        },
+        {
+            "prompt": "Like the post that includes the phrase 'Launching my first startup today!'",
+            "prompt_for_task_generation": "Like the post that includes the phrase 'Launching my first startup today!'",
+        },
+        {
+            "prompt": "Like the post where the content is exactly 'Grateful for everyone who supported me on this journey.'",
+            "prompt_for_task_generation": "Like the post where the content is exactly 'Grateful for everyone who supported me on this journey.'",
+        },
+        {
+            "prompt": "Like the post which does not include the sentence 'Looking for job opportunities.'",
+            "prompt_for_task_generation": "Like the post which does not include the sentence 'Looking for job opportunities.'",
+        },
+        {
+            "prompt": "Like the post with content not equal to 'Just completed my first year at TechCorp!'",
+            "prompt_for_task_generation": "Like the post with content not equal to 'Just completed my first year at TechCorp!'",
+        },
+        {"prompt": "Like the post that contains 'Excited to attend PyCon this year!'", "prompt_for_task_generation": "Like the post that contains 'Excited to attend PyCon this year!'"},
+        {
+            "prompt": "Like the post where the user said 'Pushed a major UI update to the product today.'",
+            "prompt_for_task_generation": "Like the post where the user said 'Pushed a major UI update to the product today.'",
+        },
+        {
+            "prompt": "Like the post which includes the line 'Remote work has been a game changer for me.'",
+            "prompt_for_task_generation": "Like the post which includes the line 'Remote work has been a game changer for me.'",
+        },
+    ],
+)
+
+COMMENT_ON_POST_USE_CASE = UseCase(
+    name="COMMENT_ON_POST",
+    description="The user comments on a post.",
+    event=CommentOnPostEvent,
+    event_source_code=CommentOnPostEvent.get_source_code_of_class(),
+    constraints_generator=generate_comment_on_post_constraints,
     examples=[
         {
             "prompt": "Comment 'Great work!' on the post with poster content 'Just released a new app version!'",
@@ -116,20 +155,6 @@ LIKE_POST_USE_CASE = UseCase(
         {
             "prompt": "Comment 'Following this for updates.' on the post with poster content 'Experimenting with fine-tuning LLMs on medical datasets.'",
             "prompt_for_task_generation": "Comment 'Following this for updates.' on the post with poster content 'Experimenting with fine-tuning LLMs on medical datasets.'",
-        },
-    ],
-)
-
-COMMENT_ON_POST_USE_CASE = UseCase(
-    name="COMMENT_ON_POST",
-    description="The user comments on a post.",
-    event=CommentOnPostEvent,
-    event_source_code=CommentOnPostEvent.get_source_code_of_class(),
-    constraints_generator=generate_comment_on_post_constraints,
-    examples=[
-        {
-            "prompt": "Comment 'liked!' on the post with poster content '",
-            "prompt_for_task_generation": "Comment 'liked!' on the post with poster content '",
         },
     ],
 )
@@ -253,7 +278,6 @@ FOLLOW_PAGE_USE_CASE = UseCase(
         },
     ],
 )
-
 SEARCH_JOBS_USE_CASE = UseCase(
     name="SEARCH_JOBS",
     description="The user searches for jobs.",
@@ -261,12 +285,70 @@ SEARCH_JOBS_USE_CASE = UseCase(
     event_source_code=SearchJobsEvent.get_source_code_of_class(),
     constraints_generator=generate_search_jobs_constraints,
     examples=[
+        # Query (STRING_OPERATORS)
         {
             "prompt": "Search for jobs with the query 'fro'.",
-            "prompt_for_task_generation": "Search for jobs with the query '<query>'.",
+            "prompt_for_task_generation": "Search for jobs with the query 'fro'.",
+        },
+        {
+            "prompt": "Find jobs where the query contains 'engineer'.",
+            "prompt_for_task_generation": "Find jobs where the query contains 'engineer'.",
+        },
+        {
+            "prompt": "Look for jobs with the query starting with 'full'.",
+            "prompt_for_task_generation": "Look for jobs with the query starting with 'full'.",
+        },
+        {
+            "prompt": "Search for jobs with the query exactly equal to 'data scientist'.",
+            "prompt_for_task_generation": "Search for jobs with the query exactly equal to 'data scientist'.",
+        },
+        # Experience (EQUALS, NOT_EQUALS)
+        {
+            "prompt": "Find jobs that require experience equal to 'mid'.",
+            "prompt_for_task_generation": "Find jobs that require experience equal to 'mid'.",
+        },
+        {
+            "prompt": "Search for jobs where the experience level is not 'entry'.",
+            "prompt_for_task_generation": "Search for jobs where the experience level is not 'entry'.",
+        },
+        # Location (STRING_OPERATORS)
+        {
+            "prompt": "Search for jobs located in 'New York'.",
+            "prompt_for_task_generation": "Search for jobs located in 'New York'.",
+        },
+        {
+            "prompt": "Find jobs where the location contains 'valley'.",
+            "prompt_for_task_generation": "Find jobs where the location contains 'valley'.",
+        },
+        {
+            "prompt": "Look for jobs with location starting with 'San'.",
+            "prompt_for_task_generation": "Look for jobs with location starting with 'San'.",
+        },
+        {
+            "prompt": "Search jobs with location equal to 'Remote'.",
+            "prompt_for_task_generation": "Search jobs with location equal to 'Remote'.",
+        },
+        # Remote (EQUALS)
+        {
+            "prompt": "Find remote jobs only.",
+            "prompt_for_task_generation": "Find remote jobs only.",
+        },
+        {
+            "prompt": "Search for jobs that are not remote.",
+            "prompt_for_task_generation": "Search for jobs that are not remote.",
+        },
+        # Salary (EQUALS, NOT_EQUALS)
+        {
+            "prompt": "Search for jobs with a salary equal to 80000.",
+            "prompt_for_task_generation": "Search for jobs with a salary equal to 80000.",
+        },
+        {
+            "prompt": "Find jobs where salary is not 50000.",
+            "prompt_for_task_generation": "Find jobs where salary is not 50000.",
         },
     ],
 )
+
 VIEW_JOB_USE_CASE = UseCase(
     name="VIEW_JOB",
     description="The user views a job posting in detail.",
@@ -290,14 +372,14 @@ VIEW_JOB_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    # VIEW_USER_PROFILE_USE_CASE,
-    # CONNECT_WITH_USER_USE_CASE,
-    # POST_STATUS_USE_CASE,
-    # LIKE_POST_USE_CASE,
-    # COMMENT_ON_POST_USE_CASE,
-    # SEARCH_USERS_USE_CASE,
-    # FOLLOW_PAGE_USE_CASE,
-    # VIEW_JOB_USE_CASE
-    # APPLY_FOR_JOB_USE_CASE,
+    VIEW_USER_PROFILE_USE_CASE,
+    CONNECT_WITH_USER_USE_CASE,
+    POST_STATUS_USE_CASE,
+    LIKE_POST_USE_CASE,
+    COMMENT_ON_POST_USE_CASE,
+    SEARCH_USERS_USE_CASE,
+    FOLLOW_PAGE_USE_CASE,
+    VIEW_JOB_USE_CASE,
+    APPLY_FOR_JOB_USE_CASE,
     SEARCH_JOBS_USE_CASE,
 ]

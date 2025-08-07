@@ -169,7 +169,7 @@ class LikePostEvent(Event, BaseEventValidator):
             [
                 # self._validate_field(self.post_id, criteria.post_id),
                 # self._validate_field(self.user_name, criteria.user_name),
-                self._validate_field(self.action, criteria.action),
+                # self._validate_field(self.action, criteria.action),
                 self._validate_field(self.poster_name, criteria.poster_name),
                 self._validate_field(self.poster_content, criteria.poster_content),
             ]

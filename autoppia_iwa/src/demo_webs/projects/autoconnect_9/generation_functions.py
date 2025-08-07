@@ -215,7 +215,8 @@ def generate_like_post_constraints():
     field_map = {"poster_content": "content", "poster_name": "name"}
 
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
-
+    # all_constraints = [{"field": "poster_content", "operator": ComparisonOperator.CONTAINS, "value": "Hosting our first DEI panel at PeopleFirst. Let's build inclusive cultures."}]
+    # # all_constraints = [{"field": "poster_content", "operator": ComparisonOperator.CONTAINS, "value": "Hosting our first DEI panel at PeopleFirst."}]
     return all_constraints
 
 
@@ -342,12 +343,57 @@ def generate_search_users_constraints() -> list[dict[str, Any]]:
 def generate_search_jobs_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for searching jobs based on the provided job data.
+    Replaces raw salary values with predefined filter options if applicable.
     """
-    # TODO fix filters constraints
     dataset = mockJobs
     field_operators = FIELD_OPERATORS_SEARCH_JOBS_MAP
     field_map = {"query": ["title", "company"]}
+
+    filter_options_data = {
+        "experience": ["2+ years", "3+ years", "4+ years", "5+ years", "6+ years"],
+        "salary": ["0-50000", "50000-75000", "75000-100000", "100000-125000", "125000-150000", "150000+"],
+        "location": ["Austin, TX", "Boston, MA", "Chicago, IL", "Denver, CO", "Los Angeles, CA", "New York, NY", "Remote", "Remote (US)", "San Francisco, CA", "Seattle, WA"],
+        "remote": [True, False],
+    }
+
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
+
+    for constraint in all_constraints:
+        if constraint["field"] == "salary":
+            raw_value = str(constraint["value"])
+
+            # Extract min salary
+            cleaned = raw_value.replace("$", "").replace(",", "").strip()
+            if "-" in cleaned:
+                parts = cleaned.split("-")
+                try:
+                    min_salary = int(parts[0])
+                except ValueError:
+                    continue
+            elif "+" in cleaned:
+                parts = cleaned.split("+")
+                try:
+                    min_salary = int(parts[0])
+                except ValueError:
+                    continue
+            else:
+                try:
+                    min_salary = int(cleaned)
+                except ValueError:
+                    continue
+
+            # Match with filter option
+            for option in filter_options_data["salary"]:
+                if "-" in option:
+                    start, end = map(int, option.split("-"))
+                    if start <= min_salary <= end:
+                        constraint["value"] = option
+                        break
+                elif "+" in option:
+                    base = int(option.replace("+", ""))
+                    if min_salary >= base:
+                        constraint["value"] = option
+                        break
 
     return all_constraints
 
