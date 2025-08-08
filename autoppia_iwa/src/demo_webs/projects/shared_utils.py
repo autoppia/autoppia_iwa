@@ -1,6 +1,7 @@
 import datetime
 from typing import Any
 
+from dateutil import parser
 from loguru import logger
 
 from .criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
@@ -85,6 +86,30 @@ def generate_mock_date_strings(dates: list):
         if isinstance(d, datetime.datetime | datetime.date):
             date_strings.append(d.strftime("%b %d"))
     return sorted(list(set(date_strings)))
+
+
+def parse_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        if isinstance(value, datetime.datetime):
+            return value
+        if isinstance(value, str):
+            try:
+                return datetime.datetime.fromisoformat(value)
+            except ValueError:
+                pass
+            for sep in ("T", " "):
+                if sep in value:
+                    date_part = value.split(sep)[0]
+                    try:
+                        return datetime.datetime.fromisoformat(date_part)
+                    except ValueError:
+                        pass
+            return parser.isoparse(value)
+        return None
+    except (ValueError, TypeError):
+        return None
 
 
 def validate_date_field(field_value, criterion):

@@ -5,9 +5,7 @@ from pydantic import BaseModel
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
-from autoppia_iwa.src.demo_webs.projects.shared_utils import validate_date_field
-
-from .data import parse_datetime
+from autoppia_iwa.src.demo_webs.projects.shared_utils import parse_datetime, validate_date_field
 
 
 class SearchHotelEvent(Event, BaseEventValidator):
