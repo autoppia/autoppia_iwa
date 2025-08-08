@@ -370,6 +370,54 @@ class CancelAddEventEvent(Event, BaseEventValidator):
         )
 
 
+class DeleteAddedEventEvent(Event, BaseEventValidator):
+    """Event triggered when user deletes an existing calendar event"""
+
+    event_name: str = "DELETE_ADDED_EVENT"
+    source: str
+    event_id: str
+    event_title: str
+    calendar: str
+    date: str
+
+    class ValidationCriteria(BaseModel):
+        source: str | CriterionValue | None = None
+        eventId: str | CriterionValue | None = None
+        eventTitle: str | CriterionValue | None = None
+        calendar: str | CriterionValue | None = None
+        date: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.source, criteria.source),
+                self._validate_field(self.event_id, criteria.eventId),
+                self._validate_field(self.event_title, criteria.eventTitle),
+                self._validate_field(self.calendar, criteria.calendar),
+                self._validate_field(self.date, criteria.date),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DeleteAddedEventEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            source=data.get("source", ""),
+            event_id=data.get("eventId", ""),
+            event_title=data.get("eventTitle", ""),
+            calendar=data.get("calendar", ""),
+            date=data.get("date", ""),
+        )
+
+
 CALENDAR_EVENTS = [
     SelectMonthEvent,
     SelectWeekEvent,
@@ -382,6 +430,7 @@ CALENDAR_EVENTS = [
     AddEventEvent,
     CellClickedEvent,
     CancelAddEventEvent,
+    DeleteAddedEventEvent,
 ]
 
 CALENDAR_BACKEND_EVENT_TYPES = {
@@ -396,4 +445,5 @@ CALENDAR_BACKEND_EVENT_TYPES = {
     "ADD_EVENT": AddEventEvent,
     "CELL_CLCIKED": CellClickedEvent,
     "CANCEL_ADD_EVENT": CancelAddEventEvent,
+    "DELETE_ADDED_EVENT": DeleteAddedEventEvent,
 }
