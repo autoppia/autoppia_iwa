@@ -439,7 +439,7 @@ CALENDAR_EVENTS = [
     DeleteAddedEventEvent,
 ]
 
-CALENDAR_BACKEND_EVENT_TYPES = {
+BACKEND_EVENT_TYPES = {
     "SELECT_MONTH": SelectMonthEvent,
     "SELECT_WEEK": SelectWeekEvent,
     "SELECT_FIVE_DAYS": SelectFiveDaysEvent,

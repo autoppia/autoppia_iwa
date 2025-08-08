@@ -88,7 +88,7 @@ def generate_mock_date_strings(dates: list):
     return sorted(list(set(date_strings)))
 
 
-def parse_datetime(value: str | None) -> datetime | None:
+def parse_datetime(value: str | None) -> datetime.datetime | None:
     if not value:
         return None
     try:
