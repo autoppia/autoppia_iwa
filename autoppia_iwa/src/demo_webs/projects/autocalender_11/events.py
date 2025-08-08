@@ -12,35 +12,35 @@ class SelectViewEvent(Event, BaseEventValidator):
     """Base event for selecting different calendar views"""
 
     event_name: str
-    source: str
-    selected_view: str
+    # source: str
+    # selected_view: str
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
-        selectedView: str | CriterionValue | None = None
+        # source: str | CriterionValue | None = None
+        # selectedView: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.source, criteria.source),
-                self._validate_field(self.selected_view, criteria.selectedView),
+                # self._validate_field(self.source, criteria.source),
+                # self._validate_field(self.selected_view, criteria.selectedView),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SelectViewEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            source=data.get("source", ""),
-            selected_view=data.get("selectedView", ""),
+            # source=data.get("source", ""),
+            # selected_view=data.get("selectedView", ""),
         )
 
 
@@ -72,36 +72,36 @@ class SelectTodayEvent(Event, BaseEventValidator):
     """Event triggered when user clicks on today"""
 
     event_name: str = "SELECT_TODAY"
-    source: str
-    selected_date: datetime | None = None
+    # source: str
+    # selected_date: datetime | None = None
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
-        selectedDate: datetime | CriterionValue | None = None
+        # source: str | CriterionValue | None = None
+        # selectedDate: datetime | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        date_valid = validate_date_field(self.selected_date, criteria.selectedDate)
+        # date_valid = validate_date_field(self.selected_date, criteria.selectedDate)
         return all(
             [
-                self._validate_field(self.source, criteria.source),
-                date_valid,
+                # self._validate_field(self.source, criteria.source),
+                # date_valid,
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SelectTodayEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            source=data.get("source", ""),
-            selected_date=parse_datetime(data.get("selectedDate")),
+            # source=data.get("source", ""),
+            # selected_date=parse_datetime(data.get("selectedDate")),
         )
 
 
@@ -109,35 +109,35 @@ class AddNewCalendarEvent(Event, BaseEventValidator):
     """Event triggered when user opens add calendar modal"""
 
     event_name: str = "ADD_NEW_CALENDAR"
-    source: str
-    action: str
+    # source: str
+    # action: str
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
-        action: str | CriterionValue | None = None
+        # source: str | CriterionValue | None = None
+        # action: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.source, criteria.source),
-                self._validate_field(self.action, criteria.action),
+                # self._validate_field(self.source, criteria.source),
+                # self._validate_field(self.action, criteria.action),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "AddNewCalendarEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            source=data.get("source", ""),
-            action=data.get("action", ""),
+            # source=data.get("source", ""),
+            # action=data.get("action", ""),
         )
 
 
@@ -147,12 +147,12 @@ class CreateCalendarEvent(Event, BaseEventValidator):
     event_name: str = "CREATE_CALENDAR"
     name: str
     description: str
-    color: str
+    # color: str
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
-        color: str | CriterionValue | None = None
+        # color: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -161,7 +161,7 @@ class CreateCalendarEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.name, criteria.name),
                 self._validate_field(self.description, criteria.description),
-                self._validate_field(self.color, criteria.color),
+                # self._validate_field(self.color, criteria.color),
             ]
         )
 
@@ -177,7 +177,7 @@ class CreateCalendarEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             name=data.get("name", ""),
             description=data.get("description", ""),
-            color=data.get("color", ""),
+            # color=data.get("color", ""),
         )
 
 
@@ -187,21 +187,21 @@ class ChooseCalendarEvent(Event, BaseEventValidator):
     event_name: str = "CHOOSE_CALENDAR"
     calendar_name: str
     selected: bool
-    color: str
+    # color: str
 
     class ValidationCriteria(BaseModel):
-        calendarName: str | CriterionValue | None = None
+        calendar_name: str | CriterionValue | None = None
         selected: bool | CriterionValue | None = None
-        color: str | CriterionValue | None = None
+        # color: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.calendar_name, criteria.calendarName),
+                self._validate_field(self.calendar_name, criteria.calendar_name),
                 self._validate_field(self.selected, criteria.selected),
-                self._validate_field(self.color, criteria.color),
+                # self._validate_field(self.color, criteria.color),
             ]
         )
 
@@ -217,7 +217,7 @@ class ChooseCalendarEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             calendar_name=data.get("calendarName", ""),
             selected=data.get("selected", False),
-            color=data.get("color", ""),
+            # color=data.get("color", ""),
         )
 
 
@@ -225,38 +225,38 @@ class AddEventEvent(Event, BaseEventValidator):
     """Event triggered when user adds a calendar event"""
 
     event_name: str = "ADD_EVENT"
-    source: str
+    # source: str
     title: str
     calendar: str
     date: str
-    start_time: list[int]
-    end_time: list[int]
-    color: str
-    is_editing: bool
+    start_time: str
+    end_time: str
+    # color: str
+    # is_editing: bool
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
+        # source: str | CriterionValue | None = None
         title: str | CriterionValue | None = None
         calendar: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
-        startTime: list[int] | CriterionValue | None = None
-        endTime: list[int] | CriterionValue | None = None
-        color: str | CriterionValue | None = None
-        isEditing: bool | CriterionValue | None = None
+        start_time: str | CriterionValue | None = None
+        end_time: str | CriterionValue | None = None
+        # color: str | CriterionValue | None = None
+        # isEditing: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.source, criteria.source),
+                # self._validate_field(self.source, criteria.source),
                 self._validate_field(self.title, criteria.title),
                 self._validate_field(self.calendar, criteria.calendar),
                 self._validate_field(self.date, criteria.date),
-                self._validate_field(self.start_time, criteria.startTime),
-                self._validate_field(self.end_time, criteria.endTime),
-                self._validate_field(self.color, criteria.color),
-                self._validate_field(self.is_editing, criteria.isEditing),
+                self._validate_field(self.start_time, criteria.start_time),
+                self._validate_field(self.end_time, criteria.end_time),
+                # self._validate_field(self.color, criteria.color),
+                # self._validate_field(self.is_editing, criteria.isEditing),
             ]
         )
 
@@ -264,20 +264,26 @@ class AddEventEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "AddEventEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-
+        start_time, end_time = "", ""
+        st = data.get("startTime", [])
+        if st:
+            start_time = st[0] + ":" + st[1]
+        et = data.get("endTime", [])
+        if et:
+            end_time = et[0] + ":" + et[1]
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            source=data.get("source", ""),
+            # source=data.get("source", ""),
             title=data.get("title", ""),
             calendar=data.get("calendar", ""),
             date=data.get("date", ""),
-            start_time=data.get("startTime", [0, 0]),
-            end_time=data.get("endTime", [0, 0]),
-            color=data.get("color", ""),
-            is_editing=data.get("isEditing", False),
+            start_time=start_time,
+            end_time=end_time,
+            # color=data.get("color", ""),
+            # is_editing=data.get("isEditing", False),
         )
 
 
@@ -332,13 +338,13 @@ class CancelAddEventEvent(Event, BaseEventValidator):
     event_name: str = "CANCEL_ADD_EVENT"
     source: str
     date: str
-    reason: str
+    # reason: str
     title: str
 
     class ValidationCriteria(BaseModel):
         source: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
-        reason: str | CriterionValue | None = None
+        # reason: str | CriterionValue | None = None
         title: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -348,7 +354,7 @@ class CancelAddEventEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.source, criteria.source),
                 self._validate_field(self.date, criteria.date),
-                self._validate_field(self.reason, criteria.reason),
+                # self._validate_field(self.reason, criteria.reason),
                 self._validate_field(self.title, criteria.title),
             ]
         )
@@ -365,7 +371,7 @@ class CancelAddEventEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             source=data.get("source", ""),
             date=data.get("date", ""),
-            reason=data.get("reason", ""),
+            # reason=data.get("reason", ""),
             title=data.get("title", ""),
         )
 
@@ -375,14 +381,14 @@ class DeleteAddedEventEvent(Event, BaseEventValidator):
 
     event_name: str = "DELETE_ADDED_EVENT"
     source: str
-    event_id: str
+    # event_id: str
     event_title: str
     calendar: str
     date: str
 
     class ValidationCriteria(BaseModel):
         source: str | CriterionValue | None = None
-        eventId: str | CriterionValue | None = None
+        # eventId: str | CriterionValue | None = None
         eventTitle: str | CriterionValue | None = None
         calendar: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
@@ -393,7 +399,7 @@ class DeleteAddedEventEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.source, criteria.source),
-                self._validate_field(self.event_id, criteria.eventId),
+                # self._validate_field(self.event_id, criteria.eventId),
                 self._validate_field(self.event_title, criteria.eventTitle),
                 self._validate_field(self.calendar, criteria.calendar),
                 self._validate_field(self.date, criteria.date),
@@ -411,7 +417,7 @@ class DeleteAddedEventEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             source=data.get("source", ""),
-            event_id=data.get("eventId", ""),
+            # event_id=data.get("eventId", ""),
             event_title=data.get("eventTitle", ""),
             calendar=data.get("calendar", ""),
             date=data.get("date", ""),
