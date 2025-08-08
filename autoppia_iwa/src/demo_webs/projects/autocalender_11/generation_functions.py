@@ -10,6 +10,7 @@ from .data import (
     DESCRIPTIONS,
     EVENT_TITLES,
     FIELD_OPERATORS_ADD_EVENT_MAP,
+    FIELD_OPERATORS_CANCEL_ADD_EVENT_MAP,
     FIELD_OPERATORS_CHOOSE_CALENDER_MAP,
     FIELD_OPERATORS_CLICK_CELL_MAP,
     FIELD_OPERATORS_CREATE_CALENDER_MAP,
@@ -312,7 +313,7 @@ def generate_cancel_add_event_constraints() -> list[dict[str, Any]]:
     fields = ["source", "date", "title"]
 
     for field in fields:
-        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_CANCEL_MAP[field]))
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_CANCEL_ADD_EVENT_MAP[field]))
 
         if field == "source":
             sources = ["month-view", "week-view", "day-view", "5 days-view"]
@@ -347,7 +348,7 @@ def generate_delete_event_constraints() -> list[dict[str, Any]]:
     fields = ["source", "eventTitle", "calendar", "date"]
 
     for field in fields:
-        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_DELETE_ADD_EVENT_MAP))
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_DELETE_ADD_EVENT_MAP[field]))
         if field == "source":
             sources = ["event-modal", "month-view", "week-view", "day-view", "5 days-view"]
             source_value = random.choice(sources)
