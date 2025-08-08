@@ -45,24 +45,11 @@ CONNECT_WITH_USER_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Connect with Jane Doe.",
-            "prompt_for_task_generation": "Connect with Jane Doe",
+            "prompt_for_task_generation": "Connect with Jane Doe.",
         },
     ],
 )
 
-# HOME_NAVBAR_USE_CASE = UseCase(
-#     name="HOME_NAVBAR",
-#     description="The user navigates to the Home page using the navbar.",
-#     event=HomeNavbarEvent,
-#     event_source_code=HomeNavbarEvent.get_source_code_of_class(),
-#     constraints_generator=None,
-#     examples=[
-#         {
-#             "prompt": "Click on the Home button in the navbar.",
-#             "prompt_for_task_generation": "Click on the Home button in the navbar.",
-#         },
-#     ],
-# )
 
 POST_STATUS_USE_CASE = UseCase(
     name="POST_STATUS",
@@ -159,19 +146,6 @@ COMMENT_ON_POST_USE_CASE = UseCase(
     ],
 )
 
-# JOBS_NAVBAR_USE_CASE = UseCase(
-#     name="JOBS_NAVBAR",
-#     description="The user navigates to the Jobs page using the navbar.",
-#     event=JobsNavbarEvent,
-#     event_source_code=JobsNavbarEvent.get_source_code_of_class(),
-#     constraints_generator=None,
-#     examples=[
-#         {
-#             "prompt": "Click on the Jobs button in the navbar.",
-#             "prompt_for_task_generation": "Click on the Jobs button in the navbar.",
-#         },
-#     ],
-# )
 
 APPLY_FOR_JOB_USE_CASE = UseCase(
     name="APPLY_FOR_JOB",
@@ -223,19 +197,6 @@ APPLY_FOR_JOB_USE_CASE = UseCase(
     ],
 )
 
-# PROFILE_NAVBAR_USE_CASE = UseCase(
-#     name="PROFILE_NAVBAR",
-#     description="The user navigates to their profile page using the navbar.",
-#     event=ProfileNavbarEvent,
-#     event_source_code=ProfileNavbarEvent.get_source_code_of_class(),
-#     constraints_generator=None,
-#     examples=[
-#         {
-#             "prompt": "Click on the Profile button in the navbar as Alex Smith.",
-#             "prompt_for_task_generation": "Click on the Profile button in the navbar as <username>.",
-#         },
-#     ],
-# )
 
 SEARCH_USERS_USE_CASE = UseCase(
     name="SEARCH_USERS",
@@ -251,19 +212,6 @@ SEARCH_USERS_USE_CASE = UseCase(
     ],
 )
 
-# VIEW_ALL_RECOMMENDATIONS_USE_CASE = UseCase(
-#     name="VIEW_ALL_RECOMMENDATIONS",
-#     description="The user views all recommendations.",
-#     event=ViewAllRecommendationsEvent,
-#     event_source_code=ViewAllRecommendationsEvent.get_source_code_of_class(),
-#     constraints_generator=None,
-#     examples=[
-#         {
-#             "prompt": "View all recommendations from the recommendations page.",
-#             "prompt_for_task_generation": "View all recommendations from the <source>.",
-#         },
-#     ],
-# )
 
 FOLLOW_PAGE_USE_CASE = UseCase(
     name="FOLLOW_PAGE",

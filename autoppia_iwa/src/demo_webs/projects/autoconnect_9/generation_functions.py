@@ -196,11 +196,11 @@ def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
 
 
 def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
-    dataset = mockUsers
+    dataset = [u for u in mockUsers if u.get("username") != "alexsmith"]
+
     field_operators = FIELD_OPERATORS_CONNECT_WITH_USER_MAP
     field_map = {
         "target_name": "name",
-        "target_username": "username",
     }
     all_constraints = _generate_constraints(dataset, field_operators, field_map, num_constraints=1)
     return all_constraints
@@ -215,8 +215,6 @@ def generate_like_post_constraints():
     field_map = {"poster_content": "content", "poster_name": "name"}
 
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
-    # all_constraints = [{"field": "poster_content", "operator": ComparisonOperator.CONTAINS, "value": "Hosting our first DEI panel at PeopleFirst. Let's build inclusive cultures."}]
-    # # all_constraints = [{"field": "poster_content", "operator": ComparisonOperator.CONTAINS, "value": "Hosting our first DEI panel at PeopleFirst."}]
     return all_constraints
 
 

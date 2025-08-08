@@ -9,7 +9,6 @@ class ViewUserProfileEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_USER_PROFILE"
     username: str
     name: str
-    source: str
 
     class ValidationCriteria(BaseModel):
         username: str | CriterionValue | None = None
@@ -23,7 +22,6 @@ class ViewUserProfileEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.username, criteria.username),
                 self._validate_field(self.name, criteria.name),
-                self._validate_field(self.source, criteria.source),
             ]
         )
 
@@ -38,20 +36,15 @@ class ViewUserProfileEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             username=data.get("username", ""),
             name=data.get("name", ""),
-            source=data.get("source", ""),
         )
 
 
 class ConnectWithUserEvent(Event, BaseEventValidator):
     event_name: str = "CONNECT_WITH_USER"
-    # current_username: str
-    # current_name: str
     target_username: str
     target_name: str
 
     class ValidationCriteria(BaseModel):
-        # current_username: str | CriterionValue | None = None
-        # current_name: str | CriterionValue | None = None
         target_username: str | CriterionValue | None = None
         target_name: str | CriterionValue | None = None
 
@@ -60,8 +53,6 @@ class ConnectWithUserEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.current_username, criteria.current_username),
-                # self._validate_field(self.current_name, criteria.current_name),
                 self._validate_field(self.target_username, criteria.target_username),
                 self._validate_field(self.target_name, criteria.target_name),
             ]
@@ -71,15 +62,12 @@ class ConnectWithUserEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "ConnectWithUserEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        # current = data.get("currentUser", {})
         target = data.get("targetUser", {})
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # current_username=current.get("username", ""),
-            # current_name=current.get("name", ""),
             target_username=target.get("username", ""),
             target_name=target.get("name", ""),
         )
@@ -119,7 +107,6 @@ class PostStatusEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         user_name: str | CriterionValue | None = None
         content: str | CriterionValue | None = None
-        post_id: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -149,16 +136,12 @@ class PostStatusEvent(Event, BaseEventValidator):
 
 class LikePostEvent(Event, BaseEventValidator):
     event_name: str = "LIKE_POST"
-    # post_id: str
     user_name: str
-    # action: str
     poster_name: str
     poster_content: str
 
     class ValidationCriteria(BaseModel):
-        # post_id: str | CriterionValue | None = None
         user_name: str | CriterionValue | None = None
-        # action: str | CriterionValue | None = None
         poster_name: str | CriterionValue | None = None
         poster_content: str | CriterionValue | None = None
 
@@ -167,9 +150,6 @@ class LikePostEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.post_id, criteria.post_id),
-                # self._validate_field(self.user_name, criteria.user_name),
-                # self._validate_field(self.action, criteria.action),
                 self._validate_field(self.poster_name, criteria.poster_name),
                 self._validate_field(self.poster_content, criteria.poster_content),
             ]
@@ -184,9 +164,7 @@ class LikePostEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # post_id=data.get("postId", ""),
             user_name=data.get("userName", ""),
-            # action=data.get("action", ""),
             poster_name=data.get("posterName", ""),
             poster_content=data.get("posterContent", ""),
         )
@@ -194,16 +172,12 @@ class LikePostEvent(Event, BaseEventValidator):
 
 class CommentOnPostEvent(Event, BaseEventValidator):
     event_name: str = "COMMENT_ON_POST"
-    # post_id: str
-    # comment_id: str
     user_name: str
     comment_text: str
     poster_name: str
     poster_content: str
 
     class ValidationCriteria(BaseModel):
-        # post_id: str | CriterionValue | None = None
-        # comment_id: str | CriterionValue | None = None
         user_name: str | CriterionValue | None = None
         comment_text: str | CriterionValue | None = None
         poster_name: str | CriterionValue | None = None
@@ -214,8 +188,6 @@ class CommentOnPostEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.post_id, criteria.post_id),
-                # self._validate_field(self.comment_id, criteria.comment_id),
                 self._validate_field(self.user_name, criteria.user_name),
                 self._validate_field(self.comment_text, criteria.comment_text),
                 self._validate_field(self.poster_name, criteria.poster_name),
@@ -232,8 +204,6 @@ class CommentOnPostEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # post_id=data.get("postId", ""),
-            # comment_id=data.get("commentId", ""),
             user_name=data.get("userName", ""),
             comment_text=data.get("commentText", ""),
             poster_name=data.get("posterName", ""),
@@ -268,13 +238,11 @@ class JobsNavbarEvent(Event, BaseEventValidator):
 
 class ApplyForJobEvent(Event, BaseEventValidator):
     event_name: str = "APPLY_FOR_JOB"
-    # job_id: str
     job_title: str
     company: str
     location: str
 
     class ValidationCriteria(BaseModel):
-        # job_id: str | CriterionValue | None = None
         job_title: str | CriterionValue | None = None
         company: str | CriterionValue | None = None
         location: str | CriterionValue | None = None
@@ -284,7 +252,6 @@ class ApplyForJobEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.job_id, criteria.job_id),
                 self._validate_field(self.job_title, criteria.job_title),
                 self._validate_field(self.company, criteria.company),
                 self._validate_field(self.location, criteria.location),
@@ -300,7 +267,6 @@ class ApplyForJobEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # job_id=data.get("jobId", ""),
             job_title=data.get("jobTitle", ""),
             company=data.get("company", ""),
             location=data.get("location", ""),
@@ -344,11 +310,8 @@ class SearchUsersEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH_USERS"
     query: str
 
-    # result_count: int
-
     class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
-        # result_count: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -356,7 +319,6 @@ class SearchUsersEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.query, criteria.query),
-                # self._validate_field(self.result_count, criteria.result_count),
             ]
         )
 
@@ -370,7 +332,6 @@ class SearchUsersEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             query=data.get("query", ""),
-            # result_count=data.get("resultCount", 0),
         )
 
 
@@ -407,7 +368,6 @@ class FollowPageEvent(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         company: str | CriterionValue | None = None
-        # action: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -415,7 +375,6 @@ class FollowPageEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.company, criteria.company),
-                # self._validate_field(self.action, criteria.action),
             ]
         )
 
@@ -429,7 +388,6 @@ class FollowPageEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             company=data.get("company", ""),
-            # action=data.get("action", ""),
         )
 
 
@@ -441,17 +399,12 @@ class SearchJobsEvent(Event, BaseEventValidator):
     remote: bool
     salary: str
 
-    # search: str
-    # result_count: int
-
     class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
-        # result_count: int | CriterionValue | None = None
         experience: str | CriterionValue | None = None
         location: str | CriterionValue | None = None
         remote: bool | CriterionValue | None = None
         salary: str | CriterionValue | None = None
-        # search: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -490,13 +443,11 @@ class SearchJobsEvent(Event, BaseEventValidator):
 
 class ViewJobEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_JOB"
-    # job_id: str
     job_title: str
     company: str
     location: str
 
     class ValidationCriteria(BaseModel):
-        # job_id: str | CriterionValue | None = None
         job_title: str | CriterionValue | None = None
         company: str | CriterionValue | None = None
         location: str | CriterionValue | None = None
@@ -506,7 +457,6 @@ class ViewJobEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.job_id, criteria.job_id),
                 self._validate_field(self.job_title, criteria.job_title),
                 self._validate_field(self.company, criteria.company),
                 self._validate_field(self.location, criteria.location),
@@ -522,7 +472,6 @@ class ViewJobEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # job_id=data.get("jobId", ""),
             job_title=data.get("jobTitle", ""),
             company=data.get("company", ""),
             location=data.get("location", ""),
@@ -532,13 +481,10 @@ class ViewJobEvent(Event, BaseEventValidator):
 EVENTS = [
     ViewUserProfileEvent,
     ConnectWithUserEvent,
-    # HomeNavbarEvent,
     PostStatusEvent,
     LikePostEvent,
     CommentOnPostEvent,
-    # JobsNavbarEvent,
     ApplyForJobEvent,
-    # ProfileNavbarEvent,
     SearchUsersEvent,
     ViewAllRecommendationsEvent,
     FollowPageEvent,
@@ -549,13 +495,10 @@ EVENTS = [
 BACKEND_EVENT_TYPES = {
     "VIEW_USER_PROFILE": ViewUserProfileEvent,
     "CONNECT_WITH_USER": ConnectWithUserEvent,
-    # "HOME_NAVBAR": HomeNavbarEvent,
     "POST_STATUS": PostStatusEvent,
     "LIKE_POST": LikePostEvent,
     "COMMENT_ON_POST": CommentOnPostEvent,
-    # "JOBS_NAVBAR": JobsNavbarEvent,
     "APPLY_FOR_JOB": ApplyForJobEvent,
-    # "PROFILE_NAVBAR": ProfileNavbarEvent,
     "SEARCH_USERS": SearchUsersEvent,
     "VIEW_ALL_RECOMMENDATIONS": ViewAllRecommendationsEvent,
     "FOLLOW_PAGE": FollowPageEvent,
