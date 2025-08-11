@@ -28,9 +28,9 @@ from .generation_functions import (
 
 SELECT_MONTH_INFO = """
 CRITICAL REQUIREMENT:
-1. Begin your prompt with "Switch to month view" or similar phrases
-2. Only mention changing the calendar view to month view
-3. Do not include other calendar interactions like adding events or selecting specific dates
+1. Begin your prompt with "Switch to month view" or similar phrases.
+2. Only mention changing the calendar view to month view.
+3. Do not include other calendar interactions like adding events or selecting specific dates.
 """
 
 SELECT_MONTH_USE_CASE = UseCase(
@@ -55,9 +55,9 @@ SELECT_MONTH_USE_CASE = UseCase(
 
 SELECT_WEEK_INFO = """
 CRITICAL REQUIREMENT:
-1. Begin your prompt with "Switch to week view" or similar phrases
-2. Only mention changing the calendar view to week view
-3. Do not include other calendar interactions like adding events or selecting specific dates
+1. Begin your prompt with "Switch to week view" or similar phrases.
+2. Only mention changing the calendar view to week view.
+3. Do not include other calendar interactions like adding events or selecting specific dates.
 """
 
 SELECT_WEEK_USE_CASE = UseCase(
@@ -82,9 +82,9 @@ SELECT_WEEK_USE_CASE = UseCase(
 
 SELECT_FIVE_DAYS_INFO = """
 CRITICAL REQUIREMENT:
-1. Begin your prompt with "Switch to 5-day view" or similar phrases
-2. Only mention changing the calendar view to 5-day view
-3. Do not include other calendar interactions like adding events or selecting specific dates
+1. Begin your prompt with "Switch to 5-day view" or similar phrases.
+2. Only mention changing the calendar view to 5-day view.
+3. Do not include other calendar interactions like adding events or selecting specific dates.
 """
 
 SELECT_FIVE_DAYS_USE_CASE = UseCase(
@@ -109,9 +109,9 @@ SELECT_FIVE_DAYS_USE_CASE = UseCase(
 
 SELECT_DAY_INFO = """
 CRITICAL REQUIREMENT:
-1. Begin your prompt with "Switch to day view" or similar phrases
-2. Only mention changing the calendar view to single day view
-3. Do not include other calendar interactions like adding events or selecting specific dates
+1. Begin your prompt with "Switch to day view" or similar phrases.
+2. Only mention changing the calendar view to single day view.
+3. Do not include other calendar interactions like adding events or selecting specific dates.
 """
 
 SELECT_DAY_USE_CASE = UseCase(
@@ -136,9 +136,9 @@ SELECT_DAY_USE_CASE = UseCase(
 
 SELECT_TODAY_INFO = """
 CRITICAL REQUIREMENT:
-1. Begin your prompt with phrases like "Go to today" or "Jump to today's date"
-2. Focus only on navigating to today's date in the calendar
-3. Do not include other calendar interactions like adding events or changing views
+1. Begin your prompt with phrases like "Go to today" or "Jump to today's date".
+2. Focus only on navigating to today's date in the calendar.
+3. Do not include other calendar interactions like adding events or changing views.
 """
 
 SELECT_TODAY_USE_CASE = UseCase(
@@ -163,9 +163,8 @@ SELECT_TODAY_USE_CASE = UseCase(
 
 ADD_NEW_CALENDAR_INFO = """
 CRITICAL REQUIREMENT:
-1. Begin your prompt with phrases like "Create a new calendar" or "Add a calendar"
-2. Only focus on initiating the calendar creation process
-3. Do not include details about calendar settings, those come in the CREATE_CALENDAR event
+1. The prompt must only mention clicking the add calendar button or icon.
+2. Do not include any other actions or details about calendar creation.
 """
 
 ADD_NEW_CALENDAR_USE_CASE = UseCase(
@@ -176,11 +175,11 @@ ADD_NEW_CALENDAR_USE_CASE = UseCase(
     constraints_generator=False,
     additional_prompt_info=ADD_NEW_CALENDAR_INFO,
     examples=[
-        {"prompt": "I want to add a new calendar.", "prompt_for_task_generation": "Open the add new calendar modal."},
-        {"prompt": "Create a new calendar for me.", "prompt_for_task_generation": "Open interface to create new calendar."},
-        {"prompt": "Add another calendar to my account.", "prompt_for_task_generation": "Add new calendar to the sidebar."},
-        {"prompt": "I need a new calendar category.", "prompt_for_task_generation": "Create new calendar category."},
-        {"prompt": "Open the dialog to add a new calendar.", "prompt_for_task_generation": "Open add calendar dialog."},
+        {"prompt": "Click the add calendar button.", "prompt_for_task_generation": "Click add calendar."},
+        {"prompt": "Press the button to add a calendar.", "prompt_for_task_generation": "Click add calendar button."},
+        {"prompt": "Select the option to add a calendar.", "prompt_for_task_generation": "Click add calendar option."},
+        {"prompt": "Click to add a new calendar.", "prompt_for_task_generation": "Click add calendar."},
+        {"prompt": "Tap the add calendar icon.", "prompt_for_task_generation": "Click add calendar icon."},
     ],
 )
 
@@ -190,9 +189,9 @@ ADD_NEW_CALENDAR_USE_CASE = UseCase(
 
 CREATE_CALENDAR_INFO = """
 CRITICAL REQUIREMENT:
-1. Include specific calendar details: name, description, and color
-2. The prompt should express completion of calendar creation with these details
-3. Be sure to mention the calendar color using the exact hex code if specified in constraints
+1. Include specific calendar details: name and description.
+2. The prompt should express completion of calendar creation with these details.
+3. Do not mention color, as it is not part of the generated constraints.
 """
 
 CREATE_CALENDAR_USE_CASE = UseCase(
@@ -204,21 +203,21 @@ CREATE_CALENDAR_USE_CASE = UseCase(
     additional_prompt_info=CREATE_CALENDAR_INFO,
     examples=[
         {
-            "prompt": "Create a 'Work' calendar with blue color (#2196F3) for my job-related events.",
-            "prompt_for_task_generation": "Create calendar named 'Work' with blue color (#2196F3) and description for job events.",
+            "prompt": "Create a 'Projects' calendar for my job-related events.",
+            "prompt_for_task_generation": "Create calendar named 'Projects' with a description for job events.",
         },
         {
-            "prompt": "Make a new 'Family' calendar in red (#E53935) to track family activities.",
-            "prompt_for_task_generation": "Create 'Family' calendar with red color (#E53935) for family activities.",
+            "prompt": "Make a new 'Holidays' calendar to track family vacations.",
+            "prompt_for_task_generation": "Create 'Holidays' calendar for family vacations.",
         },
         {
-            "prompt": "Set up a 'Fitness' calendar in green (#4CAF50) for my workout schedule.",
-            "prompt_for_task_generation": "Create 'Fitness' calendar with green color (#4CAF50) for workout tracking.",
+            "prompt": "Set up a 'Fitness' calendar for my workout schedule.",
+            "prompt_for_task_generation": "Create 'Fitness' calendar for workout tracking.",
         },
-        {"prompt": "Create a 'Travel' calendar with purple (#9C27B0) to plan my trips.", "prompt_for_task_generation": "Create 'Travel' calendar with purple color (#9C27B0) for trip planning."},
+        {"prompt": "Create a 'Travel' calendar to plan my trips.", "prompt_for_task_generation": "Create 'Travel' calendar for trip planning."},
         {
-            "prompt": "Make a 'Study' calendar with yellow (#FDD835) for my classes and assignments.",
-            "prompt_for_task_generation": "Create 'Study' calendar with yellow color (#FDD835) for academic planning.",
+            "prompt": "Make a 'Study' calendar for my classes and assignments.",
+            "prompt_for_task_generation": "Create 'Study' calendar for academic planning.",
         },
     ],
 )
@@ -229,27 +228,25 @@ CREATE_CALENDAR_USE_CASE = UseCase(
 
 CHOOSE_CALENDAR_INFO = """
 CRITICAL REQUIREMENT:
-1. Clearly state whether you want to show or hide a specific calendar.
-2. Use the calendar name exactly as provided in the constraints.
-3. If the calendar name is not 'Work' or 'Family', first request to create the calendar, then request to select or unselect it.
-Examples:
-{'calendar_name': 'Work', 'selected': false} -> "Unselect the 'Work' calendar."
-{'calendar_name': 'Personal', 'selected': false} -> "First, create a new calendar named 'Personal', then unselect it."
+1. The prompt must be about hiding or deselecting a calendar, as the 'selected' constraint is always false.
+2. Use the calendar name exactly as provided in the constraints (e.g., 'Personal', 'Fitness').
+3. Do not mention color.
+Example for {'calendar_name': 'Personal', 'selected': false} -> "Unselect the 'Personal' calendar."
 """
 
 CHOOSE_CALENDAR_USE_CASE = UseCase(
     name="CHOOSE_CALENDAR",
-    description="Triggered when the user selects or deselects a calendar from the sidebar.",
+    description="Triggered when the user deselects a calendar from the sidebar.",
     event=ChooseCalendarEvent,
     event_source_code=ChooseCalendarEvent.get_source_code_of_class(),
     constraints_generator=generate_choose_calendar_constraints,
     additional_prompt_info=CHOOSE_CALENDAR_INFO,
     examples=[
-        {"prompt": "Show my Family calendar with red color (#E53935).", "prompt_for_task_generation": "Select the Family calendar with red color (#E53935)."},
-        {"prompt": "Hide the Work calendar.", "prompt_for_task_generation": "Deselect the Work calendar."},
-        {"prompt": "Make the blue Personal calendar visible.", "prompt_for_task_generation": "Show the Personal calendar with blue color."},
-        {"prompt": "I don't want to see the Study calendar right now.", "prompt_for_task_generation": "Hide the Study calendar."},
-        {"prompt": "Display the yellow Holiday calendar (#FDD835).", "prompt_for_task_generation": "Select the Holiday calendar with yellow color (#FDD835)."},
+        {"prompt": "Hide the Personal calendar.", "prompt_for_task_generation": "Deselect the Personal calendar."},
+        {"prompt": "I don't want to see the Fitness calendar right now.", "prompt_for_task_generation": "Hide the Fitness calendar."},
+        {"prompt": "Unselect the 'Study' calendar.", "prompt_for_task_generation": "Deselect the Study calendar."},
+        {"prompt": "Remove the 'Travel' calendar from view.", "prompt_for_task_generation": "Hide the Travel calendar."},
+        {"prompt": "Deselect the 'Holidays' calendar.", "prompt_for_task_generation": "Deselect the Holidays calendar."},
     ],
 )
 
@@ -259,10 +256,10 @@ CHOOSE_CALENDAR_USE_CASE = UseCase(
 
 ADD_EVENT_INFO = """
 CRITICAL REQUIREMENT:
-1. Include all event details: title, calendar, date, start time, end time
-2. Format times as hours and minutes (e.g., "5:30 PM", "17:30")
-3. Specify which calendar the event should be added to
-4. If color is specified in constraints, mention it using the exact hex code
+1. Include all event details: title, calendar, date, start time, and end time.
+2. Format times as hours and minutes (e.g., "5:30 PM", "17:30").
+3. Specify which calendar the event should be added to.
+4. Do not mention color.
 """
 
 ADD_EVENT_USE_CASE = UseCase(
@@ -274,24 +271,24 @@ ADD_EVENT_USE_CASE = UseCase(
     additional_prompt_info=ADD_EVENT_INFO,
     examples=[
         {
-            "prompt": "Add a meeting titled 'Team Sync' to my Work calendar on August 10th from 2:00 PM to 3:00 PM.",
-            "prompt_for_task_generation": "Add 'Team Sync' event to Work calendar on August 10 from 14:00 to 15:00.",
+            "prompt": "Add 'Doctor appointment' to my 'Personal' calendar for tomorrow at 10:00 AM, ending at 10:30 AM.",
+            "prompt_for_task_generation": "Create event 'Doctor appointment' in 'Personal' calendar for tomorrow from 10:00 to 10:30.",
         },
         {
-            "prompt": "Create a 'Doctor Appointment' in my Personal calendar for July 15th at 10:30 AM lasting 1 hour.",
-            "prompt_for_task_generation": "Add 'Doctor Appointment' to Personal calendar on July 15 at 10:30 for 1 hour.",
+            "prompt": "Schedule a 'Conference call' in the 'Projects' calendar for next Monday from 15:00 to 16:00.",
+            "prompt_for_task_generation": "Add 'Conference call' to 'Projects' calendar on next Monday, 15:00-16:00.",
         },
         {
-            "prompt": "Schedule 'Dinner with Friends' in my Social calendar on Friday at 7:00 PM until 9:00 PM.",
-            "prompt_for_task_generation": "Add 'Dinner with Friends' to Social calendar on Friday from 19:00 to 21:00.",
+            "prompt": "Put 'Workout' on the 'Fitness' calendar for today at 6:00 PM, lasting one hour.",
+            "prompt_for_task_generation": "Add 'Workout' to 'Fitness' calendar today from 6:00 PM to 7:00 PM.",
         },
         {
-            "prompt": "Add 'Gym Session' to my Fitness calendar tomorrow morning from 6:30 AM to 7:30 AM.",
-            "prompt_for_task_generation": "Schedule 'Gym Session' in Fitness calendar tomorrow 6:30-7:30.",
+            "prompt": "Add a 'Study session' to the 'Study' calendar for this Friday from 9:00 AM to 11:30 AM.",
+            "prompt_for_task_generation": "Create 'Study session' in 'Study' calendar this Friday, 9:00 AM to 11:30 AM.",
         },
         {
-            "prompt": "Create a 'Project Deadline' event in my Work calendar (blue color) on August 25th all day.",
-            "prompt_for_task_generation": "Add all-day 'Project Deadline' event to Work calendar (blue) on August 25.",
+            "prompt": "I have a 'Lunch' meeting, please add it to my 'Personal' calendar for today at 12:30 PM for 30 minutes.",
+            "prompt_for_task_generation": "Add 'Lunch' to 'Personal' calendar today from 12:30 PM to 1:00 PM.",
         },
     ],
 )
@@ -302,9 +299,9 @@ ADD_EVENT_USE_CASE = UseCase(
 
 CELL_CLICKED_INFO = """
 CRITICAL REQUIREMENT:
-1. Clearly indicate selecting a specific date or time slot in the calendar
-2. Specify the view type (Month, Week, Day) where the selection is happening
-3. For week or day views, include the specific hour if available in constraints
+1. Clearly indicate selecting a specific date or time slot in the calendar.
+2. Specify the view type (Month, Week, Day, 5 days) where the selection is happening.
+3. For week, day, or 5-day views, include the specific hour if available in constraints.
 """
 
 CELL_CLICKED_USE_CASE = UseCase(
@@ -316,10 +313,10 @@ CELL_CLICKED_USE_CASE = UseCase(
     additional_prompt_info=CELL_CLICKED_INFO,
     examples=[
         {"prompt": "Select July 23rd in the month view.", "prompt_for_task_generation": "Click on July 23 cell in month view."},
-        {"prompt": "Click on the 3 PM time slot for Wednesday in week view.", "prompt_for_task_generation": "Select Wednesday at 15:00 in week view."},
-        {"prompt": "I want to check August 7th in the calendar.", "prompt_for_task_generation": "Click on August 7 in the calendar."},
-        {"prompt": "Select 9:00 AM on Monday in day view.", "prompt_for_task_generation": "Click Monday 9:00 AM slot in day view."},
-        {"prompt": "Navigate to next Tuesday's afternoon slot around 2 PM.", "prompt_for_task_generation": "Select Tuesday at 14:00 in the calendar."},
+        {"prompt": "In the week view, click on Wednesday at 3 PM.", "prompt_for_task_generation": "Click on Wednesday 3 PM slot in week view."},
+        {"prompt": "I want to select 10 AM on the current day in the day view.", "prompt_for_task_generation": "Select 10 AM in the day view."},
+        {"prompt": "Click on the 15th of next month from the month view.", "prompt_for_task_generation": "Click on the 15th of next month in month view."},
+        {"prompt": "In the 5-day view, select Friday at noon.", "prompt_for_task_generation": "Click on Friday 12:00 PM in 5-day view."},
     ],
 )
 
@@ -329,9 +326,9 @@ CELL_CLICKED_USE_CASE = UseCase(
 
 CANCEL_ADD_EVENT_INFO = """
 CRITICAL REQUIREMENT:
-1. Explicitly mention canceling or abandoning event creation
-2. If title or date is specified in constraints, include that information
-3. Make clear that the user is stopping the event creation process
+1. Explicitly mention canceling or abandoning event creation.
+2. If a title or date is specified in the constraints, include that information.
+3. Make it clear that the user is stopping the event creation process.
 """
 
 CANCEL_ADD_EVENT_USE_CASE = UseCase(
@@ -343,10 +340,10 @@ CANCEL_ADD_EVENT_USE_CASE = UseCase(
     additional_prompt_info=CANCEL_ADD_EVENT_INFO,
     examples=[
         {"prompt": "Cancel creating this event.", "prompt_for_task_generation": "Cancel the event creation process."},
-        {"prompt": "I changed my mind, don't add the 'Meeting' event.", "prompt_for_task_generation": "Cancel adding the 'Meeting' event."},
-        {"prompt": "Close the event form without saving.", "prompt_for_task_generation": "Close event form without creating the event."},
-        {"prompt": "Discard the event scheduled for August 7th.", "prompt_for_task_generation": "Cancel the event creation for August 7th."},
-        {"prompt": "Exit event creation. I don't want to add this anymore.", "prompt_for_task_generation": "Exit the event creation modal without saving."},
+        {"prompt": "Never mind, don't add the 'Meeting' event.", "prompt_for_task_generation": "Cancel adding the 'Meeting' event."},
+        {"prompt": "I made a mistake, cancel the event for tomorrow.", "prompt_for_task_generation": "Cancel creating the event for tomorrow."},
+        {"prompt": "Close the event creation dialog without saving.", "prompt_for_task_generation": "Cancel event creation."},
+        {"prompt": "Actually, don't create that event.", "prompt_for_task_generation": "Abandon event creation."},
     ],
 )
 ###############################################################################
@@ -355,10 +352,10 @@ CANCEL_ADD_EVENT_USE_CASE = UseCase(
 
 DELETE_ADDED_EVENT_INFO = """
 CRITICAL REQUIREMENT:
-1. Explicitly mention deleting or removing an existing event from the calendar
-2. Include the event title if specified in constraints
-3. Optionally mention the date or calendar name if specified in constraints
-4. Make clear that the user is removing an already created event (not canceling event creation)
+1. Explicitly mention deleting or removing an existing event from the calendar.
+2. Include the event title if specified in constraints.
+3. Optionally mention the date or calendar name if specified in constraints.
+4. Make it clear that the user is removing an already created event, not canceling its creation.
 """
 
 DELETE_ADDED_EVENT_USE_CASE = UseCase(
@@ -370,23 +367,23 @@ DELETE_ADDED_EVENT_USE_CASE = UseCase(
     additional_prompt_info=DELETE_ADDED_EVENT_INFO,
     examples=[
         {"prompt": "Delete the 'Team Meeting' event from my calendar.", "prompt_for_task_generation": "Remove 'Team Meeting' event from calendar."},
-        {"prompt": "Remove my dentist appointment scheduled on August 15th.", "prompt_for_task_generation": "Delete dentist appointment event from August 15."},
-        {"prompt": "I need to delete the 'Conference Call' from my Work calendar.", "prompt_for_task_generation": "Delete 'Conference Call' event from Work calendar."},
-        {"prompt": "Please remove the lunch meeting I scheduled for tomorrow.", "prompt_for_task_generation": "Delete lunch meeting event scheduled for tomorrow."},
-        {"prompt": "Delete the 'Project Review' event from my calendar.", "prompt_for_task_generation": "Remove 'Project Review' event from calendar."},
+        {"prompt": "Remove the 'Doctor appointment' on the 15th.", "prompt_for_task_generation": "Delete 'Doctor appointment' on the 15th."},
+        {"prompt": "I want to delete the 'Lunch' event from my 'Personal' calendar.", "prompt_for_task_generation": "Delete 'Lunch' event from 'Personal' calendar."},
+        {"prompt": "Please remove the 'Conference call' event.", "prompt_for_task_generation": "Delete the 'Conference call' event."},
+        {"prompt": "Delete the event titled 'Workout' for today.", "prompt_for_task_generation": "Remove the 'Workout' event scheduled for today."},
     ],
 )
 ALL_USE_CASES = [
-    SELECT_MONTH_USE_CASE,
-    SELECT_WEEK_USE_CASE,
-    SELECT_FIVE_DAYS_USE_CASE,
-    SELECT_DAY_USE_CASE,
-    SELECT_TODAY_USE_CASE,
-    ADD_NEW_CALENDAR_USE_CASE,
+    # SELECT_MONTH_USE_CASE,
+    # SELECT_WEEK_USE_CASE,
+    # SELECT_FIVE_DAYS_USE_CASE,
+    # SELECT_DAY_USE_CASE,
+    # SELECT_TODAY_USE_CASE,
+    # ADD_NEW_CALENDAR_USE_CASE,
     CREATE_CALENDAR_USE_CASE,
-    CHOOSE_CALENDAR_USE_CASE,
-    ADD_EVENT_USE_CASE,
-    CELL_CLICKED_USE_CASE,
-    CANCEL_ADD_EVENT_USE_CASE,
-    DELETE_ADDED_EVENT_USE_CASE,
+    # CHOOSE_CALENDAR_USE_CASE,
+    # ADD_EVENT_USE_CASE,
+    # CELL_CLICKED_USE_CASE,
+    # CANCEL_ADD_EVENT_USE_CASE,
+    # DELETE_ADDED_EVENT_USE_CASE,
 ]

@@ -2,7 +2,7 @@ from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUA
 
 CALENDAR_NAMES = ["Personal", "Fitness", "Study", "Travel", "Holidays", "Birthdays", "Projects"]
 EVENT_TITLES = ["Meeting", "Doctor appointment", "Lunch", "Conference call", "Workout", "Study session"]
-EXISTING_CALENDER_NAMES = ["Work", "Family"]
+EXISTING_CALENDAR_NAMES = ["Work", "Family"]
 DESCRIPTIONS = [
     "Team meeting to discuss project updates",
     "Doctor's appointment",
@@ -18,11 +18,11 @@ DESCRIPTIONS = [
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 
-FIELD_OPERATORS_CREATE_CALENDER_MAP = {
+FIELD_OPERATORS_CREATE_CALENDAR_MAP = {
     "name": STRING_OPERATORS,
     "description": STRING_OPERATORS,
 }
-FIELD_OPERATORS_CHOOSE_CALENDER_MAP = {
+FIELD_OPERATORS_CHOOSE_CALENDAR_MAP = {
     "calendar_name": STRING_OPERATORS,
     "selected": [EQUALS],
 }
