@@ -16,10 +16,18 @@ from .events import (
     WriteJobTitleEvent,
 )
 from .generation_functions import (
+    generate_add_skill_constraint,
     generate_book_consultant_constraint,
+    generate_cancel_hire_consultation_constraint,
+    generate_close_posting_job_constraint,
     generate_hire_button_clicked_constraint,
     generate_hire_consultation_constraint,
+    generate_job_posting_constraint,
+    generate_remove_skill_constraint,
+    generate_search_skill_constraint,
     generate_select_hiring_team_constraint,
+    generate_submit_job_constraint,
+    generate_write_job_title_constraint,
 )
 
 BOOK_A_CONSULTATION_USE_CASE = UseCase(
@@ -136,7 +144,7 @@ CANCEL_HIRE_CONSULTATION_USE_CASE = UseCase(
     description="The user cancel hiring of a chosen consultation",
     event=CancelHireEvent,
     event_source_code=CancelHireEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_cancel_hire_consultation_constraint,
     examples=[
         {
             "prompt": "User clicks 'cancel' button to cancel the hiring of a chosen consultation",
@@ -156,7 +164,7 @@ POST_A_JOB_USE_CASE = UseCase(
     description="The user post a job",
     event=PostAJobEvent,
     event_source_code=PostAJobEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_job_posting_constraint,
     examples=[
         {
             "prompt": "User clicks 'Post a job' button to initiate the posting process for a job",
@@ -174,7 +182,7 @@ WRITING_JOB_TITLE_USE_CASE = UseCase(
     description="The user writes a title of job",
     event=WriteJobTitleEvent,
     event_source_code=WriteJobTitleEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_write_job_title_constraint,
     examples=[
         {
             "prompt": "User initiates a process of job posting by writing a strong title of the job",
@@ -192,7 +200,7 @@ SEARCH_SKILL_USE_CASE = UseCase(
     description="The user search skill",
     event=SearchSkillEvent,
     event_source_code=SearchSkillEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_search_skill_constraint,
     examples=[
         {
             "prompt": "User searches skill that is required for a job",
@@ -210,7 +218,7 @@ ADD_SKILL_USE_CASE = UseCase(
     description="The user adds a skill",
     event=AddSkillEvent,
     event_source_code=AddSkillEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_add_skill_constraint,
     examples=[
         {
             "prompt": "User clicks 'Add' button to add a skill after successfully searched a skill that is required for a job",
@@ -228,7 +236,7 @@ REMOVE_SKILL_USE_CASE = UseCase(
     description="The user removes the added skill",
     event=RemoveSkillEvent,
     event_source_code=RemoveSkillEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_remove_skill_constraint,
     examples=[
         {
             "prompt": "The user remove the skill that is successfully added for job requirement",
@@ -284,7 +292,7 @@ SUBMIT_JOB_USE_CASE = UseCase(
     description="The user submits a job",
     event=SubmitJobEvent,
     event_source_code=SubmitJobEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_submit_job_constraint,
     examples=[
         {
             "prompt": "The user submits a job by clicking 'Submit Job Post' button",
@@ -318,7 +326,7 @@ CLOSE_JOB_POSTING_USE_CASE = UseCase(
     description="The user closes the posting of job window",
     event=ClosePostAJobWindowEvent,
     event_source_code=ClosePostAJobWindowEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_close_posting_job_constraint,
     examples=[
         {
             "prompt": "The user clicks 'x' button to close the job posting window",
