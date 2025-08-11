@@ -190,8 +190,7 @@ ADD_NEW_CALENDAR_USE_CASE = UseCase(
 CREATE_CALENDAR_INFO = """
 CRITICAL REQUIREMENT:
 1. Include specific calendar details: name and description.
-2. The prompt should express completion of calendar creation with these details.
-3. Do not mention color, as it is not part of the generated constraints.
+2. Start your request with "Create a new calendar" or similar phrases.
 """
 
 CREATE_CALENDAR_USE_CASE = UseCase(
@@ -227,11 +226,16 @@ CREATE_CALENDAR_USE_CASE = UseCase(
 ###############################################################################
 
 CHOOSE_CALENDAR_INFO = """
-CRITICAL REQUIREMENT:
-1. The prompt must be about hiding or deselecting a calendar, as the 'selected' constraint is always false.
-2. Use the calendar name exactly as provided in the constraints (e.g., 'Personal', 'Fitness').
-3. Do not mention color.
-Example for {'calendar_name': 'Personal', 'selected': false} -> "Unselect the 'Personal' calendar."
+CRITICAL REQUIREMENTS:
+1. The prompt must focus on hiding or deselecting a calendar (the 'selected' constraint is always false).
+2. Use the calendar name exactly as provided in the constraints (e.g., `Personal`, `Fitness`).
+   Example: For {'calendar_name': 'Personal', 'selected': False} → "Unselect the 'Personal' calendar."
+3. If the calendar name is not 'Work', 'Family', or a substring of those, first create that calendar, then unselect it.
+4. If the constraint uses an operator (e.g., 'contains'), clearly mention it in the prompt.
+   Example: {'calendar_name': {'operator': 'contains', 'value': 've'}, 'selected': False}
+   Correct: "Unselect the calendar that contains 've' in its name."
+   Incorrect: "Unselect the calendar 've' name, but first create it if it doesn't exist." (constraint not mentioned)
+5. **Do not** mention the constraint for 'selected'.
 """
 
 CHOOSE_CALENDAR_USE_CASE = UseCase(
@@ -380,8 +384,8 @@ ALL_USE_CASES = [
     # SELECT_DAY_USE_CASE,
     # SELECT_TODAY_USE_CASE,
     # ADD_NEW_CALENDAR_USE_CASE,
-    CREATE_CALENDAR_USE_CASE,
-    # CHOOSE_CALENDAR_USE_CASE,
+    # CREATE_CALENDAR_USE_CASE,
+    CHOOSE_CALENDAR_USE_CASE,
     # ADD_EVENT_USE_CASE,
     # CELL_CLICKED_USE_CASE,
     # CANCEL_ADD_EVENT_USE_CASE,
