@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from .classes import WebProject
-from .projects.autocalender_11.main import autocalender_project
+from .projects.autocalender_11.main import autocalendar_project
 from .projects.autocrm_5.main import crm_project
 from .projects.autolodge_8.main import lodge_project
 from .projects.automail_6.main import automail_project
@@ -24,5 +24,5 @@ demo_web_projects: list[WebProject] = [
     ...,
     ...,
     ...,
-    autocalender_project,
+    autocalendar_project,
 ]
