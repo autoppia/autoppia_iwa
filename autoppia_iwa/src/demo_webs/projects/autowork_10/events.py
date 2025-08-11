@@ -1,10 +1,10 @@
+# CONSULTANT RELATED EVENTS
+
 from pydantic import BaseModel
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
-
-# CONSULTANT RELATED EVENTS
 
 
 class Consultant(BaseModel):
@@ -18,9 +18,9 @@ class Consultant(BaseModel):
 
 
 class BookAConsultationEvent(Event, BaseEventValidator):
-    """event triggered when someone click on book a consultation button"""
+    """Event triggered when someone clicks on the book a consultation button"""
 
-    event_name = "BOOK_A_CONSULTATION"
+    event_name: str = "BOOK_A_CONSULTATION"
     consultant: Consultant
 
     class ValidationCriteria(CriterionValue):
@@ -30,25 +30,25 @@ class BookAConsultationEvent(Event, BaseEventValidator):
         rate: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         role: str | CriterionValue | None = None
-        # timestamp: int | CriterionValue | None = None
+        # timestamp: Optional[int | CriterionValue] = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.country, self.criteria.country),
-                self._validate_field(self.expertName, self.criteria.expertName),
-                self._validate_field(self.jobs, self.criteria.jobs),
-                self._validate_field(self.rate, self.criteria.rate),
-                self._validate_field(self.rating, self.criteria.rating),
-                self._validate_field(self.role, self.criteria.role),
-                # self._validate_field(self.timestamp, self.criteria.timestamp)
+                self._validate_field(self.consultant.country, criteria.country),
+                self._validate_field(self.consultant.expertName, criteria.expertName),
+                self._validate_field(self.consultant.jobs, criteria.jobs),
+                self._validate_field(self.consultant.rate, criteria.rate),
+                self._validate_field(self.consultant.rating, criteria.rating),
+                self._validate_field(self.consultant.role, criteria.role),
+                # self._validate_field(self.consultant.timestamp, criteria.timestamp)
             ]
         )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "BookAConsultation":
+    def parse(cls, backend_event: "BackendEvent") -> "BookAConsultationEvent":
         base_event = Event.parse(backend_event)
         return cls(
             event_name=base_event.event_name,
@@ -69,7 +69,7 @@ class HireButtonData(BaseModel):
 class HireButtonClickedEvent(Event, BaseEventValidator):
     """event triggered when someone click on hire button"""
 
-    event_name = "HIRE_BTN_CLICKED"
+    event_name: str = "HIRE_BTN_CLICKED"
     hireButton: HireButtonData
 
     class ValidationCriteria(CriterionValue):
@@ -83,15 +83,15 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.hireButton.country, self.criteria.country),
-                self._validate_field(self.hireButton.expertName, self.criteria.expertName),
-                self._validate_field(self.hireButton.expertSlug, self.criteria.expertSlug),
-                self._validate_field(self.hireButton.role, self.criteria.role),
+                self._validate_field(self.hireButton.country, criteria.country),
+                self._validate_field(self.hireButton.expertName, criteria.expertName),
+                self._validate_field(self.hireButton.expertSlug, criteria.expertSlug),
+                self._validate_field(self.hireButton.role, criteria.role),
             ]
         )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "HireButtonClicked":
+    def parse(cls, backend_event: "BackendEvent") -> "HireButtonClickedEvent":
         base_event = Event.parse(backend_event)
         return cls(
             event_name=base_event.event_name,
@@ -109,7 +109,7 @@ class SelectHiringTeamEventData(BaseModel):
 
 
 class SelectHiringTeamEvent(Event, BaseEventValidator):
-    event_name = "SELECT_HIRING_TEAM"
+    event_name: str = "SELECT_HIRING_TEAM"
     select_hiring_team: SelectHiringTeamEventData
 
     class ValidationCriteria(CriterionValue):
@@ -123,9 +123,9 @@ class SelectHiringTeamEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.select_hiring_team.expertName, self.criteria.expertName),
-                self._validate_field(self.select_hiring_team.expertSlug, self.criteria.expertSlug),
-                self._validate_field(self.select_hiring_team.team, self.criteria.team),
+                self._validate_field(self.select_hiring_team.expertName, criteria.expertName),
+                self._validate_field(self.select_hiring_team.expertSlug, criteria.expertSlug),
+                self._validate_field(self.select_hiring_team.team, criteria.team),
             ]
         )
 
@@ -155,7 +155,7 @@ class HireConsultant(BaseModel):
 class HireConsultantEvent(Event, BaseEventValidator):
     """event triggered when someone click on hire button inside hire page"""
 
-    event_name = "HIRE_CONSULTANT"
+    event_name: str = "HIRE_CONSULTANT"
 
     hireConsultant: HireConsultant
 
@@ -175,9 +175,9 @@ class HireConsultantEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(hireConsultant.country, self.criteria.country),
-                self._validate_field(hireConsultant.expertName, self.criteria.expertName),
-                self._validate_field(hireConsultant.expertSlug, self.criteria.expertSlug),
+                self._validate_field(hireConsultant.country, criteria.country),
+                self._validate_field(hireConsultant.expertName, criteria.expertName),
+                self._validate_field(hireConsultant.expertSlug, criteria.expertSlug),
             ]
         )
 
@@ -196,7 +196,7 @@ class HireConsultantEvent(Event, BaseEventValidator):
 class CancelHireEvent(Event, BaseEventValidator):
     """event triggered when someone click cancel button instead of hire while hiring consultant"""
 
-    event_name = "CANCEL_HIRE"
+    event_name: str = "CANCEL_HIRE"
     Button: str
 
     class ValidationCriteria(CriterionValue):
@@ -207,7 +207,7 @@ class CancelHireEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.Button, self.criteria.Button),
+                self._validate_field(self.Button, criteria.Button),
             ]
         )
 
@@ -234,7 +234,7 @@ class CancelHireEvent(Event, BaseEventValidator):
 class PostAJobEvent(Event, BaseEventValidator):
     """event triggered when someone click on post a job button"""
 
-    event_name = "POST_A_JOB"
+    event_name: str = "POST_A_JOB"
     page: str  # direct validate web demo data without pydantic class
     source: str  # direct validate web demo data without pydantic class
 
@@ -250,13 +250,13 @@ class PostAJobEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.page, self.criteria.page),
-                self._validate_field(self.source, self.criteria.source),
+                self._validate_field(self.page, criteria.page),
+                self._validate_field(self.source, criteria.source),
             ]
         )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "PostAJob":
+    def parse(cls, backend_event: "BackendEvent") -> "PostAJobEvent":
         base_event = Event.parse(backend_event)
         data = base_event.data
         return cls(
@@ -273,7 +273,7 @@ class PostAJobEvent(Event, BaseEventValidator):
 class WriteJobTitleEvent(Event, BaseEventValidator):
     """event triggered when someone start writing job title"""
 
-    event_name = "WRITE_JOB_TITLE"
+    event_name: str = "WRITE_JOB_TITLE"
     query: str
     step: int
 
@@ -287,13 +287,13 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.query, self.criteria.query),
-                self._validate_field(self.step, self.criteria.step),
+                self._validate_field(self.query, criteria.query),
+                self._validate_field(self.step, criteria.step),
             ]
         )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "WriteJobTitle":
+    def parse(cls, backend_event: "BackendEvent") -> "WriteJobTitleEvent":
         base_event = Event.parse(backend_event)
         return cls(
             event_name=base_event.event_name,
@@ -324,9 +324,9 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
 #             return True
 #
 #         return all([
-#             self._validate_field(self.buttonText, self.criteria.buttonText),
-#             self._validate_field(self.step, self.criteria.step),
-#             self._validate_field(self.title, self.criteria.title),
+#             self._validate_field(self.buttonText, criteria.buttonText),
+#             self._validate_field(self.step, criteria.step),
+#             self._validate_field(self.title, criteria.title),
 #         ])
 #
 #     @classmethod
@@ -347,7 +347,7 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
 class SearchSkillEvent(Event, BaseEventValidator):
     """event triggered when someone start typing to search skills"""
 
-    event_name = "SEARCH_SKILLS"
+    event_name: str = "SEARCH_SKILLS"
     query: str
 
     # timestamp : int
@@ -361,7 +361,7 @@ class SearchSkillEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.query, self.criteria.query),
+                self._validate_field(self.query, criteria.query),
             ]
         )
 
@@ -380,7 +380,7 @@ class SearchSkillEvent(Event, BaseEventValidator):
 class AddSkillEvent(Event, BaseEventValidator):
     """event triggered when someone click on Add button after successful search"""
 
-    event_name = "ADD_SKILL"
+    event_name: str = "ADD_SKILL"
     skill: str
     method: str
     timestamp: int
@@ -396,9 +396,9 @@ class AddSkillEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.method, self.criteria.method),
-                self._validate_field(self.skill, self.criteria.skill),
-                # self._validate_field(self.timestamp, self.criteria.timestamp),
+                self._validate_field(self.method, criteria.method),
+                self._validate_field(self.skill, criteria.skill),
+                # self._validate_field(self.timestamp, criteria.timestamp),
             ]
         )
 
@@ -418,7 +418,7 @@ class AddSkillEvent(Event, BaseEventValidator):
 class RemoveSkillEvent(Event, BaseEventValidator):
     """event triggered when someone remove the added skill"""
 
-    event_name = "REMOVE_SKILL"
+    event_name: str = "REMOVE_SKILL"
     skill: str
     timestamp: int
 
@@ -431,7 +431,7 @@ class RemoveSkillEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.skill, self.criteria.skill),
+                self._validate_field(self.skill, criteria.skill),
             ]
         )
 
@@ -452,7 +452,7 @@ class RemoveSkillEvent(Event, BaseEventValidator):
 class AttachFileClickedEvent(Event, BaseEventValidator):
     """event triggered when someone click on AttachFile button and then attached a file"""
 
-    event_name = "ATTACH_FILE"
+    event_name: str = "ATTACH_FILE"
     filename: str
     size: int
     step: int
@@ -469,10 +469,10 @@ class AttachFileClickedEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.filename, self.criteria.filename),
-                self._validate_field(self.size, self.criteria.size),
-                self._validate_field(self.step, self.criteria.step),
-                self._validate_field(self.type, self.criteria.type),
+                self._validate_field(self.filename, criteria.filename),
+                self._validate_field(self.size, criteria.size),
+                self._validate_field(self.step, criteria.step),
+                self._validate_field(self.type, criteria.type),
             ]
         )
 
@@ -508,11 +508,10 @@ class AttachFileClickedEvent(Event, BaseEventValidator):
 class SubmitJobEvent(Event, BaseEventValidator):
     """event triggered when someone click submit job button after successful adding previous steps information"""
 
-    event_name = "SUBMIT_JOB"
+    event_name: str = "SUBMIT_JOB"
     # submit_job_button_data: SubmitJobButtonData
     budgetType: str
     description: str
-    duration: str
     duration: str
     rate_from: str
     rate_to: str
@@ -537,15 +536,15 @@ class SubmitJobEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.budgetType, self.criteria.budgetType),
-                self._validate_field(self.description, self.criteria.description),
-                self._validate_field(self.duration, self.criteria.duration),
-                self._validate_field(self.rate_from, self.criteria.rate_from),
-                self._validate_field(self.rate_to, self.criteria.rate_to),
-                self._validate_field(self.scope, self.criteria.scope),
-                self._validate_field(self.skills, self.criteria.skills),
-                self._validate_field(self.step, self.criteria.step),
-                self._validate_field(self.title, self.criteria.title),
+                self._validate_field(self.budgetType, criteria.budgetType),
+                self._validate_field(self.description, criteria.description),
+                self._validate_field(self.duration, criteria.duration),
+                self._validate_field(self.rate_from, criteria.rate_from),
+                self._validate_field(self.rate_to, criteria.rate_to),
+                self._validate_field(self.scope, criteria.scope),
+                self._validate_field(self.skills, criteria.skills),
+                self._validate_field(self.step, criteria.step),
+                self._validate_field(self.title, criteria.title),
             ]
         )
 
@@ -575,7 +574,7 @@ class SubmitJobEvent(Event, BaseEventValidator):
 class ClosePostAJobWindowEvent(Event, BaseEventValidator):
     """event triggered when someone close post a job window"""
 
-    event_name = "CLOSE_POST_A_JOB"
+    event_name: str = "CLOSE_POST_A_JOB"
     budgetType: str
     description: str
     duration: str
@@ -602,15 +601,15 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.budgetType, self.criteria.budgetType),
-                self._validate_field(self.description, self.criteria.description),
-                self._validate_field(self.duration, self.criteria.duration),
-                self._validate_field(self.rate_from, self.criteria.rate_from),
-                self._validate_field(self.rate_to, self.criteria.rate_to),
-                self._validate_field(self.scope, self.criteria.scope),
-                self._validate_field(self.skills, self.criteria.skills),
-                self._validate_field(self.step, self.criteria.step),
-                self._validate_field(self.title, self.criteria.title),
+                self._validate_field(self.budgetType, criteria.budgetType),
+                self._validate_field(self.description, criteria.description),
+                self._validate_field(self.duration, criteria.duration),
+                self._validate_field(self.rate_from, criteria.rate_from),
+                self._validate_field(self.rate_to, criteria.rate_to),
+                self._validate_field(self.scope, criteria.scope),
+                self._validate_field(self.skills, criteria.skills),
+                self._validate_field(self.step, criteria.step),
+                self._validate_field(self.title, criteria.title),
             ]
         )
 
@@ -634,3 +633,30 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
             step=data.get("step"),
             title=data.get("title"),
         )
+
+
+EVENTS = [
+    PostAJobEvent,
+    WriteJobTitleEvent,
+    SubmitJobEvent,
+    ClosePostAJobWindowEvent,
+    CancelHireEvent,
+    HireConsultantEvent,
+    AddSkillEvent,
+    RemoveSkillEvent,
+    SearchSkillEvent,
+    AttachFileClickedEvent,
+]
+
+ALL_BACKEND_EVENTS = {
+    "POST_A_JOB": PostAJobEvent,
+    "WRITE_JOB_TITLE": WriteJobTitleEvent,
+    "SUBMIT_JOB": SubmitJobEvent,
+    "CLOSE_POST_A_JOB": ClosePostAJobWindowEvent,
+    "CANCEL_HIRE": CancelHireEvent,
+    "HIRE_CONSULTANT": HireConsultantEvent,
+    "ADD_SKILL": AddSkillEvent,
+    "REMOVE_SKILL": RemoveSkillEvent,
+    "SEARCH_SKILLS": SearchSkillEvent,
+    "ATTACH_FILE": AttachFileClickedEvent,
+}

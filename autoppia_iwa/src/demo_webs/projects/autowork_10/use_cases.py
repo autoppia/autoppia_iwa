@@ -110,7 +110,25 @@ HIRE_CONSULTATION_USE_CASE = UseCase(
     event=HireConsultantEvent,
     event_source_code=HireConsultantEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_consultation_constraint,
-    examples=[{}],
+    examples=[
+        {
+            "prompt": "The user click 'Hire' button to confirm hiring of a chosen consultation",
+            "prompt_for_task_generation": "The user click 'Hire' button to confirm hiring of a chosen consultation",
+        },
+        {
+            "prompt": "Confirm hiring of a consultation whose country is 'Spain'",
+            "prompt_for_task_generation": "Confirm hiring of a consultation whose country is 'Spain'",
+        },
+        {
+            "prompt": "Confirm hiring of a consultation whose payment type is 'fixed'",
+            "prompt_for_task_generation": "Confirm hiring of a consultation whose payment type is 'fixed'",
+        },
+        {
+            "prompt": "Confirm hiring of a consultation whose name is not 'Alexa R'",
+            "prompt_for_task_generation": "Confirm hiring of a consultation whose name is not 'Alexa R'",
+        },
+        {"prompt": "Confirm hiring of a consultation whose role is 'Full Stack Developer'", "prompt_for_task_generation": "Confirm hiring of a consultation whose role is 'Full Stack Developer'"},
+    ],
 )
 
 CANCEL_HIRE_CONSULTATION_USE_CASE = UseCase(
@@ -119,49 +137,220 @@ CANCEL_HIRE_CONSULTATION_USE_CASE = UseCase(
     event=CancelHireEvent,
     event_source_code=CancelHireEvent.get_source_code_of_class(),
     constraints_generator=None,
-    examples=[{}],
+    examples=[
+        {
+            "prompt": "User clicks 'cancel' button to cancel the hiring of a chosen consultation",
+            "prompt_for_task_generator": "User clicks 'cancel' button to cancel the hiring of a consultation",
+        },
+        {
+            "prompt": "Cancel the hiring of a chosen consultation instead of hire",
+            "prompt_for_task_generator": "Cancel the hiring of a chosen consultation instead of hire",
+        },
+    ],
 )
 
 """job related use cases"""
 
 POST_A_JOB_USE_CASE = UseCase(
-    name="POST_A_JOB", description="The user post a job", event=PostAJobEvent, event_source_code=PostAJobEvent.get_source_code_of_class(), constraints_generator=None, examples=[]
+    name="POST_A_JOB",
+    description="The user post a job",
+    event=PostAJobEvent,
+    event_source_code=PostAJobEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[
+        {
+            "prompt": "User clicks 'Post a job' button to initiate the posting process for a job",
+            "prompt_for_task_generation": "User clicks 'Post a job' button to initiate the posting process for a job",
+        },
+        {
+            "prompt": "Initiates the posting process for a job when the page is 'home'",
+            "prompt_for_task_generation": "Initiates the posting process for a job when the page is 'home'",
+        },
+    ],
 )
 
 WRITING_JOB_TITLE_USE_CASE = UseCase(
     name="WRITE_JOB_TITLE",
-    description="The user write a title of job",
+    description="The user writes a title of job",
     event=WriteJobTitleEvent,
     event_source_code=WriteJobTitleEvent.get_source_code_of_class(),
     constraints_generator=None,
-    examples=[],
+    examples=[
+        {
+            "prompt": "User initiates a process of job posting by writing a strong title of the job",
+            "prompt_for_task_generation": "User initiates a process of job posting by writing a strong title of the job",
+        },
+        {
+            "prompt": "Writes a title of job like web developers job",
+            "prompt_for_task_generation": "Writes a title of job like web developers job",
+        },
+    ],
 )
 
 SEARCH_SKILL_USE_CASE = UseCase(
-    name="SEARCH_SKILL", description="The user search skill", event=SearchSkillEvent, event_source_code=SearchSkillEvent.get_source_code_of_class(), constraints_generator=None, examples=[]
+    name="SEARCH_SKILL",
+    description="The user search skill",
+    event=SearchSkillEvent,
+    event_source_code=SearchSkillEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[
+        {
+            "prompt": "User searches skill that is required for a job",
+            "prompt_for_task_generation": "User searches skill that is required for a job",
+        },
+        {
+            "prompt": "Search a skill when the query is Python'",
+            "prompt_for_task_generation": "Search a skill when the query is Python",
+        },
+    ],
 )
 
 ADD_SKILL_USE_CASE = UseCase(
-    name="ADD_SKILL", description="The user add skill", event=AddSkillEvent, event_source_code=AddSkillEvent.get_source_code_of_class(), constraints_generator=None, examples=[]
+    name="ADD_SKILL",
+    description="The user adds a skill",
+    event=AddSkillEvent,
+    event_source_code=AddSkillEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[
+        {
+            "prompt": "User clicks 'Add' button to add a skill after successfully searched a skill that is required for a job",
+            "prompt_for_task_generation": "User clicks 'Add' button to add a skill after successfully searched a skill that is required for a job",
+        },
+        {
+            "prompt": "Adds a skill where skill is 'C++'",
+            "prompt_for_task_generation": "Adds a skill where skill is 'C++'",
+        },
+    ],
 )
 
 REMOVE_SKILL_USE_CASE = UseCase(
-    name="REMOVE_SKILL", description="The user remove the added skill", event=RemoveSkillEvent, event_source_code=RemoveSkillEvent.get_source_code_of_class(), constraints_generator=None, examples=[]
+    name="REMOVE_SKILL",
+    description="The user removes the added skill",
+    event=RemoveSkillEvent,
+    event_source_code=RemoveSkillEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[
+        {
+            "prompt": "The user remove the skill that is successfully added for job requirement",
+            "prompt_for_task_generation": "The user remove the skill that is successfully added for job requirement",
+        },
+        {
+            "prompt": "Remove skill when the skill is 'C++'",
+            "prompt_for_task_generation": "Remove skill when the skill is 'C++'",
+        },
+        {
+            "prompt": "Remove skill that contains 'Python'",
+            "prompt_for_task_generation": "Remove skill that contains 'Python'",
+        },
+    ],
 )
 
 ATTACH_FILE_USE_CASE = UseCase(
-    name="ATTACH_FILE", description="The user attach file", event=AttachFileClickedEvent, event_source_code=AttachFileClickedEvent.get_source_code_of_class(), constraints_generator=None, examples=[]
+    name="ATTACH_FILE",
+    description="The user attaches a file",
+    event=AttachFileClickedEvent,
+    event_source_code=AttachFileClickedEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[
+        {
+            "prompt": "The user clicks 'Attach file' button to attach file",
+            "prompt_for_task_generation": "The user clicks 'Attach file' button to attach file",
+        },
+        {
+            "prompt": "Attach a file whose name is 'generation_functions.py'",
+            "prompt_for_task_generation": "Attach a file whose name is 'generation_functions.py'",
+        },
+        {
+            "prompt": "Attach a file whose name is 'document.pdf'",
+            "prompt_for_task_generation": "Attach a file whose name is 'document.pdf'",
+        },
+        {
+            "prompt": "Attach a file when step is equal to 5",
+            "prompt_for_task_generation": "Attach a file when step is equal to 5",
+        },
+        {
+            "prompt": "Attach a file whose type is 'image/png'",
+            "prompt_for_task_generation": "Attach a file whose type is 'image/png'",
+        },
+        {
+            "prompt": "Attach a file whose type is 'application/pdf'",
+            "prompt_for_task_generation": "Attach a file whose type is 'application/pdf'",
+        },
+    ],
 )
 
 SUBMIT_JOB_USE_CASE = UseCase(
-    name="SUBMIT_JOB", description="The user submits a job", event=SubmitJobEvent, event_source_code=SubmitJobEvent.get_source_code_of_class(), constraints_generator=None, examples=[]
+    name="SUBMIT_JOB",
+    description="The user submits a job",
+    event=SubmitJobEvent,
+    event_source_code=SubmitJobEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[
+        {
+            "prompt": "The user submits a job by clicking 'Submit Job Post' button",
+            "prompt_for_task_generation": "The user submits a job by clicking 'Submit Job Post' button",
+        },
+        {
+            "prompt": "Submits a job whose budget type is 'hourly'",
+            "prompt_for_task_generation": "Submits a job whose budget type is 'hourly'",
+        },
+        {
+            "prompt": "Submit a job whose budget type is 'fixed'",
+            "prompt_for_task_generation": "Submit a job whose budget type is 'fixed'",
+        },
+        {
+            "prompt": "Submit a job whose job duration is '3 to 6 months'",
+            "prompt_for_task_generation": "Submit a job whose job duration is '3 to 6 months'",
+        },
+        {
+            "prompt": "Submit a job whose scope is 'Large'",
+            "prompt_for_task_generation": "Submit a job whose scope is 'Large'",
+        },
+        {
+            "prompt": "Submit a job whose title is 'Web Developers Job'",
+            "prompt_for_task_generation": "Submit a job whose title is 'Web Developers Job'",
+        },
+    ],
 )
 
 CLOSE_JOB_POSTING_USE_CASE = UseCase(
     name="CLOSE_JOB_POST",
-    description="The user clos the posting of job",
+    description="The user closes the posting of job window",
     event=ClosePostAJobWindowEvent,
     event_source_code=ClosePostAJobWindowEvent.get_source_code_of_class(),
     constraints_generator=None,
-    examples=[],
+    examples=[
+        {
+            "prompt": "The user clicks 'x' button to close the job posting window",
+            "prompt_for_task_generation": "The user clicks 'x' button to close the job posting window",
+        },
+        {
+            "prompt": "Close the window of job whose budget type is 'hourly'",
+            "prompt_for_task_generation": "Close the window of job whose budget type is 'hourly'",
+        },
+        {
+            "prompt": "Close the window of job whose title is 'Flutter Developers Job'",
+            "prompt_for_task_generation": "Close the window of job whose title is 'Flutter Developers Job'",
+        },
+        {
+            "prompt": "Close the window of job whose scope is 'Medium'",
+            "prompt_for_task_generation": "Close the window of job whose scope is 'Medium'",
+        },
+        {
+            "prompt": "Close the window of job whose duration is 'more than 6 months'",
+            "prompt_for_task_generation": "Close the window of job whose duration is 'more than 6 months'",
+        },
+    ],
 )
+
+ALL_USE_CASES = [
+    BOOK_A_CONSULTATION_USE_CASE,
+    # HIRE_BUTTON_CLICKED_USE_CASE,
+    # SELECT_HIRING_TEAM_USE_CASE,
+    # HIRE_CONSULTATION_USE_CASE,
+    # CANCEL_HIRE_CONSULTATION_USE_CASE,
+    # POST_A_JOB_USE_CASE,
+    # WRITING_JOB_TITLE_USE_CASE,
+    # SEARCH_SKILL_USE_CASE,
+    # ADD_SKILL_USE_CASE,
+]

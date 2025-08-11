@@ -258,3 +258,7 @@ def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     return constraints_list
+
+
+# def generate_cancel_hire_consultation_constraint() -> list[dict[str, Any]]:
+#     constraints_list = []
