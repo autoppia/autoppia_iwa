@@ -121,70 +121,111 @@ def _generate_constraint_value(
     }:
         base = field_value
         if isinstance(base, int | float):
-            if field == "rating":
-                min_val, max_val = 0.0, 5.0
-                if operator == ComparisonOperator.GREATER_THAN:
-                    if base > min_val:
-                        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
-                        return round(random.uniform(min_dataset, max(base - 0.5, min_dataset)), 2)
-                    else:
-                        return min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
-                elif operator == ComparisonOperator.LESS_THAN:
-                    if base < max_val:
-                        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
-                        return round(random.uniform(min(base + 0.1, max_dataset), max_dataset), 2)
-                    else:
-                        return max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
-                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                    return round(base, 2)
-            elif field == "reviews":
-                min_val, max_val = 0, 1000  # Assume 1000 as a practical upper bound
-                if operator == ComparisonOperator.GREATER_THAN:
-                    if base > min_val:
-                        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=min_val)
-                        return max(min_dataset, base - random.randint(1, min(base, 20)))
-                    else:
-                        return min((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=min_val)
-                elif operator == ComparisonOperator.LESS_THAN:
-                    if base < max_val:
-                        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=max_val)
-                        return min(max_dataset, base + random.randint(1, 20))
-                    else:
-                        return max((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=max_val)
-                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                    return base
-            else:
-                # Generic numeric logic
-                delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
-                if operator == ComparisonOperator.GREATER_THAN:
-                    return base - delta
-                elif operator == ComparisonOperator.LESS_THAN:
-                    return base + delta
-                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                    return base
+            # Generic numeric logic
+            delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
+            if operator == ComparisonOperator.GREATER_THAN:
+                return base - delta
+            elif operator == ComparisonOperator.LESS_THAN:
+                return base + delta
+            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                return base
 
     # Fallback: return None
+    return None
+
+
+def _generate_time_constraint(field: str, operator: ComparisonOperator, start_hour: int | None = None, start_minute: int | None = None) -> dict[str, Any]:
+    """Helper function to generate time constraints in either 24h or AM/PM format."""
+    use_24h = random.choice([True, False])
+
+    # For 24-hour format: 1-24, for AM/PM: 1-12
+    hour = random.randint(1, 24 if use_24h else 12) if field == "start_time" else None
+    minute = random.choice([0, 30]) if field == "start_time" else None
+
+    # Use the provided start values for end_time
+    if field == "end_time":
+        if use_24h:
+            hour = start_hour + random.randint(0, 3)
+            minute = random.choice([0, 30])
+
+            # If same hour, ensure minutes are later
+            if hour == start_hour and minute <= start_minute:
+                minute = 30 if start_minute == 0 else 0
+                if minute < start_minute:  # Rolled over to next hour
+                    hour += 1
+
+            time_value = f"{hour}:{minute:02d}"
+        else:
+            # For AM/PM format
+            start_is_am = start_hour < 12
+            end_is_am = start_is_am and random.choice([True, True, False])  # Bias toward same period
+
+            if start_is_am and not end_is_am:
+                # If start is AM and end is PM, end is always later
+                hour = random.randint(1, 12)
+                minute = random.choice([0, 30])
+            elif not start_is_am and end_is_am:
+                # Cannot have PM to AM on same day, so make it same period
+                end_is_am = False
+                hour = start_hour + random.randint(0, 3)
+                if hour > 12:
+                    hour = hour % 12 or 12
+                minute = random.choice([0, 30])
+            else:
+                # Same period (AM-AM or PM-PM)
+                hour = start_hour + random.randint(0, 3)
+                if hour > 12:
+                    hour = hour % 12 or 12
+                minute = random.choice([0, 30])
+
+                # If same hour, ensure minutes are later
+                if hour == start_hour and minute <= start_minute:
+                    minute = 30 if start_minute == 0 else 0
+                    if minute < start_minute:  # Rolled over to next hour
+                        hour += 1
+                        if hour > 12:
+                            hour = 1
+
+            am_pm = "AM" if end_is_am else "PM"
+            time_value = f"{hour}:{minute:02d} {am_pm}"
+    else:  # start_time
+        if use_24h:
+            time_value = f"{hour}:{minute:02d}"
+        else:
+            am_pm = "AM" if hour < 12 else "PM"
+            display_hour = hour if hour <= 12 else hour - 12
+            time_value = f"{display_hour}:{minute:02d} {am_pm}"
+
+    return {"constraint": create_constraint_dict(field, operator, time_value), "hour": hour, "minute": minute, "use_24h": use_24h}
+
+
+def _process_field_constraint(field: str, operators_map: dict[str, list], dataset: list[dict[str, Any]] | None = None, field_value: Any | None = None) -> dict[str, Any] | None:
+    """Process a field constraint with appropriate operators and values."""
+    operator = ComparisonOperator(random.choice(operators_map[field]))
+
+    if field_value is None or dataset is None:
+        return None
+
+    value = _generate_constraint_value(operator, field_value, field, dataset)
+    if value is not None:
+        return create_constraint_dict(field, operator, value)
     return None
 
 
 def generate_create_calendar_constraints() -> list[dict[str, Any]]:
     """Generate constraints for creating a calendar with specific details."""
     constraints_list = []
-    fields = ["name", "description"]
-    for field in fields:
+    field_map = {"name": {"values": CALENDAR_NAMES, "dataset_key": "name"}, "description": {"values": DESCRIPTIONS, "dataset_key": "description"}}
+
+    for field, config in field_map.items():
         all_ops = FIELD_OPERATORS_CREATE_CALENDER_MAP[field]
         operator = ComparisonOperator(random.choice(all_ops))
-        dataset = []
-        field_value = None
-        if field == "name":
-            field_value = random.choice(CALENDAR_NAMES)
-            dataset = [{"name": name} for name in CALENDAR_NAMES]
-        elif field == "description":
-            field_value = random.choice(DESCRIPTIONS)
-            dataset = [{"description": desc} for desc in DESCRIPTIONS]
+        field_value = random.choice(config["values"])
+        dataset = [{config["dataset_key"]: val} for val in config["values"]]
         value = _generate_constraint_value(operator, field_value, field, dataset)
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
+
     return constraints_list
 
 
@@ -192,73 +233,56 @@ def generate_choose_calendar_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting/deselecting a calendar."""
     constraints_list = []
     fields = ["calendar_name", "selected"]
+
     for field in fields:
         all_ops = FIELD_OPERATORS_CHOOSE_CALENDER_MAP[field]
         operator = ComparisonOperator(random.choice(all_ops))
-        dataset = []
-        field_value = None
-        if field == "calender_name":
+
+        if field == "calendar_name":
             field_value = random.choice(CALENDAR_NAMES)
             dataset = [{field: name} for name in CALENDAR_NAMES]
+            value = _generate_constraint_value(operator, field_value, field, dataset)
+            if value is not None:
+                constraints_list.append(create_constraint_dict(field, operator, value))
         elif field == "selected":
             constraints_list.append(create_constraint_dict(field, operator, False))
-            continue
-        value = _generate_constraint_value(operator, field_value, field, dataset)
-        if value is not None:
-            constraints_list.append(create_constraint_dict(field, operator, value))
+
     return constraints_list
 
 
 def generate_add_event_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding a calendar event."""
     constraints_list = []
-    all_fields = ["title", "calendar", "date", "start_time", "end_time"]
+    field_map = {
+        "title": {"values": EVENT_TITLES, "dataset_key": "title"},
+        "calendar": {"values": CALENDAR_NAMES, "dataset_key": "calendar"},
+    }
 
-    for field in all_fields:
+    for field, config in field_map.items():
         all_ops = FIELD_OPERATORS_ADD_EVENT_MAP[field]
         operator = ComparisonOperator(random.choice(all_ops))
+        field_value = random.choice(config["values"])
+        dataset = [{config["dataset_key"]: val} for val in config["values"]]
+        value = _generate_constraint_value(operator, field_value, field, dataset)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
 
-        if field == "title":
-            field_value = random.choice(EVENT_TITLES)
-            dataset = [{field: title} for title in EVENT_TITLES]
-            value = _generate_constraint_value(operator, field_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
+    # Date constraint
+    operator = ComparisonOperator(random.choice(FIELD_OPERATORS_ADD_EVENT_MAP["date"]))
+    today = datetime.now().date()
+    date_range = [today + timedelta(days=i) for i in range(-30, 60)]
+    field_value = random.choice(date_range)
+    dataset = [{"date": date} for date in date_range]
+    value = _generate_constraint_value(operator, field_value, "date", dataset)
+    if value is not None:
+        constraints_list.append(create_constraint_dict("date", operator, value))
 
-        elif field == "calendar":
-            field_value = random.choice(CALENDAR_NAMES)
-            dataset = [{field: name} for name in CALENDAR_NAMES]
-            value = _generate_constraint_value(operator, field_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
+    # Time constraints
+    start_time_data = _generate_time_constraint("start_time", ComparisonOperator(random.choice(FIELD_OPERATORS_ADD_EVENT_MAP["start_time"])))
+    constraints_list.append(start_time_data["constraint"])
 
-        elif field == "date":
-            today = datetime.now().date()
-            date_range = [today + timedelta(days=i) for i in range(-30, 60)]
-            field_value = random.choice(date_range)
-            dataset = [{"date": date} for date in date_range]
-            value = _generate_constraint_value(operator, field_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
-
-        elif field in ["start_time", "end_time"]:
-            start_hour = random.randint(8, 17)
-            start_minute = random.choice([0, 30])
-            end_hour = start_hour + random.randint(0, 3)
-            end_minute = random.choice([0, 30])
-
-            # Ensure end time is after start time
-            if end_hour == start_hour and end_minute <= start_minute:
-                end_minute = (start_minute + 30) % 60
-                if end_minute < start_minute:  # Rolled over to next hour
-                    end_hour += 1
-
-            if field == "start_time":
-                time_value = f"{start_hour}:{start_minute:02d}"
-                constraints_list.append(create_constraint_dict(field, operator, time_value))
-            else:  # end_time
-                time_value = f"{end_hour}:{end_minute:02d}"
-                constraints_list.append(create_constraint_dict(field, operator, time_value))
+    end_time_data = _generate_time_constraint("end_time", ComparisonOperator(random.choice(FIELD_OPERATORS_ADD_EVENT_MAP["end_time"])), start_time_data["hour"], start_time_data["minute"])
+    constraints_list.append(end_time_data["constraint"])
 
     return constraints_list
 
@@ -266,23 +290,27 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
 def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
     """Generate constraints for clicking a calendar cell."""
     constraints_list = []
+    source_value = None
+
     fields = ["source", "date", "view"]
+    field_map = {
+        "source": {"values": ["month-view", "week-view", "day-view", "5 days-view"], "dataset_key": "source"},
+        "view": {"values": ["Month", "Week", "Day", "5 days"], "dataset_key": "view"},
+    }
+
+    # Process fields with predefined values
     for field in fields:
         operator = ComparisonOperator(random.choice(FIELD_OPERATORS_CLICK_CELL_MAP[field]))
-        if field == "source":
-            sources = ["month-view", "week-view", "day-view", "5 days-view"]
-            source_value = random.choice(sources)
-            dataset = [{field: source} for source in sources]
-            value = _generate_constraint_value(operator, source_value, field, dataset)
+
+        if field in field_map:
+            field_value = random.choice(field_map[field]["values"])
+            dataset = [{field_map[field]["dataset_key"]: val} for val in field_map[field]["values"]]
+            value = _generate_constraint_value(operator, field_value, field, dataset)
             if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
-        elif field == "view":
-            views = ["Month", "Week", "Day", "5 days"]
-            view_value = random.choice(views)
-            dataset = [{field: view} for view in views]
-            value = _generate_constraint_value(operator, view_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
+                constraint = create_constraint_dict(field, operator, value)
+                constraints_list.append(constraint)
+                if field == "source":
+                    source_value = value
         elif field == "date":
             today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             date_range = [today + timedelta(days=i) for i in range(-30, 60)]
@@ -291,12 +319,6 @@ def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
             value = _generate_constraint_value(operator, date_value, field, dataset)
             if value is not None:
                 constraints_list.append(create_constraint_dict(field, operator, value))
-
-    # Get the source value from the constraints to determine if we need an hour constraint
-    source_constraints = [c for c in constraints_list if c["field"] == "source"]
-    source_value = None
-    if source_constraints and "value" in source_constraints[0]:
-        source_value = source_constraints[0]["value"]
 
     # Add hour constraint only for week/day view
     if source_value and source_value != "month-view":
@@ -310,34 +332,29 @@ def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
 def generate_cancel_add_event_constraints() -> list[dict[str, Any]]:
     """Generate constraints for canceling event creation."""
     constraints_list = []
-    fields = ["source", "date", "title"]
+    field_map = {
+        "source": {"values": ["month-view", "week-view", "day-view", "5 days-view"], "dataset_key": "source"},
+        "title": {"values": EVENT_TITLES, "dataset_key": "title"},
+    }
 
-    for field in fields:
+    # Process fields with predefined values
+    for field in field_map:
         operator = ComparisonOperator(random.choice(FIELD_OPERATORS_CANCEL_ADD_EVENT_MAP[field]))
+        field_value = random.choice(field_map[field]["values"])
+        dataset = [{field_map[field]["dataset_key"]: val} for val in field_map[field]["values"]]
+        value = _generate_constraint_value(operator, field_value, field, dataset)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
 
-        if field == "source":
-            sources = ["month-view", "week-view", "day-view", "5 days-view"]
-            source_value = random.choice(sources)
-            dataset = [{field: source} for source in sources]
-            value = _generate_constraint_value(operator, source_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
-
-        elif field == "date":
-            today = datetime.now().date()
-            date_range = [today + timedelta(days=i) for i in range(-30, 60)]
-            date_value = random.choice(date_range)
-            dataset = [{field: date} for date in date_range]
-            value = _generate_constraint_value(operator, date_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
-
-        elif field == "title":
-            title_value = random.choice(EVENT_TITLES)
-            dataset = [{field: title} for title in EVENT_TITLES]
-            value = _generate_constraint_value(operator, title_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
+    # Date constraint
+    operator = ComparisonOperator(random.choice(FIELD_OPERATORS_CANCEL_ADD_EVENT_MAP["date"]))
+    today = datetime.now().date()
+    date_range = [today + timedelta(days=i) for i in range(-30, 60)]
+    date_value = random.choice(date_range)
+    dataset = [{"date": date} for date in date_range]
+    value = _generate_constraint_value(operator, date_value, "date", dataset)
+    if value is not None:
+        constraints_list.append(create_constraint_dict("date", operator, value))
 
     return constraints_list
 
@@ -345,39 +362,29 @@ def generate_cancel_add_event_constraints() -> list[dict[str, Any]]:
 def generate_delete_event_constraints() -> list[dict[str, Any]]:
     """Generate constraints for deleting a calendar event."""
     constraints_list = []
-    fields = ["source", "eventTitle", "calendar", "date"]
+    field_map = {
+        "source": {"values": ["event-modal", "month-view", "week-view", "day-view", "5 days-view"], "dataset_key": "source"},
+        "event_title": {"values": EVENT_TITLES, "dataset_key": "event_title"},
+        "calendar": {"values": CALENDAR_NAMES, "dataset_key": "calendar"},
+    }
 
-    for field in fields:
+    # Process fields with predefined values
+    for field, config in field_map.items():
         operator = ComparisonOperator(random.choice(FIELD_OPERATORS_DELETE_ADD_EVENT_MAP[field]))
-        if field == "source":
-            sources = ["event-modal", "month-view", "week-view", "day-view", "5 days-view"]
-            source_value = random.choice(sources)
-            dataset = [{field: source} for source in sources]
-            value = _generate_constraint_value(operator, source_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
+        field_value = random.choice(config["values"])
+        dataset = [{config["dataset_key"]: val} for val in config["values"]]
+        value = _generate_constraint_value(operator, field_value, field, dataset)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
 
-        elif field == "eventTitle":
-            title_value = random.choice(EVENT_TITLES)
-            dataset = [{field: title} for title in EVENT_TITLES]
-            value = _generate_constraint_value(operator, title_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
-
-        elif field == "calendar":
-            calendar_value = random.choice(CALENDAR_NAMES)
-            dataset = [{field: name} for name in CALENDAR_NAMES]
-            value = _generate_constraint_value(operator, calendar_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
-
-        elif field == "date":
-            today = datetime.now().date()
-            date_range = [today + timedelta(days=i) for i in range(-30, 60)]
-            date_value = random.choice(date_range)
-            dataset = [{field: date} for date in date_range]
-            value = _generate_constraint_value(operator, date_value, field, dataset)
-            if value is not None:
-                constraints_list.append(create_constraint_dict(field, operator, value))
+    # Date constraint
+    operator = ComparisonOperator(random.choice(FIELD_OPERATORS_DELETE_ADD_EVENT_MAP["date"]))
+    today = datetime.now().date()
+    date_range = [today + timedelta(days=i) for i in range(-30, 60)]
+    date_value = random.choice(date_range)
+    dataset = [{"date": date} for date in date_range]
+    value = _generate_constraint_value(operator, date_value, "date", dataset)
+    if value is not None:
+        constraints_list.append(create_constraint_dict("date", operator, value))
 
     return constraints_list
