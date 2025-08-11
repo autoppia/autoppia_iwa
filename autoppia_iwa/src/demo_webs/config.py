@@ -23,5 +23,6 @@ demo_web_projects: list[WebProject] = [
     lodge_project,
     ...,
     ...,
+    ...,
     autocalender_project,
 ]

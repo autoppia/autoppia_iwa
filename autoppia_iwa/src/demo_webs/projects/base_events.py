@@ -84,6 +84,7 @@ class Event(BaseModel):
             **web_6_backend_types,
             **web_8_backend_types,
             **web_11_backend_types,
+            **web_11_backend_types,
         }
         event_class_map = ALL_BACKEND_EVENT_TYPES
 
