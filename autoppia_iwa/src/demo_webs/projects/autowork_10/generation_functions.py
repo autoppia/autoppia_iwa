@@ -17,8 +17,8 @@ from .data import (
     FIELD_OPERATORS_MAP_REMOVE_SKILL,
     FIELD_OPERATORS_MAP_SEARCH_SKILL,
     FIELD_OPERATORS_MAP_SUBMIT_JOB,
-    FIELD_OPERATORS_MAP_USER_BOOK_CONSULTANT,
     FIELD_OPERATORS_MAP_WRITING_A_JOB_TITLE,
+    FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP,
     POPULAR_SKILLS,
 )
 
@@ -107,9 +107,8 @@ def generate_book_consultant_constraint() -> list[dict[str, Any]]:
         "rating": "rating",
         "role": "role",
     }
-    # possible_fields = [field_mapping[field] for field in field_mapping.keys()]
 
-    possible_fields = ["country", "expertName", "jobs", "rate", "rating", "role"]
+    possible_fields = list(FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP.keys())
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
@@ -118,7 +117,7 @@ def generate_book_consultant_constraint() -> list[dict[str, Any]]:
     )  # go to web_demo project code then go to autoweb10 then go to library file and there we have event.ts file where each events define and their data, we can simply check where data comes by clicking event name
 
     for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_MAP_USER_BOOK_CONSULTANT.get(field, [])
+        allowed_ops = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP.get(field, [])
         if not allowed_ops:
             continue
 
@@ -145,8 +144,7 @@ def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
         "expertSlug": "slug",
         "role": "role",
     }
-    # possible_fields = [field_mapping[field] for field in field_mapping.keys()]
-    possible_fields = ["country", "expertName", "expertSlug", "role"]
+    possible_fields = list(FIELD_OPERATORS_MAP_HIRE_BUTTON.keys())
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
     # team = ["a","b"]
@@ -182,8 +180,7 @@ def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
         "expertSlug": "slug",
         "team": "team",
     }
-    # possible_fields = [field_mapping[field] for field in field_mapping.keys()]
-    possible_fields = ["expertName", "expertSlug", "team"]
+    possible_fields = list(FIELD_OPERATORS_MAP_HIRING_TEAM.keys())
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
     sample_expert = random.choice(EXPERTS)
@@ -225,8 +222,7 @@ def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
         "paymentType": "paymentType",
         "rate": "lastReviewRate",
     }
-    # possible_fields = [field_mapping[field] for field in field_mapping.keys()]
-    possible_fields = ["country", "expertName", "expertSlug", "increaseHowMuch", "increaseWhen", "paymentType", "role", "rate"]
+    possible_fields = list(FIELD_OPERATORS_MAP_HIRING_CONSULTANT.keys())
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
     payment_type = ["fixed", "hourly"]
@@ -292,7 +288,7 @@ def generate_cancel_hire_consultation_constraint() -> list[dict[str, Any]]:
 
 def generate_job_posting_constraint() -> list[dict[str, Any]]:
     constraints_list = []
-    possible_field = ["page", "source"]
+    possible_field = list(FIELD_OPERATORS_MAP_POSTING_A_JOB.keys())
     num_constraints = random.randint(1, len(possible_field))
     selected_fields = random.sample(possible_field, num_constraints)
     page = ["home"]

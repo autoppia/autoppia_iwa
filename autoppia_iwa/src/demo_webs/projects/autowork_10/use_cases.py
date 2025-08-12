@@ -2,7 +2,6 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AddSkillEvent,
-    AttachFileClickedEvent,
     BookAConsultationEvent,
     CancelHireEvent,
     ClosePostAJobWindowEvent,
@@ -253,39 +252,39 @@ REMOVE_SKILL_USE_CASE = UseCase(
     ],
 )
 
-ATTACH_FILE_USE_CASE = UseCase(
-    name="ATTACH_FILE",
-    description="The user attaches a file",
-    event=AttachFileClickedEvent,
-    event_source_code=AttachFileClickedEvent.get_source_code_of_class(),
-    constraints_generator=None,
-    examples=[
-        {
-            "prompt": "The user clicks 'Attach file' button to attach file",
-            "prompt_for_task_generation": "The user clicks 'Attach file' button to attach file",
-        },
-        {
-            "prompt": "Attach a file whose name is 'generation_functions.py'",
-            "prompt_for_task_generation": "Attach a file whose name is 'generation_functions.py'",
-        },
-        {
-            "prompt": "Attach a file whose name is 'document.pdf'",
-            "prompt_for_task_generation": "Attach a file whose name is 'document.pdf'",
-        },
-        {
-            "prompt": "Attach a file when step is equal to 5",
-            "prompt_for_task_generation": "Attach a file when step is equal to 5",
-        },
-        {
-            "prompt": "Attach a file whose type is 'image/png'",
-            "prompt_for_task_generation": "Attach a file whose type is 'image/png'",
-        },
-        {
-            "prompt": "Attach a file whose type is 'application/pdf'",
-            "prompt_for_task_generation": "Attach a file whose type is 'application/pdf'",
-        },
-    ],
-)
+# ATTACH_FILE_USE_CASE = UseCase(
+#     name="ATTACH_FILE",
+#     description="The user attaches a file",
+#     event=AttachFileClickedEvent,
+#     event_source_code=AttachFileClickedEvent.get_source_code_of_class(),
+#     constraints_generator=None,
+#     examples=[
+#         {
+#             "prompt": "The user clicks 'Attach file' button to attach file",
+#             "prompt_for_task_generation": "The user clicks 'Attach file' button to attach file",
+#         },
+#         {
+#             "prompt": "Attach a file whose name is 'generation_functions.py'",
+#             "prompt_for_task_generation": "Attach a file whose name is 'generation_functions.py'",
+#         },
+#         {
+#             "prompt": "Attach a file whose name is 'document.pdf'",
+#             "prompt_for_task_generation": "Attach a file whose name is 'document.pdf'",
+#         },
+#         {
+#             "prompt": "Attach a file when step is equal to 5",
+#             "prompt_for_task_generation": "Attach a file when step is equal to 5",
+#         },
+#         {
+#             "prompt": "Attach a file whose type is 'image/png'",
+#             "prompt_for_task_generation": "Attach a file whose type is 'image/png'",
+#         },
+#         {
+#             "prompt": "Attach a file whose type is 'application/pdf'",
+#             "prompt_for_task_generation": "Attach a file whose type is 'application/pdf'",
+#         },
+#     ],
+# )
 
 SUBMIT_JOB_USE_CASE = UseCase(
     name="SUBMIT_JOB",
