@@ -38,20 +38,20 @@ class SelectDateForTaskEvent(Event, BaseEventValidator):
 
     event_name: str = "SELECT_DATE_FOR_TASK"
     selected_date: datetime | None = None
-    was_previously_selected: bool
+    # was_previously_selected: bool
 
     class ValidationCriteria(BaseModel):
-        selectedDate: datetime | CriterionValue | None = None
-        wasPreviouslySelected: bool | CriterionValue | None = None
+        selected_date: datetime | CriterionValue | None = None
+        # wasPreviouslySelected: bool | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        date_valid = validate_date_field(self.selected_date, criteria.selectedDate)
+        date_valid = validate_date_field(self.selected_date, criteria.selected_date)
         return all(
             [
                 date_valid,
-                self._validate_field(self.was_previously_selected, criteria.wasPreviouslySelected),
+                # self._validate_field(self.was_previously_selected, criteria.wasPreviouslySelected),
             ]
         )
 
@@ -65,7 +65,7 @@ class SelectDateForTaskEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             selected_date=parse_datetime(data.get("selectedDate")),
-            was_previously_selected=data.get("wasPreviouslySelected", False),
+            # was_previously_selected=data.get("wasPreviouslySelected", False),
         )
 
 
@@ -158,19 +158,19 @@ class CancelTaskCreationEvent(Event, BaseEventValidator):
     priority: int
 
     class ValidationCriteria(BaseModel):
-        currentName: str | CriterionValue | None = None
-        currentDescription: str | CriterionValue | None = None
-        selectedDate: datetime | CriterionValue | None = None
+        current_name: str | CriterionValue | None = None
+        current_description: str | CriterionValue | None = None
+        selected_date: datetime | CriterionValue | None = None
         priority: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        date_valid = validate_date_field(self.selected_date, criteria.selectedDate)
+        date_valid = validate_date_field(self.selected_date, criteria.selected_date)
         return all(
             [
-                self._validate_field(self.current_name, criteria.currentName),
-                self._validate_field(self.current_description, criteria.currentDescription),
+                self._validate_field(self.current_name, criteria.current_name),
+                self._validate_field(self.current_description, criteria.current_description),
                 date_valid,
                 self._validate_field(self.priority, criteria.priority),
             ]
@@ -280,8 +280,6 @@ class DeleteTaskEvent(TaskAddedEvent):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # task_id=data.get("taskId", ""),
-            # name=data.get("name", ""),
             **task.model_dump(),
         )
 

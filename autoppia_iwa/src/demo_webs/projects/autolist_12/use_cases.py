@@ -12,7 +12,6 @@ from .events import (
     TaskAddedEvent,
 )
 from .generation_functions import (
-    generate_add_task_clicked_constraints,
     generate_cancel_task_creation_constraints,
     generate_complete_task_constraints,
     generate_delete_task_constraints,
@@ -36,7 +35,7 @@ ADD_TASK_CLICKED_USE_CASE = UseCase(
     description="Triggered when the user clicks the button to add a new task.",
     event=AddTaskClickedEvent,
     event_source_code=AddTaskClickedEvent.get_source_code_of_class(),
-    constraints_generator=generate_add_task_clicked_constraints,
+    constraints_generator=False,
     additional_prompt_info=ADD_TASK_CLICKED_INFO,
     examples=[
         {"prompt": "I want to add a new task.", "prompt_for_task_generation": "Add a new task."},
