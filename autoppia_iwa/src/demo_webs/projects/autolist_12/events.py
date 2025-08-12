@@ -329,3 +329,26 @@ class DeleteTaskEvent(Event, BaseEventValidator):
             name=data.get("name", ""),
             deleted_at=parse_datetime(data.get("deletedAt")),
         )
+
+
+EVENTS = [
+    AddTaskClickedEvent,
+    SelectTaskPriorityEvent,
+    SelectDateForTaskEvent,
+    TaskAddedEvent,
+    CancelTaskCreationEvent,
+    EditTaskModalOpenedEvent,
+    CancelTaskCreationEvent,
+    DeleteTaskEvent,
+]
+
+BACKEND_EVENT_TYPES = {
+    "ADD_TASK_CLICKED": AddTaskClickedEvent,
+    "SELECT_DATE_FOR_TASK": SelectDateForTaskEvent,
+    "SELECT_TASK_PRIORITY": SelectTaskPriorityEvent,
+    "TASK_ADDED": TaskAddedEvent,
+    "CANCEL_TASK_CREATION": CancelTaskCreationEvent,
+    "EDIT_TASK_MODAL_OPENED": EditTaskModalOpenedEvent,
+    "COMPLETE_TASK": CompleteTaskEvent,
+    "DELETE_TASK": DeleteTaskEvent,
+}
