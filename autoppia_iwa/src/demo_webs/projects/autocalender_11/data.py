@@ -1,4 +1,4 @@
-from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
+from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 
 CALENDAR_NAMES = ["Personal", "Fitness", "Study", "Travel", "Holidays", "Birthdays", "Projects"]
 EVENT_TITLES = ["Meeting", "Doctor appointment", "Lunch", "Conference call", "Workout", "Study session"]
@@ -19,9 +19,18 @@ DESCRIPTIONS = [
 REMINDER_MINUTES = [5, 10, 15, 30, 60, 120]
 ATTENDEE_EMAILS = ["test@example.com", "user1@work.com", "friend@email.net", "contact@domain.org"]
 
+SOURCES = ["event-modal", "cell-click", "drag-and-drop"]
+
+RECURRENCE_OPTIONS = ["None", "Daily", "Weekly", "Monthly", "Yearly"]
+VISIBILITY_OPTIONS = ["Public", "Private", "Default"]
+LOCATIONS = ["Office", "Conference Room A", "Online", "Client's Office"]
+MEETING_LINKS = ["https://meet.example.com/abc-123", "https://zoom.example.com/j/987654321", "https://teams.example.com/l/meetup-join/..."]
+
 
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
+ARRAY_OPERATORS = [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST]
+EQUALITY_OPERATORS = [EQUALS, NOT_EQUALS]
 
 FIELD_OPERATORS_CREATE_CALENDAR_MAP = {
     "name": STRING_OPERATORS,
@@ -37,6 +46,15 @@ FIELD_OPERATORS_ADD_EVENT_MAP = {
     "date": LOGICAL_OPERATORS,
     "start_time": LOGICAL_OPERATORS,
     "end_time": LOGICAL_OPERATORS,
+    "allDay": EQUALITY_OPERATORS,
+    "recurrence": EQUALITY_OPERATORS,
+    "attendees": EQUALITY_OPERATORS,
+    "reminders": EQUALITY_OPERATORS,
+    "busy": EQUALITY_OPERATORS,
+    "visibility": EQUALITY_OPERATORS,
+    "location": STRING_OPERATORS,
+    "description": STRING_OPERATORS,
+    "meetingLink": STRING_OPERATORS,
 }
 FIELD_OPERATORS_CLICK_CELL_MAP = {
     "source": STRING_OPERATORS,
@@ -61,7 +79,7 @@ FIELD_OPERATORS_SEARCH_SUBMIT_MAP = {
 
 FIELD_OPERATORS_EVENT_REMINDER_MAP = {
     "minutes": LOGICAL_OPERATORS,
-    "idx": LOGICAL_OPERATORS,
+    # "idx": LOGICAL_OPERATORS,
 }
 
 FIELD_OPERATORS_EVENT_ATTENDEE_MAP = {

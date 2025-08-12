@@ -12,15 +12,17 @@ from .data import (
     DESCRIPTIONS,
     EVENT_TITLES,
     FIELD_OPERATORS_ADD_EVENT_MAP,
-    FIELD_OPERATORS_CANCEL_ADD_EVENT_MAP,
     FIELD_OPERATORS_CHOOSE_CALENDAR_MAP,
     FIELD_OPERATORS_CLICK_CELL_MAP,
     FIELD_OPERATORS_CREATE_CALENDAR_MAP,
-    FIELD_OPERATORS_DELETE_ADD_EVENT_MAP,
     FIELD_OPERATORS_EVENT_ATTENDEE_MAP,
     FIELD_OPERATORS_EVENT_REMINDER_MAP,
     FIELD_OPERATORS_SEARCH_SUBMIT_MAP,
+    LOCATIONS,
+    MEETING_LINKS,
+    RECURRENCE_OPTIONS,
     REMINDER_MINUTES,
+    VISIBILITY_OPTIONS,
 )
 
 
@@ -183,17 +185,6 @@ def generate_choose_calendar_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_CHOOSE_CALENDAR_MAP)
 
 
-def generate_add_event_constraints() -> list[dict[str, Any]]:
-    """Generate constraints for adding a calendar event."""
-    field_map = {
-        "title": {"values": EVENT_TITLES},
-        "calendar": {"values": CALENDAR_NAMES},
-        "date": {"dataset_generator": lambda: [{"date": date.today() + timedelta(days=i)} for i in range(-30, 60)]},
-        "time": {},
-    }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
-
-
 def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
     """Generate constraints for clicking a calendar cell."""
     field_map = {
@@ -205,25 +196,27 @@ def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_CLICK_CELL_MAP, {"hour": _handle_cell_click_hour})
 
 
-def generate_cancel_add_event_constraints() -> list[dict[str, Any]]:
-    """Generate constraints for canceling event creation."""
+def generate_add_event_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for adding a calendar event."""
     field_map = {
-        "source": {"values": ["event-modal", "month-view", "week-view", "day-view", "5 days-view"]},
-        "date": {"dataset_generator": lambda: [{"date": date.today() + timedelta(days=i)} for i in range(-30, 60)]},
+        # "source": {"values": SOURCES},
         "title": {"values": EVENT_TITLES},
-    }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_CANCEL_ADD_EVENT_MAP)
-
-
-def generate_delete_event_constraints() -> list[dict[str, Any]]:
-    """Generate constraints for deleting a calendar event."""
-    field_map = {
-        "source": {"values": ["event-modal", "month-view", "week-view", "day-view", "5 days-view"]},
-        "date": {"dataset_generator": lambda: [{"date": date.today() + timedelta(days=i)} for i in range(-30, 60)]},
-        "event_title": {"values": EVENT_TITLES},
         "calendar": {"values": CALENDAR_NAMES},
+        "date": {"dataset_generator": lambda: [{"date": (date.today() + timedelta(days=i)).strftime("%Y-%m-%d")} for i in range(-30, 60)]},
+        "time": {},  # Special handler
+        # "color": {"values": COLORS},
+        # "is_editing": {"values": [True, False], "output_field": "isEditing"},
+        "all_day": {"values": [True, False], "output_field": "allDay"},
+        "recurrence": {"values": RECURRENCE_OPTIONS},
+        "attendees": {"values": ATTENDEE_EMAILS},
+        "reminders": {"values": REMINDER_MINUTES},
+        "busy": {"values": [True, False]},
+        "visibility": {"values": VISIBILITY_OPTIONS},
+        "location": {"values": LOCATIONS},
+        "description": {"values": DESCRIPTIONS},
+        "meeting_link": {"values": MEETING_LINKS, "output_field": "meetingLink"},
     }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_DELETE_ADD_EVENT_MAP)
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
 
 
 def generate_search_submit_constraints() -> list[dict[str, Any]]:
@@ -232,28 +225,13 @@ def generate_search_submit_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SEARCH_SUBMIT_MAP)
 
 
-def generate_event_add_reminder_constraints() -> list[dict[str, Any]]:
+def generate_event_reminder_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding an event reminder."""
     field_map = {"minutes": {"values": REMINDER_MINUTES}}
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_REMINDER_MAP)
 
 
-def generate_event_remove_reminder_constraints() -> list[dict[str, Any]]:
-    """Generate constraints for removing an event reminder."""
-    field_map = {
-        "minutes": {"values": REMINDER_MINUTES},
-        "idx": {"values": [0, 1, 2]},
-    }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_REMINDER_MAP)
-
-
-def generate_event_add_attendee_constraints() -> list[dict[str, Any]]:
+def generate_event_attendee_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding an event attendee."""
-    field_map = {"email": {"values": ATTENDEE_EMAILS}}
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)
-
-
-def generate_event_remove_attendee_constraints() -> list[dict[str, Any]]:
-    """Generate constraints for removing an event attendee."""
     field_map = {"email": {"values": ATTENDEE_EMAILS}}
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)
