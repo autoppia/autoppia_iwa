@@ -20,15 +20,11 @@ from .events import (
 )
 from .generation_functions import (
     generate_add_event_constraints,
-    generate_cancel_add_event_constraints,
     generate_cell_clicked_constraints,
     generate_choose_calendar_constraints,
     generate_create_calendar_constraints,
-    generate_delete_event_constraints,
-    generate_event_add_attendee_constraints,
-    generate_event_add_reminder_constraints,
-    generate_event_remove_attendee_constraints,
-    generate_event_remove_reminder_constraints,
+    generate_event_attendee_constraints,
+    generate_event_reminder_constraints,
     generate_search_submit_constraints,
 )
 
@@ -350,7 +346,7 @@ CANCEL_ADD_EVENT_USE_CASE = UseCase(
     description="Triggered when the user cancels adding a new event.",
     event=CancelAddEventEvent,
     event_source_code=CancelAddEventEvent.get_source_code_of_class(),
-    constraints_generator=generate_cancel_add_event_constraints,
+    constraints_generator=generate_add_event_constraints,
     additional_prompt_info=CANCEL_ADD_EVENT_INFO,
     examples=[
         {"prompt": "Cancel creating this event.", "prompt_for_task_generation": "Cancel the event creation process."},
@@ -377,7 +373,7 @@ DELETE_ADDED_EVENT_USE_CASE = UseCase(
     description="Triggered when the user deletes an existing calendar event.",
     event=DeleteAddedEventEvent,
     event_source_code=DeleteAddedEventEvent.get_source_code_of_class(),
-    constraints_generator=generate_delete_event_constraints,
+    constraints_generator=generate_add_event_constraints,
     additional_prompt_info=DELETE_ADDED_EVENT_INFO,
     examples=[
         {"prompt": "Delete the 'Team Meeting' event from my calendar.", "prompt_for_task_generation": "Remove 'Team Meeting' event from calendar."},
@@ -429,7 +425,7 @@ EVENT_ADD_REMINDER_USE_CASE = UseCase(
     description="Triggered when a reminder is added to an event.",
     event=EventAddReminderEvent,
     event_source_code=EventAddReminderEvent.get_source_code_of_class(),
-    constraints_generator=generate_event_add_reminder_constraints,
+    constraints_generator=generate_event_reminder_constraints,
     additional_prompt_info=EVENT_ADD_REMINDER_INFO,
     examples=[
         {"prompt": "Add a 30-minute reminder to the event.", "prompt_for_task_generation": "Add a 30-minute reminder."},
@@ -455,7 +451,7 @@ EVENT_REMOVE_REMINDER_USE_CASE = UseCase(
     description="Triggered when a reminder is removed from an event.",
     event=EventRemoveReminderEvent,
     event_source_code=EventRemoveReminderEvent.get_source_code_of_class(),
-    constraints_generator=generate_event_remove_reminder_constraints,
+    constraints_generator=generate_event_reminder_constraints,
     additional_prompt_info=EVENT_REMOVE_REMINDER_INFO,
     examples=[
         {"prompt": "Remove the 30-minute reminder.", "prompt_for_task_generation": "Remove the 30-minute reminder."},
@@ -481,7 +477,7 @@ EVENT_ADD_ATTENDEE_USE_CASE = UseCase(
     description="Triggered when an attendee is added to an event.",
     event=EventAddAttendeeEvent,
     event_source_code=EventAddAttendeeEvent.get_source_code_of_class(),
-    constraints_generator=generate_event_add_attendee_constraints,
+    constraints_generator=generate_event_attendee_constraints,
     additional_prompt_info=EVENT_ADD_ATTENDEE_INFO,
     examples=[
         {"prompt": "Add 'test@example.com' as an attendee.", "prompt_for_task_generation": "Add attendee 'test@example.com'."},
@@ -507,7 +503,7 @@ EVENT_REMOVE_ATTENDEE_USE_CASE = UseCase(
     description="Triggered when an attendee is removed from an event.",
     event=EventRemoveAttendeeEvent,
     event_source_code=EventRemoveAttendeeEvent.get_source_code_of_class(),
-    constraints_generator=generate_event_remove_attendee_constraints,
+    constraints_generator=generate_event_attendee_constraints,
     additional_prompt_info=EVENT_REMOVE_ATTENDEE_INFO,
     examples=[
         {"prompt": "Remove 'test@example.com' from the attendees.", "prompt_for_task_generation": "Remove attendee 'test@example.com'."},
