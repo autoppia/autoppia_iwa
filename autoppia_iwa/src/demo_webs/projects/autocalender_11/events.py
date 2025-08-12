@@ -267,10 +267,10 @@ class AddEventEvent(Event, BaseEventValidator):
         start_time, end_time = "", ""
         st = data.get("startTime", [])
         if st:
-            start_time = st[0] + ":" + st[1]
+            start_time = str(st[0]) + ":" + str(st[1]).zfill(2)
         et = data.get("endTime", [])
         if et:
-            end_time = et[0] + ":" + et[1]
+            end_time = str(et[0]) + ":" + str(et[1]).zfill(2)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -424,6 +424,170 @@ class DeleteAddedEventEvent(Event, BaseEventValidator):
         )
 
 
+class SearchSubmitEvent(Event, BaseEventValidator):
+    """Event triggered when user submits a search query"""
+
+    event_name: str = "SEARCH_SUBMIT"
+    query: str
+
+    class ValidationCriteria(BaseModel):
+        query: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.query, criteria.query),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "SearchSubmitEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            query=data.get("query", ""),
+        )
+
+
+class EventAddReminderEvent(Event, BaseEventValidator):
+    """Event triggered when a reminder is added to an event"""
+
+    event_name: str = "EVENT_ADD_REMINDER"
+    minutes: int
+
+    class ValidationCriteria(BaseModel):
+        minutes: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.minutes, criteria.minutes),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EventAddReminderEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            minutes=data.get("minutes", 0),
+        )
+
+
+class EventRemoveReminderEvent(Event, BaseEventValidator):
+    """Event triggered when a reminder is removed from an event"""
+
+    event_name: str = "EVENT_REMOVE_REMINDER"
+    minutes: int
+    idx: int
+
+    class ValidationCriteria(BaseModel):
+        minutes: int | CriterionValue | None = None
+        idx: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.minutes, criteria.minutes),
+                self._validate_field(self.idx, criteria.idx),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EventRemoveReminderEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            minutes=data.get("minutes", 0),
+            idx=data.get("idx", 0),
+        )
+
+
+class EventAddAttendeeEvent(Event, BaseEventValidator):
+    """Event triggered when an attendee is added to an event"""
+
+    event_name: str = "EVENT_ADD_ATTENDEE"
+    email: str
+
+    class ValidationCriteria(BaseModel):
+        email: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.email, criteria.email),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EventAddAttendeeEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            email=data.get("email", ""),
+        )
+
+
+class EventRemoveAttendeeEvent(Event, BaseEventValidator):
+    """Event triggered when an attendee is removed from an event"""
+
+    event_name: str = "EVENT_REMOVE_ATTENDEE"
+    email: str
+
+    class ValidationCriteria(BaseModel):
+        email: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.email, criteria.email),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EventRemoveAttendeeEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            email=data.get("email", ""),
+        )
+
+
 CALENDAR_EVENTS = [
     SelectMonthEvent,
     SelectWeekEvent,
@@ -437,6 +601,11 @@ CALENDAR_EVENTS = [
     CellClickedEvent,
     CancelAddEventEvent,
     DeleteAddedEventEvent,
+    SearchSubmitEvent,
+    EventAddReminderEvent,
+    EventRemoveReminderEvent,
+    EventAddAttendeeEvent,
+    EventRemoveAttendeeEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -452,4 +621,9 @@ BACKEND_EVENT_TYPES = {
     "CELL_CLCIKED": CellClickedEvent,
     "CANCEL_ADD_EVENT": CancelAddEventEvent,
     "DELETE_ADDED_EVENT": DeleteAddedEventEvent,
+    "SEARCH_SUBMIT": SearchSubmitEvent,
+    "EVENT_ADD_REMINDER": EventAddReminderEvent,
+    "EVENT_REMOVE_REMINDER": EventRemoveReminderEvent,
+    "EVENT_ADD_ATTENDEE": EventAddAttendeeEvent,
+    "EVENT_REMOVE_ATTENDEE": EventRemoveAttendeeEvent,
 }

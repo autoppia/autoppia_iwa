@@ -7,6 +7,11 @@ from .events import (
     ChooseCalendarEvent,
     CreateCalendarEvent,
     DeleteAddedEventEvent,
+    EventAddAttendeeEvent,
+    EventAddReminderEvent,
+    EventRemoveAttendeeEvent,
+    EventRemoveReminderEvent,
+    SearchSubmitEvent,
     SelectDayEvent,
     SelectFiveDaysEvent,
     SelectMonthEvent,
@@ -20,6 +25,11 @@ from .generation_functions import (
     generate_choose_calendar_constraints,
     generate_create_calendar_constraints,
     generate_delete_event_constraints,
+    generate_event_add_attendee_constraints,
+    generate_event_add_reminder_constraints,
+    generate_event_remove_attendee_constraints,
+    generate_event_remove_reminder_constraints,
+    generate_search_submit_constraints,
 )
 
 ###############################################################################
@@ -275,24 +285,24 @@ ADD_EVENT_USE_CASE = UseCase(
     additional_prompt_info=ADD_EVENT_INFO,
     examples=[
         {
-            "prompt": "Add 'Doctor appointment' to my 'Personal' calendar for tomorrow at 10:00 AM, ending at 10:30 AM.",
-            "prompt_for_task_generation": "Create event 'Doctor appointment' in 'Personal' calendar for tomorrow from 10:00 to 10:30.",
+            "prompt": "Add an event 'Team Meeting' to the 'Work' calendar for tomorrow at 10:00 AM, ending at 11:00 AM.",
+            "prompt_for_task_generation": "Create event 'Team Meeting' in 'Work' calendar for tomorrow, 10:00 AM to 11:00 AM.",
         },
         {
-            "prompt": "Schedule a 'Conference call' in the 'Projects' calendar for next Monday from 15:00 to 16:00.",
-            "prompt_for_task_generation": "Add 'Conference call' to 'Projects' calendar on next Monday, 15:00-16:00.",
+            "prompt": "Schedule 'Doctor Appointment' on the 'Personal' calendar for July 25th from 2:30 PM to 3:00 PM.",
+            "prompt_for_task_generation": "Add event 'Doctor Appointment' to 'Personal' calendar on July 25th, 2:30 PM - 3:00 PM.",
         },
         {
-            "prompt": "Put 'Workout' on the 'Fitness' calendar for today at 6:00 PM, lasting one hour.",
-            "prompt_for_task_generation": "Add 'Workout' to 'Fitness' calendar today from 6:00 PM to 7:00 PM.",
+            "prompt": "New event in 'Fitness' calendar: 'Gym Session', today from 18:00 to 19:30.",
+            "prompt_for_task_generation": "Create event 'Gym Session' in 'Fitness' calendar, today, 18:00-19:30.",
         },
         {
-            "prompt": "Add a 'Study session' to the 'Study' calendar for this Friday from 9:00 AM to 11:30 AM.",
-            "prompt_for_task_generation": "Create 'Study session' in 'Study' calendar this Friday, 9:00 AM to 11:30 AM.",
+            "prompt": "Add 'Family Dinner' to the 'Family' calendar for this Friday at 7 PM, lasting one hour.",
+            "prompt_for_task_generation": "Add event 'Family Dinner' to 'Family' calendar, this Friday, 7:00 PM to 8:00 PM.",
         },
         {
-            "prompt": "I have a 'Lunch' meeting, please add it to my 'Personal' calendar for today at 12:30 PM for 30 minutes.",
-            "prompt_for_task_generation": "Add 'Lunch' to 'Personal' calendar today from 12:30 PM to 1:00 PM.",
+            "prompt": "Put 'Project Deadline' on the 'Work' calendar for August 1st, starting at 9 AM and ending at 5 PM.",
+            "prompt_for_task_generation": "Create event 'Project Deadline' in 'Work' calendar for August 1st, 9:00 AM - 5:00 PM.",
         },
     ],
 )
@@ -377,17 +387,153 @@ DELETE_ADDED_EVENT_USE_CASE = UseCase(
         {"prompt": "Delete the event titled 'Workout' for today.", "prompt_for_task_generation": "Remove the 'Workout' event scheduled for today."},
     ],
 )
+
+###############################################################################
+# SEARCH_SUBMIT_USE_CASE
+###############################################################################
+
+SEARCH_SUBMIT_INFO = """
+CRITICAL REQUIREMENT:
+1. The prompt must explicitly mention searching for something.
+2. Include the search query in the prompt.
+"""
+
+SEARCH_SUBMIT_USE_CASE = UseCase(
+    name="SEARCH_SUBMIT",
+    description="Triggered when the user submits a search query.",
+    event=SearchSubmitEvent,
+    event_source_code=SearchSubmitEvent.get_source_code_of_class(),
+    constraints_generator=generate_search_submit_constraints,
+    additional_prompt_info=SEARCH_SUBMIT_INFO,
+    examples=[
+        {"prompt": "Search for 'work'", "prompt_for_task_generation": "Search for 'work'"},
+        {"prompt": "Find events with 'meeting'", "prompt_for_task_generation": "Search for 'meeting'"},
+        {"prompt": "Look up 'dentist appointment'", "prompt_for_task_generation": "Search for 'dentist appointment'"},
+        {"prompt": "Show me all events related to 'project'", "prompt_for_task_generation": "Search for 'project'"},
+        {"prompt": "Find 'lunch'", "prompt_for_task_generation": "Search for 'lunch'"},
+    ],
+)
+
+###############################################################################
+# EVENT_ADD_REMINDER_USE_CASE
+###############################################################################
+
+EVENT_ADD_REMINDER_INFO = """
+CRITICAL REQUIREMENT:
+1. The prompt must explicitly mention adding a reminder to an event.
+2. Specify the time for the reminder in minutes.
+"""
+
+EVENT_ADD_REMINDER_USE_CASE = UseCase(
+    name="EVENT_ADD_REMINDER",
+    description="Triggered when a reminder is added to an event.",
+    event=EventAddReminderEvent,
+    event_source_code=EventAddReminderEvent.get_source_code_of_class(),
+    constraints_generator=generate_event_add_reminder_constraints,
+    additional_prompt_info=EVENT_ADD_REMINDER_INFO,
+    examples=[
+        {"prompt": "Add a 30-minute reminder to the event.", "prompt_for_task_generation": "Add a 30-minute reminder."},
+        {"prompt": "Set a reminder for 10 minutes before.", "prompt_for_task_generation": "Add a 10-minute reminder."},
+        {"prompt": "I need a reminder 1 hour before.", "prompt_for_task_generation": "Add a 60-minute reminder."},
+        {"prompt": "Remind me 15 minutes prior.", "prompt_for_task_generation": "Add a 15-minute reminder."},
+        {"prompt": "Add a 2-hour reminder.", "prompt_for_task_generation": "Add a 120-minute reminder."},
+    ],
+)
+
+###############################################################################
+# EVENT_REMOVE_REMINDER_USE_CASE
+###############################################################################
+
+EVENT_REMOVE_REMINDER_INFO = """
+CRITICAL REQUIREMENT:
+1. The prompt must explicitly mention removing a reminder from an event.
+2. Specify the time of the reminder to be removed in minutes.
+"""
+
+EVENT_REMOVE_REMINDER_USE_CASE = UseCase(
+    name="EVENT_REMOVE_REMINDER",
+    description="Triggered when a reminder is removed from an event.",
+    event=EventRemoveReminderEvent,
+    event_source_code=EventRemoveReminderEvent.get_source_code_of_class(),
+    constraints_generator=generate_event_remove_reminder_constraints,
+    additional_prompt_info=EVENT_REMOVE_REMINDER_INFO,
+    examples=[
+        {"prompt": "Remove the 30-minute reminder.", "prompt_for_task_generation": "Remove the 30-minute reminder."},
+        {"prompt": "Delete the 10-minute reminder.", "prompt_for_task_generation": "Remove the 10-minute reminder."},
+        {"prompt": "I don't need the 1-hour reminder anymore.", "prompt_for_task_generation": "Remove the 60-minute reminder."},
+        {"prompt": "Get rid of the 15-minute reminder.", "prompt_for_task_generation": "Remove the 15-minute reminder."},
+        {"prompt": "Cancel the 2-hour reminder.", "prompt_for_task_generation": "Remove the 120-minute reminder."},
+    ],
+)
+
+###############################################################################
+# EVENT_ADD_ATTENDEE_USE_CASE
+###############################################################################
+
+EVENT_ADD_ATTENDEE_INFO = """
+CRITICAL REQUIREMENT:
+1. The prompt must explicitly mention adding an attendee to an event.
+2. Specify the email address of the attendee to be added.
+"""
+
+EVENT_ADD_ATTENDEE_USE_CASE = UseCase(
+    name="EVENT_ADD_ATTENDEE",
+    description="Triggered when an attendee is added to an event.",
+    event=EventAddAttendeeEvent,
+    event_source_code=EventAddAttendeeEvent.get_source_code_of_class(),
+    constraints_generator=generate_event_add_attendee_constraints,
+    additional_prompt_info=EVENT_ADD_ATTENDEE_INFO,
+    examples=[
+        {"prompt": "Add 'test@example.com' as an attendee.", "prompt_for_task_generation": "Add attendee 'test@example.com'."},
+        {"prompt": "Invite 'user1@work.com' to this event.", "prompt_for_task_generation": "Add attendee 'user1@work.com'."},
+        {"prompt": "Include 'friend@email.net' in the guest list.", "prompt_for_task_generation": "Add attendee 'friend@email.net'."},
+        {"prompt": "Add attendee with email 'contact@domain.org'.", "prompt_for_task_generation": "Add attendee 'contact@domain.org'."},
+        {"prompt": "Put 'another.user@email.com' on the invite list.", "prompt_for_task_generation": "Add attendee 'another.user@email.com'."},
+    ],
+)
+
+###############################################################################
+# EVENT_REMOVE_ATTENDEE_USE_CASE
+###############################################################################
+
+EVENT_REMOVE_ATTENDEE_INFO = """
+CRITICAL REQUIREMENT:
+1. The prompt must explicitly mention removing an attendee from an event.
+2. Specify the email address of the attendee to be removed.
+"""
+
+EVENT_REMOVE_ATTENDEE_USE_CASE = UseCase(
+    name="EVENT_REMOVE_ATTENDEE",
+    description="Triggered when an attendee is removed from an event.",
+    event=EventRemoveAttendeeEvent,
+    event_source_code=EventRemoveAttendeeEvent.get_source_code_of_class(),
+    constraints_generator=generate_event_remove_attendee_constraints,
+    additional_prompt_info=EVENT_REMOVE_ATTENDEE_INFO,
+    examples=[
+        {"prompt": "Remove 'test@example.com' from the attendees.", "prompt_for_task_generation": "Remove attendee 'test@example.com'."},
+        {"prompt": "Uninvite 'user1@work.com' from this event.", "prompt_for_task_generation": "Remove attendee 'user1@work.com'."},
+        {"prompt": "Take 'friend@email.net' off the guest list.", "prompt_for_task_generation": "Remove attendee 'friend@email.net'."},
+        {"prompt": "Remove attendee with email 'contact@domain.org'.", "prompt_for_task_generation": "Remove attendee 'contact@domain.org'."},
+        {"prompt": "Delete 'another.user@email.com' from the invite list.", "prompt_for_task_generation": "Remove attendee 'another.user@email.com'."},
+    ],
+)
+
 ALL_USE_CASES = [
-    # SELECT_MONTH_USE_CASE,
-    # SELECT_WEEK_USE_CASE,
-    # SELECT_FIVE_DAYS_USE_CASE,
-    # SELECT_DAY_USE_CASE,
-    # SELECT_TODAY_USE_CASE,
-    # ADD_NEW_CALENDAR_USE_CASE,
-    # CREATE_CALENDAR_USE_CASE,
+    SELECT_MONTH_USE_CASE,
+    SELECT_WEEK_USE_CASE,
+    SELECT_FIVE_DAYS_USE_CASE,
+    SELECT_DAY_USE_CASE,
+    SELECT_TODAY_USE_CASE,
+    ADD_NEW_CALENDAR_USE_CASE,
+    CREATE_CALENDAR_USE_CASE,
     CHOOSE_CALENDAR_USE_CASE,
-    # ADD_EVENT_USE_CASE,
-    # CELL_CLICKED_USE_CASE,
-    # CANCEL_ADD_EVENT_USE_CASE,
-    # DELETE_ADDED_EVENT_USE_CASE,
+    ADD_EVENT_USE_CASE,
+    CELL_CLICKED_USE_CASE,
+    CANCEL_ADD_EVENT_USE_CASE,
+    DELETE_ADDED_EVENT_USE_CASE,
+    SEARCH_SUBMIT_USE_CASE,
+    EVENT_ADD_REMINDER_USE_CASE,
+    EVENT_REMOVE_REMINDER_USE_CASE,
+    EVENT_ADD_ATTENDEE_USE_CASE,
+    EVENT_REMOVE_ATTENDEE_USE_CASE,
 ]
