@@ -221,72 +221,6 @@ class ChooseCalendarEvent(Event, BaseEventValidator):
         )
 
 
-class AddEventEvent(Event, BaseEventValidator):
-    """Event triggered when user adds a calendar event"""
-
-    event_name: str = "ADD_EVENT"
-    # source: str
-    title: str
-    calendar: str
-    date: str
-    start_time: str
-    end_time: str
-    # color: str
-    # is_editing: bool
-
-    class ValidationCriteria(BaseModel):
-        # source: str | CriterionValue | None = None
-        title: str | CriterionValue | None = None
-        calendar: str | CriterionValue | None = None
-        date: str | CriterionValue | None = None
-        start_time: str | CriterionValue | None = None
-        end_time: str | CriterionValue | None = None
-        # color: str | CriterionValue | None = None
-        # isEditing: bool | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                # self._validate_field(self.source, criteria.source),
-                self._validate_field(self.title, criteria.title),
-                self._validate_field(self.calendar, criteria.calendar),
-                self._validate_field(self.date, criteria.date),
-                self._validate_field(self.start_time, criteria.start_time),
-                self._validate_field(self.end_time, criteria.end_time),
-                # self._validate_field(self.color, criteria.color),
-                # self._validate_field(self.is_editing, criteria.isEditing),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "AddEventEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-        start_time, end_time = "", ""
-        st = data.get("startTime", [])
-        if st:
-            start_time = str(st[0]) + ":" + str(st[1]).zfill(2)
-        et = data.get("endTime", [])
-        if et:
-            end_time = str(et[0]) + ":" + str(et[1]).zfill(2)
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            # source=data.get("source", ""),
-            title=data.get("title", ""),
-            calendar=data.get("calendar", ""),
-            date=data.get("date", ""),
-            start_time=start_time,
-            end_time=end_time,
-            # color=data.get("color", ""),
-            # is_editing=data.get("isEditing", False),
-        )
-
-
 class CellClickedEvent(Event, BaseEventValidator):
     """Event triggered when user clicks on a calendar cell"""
 
@@ -332,95 +266,150 @@ class CellClickedEvent(Event, BaseEventValidator):
         )
 
 
-class CancelAddEventEvent(Event, BaseEventValidator):
-    """Event triggered when user cancels adding an event"""
+class AddEventEvent(Event, BaseEventValidator):
+    """Event triggered when user adds a calendar event"""
 
-    event_name: str = "CANCEL_ADD_EVENT"
-    source: str
-    date: str
-    # reason: str
+    event_name: str = "ADD_EVENT"
     title: str
+    calendar: str
+    date: str
+    start_time: str
+    end_time: str
+    # color: str
+    # is_editing: bool
+    all_day: bool
+    recurrence: str
+    attendees: list[str]
+    reminders: list[int]
+    busy: bool
+    visibility: str
+    location: str
+    description: str
+    meeting_link: str
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
-        date: str | CriterionValue | None = None
-        # reason: str | CriterionValue | None = None
         title: str | CriterionValue | None = None
+        calendar: str | CriterionValue | None = None
+        date: str | CriterionValue | None = None
+        start_time: str | CriterionValue | None = None
+        end_time: str | CriterionValue | None = None
+        # color: str | CriterionValue | None = None
+        # isEditing: bool | CriterionValue | None = None
+        allDay: bool | CriterionValue | None = None
+        recurrence: str | CriterionValue | None = None
+        attendees: list[str] | CriterionValue | None = None
+        reminders: list[int] | CriterionValue | None = None
+        busy: bool | CriterionValue | None = None
+        visibility: str | CriterionValue | None = None
+        location: str | CriterionValue | None = None
+        description: str | CriterionValue | None = None
+        meetingLink: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.source, criteria.source),
-                self._validate_field(self.date, criteria.date),
-                # self._validate_field(self.reason, criteria.reason),
                 self._validate_field(self.title, criteria.title),
+                self._validate_field(self.calendar, criteria.calendar),
+                self._validate_field(self.date, criteria.date),
+                self._validate_field(self.start_time, criteria.start_time),
+                self._validate_field(self.end_time, criteria.end_time),
+                # self._validate_field(self.color, criteria.color),
+                # self._validate_field(self.is_editing, criteria.isEditing),
+                self._validate_field(self.all_day, criteria.allDay),
+                self._validate_field(self.recurrence, criteria.recurrence),
+                self._validate_field(self.attendees, criteria.attendees),
+                self._validate_field(self.reminders, criteria.reminders),
+                self._validate_field(self.busy, criteria.busy),
+                self._validate_field(self.visibility, criteria.visibility),
+                self._validate_field(self.location, criteria.location),
+                self._validate_field(self.description, criteria.description),
+                self._validate_field(self.meeting_link, criteria.meetingLink),
             ]
         )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "AddEventEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        start_time, end_time = "", ""
+        st = data.get("startTime", [])
+        if st:
+            start_time = str(st[0]) + ":" + str(st[1]).zfill(2)
+        et = data.get("endTime", [])
+        if et:
+            end_time = str(et[0]) + ":" + str(et[1]).zfill(2)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            title=data.get("title", ""),
+            calendar=data.get("calendar", ""),
+            date=data.get("date", ""),
+            start_time=start_time,
+            end_time=end_time,
+            # color=data.get("color", ""),
+            # is_editing=data.get("isEditing", False),
+            all_day=data.get("allDay", False),
+            recurrence=data.get("recurrence", ""),
+            attendees=data.get("attendees", []),
+            reminders=data.get("reminders", []),
+            busy=data.get("busy", False),
+            visibility=data.get("visibility", ""),
+            location=data.get("location", ""),
+            description=data.get("description", ""),
+            meeting_link=data.get("meetingLink", ""),
+        )
+
+
+class CancelAddEventEvent(AddEventEvent):
+    """Event triggered when user cancels adding an event"""
+
+    event_name: str = "CANCEL_ADD_EVENT"
+
+    class ValidationCriteria(AddEventEvent):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        return AddEventEvent._validate_criteria(self, criteria)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "CancelAddEventEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
+        task = AddEventEvent.parse(backend_event)
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            source=data.get("source", ""),
-            date=data.get("date", ""),
-            # reason=data.get("reason", ""),
-            title=data.get("title", ""),
+            **task.model_dump(),
         )
 
 
-class DeleteAddedEventEvent(Event, BaseEventValidator):
+class DeleteAddedEventEvent(AddEventEvent):
     """Event triggered when user deletes an existing calendar event"""
 
     event_name: str = "DELETE_ADDED_EVENT"
-    source: str
-    # event_id: str
-    event_title: str
-    calendar: str
-    date: str
 
-    class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
-        # eventId: str | CriterionValue | None = None
-        eventTitle: str | CriterionValue | None = None
-        calendar: str | CriterionValue | None = None
-        date: str | CriterionValue | None = None
+    class ValidationCriteria(AddEventEvent.ValidationCriteria):
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.source, criteria.source),
-                # self._validate_field(self.event_id, criteria.eventId),
-                self._validate_field(self.event_title, criteria.eventTitle),
-                self._validate_field(self.calendar, criteria.calendar),
-                self._validate_field(self.date, criteria.date),
-            ]
-        )
+        return AddEventEvent._validate_criteria(self, criteria)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "DeleteAddedEventEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-
+        task = AddEventEvent.parse(backend_event)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            source=data.get("source", ""),
-            # event_id=data.get("eventId", ""),
-            event_title=data.get("eventTitle", ""),
-            calendar=data.get("calendar", ""),
-            date=data.get("date", ""),
+            **task.model_dump(),
         )
 
 
@@ -434,13 +423,7 @@ class SearchSubmitEvent(Event, BaseEventValidator):
         query: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.query, criteria.query),
-            ]
-        )
+        return self._validate_field(self.query, criteria.query)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SearchSubmitEvent":
@@ -466,13 +449,7 @@ class EventAddReminderEvent(Event, BaseEventValidator):
         minutes: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.minutes, criteria.minutes),
-            ]
-        )
+        return self._validate_field(self.minutes, criteria.minutes)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EventAddReminderEvent":
@@ -488,40 +465,22 @@ class EventAddReminderEvent(Event, BaseEventValidator):
         )
 
 
-class EventRemoveReminderEvent(Event, BaseEventValidator):
+class EventRemoveReminderEvent(EventAddReminderEvent):
     """Event triggered when a reminder is removed from an event"""
 
     event_name: str = "EVENT_REMOVE_REMINDER"
-    minutes: int
-    idx: int
 
-    class ValidationCriteria(BaseModel):
-        minutes: int | CriterionValue | None = None
-        idx: int | CriterionValue | None = None
+    class ValidationCriteria(EventAddReminderEvent.ValidationCriteria):
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.minutes, criteria.minutes),
-                self._validate_field(self.idx, criteria.idx),
-            ]
-        )
+        return EventAddReminderEvent._validate_criteria(self, criteria)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EventRemoveReminderEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            minutes=data.get("minutes", 0),
-            idx=data.get("idx", 0),
-        )
+        reminder = EventAddReminderEvent.parse(backend_event)
+        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, **reminder.model_dump())
 
 
 class EventAddAttendeeEvent(Event, BaseEventValidator):
@@ -534,13 +493,7 @@ class EventAddAttendeeEvent(Event, BaseEventValidator):
         email: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.email, criteria.email),
-            ]
-        )
+        return self._validate_field(self.email, criteria.email)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EventAddAttendeeEvent":
@@ -556,35 +509,27 @@ class EventAddAttendeeEvent(Event, BaseEventValidator):
         )
 
 
-class EventRemoveAttendeeEvent(Event, BaseEventValidator):
+class EventRemoveAttendeeEvent(EventAddAttendeeEvent):
     """Event triggered when an attendee is removed from an event"""
 
     event_name: str = "EVENT_REMOVE_ATTENDEE"
-    email: str
 
-    class ValidationCriteria(BaseModel):
-        email: str | CriterionValue | None = None
+    class ValidationCriteria(EventAddAttendeeEvent.ValidationCriteria):
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.email, criteria.email),
-            ]
-        )
+        return EventAddAttendeeEvent._validate_criteria(self, criteria)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EventRemoveAttendeeEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-
+        attendee = EventAddAttendeeEvent.parse(backend_event)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            email=data.get("email", ""),
+            **attendee.model_dump(),
         )
 
 
