@@ -7,6 +7,7 @@ from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_d
 
 from ..criterion_helper import ComparisonOperator
 from .data import (
+    ATTENDEE_EMAILS,
     CALENDAR_NAMES,
     DESCRIPTIONS,
     EVENT_TITLES,
@@ -16,6 +17,10 @@ from .data import (
     FIELD_OPERATORS_CLICK_CELL_MAP,
     FIELD_OPERATORS_CREATE_CALENDAR_MAP,
     FIELD_OPERATORS_DELETE_ADD_EVENT_MAP,
+    FIELD_OPERATORS_EVENT_ATTENDEE_MAP,
+    FIELD_OPERATORS_EVENT_REMINDER_MAP,
+    FIELD_OPERATORS_SEARCH_SUBMIT_MAP,
+    REMINDER_MINUTES,
 )
 
 
@@ -219,3 +224,36 @@ def generate_delete_event_constraints() -> list[dict[str, Any]]:
         "calendar": {"values": CALENDAR_NAMES},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_DELETE_ADD_EVENT_MAP)
+
+
+def generate_search_submit_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for submitting a search query."""
+    field_map = {"query": {"values": CALENDAR_NAMES}}
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SEARCH_SUBMIT_MAP)
+
+
+def generate_event_add_reminder_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for adding an event reminder."""
+    field_map = {"minutes": {"values": REMINDER_MINUTES}}
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_REMINDER_MAP)
+
+
+def generate_event_remove_reminder_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for removing an event reminder."""
+    field_map = {
+        "minutes": {"values": REMINDER_MINUTES},
+        "idx": {"values": [0, 1, 2]},
+    }
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_REMINDER_MAP)
+
+
+def generate_event_add_attendee_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for adding an event attendee."""
+    field_map = {"email": {"values": ATTENDEE_EMAILS}}
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)
+
+
+def generate_event_remove_attendee_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for removing an event attendee."""
+    field_map = {"email": {"values": ATTENDEE_EMAILS}}
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_EVENT_ATTENDEE_MAP)

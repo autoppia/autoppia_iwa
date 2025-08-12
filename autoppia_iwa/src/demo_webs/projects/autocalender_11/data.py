@@ -15,6 +15,11 @@ DESCRIPTIONS = [
     "Holiday planning session",
     "Client presentation review",
 ]
+
+REMINDER_MINUTES = [5, 10, 15, 30, 60, 120]
+ATTENDEE_EMAILS = ["test@example.com", "user1@work.com", "friend@email.net", "contact@domain.org"]
+
+
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 
@@ -49,4 +54,16 @@ FIELD_OPERATORS_DELETE_ADD_EVENT_MAP = {
     "date": LOGICAL_OPERATORS,
     "event_title": STRING_OPERATORS,
     "calendar": STRING_OPERATORS,
+}
+FIELD_OPERATORS_SEARCH_SUBMIT_MAP = {
+    "query": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_EVENT_REMINDER_MAP = {
+    "minutes": LOGICAL_OPERATORS,
+    "idx": LOGICAL_OPERATORS,
+}
+
+FIELD_OPERATORS_EVENT_ATTENDEE_MAP = {
+    "email": STRING_OPERATORS,
 }
