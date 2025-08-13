@@ -312,7 +312,7 @@ class AddEventEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.title, criteria.title),
                 self._validate_field(self.calendar, criteria.calendar),
-                self._validate_field(self.date, criteria.date),
+                validate_date_field(self.date, criteria.date),
                 self._validate_field(self.start_time, criteria.start_time),
                 self._validate_field(self.end_time, criteria.end_time),
                 # self._validate_field(self.color, criteria.color),
@@ -489,6 +489,7 @@ CALENDAR_EVENTS = [
     CancelAddEventEvent,
     DeleteAddedEventEvent,
     SearchSubmitEvent,
+    EventWizardOpenEvent,
     EventAddReminderEvent,
     EventRemoveReminderEvent,
     EventAddAttendeeEvent,
@@ -513,4 +514,5 @@ BACKEND_EVENT_TYPES = {
     "EVENT_REMOVE_REMINDER": EventRemoveReminderEvent,
     "EVENT_ADD_ATTENDEE": EventAddAttendeeEvent,
     "EVENT_REMOVE_ATTENDEE": EventRemoveAttendeeEvent,
+    "EVENT_WIZARD_OPEN": EventWizardOpenEvent,
 }
