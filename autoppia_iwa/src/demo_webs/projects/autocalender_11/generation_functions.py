@@ -1,9 +1,9 @@
 import random
 from collections.abc import Callable
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
+from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
 
 from ..criterion_helper import ComparisonOperator
 from .data import (
@@ -11,6 +11,7 @@ from .data import (
     CALENDAR_NAMES,
     DESCRIPTIONS,
     EVENT_TITLES,
+    EVENTS_DATASET,
     FIELD_OPERATORS_ADD_EVENT_MAP,
     FIELD_OPERATORS_CHOOSE_CALENDAR_MAP,
     FIELD_OPERATORS_CLICK_CELL_MAP,
@@ -46,6 +47,23 @@ def _generate_constraint_value(
             return field_value
         if operator == ComparisonOperator.NOT_EQUALS:
             return field_value + timedelta(days=delta_days + 1)
+
+    if isinstance(field_value, time):
+        delta_minutes = random.choice([5, 10, 15, 30, 60])
+
+        def add_minutes(t, mins):
+            full_dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
+            return full_dt.time()
+
+        if operator == ComparisonOperator.GREATER_THAN:
+            return add_minutes(field_value, -delta_minutes)
+        if operator == ComparisonOperator.LESS_THAN:
+            return add_minutes(field_value, delta_minutes)
+        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
+            return field_value
+        if operator == ComparisonOperator.NOT_EQUALS:
+            valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
+            return random.choice(valid) if valid else add_minutes(field_value, delta_minutes + 5)
 
     if operator == ComparisonOperator.EQUALS:
         return field_value
@@ -205,8 +223,8 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
         "date": {"dataset_generator": lambda: [{"date": (date.today() + timedelta(days=i)).strftime("%Y-%m-%d")} for i in range(-30, 60)]},
         "time": {},  # Special handler
         # "color": {"values": COLORS},
-        # "is_editing": {"values": [True, False], "output_field": "isEditing"},
-        "all_day": {"values": [True, False], "output_field": "allDay"},
+        # "is_editing": {"values": [True, False]},
+        "all_day": {"values": [True, False]},
         "recurrence": {"values": RECURRENCE_OPTIONS},
         "attendees": {"values": ATTENDEE_EMAILS},
         "reminders": {"values": REMINDER_MINUTES},
@@ -214,9 +232,44 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
         "visibility": {"values": VISIBILITY_OPTIONS},
         "location": {"values": LOCATIONS},
         "description": {"values": DESCRIPTIONS},
-        "meeting_link": {"values": MEETING_LINKS, "output_field": "meetingLink"},
+        "meeting_link": {"values": MEETING_LINKS},
     }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
+    possible_fields = list(field_map.keys())
+    selected_fields = random.sample(possible_fields, k=random.randint(3, len(possible_fields)))
+    reduced_field_map = {field: field_map[field] for field in selected_fields}
+    return _generate_constraints_for_event(reduced_field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
+
+
+def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    possible_fields = list(FIELD_OPERATORS_ADD_EVENT_MAP.keys())
+    selected_fields = random.sample(possible_fields, k=random.randint(3, len(possible_fields)))
+    sample_event = random.choice(EVENTS_DATASET)
+    for field in selected_fields:
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_ADD_EVENT_MAP[field]))
+        if field == "title":
+            field_value = sample_event.get("label", None)
+            dataset = [{"title": v} for v in EVENTS_DATASET["label"]]
+        elif field == "date":
+            field_value = parse_datetime(sample_event.get("date", None))
+            dataset = [{"date": parse_datetime(v)} for v in EVENTS_DATASET["date"]]
+        elif field in ["start_time", "end_time"]:
+            val = sample_event.get(field, [])
+            if len(val) == 2:
+                time_str = f"{val[0]}:{str(val[1]).zfill(2)}"
+                field_value = datetime.strptime(time_str, "%H:%M").time()
+                dataset = [{field: datetime.strptime(f"{v[0]}:{str(v[1]).zfill(2)}", "%H:%M").time()} for v in EVENTS_DATASET[field] if isinstance(v, list) and len(v) == 2]
+            else:
+                continue
+        else:
+            field_value = sample_event.get(field, None)
+            dataset = [{field: event.get(field, None)} for event in EVENTS_DATASET if field in event]
+        if not field_value:
+            continue
+        value = _generate_constraint_value(operator, field_value, field, dataset)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
 
 
 def generate_search_submit_constraints() -> list[dict[str, Any]]:

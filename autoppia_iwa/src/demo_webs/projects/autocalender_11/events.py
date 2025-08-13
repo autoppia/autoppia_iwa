@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 
 from pydantic import BaseModel
 
@@ -273,8 +273,8 @@ class AddEventEvent(Event, BaseEventValidator):
     title: str
     calendar: str
     date: str
-    start_time: str
-    end_time: str
+    start_time: time
+    end_time: time
     # color: str
     # is_editing: bool
     all_day: bool
@@ -291,8 +291,8 @@ class AddEventEvent(Event, BaseEventValidator):
         title: str | CriterionValue | None = None
         calendar: str | CriterionValue | None = None
         date: str | CriterionValue | None = None
-        start_time: str | CriterionValue | None = None
-        end_time: str | CriterionValue | None = None
+        start_time: time | CriterionValue | None = None
+        end_time: time | CriterionValue | None = None
         # color: str | CriterionValue | None = None
         # isEditing: bool | CriterionValue | None = None
         all_day: bool | CriterionValue | None = None
@@ -336,10 +336,13 @@ class AddEventEvent(Event, BaseEventValidator):
         start_time, end_time = "", ""
         st = data.get("startTime", [])
         if st:
-            start_time = str(st[0]) + ":" + str(st[1]).zfill(2)
+            time_str = str(st[0]) + ":" + str(st[1]).zfill(2)
+            start_time = datetime.strptime(time_str, "%H:%M").time()
         et = data.get("endTime", [])
         if et:
-            end_time = str(et[0]) + ":" + str(et[1]).zfill(2)
+            time_str = str(et[0]) + ":" + str(et[1]).zfill(2)
+            end_time = datetime.strptime(time_str, "%H:%M").time()
+
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
