@@ -2,77 +2,71 @@
 
 from pydantic import BaseModel
 
-from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
-
-
-class Consultant(BaseModel):
-    country: str
-    expertName: str
-    jobs: int
-    rate: str
-    rating: float
-    role: str
-    # timestamp: int
 
 
 class BookAConsultationEvent(Event, BaseEventValidator):
     """Event triggered when someone clicks on the book a consultation button"""
 
     event_name: str = "BOOK_A_CONSULTATION"
-    consultant: Consultant
+    country: str
+    expertName: str
+    jobs: int
+    rate: str
+    rating: float
+    role: str
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
         expertName: str | CriterionValue | None = None
         jobs: int | CriterionValue | None = None
         rate: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         role: str | CriterionValue | None = None
-        # timestamp: Optional[int | CriterionValue] = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.consultant.country, criteria.country),
-                self._validate_field(self.consultant.expertName, criteria.expertName),
-                self._validate_field(self.consultant.jobs, criteria.jobs),
-                self._validate_field(self.consultant.rate, criteria.rate),
-                self._validate_field(self.consultant.rating, criteria.rating),
-                self._validate_field(self.consultant.role, criteria.role),
-                # self._validate_field(self.consultant.timestamp, criteria.timestamp)
+                self._validate_field(self.country, criteria.country),
+                self._validate_field(self.expertName, criteria.expertName),
+                self._validate_field(self.jobs, criteria.jobs),
+                self._validate_field(self.rate, criteria.rate),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.role, criteria.role),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "BookAConsultationEvent":
         base_event = Event.parse(backend_event)
+        data = base_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            consultant=Consultant(**backend_event.data),
+            country=data.get("country"),
+            expertName=data.get("expertName"),
+            jobs=data.get("jobs"),
+            rate=data.get("rate"),
+            rating=data.get("rating"),
+            role=data.get("role"),
         )
-
-
-class HireButtonData(BaseModel):
-    country: str
-    expertName: str
-    expertSlug: str
-    role: str
 
 
 class HireButtonClickedEvent(Event, BaseEventValidator):
     """event triggered when someone click on hire button"""
 
     event_name: str = "HIRE_BTN_CLICKED"
-    hireButton: HireButtonData
+    country: str
+    expertName: str
+    expertSlug: str
+    role: str
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
         expertName: str | CriterionValue | None = None
         expertSlug: str | CriterionValue | None = None
@@ -83,22 +77,25 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.hireButton.country, criteria.country),
-                self._validate_field(self.hireButton.expertName, criteria.expertName),
-                self._validate_field(self.hireButton.expertSlug, criteria.expertSlug),
-                self._validate_field(self.hireButton.role, criteria.role),
+                self._validate_field(self.country, criteria.country),
+                self._validate_field(self.expertName, criteria.expertName),
+                self._validate_field(self.expertSlug, criteria.expertSlug),
+                self._validate_field(self.role, criteria.role),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "HireButtonClickedEvent":
         base_event = Event.parse(backend_event)
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            hireButton=HireButtonData(**base_event.data),
+            country=data.get("country", ""),
+            expertName=data.get("expertName", ""),
+            expertSlug=data.get("expertSlug", ""),
         )
 
 
@@ -112,7 +109,7 @@ class SelectHiringTeamEvent(Event, BaseEventValidator):
     event_name: str = "SELECT_HIRING_TEAM"
     select_hiring_team: SelectHiringTeamEventData
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         expertName: str | CriterionValue | None = None
         expertSlug: str | CriterionValue | None = None
         team: str | CriterionValue | None = None
@@ -159,7 +156,7 @@ class HireConsultantEvent(Event, BaseEventValidator):
 
     hireConsultant: HireConsultant
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
         expertName: str | CriterionValue | None = None
         expertSlug: str | CriterionValue | None = None
@@ -199,7 +196,7 @@ class CancelHireEvent(Event, BaseEventValidator):
     event_name: str = "CANCEL_HIRE"
     Button: str
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         Button: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -240,7 +237,7 @@ class PostAJobEvent(Event, BaseEventValidator):
 
     # post_a_job: PostAJobData
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         page: str | CriterionValue | None = None
         source: str | CriterionValue | None = None
 
@@ -277,7 +274,7 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
     query: str
     step: int
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
         step: int | CriterionValue | None = None
 
@@ -313,7 +310,7 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
 #     title: str
 #
 #
-#     class ValidationCriteria(CriterionValue):
+#     class ValidationCriteria(BaseModel):
 #         buttonText: str | CriterionValue | None = None
 #         step: int | CriterionValue | None = None
 #         title: str | CriterionValue | None = None
@@ -352,7 +349,7 @@ class SearchSkillEvent(Event, BaseEventValidator):
 
     # timestamp : int
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -385,7 +382,7 @@ class AddSkillEvent(Event, BaseEventValidator):
     method: str
     timestamp: int
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         method: str | CriterionValue | None = None
         skill: str | CriterionValue | None = None
         # timestamp: int | CriterionValue | None = None
@@ -422,7 +419,7 @@ class RemoveSkillEvent(Event, BaseEventValidator):
     skill: str
     timestamp: int
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         skill: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -458,7 +455,7 @@ class AttachFileClickedEvent(Event, BaseEventValidator):
     step: int
     type: str
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         filename: str | CriterionValue | None = None
         size: int | CriterionValue | None = None
         step: int | CriterionValue | None = None
@@ -520,7 +517,7 @@ class SubmitJobEvent(Event, BaseEventValidator):
     step: int
     title: str
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         budgetType: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
         duration: str | CriterionValue | None = None
@@ -585,7 +582,7 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
     step: int
     title: str
 
-    class ValidationCriteria(CriterionValue):
+    class ValidationCriteria(BaseModel):
         budgetType: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
         duration: str | CriterionValue | None = None
@@ -636,6 +633,8 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
 
 
 EVENTS = [
+    BookAConsultationEvent,
+    HireButtonClickedEvent,
     PostAJobEvent,
     WriteJobTitleEvent,
     SubmitJobEvent,
@@ -649,6 +648,8 @@ EVENTS = [
 ]
 
 ALL_BACKEND_EVENTS = {
+    "BOOK_A_CONSULTATION": BookAConsultationEvent,
+    "HIRE_BTN_CLICKED": HireButtonClickedEvent,
     "POST_A_JOB": PostAJobEvent,
     "WRITE_JOB_TITLE": WriteJobTitleEvent,
     "SUBMIT_JOB": SubmitJobEvent,
