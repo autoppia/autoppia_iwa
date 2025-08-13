@@ -146,13 +146,22 @@ CANCEL_HIRE_CONSULTATION_USE_CASE = UseCase(
     constraints_generator=generate_cancel_hire_consultation_constraint,
     examples=[
         {
-            "prompt": "User clicks 'cancel' button to cancel the hiring of a chosen consultation",
-            "prompt_for_task_generator": "User clicks 'cancel' button to cancel the hiring of a consultation",
+            "prompt": "The user click 'Cancel' button to cancel the hiring of chosen consultation",
+            "prompt_for_task_generation": "The user click 'Cancel' button to cancel the hiring of chosen consultation",
         },
         {
-            "prompt": "Cancel the hiring of a chosen consultation instead of hire",
-            "prompt_for_task_generator": "Cancel the hiring of a chosen consultation instead of hire",
+            "prompt": "Cancel hiring of a consultation whose country is 'Spain'",
+            "prompt_for_task_generation": "Cancel hiring of a consultation whose country is 'Spain'",
         },
+        {
+            "prompt": "Cancel hiring of a consultation whose slug is 'ashley-c'",
+            "prompt_for_task_generation": "Cancel hiring of a consultation whose slug is 'ashley-c'",
+        },
+        {
+            "prompt": "Cancel hiring of a consultation whose name is not 'Alexa R'",
+            "prompt_for_task_generation": "Cancel hiring of a consultation whose name is not 'Alexa R'",
+        },
+        {"prompt": "Cancel hiring of a consultation whose role is 'Full Stack Developer'", "prompt_for_task_generation": "Cancel hiring of a consultation whose role is 'Full Stack Developer'"},
     ],
 )
 

@@ -753,7 +753,19 @@ FIELD_OPERATORS_MAP_HIRING_CONSULTANT = {
 }
 
 FIELD_OPERATORS_MAP_CANCEL_HIRE_CONSULTANT = {
-    "Button": STRING_OPERATORS,
+    # "Button": STRING_OPERATORS,
+    # "about": STRING_OPERATORS,
+    # "avatar": STRING_OPERATORS,
+    # "consultation": STRING_OPERATORS,
+    "country": STRING_OPERATORS,
+    # "desc": STRING_OPERATORS,
+    # "hoursPerWeek": STRING_OPERATORS,
+    # "languages": STRING_OPERATORS,
+    "name": STRING_OPERATORS,
+    "rate": STRING_OPERATORS,
+    # "rating": LOGICAL_OPERATORS,
+    "role": STRING_OPERATORS,
+    "slug": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_POSTING_A_JOB = {

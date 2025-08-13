@@ -194,17 +194,53 @@ class CancelHireEvent(Event, BaseEventValidator):
     """event triggered when someone click cancel button instead of hire while hiring consultant"""
 
     event_name: str = "CANCEL_HIRE"
-    Button: str
+    # about : str
+    # avatar : str
+    # consultation: str
+    country: str
+    # desc: str
+    # hoursPerWeek: str
+    # languages: list[str]
+    name: str
+    rate: str
+    # rating: int
+    role: str
+    slug: str
 
+    # Button: str
     class ValidationCriteria(BaseModel):
-        Button: str | CriterionValue | None = None
+        # about: str | CriterionValue | None = None
+        # avatar: str | CriterionValue | None = None
+        # consultation: str | CriterionValue | None = None
+        country: str | CriterionValue | None = None
+        # desc: str | CriterionValue | None = None
+        # hoursPerWeek: str | CriterionValue | None = None
+        # languages: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        rate: str | CriterionValue | None = None
+        # rating: int | CriterionValue | None = None
+        role: str | CriterionValue | None = None
+        slug: str | CriterionValue | None = None
+        # Button: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.Button, criteria.Button),
+                # self._validate_field(self.Button, criteria.Button),
+                # self._validate_field(self.about, criteria.about),
+                # self._validate_field(self.avatar, criteria.avatar),
+                # self._validate_field(self.consultation, criteria.consultation),
+                self._validate_field(self.country, criteria.country),
+                # self._validate_field(self.desc, criteria.desc),
+                # self._validate_field(self.hoursPerWeek, criteria.hoursPerWeek),
+                # self._validate_field(self.languages, criteria.language),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.rate, criteria.rate),
+                # self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.role, criteria.role),
+                self._validate_field(self.slug, criteria.slug),
             ]
         )
 
@@ -212,20 +248,26 @@ class CancelHireEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "CancelHireEvent":
         base_event = Event.parse(backend_event)
         data = base_event.data
+        expert = data.get("expert")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            Button=data.get("Button"),
+            # Button=expert.get("Button"),
+            # about=expert.get("about"),
+            # avatar=expert.get("avatar"),
+            # consultation=expert.get("consultation"),
+            country=expert.get("country"),
+            # desc=expert.get("desc"),
+            # hoursPerWeek=expert.get("hoursPerWeek"),
+            # languages=expert.get("languages"),
+            name=expert.get("name"),
+            rate=expert.get("rate"),
+            # rating=expert.get("rating"),
+            role=expert.get("role"),
+            slug=expert.get("slug"),
         )
-
-
-# JOB RELATED EVENTS
-
-# class PostAJobData(BaseModel):
-#     page: str
-#     source: str
 
 
 class PostAJobEvent(Event, BaseEventValidator):
@@ -234,8 +276,6 @@ class PostAJobEvent(Event, BaseEventValidator):
     event_name: str = "POST_A_JOB"
     page: str  # direct validate web demo data without pydantic class
     source: str  # direct validate web demo data without pydantic class
-
-    # post_a_job: PostAJobData
 
     class ValidationCriteria(BaseModel):
         page: str | CriterionValue | None = None
@@ -263,7 +303,6 @@ class PostAJobEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             page=data.get("page"),
             source=data.get("source"),
-            # post_a_job = PostAJob(**base_event.data),
         )
 
 

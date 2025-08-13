@@ -287,23 +287,9 @@ def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
 
 
 def generate_cancel_hire_consultation_constraint() -> list[dict[str, Any]]:
-    constraints_list = []
-    possible_field = ["Button"]
-    button = ["Cancel"]
-    for field in possible_field:
-        allowed_ops = FIELD_OPERATORS_MAP_CANCEL_HIRE_CONSULTANT.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-        field_value = random.choice(button)
-        button_dataset = [{"Button": b} for b in button]
-        value = _generate_constraint_value(operator, field_value, field, dataset=button_dataset)
-
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
+    dataset = EXPERTS_DATA_MODIFIED
+    field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE_CONSULTANT
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2)
 
     return constraints_list
 
