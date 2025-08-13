@@ -11,6 +11,7 @@ from .events import (
     EventAddReminderEvent,
     EventRemoveAttendeeEvent,
     EventRemoveReminderEvent,
+    EventWizardOpenEvent,
     SearchSubmitEvent,
     SelectDayEvent,
     SelectFiveDaysEvent,
@@ -385,6 +386,32 @@ DELETE_ADDED_EVENT_USE_CASE = UseCase(
 )
 
 ###############################################################################
+# EVENT_WIZARD_OPEN_USE_CASE
+###############################################################################
+
+EVENT_WIZARD_OPEN_INFO = """
+CRITICAL REQUIREMENT:
+1. The prompt must be about opening the event creation or editing form.
+2. Do not mention submitting or saving the event. The focus is on opening the wizard.
+"""
+
+EVENT_WIZARD_OPEN_USE_CASE = UseCase(
+    name="EVENT_WIZARD_OPEN",
+    description="Triggered when the user opens the event creation or editing wizard.",
+    event=EventWizardOpenEvent,
+    event_source_code=EventWizardOpenEvent.get_source_code_of_class(),
+    constraints_generator=generate_add_event_constraints,
+    additional_prompt_info=EVENT_WIZARD_OPEN_INFO,
+    examples=[
+        {"prompt": "Open the form to add a new event.", "prompt_for_task_generation": "Open the new event wizard."},
+        {"prompt": "I want to edit the 'Team Meeting' event.", "prompt_for_task_generation": "Open the event wizard to edit 'Team Meeting'."},
+        {"prompt": "Click the 'add event' button.", "prompt_for_task_generation": "Open the event creation form."},
+        {"prompt": "Modify the details for the 'Doctor Appointment'.", "prompt_for_task_generation": "Open the event editor for 'Doctor Appointment'."},
+        {"prompt": "Let's schedule a new event.", "prompt_for_task_generation": "Open the event wizard for a new event."},
+    ],
+)
+
+###############################################################################
 # SEARCH_SUBMIT_USE_CASE
 ###############################################################################
 
@@ -527,6 +554,7 @@ ALL_USE_CASES = [
     # CELL_CLICKED_USE_CASE,
     # CANCEL_ADD_EVENT_USE_CASE,
     # DELETE_ADDED_EVENT_USE_CASE,
+    EVENT_WIZARD_OPEN_USE_CASE,
     # SEARCH_SUBMIT_USE_CASE,
     # EVENT_ADD_REMINDER_USE_CASE,
     # EVENT_REMOVE_REMINDER_USE_CASE,
