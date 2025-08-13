@@ -295,7 +295,7 @@ class AddEventEvent(Event, BaseEventValidator):
         end_time: str | CriterionValue | None = None
         # color: str | CriterionValue | None = None
         # isEditing: bool | CriterionValue | None = None
-        allDay: bool | CriterionValue | None = None
+        all_day: bool | CriterionValue | None = None
         recurrence: str | CriterionValue | None = None
         attendees: list[str] | CriterionValue | None = None
         reminders: list[int] | CriterionValue | None = None
@@ -303,7 +303,7 @@ class AddEventEvent(Event, BaseEventValidator):
         visibility: str | CriterionValue | None = None
         location: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
-        meetingLink: str | CriterionValue | None = None
+        meeting_link: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -317,7 +317,7 @@ class AddEventEvent(Event, BaseEventValidator):
                 self._validate_field(self.end_time, criteria.end_time),
                 # self._validate_field(self.color, criteria.color),
                 # self._validate_field(self.is_editing, criteria.isEditing),
-                self._validate_field(self.all_day, criteria.allDay),
+                self._validate_field(self.all_day, criteria.all_day),
                 self._validate_field(self.recurrence, criteria.recurrence),
                 self._validate_field(self.attendees, criteria.attendees),
                 self._validate_field(self.reminders, criteria.reminders),
@@ -325,7 +325,7 @@ class AddEventEvent(Event, BaseEventValidator):
                 self._validate_field(self.visibility, criteria.visibility),
                 self._validate_field(self.location, criteria.location),
                 self._validate_field(self.description, criteria.description),
-                self._validate_field(self.meeting_link, criteria.meetingLink),
+                self._validate_field(self.meeting_link, criteria.meeting_link),
             ]
         )
 

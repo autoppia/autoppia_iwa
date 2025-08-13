@@ -578,7 +578,7 @@ FIELD_OPERATORS_ADD_EVENT_MAP = {
     "date": LOGICAL_OPERATORS,
     "start_time": LOGICAL_OPERATORS,
     "end_time": LOGICAL_OPERATORS,
-    "allDay": EQUALITY_OPERATORS,
+    "all_day": EQUALITY_OPERATORS,
     "recurrence": EQUALITY_OPERATORS,
     "attendees": EQUALITY_OPERATORS,
     "reminders": EQUALITY_OPERATORS,
@@ -586,7 +586,7 @@ FIELD_OPERATORS_ADD_EVENT_MAP = {
     "visibility": EQUALITY_OPERATORS,
     "location": STRING_OPERATORS,
     "description": STRING_OPERATORS,
-    "meetingLink": STRING_OPERATORS,
+    "meeting_link": STRING_OPERATORS,
 }
 FIELD_OPERATORS_CLICK_CELL_MAP = {
     "source": STRING_OPERATORS,
