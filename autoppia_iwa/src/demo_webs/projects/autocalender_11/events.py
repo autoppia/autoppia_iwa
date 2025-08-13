@@ -364,53 +364,22 @@ class AddEventEvent(Event, BaseEventValidator):
         )
 
 
+class EventWizardOpenEvent(AddEventEvent):
+    """Event triggered when the event creation/editing wizard is opened."""
+
+    event_name: str = "EVENT_WIZARD_OPEN"
+
+
 class CancelAddEventEvent(AddEventEvent):
     """Event triggered when user cancels adding an event"""
 
     event_name: str = "CANCEL_ADD_EVENT"
-
-    class ValidationCriteria(AddEventEvent):
-        pass
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return AddEventEvent._validate_criteria(self, criteria)
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "CancelAddEventEvent":
-        base_event = Event.parse(backend_event)
-        task = AddEventEvent.parse(backend_event)
-
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            **task.model_dump(),
-        )
 
 
 class DeleteAddedEventEvent(AddEventEvent):
     """Event triggered when user deletes an existing calendar event"""
 
     event_name: str = "DELETE_ADDED_EVENT"
-
-    class ValidationCriteria(AddEventEvent.ValidationCriteria):
-        pass
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return AddEventEvent._validate_criteria(self, criteria)
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "DeleteAddedEventEvent":
-        base_event = Event.parse(backend_event)
-        task = AddEventEvent.parse(backend_event)
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            **task.model_dump(),
-        )
 
 
 class SearchSubmitEvent(Event, BaseEventValidator):
@@ -470,18 +439,6 @@ class EventRemoveReminderEvent(EventAddReminderEvent):
 
     event_name: str = "EVENT_REMOVE_REMINDER"
 
-    class ValidationCriteria(EventAddReminderEvent.ValidationCriteria):
-        pass
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return EventAddReminderEvent._validate_criteria(self, criteria)
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "EventRemoveReminderEvent":
-        base_event = Event.parse(backend_event)
-        reminder = EventAddReminderEvent.parse(backend_event)
-        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, **reminder.model_dump())
-
 
 class EventAddAttendeeEvent(Event, BaseEventValidator):
     """Event triggered when an attendee is added to an event"""
@@ -513,24 +470,6 @@ class EventRemoveAttendeeEvent(EventAddAttendeeEvent):
     """Event triggered when an attendee is removed from an event"""
 
     event_name: str = "EVENT_REMOVE_ATTENDEE"
-
-    class ValidationCriteria(EventAddAttendeeEvent.ValidationCriteria):
-        pass
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return EventAddAttendeeEvent._validate_criteria(self, criteria)
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "EventRemoveAttendeeEvent":
-        base_event = Event.parse(backend_event)
-        attendee = EventAddAttendeeEvent.parse(backend_event)
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            **attendee.model_dump(),
-        )
 
 
 CALENDAR_EVENTS = [
