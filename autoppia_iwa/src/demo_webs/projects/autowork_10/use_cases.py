@@ -37,10 +37,6 @@ BOOK_A_CONSULTATION_USE_CASE = UseCase(
     constraints_generator=generate_book_consultant_constraint,
     examples=[
         {
-            "prompt": "Go to the jobs page and navigate to end of the page and click on 'Book a consultation' button to book a that particular consultation",
-            "prompt_for_task_generation": "Go to the jobs page and navigate to end of the page and click on 'Book a consultation' button to book a that particular consultation",
-        },
-        {
             "prompt": "Book a consultation whose name is 'Alexa R'",
             "prompt_for_task_generation": "Book a consultation whose name is 'Alexa R'",
         },
@@ -68,27 +64,23 @@ BOOK_A_CONSULTATION_USE_CASE = UseCase(
 )
 
 HIRE_BUTTON_CLICKED_USE_CASE = UseCase(
-    name="HIRE_BUTTON_CLICKED",
+    name="HIRE_BTN_CLICKED",
     description="The user clicked hire button to start hiring a consultation workflow",
     event=HireButtonClickedEvent,
     event_source_code=HireButtonClickedEvent.get_source_code_of_class(),
     constraints_generator=generate_hire_button_clicked_constraint,
     examples=[
         {
-            "prompt": "The user clicks 'Hire' button to start hiring a consultation workflow",
-            "prompt_for_task_generation": "The user clicks 'Hire' button to start hiring a consultation workflow",
+            "prompt": "Hire a consultant whose name is 'Brandon M'",
+            "prompt_for_task_generation": "Hire a consultant whose name is 'Brandon M'",
         },
         {
-            "prompt": "Start a hiring consultation workflow if consultation name is 'Brandon M'",
-            "prompt_for_task_generation": "Start a hiring consultation workflow if consultation name is 'Brandon M'",
+            "prompt": "Hire a consultant whose role is 'Blockchain Expert'",
+            "prompt_for_task_generation": "Hire a consultant whose role is 'Blockchain Expert'",
         },
         {
-            "prompt": "Start a hiring consultation workflow if consultation role is 'Blockchain Expert'",
-            "prompt_for_task_generation": "Start a hiring consultation workflow if consultation role is 'Blockchain Expert'",
-        },
-        {
-            "prompt": "Start a hiring consultation workflow if consultation country is 'Morocco'",
-            "prompt_for_task_generation": "Start a hiring consultation workflow if consultation country is 'Morocco'",
+            "prompt": "Hire a consultant whose country is 'Morocco'",
+            "prompt_for_task_generation": "Hire a consultant whose country is 'Morocco'",
         },
     ],
 )

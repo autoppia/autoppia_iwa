@@ -11,19 +11,21 @@ class BookAConsultationEvent(Event, BaseEventValidator):
 
     event_name: str = "BOOK_A_CONSULTATION"
     country: str
-    expertName: str
+    name: str
     jobs: int
     rate: str
     rating: float
     role: str
+    slug: str | None = None
 
     class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
-        expertName: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
         jobs: int | CriterionValue | None = None
         rate: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
         role: str | CriterionValue | None = None
+        slug: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -31,11 +33,12 @@ class BookAConsultationEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.country, criteria.country),
-                self._validate_field(self.expertName, criteria.expertName),
+                self._validate_field(self.name, criteria.name),
                 self._validate_field(self.jobs, criteria.jobs),
                 self._validate_field(self.rate, criteria.rate),
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.role, criteria.role),
+                self._validate_field(self.slug, criteria.slug),
             ]
         )
 
@@ -49,11 +52,12 @@ class BookAConsultationEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             country=data.get("country"),
-            expertName=data.get("expertName"),
+            name=data.get("expertName"),
             jobs=data.get("jobs"),
             rate=data.get("rate"),
             rating=data.get("rating"),
             role=data.get("role"),
+            slug=data.get("expertSlug"),
         )
 
 
@@ -62,14 +66,14 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
 
     event_name: str = "HIRE_BTN_CLICKED"
     country: str
-    expertName: str
-    expertSlug: str
+    name: str
+    slug: str
     role: str
 
     class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
-        expertName: str | CriterionValue | None = None
-        expertSlug: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        slug: str | CriterionValue | None = None
         role: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -78,8 +82,8 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.country, criteria.country),
-                self._validate_field(self.expertName, criteria.expertName),
-                self._validate_field(self.expertSlug, criteria.expertSlug),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.slug, criteria.slug),
                 self._validate_field(self.role, criteria.role),
             ]
         )
@@ -94,24 +98,21 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             country=data.get("country", ""),
-            expertName=data.get("expertName", ""),
-            expertSlug=data.get("expertSlug", ""),
+            name=data.get("expertName", ""),
+            slug=data.get("expertSlug", ""),
+            role=data.get("role", ""),
         )
-
-
-class SelectHiringTeamEventData(BaseModel):
-    expertName: str
-    expertSlug: str
-    team: str
 
 
 class SelectHiringTeamEvent(Event, BaseEventValidator):
     event_name: str = "SELECT_HIRING_TEAM"
-    select_hiring_team: SelectHiringTeamEventData
+    name: str
+    slug: str
+    team: str
 
     class ValidationCriteria(BaseModel):
-        expertName: str | CriterionValue | None = None
-        expertSlug: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        slug: str | CriterionValue | None = None
         team: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -120,28 +121,31 @@ class SelectHiringTeamEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.select_hiring_team.expertName, criteria.expertName),
-                self._validate_field(self.select_hiring_team.expertSlug, criteria.expertSlug),
-                self._validate_field(self.select_hiring_team.team, criteria.team),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.slug, criteria.slug),
+                self._validate_field(self.team, criteria.team),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SelectHiringTeamEventData":
         base_event = Event.parse(backend_event)
+        data = base_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            select_hiring_team=SelectHiringTeamEventData(**base_event.data),
+            name=data.get("expertName", ""),
+            slug=data.get("expertSlug", ""),
+            team=data.get("team", ""),
         )
 
 
 class HireConsultant(BaseModel):
     country: str
-    expertName: str
-    expertSlug: str
+    name: str
+    slug: str
     increaseHowMuch: str
     increaseWhen: str
     paymentType: str
@@ -158,8 +162,8 @@ class HireConsultantEvent(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
-        expertName: str | CriterionValue | None = None
-        expertSlug: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        slug: str | CriterionValue | None = None
         increaseHowMuch: str | CriterionValue | None = None
         increaseWhen: str | CriterionValue | None = None
         paymentType: str | CriterionValue | None = None
@@ -173,8 +177,8 @@ class HireConsultantEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(hireConsultant.country, criteria.country),
-                self._validate_field(hireConsultant.expertName, criteria.expertName),
-                self._validate_field(hireConsultant.expertSlug, criteria.expertSlug),
+                self._validate_field(hireConsultant.name, criteria.name),
+                self._validate_field(hireConsultant.slug, criteria.slug),
             ]
         )
 
@@ -195,7 +199,6 @@ class CancelHireEvent(Event, BaseEventValidator):
 
     event_name: str = "CANCEL_HIRE"
     # about : str
-    # avatar : str
     # consultation: str
     country: str
     # desc: str
@@ -207,10 +210,8 @@ class CancelHireEvent(Event, BaseEventValidator):
     role: str
     slug: str
 
-    # Button: str
     class ValidationCriteria(BaseModel):
         # about: str | CriterionValue | None = None
-        # avatar: str | CriterionValue | None = None
         # consultation: str | CriterionValue | None = None
         country: str | CriterionValue | None = None
         # desc: str | CriterionValue | None = None
@@ -228,9 +229,7 @@ class CancelHireEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.Button, criteria.Button),
                 # self._validate_field(self.about, criteria.about),
-                # self._validate_field(self.avatar, criteria.avatar),
                 # self._validate_field(self.consultation, criteria.consultation),
                 self._validate_field(self.country, criteria.country),
                 # self._validate_field(self.desc, criteria.desc),
@@ -674,6 +673,7 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
 EVENTS = [
     BookAConsultationEvent,
     HireButtonClickedEvent,
+    SelectHiringTeamEvent,
     PostAJobEvent,
     WriteJobTitleEvent,
     SubmitJobEvent,
@@ -689,6 +689,7 @@ EVENTS = [
 ALL_BACKEND_EVENTS = {
     "BOOK_A_CONSULTATION": BookAConsultationEvent,
     "HIRE_BTN_CLICKED": HireButtonClickedEvent,
+    "SELECT_HIRING_TEAM": SelectHiringTeamEvent,
     "POST_A_JOB": PostAJobEvent,
     "WRITE_JOB_TITLE": WriteJobTitleEvent,
     "SUBMIT_JOB": SubmitJobEvent,

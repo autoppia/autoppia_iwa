@@ -171,26 +171,17 @@ def _generate_constraints(
 
 
 def generate_book_consultant_constraint() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    field_mapping = {
-        "expertName": "name",
-    }
     dataset = EXPERTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP
-    constraints_list = _generate_constraints(dataset, field_operators, field_mapping, min_constraints=2)
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2)
 
     return constraints_list
 
 
 def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    field_mapping = {
-        "expertName": "name",
-        "expertSlug": "slug",
-    }
     dataset = EXPERTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
-    constraints_list = _generate_constraints(dataset, field_operators, field_mapping, min_constraints=2)
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2)
 
     return constraints_list
 
@@ -200,7 +191,6 @@ def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
     field_mapping = {
         "expertName": "name",
         "expertSlug": "slug",
-        "team": "team",
     }
     possible_fields = list(FIELD_OPERATORS_MAP_HIRING_TEAM.keys())
     num_constraints = random.randint(2, len(possible_fields))
