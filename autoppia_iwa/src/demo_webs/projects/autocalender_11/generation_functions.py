@@ -236,6 +236,8 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
     }
     possible_fields = list(field_map.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(3, len(possible_fields)))
+    if "end_time" in selected_fields and "start_time" not in selected_fields:
+        selected_fields.append("start_time")
     reduced_field_map = {field: field_map[field] for field in selected_fields}
     return _generate_constraints_for_event(reduced_field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
 
@@ -244,21 +246,28 @@ def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_ADD_EVENT_MAP.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(3, len(possible_fields)))
+    # Ensure start_time is present if end_time is selected
+    if "end_time" in selected_fields and "start_time" not in selected_fields:
+        selected_fields.append("start_time")
     sample_event = random.choice(EVENTS_DATASET)
     for field in selected_fields:
         operator = ComparisonOperator(random.choice(FIELD_OPERATORS_ADD_EVENT_MAP[field]))
         if field == "title":
             field_value = sample_event.get("label", None)
-            dataset = [{"title": v} for v in EVENTS_DATASET["label"]]
+            dataset = [{"title": v["label"]} for v in EVENTS_DATASET]
         elif field == "date":
             field_value = parse_datetime(sample_event.get("date", None))
-            dataset = [{"date": parse_datetime(v)} for v in EVENTS_DATASET["date"]]
+            dataset = [{"date": parse_datetime(event["date"])} for event in EVENTS_DATASET if "date" in event]
         elif field in ["start_time", "end_time"]:
             val = sample_event.get(field, [])
             if len(val) == 2:
                 time_str = f"{val[0]}:{str(val[1]).zfill(2)}"
                 field_value = datetime.strptime(time_str, "%H:%M").time()
-                dataset = [{field: datetime.strptime(f"{v[0]}:{str(v[1]).zfill(2)}", "%H:%M").time()} for v in EVENTS_DATASET[field] if isinstance(v, list) and len(v) == 2]
+                dataset = [
+                    {field: datetime.strptime(f"{event[field][0]}:{str(event[field][1]).zfill(2)}", "%H:%M").time()}
+                    for event in EVENTS_DATASET
+                    if field in event and isinstance(event[field], list) and len(event[field]) == 2
+                ]
             else:
                 continue
         else:
