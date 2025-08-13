@@ -26,6 +26,7 @@ from .generation_functions import (
     generate_create_calendar_constraints,
     generate_event_attendee_constraints,
     generate_event_reminder_constraints,
+    generate_event_wizard_open_constraints,
     generate_search_submit_constraints,
 )
 
@@ -391,7 +392,7 @@ DELETE_ADDED_EVENT_USE_CASE = UseCase(
 
 EVENT_WIZARD_OPEN_INFO = """
 CRITICAL REQUIREMENT:
-1. The prompt must be about opening the event creation or editing form.
+1. The prompt must be about opening the event creation or editing form, starting the requests with phrases like "Open the form to add ..." or "Open the event ...".
 2. Do not mention submitting or saving the event. The focus is on opening the wizard.
 """
 
@@ -400,7 +401,7 @@ EVENT_WIZARD_OPEN_USE_CASE = UseCase(
     description="Triggered when the user opens the event creation or editing wizard.",
     event=EventWizardOpenEvent,
     event_source_code=EventWizardOpenEvent.get_source_code_of_class(),
-    constraints_generator=generate_add_event_constraints,
+    constraints_generator=generate_event_wizard_open_constraints,
     additional_prompt_info=EVENT_WIZARD_OPEN_INFO,
     examples=[
         {"prompt": "Open the form to add a new event.", "prompt_for_task_generation": "Open the new event wizard."},
@@ -549,13 +550,13 @@ ALL_USE_CASES = [
     # SELECT_TODAY_USE_CASE,
     # ADD_NEW_CALENDAR_USE_CASE,
     # CREATE_CALENDAR_USE_CASE,
-    CHOOSE_CALENDAR_USE_CASE,
-    # ADD_EVENT_USE_CASE,
+    # CHOOSE_CALENDAR_USE_CASE,
+    # SEARCH_SUBMIT_USE_CASE,
+    EVENT_WIZARD_OPEN_USE_CASE,
     # CELL_CLICKED_USE_CASE,
+    # ADD_EVENT_USE_CASE,
     # CANCEL_ADD_EVENT_USE_CASE,
     # DELETE_ADDED_EVENT_USE_CASE,
-    EVENT_WIZARD_OPEN_USE_CASE,
-    # SEARCH_SUBMIT_USE_CASE,
     # EVENT_ADD_REMINDER_USE_CASE,
     # EVENT_REMOVE_REMINDER_USE_CASE,
     # EVENT_ADD_ATTENDEE_USE_CASE,
