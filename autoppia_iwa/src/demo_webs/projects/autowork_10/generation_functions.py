@@ -144,24 +144,33 @@ def _generate_constraints(
         allowed_ops = field_operators.get(field, [])
         if not allowed_ops:
             continue
+
         op = ComparisonOperator(choice(allowed_ops))
         new_field = field_map.get(field, field)
 
         field_value = None
+        constraint_value = None
         if isinstance(new_field, list):
             random.shuffle(new_field)
             for f in new_field:
                 field_value = sample_data.get(f)
                 new_field = f
                 break
-        else:
+        elif isinstance(new_field, str):
             field_value = sample_data.get(new_field)
+        elif isinstance(new_field, dict):
+            custom_dataset = new_field.get("dataset", [])
+            new_field = new_field.get("field", "")
+            field_value = choice(custom_dataset).get(new_field)
+            if new_field:
+                constraint_value = _generate_constraint_value(op, field_value, new_field, dataset=custom_dataset)
 
         if field_value is None:
             continue
 
-        # Generate a constraint value based on the operator and field value
-        constraint_value = _generate_constraint_value(op, field_value, new_field, dataset)
+        if constraint_value is None:
+            # Generate a constraint value based on the operator and field value
+            constraint_value = _generate_constraint_value(op, field_value, new_field, dataset)
 
         if constraint_value is not None:
             constraint = create_constraint_dict(field, op, constraint_value)
@@ -223,55 +232,16 @@ def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
 
 
 def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
-    constraints_list = []
     field_mapping = {
-        "country": "country",
-        "expertName": "name",
-        "expertSlug": "slug",
-        "role": "role",
-        "increaseHowMuch": "increaseHowMuch",
-        "increaseWhen": "increaseWhen",
-        "paymentType": "paymentType",
-        "rate": "lastReviewRate",
+        "increaseHowMuch": {"field": "increaseHowMuch", "dataset": [{"increaseHowMuch": p} for p in ["5%", "10%", "15%"]]},
+        "increaseWhen": {"field": "increaseWhen", "dataset": [{"increaseWhen": p} for p in ["Never", "After 3 months", "After 6 months", "After 12 months"]]},
+        "paymentType": {"field": "paymentType", "dataset": [{"paymentType": p} for p in ["fixed", "hourly"]]},
     }
-    possible_fields = list(FIELD_OPERATORS_MAP_HIRING_CONSULTANT.keys())
-    num_constraints = random.randint(2, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-    payment_type = ["fixed", "hourly"]
-    increase_how_much = ["5%", "10%", "15%"]
-    increase_when = ["Never", "After 3 months", "After 6 months", "After 12 months"]
-    random.choice(EXPERTS_DATA_MODIFIED)
-    sample_expert = random.choice(EXPERTS_DATA_MODIFIED)
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_MAP_HIRING_CONSULTANT.get(field, [])
-        if not allowed_ops:
-            continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-        if field == "paymentType":
-            field_value = random.choice(payment_type)
-            payment_dataset = [{"paymentType": p} for p in payment_type]
-            value = _generate_constraint_value(operator, field_value, field, dataset=payment_dataset)
-
-        elif field == "increaseHowMuch":
-            field_value = random.choice(increase_how_much)
-            increase_when_dataset = [{"increaseWhen": p} for p in increase_how_much]
-            value = _generate_constraint_value(operator, field_value, field, dataset=increase_when_dataset)
-
-        elif field == "increaseWhen":
-            field_value = random.choice(increase_when)
-            increase_when_dataset = [{"increaseWhen": p} for p in increase_when]
-            value = _generate_constraint_value(operator, field_value, field, dataset=increase_when_dataset)
-
-        else:
-            new_field = field_mapping.get(field, field)
-            field_value = sample_expert.get(new_field)
-            value = _generate_constraint_value(operator, field_value, new_field, dataset=EXPERTS_DATA_MODIFIED)
-
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
+    dataset = EXPERTS_DATA_MODIFIED
+    field_operators = FIELD_OPERATORS_MAP_HIRING_CONSULTANT
+    selected_fields = ["slug", "paymentType"]
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
 
     return constraints_list
 

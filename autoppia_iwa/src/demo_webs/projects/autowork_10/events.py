@@ -686,7 +686,7 @@ EVENTS = [
     AttachFileClickedEvent,
 ]
 
-ALL_BACKEND_EVENTS = {
+BACKEND_EVENT_TYPES = {
     "BOOK_A_CONSULTATION": BookAConsultationEvent,
     "HIRE_BTN_CLICKED": HireButtonClickedEvent,
     "SELECT_HIRING_TEAM": SelectHiringTeamEvent,
