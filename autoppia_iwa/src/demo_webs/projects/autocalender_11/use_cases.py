@@ -311,7 +311,7 @@ ADD_EVENT_USE_CASE = UseCase(
 
 CELL_CLICKED_INFO = """
 CRITICAL REQUIREMENT:
-1. Clearly indicate selecting a specific date or time slot in the calendar.
+1. Clearly indicate selecting a specific date or time slot in the calendar by starting the request with "Click on cell" or similar.
 2. Specify the view type (Month, Week, Day, 5 days) where the selection is happening.
 3. For week, day, or 5-day views, include the specific hour if available in constraints.
 """

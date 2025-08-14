@@ -139,6 +139,10 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
 
     for field, config in field_map.items():
         if field in special_handlers:
+            if field == "hour":
+                view = [v["value"] for v in constraints_list if v["field"] == "view"]
+                if view:
+                    context["view"] = random.choice(view)
             constraints_list.extend(special_handlers[field](context))
             continue
 
@@ -177,7 +181,7 @@ def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
 
 def _handle_cell_click_hour(context: dict) -> list[dict[str, Any]]:
     """Handler for hour constraint in cell click event."""
-    source_value = context.get("source")
+    source_value = context.get("view").lower()
     if source_value and "month" not in source_value:
         hour_op = ComparisonOperator(random.choice(FIELD_OPERATORS_CLICK_CELL_MAP["hour"]))
         hour_value = random.randint(0, 23)
@@ -206,7 +210,7 @@ def generate_choose_calendar_constraints() -> list[dict[str, Any]]:
 def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
     """Generate constraints for clicking a calendar cell."""
     field_map = {
-        "source": {"values": ["month-view", "week-view", "day-view", "5 days-view"], "provides_context": True},
+        # "source": {"values": ["month-view", "week-view", "day-view", "5 days-view"], "provides_context": True},
         "date": {"dataset_generator": lambda: [{"date": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=i)} for i in range(-30, 60)]},
         "view": {"values": ["Month", "Week", "Day", "5 days"]},
         "hour": {},
