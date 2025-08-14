@@ -224,7 +224,7 @@ class ChooseCalendarEvent(Event, BaseEventValidator):
 class CellClickedEvent(Event, BaseEventValidator):
     """Event triggered when user clicks on a calendar cell"""
 
-    event_name: str = "CELL_CLCIKED"
+    event_name: str = "CELL_CLICKED"
     # source: str
     date: datetime | None = None
     hour: int | None = None
@@ -506,7 +506,7 @@ BACKEND_EVENT_TYPES = {
     "CREATE_CALENDAR": CreateCalendarEvent,
     "CHOOSE_CALENDAR": ChooseCalendarEvent,
     "ADD_EVENT": AddEventEvent,
-    "CELL_CLCIKED": CellClickedEvent,
+    "CELL_CLICKED": CellClickedEvent,
     "CANCEL_ADD_EVENT": CancelAddEventEvent,
     "DELETE_ADDED_EVENT": DeleteAddedEventEvent,
     "SEARCH_SUBMIT": SearchSubmitEvent,
