@@ -225,13 +225,13 @@ class CellClickedEvent(Event, BaseEventValidator):
     """Event triggered when user clicks on a calendar cell"""
 
     event_name: str = "CELL_CLCIKED"
-    source: str
+    # source: str
     date: datetime | None = None
     hour: int | None = None
     view: str
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
+        # source: str | CriterionValue | None = None
         date: datetime | CriterionValue | None = None
         hour: int | CriterionValue | None = None
         view: str | CriterionValue | None = None
@@ -242,7 +242,7 @@ class CellClickedEvent(Event, BaseEventValidator):
         date_valid = validate_date_field(self.date, criteria.date)
         return all(
             [
-                self._validate_field(self.source, criteria.source),
+                # self._validate_field(self.source, criteria.source),
                 date_valid,
                 self._validate_field(self.hour, criteria.hour) if self.hour is not None else True,
                 self._validate_field(self.view, criteria.view),
@@ -259,7 +259,7 @@ class CellClickedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            source=data.get("source", ""),
+            # source=data.get("source", ""),
             date=parse_datetime(data.get("date")),
             hour=data.get("hour"),
             view=data.get("view", ""),
