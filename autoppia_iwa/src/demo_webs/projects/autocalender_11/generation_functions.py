@@ -139,10 +139,6 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
 
     for field, config in field_map.items():
         if field in special_handlers:
-            if field == "hour":
-                view = [v["value"] for v in constraints_list if v["field"] == "view"]
-                if view:
-                    context["view"] = random.choice(view)
             constraints_list.extend(special_handlers[field](context))
             continue
 
@@ -179,16 +175,6 @@ def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
     return [start_time_data["constraint"], end_time_data["constraint"]]
 
 
-def _handle_cell_click_hour(context: dict) -> list[dict[str, Any]]:
-    """Handler for hour constraint in cell click event."""
-    source_value = context.get("view").lower()
-    if source_value and "month" not in source_value:
-        hour_op = ComparisonOperator(random.choice(FIELD_OPERATORS_CLICK_CELL_MAP["hour"]))
-        hour_value = random.randint(0, 23)
-        return [create_constraint_dict("hour", hour_op, hour_value)]
-    return []
-
-
 def generate_create_calendar_constraints() -> list[dict[str, Any]]:
     """Generate constraints for creating a calendar."""
     field_map = {
@@ -208,14 +194,84 @@ def generate_choose_calendar_constraints() -> list[dict[str, Any]]:
 
 
 def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
-    """Generate constraints for clicking a calendar cell."""
-    field_map = {
-        # "source": {"values": ["month-view", "week-view", "day-view", "5 days-view"], "provides_context": True},
-        "date": {"dataset_generator": lambda: [{"date": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=i)} for i in range(-30, 60)]},
-        "view": {"values": ["Month", "Week", "Day", "5 days"]},
-        "hour": {},
-    }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_CLICK_CELL_MAP, {"hour": _handle_cell_click_hour})
+    """Generate constraints for clicking a calendar cell, ensuring date is valid for the view."""
+    constraints_list = []
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    all_views = ["Month", "Week", "Day", "5 days"]
+
+    view = random.choice(all_views)
+    view_op = ComparisonOperator(random.choice(FIELD_OPERATORS_CLICK_CELL_MAP["view"]))
+    constraints_list.append(create_constraint_dict("view", view_op, view))
+
+    # 2. Determine a realistic viewDate, simulating weekly navigation
+    navigation = random.choice(["current", "next", "previous"])
+    offset = timedelta(0)
+    if navigation != "current":
+        # Navigation is always by week. Simulate 1 to 5 clicks.
+        num_weeks = random.randint(1, 5)
+        days_to_move = num_weeks * 7
+        if navigation == "previous":
+            days_to_move = -days_to_move
+        offset = timedelta(days=days_to_move)
+
+    view_date = today + offset
+
+    # 3. Calculate the range of visible dates based on the view and view_date
+    if view == "Month":
+        # The month view shows the whole month for the given view_date
+        start_date = view_date.replace(day=1)
+        if start_date.month == 12:  # Handle December
+            end_date = start_date.replace(year=start_date.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            end_date = start_date.replace(month=start_date.month + 1, day=1) - timedelta(days=1)
+    elif view == "Week":
+        # The week view shows from Monday to Sunday for the given view_date
+        start_date = view_date - timedelta(days=view_date.weekday())
+        end_date = start_date + timedelta(days=6)
+    elif view == "5 days":
+        # The 5 days view shows from Tuesday to Saturday for the week of the given view_date
+        start_of_week = view_date - timedelta(days=view_date.weekday())
+        start_date = start_of_week + timedelta(days=1)  # Tuesday
+        end_date = start_of_week + timedelta(days=5)  # Saturday
+    else:  # Day view
+        # The day view shows only the given view_date
+        start_date = end_date = view_date
+
+    # 4. Select a date operator and value, ensuring the constraint is satisfiable
+    days_in_range = (end_date - start_date).days
+    possible_ops = FIELD_OPERATORS_CLICK_CELL_MAP["date"]
+
+    # If view has only one day, some operators are impossible to satisfy
+
+    if days_in_range == 0:
+        possible_ops = ([op for op in possible_ops if op in [ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS]],)
+        if not possible_ops:
+            possible_ops = [ComparisonOperator.EQUALS]  # Fallback
+
+    date_op_str = random.choice(possible_ops)
+    date_op = ComparisonOperator(date_op_str)
+
+    # Select a date from the range
+    random_day_offset = random.randint(0, max(0, days_in_range))
+    constraint_date = start_date + timedelta(days=random_day_offset)
+
+    # Adjust date for operators to ensure satisfiability
+    if date_op == ComparisonOperator.LESS_THAN and constraint_date == start_date:
+        # e.g., "date < start_date" is impossible. Move to next day.
+        constraint_date += timedelta(days=1)
+    elif date_op == ComparisonOperator.GREATER_THAN and constraint_date == end_date:
+        # e.g., "date > end_date" is impossible. Move to previous day.
+        constraint_date -= timedelta(days=1)
+
+    constraints_list.append(create_constraint_dict("date", date_op, constraint_date))
+
+    # 5. Generate hour constraint if not in month view
+    if "month" not in view.lower():
+        hour_op = ComparisonOperator(random.choice(FIELD_OPERATORS_CLICK_CELL_MAP["hour"]))
+        hour_value = random.randint(0, 23)
+        constraints_list.append(create_constraint_dict("hour", hour_op, hour_value))
+
+    return constraints_list
 
 
 def generate_add_event_constraints() -> list[dict[str, Any]]:
