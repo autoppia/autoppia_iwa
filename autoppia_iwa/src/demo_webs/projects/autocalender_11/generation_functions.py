@@ -244,9 +244,10 @@ def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
     # If view has only one day, some operators are impossible to satisfy
 
     if days_in_range == 0:
-        possible_ops = ([op for op in possible_ops if op in [ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS]],)
+        allowed_ops = [ComparisonOperator.EQUALS.value, ComparisonOperator.GREATER_EQUAL.value, ComparisonOperator.LESS_EQUAL.value]
+        possible_ops = [op for op in possible_ops if op in allowed_ops]
         if not possible_ops:
-            possible_ops = [ComparisonOperator.EQUALS]  # Fallback
+            possible_ops = [ComparisonOperator.EQUALS.value]  # Fallback
 
     date_op_str = random.choice(possible_ops)
     date_op = ComparisonOperator(date_op_str)
