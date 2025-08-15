@@ -1,12 +1,11 @@
 import random
-from datetime import datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
-    EXPERTS,
     EXPERTS_DATA_MODIFIED,
     FIELD_OPERATORS_MAP_ADD_SKILL,
     FIELD_OPERATORS_MAP_CANCEL_HIRE_CONSULTANT,
@@ -24,98 +23,81 @@ from .data import (
 )
 
 
-def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
-    value = None
-
-    # Handle datetime comparisons
-    if isinstance(field_value, datetime):
+def _generate_constraint_value(
+    operator: ComparisonOperator,
+    field_value: Any,
+    field: str,
+    dataset: list[dict[str, Any]],
+) -> Any:
+    """
+    Generate a constraint value for a given operator, field, and dataset.
+    Handles various data types and operators robustly.
+    """
+    if isinstance(field_value, datetime | date):
         delta_days = random.randint(1, 5)
         if operator == ComparisonOperator.GREATER_THAN:
             return field_value - timedelta(days=delta_days)
-        elif operator == ComparisonOperator.LESS_THAN:
+        if operator == ComparisonOperator.LESS_THAN:
             return field_value + timedelta(days=delta_days)
-        elif operator == ComparisonOperator.GREATER_EQUAL or operator == ComparisonOperator.LESS_EQUAL or operator == ComparisonOperator.EQUALS:
+        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
             return field_value
-        elif operator == ComparisonOperator.NOT_EQUALS:
+        if operator == ComparisonOperator.NOT_EQUALS:
             return field_value + timedelta(days=delta_days + 1)
+
+    if isinstance(field_value, time):
+        delta_minutes = random.choice([5, 10, 15, 30, 60])
+
+        def add_minutes(t, mins):
+            full_dt = datetime.combine(date.today(), t) + timedelta(minutes=mins)
+            return full_dt.time()
+
+        if operator == ComparisonOperator.GREATER_THAN:
+            return add_minutes(field_value, -delta_minutes)
+        if operator == ComparisonOperator.LESS_THAN:
+            return add_minutes(field_value, delta_minutes)
+        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
+            return field_value
+        if operator == ComparisonOperator.NOT_EQUALS:
+            valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
+            return random.choice(valid) if valid else add_minutes(field_value, delta_minutes + 5)
 
     if operator == ComparisonOperator.EQUALS:
         return field_value
 
-    elif operator == ComparisonOperator.NOT_EQUALS:
-        if isinstance(field_value, str):
-            valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
-            return random.choice(valid) if valid else None
-        elif isinstance(field_value, list):
-            valid = [v[f] for v in dataset for f in field_value if v.get(f) and v.get(f) != field_value]
-            return random.choice(valid) if valid else None
+    if operator == ComparisonOperator.NOT_EQUALS:
+        valid = [v[field] for v in dataset if v.get(field) and v.get(field) != field_value]
+        return random.choice(valid) if valid else None
 
-    elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
         if len(field_value) > 2:
             start = random.randint(0, max(0, len(field_value) - 2))
             end = random.randint(start + 1, len(field_value))
             return field_value[start:end]
         return field_value
 
-    elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
+    if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
         alphabet = "abcdefghijklmnopqrstuvwxyz"
-        while True:
+        for _ in range(100):
             test_str = "".join(random.choice(alphabet) for _ in range(3))
             if test_str.lower() not in field_value.lower():
                 return test_str
+        return "xyz"  # fallback
 
-    elif operator == ComparisonOperator.IN_LIST:
-        all_values = []
-        for v in dataset:
-            if field in v:
-                val = v.get(field)
-                if isinstance(val, list):
-                    all_values.extend(val)
-                elif val is not None:
-                    all_values.append(val)
-        all_values = list(set(all_values))
-
-        if not all_values:
-            return [field_value]
-        random.shuffle(all_values)
-        subset = random.sample(all_values, min(2, len(all_values)))
-        if field_value not in subset:
-            subset.append(field_value)
-        return list(set(subset))
-
-    elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = []
-        for v in dataset:
-            if field in v:
-                val = v.get(field)
-                if isinstance(val, list):
-                    all_values.extend(val)
-                elif val is not None:
-                    all_values.append(val)
-        all_values = list(set(all_values))
-
-        if field_value in all_values:
-            all_values.remove(field_value)
-        return random.sample(all_values, min(2, len(all_values))) if all_values else []
-
-    elif operator in {
+    if operator in {
         ComparisonOperator.GREATER_THAN,
         ComparisonOperator.LESS_THAN,
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
-    }:
-        numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
-        if numeric_values:
-            base = random.choice(numeric_values)
-            delta = random.uniform(1, 3)
-            if operator == ComparisonOperator.GREATER_THAN:
-                return round(base - delta, 2)
-            elif operator == ComparisonOperator.LESS_THAN:
-                return round(base + delta, 2)
-            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                return round(base, 2)
+    } and isinstance(field_value, int | float):
+        delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
+        if operator == ComparisonOperator.GREATER_THAN:
+            return field_value - delta
+        if operator == ComparisonOperator.LESS_THAN:
+            return field_value + delta
+        if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+            return field_value
 
-    return value
+    return None
 
 
 def _generate_constraints(
@@ -182,7 +164,8 @@ def _generate_constraints(
 def generate_book_consultant_constraint() -> list[dict[str, Any]]:
     dataset = EXPERTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2)
+    selected_field = ["slug"]
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
 
     return constraints_list
 
@@ -190,7 +173,8 @@ def generate_book_consultant_constraint() -> list[dict[str, Any]]:
 def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
     dataset = EXPERTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2)
+    selected_field = ["slug"]
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
 
     return constraints_list
 
@@ -198,35 +182,39 @@ def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
 def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     field_mapping = {
-        "expertName": "name",
-        "expertSlug": "slug",
+        "team": {"field": "team", "dataset": [{"team": t} for t in ["Microsoft", "Apple", "Google"]]},
     }
-    possible_fields = list(FIELD_OPERATORS_MAP_HIRING_TEAM.keys())
-    num_constraints = random.randint(2, len(possible_fields))
-    selected_fields = random.sample(possible_fields, num_constraints)
-    sample_expert = random.choice(EXPERTS)
+    # possible_fields = list(FIELD_OPERATORS_MAP_HIRING_TEAM.keys())
+    # num_constraints = random.randint(2, len(possible_fields))
+    # selected_fields = random.sample(possible_fields, num_constraints)
+    # sample_expert = random.choice(EXPERTS)
 
-    team = ["Microsoft", "Apple", "Google"]
+    # team = ["Microsoft", "Apple", "Google"]
+    # dataset = [{"team": t} for t in team]
 
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_MAP_HIRING_TEAM.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-        if field == "team":
-            field_value = choice(team)
-            dataset = [{"team": t} for t in team]
-            value = _generate_constraint_value(operator, field_value, field, dataset=dataset)
-        else:
-            new_field = field_mapping.get(field, field)
-            field_value = sample_expert.get(new_field)
-            value = _generate_constraint_value(operator, field_value, new_field, dataset=EXPERTS)
-
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
+    # for field in selected_fields:
+    #     allowed_ops = FIELD_OPERATORS_MAP_HIRING_TEAM.get(field, [])
+    #     if not allowed_ops:
+    #         continue
+    #
+    #     op_str = random.choice(allowed_ops)
+    #     operator = ComparisonOperator(op_str)
+    #     if field == "team":
+    #         field_value = choice(team)
+    #         dataset = [{"team": t} for t in team]
+    #         value = _generate_constraint_value(operator, field_value, field, dataset=dataset)
+    #     else:
+    #         new_field = field_mapping.get(field, field)
+    #         field_value = sample_expert.get(new_field)
+    #         value = _generate_constraint_value(operator, field_value, new_field, dataset=EXPERTS)
+    #
+    #     if value is not None:
+    #         constraint = create_constraint_dict(field, operator, value)
+    #         constraints_list.append(constraint)
+    dataset = EXPERTS_DATA_MODIFIED
+    field_operators = FIELD_OPERATORS_MAP_HIRING_TEAM
+    selected_fields = ["slug"]
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_fields, field_map=field_mapping)
 
     return constraints_list
 
@@ -246,10 +234,11 @@ def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_cancel_hire_consultation_constraint() -> list[dict[str, Any]]:
+def generate_cancel_hire_constraint() -> list[dict[str, Any]]:
     dataset = EXPERTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE_CONSULTANT
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2)
+    fixed_fields = ["slug"]
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=fixed_fields)
 
     return constraints_list
 

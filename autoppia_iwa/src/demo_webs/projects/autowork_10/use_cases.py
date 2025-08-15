@@ -17,7 +17,7 @@ from .events import (
 from .generation_functions import (
     generate_add_skill_constraint,
     generate_book_consultant_constraint,
-    generate_cancel_hire_consultation_constraint,
+    generate_cancel_hire_constraint,
     generate_close_posting_job_constraint,
     generate_hire_button_clicked_constraint,
     generate_hire_consultation_constraint,
@@ -104,7 +104,7 @@ SELECT_HIRING_TEAM_USE_CASE = UseCase(
 )
 
 HIRE_CONSULTATION_USE_CASE = UseCase(
-    name="HIRE_CONSULTATION",
+    name="HIRE_CONSULTANT",
     description="The user confirm hiring of a chosen consultation",
     event=HireConsultantEvent,
     event_source_code=HireConsultantEvent.get_source_code_of_class(),
@@ -130,12 +130,12 @@ HIRE_CONSULTATION_USE_CASE = UseCase(
     ],
 )
 
-CANCEL_HIRE_CONSULTATION_USE_CASE = UseCase(
-    name="CANCEL_HIRE_CONSULTATION",
+CANCEL_HIRE_USE_CASE = UseCase(
+    name="CANCEL_HIRE",
     description="The user cancel hiring of a chosen consultation",
     event=CancelHireEvent,
     event_source_code=CancelHireEvent.get_source_code_of_class(),
-    constraints_generator=generate_cancel_hire_consultation_constraint,
+    constraints_generator=generate_cancel_hire_constraint,
     examples=[
         {
             "prompt": "The user click 'Cancel' button to cancel the hiring of chosen consultation",
@@ -352,11 +352,11 @@ CLOSE_JOB_POSTING_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    # BOOK_A_CONSULTATION_USE_CASE,
+    BOOK_A_CONSULTATION_USE_CASE,
     # HIRE_BUTTON_CLICKED_USE_CASE,
     # SELECT_HIRING_TEAM_USE_CASE,
-    HIRE_CONSULTATION_USE_CASE,
-    # CANCEL_HIRE_CONSULTATION_USE_CASE,
+    # HIRE_CONSULTATION_USE_CASE,
+    # CANCEL_HIRE_USE_CASE,
     # POST_A_JOB_USE_CASE,
     # WRITING_JOB_TITLE_USE_CASE,
     # SEARCH_SKILL_USE_CASE,

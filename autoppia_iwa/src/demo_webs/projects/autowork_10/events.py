@@ -10,12 +10,12 @@ class BookAConsultationEvent(Event, BaseEventValidator):
     """Event triggered when someone clicks on the book a consultation button"""
 
     event_name: str = "BOOK_A_CONSULTATION"
-    country: str
-    name: str
-    jobs: int
-    rate: str
-    rating: float
-    role: str
+    country: str | None = None
+    name: str | None = None
+    jobs: int | None = None
+    rate: str | None = None
+    rating: float | None = None
+    role: str | None = None
     slug: str | None = None
 
     class ValidationCriteria(BaseModel):
@@ -45,7 +45,7 @@ class BookAConsultationEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "BookAConsultationEvent":
         base_event = Event.parse(backend_event)
-        data = base_event.data
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -65,10 +65,10 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
     """event triggered when someone click on hire button"""
 
     event_name: str = "HIRE_BTN_CLICKED"
-    country: str
-    name: str
-    slug: str
-    role: str
+    country: str | None = None
+    name: str | None = None
+    slug: str | None = None
+    role: str | None = None
 
     class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
@@ -97,18 +97,18 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            country=data.get("country", ""),
-            name=data.get("expertName", ""),
-            slug=data.get("expertSlug", ""),
-            role=data.get("role", ""),
+            country=data.get("country"),
+            name=data.get("expertName"),
+            slug=data.get("expertSlug"),
+            role=data.get("role"),
         )
 
 
 class SelectHiringTeamEvent(Event, BaseEventValidator):
     event_name: str = "SELECT_HIRING_TEAM"
-    name: str
-    slug: str
-    team: str
+    name: str | None = None
+    slug: str | None = None
+    team: str | None = None
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
@@ -130,35 +130,30 @@ class SelectHiringTeamEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SelectHiringTeamEventData":
         base_event = Event.parse(backend_event)
-        data = base_event.data
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            name=data.get("expertName", ""),
-            slug=data.get("expertSlug", ""),
-            team=data.get("team", ""),
+            name=data.get("expertName"),
+            slug=data.get("expertSlug"),
+            team=data.get("team"),
         )
-
-
-class HireConsultant(BaseModel):
-    country: str
-    name: str
-    slug: str
-    increaseHowMuch: str
-    increaseWhen: str
-    paymentType: str
-    role: str
-    rate: str
 
 
 class HireConsultantEvent(Event, BaseEventValidator):
     """event triggered when someone click on hire button inside hire page"""
 
     event_name: str = "HIRE_CONSULTANT"
-
-    hireConsultant: HireConsultant
+    country: str | None = None
+    name: str | None = None
+    slug: str | None = None
+    increaseHowMuch: str | None = None
+    increaseWhen: str | None = None
+    paymentType: str | None = None
+    role: str | None = None
+    # rate: str | None = None
 
     class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
@@ -168,7 +163,7 @@ class HireConsultantEvent(Event, BaseEventValidator):
         increaseWhen: str | CriterionValue | None = None
         paymentType: str | CriterionValue | None = None
         role: str | CriterionValue | None = None
-        rate: str | CriterionValue | None = None
+        # rate: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -176,21 +171,34 @@ class HireConsultantEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(hireConsultant.country, criteria.country),
-                self._validate_field(hireConsultant.name, criteria.name),
-                self._validate_field(hireConsultant.slug, criteria.slug),
+                self._validate_field(self.country, criteria.country),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.slug, criteria.slug),
+                self._validate_field(self.increaseWhen, criteria.increaseWhen),
+                self._validate_field(self.increaseHowMuch, criteria.increaseHowMuch),
+                self._validate_field(self.paymentType, criteria.paymentType),
+                self._validate_field(self.role, criteria.role),
+                # self._validate_field(self.rate, criteria.rate)
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "HireConsultantEvent":
         base_event = Event.parse(backend_event)
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            hireConsultant=HireConsultant(**backend_event.data),
+            name=data.get("expertName"),
+            slug=data.get("expertSlug"),
+            country=data.get("country"),
+            paymentType=data.get("paymentType"),
+            increaseHowMuch=data.get("increaseHowMuch"),
+            increaseWhen=data.get("increaseWhen"),
+            role=data.get("role"),
+            # rate=data.get("rate"),
         )
 
 
@@ -200,15 +208,15 @@ class CancelHireEvent(Event, BaseEventValidator):
     event_name: str = "CANCEL_HIRE"
     # about : str
     # consultation: str
-    country: str
+    country: str | None = None
     # desc: str
     # hoursPerWeek: str
     # languages: list[str]
-    name: str
-    rate: str
+    name: str | None = None
+    rate: str | None = None
     # rating: int
-    role: str
-    slug: str
+    role: str | None = None
+    slug: str | None = None
 
     class ValidationCriteria(BaseModel):
         # about: str | CriterionValue | None = None
@@ -246,7 +254,7 @@ class CancelHireEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "CancelHireEvent":
         base_event = Event.parse(backend_event)
-        data = base_event.data
+        data = backend_event.data
         expert = data.get("expert")
         return cls(
             event_name=base_event.event_name,
@@ -294,7 +302,7 @@ class PostAJobEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "PostAJobEvent":
         base_event = Event.parse(backend_event)
-        data = base_event.data
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -473,7 +481,7 @@ class RemoveSkillEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "RemoveSkillEvent":
         base_event = Event.parse(backend_event)
-        data = base_event.data
+        data = backend_event.data
 
         return cls(
             event_name=base_event.event_name,
@@ -514,7 +522,7 @@ class AttachFileClickedEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "Event":
         base_event = Event.parse(backend_event)
-        data = base_event.data
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -586,7 +594,7 @@ class SubmitJobEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SubmitJobEvent":
         base_event = Event.parse(backend_event)
-        data = base_event.data
+        data = backend_event.data
 
         return cls(
             event_name=base_event.event_name,
@@ -651,7 +659,7 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ClosePostAJobWindowEvent":
         base_event = Event.parse(backend_event)
-        data = base_event.data
+        data = backend_event.data
 
         return cls(
             event_name=base_event.event_name,
