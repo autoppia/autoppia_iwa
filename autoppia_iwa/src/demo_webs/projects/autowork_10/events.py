@@ -318,6 +318,7 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
 
     event_name: str = "WRITE_JOB_TITLE"
     query: str
+
     # step: int
 
     class ValidationCriteria(BaseModel):
@@ -341,7 +342,7 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
-            user_id=base_event.user,
+            user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
             query=backend_event.data.get("query"),
             # step=backend_event.data.get("step"),
@@ -425,6 +426,7 @@ class AddSkillEvent(Event, BaseEventValidator):
 
     event_name: str = "ADD_SKILL"
     skill: str
+
     # method: str
     # timestamp: int
 
@@ -556,8 +558,8 @@ class SubmitJobEvent(Event, BaseEventValidator):
     budgetType: str
     description: str
     duration: str
-    rate_from: str
-    rate_to: str
+    rate_from: int | None
+    rate_to: int | None
     scope: str
     skills: list[str]
     step: int
@@ -567,8 +569,8 @@ class SubmitJobEvent(Event, BaseEventValidator):
         budgetType: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
         duration: str | CriterionValue | None = None
-        rate_from: str | CriterionValue | None = None
-        rate_to: str | CriterionValue | None = None
+        rate_from: int | CriterionValue | None = None
+        rate_to: int | CriterionValue | None = None
         scope: str | CriterionValue | None = None
         skills: str | CriterionValue | None = None
         step: int | CriterionValue | None = None
@@ -605,8 +607,8 @@ class SubmitJobEvent(Event, BaseEventValidator):
             budgetType=data.get("budgetType"),
             description=data.get("description"),
             duration=data.get("duration"),
-            rate_from=data.get("rate_from"),
-            rate_to=data.get("rate_to"),
+            rate_from=int(data.get("rate_from")) if data.get("rate_from") else None,
+            rate_to=int(data.get("rate_to")) if data.get("rate_to") else None,
             scope=data.get("scope"),
             step=data.get("step"),
             title=data.get("title"),

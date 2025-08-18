@@ -429,21 +429,6 @@ def generate_submit_job_constraint() -> list[dict[str, Any]]:
         "Embedded Systems Engineers Jobs",
     ]
     scope_data = ["Small", "Medium", "Large"]
-    # rate_to_data = list(range(0,1001)) for integers
-    rate_to_data = []
-    i = 0.0
-    while i <= 1000:
-        rate_to_data.append(i, 1)
-        i += 0.1
-
-    # rate_from_data = list(range(0,1001))
-
-    rate_from_data = []
-    i = 0.0
-    while i <= 1000:
-        rate_from_data.append(i, 1)
-        i += 0.1
-
     duration_data = ["3 to 6 months", "More than 6 months"]
     budget_type_data = ["hourly", "fixed"]
     job_descriptions_data = [
@@ -466,6 +451,7 @@ def generate_submit_job_constraint() -> list[dict[str, Any]]:
 
         op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
+        value = None
 
         if field == "budgetType":
             field_value = random.choice(budget_type_data)
