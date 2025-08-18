@@ -105,32 +105,6 @@ def _generate_constraint_value(
     return None
 
 
-def _generate_time_constraint(field: str, operator: ComparisonOperator, use_24h: bool, start_hour: int | None = None, start_minute: int | None = None) -> dict[str, Any]:
-    """Helper function to generate time constraints in either 24h or AM/PM format."""
-    if field == "start_time":
-        hour = random.randint(0, 23)
-        minute = random.choice([0, 30])
-    else:  # end_time
-        hour = start_hour + random.randint(0, 2)
-        minute = random.choice([0, 30])
-        if hour == start_hour and minute <= start_minute:
-            minute = 30 if start_minute == 0 else 0
-            if minute < start_minute:
-                hour += 1
-        hour %= 24
-
-    if use_24h:
-        time_value = f"{hour:02d}:{minute:02d}"
-    else:
-        am_pm = "AM" if hour < 12 else "PM"
-        display_hour = hour % 12
-        if display_hour == 0:
-            display_hour = 12
-        time_value = f"{display_hour}:{minute:02d} {am_pm}"
-
-    return {"constraint": create_constraint_dict(field, operator, time_value), "hour": hour, "minute": minute}
-
-
 def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operators_map: dict[str, list], special_handlers: dict[str, Callable] | None = None) -> list[dict[str, Any]]:
     """Generic function to generate constraints based on a field map."""
     constraints_list = []
@@ -166,14 +140,60 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
 
 
 def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
-    """Handler for start and end time constraints."""
+    """Handler for start and end time constraints ensuring logical consistency."""
     use_24h = random.choice([True, False])
-    start_op = ComparisonOperator(random.choice(FIELD_OPERATORS_ADD_EVENT_MAP["start_time"]))
-    start_time_data = _generate_time_constraint("start_time", start_op, use_24h)
 
-    end_op = ComparisonOperator(random.choice(FIELD_OPERATORS_ADD_EVENT_MAP["end_time"]))
-    end_time_data = _generate_time_constraint("end_time", end_op, use_24h, start_hour=start_time_data["hour"], start_minute=start_time_data["minute"])
-    return [start_time_data["constraint"], end_time_data["constraint"]]
+    start_hour = random.randint(0, 22)
+    start_minute = random.choice([0, 30])
+
+    end_hour = start_hour
+    end_minute = start_minute
+
+    if start_minute == 0:
+        end_minute = 30
+    else:
+        end_minute = 0
+        end_hour += 1
+
+    start_op_choices = FIELD_OPERATORS_ADD_EVENT_MAP["start_time"]
+    end_op_choices = FIELD_OPERATORS_ADD_EVENT_MAP["end_time"]
+
+    # Select operators
+    start_op = ComparisonOperator(random.choice(start_op_choices))
+    end_op = ComparisonOperator(random.choice(end_op_choices))
+
+    # Format time values based on 24h or AM/PM
+    if use_24h:
+        start_time_value = f"{start_hour:02d}:{start_minute:02d}"
+        end_time_value = f"{end_hour:02d}:{end_minute:02d}"
+    else:
+        # AM/PM format
+        start_am_pm = "AM" if start_hour < 12 else "PM"
+        start_display_hour = start_hour % 12
+        if start_display_hour == 0:
+            start_display_hour = 12
+        start_time_value = f"{start_display_hour}:{start_minute:02d} {start_am_pm}"
+
+        end_am_pm = "AM" if end_hour < 12 else "PM"
+        end_display_hour = end_hour % 12
+        if end_display_hour == 0:
+            end_display_hour = 12
+        end_time_value = f"{end_display_hour}:{end_minute:02d} {end_am_pm}"
+
+    # If start_time > X, then end_time must be > X + 30min
+    # Ensure end time is not less than or equal to start time
+    if start_op in [ComparisonOperator.GREATER_THAN, ComparisonOperator.GREATER_EQUAL] and end_op in [ComparisonOperator.LESS_THAN, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS]:
+        end_op = ComparisonOperator.GREATER_THAN
+
+    # If end_time < X, then start_time must be < X - 30min
+    # Ensure start time is not greater than or equal to end time
+    elif end_op in [ComparisonOperator.LESS_THAN, ComparisonOperator.LESS_EQUAL] and start_op in [ComparisonOperator.GREATER_THAN, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.EQUALS]:
+        start_op = ComparisonOperator.LESS_THAN
+
+    start_constraint = create_constraint_dict("start_time", start_op, start_time_value)
+    end_constraint = create_constraint_dict("end_time", end_op, end_time_value)
+
+    return [start_constraint, end_constraint]
 
 
 def generate_create_calendar_constraints() -> list[dict[str, Any]]:
@@ -297,7 +317,7 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
         "meeting_link": {"values": MEETING_LINKS},
     }
     possible_fields = list(field_map.keys())
-    selected_fields = random.sample(possible_fields, k=random.randint(3, len(possible_fields)))
+    selected_fields = random.sample(possible_fields, k=random.randint(3, min(8, len(possible_fields))))
     if "title" not in selected_fields:
         selected_fields.append("title")
     if "date" not in selected_fields:
