@@ -141,8 +141,6 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
 
 def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
     """Handler for start and end time constraints ensuring logical consistency."""
-    use_24h = random.choice([True, False])
-
     start_hour = random.randint(0, 22)
     start_minute = random.choice([0, 30])
 
@@ -162,23 +160,8 @@ def _handle_time_constraints(context: dict) -> list[dict[str, Any]]:
     start_op = ComparisonOperator(random.choice(start_op_choices))
     end_op = ComparisonOperator(random.choice(end_op_choices))
 
-    # Format time values based on 24h or AM/PM
-    if use_24h:
-        start_time_value = f"{start_hour:02d}:{start_minute:02d}"
-        end_time_value = f"{end_hour:02d}:{end_minute:02d}"
-    else:
-        # AM/PM format
-        start_am_pm = "AM" if start_hour < 12 else "PM"
-        start_display_hour = start_hour % 12
-        if start_display_hour == 0:
-            start_display_hour = 12
-        start_time_value = f"{start_display_hour}:{start_minute:02d} {start_am_pm}"
-
-        end_am_pm = "AM" if end_hour < 12 else "PM"
-        end_display_hour = end_hour % 12
-        if end_display_hour == 0:
-            end_display_hour = 12
-        end_time_value = f"{end_display_hour}:{end_minute:02d} {end_am_pm}"
+    start_time_value = time(hour=start_hour, minute=start_minute)
+    end_time_value = time(hour=end_hour, minute=end_minute)
 
     # If start_time > X, then end_time must be > X + 30min
     # Ensure end time is not less than or equal to start time
