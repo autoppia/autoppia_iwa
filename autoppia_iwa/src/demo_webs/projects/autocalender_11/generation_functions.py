@@ -297,6 +297,8 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
     }
     possible_fields = list(field_map.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(3, len(possible_fields)))
+    if "title" not in selected_fields:
+        selected_fields.append("title")
     if "end_time" in selected_fields and "start_time" not in selected_fields:
         selected_fields.append("start_time")
     reduced_field_map = {field: field_map[field] for field in selected_fields}
