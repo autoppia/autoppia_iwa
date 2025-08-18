@@ -275,8 +275,6 @@ class AddEventEvent(Event, BaseEventValidator):
     date: str
     start_time: time
     end_time: time
-    # color: str
-    # is_editing: bool
     all_day: bool
     recurrence: str
     attendees: list[str]
@@ -293,12 +291,10 @@ class AddEventEvent(Event, BaseEventValidator):
         date: str | CriterionValue | None = None
         start_time: time | CriterionValue | None = None
         end_time: time | CriterionValue | None = None
-        # color: str | CriterionValue | None = None
-        # isEditing: bool | CriterionValue | None = None
         all_day: bool | CriterionValue | None = None
         recurrence: str | CriterionValue | None = None
-        attendees: list[str] | CriterionValue | None = None
-        reminders: list[int] | CriterionValue | None = None
+        attendees: str | CriterionValue | None = None
+        reminders: int | CriterionValue | None = None
         busy: bool | CriterionValue | None = None
         visibility: str | CriterionValue | None = None
         location: str | CriterionValue | None = None
@@ -315,12 +311,12 @@ class AddEventEvent(Event, BaseEventValidator):
                 validate_date_field(self.date, criteria.date),
                 self._validate_field(self.start_time, criteria.start_time),
                 self._validate_field(self.end_time, criteria.end_time),
-                # self._validate_field(self.color, criteria.color),
-                # self._validate_field(self.is_editing, criteria.isEditing),
                 self._validate_field(self.all_day, criteria.all_day),
                 self._validate_field(self.recurrence, criteria.recurrence),
-                self._validate_field(self.attendees, criteria.attendees),
-                self._validate_field(self.reminders, criteria.reminders),
+                any([at for at in self.attendees if self._validate_field(at, criteria.attendees)]),
+                any([rem for rem in self.reminders if self._validate_field(rem, criteria.reminders)]),
+                # self._validate_field(self.attendees, criteria.attendees),
+                # self._validate_field(self.reminders, criteria.reminders),
                 self._validate_field(self.busy, criteria.busy),
                 self._validate_field(self.visibility, criteria.visibility),
                 self._validate_field(self.location, criteria.location),
@@ -353,8 +349,6 @@ class AddEventEvent(Event, BaseEventValidator):
             date=data.get("date", ""),
             start_time=start_time,
             end_time=end_time,
-            # color=data.get("color", ""),
-            # is_editing=data.get("isEditing", False),
             all_day=data.get("allDay", False),
             recurrence=data.get("recurrence", ""),
             attendees=data.get("attendees", []),
