@@ -445,7 +445,14 @@ SEARCH_SUBMIT_USE_CASE = UseCase(
 EVENT_ADD_REMINDER_INFO = """
 CRITICAL REQUIREMENT:
 1. The prompt must explicitly mention adding a reminder to an event.
-2. Specify the time for the reminder in minutes.
+2. Specify the time for the reminder in minutes. If the time is 60 minutes, mention the reminder as 1 hour; for 120 minutes, mention as 2 hours; for 1440 minutes, mention as 1 day.
+3. Do not include other event details like title or date.
+4. Do not mention the same constraint more than once in the prompt.
+Examples:
+Constraint: {'minutes': {'operator': 'greater_than', 'value': 59}}
+CORRECT: "Please add a reminder to the event where the time in minutes is greater than 59."
+CORRECT: "Please add a reminder to the event for 1 hour in advance."
+INCORRECT: "Please add a reminder to the event for 1 hour in advance where the time in minutes is greater than 59."
 """
 
 EVENT_ADD_REMINDER_USE_CASE = UseCase(
@@ -470,8 +477,16 @@ EVENT_ADD_REMINDER_USE_CASE = UseCase(
 
 EVENT_REMOVE_REMINDER_INFO = """
 CRITICAL REQUIREMENT:
-1. The prompt must explicitly mention removing a reminder from an event.
-2. Specify the time of the reminder to be removed in minutes.
+1. The prompt must explicitly mention removing or deleting a reminder from an event.
+2. To remove a reminder, it must first exist. If the reminder to be removed does not exist, first add it, and then remove it.
+3. Specify the time for the reminder in minutes. If the time is 60 minutes, mention the reminder as 1 hour; for 120 minutes, mention as 2 hours; for 1440 minutes, mention as 1 day.
+4. Do not include other event details like title or date.
+5. Do not mention the same constraint more than once in the prompt.
+Examples:
+Constraint: {'minutes': {'operator': 'greater_than', 'value': 59}}
+CORRECT: "Please remove the reminder from the event where the time in minutes is greater than 59."
+CORRECT: "Please remove the 1-hour reminder from the event. If it does not exist, add it first and then remove it."
+INCORRECT: "Please remove the 1-hour reminder from the event where the time in minutes is greater than 59."
 """
 
 EVENT_REMOVE_REMINDER_USE_CASE = UseCase(
@@ -482,11 +497,26 @@ EVENT_REMOVE_REMINDER_USE_CASE = UseCase(
     constraints_generator=generate_event_reminder_constraints,
     additional_prompt_info=EVENT_REMOVE_REMINDER_INFO,
     examples=[
-        {"prompt": "Remove the 30-minute reminder.", "prompt_for_task_generation": "Remove the 30-minute reminder."},
-        {"prompt": "Delete the 10-minute reminder.", "prompt_for_task_generation": "Remove the 10-minute reminder."},
-        {"prompt": "I don't need the 1-hour reminder anymore.", "prompt_for_task_generation": "Remove the 60-minute reminder."},
-        {"prompt": "Get rid of the 15-minute reminder.", "prompt_for_task_generation": "Remove the 15-minute reminder."},
-        {"prompt": "Cancel the 2-hour reminder.", "prompt_for_task_generation": "Remove the 120-minute reminder."},
+        {
+            "prompt": "Remove the 30-minute reminder. If it's not there, add it first, then remove it.",
+            "prompt_for_task_generation": "Remove the 30-minute reminder, creating it first if it does not exist.",
+        },
+        {
+            "prompt": "Delete the 10-minute reminder. If it doesn't exist, create it and then delete it.",
+            "prompt_for_task_generation": "Remove the 10-minute reminder, creating it first if it does not exist.",
+        },
+        {
+            "prompt": "I don't need the 1-hour reminder anymore. Please remove it. If it's not set, add it and then remove it.",
+            "prompt_for_task_generation": "Remove the 60-minute reminder, creating it first if it does not exist.",
+        },
+        {
+            "prompt": "Get rid of the 15-minute reminder. If one isn't there, make one and then delete it.",
+            "prompt_for_task_generation": "Remove the 15-minute reminder, creating it first if it does not exist.",
+        },
+        {
+            "prompt": "Cancel the 2-hour reminder. If it doesn't exist, add it and then cancel it.",
+            "prompt_for_task_generation": "Remove the 120-minute reminder, creating it first if it does not exist.",
+        },
     ],
 )
 

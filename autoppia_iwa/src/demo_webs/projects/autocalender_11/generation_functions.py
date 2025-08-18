@@ -281,7 +281,7 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
         # "source": {"values": SOURCES},
         "title": {"values": EVENT_TITLES},
         "calendar": {"values": CALENDAR_NAMES},
-        "date": {"dataset_generator": lambda: [{"date": (date.today() + timedelta(days=i)).strftime("%Y-%m-%d")} for i in range(-30, 60)]},
+        "date": {"dataset_generator": lambda: [{"date": (date.today() + timedelta(days=i)).strftime("%Y-%m-%d")} for i in range(-30, 30)]},
         "time": {},  # Special handler
         # "color": {"values": COLORS},
         # "is_editing": {"values": [True, False]},
