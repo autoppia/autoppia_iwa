@@ -587,7 +587,7 @@ FIELD_OPERATORS_ADD_EVENT_MAP = {
     "visibility": EQUALITY_OPERATORS,
     "location": STRING_OPERATORS,
     "description": STRING_OPERATORS,
-    "meeting_link": STRING_OPERATORS,
+    "meeting_link": EQUALITY_OPERATORS,
 }
 FIELD_OPERATORS_CLICK_CELL_MAP = {
     # "source": EQUALITY_OPERATORS,
