@@ -12,6 +12,7 @@ from .data import (
     DESCRIPTIONS,
     EVENT_TITLES,
     EVENTS_DATASET,
+    EXISTING_CALENDAR_NAMES,
     FIELD_OPERATORS_ADD_EVENT_MAP,
     FIELD_OPERATORS_CHOOSE_CALENDAR_MAP,
     FIELD_OPERATORS_CLICK_CELL_MAP,
@@ -280,7 +281,7 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
     field_map = {
         # "source": {"values": SOURCES},
         "title": {"values": EVENT_TITLES},
-        "calendar": {"values": CALENDAR_NAMES},
+        "calendar": {"values": EXISTING_CALENDAR_NAMES},
         "date": {"dataset_generator": lambda: [{"date": (date.today() + timedelta(days=i)).strftime("%Y-%m-%d")} for i in range(-30, 30)]},
         "time": {},  # Special handler
         # "color": {"values": COLORS},
@@ -299,6 +300,8 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
     selected_fields = random.sample(possible_fields, k=random.randint(3, len(possible_fields)))
     if "title" not in selected_fields:
         selected_fields.append("title")
+    if "date" not in selected_fields:
+        selected_fields.append("date")
     if "end_time" in selected_fields and "start_time" not in selected_fields:
         selected_fields.append("start_time")
     reduced_field_map = {field: field_map[field] for field in selected_fields}
