@@ -318,11 +318,11 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
 
     event_name: str = "WRITE_JOB_TITLE"
     query: str
-    step: int
+    # step: int
 
     class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
-        step: int | CriterionValue | None = None
+        # step: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -331,7 +331,7 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.query, criteria.query),
-                self._validate_field(self.step, criteria.step),
+                # self._validate_field(self.step, criteria.step),
             ]
         )
 
@@ -343,8 +343,8 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             user_id=base_event.user,
             web_agent_id=base_event.web_agent_id,
-            query=base_event.data.get("query"),
-            step=base_event.data.get("step"),
+            query=backend_event.data.get("query"),
+            # step=backend_event.data.get("step"),
         )
 
 
@@ -390,13 +390,13 @@ class WriteJobTitleEvent(Event, BaseEventValidator):
 class SearchSkillEvent(Event, BaseEventValidator):
     """event triggered when someone start typing to search skills"""
 
-    event_name: str = "SEARCH_SKILLS"
-    query: str
+    event_name: str = "SEARCH_SKILL"
+    skill: str
 
     # timestamp : int
 
     class ValidationCriteria(BaseModel):
-        query: str | CriterionValue | None = None
+        skill: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -404,7 +404,7 @@ class SearchSkillEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.query, criteria.query),
+                self._validate_field(self.skill, criteria.skill),
             ]
         )
 
@@ -416,7 +416,7 @@ class SearchSkillEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
-            query=base_event.data.get("query"),
+            skill=backend_event.data.get("query"),
         )
 
 
@@ -425,11 +425,11 @@ class AddSkillEvent(Event, BaseEventValidator):
 
     event_name: str = "ADD_SKILL"
     skill: str
-    method: str
-    timestamp: int
+    # method: str
+    # timestamp: int
 
     class ValidationCriteria(BaseModel):
-        method: str | CriterionValue | None = None
+        # method: str | CriterionValue | None = None
         skill: str | CriterionValue | None = None
         # timestamp: int | CriterionValue | None = None
 
@@ -439,8 +439,8 @@ class AddSkillEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.method, criteria.method),
                 self._validate_field(self.skill, criteria.skill),
+                # self._validate_field(self.method, criteria.method),
                 # self._validate_field(self.timestamp, criteria.timestamp),
             ]
         )
@@ -453,8 +453,8 @@ class AddSkillEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
-            method=base_event.data.get("method"),
-            skill=base_event.data.get("skill"),
+            skill=backend_event.data.get("skill"),
+            # method=backend_event.data.get("method"),
         )
 
 
@@ -706,6 +706,6 @@ BACKEND_EVENT_TYPES = {
     "CLOSE_POST_A_JOB": ClosePostAJobWindowEvent,
     "ADD_SKILL": AddSkillEvent,
     "REMOVE_SKILL": RemoveSkillEvent,
-    "SEARCH_SKILLS": SearchSkillEvent,
+    "SEARCH_SKILL": SearchSkillEvent,
     "ATTACH_FILE": AttachFileClickedEvent,
 }

@@ -207,8 +207,16 @@ SEARCH_SKILL_USE_CASE = UseCase(
             "prompt_for_task_generation": "User searches skill that is required for a job",
         },
         {
-            "prompt": "Search a skill when the query is Python'",
-            "prompt_for_task_generation": "Search a skill when the query is Python",
+            "prompt": "Search a skill 'Go'",
+            "prompt_for_task_generation": "Search a skill 'Go'",
+        },
+        {
+            "prompt": "Search a skill 'Python'",
+            "prompt_for_task_generation": "Search a skill 'Python'",
+        },
+        {
+            "prompt": "Search a skill 'C#'",
+            "prompt_for_task_generation": "Search a skill 'C#'",
         },
     ],
 )
@@ -221,12 +229,16 @@ ADD_SKILL_USE_CASE = UseCase(
     constraints_generator=generate_add_skill_constraint,
     examples=[
         {
-            "prompt": "User clicks 'Add' button to add a skill after successfully searched a skill that is required for a job",
-            "prompt_for_task_generation": "User clicks 'Add' button to add a skill after successfully searched a skill that is required for a job",
+            "prompt": "Adds a skill where skill contains 'C'",
+            "prompt_for_task_generation": "Adds a skill where skill contains 'C'",
         },
         {
             "prompt": "Adds a skill where skill is 'C++'",
             "prompt_for_task_generation": "Adds a skill where skill is 'C++'",
+        },
+        {
+            "prompt": "Adds a skill where skill not contains '++'",
+            "prompt_for_task_generation": "Adds a skill where skill not contains '++'",
         },
     ],
 )
@@ -352,7 +364,7 @@ CLOSE_JOB_POSTING_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    BOOK_A_CONSULTATION_USE_CASE,
+    # BOOK_A_CONSULTATION_USE_CASE,
     # HIRE_BUTTON_CLICKED_USE_CASE,
     # SELECT_HIRING_TEAM_USE_CASE,
     # HIRE_CONSULTATION_USE_CASE,
@@ -360,5 +372,8 @@ ALL_USE_CASES = [
     # POST_A_JOB_USE_CASE,
     # WRITING_JOB_TITLE_USE_CASE,
     # SEARCH_SKILL_USE_CASE,
-    # ADD_SKILL_USE_CASE,
+    ADD_SKILL_USE_CASE,
+    REMOVE_SKILL_USE_CASE,
+    SUBMIT_JOB_USE_CASE,
+    CLOSE_JOB_POSTING_USE_CASE,
 ]

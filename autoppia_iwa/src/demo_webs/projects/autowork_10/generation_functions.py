@@ -277,7 +277,8 @@ def generate_job_posting_constraint() -> list[dict[str, Any]]:
 
 def generate_write_job_title_constraint() -> list[dict[str, Any]]:
     constraints_list = []
-    possible_fields = ["query", "step"]
+    # possible_fields = ["query", "step"]
+    possible_fields = ["query"]
     # num_constraints= random.randint(1, len(possible_fields))
     # selected_fields = random.sample(possible_field, num_constraints)
     query = [
@@ -328,9 +329,8 @@ def generate_write_job_title_constraint() -> list[dict[str, Any]]:
 
 def generate_search_skill_constraint() -> list[dict[str, Any]]:
     constraints_list = []
-    possible_field = ["query"]
-
-    popular_skill_data = [{"query": q} for q in POPULAR_SKILLS]
+    possible_field = ["skill"]
+    popular_skill_data = [{"skill": q} for q in POPULAR_SKILLS]
     sample_skill = random.choice(popular_skill_data)
     for field in possible_field:
         allowed_ops = FIELD_OPERATORS_MAP_SEARCH_SKILL.get(field, [])
@@ -339,7 +339,7 @@ def generate_search_skill_constraint() -> list[dict[str, Any]]:
 
         op_str = random.choice(allowed_ops)
         operator = ComparisonOperator(op_str)
-        field_value = sample_skill.get(field, None)
+        field_value = sample_skill.get(field)
         value = _generate_constraint_value(operator, field_value, field, dataset=popular_skill_data)
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -352,7 +352,7 @@ def generate_add_skill_constraint() -> list[dict[str, Any]]:
     possible_field = list(FIELD_OPERATORS_MAP_ADD_SKILL.keys())
     num_constraints = random.randint(1, len(possible_field))
     selected_field = random.sample(possible_field, num_constraints)
-    popular_skills_data = [{"query": q} for q in POPULAR_SKILLS]
+    popular_skills_data = [{"skill": q} for q in POPULAR_SKILLS]
     sample_skill = random.choice(popular_skills_data)
     for field in selected_field:
         allowed_ops = FIELD_OPERATORS_MAP_ADD_SKILL.get(field, [])
