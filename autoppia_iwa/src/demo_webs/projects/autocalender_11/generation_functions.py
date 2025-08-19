@@ -305,8 +305,8 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
         selected_fields.append("title")
     if "date" not in selected_fields:
         selected_fields.append("date")
-    if "end_time" in selected_fields and "start_time" not in selected_fields:
-        selected_fields.append("start_time")
+    if "all_day" in selected_fields and "time" in selected_fields:
+        selected_fields.remove("time")
     reduced_field_map = {field: field_map[field] for field in selected_fields}
     return _generate_constraints_for_event(reduced_field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
 
