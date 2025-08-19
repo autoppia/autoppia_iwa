@@ -200,7 +200,7 @@ def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
 
     dataset = EXPERTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_MAP_HIRING_CONSULTANT
-    selected_fields = ["slug", "paymentType"]
+    selected_fields = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
 
     return constraints_list
@@ -363,14 +363,6 @@ def generate_remove_skill_constraint() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     return constraints_list
-
-
-# def generate_attach_file_constraint() -> list[dict[str, Any]]:
-#     constraints_list = []
-#     possible_fields= list(FIELD_OPERATORS_MAP_ATTACH_FILE.keys())
-#     num_constraints = random.randint(2, len(possible_fields))
-#     selected_field = random.sample(possible_fields, num_constraints)
-#
 
 
 def generate_submit_job_constraint() -> list[dict[str, Any]]:

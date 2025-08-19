@@ -173,7 +173,7 @@ class HireConsultantEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.country, criteria.country),
                 self._validate_field(self.name, criteria.name),
-                self._validate_field(self.slug, criteria.slug),
+                # self._validate_field(self.slug, criteria.slug),
                 self._validate_field(self.increaseWhen, criteria.increaseWhen),
                 self._validate_field(self.increaseHowMuch, criteria.increaseHowMuch),
                 self._validate_field(self.paymentType, criteria.paymentType),
