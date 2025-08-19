@@ -84,7 +84,10 @@ HIRE_BUTTON_CLICKED_USE_CASE = UseCase(
         },
     ],
 )
-
+ADDITIONAL_PROMPT_INFO = """
+CRITICAL INSTRUCTIONS:
+1. Ensure that constraints values are applied correctly in the prompt. Do not modify the constraints values.
+"""
 SELECT_HIRING_TEAM_USE_CASE = UseCase(
     name="SELECT_HIRING_TEAM",
     description="The user select the hiring team",
@@ -93,14 +96,19 @@ SELECT_HIRING_TEAM_USE_CASE = UseCase(
     constraints_generator=generate_select_hiring_team_constraint,
     examples=[
         {
-            "prompt": "Select the hiring team where expert name is 'Ashley C'",
-            "prompt_for_task_generation": "Select the hiring team where expert name is 'Ashley C'",
+            "prompt": "Select the hiring team 'Apple' where expert name is 'Ashley C.'",
+            "prompt_for_task_generation": "Select the hiring team 'Apple' where expert name is 'Ashley C.'",
         },
         {
-            "prompt": "Select the hiring team where expert slug is 'ashley-c'",
-            "prompt_for_task_generation": "Select the hiring team where expert slug is 'ashley-c'",
+            "prompt": "Select the hiring team 'Google' where expert slug is 'alex-r'",
+            "prompt_for_task_generation": "Select the hiring team 'Google' where expert slug is 'alex-r'",
+        },
+        {
+            "prompt": "Select the hiring team 'Google' where expert name is not 'John D.'",
+            "prompt_for_task_generation": "Select the hiring team 'Google' where expert name is not 'John D.'",
         },
     ],
+    additional_prompt_info=ADDITIONAL_PROMPT_INFO,
 )
 
 HIRE_CONSULTATION_USE_CASE = UseCase(
@@ -367,13 +375,13 @@ ALL_USE_CASES = [
     # BOOK_A_CONSULTATION_USE_CASE,
     # HIRE_BUTTON_CLICKED_USE_CASE,
     # SELECT_HIRING_TEAM_USE_CASE,
-    # HIRE_CONSULTATION_USE_CASE,
+    HIRE_CONSULTATION_USE_CASE,
     # CANCEL_HIRE_USE_CASE,
     # POST_A_JOB_USE_CASE,
     # WRITING_JOB_TITLE_USE_CASE,
     # SEARCH_SKILL_USE_CASE,
     # ADD_SKILL_USE_CASE,
     # REMOVE_SKILL_USE_CASE,
-    SUBMIT_JOB_USE_CASE,
+    # SUBMIT_JOB_USE_CASE,
     # CLOSE_JOB_POSTING_USE_CASE,
 ]

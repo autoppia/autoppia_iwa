@@ -8,7 +8,7 @@ from ..shared_utils import create_constraint_dict
 from .data import (
     EXPERTS_DATA_MODIFIED,
     FIELD_OPERATORS_MAP_ADD_SKILL,
-    FIELD_OPERATORS_MAP_CANCEL_HIRE_CONSULTANT,
+    FIELD_OPERATORS_MAP_CANCEL_HIRE,
     FIELD_OPERATORS_MAP_CLOSE_JOB_POSTING,
     FIELD_OPERATORS_MAP_HIRE_BUTTON,
     FIELD_OPERATORS_MAP_HIRING_CONSULTANT,
@@ -173,47 +173,19 @@ def generate_book_consultant_constraint() -> list[dict[str, Any]]:
 def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
     dataset = EXPERTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
-    selected_field = ["slug"]
+    selected_field = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
 
     return constraints_list
 
 
 def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
     field_mapping = {
         "team": {"field": "team", "dataset": [{"team": t} for t in ["Microsoft", "Apple", "Google"]]},
     }
-    # possible_fields = list(FIELD_OPERATORS_MAP_HIRING_TEAM.keys())
-    # num_constraints = random.randint(2, len(possible_fields))
-    # selected_fields = random.sample(possible_fields, num_constraints)
-    # sample_expert = random.choice(EXPERTS)
-
-    # team = ["Microsoft", "Apple", "Google"]
-    # dataset = [{"team": t} for t in team]
-
-    # for field in selected_fields:
-    #     allowed_ops = FIELD_OPERATORS_MAP_HIRING_TEAM.get(field, [])
-    #     if not allowed_ops:
-    #         continue
-    #
-    #     op_str = random.choice(allowed_ops)
-    #     operator = ComparisonOperator(op_str)
-    #     if field == "team":
-    #         field_value = choice(team)
-    #         dataset = [{"team": t} for t in team]
-    #         value = _generate_constraint_value(operator, field_value, field, dataset=dataset)
-    #     else:
-    #         new_field = field_mapping.get(field, field)
-    #         field_value = sample_expert.get(new_field)
-    #         value = _generate_constraint_value(operator, field_value, new_field, dataset=EXPERTS)
-    #
-    #     if value is not None:
-    #         constraint = create_constraint_dict(field, operator, value)
-    #         constraints_list.append(constraint)
     dataset = EXPERTS_DATA_MODIFIED
     field_operators = FIELD_OPERATORS_MAP_HIRING_TEAM
-    selected_fields = ["slug"]
+    selected_fields = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_fields, field_map=field_mapping)
 
     return constraints_list
@@ -236,7 +208,7 @@ def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
 
 def generate_cancel_hire_constraint() -> list[dict[str, Any]]:
     dataset = EXPERTS_DATA_MODIFIED
-    field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE_CONSULTANT
+    field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE
     fixed_fields = ["slug"]
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=fixed_fields)
 

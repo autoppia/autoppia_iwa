@@ -67,13 +67,13 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
     event_name: str = "HIRE_BTN_CLICKED"
     country: str | None = None
     name: str | None = None
-    slug: str | None = None
+    # slug: str | None = None
     role: str | None = None
 
     class ValidationCriteria(BaseModel):
         country: str | CriterionValue | None = None
         name: str | CriterionValue | None = None
-        slug: str | CriterionValue | None = None
+        # slug: str | CriterionValue | None = None
         role: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -83,7 +83,7 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.country, criteria.country),
                 self._validate_field(self.name, criteria.name),
-                self._validate_field(self.slug, criteria.slug),
+                # self._validate_field(self.slug, criteria.slug),
                 self._validate_field(self.role, criteria.role),
             ]
         )
@@ -99,7 +99,7 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             country=data.get("country"),
             name=data.get("expertName"),
-            slug=data.get("expertSlug"),
+            # slug=data.get("expertSlug"),
             role=data.get("role"),
         )
 
@@ -107,12 +107,12 @@ class HireButtonClickedEvent(Event, BaseEventValidator):
 class SelectHiringTeamEvent(Event, BaseEventValidator):
     event_name: str = "SELECT_HIRING_TEAM"
     name: str | None = None
-    slug: str | None = None
+    # slug: str | None = None
     team: str | None = None
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
-        slug: str | CriterionValue | None = None
+        # slug: str | CriterionValue | None = None
         team: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -122,7 +122,7 @@ class SelectHiringTeamEvent(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.name, criteria.name),
-                self._validate_field(self.slug, criteria.slug),
+                # self._validate_field(self.slug, criteria.slug),
                 self._validate_field(self.team, criteria.team),
             ]
         )
@@ -137,7 +137,7 @@ class SelectHiringTeamEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             name=data.get("expertName"),
-            slug=data.get("expertSlug"),
+            # slug=data.get("expertSlug"),
             team=data.get("team"),
         )
 
