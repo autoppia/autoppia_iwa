@@ -315,8 +315,6 @@ class AddEventEvent(Event, BaseEventValidator):
                 self._validate_field(self.recurrence, criteria.recurrence),
                 any([at for at in self.attendees if self._validate_field(at, criteria.attendees)]) if criteria.attendees else True,
                 any([rem for rem in self.reminders if self._validate_field(rem, criteria.reminders)]) if criteria.reminders else True,
-                # self._validate_field(self.attendees, criteria.attendees),
-                # self._validate_field(self.reminders, criteria.reminders),
                 self._validate_field(self.busy, criteria.busy),
                 self._validate_field(self.visibility, criteria.visibility),
                 self._validate_field(self.location, criteria.location),
