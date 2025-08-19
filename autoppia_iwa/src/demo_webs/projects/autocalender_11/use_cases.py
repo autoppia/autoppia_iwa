@@ -269,9 +269,14 @@ CHOOSE_CALENDAR_USE_CASE = UseCase(
 ADD_EVENT_INFO = """
 CRITICAL REQUIREMENT:
 1. Include all event details: title, calendar, date, start time, and end time.
-2. Format times as hours and minutes (e.g., "5:30 PM", "17:30").
-3. Specify which calendar the event should be added to.
-4. Do not mention color.
+2. Start your request with "Add an event" or similar phrases.
+3. Pay attention to the constraints, mentioning exact constraint operator is crucial,
+Example:
+constraint: {"field": "title", "operator": "not_equals", "value": "Team Meeting"}
+prompt:
+CORRECT: 'Add an event whose title is not "Team Meeting" to the "Work" calendar for tomorrow at 10:00 AM, ending at 11:00 AM.'
+INCORRECT: 'Add an event "Team Meeting" to the "Work" calendar for tomorrow at 10:00 AM, ending at 11:00 AM.'
+4. You may use synonyms for "add" such as "schedule", "create", "put", or "set up".
 """
 
 ADD_EVENT_USE_CASE = UseCase(
@@ -368,6 +373,7 @@ CRITICAL REQUIREMENT:
 2. Include the event title if specified in constraints.
 3. Optionally mention the date or calendar name if specified in constraints.
 4. Make it clear that the user is removing an already created event, not canceling its creation.
+5. The event does not exists, mention to create an event first and then delete it.
 """
 
 DELETE_ADDED_EVENT_USE_CASE = UseCase(
@@ -573,22 +579,22 @@ EVENT_REMOVE_ATTENDEE_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    # SELECT_MONTH_USE_CASE,
-    # SELECT_WEEK_USE_CASE,
-    # SELECT_FIVE_DAYS_USE_CASE,
-    # SELECT_DAY_USE_CASE,
-    # SELECT_TODAY_USE_CASE,
-    # ADD_NEW_CALENDAR_USE_CASE,
-    # CREATE_CALENDAR_USE_CASE,
-    # CHOOSE_CALENDAR_USE_CASE,
-    # SEARCH_SUBMIT_USE_CASE,
-    # EVENT_WIZARD_OPEN_USE_CASE,
-    # CELL_CLICKED_USE_CASE,
-    # ADD_EVENT_USE_CASE,
+    SELECT_MONTH_USE_CASE,
+    SELECT_WEEK_USE_CASE,
+    SELECT_FIVE_DAYS_USE_CASE,
+    SELECT_DAY_USE_CASE,
+    SELECT_TODAY_USE_CASE,
+    ADD_NEW_CALENDAR_USE_CASE,
+    CREATE_CALENDAR_USE_CASE,
+    CHOOSE_CALENDAR_USE_CASE,
+    SEARCH_SUBMIT_USE_CASE,
+    EVENT_WIZARD_OPEN_USE_CASE,
+    CELL_CLICKED_USE_CASE,
+    ADD_EVENT_USE_CASE,
     CANCEL_ADD_EVENT_USE_CASE,
     DELETE_ADDED_EVENT_USE_CASE,
-    # EVENT_ADD_REMINDER_USE_CASE,
-    # EVENT_REMOVE_REMINDER_USE_CASE,
-    # EVENT_ADD_ATTENDEE_USE_CASE,
-    # EVENT_REMOVE_ATTENDEE_USE_CASE,
+    EVENT_ADD_REMINDER_USE_CASE,
+    EVENT_REMOVE_REMINDER_USE_CASE,
+    EVENT_ADD_ATTENDEE_USE_CASE,
+    EVENT_REMOVE_ATTENDEE_USE_CASE,
 ]
