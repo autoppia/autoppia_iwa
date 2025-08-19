@@ -232,18 +232,22 @@ CREATE_CALENDAR_USE_CASE = UseCase(
 ###############################################################################
 # CHOOSE_CALENDAR_USE_CASE
 ###############################################################################
+import json
 
-CHOOSE_CALENDAR_INFO = """
+from .data import EXISTING_CALENDAR_NAMES
+
+CHOOSE_CALENDAR_INFO = f"""
 CRITICAL REQUIREMENTS:
-1. The prompt must focus on hiding or deselecting a calendar (the 'selected' constraint is always false).
+1. The prompt must focus on deselecting a calendar (the 'selected' constraint is always false).
 2. Use the calendar name exactly as provided in the constraints (e.g., `Personal`, `Fitness`).
-   Example: For {'calendar_name': 'Personal', 'selected': False} → "Unselect the 'Personal' calendar."
-3. If the calendar name is not 'Work', 'Family', or a substring of those, first create that calendar, then unselect it.
+   Example: For {{'calendar_name': 'Personal', 'selected': False}} → "Unselect the 'Personal' calendar."
+3. If the calendar name is not in the list of existing calendar names, or a substring of those, mention in the prompt to first create that calendar, then unselect it.
+   Existing Calendar Names: {json.dumps(EXISTING_CALENDAR_NAMES)}
 4. If the constraint uses an operator (e.g., 'contains'), clearly mention it in the prompt.
-   Example: {'calendar_name': {'operator': 'contains', 'value': 've'}, 'selected': False}
+   Example: {{'calendar_name': {{'operator': 'contains', 'value': 've'}}, 'selected': False}}
    Correct: "Unselect the calendar that contains 've' in its name."
    Incorrect: "Unselect the calendar 've' name, but first create it if it doesn't exist." (constraint not mentioned)
-5. **Do not** mention the constraint for 'selected'.
+5. **Do not** mention the constraint for 'selected' in the prompt.
 """
 
 CHOOSE_CALENDAR_USE_CASE = UseCase(
@@ -259,6 +263,9 @@ CHOOSE_CALENDAR_USE_CASE = UseCase(
         {"prompt": "Unselect the 'Study' calendar.", "prompt_for_task_generation": "Deselect the Study calendar."},
         {"prompt": "Remove the 'Travel' calendar from view.", "prompt_for_task_generation": "Hide the Travel calendar."},
         {"prompt": "Deselect the 'Holidays' calendar.", "prompt_for_task_generation": "Deselect the Holidays calendar."},
+        {"prompt": "Unselect the calendar that contains 've' in its name.", "prompt_for_task_generation": "Deselect any calendar whose name contains 've'."},
+        {"prompt": "First create the 'Projects' calendar, then unselect it.", "prompt_for_task_generation": "Create 'Projects' calendar if missing, then deselect it."},
+        {"prompt": "If the 'Events' calendar does not exist, create it, then hide it.", "prompt_for_task_generation": "Create 'Events' calendar if needed, then hide it."},
     ],
 )
 
