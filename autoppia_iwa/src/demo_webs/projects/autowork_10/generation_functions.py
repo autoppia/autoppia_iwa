@@ -83,6 +83,22 @@ def _generate_constraint_value(
                 return test_str
         return "xyz"  # fallback
 
+    if operator == ComparisonOperator.IN_LIST:
+        all_values = list({v.get(field) for v in dataset if field in v})
+        if not all_values:
+            return [field_value]
+        random.shuffle(all_values)
+        subset = random.sample(all_values, min(2, len(all_values)))
+        if field_value not in subset:
+            subset.append(field_value)
+        return list(set(subset))
+
+    if operator == ComparisonOperator.NOT_IN_LIST:
+        all_values = list({v.get(field) for v in dataset if field in v})
+        if field_value in all_values:
+            all_values.remove(field_value)
+        return random.sample(all_values, min(2, len(all_values))) if all_values else []
+
     if operator in {
         ComparisonOperator.GREATER_THAN,
         ComparisonOperator.LESS_THAN,
@@ -367,10 +383,10 @@ def generate_remove_skill_constraint() -> list[dict[str, Any]]:
 
 def generate_submit_job_constraint() -> list[dict[str, Any]]:
     constraints_list = []
-    possible_field = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
-    num_constraints = random.randint(2, len(possible_field))
-    selected_field = random.sample(possible_field, num_constraints)
-    popular_skill_data = [{"query": q} for q in POPULAR_SKILLS]
+    possible_fields = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
+    num_constraints = random.randint(2, len(possible_fields))
+    selected_fields = random.sample(possible_fields, num_constraints)
+    popular_skill_data = [{"skills": s} for s in POPULAR_SKILLS]
     sample_skills = random.choice(popular_skill_data)
     title_data = [
         "Web Developers Jobs",
@@ -408,7 +424,7 @@ def generate_submit_job_constraint() -> list[dict[str, Any]]:
         "Write clear documentation, tutorials, and guides for technical and non-technical audiences.",
     ]
     rate_constraints = []
-    for field in selected_field:
+    for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_SUBMIT_JOB.get(field, [])
         if not allowed_ops:
             continue
@@ -465,7 +481,7 @@ def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
     possible_field = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
     num_constraints = random.randint(2, len(possible_field))
     selected_field = random.sample(possible_field, num_constraints)
-    popular_skill_data = [{"query": q} for q in POPULAR_SKILLS]
+    popular_skill_data = [{"skills": s} for s in POPULAR_SKILLS]
     sample_skills = random.choice(popular_skill_data)
     title_data = [
         "Web Developers Jobs",

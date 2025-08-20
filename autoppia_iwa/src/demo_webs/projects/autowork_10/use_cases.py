@@ -342,7 +342,7 @@ SUBMIT_JOB_USE_CASE = UseCase(
 )
 
 CLOSE_JOB_POSTING_USE_CASE = UseCase(
-    name="CLOSE_JOB_POST",
+    name="CLOSE_POST_A_JOB_WINDOW",
     description="The user closes the posting of job window",
     event=ClosePostAJobWindowEvent,
     event_source_code=ClosePostAJobWindowEvent.get_source_code_of_class(),
@@ -375,7 +375,7 @@ ALL_USE_CASES = [
     # BOOK_A_CONSULTATION_USE_CASE,
     # HIRE_BUTTON_CLICKED_USE_CASE,
     # SELECT_HIRING_TEAM_USE_CASE,
-    HIRE_CONSULTATION_USE_CASE,
+    # HIRE_CONSULTATION_USE_CASE,
     # CANCEL_HIRE_USE_CASE,
     # POST_A_JOB_USE_CASE,
     # WRITING_JOB_TITLE_USE_CASE,
@@ -383,5 +383,5 @@ ALL_USE_CASES = [
     # ADD_SKILL_USE_CASE,
     # REMOVE_SKILL_USE_CASE,
     # SUBMIT_JOB_USE_CASE,
-    # CLOSE_JOB_POSTING_USE_CASE,
+    CLOSE_JOB_POSTING_USE_CASE,
 ]

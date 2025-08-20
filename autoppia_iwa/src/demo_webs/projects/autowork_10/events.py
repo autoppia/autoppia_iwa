@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
+from ..criterion_helper import ComparisonOperator
+
 
 class BookAConsultationEvent(Event, BaseEventValidator):
     """Event triggered when someone clicks on the book a consultation button"""
@@ -558,8 +560,8 @@ class SubmitJobEvent(Event, BaseEventValidator):
     budgetType: str
     description: str
     duration: str
-    rate_from: str | None
-    rate_to: str | None
+    rate_from: int | None
+    rate_to: int | None
     # rate_from: int | None
     # rate_to: int | None
     scope: str
@@ -571,12 +573,38 @@ class SubmitJobEvent(Event, BaseEventValidator):
         budgetType: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
         duration: str | CriterionValue | None = None
-        rate_from: str | CriterionValue | None = None
-        rate_to: str | CriterionValue | None = None
+        rate_from: int | CriterionValue | None = None
+        rate_to: int | CriterionValue | None = None
         scope: str | CriterionValue | None = None
         skills: str | CriterionValue | None = None
         step: int | CriterionValue | None = None
         title: str | CriterionValue | None = None
+
+    def _skill_validation(self, criteria: CriterionValue | None = None) -> bool:
+        if not criteria:
+            return True
+        if criteria.skills is not None:
+            if isinstance(criteria, str):
+                if not any(criteria.skills.lower() in skills.lower() for skills in self.skills):
+                    return False
+            else:
+                if criteria.skills.operator == ComparisonOperator.CONTAINS:
+                    if not any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
+                        return False
+                elif criteria.skills.operator == ComparisonOperator.NOT_CONTAINS:
+                    if any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
+                        return False
+                elif criteria.skills.operator == ComparisonOperator.IN_LIST:
+                    if not isinstance(criteria.skills.value, list):
+                        return False
+                    if not any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
+                        return False
+                elif criteria.skills.operator == ComparisonOperator.NOT_IN_LIST:
+                    if not isinstance(criteria.skills.value, list):
+                        return False
+                    if any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
+                        return False
+        return True
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -589,7 +617,7 @@ class SubmitJobEvent(Event, BaseEventValidator):
                 self._validate_field(self.rate_from, criteria.rate_from),
                 self._validate_field(self.rate_to, criteria.rate_to),
                 self._validate_field(self.scope, criteria.scope),
-                self._validate_field(self.skills, criteria.skills),
+                self._skill_validation(criteria),
                 self._validate_field(self.step, criteria.step),
                 self._validate_field(self.title, criteria.title),
             ]
@@ -609,10 +637,8 @@ class SubmitJobEvent(Event, BaseEventValidator):
             budgetType=data.get("budgetType"),
             description=data.get("description"),
             duration=data.get("duration"),
-            # rate_from=int(data.get("rate_from")) if data.get("rate_from") else None,
-            # rate_to=int(data.get("rate_to")) if data.get("rate_to") else None,
-            rate_from=data.get("rate_from"),
-            rate_to=data.get("rate_to"),
+            rate_from=int(data.get("rateFrom")) if data.get("rateFrom") else None,
+            rate_to=int(data.get("rateTo")) if data.get("rateTo") else None,
             scope=data.get("scope"),
             step=data.get("step"),
             title=data.get("title"),
@@ -623,12 +649,12 @@ class SubmitJobEvent(Event, BaseEventValidator):
 class ClosePostAJobWindowEvent(Event, BaseEventValidator):
     """event triggered when someone close post a job window"""
 
-    event_name: str = "CLOSE_POST_A_JOB"
+    event_name: str = "CLOSE_POST_A_JOB_WINDOW"
     budgetType: str
     description: str
     duration: str
-    rate_from: str
-    rate_to: str
+    rate_from: int | None
+    rate_to: int | None
     scope: str
     skills: list[str]
     step: int
@@ -638,12 +664,38 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
         budgetType: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
         duration: str | CriterionValue | None = None
-        rate_from: str | CriterionValue | None = None
-        rate_to: str | CriterionValue | None = None
+        rate_from: int | CriterionValue | None = None
+        rate_to: int | CriterionValue | None = None
         scope: str | CriterionValue | None = None
         skills: str | CriterionValue | None = None
         step: int | CriterionValue | None = None
         title: str | CriterionValue | None = None
+
+    def _skill_validation(self, criteria: CriterionValue | None = None) -> bool:
+        if not criteria:
+            return True
+        if criteria.skills is not None:
+            if isinstance(criteria, str):
+                if not any(criteria.skills.lower() in skills.lower() for skills in self.skills):
+                    return False
+            else:
+                if criteria.skills.operator == ComparisonOperator.CONTAINS:
+                    if not any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
+                        return False
+                elif criteria.skills.operator == ComparisonOperator.NOT_CONTAINS:
+                    if any(criteria.skills.value.lower() in skills.lower() for skills in self.skills):
+                        return False
+                elif criteria.skills.operator == ComparisonOperator.IN_LIST:
+                    if not isinstance(criteria.skills.value, list):
+                        return False
+                    if not any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
+                        return False
+                elif criteria.skills.operator == ComparisonOperator.NOT_IN_LIST:
+                    if not isinstance(criteria.skills.value, list):
+                        return False
+                    if any(skills.lower() in [v.lower() for v in criteria.skills.value] for skills in self.skills):
+                        return False
+        return True
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -656,7 +708,7 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
                 self._validate_field(self.rate_from, criteria.rate_from),
                 self._validate_field(self.rate_to, criteria.rate_to),
                 self._validate_field(self.scope, criteria.scope),
-                self._validate_field(self.skills, criteria.skills),
+                self._skill_validation(criteria),
                 self._validate_field(self.step, criteria.step),
                 self._validate_field(self.title, criteria.title),
             ]
@@ -675,8 +727,8 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
             budgetType=data.get("budgetType"),
             description=data.get("description"),
             duration=data.get("duration"),
-            rate_from=data.get("rate_from"),
-            rate_to=data.get("rate_to"),
+            rate_from=int(data.get("rateFrom")) if data.get("rateFrom") else None,
+            rate_to=int(data.get("rateTo")) if data.get("rateTo") else None,
             scope=data.get("scope"),
             skills=data.get("skills", []),
             step=data.get("step"),
@@ -709,7 +761,7 @@ BACKEND_EVENT_TYPES = {
     "POST_A_JOB": PostAJobEvent,
     "WRITE_JOB_TITLE": WriteJobTitleEvent,
     "SUBMIT_JOB": SubmitJobEvent,
-    "CLOSE_POST_A_JOB": ClosePostAJobWindowEvent,
+    "CLOSE_POST_A_JOB_WINDOW": ClosePostAJobWindowEvent,
     "ADD_SKILL": AddSkillEvent,
     "REMOVE_SKILL": RemoveSkillEvent,
     "SEARCH_SKILL": SearchSkillEvent,
