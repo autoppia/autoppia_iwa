@@ -125,7 +125,8 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
             dataset = config["dataset_generator"]()
             # For date fields, we need a field_value to compare against
             if field_value is None and dataset:
-                field_value = random.choice(dataset)[field]
+                field_str = random.choice(dataset)[field]
+                field_value = datetime.strptime(field_str, "%Y-%m-%d").date()
         else:
             dataset = [{config.get("dataset_key", field): val} for val in field_value_source]
 
