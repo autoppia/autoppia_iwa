@@ -325,8 +325,12 @@ def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
             field_value = sample_event.get("label", None)
             dataset = [{"title": v["label"]} for v in EVENTS_DATASET]
         elif field == "date":
-            field_value = parse_datetime(sample_event.get("date", None))
-            dataset = [{"date": parse_datetime(event["date"])} for event in EVENTS_DATASET if "date" in event]
+            dt = parse_datetime(sample_event.get("date", None))
+            if not dt:
+                continue
+            # Convert datetime to string format for validation
+            field_value = dt.strftime("%Y-%m-%d")
+            dataset = [{"date": parse_datetime(event["date"]).strftime("%Y-%m-%d")} for event in EVENTS_DATASET if "date" in event]
         elif field in ["start_time", "end_time"]:
             val = sample_event.get(field, [])
             if len(val) == 2:
@@ -339,6 +343,11 @@ def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
                 ]
             else:
                 continue
+        elif field in ["reminders", "attendees"]:
+            field_value = sample_event.get(field, [])
+            if field_value and isinstance(field_value, list):
+                field_value = field_value[0]
+            dataset = [{field: v[field][0]} for v in EVENTS_DATASET if field in v and isinstance(v[field], list) and len(v[field]) > 0]
         else:
             field_value = sample_event.get(field, None)
             dataset = [{field: event.get(field, None)} for event in EVENTS_DATASET if field in event]
@@ -346,6 +355,10 @@ def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
             continue
         value = _generate_constraint_value(operator, field_value, field, dataset)
         if value is not None:
+            if field == "date" and isinstance(value, datetime):
+                value = value.strftime("%Y-%m-%d")
+            if field in ["attendees", "reminders"] and isinstance(value, list):
+                value = value[0]
             constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
