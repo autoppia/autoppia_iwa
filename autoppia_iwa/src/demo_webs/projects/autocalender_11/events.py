@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, datetime, time
 
 from pydantic import BaseModel
 
@@ -288,7 +288,7 @@ class AddEventEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         title: str | CriterionValue | None = None
         calendar: str | CriterionValue | None = None
-        date: str | CriterionValue | None = None
+        date: date | CriterionValue | None = None
         start_time: time | CriterionValue | None = None
         end_time: time | CriterionValue | None = None
         all_day: bool | CriterionValue | None = None
