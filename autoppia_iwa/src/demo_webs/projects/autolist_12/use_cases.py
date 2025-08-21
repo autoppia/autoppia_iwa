@@ -82,12 +82,12 @@ SELECT_DATE_FOR_TASK_USE_CASE = UseCase(
 
 SELECT_TASK_PRIORITY_INFO = """
 CRITICAL REQUIREMENT:
-1. The prompt must be about setting or changing the priority level of a task.
-Use phrases like "set priority to", "make this high priority", or "change priority".
-2. DO NOT mention a single constraint more than once in the prompt.
-example:
-CORRECT: "Change the priority of the task to 'Low'.
-INCORRECT: "Change the priority of the task to 'Low' where the label is equal to 'Low".
+1. The prompt must focus on setting or changing the priority level.
+Use clear phrases such as "set priority to", "make this <priority_level> priority", or "change priority" ....
+2. Do not mention the same constraint more than once in the prompt.
+Example:
+CORRECT: "Change the priority to 'Low'."
+INCORRECT: "Change the priority to 'Low' where the label is equal to 'Low'."
 """.strip()
 
 SELECT_TASK_PRIORITY_USE_CASE = UseCase(

@@ -44,20 +44,52 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, s
         valid = [v[source_key] for v in dataset if v.get(source_key) and v.get(source_key) != field_value]
         return random.choice(valid) if valid else None
 
-    if isinstance(field_value, str):
-        if operator == ComparisonOperator.CONTAINS:
-            if len(field_value) > 2:
-                start = random.randint(0, max(0, len(field_value) - 2))
-                end = random.randint(start + 1, len(field_value))
-                return field_value[start:end]
-            return field_value
-        if operator == ComparisonOperator.NOT_CONTAINS:
-            alphabet = "abcdefghijklmnopqrstuvwxyz"
-            for _ in range(100):
-                test_str = "".join(random.choice(alphabet) for _ in range(3))
-                if test_str.lower() not in field_value.lower():
-                    return test_str
-            return "xyz"  # fallback
+    if operator == ComparisonOperator.CONTAINS:
+        if len(field_value) > 2:
+            start = random.randint(0, max(0, len(field_value) - 2))
+            end = random.randint(start + 1, len(field_value))
+            return field_value[start:end]
+        return field_value
+    elif operator == ComparisonOperator.NOT_CONTAINS:
+        alphabet = "abcdefghijklmnopqrstuvwxyz"
+        for _ in range(100):
+            test_str = "".join(random.choice(alphabet) for _ in range(3))
+            if test_str.lower() not in field_value.lower():
+                return test_str
+        return "xyz"  # fallback
+    elif operator == ComparisonOperator.IN_LIST:
+        all_values = []
+        for v in dataset:
+            if source_key in v:
+                val = v.get(source_key)
+                if isinstance(val, list):
+                    all_values.extend(val)
+                elif val is not None:
+                    all_values.append(val)
+        all_values = list(set(all_values))
+
+        if not all_values:
+            return [field_value]
+        random.shuffle(all_values)
+        subset = random.sample(all_values, min(2, len(all_values)))
+        if field_value not in subset:
+            subset.append(field_value)
+        return list(set(subset))
+
+    elif operator == ComparisonOperator.NOT_IN_LIST:
+        all_values = []
+        for v in dataset:
+            if source_key in v:
+                val = v.get(source_key)
+                if isinstance(val, list):
+                    all_values.extend(val)
+                elif val is not None:
+                    all_values.append(val)
+        all_values = list(set(all_values))
+
+        if field_value in all_values:
+            all_values.remove(field_value)
+        return random.sample(all_values, min(2, len(all_values))) if all_values else []
 
     if isinstance(field_value, int | float):
         delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
@@ -140,7 +172,7 @@ def generate_team_members_added_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding team members."""
     field_map = {
         "_dataset": TEAM_MEMBERS_OPTIONS,
-        "members": {"source_key": "label", "dataset": TEAM_MEMBERS_OPTIONS},
+        "members": {"source_key": "value", "dataset": TEAM_MEMBERS_OPTIONS},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_MEMBERS_ADDED_MAP)
 
