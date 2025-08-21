@@ -222,9 +222,9 @@ class SearchRideEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         dropoff: str | CriterionValue | None = None
         # dropoffLength: int | CriterionValue |None = None
-        hasDropoff: bool | CriterionValue | None = None
-        hasPickup: bool | CriterionValue | None = None
-        isScheduled: bool | CriterionValue | None = None
+        # hasDropoff: bool | CriterionValue | None = None
+        # hasPickup: bool | CriterionValue | None = None
+        # isScheduled: bool | CriterionValue | None = None
         pickup: str | CriterionValue | None = None
         # pickupLength: int | CriterionValue |None = None
         scheduled: datetime | CriterionValue | None = None
@@ -238,9 +238,9 @@ class SearchRideEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.dropoff, criteria.dropoff),
                 # self._validate_field(self.dropoffLength, criteria.dropoffLength),
-                self._validate_field(self.hasDropoff, criteria.hasDropoff),
-                self._validate_field(self.hasPickup, criteria.hasPickup),
-                self._validate_field(self.isScheduled, criteria.isSchedule),
+                # self._validate_field(self.hasDropoff, criteria.hasDropoff),
+                # self._validate_field(self.hasPickup, criteria.hasPickup),
+                # self._validate_field(self.isScheduled, criteria.isSchedule),
                 self._validate_field(self.pickup, criteria.pickup),
                 # self._validate_field(self.pickupLength, criteria.pickupLength),
                 # self._validate_field(self.scheduled, criteria.scheduled),
@@ -259,9 +259,9 @@ class SearchRideEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             dropoff=data.get("dropoff"),
             # dropoffLength=data.get("dropoffLength"),
-            hasDropoff=data.get("hasDropoff"),
-            hasPickup=data.get("hasPickup"),
-            isScheduled=data.get("isScheduled"),
+            # hasDropoff=data.get("hasDropoff"),
+            # hasPickup=data.get("hasPickup"),
+            # isScheduled=data.get("isScheduled"),
             pickup=data.get("pickup"),
             # pickupLength=data.get("pickupLength"),
             scheduled=parse_datetime(data.get("scheduled")),
