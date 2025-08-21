@@ -17,6 +17,7 @@ from .generation_functions import (
     generate_enter_destination_constraint,
     generate_enter_location_constraint,
     generate_next_pickup_constraint,
+    generate_search_ride_constraints,
     generate_see_prices_constraint,
     generate_select_date_constraint,
     generate_select_time_constraint,
@@ -203,7 +204,7 @@ SEARCH_RIDE_USE_CASE = UseCase(
     description="The user clicks on the 'Search' button after selecting pickup, dropoff, and optionally scheduling a ride.",
     event=SearchRideEvent,
     event_source_code=SearchRideEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_search_ride_constraints,
     examples=[
         {
             "prompt": "Search ride with pickup '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA' and dropoff '1030 Post Street Apartments - 1030 Post St #112, San Francisco, CA 94109, USA'",
@@ -371,5 +372,10 @@ ALL_USE_CASES = [
     # SEE_PRICES_USE_CASE,
     # SELECT_DATE_USE_CASE,
     # SELECT_TIME_USE_CASE,
-    NEXT_PICKUP_USE_CASE,
+    # NEXT_PICKUP_USE_CASE,
+    SEARCH_RIDE_USE_CASE,
+    # SELECT_CAR_USE_CASE,
+    # RESERVE_RIDE_USE_CASE,
+    # TRIP_DETAILS_USE_CASE,
+    # CANCEL_RESERVATION_USE_CASE,
 ]

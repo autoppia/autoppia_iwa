@@ -11,6 +11,7 @@ from .data import (
     FIELD_OPERATORS_MAP_ENTER_DESTINATION,
     FIELD_OPERATORS_MAP_ENTER_LOCATION,
     FIELD_OPERATORS_MAP_NEXT_PICKUP,
+    FIELD_OPERATORS_MAP_SEARCH_RIDE,
     FIELD_OPERATORS_MAP_SEE_PRICES,
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
@@ -111,6 +112,36 @@ def _generate_constraint_value(
     return None
 
 
+def random_datetime(days: int | None = None, end: datetime | None = None, start: datetime | None = None) -> datetime:
+    """
+    Generate a random datetime starting from today (or a given start datetime).
+
+    Args:
+        days (int, optional): Number of days from today to set as the end range.
+        end (datetime, optional): Specific end datetime.
+        start (datetime, optional): Custom start datetime (default: now).
+
+    Returns:
+        datetime: Random datetime within the range.
+    """
+    # Default start is now
+    start = start or datetime.now()
+
+    if end is None and days is None:
+        raise ValueError("You must provide either 'end' datetime or 'days' range")
+
+    if end is None:
+        end = start + timedelta(days=days)
+
+    if start >= end:
+        raise ValueError("start must be earlier than end")
+
+    # Pick random datetime
+    delta = end - start
+    random_second = random.randint(0, int(delta.total_seconds()))
+    return start + timedelta(seconds=random_second)
+
+
 def _generate_constraints(
     dataset: list[dict], field_operators: dict, field_map: dict | None = None, min_constraints: int | None = 1, num_constraints: int | None = None, selected_fields: list | None = None
 ) -> list[dict[str, Any]]:
@@ -152,11 +183,16 @@ def _generate_constraints(
         elif isinstance(new_field, str):
             field_value = sample_data.get(new_field)
         elif isinstance(new_field, dict):
-            custom_dataset = new_field.get("dataset", [])
-            new_field = new_field.get("field", "")
-            field_value = choice(custom_dataset).get(new_field)
-            if new_field:
-                constraint_value = _generate_constraint_value(op, field_value, new_field, dataset=custom_dataset)
+            if new_field.get("is_datetime"):
+                days = new_field.get("days", 1)
+                new_field = new_field.get("field", "")
+                constraint_value = random_datetime(days=days, start=datetime.now(UTC))
+            else:
+                custom_dataset = new_field.get("dataset", [])
+                new_field = new_field.get("field", "")
+                field_value = choice(custom_dataset).get(new_field)
+                if new_field:
+                    constraint_value = _generate_constraint_value(op, field_value, new_field, dataset=custom_dataset)
 
         if field_value is None:
             continue
@@ -251,3 +287,15 @@ def generate_next_pickup_constraint() -> list[dict[str, Any]]:
             all_constraints.append(constraint)
 
     return all_constraints
+
+
+def generate_search_ride_constraints() -> list[dict[str, Any]]:
+    field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
+
+    field_map = {
+        "pickup": {"field": "label", "dataset": PLACES},
+        "dropoff": {"field": "label", "dataset": PLACES},
+        "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
+    }
+    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["scheduled"])
+    return constraints_list
