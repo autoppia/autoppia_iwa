@@ -14,7 +14,7 @@ from .data import (
     FIELD_OPERATORS_MAP_SEE_PRICES,
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
-    LOCATIONS,
+    PLACES,
 )
 
 
@@ -173,30 +173,26 @@ def _generate_constraints(
 
 
 def generate_enter_location_constraint() -> list[dict[str, Any]]:
-    # field_mapping = {
-    #     "value": {"field": "value", "dataset": [{"value": v} for v in LOCATIONS]},
-    # }
-    dataset = [{"value": v} for v in LOCATIONS]
+    field_map = {"location": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_LOCATION
-    constraints_list = _generate_constraints(dataset, field_operators)
+    constraints_list = _generate_constraints(PLACES, field_operators, field_map=field_map)
     return constraints_list
 
 
 def generate_enter_destination_constraint() -> list[dict[str, Any]]:
-    dataset = [{"value": v} for v in LOCATIONS]
+    field_map = {"destination": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_DESTINATION
-    constraints_list = _generate_constraints(dataset, field_operators)
+    constraints_list = _generate_constraints(PLACES, field_operators, field_map=field_map)
     return constraints_list
 
 
 def generate_see_prices_constraint() -> list[dict[str, Any]]:
     field_mapping = {
-        "location": {"field": "location", "dataset": [{"location": loc} for loc in LOCATIONS]},
-        "destination": {"field": "destination", "dataset": [{"destination": d} for d in LOCATIONS]},
+        "location": {"field": "label", "dataset": PLACES},
+        "destination": {"field": "label", "dataset": PLACES},
     }
-    dataset = LOCATIONS
     field_operators = FIELD_OPERATORS_MAP_SEE_PRICES
-    constraints_list = _generate_constraints(dataset, field_operators, field_mapping)
+    constraints_list = _generate_constraints([], field_operators, field_mapping)
     return constraints_list
 
 

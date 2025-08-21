@@ -1,12 +1,5 @@
 from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
 
-LOCATIONS = [
-    "1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA",
-    "100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA",
-    "1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA",
-    "1001 Castro Street - 1001 Castro St, San Francisco, CA 94114, USA",
-]
-
 PLACES = [
     {
         "label": "1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA",
@@ -65,27 +58,6 @@ RIDES = [
     },
 ]
 
-RIDE_TYPES = [
-    {
-        "name": "AutoDriverX",
-        "icon": "/car1.jpg",
-        # "icon": "https://ext.same-assets.com/407674263/3757967630.png",
-        "price": 26.6,
-    },
-    {
-        "name": "Comfort",
-        "icon": "/car2.jpg",
-        # "icon": "https://ext.same-assets.com/407674263/2600779409.svg",
-        "price": 31.5,
-    },
-    {
-        "name": "AutoDriverXL",
-        "icon": "/car3.jpg",
-        # "icon": "https://ext.same-assets.com/407674263/2882408466.svg",
-        "price": 27.37,
-    },
-]
-
 TRIPS = [
     {
         "id": "1",
@@ -129,10 +101,8 @@ STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL]
 LIST_OPERATORS = [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST]
 
-FIELD_OPERATORS_MAP_ENTER_LOCATION = {"value": STRING_OPERATORS}
-FIELD_OPERATORS_MAP_ENTER_DESTINATION = {
-    **FIELD_OPERATORS_MAP_ENTER_LOCATION,
-}
+FIELD_OPERATORS_MAP_ENTER_LOCATION = {"location": STRING_OPERATORS}
+FIELD_OPERATORS_MAP_ENTER_DESTINATION = {"destination": STRING_OPERATORS}
 FIELD_OPERATORS_MAP_SEE_PRICES = {
     "location": STRING_OPERATORS,
     "destination": STRING_OPERATORS,

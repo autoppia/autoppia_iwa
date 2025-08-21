@@ -13,10 +13,10 @@ class EnterLocationEvent(Event, BaseEventValidator):
     """event triggered when someone enter location"""
 
     event_name: str = "ENTER_LOCATION"
-    value: str
+    location: str
 
     class ValidationCriteria(BaseModel):
-        value: str | CriterionValue | None = None
+        location: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -24,7 +24,7 @@ class EnterLocationEvent(Event, BaseEventValidator):
 
         return all(
             [
-                self._validate_field(self.value, criteria.value),
+                self._validate_field(self.location, criteria.location),
             ]
         )
 
@@ -37,7 +37,7 @@ class EnterLocationEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            value=data.get("value"),
+            location=data.get("value"),
         )
 
 
@@ -45,17 +45,17 @@ class EnterDestinationEvent(Event, BaseEventValidator):
     """event triggered when someone enter destination"""
 
     event_name: str = "ENTER_DESTINATION"
-    value: str
+    destination: str
 
     class ValidationCriteria(BaseModel):
-        value: str | CriterionValue | None = None
+        destination: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.value, criteria.value),
+                self._validate_field(self.destination, criteria.destination),
             ]
         )
 
@@ -68,7 +68,7 @@ class EnterDestinationEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            value=data.get("value"),
+            destination=data.get("value"),
         )
 
 
