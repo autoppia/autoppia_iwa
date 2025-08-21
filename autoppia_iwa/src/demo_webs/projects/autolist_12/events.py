@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.autolodge_8.data import parse_datetime
@@ -12,37 +12,19 @@ from autoppia_iwa.src.demo_webs.projects.shared_utils import validate_date_field
 class AddTaskClickedEvent(Event, BaseEventValidator):
     """Event triggered when user clicks the add task button"""
 
-    event_name: str = "ADD_TASK_CLICKED"
-
-    class ValidationCriteria(BaseModel):
-        pass
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return True
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "AddTaskClickedEvent":
-        base_event = Event.parse(backend_event)
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-        )
+    event_name: str = "AUTOLIST_ADD_TASK_CLICKED"
 
 
 class SelectDateForTaskEvent(Event, BaseEventValidator):
     """Event triggered when user selects a date for a task"""
 
-    event_name: str = "SELECT_DATE_FOR_TASK"
+    event_name: str = "AUTOLIST_SELECT_DATE_FOR_TASK"
     selected_date: datetime | None = None
-    # was_previously_selected: bool
+    quick_option: str | None = None
 
     class ValidationCriteria(BaseModel):
         selected_date: datetime | CriterionValue | None = None
-        # wasPreviouslySelected: bool | CriterionValue | None = None
+        quick_option: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -51,7 +33,7 @@ class SelectDateForTaskEvent(Event, BaseEventValidator):
         return all(
             [
                 date_valid,
-                # self._validate_field(self.was_previously_selected, criteria.wasPreviouslySelected),
+                self._validate_field(self.quick_option, criteria.quick_option),
             ]
         )
 
@@ -65,19 +47,19 @@ class SelectDateForTaskEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             selected_date=parse_datetime(data.get("selectedDate")),
-            # was_previously_selected=data.get("wasPreviouslySelected", False),
+            quick_option=data.get("quickOption"),
         )
 
 
 class SelectTaskPriorityEvent(Event, BaseEventValidator):
     """Event triggered when user selects a priority for a task"""
 
-    event_name: str = "SELECT_TASK_PRIORITY"
-    priority: int
+    event_name: str = "AUTOLIST_SELECT_TASK_PRIORITY"
+    # priority: int
     label: str
 
     class ValidationCriteria(BaseModel):
-        priority: int | CriterionValue | None = None
+        # priority: int | CriterionValue | None = None
         label: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -85,7 +67,7 @@ class SelectTaskPriorityEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.priority, criteria.priority),
+                # self._validate_field(self.priority, criteria.priority),
                 self._validate_field(self.label, criteria.label),
             ]
         )
@@ -99,7 +81,7 @@ class SelectTaskPriorityEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            priority=data.get("priority", 4),
+            # priority=data.get("priority", 4),
             label=data.get("label", ""),
         )
 
@@ -107,7 +89,7 @@ class SelectTaskPriorityEvent(Event, BaseEventValidator):
 class TaskAddedEvent(Event, BaseEventValidator):
     """Event triggered when a task is added or updated"""
 
-    event_name: str = "TASK_ADDED"
+    event_name: str = "AUTOLIST_TASK_ADDED"
     name: str
     description: str
     date: datetime | None = None
@@ -148,54 +130,34 @@ class TaskAddedEvent(Event, BaseEventValidator):
         )
 
 
+class EditTaskModalOpenedEvent(TaskAddedEvent):
+    """Event triggered when the edit task modal is opened"""
+
+    event_name: str = "AUTOLIST_EDIT_TASK_MODAL_OPENED"
+
+
+class CompleteTaskEvent(TaskAddedEvent):
+    """Event triggered when a task is marked as complete"""
+
+    event_name: str = "AUTOLIST_COMPLETE_TASK"
+
+
+class DeleteTaskEvent(TaskAddedEvent):
+    """Event triggered when a task is deleted"""
+
+    event_name: str = "AUTOLIST_DELETE_TASK"
+
+
+class AddTeamClickedEvent(TaskAddedEvent):
+    """Event triggered when user clicks the add team button"""
+
+    event_name: str = "AUTOLIST_ADD_TEAM_CLICKED"
+
+
 class CancelTaskCreationEvent(Event, BaseEventValidator):
     """Event triggered when user cancels task creation"""
 
-    event_name: str = "CANCEL_TASK_CREATION"
-    current_name: str
-    current_description: str
-    selected_date: datetime | None = None
-    priority: int
-
-    class ValidationCriteria(BaseModel):
-        current_name: str | CriterionValue | None = None
-        current_description: str | CriterionValue | None = None
-        selected_date: datetime | CriterionValue | None = None
-        priority: int | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        date_valid = validate_date_field(self.selected_date, criteria.selected_date)
-        return all(
-            [
-                self._validate_field(self.current_name, criteria.current_name),
-                self._validate_field(self.current_description, criteria.current_description),
-                date_valid,
-                self._validate_field(self.priority, criteria.priority),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "CancelTaskCreationEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            current_name=data.get("currentName", ""),
-            current_description=data.get("currentDescription", ""),
-            selected_date=parse_datetime(data.get("selectedDate")),
-            priority=data.get("priority", 4),
-        )
-
-
-class EditTaskModalOpenedEvent(Event, BaseEventValidator):
-    """Event triggered when the edit task modal is opened"""
-
-    event_name: str = "EDIT_TASK_MODAL_OPENED"
+    event_name: str = "AUTOLIST_CANCEL_TASK_CREATION"
     name: str
     description: str
     date: datetime | None = None
@@ -221,7 +183,7 @@ class EditTaskModalOpenedEvent(Event, BaseEventValidator):
         )
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "EditTaskModalOpenedEvent":
+    def parse(cls, backend_event: BackendEvent) -> "CancelTaskCreationEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -229,58 +191,128 @@ class EditTaskModalOpenedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            name=data.get("name", ""),
-            description=data.get("description", ""),
-            date=parse_datetime(data.get("date")),
+            name=data.get("currentName", ""),
+            description=data.get("currentDescription", ""),
+            date=parse_datetime(data.get("selectedDate")),
             priority=data.get("priority", 4),
         )
 
 
-class CompleteTaskEvent(TaskAddedEvent):
-    """Event triggered when a task is marked as complete"""
+class TeamMembersAddedEvent(Event, BaseEventValidator):
+    """Event triggered when team members are added"""
 
-    event_name: str = "COMPLETE_TASK"
+    event_name: str = "AUTOLIST_TEAM_MEMBERS_ADDED"
+    member_count: int
+    members: list[str]
 
-    class ValidationCriteria(TaskAddedEvent.ValidationCriteria):
-        pass
+    class ValidationCriteria(BaseModel):
+        member_count: int | CriterionValue | None = None
+        members: list[str] | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return TaskAddedEvent._validate_criteria(criteria)
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.member_count, criteria.member_count),
+                self._validate_field(self.members, criteria.members),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "CompleteTaskEvent":
+    def parse(cls, backend_event: BackendEvent) -> "TeamMembersAddedEvent":
         base_event = Event.parse(backend_event)
-        task = TaskAddedEvent.parse(backend_event)
+        data = backend_event.data or {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            **task.model_dump(),
+            member_count=data.get("memberCount", 0),
+            members=data.get("members", []),
         )
 
 
-class DeleteTaskEvent(TaskAddedEvent):
-    """Event triggered when a task is deleted"""
+class TeamRoleAssignedEvent(Event, BaseEventValidator):
+    """Event triggered when a role is assigned to a team member"""
 
-    event_name: str = "DELETE_TASK"
+    event_name: str = "AUTOLIST_TEAM_ROLE_ASSIGNED"
+    member: str
+    role: str
 
-    class ValidationCriteria(TaskAddedEvent.ValidationCriteria):
-        pass
+    class ValidationCriteria(BaseModel):
+        member: str | CriterionValue | None = None
+        role: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        return TaskAddedEvent._validate_field(self, criteria)
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.member, criteria.member),
+                self._validate_field(self.role, criteria.role),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "DeleteTaskEvent":
+    def parse(cls, backend_event: BackendEvent) -> "TeamRoleAssignedEvent":
         base_event = Event.parse(backend_event)
-        task = TaskAddedEvent.parse(backend_event)
+        data = backend_event.data or {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            **task.model_dump(),
+            member=data.get("memberId", ""),
+            role=data.get("role", ""),
+        )
+
+
+class TeamMember(BaseModel):
+    id: str | None = None
+    name: str | None = None
+    email: str | None = None
+
+
+class TeamCreatedEvent(Event, BaseEventValidator):
+    """Event triggered when a team is created"""
+
+    event_name: str = "AUTOLIST_TEAM_CREATED"
+    team_name: str
+    team_description: str | None = None
+    members: list[TeamMember] | None = Field(default_factory=list)
+
+    class ValidationCriteria(BaseModel):
+        team_name: str | CriterionValue | None = None
+        team_description: str | CriterionValue | None = None
+        member_name: str | CriterionValue | None = None
+        member_email: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.team_name, criteria.team_name),
+                self._validate_field(self.team_description, criteria.team_description),
+                all(self._validate_field(member.name, criteria.member_name) and self._validate_field(member.email, criteria.member_email) for member in self.members)
+                if criteria.member_name or criteria.member_email
+                else True,
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "TeamCreatedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            team_name=data.get("teamName", ""),
+            team_description=data.get("teamDescription"),
+            members=[TeamMember(**m) for m in data.get("members", []) if data.get("members", [])],
         )
 
 
@@ -291,17 +323,25 @@ EVENTS = [
     TaskAddedEvent,
     CancelTaskCreationEvent,
     EditTaskModalOpenedEvent,
-    CancelTaskCreationEvent,
+    CompleteTaskEvent,
     DeleteTaskEvent,
+    AddTeamClickedEvent,
+    TeamMembersAddedEvent,
+    TeamRoleAssignedEvent,
+    TeamCreatedEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
-    "ADD_TASK_CLICKED": AddTaskClickedEvent,
-    "SELECT_DATE_FOR_TASK": SelectDateForTaskEvent,
-    "SELECT_TASK_PRIORITY": SelectTaskPriorityEvent,
-    "TASK_ADDED": TaskAddedEvent,
-    "CANCEL_TASK_CREATION": CancelTaskCreationEvent,
-    "EDIT_TASK_MODAL_OPENED": EditTaskModalOpenedEvent,
-    "COMPLETE_TASK": CompleteTaskEvent,
-    "DELETE_TASK": DeleteTaskEvent,
+    "AUTOLIST_ADD_TASK_CLICKED": AddTaskClickedEvent,
+    "AUTOLIST_SELECT_DATE_FOR_TASK": SelectDateForTaskEvent,
+    "AUTOLIST_SELECT_TASK_PRIORITY": SelectTaskPriorityEvent,
+    "AUTOLIST_TASK_ADDED": TaskAddedEvent,
+    "AUTOLIST_CANCEL_TASK_CREATION": CancelTaskCreationEvent,
+    "AUTOLIST_EDIT_TASK_MODAL_OPENED": EditTaskModalOpenedEvent,
+    "AUTOLIST_COMPLETE_TASK": CompleteTaskEvent,
+    "AUTOLIST_DELETE_TASK": DeleteTaskEvent,
+    "AUTOLIST_ADD_TEAM_CLICKED": AddTeamClickedEvent,
+    "AUTOLIST_TEAM_MEMBERS_ADDED": TeamMembersAddedEvent,
+    "AUTOLIST_TEAM_ROLE_ASSIGNED": TeamRoleAssignedEvent,
+    "AUTOLIST_TEAM_CREATED": TeamCreatedEvent,
 }

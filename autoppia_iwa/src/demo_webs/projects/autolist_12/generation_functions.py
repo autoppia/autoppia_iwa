@@ -7,16 +7,22 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
 from .data import (
-    FIELD_OPERATORS_CANCEL_TASK_MAP,
-    FIELD_OPERATORS_EDIT_MODAL_MAP,
+    DATES_QUICK_OPTIONS,
     FIELD_OPERATORS_SELECT_DATE_MAP,
     FIELD_OPERATORS_SELECT_PRIORITY_MAP,
-    FIELD_OPERATORS_TASK_ADDED_MAP,
-    TASKS_DATA,
+    FIELD_OPERATORS_TASK_MAP,
+    FIELD_OPERATORS_TEAM_CREATED_MAP,
+    FIELD_OPERATORS_TEAM_MEMBERS_ADDED_MAP,
+    FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP,
+    PRIORITIES,
+    ROLES,
+    TASKS,
+    TEAM_MEMBERS_OPTIONS,
+    TEAMS,
 )
 
 
-def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
+def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, source_key: str, dataset: list[dict[str, Any]]) -> Any:
     """
     Generate a constraint value for a given operator, field, and dataset.
     """
@@ -35,13 +41,13 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
 
     if operator == ComparisonOperator.NOT_EQUALS:
-        valid_values = [d.get(field) for d in dataset if d.get(field) is not None and d.get(field) != field_value]
-        return random.choice(valid_values) if valid_values else "a different value"
+        valid = [v[source_key] for v in dataset if v.get(source_key) and v.get(source_key) != field_value]
+        return random.choice(valid) if valid else None
 
     if isinstance(field_value, str):
         if operator == ComparisonOperator.CONTAINS:
             if len(field_value) > 2:
-                start = random.randint(0, len(field_value) - 2)
+                start = random.randint(0, max(0, len(field_value) - 2))
                 end = random.randint(start + 1, len(field_value))
                 return field_value[start:end]
             return field_value
@@ -65,46 +71,36 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return None
 
 
-def _generate_constraints_from_map(
-    field_operator_map: dict[str, list[str]],
-    sample_data: dict[str, Any],
-    dataset: list[dict[str, Any]] | None = None,
-    are_optional=False,
-) -> list[dict[str, Any]]:
-    """
-    Generic function to generate a list of constraints from a field-operator map.
-    """
-    if dataset is None:
-        dataset = TASKS_DATA
+def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operators_map: dict[str, list]) -> list[dict[str, Any]]:
+    """Generic function to generate constraints based on a field map."""
+    constraints_list = []
+    sample_data = random.choice(field_map.get("_dataset", [{}]))
 
-    constraints_list: list[dict[str, Any]] = []
-    possible_fields = list(field_operator_map.keys())
-    if are_optional:
-        num_constraints = random.randint(1, len(possible_fields))
-        selected_fields = random.sample(possible_fields, num_constraints)
-    else:
-        selected_fields = possible_fields
-
-    for field in selected_fields:
-        allowed_ops = field_operator_map.get(field, [])
-        if not allowed_ops:
+    for field, config in field_map.items():
+        if field == "_dataset":
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(operators_map[field]))
+        source_key = config.get("source_key", field)
+        field_value = sample_data.get(source_key)
+        dataset = config.get("dataset", [])
 
-        field_value = sample_data.get(field)
-        if field_value is None:
-            continue
-        if field == "selected_date" or "date" in field:
-            # Special case for date fields, pick a random date from this month
-            today = datetime.now().date()
+        if field_value is None and not config.get("is_date"):
+            if "values" in config:
+                field_value = random.choice(config["values"])
+            else:
+                continue
+
+        if config.get("is_date"):
+            today = datetime.today()
             start_of_month = today.replace(day=1)
             next_month = today.replace(year=today.year + 1, month=1, day=1) if today.month == 12 else today.replace(month=today.month + 1, day=1)
             days_in_month = (next_month - start_of_month).days
-            random_day = random.randint(0, days_in_month - 1)
-            field_value = start_of_month + timedelta(days=random_day)
-        value = _generate_constraint_value(operator, field_value, field, dataset)
+            random_day = random.randint(1, days_in_month)
+            field_value = today.replace(day=random_day).date()
+
+        value = _generate_constraint_value(operator, field_value, source_key, dataset)
+
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
 
@@ -112,42 +108,62 @@ def _generate_constraints_from_map(
 
 
 def generate_select_date_for_task_constraints() -> list[dict[str, Any]]:
-    sample_task = random.choice(TASKS_DATA)
-    return _generate_constraints_from_map(FIELD_OPERATORS_SELECT_DATE_MAP, sample_task)
+    """Generate constraints for selecting a date for a task."""
+    field_map = {
+        "_dataset": TASKS,
+        "selected_date": {"is_date": True},
+        "quick_option": {"values": DATES_QUICK_OPTIONS},
+    }
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
 
 def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
-    sample_task = random.choice(TASKS_DATA).copy()
-    priority = sample_task.get("priority")
-    if priority:
-        sample_task["label"] = f"Priority {priority}"
-    return _generate_constraints_from_map(FIELD_OPERATORS_SELECT_PRIORITY_MAP, sample_task)
+    """Generate constraints for selecting a task priority."""
+    field_map = {
+        "label": {"values": PRIORITIES},
+    }
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_PRIORITY_MAP)
 
 
-def generate_task_added_constraints() -> list[dict[str, Any]]:
-    sample_task = random.choice(TASKS_DATA)
-    return _generate_constraints_from_map(FIELD_OPERATORS_TASK_ADDED_MAP, sample_task)
+def generate_task_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for adding or updating a task."""
+    field_map = {
+        "_dataset": TASKS,
+        "name": {"dataset": TASKS},
+        "description": {"dataset": TASKS},
+        "date": {"is_date": True},
+        "priority": {"dataset": PRIORITIES},
+    }
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TASK_MAP)
 
 
-def generate_cancel_task_creation_constraints() -> list[dict[str, Any]]:
-    sample_task = random.choice(TASKS_DATA).copy()
-    # Rename keys to match event validation criteria
-    sample_task["current_name"] = sample_task.pop("name", "")
-    sample_task["current_description"] = sample_task.pop("description", "")
-    sample_task["selected_date"] = sample_task.pop("date", None)
-    return _generate_constraints_from_map(FIELD_OPERATORS_CANCEL_TASK_MAP, sample_task)
+def generate_team_members_added_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for adding team members."""
+    field_map = {
+        "_dataset": TEAMS,
+        "member_count": {"source_key": "memberCount", "dataset": TEAMS},
+        "members": {"source_key": "label", "dataset": TEAM_MEMBERS_OPTIONS},
+    }
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_MEMBERS_ADDED_MAP)
 
 
-def generate_edit_task_modal_opened_constraints() -> list[dict[str, Any]]:
-    sample_task = random.choice(TASKS_DATA)
-    return _generate_constraints_from_map(FIELD_OPERATORS_EDIT_MODAL_MAP, sample_task)
+def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for assigning a role to a team member."""
+    field_map = {
+        "_dataset": TEAMS,
+        "member": {"source_key": "label", "dataset": TEAM_MEMBERS_OPTIONS},
+        "role": {"source_key": "label", "dataset": ROLES},
+    }
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP)
 
 
-def generate_complete_task_constraints() -> list[dict[str, Any]]:
-    sample_task = random.choice(TASKS_DATA)
-    return _generate_constraints_from_map(FIELD_OPERATORS_TASK_ADDED_MAP, sample_task)
-
-
-def generate_delete_task_constraints() -> list[dict[str, Any]]:
-    sample_task = random.choice(TASKS_DATA)
-    return _generate_constraints_from_map(FIELD_OPERATORS_TASK_ADDED_MAP, sample_task)
+def generate_team_created_constraints() -> list[dict[str, Any]]:
+    """Generate constraints for creating a team."""
+    field_map = {
+        "_dataset": TEAMS,
+        "team_name": {"source_key": "name", "dataset": TEAMS},
+        "team_description": {"source_key": "description", "dataset": TEAMS},
+        "member_name": {"source_key": "label", "dataset": TEAM_MEMBERS_OPTIONS},
+        "member_email": {"source_key": "value", "dataset": TEAM_MEMBERS_OPTIONS},
+    }
+    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_CREATED_MAP)

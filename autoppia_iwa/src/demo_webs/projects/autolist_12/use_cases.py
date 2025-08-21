@@ -3,6 +3,7 @@
 from ...classes import UseCase
 from .events import (
     AddTaskClickedEvent,
+    AddTeamClickedEvent,
     CancelTaskCreationEvent,
     CompleteTaskEvent,
     DeleteTaskEvent,
@@ -10,15 +11,17 @@ from .events import (
     SelectDateForTaskEvent,
     SelectTaskPriorityEvent,
     TaskAddedEvent,
+    TeamCreatedEvent,
+    TeamMembersAddedEvent,
+    TeamRoleAssignedEvent,
 )
 from .generation_functions import (
-    generate_cancel_task_creation_constraints,
-    generate_complete_task_constraints,
-    generate_delete_task_constraints,
-    generate_edit_task_modal_opened_constraints,
     generate_select_date_for_task_constraints,
     generate_select_task_priority_constraints,
-    generate_task_added_constraints,
+    generate_task_constraints,
+    generate_team_created_constraints,
+    generate_team_members_added_constraints,
+    generate_team_role_assigned_constraints,
 )
 
 ###############################################################################
@@ -110,7 +113,7 @@ TASK_ADDED_USE_CASE = UseCase(
     description="Triggered when a task is added or updated.",
     event=TaskAddedEvent,
     event_source_code=TaskAddedEvent.get_source_code_of_class(),
-    constraints_generator=generate_task_added_constraints,
+    constraints_generator=generate_task_constraints,
     additional_prompt_info=TASK_ADDED_INFO,
     examples=[
         {
@@ -144,7 +147,7 @@ CANCEL_TASK_CREATION_USE_CASE = UseCase(
     description="Triggered when the user cancels task creation.",
     event=CancelTaskCreationEvent,
     event_source_code=CancelTaskCreationEvent.get_source_code_of_class(),
-    constraints_generator=generate_cancel_task_creation_constraints,
+    constraints_generator=generate_task_constraints,
     additional_prompt_info=CANCEL_TASK_CREATION_INFO,
     examples=[
         {"prompt": "Cancel creating this task.", "prompt_for_task_generation": "Cancel task creation."},
@@ -169,7 +172,7 @@ EDIT_TASK_MODAL_OPENED_USE_CASE = UseCase(
     description="Triggered when the edit task modal is opened.",
     event=EditTaskModalOpenedEvent,
     event_source_code=EditTaskModalOpenedEvent.get_source_code_of_class(),
-    constraints_generator=generate_edit_task_modal_opened_constraints,
+    constraints_generator=generate_task_constraints,
     additional_prompt_info=EDIT_TASK_MODAL_OPENED_INFO,
     examples=[
         {"prompt": "I need to edit the 'Buy groceries' task.", "prompt_for_task_generation": "Edit task '<name>'."},
@@ -194,7 +197,7 @@ COMPLETE_TASK_USE_CASE = UseCase(
     description="Triggered when a task is marked as complete.",
     event=CompleteTaskEvent,
     event_source_code=CompleteTaskEvent.get_source_code_of_class(),
-    constraints_generator=generate_complete_task_constraints,
+    constraints_generator=generate_task_constraints,
     additional_prompt_info=COMPLETE_TASK_INFO,
     examples=[
         {"prompt": "Mark 'Buy groceries' as complete.", "prompt_for_task_generation": "Mark task '<name>' as complete."},
@@ -219,7 +222,7 @@ DELETE_TASK_USE_CASE = UseCase(
     description="Triggered when a task is deleted.",
     event=DeleteTaskEvent,
     event_source_code=DeleteTaskEvent.get_source_code_of_class(),
-    constraints_generator=generate_delete_task_constraints,
+    constraints_generator=generate_task_constraints,
     additional_prompt_info=DELETE_TASK_INFO,
     examples=[
         {"prompt": "Delete the 'Buy groceries' task.", "prompt_for_task_generation": "Delete task '<name>'."},
@@ -227,6 +230,98 @@ DELETE_TASK_USE_CASE = UseCase(
         {"prompt": "Get rid of the 'Call John' task.", "prompt_for_task_generation": "Delete task '<name>'."},
         {"prompt": "I don't need this task anymore, remove it.", "prompt_for_task_generation": "Delete task '<name>'."},
         {"prompt": "Trash the 'Old project notes' task.", "prompt_for_task_generation": "Delete task '<name>'."},
+    ],
+)
+
+###############################################################################
+# ADD_TEAM_CLICKED_USE_CASE
+###############################################################################
+
+ADD_TEAM_CLICKED_INFO = """
+CRITICAL REQUIREMENT: The prompt must clearly indicate the user's intent to start creating a new team.
+Use phrases like "add a team", "create a new team", or "new team".
+"""
+
+ADD_TEAM_CLICKED_USE_CASE = UseCase(
+    name="ADD_TEAM_CLICKED",
+    description="Triggered when the user clicks the button to add a new team.",
+    event=AddTeamClickedEvent,
+    event_source_code=AddTeamClickedEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    additional_prompt_info=ADD_TEAM_CLICKED_INFO,
+    examples=[
+        {"prompt": "I want to add a new team.", "prompt_for_task_generation": "Add a new team."},
+        {"prompt": "Create a team.", "prompt_for_task_generation": "Create a new team."},
+        {"prompt": "Let's make a new team.", "prompt_for_task_generation": "Create a new team."},
+    ],
+)
+
+###############################################################################
+# TEAM_MEMBERS_ADDED_USE_CASE
+###############################################################################
+
+TEAM_MEMBERS_ADDED_INFO = """
+CRITICAL REQUIREMENT: The prompt must be about adding members to a team.
+Use phrases like "add members", "invite to team", and list the member identifiers (e.g., emails).
+"""
+
+TEAM_MEMBERS_ADDED_USE_CASE = UseCase(
+    name="TEAM_MEMBERS_ADDED",
+    description="Triggered when team members are added.",
+    event=TeamMembersAddedEvent,
+    event_source_code=TeamMembersAddedEvent.get_source_code_of_class(),
+    constraints_generator=generate_team_members_added_constraints,
+    additional_prompt_info=TEAM_MEMBERS_ADDED_INFO,
+    examples=[
+        {"prompt": "Add jane@example.com to the team.", "prompt_for_task_generation": "Add member '<email>' to the team."},
+        {"prompt": "Invite alice@example.com and michael@example.com.", "prompt_for_task_generation": "Invite members '<email1>' and '<email2>' to the team."},
+        {"prompt": "Add these members: jane@example.com, alice@example.com", "prompt_for_task_generation": "Add members '<email1>', '<email2>' to the team."},
+    ],
+)
+
+###############################################################################
+# TEAM_ROLE_ASSIGNED_USE_CASE
+###############################################################################
+
+TEAM_ROLE_ASSIGNED_INFO = """
+CRITICAL REQUIREMENT: The prompt must be about assigning a specific role to a team member.
+Use phrases like "assign role", "make [member] a [role]", "set role for".
+"""
+
+TEAM_ROLE_ASSIGNED_USE_CASE = UseCase(
+    name="TEAM_ROLE_ASSIGNED",
+    description="Triggered when a role is assigned to a team member.",
+    event=TeamRoleAssignedEvent,
+    event_source_code=TeamRoleAssignedEvent.get_source_code_of_class(),
+    constraints_generator=generate_team_role_assigned_constraints,
+    additional_prompt_info=TEAM_ROLE_ASSIGNED_INFO,
+    examples=[
+        {"prompt": "Assign the developer role to jane@example.com.", "prompt_for_task_generation": "Assign role '<role>' to member '<email>'."},
+        {"prompt": "Make alice@example.com a tester.", "prompt_for_task_generation": "Make member '<email>' a '<role>'."},
+        {"prompt": "Set the role for michael@example.com to designer.", "prompt_for_task_generation": "Set role for member '<email>' to '<role>'."},
+    ],
+)
+
+###############################################################################
+# TEAM_CREATED_USE_CASE
+###############################################################################
+
+TEAM_CREATED_INFO = """
+CRITICAL REQUIREMENT: The prompt must confirm the creation of a team with a specific name.
+Use phrases like "create team", "name the team", "confirm team creation".
+"""
+
+TEAM_CREATED_USE_CASE = UseCase(
+    name="TEAM_CREATED",
+    description="Triggered when a team is created.",
+    event=TeamCreatedEvent,
+    event_source_code=TeamCreatedEvent.get_source_code_of_class(),
+    constraints_generator=generate_team_created_constraints,
+    additional_prompt_info=TEAM_CREATED_INFO,
+    examples=[
+        {"prompt": "Create the team and name it 'Gul Shair'.", "prompt_for_task_generation": "Create team with name '<team_name>'."},
+        {"prompt": "Let's name the team 'Project Phoenix'.", "prompt_for_task_generation": "Name the team '<team_name>'."},
+        {"prompt": "Confirm team creation with the name 'Marketing'.", "prompt_for_task_generation": "Create team with name '<team_name>'."},
     ],
 )
 
@@ -239,4 +334,8 @@ ALL_USE_CASES = [
     EDIT_TASK_MODAL_OPENED_USE_CASE,
     COMPLETE_TASK_USE_CASE,
     DELETE_TASK_USE_CASE,
+    ADD_TEAM_CLICKED_USE_CASE,
+    TEAM_MEMBERS_ADDED_USE_CASE,
+    TEAM_ROLE_ASSIGNED_USE_CASE,
+    TEAM_CREATED_USE_CASE,
 ]
