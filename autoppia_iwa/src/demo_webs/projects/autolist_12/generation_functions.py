@@ -82,10 +82,11 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
 
         operator = ComparisonOperator(random.choice(operators_map[field]))
         source_key = config.get("source_key", field)
-        field_value = sample_data.get(source_key)
         dataset = config.get("dataset", [])
         if dataset and all(not isinstance(item, dict) for item in dataset):
             dataset = [{source_key: item} for item in dataset]
+        field_value = sample_data.get(source_key) or random.choice(dataset)[source_key] if dataset else None
+
         if field_value is None and not config.get("is_date"):
             if "values" in config:
                 field_value = random.choice(config["values"])
@@ -118,7 +119,7 @@ def generate_select_date_for_task_constraints() -> list[dict[str, Any]]:
 def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting a task priority."""
     field_map = {
-        "label": {"values": PRIORITIES},
+        "priority": {"dataset": PRIORITIES},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_PRIORITY_MAP)
 

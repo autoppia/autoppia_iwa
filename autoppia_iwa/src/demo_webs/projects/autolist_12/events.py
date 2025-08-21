@@ -55,20 +55,20 @@ class SelectTaskPriorityEvent(Event, BaseEventValidator):
     """Event triggered when user selects a priority for a task"""
 
     event_name: str = "AUTOLIST_SELECT_TASK_PRIORITY"
-    # priority: int
-    label: str
+    priority: str
+    # label: str
 
     class ValidationCriteria(BaseModel):
-        # priority: int | CriterionValue | None = None
-        label: str | CriterionValue | None = None
+        priority: str | CriterionValue | None = None
+        # label: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                # self._validate_field(self.priority, criteria.priority),
-                self._validate_field(self.label, criteria.label),
+                self._validate_field(self.priority, criteria.priority),
+                # self._validate_field(self.label, criteria.label),
             ]
         )
 
@@ -81,8 +81,7 @@ class SelectTaskPriorityEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            # priority=data.get("priority", 4),
-            label=data.get("label", ""),
+            priority=data.get("label", ""),
         )
 
 
