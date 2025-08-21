@@ -84,7 +84,8 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
         source_key = config.get("source_key", field)
         field_value = sample_data.get(source_key)
         dataset = config.get("dataset", [])
-
+        if dataset and all(not isinstance(item, dict) for item in dataset):
+            dataset = [{source_key: item} for item in dataset]
         if field_value is None and not config.get("is_date"):
             if "values" in config:
                 field_value = random.choice(config["values"])
@@ -109,11 +110,8 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
 
 def generate_select_date_for_task_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting a date for a task."""
-    field_map = {
-        "_dataset": TASKS,
-        "selected_date": {"is_date": True},
-        "quick_option": {"values": DATES_QUICK_OPTIONS},
-    }
+    date_field = random.choice([{"selected_date": {"is_date": True}, "quick_option": {"values": DATES_QUICK_OPTIONS}}])
+    field_map = {"_dataset": TASKS, **date_field}
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
 
@@ -140,8 +138,7 @@ def generate_task_constraints() -> list[dict[str, Any]]:
 def generate_team_members_added_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding team members."""
     field_map = {
-        "_dataset": TEAMS,
-        "member_count": {"source_key": "memberCount", "dataset": TEAMS},
+        "_dataset": TEAM_MEMBERS_OPTIONS,
         "members": {"source_key": "label", "dataset": TEAM_MEMBERS_OPTIONS},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_MEMBERS_ADDED_MAP)
