@@ -3,6 +3,7 @@ from pathlib import Path
 
 from .classes import WebProject
 from .projects.autocrm_5.main import crm_project
+from .projects.autodrive_13.main import drive_project
 from .projects.autolodge_8.main import lodge_project
 from .projects.automail_6.main import automail_project
 from .projects.books_2.main import books_project
@@ -21,4 +22,10 @@ demo_web_projects: list[WebProject] = [
     crm_project,
     automail_project,
     lodge_project,
+    ...,
+    ...,
+    ...,
+    ...,
+    ...,
+    drive_project,
 ]
