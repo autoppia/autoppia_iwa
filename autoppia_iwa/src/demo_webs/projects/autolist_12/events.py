@@ -19,17 +19,17 @@ class SelectDateForTaskEvent(Event, BaseEventValidator):
     """Event triggered when user selects a date for a task"""
 
     event_name: str = "AUTOLIST_SELECT_DATE_FOR_TASK"
-    selected_date: datetime | None = None
+    date: datetime | None = None
     quick_option: str | None = None
 
     class ValidationCriteria(BaseModel):
-        selected_date: datetime | CriterionValue | None = None
+        date: datetime | CriterionValue | None = None
         quick_option: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        date_valid = validate_date_field(self.selected_date, criteria.selected_date)
+        date_valid = validate_date_field(self.date, criteria.date)
         return all(
             [
                 date_valid,
@@ -46,7 +46,7 @@ class SelectDateForTaskEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            selected_date=parse_datetime(data.get("selectedDate")),
+            date=parse_datetime(data.get("selectedDate")),
             quick_option=data.get("quickOption"),
         )
 

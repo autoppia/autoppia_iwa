@@ -143,8 +143,7 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
 
 def generate_select_date_for_task_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting a date for a task."""
-    date_field = random.choice([{"selected_date": {"is_date": True}, "quick_option": {"values": DATES_QUICK_OPTIONS}}])
-    field_map = {"_dataset": TASKS, **date_field}
+    field_map = {"_dataset": TASKS, "date": {"is_date": True}} if random.choice([True, False]) else {"_dataset": TASKS, "quick_option": {"values": DATES_QUICK_OPTIONS}}
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
 
