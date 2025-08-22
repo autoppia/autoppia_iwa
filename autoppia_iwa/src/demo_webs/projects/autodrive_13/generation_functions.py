@@ -153,22 +153,19 @@ def _generate_constraints(
     """
     all_constraints = []
     sample_data = choice(dataset)
-    possible_fields = list(field_operators.keys())
-    if selected_fields:
-        possible_fields = [f for f in possible_fields if f not in selected_fields]
-    else:
-        selected_fields = []
+    possible_fields = [f for f in field_operators if not (selected_fields and f in selected_fields)]
+    selected_fields = selected_fields or []
 
     if num_constraints is None:
         num_constraints = random.randint(min_constraints, len(possible_fields))
 
-    selected_fields.extend(random.sample(possible_fields, num_constraints))
+    chosen_fields = random.sample(possible_fields, min(num_constraints, len(possible_fields)))
+    selected_fields.extend(chosen_fields)
 
-    if field_map is None:
-        field_map = {}
+    field_map = field_map or {}
 
     for field in selected_fields:
-        allowed_ops = field_operators.get(field, [])
+        allowed_ops = field_operators.get(field)
         if not allowed_ops:
             continue
 
@@ -177,32 +174,37 @@ def _generate_constraints(
 
         field_value = None
         constraint_value = None
+
         if isinstance(new_field, list):
             random.shuffle(new_field)
             for f in new_field:
-                field_value = sample_data.get(f)
-                new_field = f
-                break
+                val = sample_data.get(f)
+                if val is not None:
+                    field_value = val
+                    new_field = f
+                    break
         elif isinstance(new_field, str):
             field_value = sample_data.get(new_field)
         elif isinstance(new_field, dict):
             if new_field.get("is_datetime"):
                 days = new_field.get("days", 1)
-                new_field = new_field.get("field", "")
+                new_field_name = new_field.get("field", "")
                 constraint_value = random_datetime(days=days, start=datetime.now(UTC))
                 field_value = constraint_value
+                new_field = new_field_name
             else:
                 custom_dataset = new_field.get("dataset", [])
-                new_field = new_field.get("field", "")
-                field_value = choice(custom_dataset).get(new_field)
-                if new_field:
-                    constraint_value = _generate_constraint_value(op, field_value, new_field, dataset=custom_dataset)
+                new_field_name = new_field.get("field", "")
+                if custom_dataset and new_field_name:
+                    field_value = choice(custom_dataset).get(new_field_name)
+                    if field_value is not None:
+                        constraint_value = _generate_constraint_value(op, field_value, new_field_name, dataset=custom_dataset)
+                new_field = new_field_name
 
         if field_value is None:
             continue
 
         if constraint_value is None:
-            # Generate a constraint value based on the operator and field value
             constraint_value = _generate_constraint_value(op, field_value, new_field, dataset)
 
         if constraint_value is not None:
