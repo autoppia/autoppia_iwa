@@ -96,6 +96,11 @@ TRIPS = [
         "driver": {"name": "Samir Patel", "car": "Tesla Model 3 (Red)", "plate": "TES 333", "phone": "+1 416-555-9999", "photo": "https://randomuser.me/api/portraits/men/85.jpg"},
     },
 ]
+DISCOUNT_PERCENTAGE_DATA = [
+    {"discount_percentage": "5.00"},
+    {"discount_percentage": "10.00"},
+    {"discount_percentage": "15.00"},
+]
 
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL]
@@ -127,14 +132,33 @@ FIELD_OPERATORS_MAP_SELECT_CAR = {
     "discount_percentage": STRING_OPERATORS,
     "drop_off": STRING_OPERATORS,
     "eta": STRING_OPERATORS,
-    "is_recommended": LOGICAL_OPERATORS,
+    # "is_recommended": LOGICAL_OPERATORS,
     "old_price": LOGICAL_OPERATORS,
     "pick_up": STRING_OPERATORS,
     "price": LOGICAL_OPERATORS,
-    "price_difference": LOGICAL_OPERATORS,
-    "ride_id": LOGICAL_OPERATORS,
+    # "price_difference": LOGICAL_OPERATORS,
+    # "ride_id": LOGICAL_OPERATORS,
     "ride_name": STRING_OPERATORS,
-    "ride_type": STRING_OPERATORS,
+    # "ride_type": STRING_OPERATORS,
     "scheduled": LOGICAL_OPERATORS,
     "seats": LOGICAL_OPERATORS,
+}
+FIELD_OPERATORS_MAP_RESERVE_RIDE = {
+    **FIELD_OPERATORS_MAP_SELECT_CAR,
+}
+FIELD_OPERATORS_MAP_TRIP_DETAILS = {
+    "date": LOGICAL_OPERATORS,
+    "drop_off": STRING_OPERATORS,
+    "drop_off_label": STRING_OPERATORS,
+    # "id": STRING_OPERATORS,
+    # "payment": STRING_OPERATORS,
+    "pickup": STRING_OPERATORS,
+    "pickup_label": STRING_OPERATORS,
+    "price": LOGICAL_OPERATORS,
+    "ride_name": STRING_OPERATORS,
+    # "ride_index": LOGICAL_OPERATORS,
+    "time": LOGICAL_OPERATORS,
+}
+FIELD_OPERATORS_MAP_CANCEL_RESERVATION = {
+    **FIELD_OPERATORS_MAP_TRIP_DETAILS,
 }

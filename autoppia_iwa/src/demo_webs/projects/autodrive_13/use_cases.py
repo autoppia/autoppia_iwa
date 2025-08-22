@@ -14,14 +14,17 @@ from .events import (
     TripDetailsEvent,
 )
 from .generation_functions import (
+    generate_cancel_reservation_constraints,
     generate_enter_destination_constraints,
     generate_enter_location_constraints,
     generate_next_pickup_constraints,
+    generate_reserve_ride_constraints,
     generate_search_ride_constraints,
     generate_see_prices_constraints,
     generate_select_car_constraints,
     generate_select_date_constraints,
     generate_select_time_constraints,
+    generate_trip_details_constraints,
 )
 
 ENTER_LOCATION_USE_CASE = UseCase(
@@ -256,10 +259,6 @@ SELECT_CAR_USE_CASE = UseCase(
             "prompt": "Select car where scheduled equals '2025-07-18 13:00:00'",
             "prompt_for_task_generation": "Select car where scheduled equals '2025-07-18 13:00:00'",
         },
-        {
-            "prompt": "Select car where is recommended equals true",
-            "prompt_for_task_generation": "Select car where is recommended equals true",
-        },
     ],
 )
 RESERVE_RIDE_USE_CASE = UseCase(
@@ -267,19 +266,19 @@ RESERVE_RIDE_USE_CASE = UseCase(
     description="The user reserves an available car for their ride, including details such as price, discount, seats, and pickup/dropoff information.",
     event=ReserveRideEvent,
     event_source_code=ReserveRideEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_reserve_ride_constraints,
     examples=[
         {
-            "prompt": "Reserve ride for 'AutoDriverX' at 1:39 PM with pickup '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
-            "prompt_for_task_generation": "Reserve ride for 'AutoDriverX' at 1:39 PM with pickup '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt": "Reserve ride where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt_for_task_generation": "Reserve ride where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
         },
         {
-            "prompt": "Reserve ride for 'Comfort' where total price is 31.5 and scheduled time equals '2025-07-18 13:00:00'",
-            "prompt_for_task_generation": "Reserve ride for 'Comfort' where total price is 31.5 and scheduled time equals '2025-07-18 13:00:00'",
+            "prompt": "Reserve ride where ride name contains 'Comfort' and where total price is 31.5 and scheduled time equals '2025-07-18 13:00:00'",
+            "prompt_for_task_generation": "Reserve ride where ride name contains 'Comfort' and where total price is 31.5 and scheduled time equals '2025-07-18 13:00:00'",
         },
         {
-            "prompt": "Reserve ride for 'AutoDriverXL' with 6 seats and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
-            "prompt_for_task_generation": "Reserve ride for 'AutoDriverXL' with 6 seats and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
+            "prompt": "Reserve ride where ride name is 'AutoDriverXL' and seats greater than '4' and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
+            "prompt_for_task_generation": "Reserve ride where ride name is 'AutoDriverXL' and seats greater than '4' and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
         },
         {
             "prompt": "Reserve ride where discount percentage equals '12%' and old price equals 35.0",
@@ -290,12 +289,8 @@ RESERVE_RIDE_USE_CASE = UseCase(
             "prompt_for_task_generation": "Reserve ride with pickup '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA' and scheduled at '2025-07-18 13:00:00'",
         },
         {
-            "prompt": "Reserve ride where price difference is less than 3.0 and is recommended equals true",
-            "prompt_for_task_generation": "Reserve ride where price difference is less than 3.0 and is recommended equals true",
-        },
-        {
-            "prompt": "Reserve ride for 'AutoDriverX' where eta equals '1 min away · 1:39 PM' and driver name is 'Alexei Ivanov'",
-            "prompt_for_task_generation": "Reserve ride for 'AutoDriverX' where eta equals '1 min away · 1:39 PM' and driver name is 'Alexei Ivanov'",
+            "prompt": "Reserve ride where ride name is equals 'AutoDriverX' where eta equals '1 min away · 1:39 PM'",
+            "prompt_for_task_generation": "Reserve ride where ride name is equals 'AutoDriverX' where eta equals '1 min away · 1:39 PM'",
         },
     ],
 )
@@ -304,7 +299,7 @@ TRIP_DETAILS_USE_CASE = UseCase(
     description="The user checks details of a specific trip, including pickup, dropoff, date, time and price.",
     event=TripDetailsEvent,
     event_source_code=TripDetailsEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_trip_details_constraints,
     examples=[
         {
             "prompt": "Show trip details where ride name equals 'AutoDriverX' and price equals 26.6",
@@ -337,7 +332,7 @@ CANCEL_RESERVATION_USE_CASE = UseCase(
     description="The user cancels a previously reserved ride, providing details such as ride name, pickup, dropoff, price, and scheduled date/time.",
     event=CancelReservationEvent,
     event_source_code=CancelReservationEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_cancel_reservation_constraints,
     examples=[
         {
             "prompt": "Cancel reservation with ride name 'AutoDriverX'",
@@ -356,8 +351,8 @@ CANCEL_RESERVATION_USE_CASE = UseCase(
             "prompt_for_task_generation": "Cancel reservation where price equals 22.5",
         },
         {
-            "prompt": "Cancel reservation with ride index equals 3 and ride name equals 'Comfort XL'",
-            "prompt_for_task_generation": "Cancel reservation with ride index equals 3 and ride name equals 'Comfort XL'",
+            "prompt": "Cancel reservation with ride index equals 3 and ride name equals 'Comfort'",
+            "prompt_for_task_generation": "Cancel reservation with ride index equals 3 and ride name equals 'Comfort'",
         },
         {
             "prompt": "Cancel reservation where pickup label equals 'Moscone Center' and dropoff label equals 'Pier 39'",
@@ -375,8 +370,8 @@ ALL_USE_CASES = [
     # SELECT_TIME_USE_CASE,
     # NEXT_PICKUP_USE_CASE,
     # SEARCH_RIDE_USE_CASE,
-    SELECT_CAR_USE_CASE,
+    # SELECT_CAR_USE_CASE,
     # RESERVE_RIDE_USE_CASE,
     # TRIP_DETAILS_USE_CASE,
-    # CANCEL_RESERVATION_USE_CASE,
+    CANCEL_RESERVATION_USE_CASE,
 ]

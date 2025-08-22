@@ -8,14 +8,18 @@ from dateutil import parser
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
+    DISCOUNT_PERCENTAGE_DATA,
+    FIELD_OPERATORS_MAP_CANCEL_RESERVATION,
     FIELD_OPERATORS_MAP_ENTER_DESTINATION,
     FIELD_OPERATORS_MAP_ENTER_LOCATION,
     FIELD_OPERATORS_MAP_NEXT_PICKUP,
+    FIELD_OPERATORS_MAP_RESERVE_RIDE,
     FIELD_OPERATORS_MAP_SEARCH_RIDE,
     FIELD_OPERATORS_MAP_SEE_PRICES,
     FIELD_OPERATORS_MAP_SELECT_CAR,
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
+    FIELD_OPERATORS_MAP_TRIP_DETAILS,
     PLACES,
     RIDES,
     TRIPS,
@@ -192,6 +196,24 @@ def _generate_constraints(
                 constraint_value = random_datetime(days=days, start=datetime.now(UTC))
                 field_value = constraint_value
                 new_field = new_field_name
+
+            elif new_field.get("is_date"):
+                current_date = datetime.now(UTC)
+                offset = random.randint(1, 7)
+                new_date = current_date.date() + timedelta(days=offset)
+                new_date = parser.parse(str(new_date))
+                constraint_value = new_date
+                field_value = new_field
+
+            elif new_field.get("is_time"):
+                current_time = datetime.now(UTC)
+                offset_hours = random.randint(0, 23)
+                offset_minutes = random.randint(0, 59)
+                new_time = current_time + timedelta(hours=offset_hours, minutes=offset_minutes)
+                new_time = time(new_time.hour, new_time.minute)
+                constraint_value = new_time
+                field_value = new_field
+
             else:
                 custom_dataset = new_field.get("dataset", [])
                 new_field_name = new_field.get("field", "")
@@ -310,7 +332,8 @@ def generate_search_ride_constraints() -> list[dict[str, Any]]:
 def generate_select_car_constraints() -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SELECT_CAR
     field_map = {
-        "discount_percentage": {"field": "discount_percentage", "dataset": [{"discount_percentage": d} for d in ["5%", "10%", "15%"]]},
+        # "discount_percentage": {"field": "discount_percentage", "dataset": [{"discount_percentage": d} for d in ["5%", "10%", "15%"]]},
+        "discount_percentage": {"field": "discount_percentage", "dataset": DISCOUNT_PERCENTAGE_DATA},
         "old_price": {"field": "oldPrice", "dataset": RIDES},
         # "pick_up": {"field": "pickup", "dataset": TRIPS},
         "pick_up": "pickup",
@@ -320,4 +343,51 @@ def generate_select_car_constraints() -> list[dict[str, Any]]:
         "seats": {"field": "seats", "dataset": RIDES},
     }
     constraints_list = _generate_constraints(TRIPS, field_ops, field_map=field_map, selected_fields=["dropoff", "old_price"])
+    return constraints_list
+
+
+def generate_reserve_ride_constraints() -> list[dict[str, Any]]:
+    field_ops = FIELD_OPERATORS_MAP_RESERVE_RIDE
+    field_map = {
+        "discount_percentage": {"field": "discount_percentage", "dataset": DISCOUNT_PERCENTAGE_DATA},
+        "old_price": {"field": "oldPrice", "dataset": RIDES},
+        "pick_up": "pickup",
+        "ride_id": "id",
+        "ride_name": {"field": "name", "dataset": RIDES},
+        "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
+        "seats": {"field": "seats", "dataset": RIDES},
+    }
+    constraints_list = _generate_constraints(TRIPS, field_ops, field_map=field_map)
+    return constraints_list
+
+
+def generate_trip_details_constraints() -> list[dict[str, Any]]:
+    field_ops = FIELD_OPERATORS_MAP_TRIP_DETAILS
+    field_map = {
+        "date": {"is_date": True, "field": "date"},
+        "time": {"is_time": True, "field": "time"},
+        "drop_off": "label",
+        "drop_off_label": "main",
+        "pick_up": "label",
+        "pick_up_label": "main",
+        "price": {"field": "price", "dataset": RIDES},
+        "ride_name": {"field": "name", "dataset": RIDES},
+    }
+    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map)
+    return constraints_list
+
+
+def generate_cancel_reservation_constraints() -> list[dict[str, Any]]:
+    field_ops = FIELD_OPERATORS_MAP_CANCEL_RESERVATION
+    field_map = {
+        "date": {"is_date": True, "field": "date"},
+        "time": {"is_time": True, "field": "time"},
+        "drop_off": "label",
+        "drop_off_label": "main",
+        "pick_up": "label",
+        "pick_up_label": "main",
+        "price": {"field": "price", "dataset": RIDES},
+        "ride_name": {"field": "name", "dataset": RIDES},
+    }
+    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map)
     return constraints_list
