@@ -123,3 +123,18 @@ FIELD_OPERATORS_MAP_SEARCH_RIDE = {
     "pickup": STRING_OPERATORS,
     "scheduled": LOGICAL_OPERATORS,
 }
+FIELD_OPERATORS_MAP_SELECT_CAR = {
+    "discount_percentage": STRING_OPERATORS,
+    "drop_off": STRING_OPERATORS,
+    "eta": STRING_OPERATORS,
+    "is_recommended": LOGICAL_OPERATORS,
+    "old_price": LOGICAL_OPERATORS,
+    "pick_up": STRING_OPERATORS,
+    "price": LOGICAL_OPERATORS,
+    "price_difference": LOGICAL_OPERATORS,
+    "ride_id": LOGICAL_OPERATORS,
+    "ride_name": STRING_OPERATORS,
+    "ride_type": STRING_OPERATORS,
+    "scheduled": LOGICAL_OPERATORS,
+    "seats": LOGICAL_OPERATORS,
+}

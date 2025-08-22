@@ -13,9 +13,12 @@ from .data import (
     FIELD_OPERATORS_MAP_NEXT_PICKUP,
     FIELD_OPERATORS_MAP_SEARCH_RIDE,
     FIELD_OPERATORS_MAP_SEE_PRICES,
+    FIELD_OPERATORS_MAP_SELECT_CAR,
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
     PLACES,
+    RIDES,
+    TRIPS,
 )
 
 
@@ -187,6 +190,7 @@ def _generate_constraints(
                 days = new_field.get("days", 1)
                 new_field = new_field.get("field", "")
                 constraint_value = random_datetime(days=days, start=datetime.now(UTC))
+                field_value = constraint_value
             else:
                 custom_dataset = new_field.get("dataset", [])
                 new_field = new_field.get("field", "")
@@ -208,21 +212,21 @@ def _generate_constraints(
     return all_constraints
 
 
-def generate_enter_location_constraint() -> list[dict[str, Any]]:
+def generate_enter_location_constraints() -> list[dict[str, Any]]:
     field_map = {"location": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_LOCATION
     constraints_list = _generate_constraints(PLACES, field_operators, field_map=field_map)
     return constraints_list
 
 
-def generate_enter_destination_constraint() -> list[dict[str, Any]]:
+def generate_enter_destination_constraints() -> list[dict[str, Any]]:
     field_map = {"destination": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_DESTINATION
     constraints_list = _generate_constraints(PLACES, field_operators, field_map=field_map)
     return constraints_list
 
 
-def generate_see_prices_constraint() -> list[dict[str, Any]]:
+def generate_see_prices_constraints() -> list[dict[str, Any]]:
     field_mapping = {
         "location": {"field": "label", "dataset": PLACES},
         "destination": {"field": "label", "dataset": PLACES},
@@ -232,7 +236,7 @@ def generate_see_prices_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_select_date_constraint() -> list[dict[str, Any]]:
+def generate_select_date_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     for field, ops in FIELD_OPERATORS_MAP_SELECT_DATE.items():
         if field == "date":
@@ -246,7 +250,7 @@ def generate_select_date_constraint() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_select_time_constraint() -> list[dict[str, Any]]:
+def generate_select_time_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     for field, ops in FIELD_OPERATORS_MAP_SELECT_TIME.items():
         if field == "time":
@@ -263,7 +267,7 @@ def generate_select_time_constraint() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_next_pickup_constraint() -> list[dict[str, Any]]:
+def generate_next_pickup_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     for field, ops in FIELD_OPERATORS_MAP_NEXT_PICKUP.items():
         if field == "date":
@@ -298,4 +302,20 @@ def generate_search_ride_constraints() -> list[dict[str, Any]]:
         "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
     }
     constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["scheduled"])
+    return constraints_list
+
+
+def generate_select_car_constraints() -> list[dict[str, Any]]:
+    field_ops = FIELD_OPERATORS_MAP_SELECT_CAR
+    field_map = {
+        "discount_percentage": {"field": "discount_percentage", "dataset": [{"discount_percentage": d} for d in ["5%", "10%", "15%"]]},
+        "old_price": {"field": "oldPrice", "dataset": RIDES},
+        # "pick_up": {"field": "pickup", "dataset": TRIPS},
+        "pick_up": "pickup",
+        "ride_id": "id",
+        "ride_name": {"field": "name", "dataset": RIDES},
+        "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
+        "seats": {"field": "seats", "dataset": RIDES},
+    }
+    constraints_list = _generate_constraints(TRIPS, field_ops, field_map=field_map, selected_fields=["dropoff", "old_price"])
     return constraints_list

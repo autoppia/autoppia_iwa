@@ -14,13 +14,14 @@ from .events import (
     TripDetailsEvent,
 )
 from .generation_functions import (
-    generate_enter_destination_constraint,
-    generate_enter_location_constraint,
-    generate_next_pickup_constraint,
+    generate_enter_destination_constraints,
+    generate_enter_location_constraints,
+    generate_next_pickup_constraints,
     generate_search_ride_constraints,
-    generate_see_prices_constraint,
-    generate_select_date_constraint,
-    generate_select_time_constraint,
+    generate_see_prices_constraints,
+    generate_select_car_constraints,
+    generate_select_date_constraints,
+    generate_select_time_constraints,
 )
 
 ENTER_LOCATION_USE_CASE = UseCase(
@@ -28,7 +29,7 @@ ENTER_LOCATION_USE_CASE = UseCase(
     description="The user enters a location value (e.g., city, country, or region)",
     event=EnterLocationEvent,
     event_source_code=EnterLocationEvent.get_source_code_of_class(),
-    constraints_generator=generate_enter_location_constraint,
+    constraints_generator=generate_enter_location_constraints,
     examples=[
         {
             "prompt": "Enter location equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
@@ -53,7 +54,7 @@ ENTER_DESTINATION_USE_CASE = UseCase(
     description="The user enters a destination value (e.g., city, country, or region)",
     event=EnterDestinationEvent,
     event_source_code=EnterDestinationEvent.get_source_code_of_class(),
-    constraints_generator=generate_enter_destination_constraint,
+    constraints_generator=generate_enter_destination_constraints,
     examples=[
         {
             "prompt": "Enter destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
@@ -78,7 +79,7 @@ SEE_PRICES_USE_CASE = UseCase(
     description="The user sees prices for a trip between a location and a destination",
     event=SeePricesEvent,
     event_source_code=SeePricesEvent.get_source_code_of_class(),
-    constraints_generator=generate_see_prices_constraint,
+    constraints_generator=generate_see_prices_constraints,
     examples=[
         {
             "prompt": "See prices where location equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
@@ -103,7 +104,7 @@ SELECT_DATE_USE_CASE = UseCase(
     description="The user selects a specific date for their trip or booking",
     event=SelectDateEvent,
     event_source_code=SelectDateEvent.get_source_code_of_class(),
-    constraints_generator=generate_select_date_constraint,
+    constraints_generator=generate_select_date_constraints,
     examples=[
         {
             "prompt": "Select date equals '2025-08-20'",
@@ -137,7 +138,7 @@ SELECT_TIME_USE_CASE = UseCase(
     description="The user selects a specific time for their trip or booking",
     event=SelectTimeEvent,
     event_source_code=SelectTimeEvent.get_source_code_of_class(),
-    constraints_generator=generate_select_time_constraint,
+    constraints_generator=generate_select_time_constraints,
     examples=[
         {
             "prompt": "Select time equals '10:00:00'",
@@ -171,7 +172,7 @@ NEXT_PICKUP_USE_CASE = UseCase(
     description="The user clicks the 'Next' button after successfully selecting a pickup date and time.",
     event=NextPickupEvent,
     event_source_code=NextPickupEvent.get_source_code_of_class(),
-    constraints_generator=generate_next_pickup_constraint,
+    constraints_generator=generate_next_pickup_constraints,
     examples=[
         {
             "prompt": "Next pickup date equals '2025-08-20' and time equals '10:00:00'",
@@ -229,7 +230,7 @@ SELECT_CAR_USE_CASE = UseCase(
     description="The user selects an available car option for their ride, including details such as price, discount, seats, and pickup/dropoff information.",
     event=SelectCarEvent,
     event_source_code=SelectCarEvent.get_source_code_of_class(),
-    constraints_generator=None,
+    constraints_generator=generate_select_car_constraints,
     examples=[
         {
             "prompt": "Select car with ride name 'AutoDriverX' and eta equals '1 min away · 1:39 PM'",
@@ -373,8 +374,8 @@ ALL_USE_CASES = [
     # SELECT_DATE_USE_CASE,
     # SELECT_TIME_USE_CASE,
     # NEXT_PICKUP_USE_CASE,
-    SEARCH_RIDE_USE_CASE,
-    # SELECT_CAR_USE_CASE,
+    # SEARCH_RIDE_USE_CASE,
+    SELECT_CAR_USE_CASE,
     # RESERVE_RIDE_USE_CASE,
     # TRIP_DETAILS_USE_CASE,
     # CANCEL_RESERVATION_USE_CASE,

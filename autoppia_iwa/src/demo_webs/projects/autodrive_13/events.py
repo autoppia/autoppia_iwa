@@ -212,9 +212,9 @@ class SearchRideEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH"
     dropoff: str
     # dropoffLength: int
-    hasDropoff: bool
-    hasPickup: bool
-    isScheduled: bool
+    # hasDropoff: bool
+    # hasPickup: bool
+    # isScheduled: bool
     pickup: str
     # pickupLength: int
     scheduled: datetime
@@ -275,7 +275,7 @@ class SelectCarEvent(Event, BaseEventValidator):
     discount_percentage: str
     drop_off: str
     eta: str
-    is_recommended: bool
+    # is_recommended: bool
     old_price: float
     pick_up: str
     price: float
@@ -290,14 +290,14 @@ class SelectCarEvent(Event, BaseEventValidator):
         discount_percentage: str | CriterionValue | None = None
         drop_off: str | CriterionValue | None = None
         eta: str | CriterionValue | None = None
-        is_recommended: bool | CriterionValue | None = None
+        # is_recommended: bool | CriterionValue | None = None
         old_price: float | CriterionValue | None = None
         pick_up: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
-        price_difference: float | CriterionValue | None = None
+        # price_difference: float | CriterionValue | None = None
         ride_id: int | CriterionValue | None = None
         ride_name: str | CriterionValue | None = None
-        ride_type: str | CriterionValue | None = None
+        # ride_type: str | CriterionValue | None = None
         scheduled: datetime | CriterionValue | None = None
         seats: int | CriterionValue | None = None
 
@@ -310,14 +310,14 @@ class SelectCarEvent(Event, BaseEventValidator):
                 self._validate_field(self.discount_percentage, criterion.discount_percentage),
                 self._validate_field(self.drop_off, criterion.drop_off),
                 self._validate_field(self.eta, criterion.eta),
-                self._validate_field(self.is_recommended, criterion.is_recommended),
+                # self._validate_field(self.is_recommended, criterion.is_recommended),
                 self._validate_field(self.old_price, criterion.old_price),
                 self._validate_field(self.pick_up, criterion.pick_up),
                 self._validate_field(self.price, criterion.price),
-                self._validate_field(self.price_difference, criterion.price_difference),
+                # self._validate_field(self.price_difference, criterion.price_difference),
                 self._validate_field(self.ride_id, criterion.ride_id),
                 self._validate_field(self.ride_name, criterion.ride_name),
-                self._validate_field(self.ride_type, criterion.ride_type),
+                # self._validate_field(self.ride_type, criterion.ride_type),
                 validate_schedule,
                 self._validate_field(self.seats, criterion.seats),
             ]
@@ -335,14 +335,14 @@ class SelectCarEvent(Event, BaseEventValidator):
             discount_percentage=data.get("discountPercentage"),
             drop_off=data.get("dropoff"),
             eta=data.get("eta"),
-            is_recommended=data.get("isRecommended"),
+            # is_recommended=data.get("isRecommended"),
             old_price=data.get("oldPrice"),
             pick_up=data.get("pickup"),
             price=data.get("price"),
-            price_difference=data.get("priceDifference"),
+            # price_difference=data.get("priceDifference"),
             ride_id=data.get("rideId"),
             ride_name=data.get("rideName"),
-            ride_type=data.get("rideType"),
+            # ride_type=data.get("rideType"),
             scheduled=parse_datetime(data.get("scheduled")),
             seats=data.get("seats"),
         )
