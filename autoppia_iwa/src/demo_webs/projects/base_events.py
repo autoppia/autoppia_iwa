@@ -67,6 +67,7 @@ class Event(BaseModel):
         # TODO: If we have more types we should include here
         # TODO: Moving (ALL_BACKEND_EVENT_TYPES) here to resolve circular import error
         from autoppia_iwa.src.demo_webs.projects.autocrm_5.events import BACKEND_EVENT_TYPES as web_5_backend_types
+        from autoppia_iwa.src.demo_webs.projects.autodrive_13.events import BACKEND_EVENT_TYPES as web_13_backend_types
         from autoppia_iwa.src.demo_webs.projects.autolodge_8.events import BACKEND_EVENT_TYPES as web_8_backend_types
         from autoppia_iwa.src.demo_webs.projects.automail_6.events import BACKEND_EVENT_TYPES as web_6_backend_types
         from autoppia_iwa.src.demo_webs.projects.books_2.events import BACKEND_EVENT_TYPES as web_2_backend_types
@@ -82,6 +83,7 @@ class Event(BaseModel):
             **web_5_backend_types,
             **web_6_backend_types,
             **web_8_backend_types,
+            **web_13_backend_types,
         }
         event_class_map = ALL_BACKEND_EVENT_TYPES
 
