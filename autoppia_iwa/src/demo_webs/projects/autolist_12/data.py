@@ -123,7 +123,7 @@ TEAM_MEMBERS_OPTIONS = [
     {"value": "emily@example.com", "label": "Emily Davis"},
     {"value": "david@example.com", "label": "David Wilson"},
     {"value": "sophia@example.com", "label": "Sophia Martinez"},
-    {"value": "li@example.com", "label": "Li Wei"},
+    {"value": "lie@example.com", "label": "Lie Wei"},
     {"value": "fatima@example.com", "label": "Fatima Al-Farsi"},
 ]
 DATES_QUICK_OPTIONS = ["today", "tomorrow", "nextweek", "weekend"]
@@ -150,7 +150,7 @@ FIELD_OPERATORS_TASK_MAP = {
 }
 FIELD_OPERATORS_TEAM_MEMBERS_ADDED_MAP = {
     "members": ARRAY_OPERATORS,
-    "member_count": LOGICAL_OPERATORS,
+    "member_count": [EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL],
 }
 FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP = {
     "member": STRING_OPERATORS,

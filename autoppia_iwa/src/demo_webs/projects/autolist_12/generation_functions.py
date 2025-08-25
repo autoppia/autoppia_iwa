@@ -147,7 +147,7 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
         else:
             value = _generate_constraint_value(operator, field_value, source_key, dataset)
 
-        if value is not None:
+        if value:
             constraints_list.append(create_constraint_dict(field, operator, value))
 
     return constraints_list
@@ -180,12 +180,18 @@ def generate_task_constraints() -> list[dict[str, Any]]:
 
 
 def generate_team_members_added_constraints() -> list[dict[str, Any]]:
-    """Generate constraints for adding team members."""
-    field_map = {
-        "_dataset": TEAM_MEMBERS_OPTIONS,
-        "members": {"source_key": "value", "dataset": TEAM_MEMBERS_OPTIONS},
-    }
-    return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_MEMBERS_ADDED_MAP)
+    """Generate constraints for adding team members, including member_count and members."""
+    num_members = random.randint(1, 3)
+    selected_members = random.sample([m["label"] for m in TEAM_MEMBERS_OPTIONS], k=num_members)
+    constraints_list = []
+
+    operator = ComparisonOperator(random.choice(FIELD_OPERATORS_TEAM_MEMBERS_ADDED_MAP["members"]))
+    constraints_list.append(create_constraint_dict("members", operator, selected_members))
+
+    count_operator = ComparisonOperator(random.choice(FIELD_OPERATORS_TEAM_MEMBERS_ADDED_MAP["member_count"]))
+    constraints_list.append(create_constraint_dict("member_count", count_operator, num_members))
+
+    return constraints_list
 
 
 def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
