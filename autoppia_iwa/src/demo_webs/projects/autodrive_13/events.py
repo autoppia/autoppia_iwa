@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time as dt_time
 
 from dateutil import parser
 from pydantic import BaseModel
@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
-from ..shared_utils import validate_date_field
+from ..shared_utils import validate_date_field, validate_time_field
 
 
 class EnterLocationEvent(Event, BaseEventValidator):
@@ -141,19 +141,32 @@ class SelectDateEvent(Event, BaseEventValidator):
         )
 
 
+def parse_time(value: str | None) -> dt_time | None:
+    if not value:
+        return None
+    try:
+        if isinstance(value, dt_time):
+            return value
+        if isinstance(value, str):
+            return parser.parse(value)
+        return None
+    except (ValueError, TypeError):
+        return None
+
+
 class SelectTimeEvent(Event, BaseEventValidator):
     """event triggered when someone selects time"""
 
     event_name: str = "SELECT_TIME"
-    time: datetime | None = None
+    time: dt_time | None = None
 
     class ValidationCriteria(BaseModel):
-        time: datetime | CriterionValue | None = None
+        time: dt_time | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        validate_time = validate_date_field(self.time, criteria.time)
+        validate_time = validate_time_field(self.time, criteria.time)
         return all([validate_time])
 
     @classmethod
@@ -576,7 +589,7 @@ class CancelReservationEvent(Event, BaseEventValidator):
         )
 
 
-def parse_datetime(value: str | None) -> datetime | time | None:
+def parse_datetime(value: str | None) -> datetime | dt_time | None:
     if not value:
         return None
     try:
@@ -589,7 +602,7 @@ def parse_datetime(value: str | None) -> datetime | time | None:
                 if ":" in value:  # updated for time
                     t = value.split(":")  # updated for time
                     if len(t) > 1:  # updated for time
-                        return time(int(t[0]), int(t[1]))  # updated for time
+                        return dt_time(int(t[0]), int(t[1]))  # updated for time
             for sep in ("T", " "):
                 if sep in value:
                     date_part = value.split(sep)[0]

@@ -278,11 +278,18 @@ def generate_select_time_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     for field, ops in FIELD_OPERATORS_MAP_SELECT_TIME.items():
         if field == "time":
-            current_time = datetime.now(UTC)
-            offset_hours = random.randint(0, 23)
-            minute_slot = random.randrange(0, 60, 10)
+            current_time = datetime.now()
+            offset_hours = random.randint(0, 23 - current_time.hour)
+            minute_slot = random.randrange(0, 60 - current_time.minute, 10)
 
             future_dt = current_time + timedelta(hours=offset_hours)
+            # Ensure the new time is not before the current time
+            if future_dt.hour < current_time.hour or (future_dt.hour == current_time.hour and minute_slot < current_time.minute):
+                future_dt = current_time
+                minute_slot = ((current_time.minute + 9) // 10) * 10
+                if minute_slot >= 60:
+                    minute_slot = 0
+                    future_dt += timedelta(hours=1)
             new_time = time(future_dt.hour, minute_slot)
             op = ComparisonOperator(choice(ops))
             constraint = create_constraint_dict(field, op, new_time)
