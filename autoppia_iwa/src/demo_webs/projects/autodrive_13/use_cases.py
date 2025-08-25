@@ -35,20 +35,20 @@ ENTER_LOCATION_USE_CASE = UseCase(
     constraints_generator=generate_enter_location_constraints,
     examples=[
         {
-            "prompt": "Enter location equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
-            "prompt_for_task_generation": "Enter location equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt": "Enter location where location equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt_for_task_generation": "Enter location  where location equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
         },
         {
-            "prompt": "Enter location not equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-            "prompt_for_task_generation": "Enter location not equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+            "prompt": "Enter location  where location not equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+            "prompt_for_task_generation": "Enter location  where location not equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
         },
         {
-            "prompt": "Enter location contains '1000 Chestnut Street Apartments'",
-            "prompt_for_task_generation": "Enter location contains '1000 Chestnut Street Apartments'",
+            "prompt": "Enter location  where location contains '1000 Chestnut Street Apartments'",
+            "prompt_for_task_generation": "Enter location  where location contains '1000 Chestnut Street Apartments'",
         },
         {
-            "prompt": "Enter location not contains '1001 Castro Street'",
-            "prompt_for_task_generation": "Enter location not contains '1001 Castro Street'",
+            "prompt": "Enter location  where location not contains '1001 Castro Street'",
+            "prompt_for_task_generation": "Enter location  where location not contains '1001 Castro Street'",
         },
     ],
 )
@@ -93,11 +93,11 @@ SEE_PRICES_USE_CASE = UseCase(
             "prompt_for_task_generation": "See prices where location not equals '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA' and destination equals '1001 Castro Street - 1001 Castro St, San Francisco, CA 94114, USA'",
         },
         {
-            "prompt": "See prices where destination contains 'Van Ness' and destination contains 'Castro'",
+            "prompt": "See prices where location contains 'Van Ness' and destination contains 'Castro'",
             "prompt_for_task_generation": "See prices where location contains 'Van Ness' and destination contains 'Castro'",
         },
         {
-            "prompt": "See prices where destination not contains 'Chestnut' and destination not contains 'Hotel'",
+            "prompt": "See prices where location not contains 'Chestnut' and destination not contains 'Hotel'",
             "prompt_for_task_generation": "See prices where location not contains 'Chestnut' and destination not contains 'Hotel'",
         },
     ],
@@ -365,9 +365,9 @@ CANCEL_RESERVATION_USE_CASE = UseCase(
 ALL_USE_CASES = [
     # ENTER_LOCATION_USE_CASE,
     # ENTER_DESTINATION_USE_CASE,
-    # SEE_PRICES_USE_CASE,
+    SEE_PRICES_USE_CASE,
     # SELECT_DATE_USE_CASE,
-    SELECT_TIME_USE_CASE,
+    # SELECT_TIME_USE_CASE,
     # NEXT_PICKUP_USE_CASE,
     # SEARCH_RIDE_USE_CASE,
     # SELECT_CAR_USE_CASE,

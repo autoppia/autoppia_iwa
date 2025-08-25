@@ -21,7 +21,139 @@ PLACES = [
         "main": "1030 Post Street Apartments",
         "sub": "1030 Post St #112, San Francisco, CA 94109, USA",
     },
+    {
+        "label": "The Ritz-Carlton - 600 Stockton St, San Francisco, CA 94108, USA",
+        "main": "The Ritz-Carlton",
+        "sub": "600 Stockton St, San Francisco, CA 94108, USA",
+    },
+    {
+        "label": "Fairmont San Francisco - 950 Mason St, San Francisco, CA 94108, USA",
+        "main": "Fairmont San Francisco",
+        "sub": "950 Mason St, San Francisco, CA 94108, USA",
+    },
+    {
+        "label": "Hotel Nikko - 222 Mason St, San Francisco, CA 94102, USA",
+        "main": "Hotel Nikko",
+        "sub": "222 Mason St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Palace Hotel - 2 New Montgomery St, San Francisco, CA 94105, USA",
+        "main": "Palace Hotel",
+        "sub": "2 New Montgomery St, San Francisco, CA 94105, USA",
+    },
+    {
+        "label": "InterContinental San Francisco - 888 Howard St, San Francisco, CA 94103, USA",
+        "main": "InterContinental San Francisco",
+        "sub": "888 Howard St, San Francisco, CA 94103, USA",
+    },
+    {
+        "label": "Hotel Zephyr - 250 Beach St, San Francisco, CA 94133, USA",
+        "main": "Hotel Zephyr",
+        "sub": "250 Beach St, San Francisco, CA 94133, USA",
+    },
+    {
+        "label": "Hotel Zoe Fisherman's Wharf - 425 North Point St, San Francisco, CA 94133, USA",
+        "main": "Hotel Zoe Fisherman's Wharf",
+        "sub": "425 North Point St, San Francisco, CA 94133, USA",
+    },
+    {
+        "label": "The Clift Royal Sonesta Hotel - 495 Geary St, San Francisco, CA 94102, USA",
+        "main": "The Clift Royal Sonesta Hotel",
+        "sub": "495 Geary St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "The Marker San Francisco - 501 Geary St, San Francisco, CA 94102, USA",
+        "main": "The Marker San Francisco",
+        "sub": "501 Geary St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Hilton San Francisco Union Square - 333 O'Farrell St, San Francisco, CA 94102, USA",
+        "main": "Hilton San Francisco Union Square",
+        "sub": "333 O'Farrell St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Parc 55 San Francisco - 55 Cyril Magnin St, San Francisco, CA 94102, USA",
+        "main": "Parc 55 San Francisco",
+        "sub": "55 Cyril Magnin St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Hotel Kabuki - 1625 Post St, San Francisco, CA 94115, USA",
+        "main": "Hotel Kabuki",
+        "sub": "1625 Post St, San Francisco, CA 94115, USA",
+    },
+    {
+        "label": "Hotel G San Francisco - 386 Geary St, San Francisco, CA 94102, USA",
+        "main": "Hotel G San Francisco",
+        "sub": "386 Geary St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "The Westin St. Francis - 335 Powell St, San Francisco, CA 94102, USA",
+        "main": "The Westin St. Francis",
+        "sub": "335 Powell St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Hotel Vitale - 8 Mission St, San Francisco, CA 94105, USA",
+        "main": "Hotel Vitale",
+        "sub": "8 Mission St, San Francisco, CA 94105, USA",
+    },
+    {
+        "label": "Argonaut Hotel - 495 Jefferson St, San Francisco, CA 94109, USA",
+        "main": "Argonaut Hotel",
+        "sub": "495 Jefferson St, San Francisco, CA 94109, USA",
+    },
+    {
+        "label": "Hotel Emblem - 562 Sutter St, San Francisco, CA 94102, USA",
+        "main": "Hotel Emblem",
+        "sub": "562 Sutter St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Hotel Triton - 342 Grant Ave, San Francisco, CA 94108, USA",
+        "main": "Hotel Triton",
+        "sub": "342 Grant Ave, San Francisco, CA 94108, USA",
+    },
+    {
+        "label": "Hotel North Beach - 935 Kearny St, San Francisco, CA 94133, USA",
+        "main": "Hotel North Beach",
+        "sub": "935 Kearny St, San Francisco, CA 94133, USA",
+    },
+    {
+        "label": "Hotel Spero - 405 Taylor St, San Francisco, CA 94102, USA",
+        "main": "Hotel Spero",
+        "sub": "405 Taylor St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Hotel Caza - 1300 Columbus Ave, San Francisco, CA 94133, USA",
+        "main": "Hotel Caza",
+        "sub": "1300 Columbus Ave, San Francisco, CA 94133, USA",
+    },
+    {
+        "label": "The Donatello - 501 Post St, San Francisco, CA 94102, USA",
+        "main": "The Donatello",
+        "sub": "501 Post St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Hotel Abri - 127 Ellis St, San Francisco, CA 94102, USA",
+        "main": "Hotel Abri",
+        "sub": "127 Ellis St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Hotel Fusion - 140 Ellis St, San Francisco, CA 94102, USA",
+        "main": "Hotel Fusion",
+        "sub": "140 Ellis St, San Francisco, CA 94102, USA",
+    },
+    {
+        "label": "Hotel Whitcomb - 1231 Market St, San Francisco, CA 94103, USA",
+        "main": "Hotel Whitcomb",
+        "sub": "1231 Market St, San Francisco, CA 94103, USA",
+    },
+    {
+        "label": "Hotel Majestic - 1500 Sutter St, San Francisco, CA 94109, USA",
+        "main": "Hotel Majestic",
+        "sub": "1500 Sutter St, San Francisco, CA 94109, USA",
+    },
 ]
+
+
 RIDES = [
     {
         "name": "AutoDriverX",
@@ -108,7 +240,10 @@ LIST_OPERATORS = [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST]
 BOOL_OPERATORS = [EQUALS, NOT_EQUALS]
 
 FIELD_OPERATORS_MAP_ENTER_LOCATION = {"location": STRING_OPERATORS}
-FIELD_OPERATORS_MAP_ENTER_DESTINATION = {"destination": STRING_OPERATORS}
+FIELD_OPERATORS_MAP_ENTER_DESTINATION = {
+    "destination": [EQUALS, NOT_EQUALS],
+    # "destination": STRING_OPERATORS
+}
 FIELD_OPERATORS_MAP_SEE_PRICES = {
     "location": STRING_OPERATORS,
     "destination": STRING_OPERATORS,

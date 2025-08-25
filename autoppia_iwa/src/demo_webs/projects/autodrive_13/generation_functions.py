@@ -256,7 +256,7 @@ def generate_see_prices_constraints() -> list[dict[str, Any]]:
         "destination": {"field": "label", "dataset": PLACES},
     }
     field_operators = FIELD_OPERATORS_MAP_SEE_PRICES
-    constraints_list = _generate_constraints([], field_operators, field_mapping)
+    constraints_list = _generate_constraints(PLACES, field_operators, field_mapping)
     return constraints_list
 
 
