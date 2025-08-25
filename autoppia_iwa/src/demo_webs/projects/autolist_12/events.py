@@ -92,13 +92,13 @@ class TaskAddedEvent(Event, BaseEventValidator):
     name: str
     description: str
     date: datetime | None = None
-    priority: int
+    priority: str
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
         date: datetime | CriterionValue | None = None
-        priority: int | CriterionValue | None = None
+        priority: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -125,7 +125,7 @@ class TaskAddedEvent(Event, BaseEventValidator):
             name=data.get("name", ""),
             description=data.get("description", ""),
             date=parse_datetime(data.get("date")),
-            priority=data.get("priority", 4),
+            priority=data.get("priority", ""),
         )
 
 
@@ -145,12 +145,6 @@ class DeleteTaskEvent(TaskAddedEvent):
     """Event triggered when a task is deleted"""
 
     event_name: str = "AUTOLIST_DELETE_TASK"
-
-
-class AddTeamClickedEvent(TaskAddedEvent):
-    """Event triggered when user clicks the add team button"""
-
-    event_name: str = "AUTOLIST_ADD_TEAM_CLICKED"
 
 
 class CancelTaskCreationEvent(Event, BaseEventValidator):
@@ -195,6 +189,12 @@ class CancelTaskCreationEvent(Event, BaseEventValidator):
             date=parse_datetime(data.get("selectedDate")),
             priority=data.get("priority", 4),
         )
+
+
+class AddTeamClickedEvent(Event):
+    """Event triggered when user clicks the add team button"""
+
+    event_name: str = "AUTOLIST_ADD_TEAM_CLICKED"
 
 
 class TeamMembersAddedEvent(Event, BaseEventValidator):
