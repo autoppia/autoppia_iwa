@@ -269,7 +269,9 @@ def generate_select_date_constraints() -> list[dict[str, Any]]:
             new_date = current_date.date() + timedelta(days=offset)
             new_date = parser.parse(str(new_date))
             op = ComparisonOperator(choice(ops))
-            constraint = create_constraint_dict(field, op, new_date)
+            if op == ComparisonOperator.LESS_THAN and new_date <= current_date:
+                new_date = current_date + timedelta(days=1)
+            constraint = create_constraint_dict(field, op, new_date.date())
             all_constraints.append(constraint)
     return all_constraints
 

@@ -120,13 +120,7 @@ class SelectDateEvent(Event, BaseEventValidator):
         if not criteria:
             return True
 
-        validate_date = validate_date_field(self.date, criteria.date)
-        return all(
-            [
-                validate_date
-                # self._validate_field(self.date, criteria.date),
-            ]
-        )
+        return validate_date_field(self.date, criteria.date)
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "SelectDateEvent":
