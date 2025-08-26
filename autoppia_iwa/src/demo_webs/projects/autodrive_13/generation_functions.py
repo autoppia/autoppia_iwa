@@ -264,13 +264,13 @@ def generate_select_date_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     for field, ops in FIELD_OPERATORS_MAP_SELECT_DATE.items():
         if field == "date":
-            current_date = datetime.now(UTC)
+            current_date = datetime.now()
             offset = random.randint(1, 7)
             new_date = current_date.date() + timedelta(days=offset)
             new_date = parser.parse(str(new_date))
             op = ComparisonOperator(choice(ops))
-            if op == ComparisonOperator.LESS_THAN and new_date <= current_date:
-                new_date = current_date + timedelta(days=1)
+            if op == ComparisonOperator.LESS_THAN and new_date <= (current_date + timedelta(days=1)):
+                new_date = new_date + timedelta(days=1)
             constraint = create_constraint_dict(field, op, new_date.date())
             all_constraints.append(constraint)
     return all_constraints
