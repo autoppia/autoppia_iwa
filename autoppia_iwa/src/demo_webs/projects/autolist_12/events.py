@@ -211,35 +211,23 @@ class TeamMembersAddedEvent(Event, BaseEventValidator):
     def _validate_members(self, field_value, criterion):
         if criterion is None:
             return True
-        elif isinstance(criterion, CriterionValue):
-            op = criterion.operator
-            val = criterion.value
-            if op == ComparisonOperator.CONTAINS:
-                if isinstance(field_value, list):
-                    return any(val.lower() in member.lower() for member in field_value)
-                return val.lower() in str(field_value).lower()
-            elif op == ComparisonOperator.NOT_CONTAINS:
-                if isinstance(field_value, list):
-                    return all(val.lower() not in member.lower() for member in field_value)
-                return val.lower() not in str(field_value).lower()
-            elif op == ComparisonOperator.IN_LIST:
-                if isinstance(val, str):
-                    if isinstance(field_value, list):
-                        return any(member.lower() == val.lower() for member in field_value)
-                    return str(field_value).lower() == val.lower()
-                if isinstance(val, list):
-                    if isinstance(field_value, list):
-                        return any(member.lower() in [v.lower() for v in val] for member in field_value)
-                    return str(field_value).lower() in [v.lower() for v in val]
-            elif op == ComparisonOperator.NOT_IN_LIST:
-                if isinstance(val, str):
-                    if isinstance(field_value, list):
-                        return all(member.lower() != val.lower() for member in field_value)
-                    return str(field_value).lower() != val.lower()
-                if isinstance(val, list):
-                    if isinstance(field_value, list):
-                        return all(member.lower() not in [v.lower() for v in val] for member in field_value)
-                    return str(field_value).lower() not in [v.lower() for v in val]
+        if not isinstance(criterion, CriterionValue):
+            return False
+
+        op = criterion.operator
+        val = criterion.value
+
+        members = field_value if isinstance(field_value, list) else [str(field_value)]
+        values = val if isinstance(val, list) else [val]
+
+        if op == ComparisonOperator.CONTAINS:
+            return any(v.lower() in member.lower() for v in values for member in members)
+        elif op == ComparisonOperator.NOT_CONTAINS:
+            return all(all(v.lower() not in member.lower() for v in values) for member in members)
+        elif op == ComparisonOperator.IN_LIST:
+            return any(member.lower() in [v.lower() for v in values] for member in members)
+        elif op == ComparisonOperator.NOT_IN_LIST:
+            return all(member.lower() not in [v.lower() for v in values] for member in members)
         return False
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
