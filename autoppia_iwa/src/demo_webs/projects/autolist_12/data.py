@@ -157,8 +157,8 @@ FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP = {
     "role": STRING_OPERATORS,
 }
 FIELD_OPERATORS_TEAM_CREATED_MAP = {
-    "team_name": STRING_OPERATORS,
-    "team_description": STRING_OPERATORS,
-    "member_name": STRING_OPERATORS,
-    "member_email": STRING_OPERATORS,
+    "name": STRING_OPERATORS,
+    "description": STRING_OPERATORS,
+    "member": STRING_OPERATORS,
+    "role": STRING_OPERATORS,
 }

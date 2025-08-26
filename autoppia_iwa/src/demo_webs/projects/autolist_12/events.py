@@ -292,33 +292,31 @@ class TeamRoleAssignedEvent(Event, BaseEventValidator):
 class TeamMember(BaseModel):
     id: str | None = None
     name: str | None = None
-    email: str | None = None
+    role: str | None = None
 
 
 class TeamCreatedEvent(Event, BaseEventValidator):
     """Event triggered when a team is created"""
 
     event_name: str = "AUTOLIST_TEAM_CREATED"
-    team_name: str
-    team_description: str | None = None
+    name: str
+    description: str | None = None
     members: list[TeamMember] | None = Field(default_factory=list)
 
     class ValidationCriteria(BaseModel):
-        team_name: str | CriterionValue | None = None
-        team_description: str | CriterionValue | None = None
-        member_name: str | CriterionValue | None = None
-        member_email: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        description: str | CriterionValue | None = None
+        member: str | CriterionValue | None = None
+        role: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.team_name, criteria.team_name),
-                self._validate_field(self.team_description, criteria.team_description),
-                all(self._validate_field(member.name, criteria.member_name) and self._validate_field(member.email, criteria.member_email) for member in self.members)
-                if criteria.member_name or criteria.member_email
-                else True,
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.description, criteria.description),
+                all(self._validate_field(member.name, criteria.member) and self._validate_field(member.role, criteria.role) for member in self.members) if criteria.member or criteria.role else True,
             ]
         )
 
@@ -331,8 +329,8 @@ class TeamCreatedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            team_name=data.get("teamName", ""),
-            team_description=data.get("teamDescription"),
+            name=data.get("teamName", ""),
+            description=data.get("teamDescription"),
             members=[TeamMember(**m) for m in data.get("members", []) if data.get("members", [])],
         )
 

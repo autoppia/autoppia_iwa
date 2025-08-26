@@ -208,9 +208,9 @@ def generate_team_created_constraints() -> list[dict[str, Any]]:
     """Generate constraints for creating a team."""
     field_map = {
         "_dataset": TEAMS,
-        "team_name": {"source_key": "name", "dataset": TEAMS},
-        "team_description": {"source_key": "description", "dataset": TEAMS},
-        "member_name": {"source_key": "label", "dataset": TEAM_MEMBERS_OPTIONS},
-        "member_email": {"source_key": "value", "dataset": TEAM_MEMBERS_OPTIONS},
+        "name": {"dataset": TEAMS},
+        "description": {"dataset": TEAMS},
+        "member": {"source_key": "label", "dataset": TEAM_MEMBERS_OPTIONS},
+        "role": {"source_key": "label", "dataset": ROLES},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_CREATED_MAP)
