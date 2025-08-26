@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
 from autoppia_iwa.src.demo_webs.projects.autolodge_8.data import parse_datetime
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
-from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
+from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
 from autoppia_iwa.src.demo_webs.projects.shared_utils import validate_date_field
 
 
@@ -208,13 +208,47 @@ class TeamMembersAddedEvent(Event, BaseEventValidator):
         member_count: int | CriterionValue | None = None
         members: list[str] | CriterionValue | None = None
 
+    def _validate_members(self, field_value, criterion):
+        if criterion is None:
+            return True
+        elif isinstance(criterion, CriterionValue):
+            op = criterion.operator
+            val = criterion.value
+            if op == ComparisonOperator.CONTAINS:
+                if isinstance(field_value, list):
+                    return any(val.lower() in member.lower() for member in field_value)
+                return val.lower() in str(field_value).lower()
+            elif op == ComparisonOperator.NOT_CONTAINS:
+                if isinstance(field_value, list):
+                    return all(val.lower() not in member.lower() for member in field_value)
+                return val.lower() not in str(field_value).lower()
+            elif op == ComparisonOperator.IN_LIST:
+                if isinstance(val, str):
+                    if isinstance(field_value, list):
+                        return any(member.lower() == val.lower() for member in field_value)
+                    return str(field_value).lower() == val.lower()
+                if isinstance(val, list):
+                    if isinstance(field_value, list):
+                        return any(member.lower() in [v.lower() for v in val] for member in field_value)
+                    return str(field_value).lower() in [v.lower() for v in val]
+            elif op == ComparisonOperator.NOT_IN_LIST:
+                if isinstance(val, str):
+                    if isinstance(field_value, list):
+                        return all(member.lower() != val.lower() for member in field_value)
+                    return str(field_value).lower() != val.lower()
+                if isinstance(val, list):
+                    if isinstance(field_value, list):
+                        return all(member.lower() not in [v.lower() for v in val] for member in field_value)
+                    return str(field_value).lower() not in [v.lower() for v in val]
+        return False
+
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
                 self._validate_field(self.member_count, criteria.member_count),
-                self._validate_field(self.members, criteria.members),
+                self._validate_members(self.members, criteria.members),
             ]
         )
 
