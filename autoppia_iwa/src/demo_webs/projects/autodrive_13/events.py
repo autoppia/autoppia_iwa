@@ -181,17 +181,17 @@ class NextPickupEvent(Event, BaseEventValidator):
 
     event_name: str = "NEXT_PICKUP"
     date: datetime | None = None
-    time: datetime | None = None
+    time: dt_time | None = None
 
     class ValidationCriteria(BaseModel):
         date: datetime | CriterionValue | None = None
-        time: datetime | CriterionValue | None = None
+        time: dt_time | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         validate_date = validate_date_field(self.date, criteria.date)
-        validate_time = validate_date_field(self.time, criteria.time)
+        validate_time = validate_time_field(self.time, criteria.time)
         return all(
             [
                 validate_date,
@@ -217,38 +217,40 @@ class SearchRideEvent(Event, BaseEventValidator):
     """event triggered when someone clicks on the search button after successful selects date and time for pickup"""
 
     event_name: str = "SEARCH"
-    dropoff: str
+    destination: str
     # dropoffLength: int
     # hasDropoff: bool
     # hasPickup: bool
     # isScheduled: bool
-    pickup: str
+    location: str
     # pickupLength: int
     scheduled: datetime
 
     class ValidationCriteria(BaseModel):
-        dropoff: str | CriterionValue | None = None
+        # dropoff: str | CriterionValue | None = None
+        destination: str | CriterionValue | None = None
         # dropoffLength: int | CriterionValue |None = None
         # hasDropoff: bool | CriterionValue | None = None
         # hasPickup: bool | CriterionValue | None = None
         # isScheduled: bool | CriterionValue | None = None
-        pickup: str | CriterionValue | None = None
+        # pickup: str | CriterionValue | None = None
+        location: str | CriterionValue | None = None
         # pickupLength: int | CriterionValue |None = None
-        scheduled: datetime | CriterionValue | None = None
+        scheduled: datetime | CriterionValue | None = None  # skip for now but will work on it
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
 
-        validate_schedule = validate_date_field(self.scheduled, criteria.schedule)
+        validate_schedule = validate_date_field(self.scheduled, criteria.scheduled)
         return all(
             [
-                self._validate_field(self.dropoff, criteria.dropoff),
+                self._validate_field(self.destination, criteria.destination),
                 # self._validate_field(self.dropoffLength, criteria.dropoffLength),
                 # self._validate_field(self.hasDropoff, criteria.hasDropoff),
                 # self._validate_field(self.hasPickup, criteria.hasPickup),
                 # self._validate_field(self.isScheduled, criteria.isSchedule),
-                self._validate_field(self.pickup, criteria.pickup),
+                self._validate_field(self.location, criteria.location),
                 # self._validate_field(self.pickupLength, criteria.pickupLength),
                 # self._validate_field(self.scheduled, criteria.scheduled),
                 validate_schedule,
@@ -264,12 +266,12 @@ class SearchRideEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            dropoff=data.get("dropoff"),
+            destination=data.get("dropoff"),
             # dropoffLength=data.get("dropoffLength"),
             # hasDropoff=data.get("hasDropoff"),
             # hasPickup=data.get("hasPickup"),
             # isScheduled=data.get("isScheduled"),
-            pickup=data.get("pickup"),
+            location=data.get("pickup"),
             # pickupLength=data.get("pickupLength"),
             scheduled=parse_datetime(data.get("scheduled")),
         )
@@ -279,54 +281,54 @@ class SelectCarEvent(Event, BaseEventValidator):
     """event triggered when someone selects available car to ride"""
 
     event_name: str = "SELECT_CAR"
-    discount_percentage: str
-    drop_off: str
-    eta: str
+    # discount_percentage: str
+    destination: str
+    # eta: str
     # is_recommended: bool
-    old_price: float
-    pick_up: str
+    # old_price: float
+    location: str
     price: float
-    price_difference: float
-    ride_id: int
+    # price_difference: float
+    # ride_id: int
     ride_name: str
-    ride_type: str
-    scheduled: datetime
+    # ride_type: str
+    # scheduled: datetime
     seats: int
 
     class ValidationCriteria(BaseModel):
-        discount_percentage: str | CriterionValue | None = None
-        drop_off: str | CriterionValue | None = None
-        eta: str | CriterionValue | None = None
+        # discount_percentage: str | CriterionValue | None = None
+        destination: str | CriterionValue | None = None
+        # eta: str | CriterionValue | None = None
         # is_recommended: bool | CriterionValue | None = None
-        old_price: float | CriterionValue | None = None
-        pick_up: str | CriterionValue | None = None
+        # old_price: float | CriterionValue | None = None
+        location: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         # price_difference: float | CriterionValue | None = None
         # ride_id: int | CriterionValue | None = None
         ride_name: str | CriterionValue | None = None
         # ride_type: str | CriterionValue | None = None
-        scheduled: datetime | CriterionValue | None = None
+        # scheduled: datetime | CriterionValue | None = None
         seats: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        validate_schedule = validate_date_field(self.scheduled, criteria.scheduled)
+        # validate_schedule = validate_date_field(self.scheduled, criteria.scheduled)
         return all(
             [
-                self._validate_field(self.discount_percentage, criterion.discount_percentage),
-                self._validate_field(self.drop_off, criterion.drop_off),
-                self._validate_field(self.eta, criterion.eta),
-                # self._validate_field(self.is_recommended, criterion.is_recommended),
-                self._validate_field(self.old_price, criterion.old_price),
-                self._validate_field(self.pick_up, criterion.pick_up),
-                self._validate_field(self.price, criterion.price),
-                # self._validate_field(self.price_difference, criterion.price_difference),
-                # self._validate_field(self.ride_id, criterion.ride_id),
-                self._validate_field(self.ride_name, criterion.ride_name),
-                # self._validate_field(self.ride_type, criterion.ride_type),
-                validate_schedule,
-                self._validate_field(self.seats, criterion.seats),
+                # self._validate_field(self.discount_percentage, criteria.discount_percentage),
+                self._validate_field(self.destination, criteria.destination),
+                # self._validate_field(self.eta, criteria.eta),
+                # self._validate_field(self.is_recommended, criteria.is_recommended),
+                # self._validate_field(self.old_price, criteria.old_price),
+                self._validate_field(self.location, criteria.location),
+                self._validate_field(self.price, criteria.price),
+                # self._validate_field(self.price_difference, criteria.price_difference),
+                # self._validate_field(self.ride_id, criteria.ride_id),
+                self._validate_field(self.ride_name, criteria.ride_name),
+                # self._validate_field(self.ride_type, criteria.ride_type),
+                # validate_schedule,
+                self._validate_field(self.seats, criteria.seats),
             ]
         )
 
@@ -339,18 +341,18 @@ class SelectCarEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            discount_percentage=data.get("discountPercentage"),
-            drop_off=data.get("dropoff"),
-            eta=data.get("eta"),
+            # discount_percentage=data.get("discountPercentage"),
+            destination=data.get("dropoff"),
+            # eta=data.get("eta"),
             # is_recommended=data.get("isRecommended"),
-            old_price=data.get("oldPrice"),
-            pick_up=data.get("pickup"),
+            # old_price=data.get("oldPrice"),
+            location=data.get("pickup"),
             price=data.get("price"),
             # price_difference=data.get("priceDifference"),
             # ride_id=data.get("rideId"),
             ride_name=data.get("rideName"),
             # ride_type=data.get("rideType"),
-            scheduled=parse_datetime(data.get("scheduled")),
+            # scheduled=parse_datetime(data.get("scheduled")),
             seats=data.get("seats"),
         )
 
@@ -359,54 +361,54 @@ class ReserveRideEvent(Event, BaseEventValidator):
     """event triggered when someone reserves available car to ride"""
 
     event_name: str = "RESERVE_RIDE"
-    discount_percentage: str
-    drop_off: str
-    eta: str
-    is_recommended: bool
-    old_price: float
-    pick_up: str
+    # discount_percentage: str
+    destination: str
+    # eta: str
+    # is_recommended: bool
+    # old_price: float
+    location: str
     price: float
-    price_difference: float
-    ride_id: int
+    # price_difference: float
+    # ride_id: int
     ride_name: str
-    ride_type: str
-    scheduled: datetime
+    # ride_type: str
+    # scheduled: datetime
     seats: int
 
     class ValidationCriteria(BaseModel):
-        discount_percentage: str | CriterionValue | None = None
-        drop_off: str | CriterionValue | None = None
-        eta: str | CriterionValue | None = None
+        # discount_percentage: str | CriterionValue | None = None
+        destination: str | CriterionValue | None = None
+        # eta: str | CriterionValue | None = None
         # is_recommended: bool | CriterionValue | None = None
-        old_price: float | CriterionValue | None = None
-        pick_up: str | CriterionValue | None = None
+        # old_price: float | CriterionValue | None = None
+        location: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         # price_difference: float | CriterionValue | None = None
         # ride_id: int | CriterionValue | None = None
         ride_name: str | CriterionValue | None = None
         # ride_type: str | CriterionValue | None = None
-        scheduled: datetime | CriterionValue | None = None
+        # scheduled: datetime | CriterionValue | None = None
         seats: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        validate_scheduled = validate_date_field(self.scheduled, criteria.scheduled)
+        # validate_scheduled = validate_date_field(self.scheduled, criteria.scheduled)
         return all(
             [
-                self._validate_field(self.discount_percentage, criterion.discount_percentage),
-                self._validate_field(self.drop_off, criterion.drop_off),
-                self._validate_field(self.eta, criterion.eta),
-                # self._validate_field(self.is_recommended, criterion.is_recommended),
-                self._validate_field(self.old_price, criterion.old_price),
-                self._validate_field(self.pick_up, criterion.pick_up),
-                self._validate_field(self.price, criterion.price),
-                # self._validate_field(self.price_difference, criterion.price_difference),
-                # self._validate_field(self.ride_id, criterion.ride_id),
-                self._validate_field(self.ride_name, criterion.ride_name),
-                # self._validate_field(self.ride_type, criterion.ride_type),
-                validate_scheduled,
-                self._validate_field(self.seats, criterion.seats),
+                # self._validate_field(self.discount_percentage, criteria.discount_percentage),
+                self._validate_field(self.destination, criteria.destination),
+                # self._validate_field(self.eta, criteria.eta),
+                # self._validate_field(self.is_recommended, criteria.is_recommended),
+                # self._validate_field(self.old_price, criteria.old_price),
+                self._validate_field(self.location, criteria.location),
+                self._validate_field(self.price, criteria.price),
+                # self._validate_field(self.price_difference, criteria.price_difference),
+                # self._validate_field(self.ride_id, criteria.ride_id),
+                self._validate_field(self.ride_name, criteria.ride_name),
+                # self._validate_field(self.ride_type, criteria.ride_type),
+                # validate_scheduled,
+                self._validate_field(self.seats, criteria.seats),
             ]
         )
 
@@ -419,18 +421,18 @@ class ReserveRideEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            discount_percentage=data.get("discountPercentage"),
-            drop_off=data.get("dropoff"),
-            eta=data.get("eta"),
+            # discount_percentage=data.get("discountPercentage"),
+            destination=data.get("dropoff"),
+            # eta=data.get("eta"),
             # is_recommended=data.get("isRecommended"),
-            old_price=data.get("oldPrice"),
-            pick_up=data.get("pickup"),
+            # old_price=data.get("oldPrice"),
+            location=data.get("pickup"),
             price=data.get("price"),
             # price_difference=data.get("priceDifference"),
             # ride_id=data.get("rideId"),
             ride_name=data.get("rideName"),
             # ride_type=data.get("rideType"),
-            scheduled=parse_datetime(data.get("scheduled")),
+            # scheduled=parse_datetime(data.get("scheduled")),
             seats=data.get("seats"),
         )
 
@@ -439,49 +441,49 @@ class TripDetailsEvent(Event, BaseEventValidator):
     """event triggered when want to check details of the trip"""
 
     event_name: str = "TRIP_DETAILS"
-    date: datetime
-    drop_off: str
-    drop_off_label: str
+    # date: datetime
+    destination: str
+    # drop_off_label: str
     # id: str
     # payment: str
-    pickup: str
-    pickup_label: str
+    location: str
+    # pickup_label: str
     price: float
     # ride_index: int
     ride_name: str
-    time: datetime
+    # time: datetime
 
     class ValidationCriteria(BaseModel):
-        date: datetime | CriterionValue | None = None
-        drop_off: str | CriterionValue | None = None
-        drop_off_label: str | CriterionValue | None = None
+        # date: datetime | CriterionValue | None = None
+        destination: str | CriterionValue | None = None
+        # drop_off_label: str | CriterionValue | None = None
         # id: str | CriterionValue | None = None
         # payment: str | CriterionValue | None = None
-        pickup: str | CriterionValue | None = None
-        pickup_label: str | CriterionValue | None = None
+        location: str | CriterionValue | None = None
+        # pickup_label: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         # ride_index: int | CriterionValue | None = None
         ride_name: str | CriterionValue | None = None
-        time: datetime | CriterionValue | None = None
+        # time: datetime | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        validate_date = (validate_date_field(self.date, criteria.date),)
-        validate_time = (validate_date_field(self.time, criteria.time),)
+        # validate_date = (validate_date_field(self.date, criteria.date),)
+        # validate_time = (validate_date_field(self.time, criteria.time),)
         return all(
             [
-                validate_date,
-                self._validate_field(self.drop_off, criterion.drop_off),
-                self._validate_field(self.drop_off_label, criterion.drop_off_label),
-                # self._validate_field(self.id, criterion.id),
-                # self._validate_field(self.payment, criterion.payment),
-                self._validate_field(self.pickup, criterion.pickup),
-                self._validate_field(self.pickup_label, criterion.pickup_label),
-                self._validate_field(self.price, criterion.price),
-                # self._validate_field(self.ride_index, criterion.ride_index),
-                self._validate_field(self.ride_name, criterion.ride_name),
-                validate_time,
+                # validate_date,
+                self._validate_field(self.destination, criteria.destination),
+                # self._validate_field(self.drop_off_label, criteria.drop_off_label),
+                # self._validate_field(self.id, criteria.id),
+                # self._validate_field(self.payment, criteria.payment),
+                self._validate_field(self.location, criteria.location),
+                # self._validate_field(self.pickup_label, criteria.pickup_label),
+                self._validate_field(self.price, criteria.price),
+                # self._validate_field(self.ride_index, criteria.ride_index),
+                self._validate_field(self.ride_name, criteria.ride_name),
+                # validate_time,
             ]
         )
 
@@ -495,17 +497,17 @@ class TripDetailsEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            date=parse_datetime(trip_data.get("date")),
-            drop_off=trip_data.get("dropoff"),
-            drop_off_label=trip_data.get("dropoffLabel"),
+            # date=parse_datetime(trip_data.get("date")),
+            destination=trip_data.get("dropoff"),
+            # drop_off_label=trip_data.get("dropoffLabel"),
             # id=trip_data.get("id"),
             # payment=trip_data.get("payment"),
-            pickup=trip_data.get("pickup"),
-            pickup_label=trip_data.get("pickupLabel"),
+            location=trip_data.get("pickup"),
+            # pickup_label=trip_data.get("pickupLabel"),
             price=trip_data.get("price"),
             # ride_index=trip_data.get("rideIndex"),
             ride_name=trip_data.get("rideName"),
-            time=parse_datetime(trip_data.get("time")),
+            # time=parse_datetime(trip_data.get("time")),
         )
 
 
@@ -514,11 +516,11 @@ class CancelReservationEvent(Event, BaseEventValidator):
 
     event_name: str = "CANCEL_RESERVATION"
     date: datetime
-    drop_off: str
+    destination: str
     drop_off_label: str
     # id: str
     # payment: str
-    pickup: str
+    location: str
     pickup_label: str
     price: float
     # ride_index: int
@@ -527,11 +529,11 @@ class CancelReservationEvent(Event, BaseEventValidator):
 
     class ValidationCriteria(BaseModel):
         date: datetime | CriterionValue | None = None
-        drop_off: str | CriterionValue | None = None
+        destination: str | CriterionValue | None = None
         drop_off_label: str | CriterionValue | None = None
         # id: str | CriterionValue | None = None
         # payment: str | CriterionValue | None = None
-        pickup: str | CriterionValue | None = None
+        location: str | CriterionValue | None = None
         pickup_label: str | CriterionValue | None = None
         price: float | CriterionValue | None = None
         # ride_index: int | CriterionValue | None = None
@@ -546,15 +548,15 @@ class CancelReservationEvent(Event, BaseEventValidator):
         return all(
             [
                 validate_date,
-                self._validate_field(self.drop_off, criterion.drop_off),
-                self._validate_field(self.drop_off_label, criterion.drop_off_label),
-                # self._validate_field(self.id, criterion.id),
-                # self._validate_field(self.payment, criterion.payment),
-                self._validate_field(self.pickup, criterion.pickup),
-                self._validate_field(self.pickup_label, criterion.pickup_label),
-                self._validate_field(self.price, criterion.price),
-                # self._validate_field(self.ride_index, criterion.ride_index),
-                self._validate_field(self.ride_name, criterion.ride_name),
+                self._validate_field(self.destination, criteria.destination),
+                self._validate_field(self.drop_off_label, criteria.drop_off_label),
+                # self._validate_field(self.id, criteria.id),
+                # self._validate_field(self.payment, criteria.payment),
+                self._validate_field(self.location, criteria.location),
+                self._validate_field(self.pickup_label, criteria.pickup_label),
+                self._validate_field(self.price, criteria.price),
+                # self._validate_field(self.ride_index, criteria.ride_index),
+                self._validate_field(self.ride_name, criteria.ride_name),
                 validate_time,
             ]
         )
@@ -570,11 +572,11 @@ class CancelReservationEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             date=parse_datetime(trip_data.get("date")),
-            drop_off=trip_data.get("dropoff"),
+            destination=trip_data.get("dropoff"),
             drop_off_label=trip_data.get("dropoffLabel"),
             # id=trip_data.get("id"),
             # payment=trip_data.get("payment"),
-            pickup=trip_data.get("pickup"),
+            location=trip_data.get("pickup"),
             pickup_label=trip_data.get("pickupLabel"),
             price=trip_data.get("price"),
             # ride_index=trip_data.get("rideIndex"),

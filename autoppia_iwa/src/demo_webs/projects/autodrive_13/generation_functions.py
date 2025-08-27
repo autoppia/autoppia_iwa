@@ -8,7 +8,6 @@ from dateutil import parser
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
-    DISCOUNT_PERCENTAGE_DATA,
     FIELD_OPERATORS_MAP_CANCEL_RESERVATION,
     FIELD_OPERATORS_MAP_ENTER_DESTINATION,
     FIELD_OPERATORS_MAP_ENTER_LOCATION,
@@ -22,7 +21,6 @@ from .data import (
     FIELD_OPERATORS_MAP_TRIP_DETAILS,
     PLACES,
     RIDES,
-    TRIPS,
 )
 
 
@@ -303,21 +301,30 @@ def generate_next_pickup_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     for field, ops in FIELD_OPERATORS_MAP_NEXT_PICKUP.items():
         if field == "date":
-            current_date = datetime.now(UTC)
+            current_date = datetime.now()
             offset = random.randint(1, 7)
             new_date = current_date.date() + timedelta(days=offset)
             new_date = parser.parse(str(new_date))
             op = ComparisonOperator(choice(ops))
-            constraint = create_constraint_dict(field, op, new_date)
+            if op == ComparisonOperator.LESS_THAN and new_date <= (current_date + timedelta(days=1)):
+                new_date = new_date + timedelta(days=1)
+            constraint = create_constraint_dict(field, op, new_date.date())
             all_constraints.append(constraint)
 
         if field == "time":
-            current_time = datetime.now(UTC)
-            offset_hours = random.randint(0, 23)
-            offset_minutes = random.randint(0, 59)
+            current_time = datetime.now()
+            offset_hours = random.randint(0, 23 - current_time.hour)
+            minute_slot = random.randrange(0, 60 - current_time.minute, 10)
 
-            new_time = current_time + timedelta(hours=offset_hours, minutes=offset_minutes)
-            new_time = time(new_time.hour, new_time.minute)
+            future_dt = current_time + timedelta(hours=offset_hours)
+            # Ensure the new time is not before the current time
+            if future_dt.hour < current_time.hour or (future_dt.hour == current_time.hour and minute_slot < current_time.minute):
+                future_dt = current_time
+                minute_slot = ((current_time.minute + 9) // 10) * 10
+                if minute_slot >= 60:
+                    minute_slot = 0
+                    future_dt += timedelta(hours=1)
+            new_time = time(future_dt.hour, minute_slot)
             op = ComparisonOperator(choice(ops))
             constraint = create_constraint_dict(field, op, new_time)
             all_constraints.append(constraint)
@@ -329,11 +336,11 @@ def generate_search_ride_constraints() -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
 
     field_map = {
-        "pickup": {"field": "label", "dataset": PLACES},
-        "dropoff": {"field": "label", "dataset": PLACES},
+        "location": {"field": "label", "dataset": PLACES},
+        "destination": {"field": "label", "dataset": PLACES},
         "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
     }
-    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["scheduled"])
+    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])
     return constraints_list
 
 
@@ -341,47 +348,49 @@ def generate_select_car_constraints() -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SELECT_CAR
     field_map = {
         # "discount_percentage": {"field": "discount_percentage", "dataset": [{"discount_percentage": d} for d in ["5%", "10%", "15%"]]},
-        "discount_percentage": {"field": "discount_percentage", "dataset": DISCOUNT_PERCENTAGE_DATA},
-        "old_price": {"field": "oldPrice", "dataset": RIDES},
+        # "discount_percentage": {"field": "discount_percentage", "dataset": DISCOUNT_PERCENTAGE_DATA},
+        # "old_price": {"field": "oldPrice", "dataset": RIDES},
         # "pick_up": {"field": "pickup", "dataset": TRIPS},
-        "pick_up": "pickup",
-        "ride_id": "id",
+        "location": "label",
+        "destination": "label",
+        # "ride_id": "id",
         "ride_name": {"field": "name", "dataset": RIDES},
-        "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
-        "seats": {"field": "seats", "dataset": RIDES},
+        # "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
+        # "seats": {"field": "seats", "dataset": RIDES},
     }
-    constraints_list = _generate_constraints(TRIPS, field_ops, field_map=field_map, selected_fields=["dropoff", "old_price"])
+    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])  # selected_fields=["ride_name"]
     return constraints_list
 
 
 def generate_reserve_ride_constraints() -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_RESERVE_RIDE
     field_map = {
-        "discount_percentage": {"field": "discount_percentage", "dataset": DISCOUNT_PERCENTAGE_DATA},
-        "old_price": {"field": "oldPrice", "dataset": RIDES},
-        "pick_up": "pickup",
-        "ride_id": "id",
+        # "discount_percentage": {"field": "discount_percentage", "dataset": DISCOUNT_PERCENTAGE_DATA},
+        # "old_price": {"field": "oldPrice", "dataset": RIDES},
+        "location": "label",
+        "destination": "label",
+        # "ride_id": "id",
         "ride_name": {"field": "name", "dataset": RIDES},
-        "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
-        "seats": {"field": "seats", "dataset": RIDES},
+        # "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
+        # "seats": {"field": "seats", "dataset": RIDES},
     }
-    constraints_list = _generate_constraints(TRIPS, field_ops, field_map=field_map)
+    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])  # "ride_name"
     return constraints_list
 
 
 def generate_trip_details_constraints() -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_TRIP_DETAILS
     field_map = {
-        "date": {"is_date": True, "field": "date"},
-        "time": {"is_time": True, "field": "time"},
-        "drop_off": "label",
-        "drop_off_label": "main",
-        "pick_up": "label",
-        "pick_up_label": "main",
-        "price": {"field": "price", "dataset": RIDES},
+        # "date": {"is_date": True, "field": "date"},
+        # "time": {"is_time": True, "field": "time"},
+        "destination": {"field": "label", "dataset": PLACES},
+        # "drop_off_label": "main",
+        "location": {"field": "label", "dataset": PLACES},
+        # "pick_up_label": "main",
+        # "price": {"field": "price", "dataset": RIDES},
         "ride_name": {"field": "name", "dataset": RIDES},
     }
-    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map)
+    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])
     return constraints_list
 
 
