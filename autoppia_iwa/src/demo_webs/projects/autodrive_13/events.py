@@ -372,7 +372,7 @@ class ReserveRideEvent(Event, BaseEventValidator):
     # ride_id: int
     ride_name: str
     # ride_type: str
-    # scheduled: datetime
+    scheduled: datetime
     seats: int
 
     class ValidationCriteria(BaseModel):
@@ -387,13 +387,13 @@ class ReserveRideEvent(Event, BaseEventValidator):
         # ride_id: int | CriterionValue | None = None
         ride_name: str | CriterionValue | None = None
         # ride_type: str | CriterionValue | None = None
-        # scheduled: datetime | CriterionValue | None = None
+        scheduled: datetime | CriterionValue | None = None
         seats: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        # validate_scheduled = validate_date_field(self.scheduled, criteria.scheduled)
+        validate_scheduled = validate_date_field(self.scheduled, criteria.scheduled)
         return all(
             [
                 # self._validate_field(self.discount_percentage, criteria.discount_percentage),
@@ -407,7 +407,7 @@ class ReserveRideEvent(Event, BaseEventValidator):
                 # self._validate_field(self.ride_id, criteria.ride_id),
                 self._validate_field(self.ride_name, criteria.ride_name),
                 # self._validate_field(self.ride_type, criteria.ride_type),
-                # validate_scheduled,
+                validate_scheduled,
                 self._validate_field(self.seats, criteria.seats),
             ]
         )
@@ -432,7 +432,7 @@ class ReserveRideEvent(Event, BaseEventValidator):
             # ride_id=data.get("rideId"),
             ride_name=data.get("rideName"),
             # ride_type=data.get("rideType"),
-            # scheduled=parse_datetime(data.get("scheduled")),
+            scheduled=parse_datetime(data.get("scheduled")),
             seats=data.get("seats"),
         )
 
@@ -491,22 +491,22 @@ class TripDetailsEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: "BackendEvent") -> "TripDetailsEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        trip_data = data.get("tripData")
+        # trip_data = data.get("tripData")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             # date=parse_datetime(trip_data.get("date")),
-            destination=trip_data.get("dropoff"),
+            destination=data.get("dropoff_location"),
             # drop_off_label=trip_data.get("dropoffLabel"),
             # id=trip_data.get("id"),
             # payment=trip_data.get("payment"),
-            location=trip_data.get("pickup"),
+            location=data.get("pickup_location"),
             # pickup_label=trip_data.get("pickupLabel"),
-            price=trip_data.get("price"),
+            price=data.get("trip_price"),
             # ride_index=trip_data.get("rideIndex"),
-            ride_name=trip_data.get("rideName"),
+            ride_name=data.get("ride_name"),
             # time=parse_datetime(trip_data.get("time")),
         )
 
@@ -622,8 +622,8 @@ EVENTS = [
     SelectCarEvent,
     SearchRideEvent,
     ReserveRideEvent,
-    TripDetailsEvent,
-    CancelReservationEvent,
+    # TripDetailsEvent,
+    # CancelReservationEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -636,6 +636,6 @@ BACKEND_EVENT_TYPES = {
     "SEARCH": SearchRideEvent,
     "SELECT_CAR": SelectCarEvent,
     "RESERVE_RIDE": ReserveRideEvent,
-    "TRIP_DETAILS": TripDetailsEvent,
-    "CANCEL_RESERVATION": CancelReservationEvent,
+    # "TRIP_DETAILS": TripDetailsEvent,
+    # "CANCEL_RESERVATION": CancelReservationEvent,
 }
