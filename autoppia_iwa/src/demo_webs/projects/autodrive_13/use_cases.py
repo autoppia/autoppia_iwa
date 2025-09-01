@@ -1,12 +1,11 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
-    EnterDestinationEvent,
-    EnterLocationEvent,
     NextPickupEvent,
     ReserveRideEvent,
+    SearchDestinationEvent,
+    SearchLocationEvent,
     SearchRideEvent,
-    SeePricesEvent,
     SelectCarEvent,
     SelectDateEvent,
     SelectTimeEvent,
@@ -17,17 +16,16 @@ from .generation_functions import (
     generate_next_pickup_constraints,
     generate_reserve_ride_constraints,
     generate_search_ride_constraints,
-    generate_see_prices_constraints,
     generate_select_car_constraints,
     generate_select_date_constraints,
     generate_select_time_constraints,
 )
 
 ENTER_LOCATION_USE_CASE = UseCase(
-    name="ENTER_LOCATION",
+    name="SEARCH_LOCATION",
     description="The user enters a location value (e.g., city, country, or region)",
-    event=EnterLocationEvent,
-    event_source_code=EnterLocationEvent.get_source_code_of_class(),
+    event=SearchLocationEvent,
+    event_source_code=SearchLocationEvent.get_source_code_of_class(),
     constraints_generator=generate_enter_location_constraints,
     examples=[
         {
@@ -53,75 +51,75 @@ ENTER_LOCATION_USE_CASE = UseCase(
     ],
 )
 ENTER_DESTINATION_USE_CASE = UseCase(
-    name="ENTER_DESTINATION",
+    name="SEARCH_DESTINATION",
     description="The user enters a destination value (e.g., city, country, or region)",
-    event=EnterDestinationEvent,
-    event_source_code=EnterDestinationEvent.get_source_code_of_class(),
+    event=SearchDestinationEvent,
+    event_source_code=SearchDestinationEvent.get_source_code_of_class(),
     constraints_generator=generate_enter_destination_constraints,
     examples=[
+        {
+            "prompt": "Enter destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+            "prompt_for_task_generation": "Enter destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+        },
+        {
+            "prompt": "Enter destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt_for_task_generation": "Enter destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+        },
+        {
+            "prompt": "Enter destination contains '1001 Castro Street'",
+            "prompt_for_task_generation": "Enter destination contains '1001 Castro Street'",
+        },
+        {
+            "prompt": "Enter destination not contains '1000 Chestnut Street Apartments'",
+            "prompt_for_task_generation": "Enter destination not contains '1000 Chestnut Street Apartments'",
+        },
         # {
-        #     "prompt": "Enter destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-        #     "prompt_for_task_generation": "Enter destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+        #     "prompt": "Enter and select a destination from dropdown where destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+        #     "prompt_for_task_generation": "Enter and select a destination from dropdown where destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
         # },
         # {
-        #     "prompt": "Enter destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
-        #     "prompt_for_task_generation": "Enter destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+        #     "prompt": "Enter and select a destination from dropdown where destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+        #     "prompt_for_task_generation": "Enter and select a destination from dropdown where destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
         # },
         # {
-        #     "prompt": "Enter destination contains '1001 Castro Street'",
-        #     "prompt_for_task_generation": "Enter destination contains '1001 Castro Street'",
+        #     "prompt": "Enter and select a destination from dropdown where destination contains '1001 Castro Street'",
+        #     "prompt_for_task_generation": "Enter and select a destination from dropdown where destination contains '1001 Castro Street'",
         # },
         # {
-        #     "prompt": "Enter destination not contains '1000 Chestnut Street Apartments'",
-        #     "prompt_for_task_generation": "Enter destination not contains '1000 Chestnut Street Apartments'",
-        # },
-        {
-            "prompt": "Enter and select a destination from dropdown where destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-            "prompt_for_task_generation": "Enter and select a destination from dropdown where destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-        },
-        {
-            "prompt": "Enter and select a destination from dropdown where destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
-            "prompt_for_task_generation": "Enter and select a destination from dropdown where destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
-        },
-        {
-            "prompt": "Enter and select a destination from dropdown where destination contains '1001 Castro Street'",
-            "prompt_for_task_generation": "Enter and select a destination from dropdown where destination contains '1001 Castro Street'",
-        },
-        {
-            "prompt": "Enter and select a destination from dropdown where destination not contains '1000 Chestnut Street Apartments'",
-            "prompt_for_task_generation": "Enter and select a destination from dropdown where destination not contains '1000 Chestnut Street Apartments'",
-        },
-    ],
-)
-SEE_PRICES_USE_CASE = UseCase(
-    name="SEE_PRICES",
-    description="The user sees prices for a trip between a location and a destination",
-    event=SeePricesEvent,
-    event_source_code=SeePricesEvent.get_source_code_of_class(),
-    constraints_generator=generate_see_prices_constraints,
-    examples=[
-        {
-            "prompt": "See prices after successfully selects location from dropdown that is not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and selects destination from dropdown that is equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-            "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not  equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and selects destination from dropdown that is equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-        },
-        {
-            "prompt": "See prices after successfully selects location from dropdown that is not equals '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA' and selects destination from dropdown that is equals '1001 Castro Street - 1001 Castro St, San Francisco, CA 94114, USA'",
-            "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not equals '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA' and selects destination from dropdown that is equals '1001 Castro Street - 1001 Castro St, San Francisco, CA 94114, USA'",
-        },
-        {
-            "prompt": "See prices after successfully selects location from dropdown that contains 'Van Ness' and select destination from dropdown that contains 'Castro'",
-            "prompt_for_task_generation": "See prices after successfully selects location from dropdown that contains 'Van Ness' and selects destination from dropdown that contains 'Castro'",
-        },
-        {
-            "prompt": "See prices after successfully selects location from dropdown that is not contains '1000 Chestnut' and select destination from dropdown that is not contains '1001 Castro'",
-            "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not contains '1000 Chestnut' and selects destination from dropdown that is not contains '1001 Castro'",
-        },
-        # {
-        #     "prompt": "See prices where location not contains 'Chestnut' and destination not contains 'Hotel'",
-        #     "prompt_for_task_generation": "See prices where location not contains 'Chestnut' and destination not contains 'Hotel'",
+        #     "prompt": "Enter and select a destination from dropdown where destination not contains '1000 Chestnut Street Apartments'",
+        #     "prompt_for_task_generation": "Enter and select a destination from dropdown where destination not contains '1000 Chestnut Street Apartments'",
         # },
     ],
 )
+# SEE_PRICES_USE_CASE = UseCase(
+#     name="SEE_PRICES",
+#     description="The user sees prices for a trip between a location and a destination",
+#     event=SeePricesEvent,
+#     event_source_code=SeePricesEvent.get_source_code_of_class(),
+#     constraints_generator=generate_see_prices_constraints,
+#     examples=[
+#         {
+#             "prompt": "See prices after successfully selects location from dropdown that is not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and selects destination from dropdown that is equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+#             "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not  equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and selects destination from dropdown that is equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+#         },
+#         {
+#             "prompt": "See prices after successfully selects location from dropdown that is not equals '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA' and selects destination from dropdown that is equals '1001 Castro Street - 1001 Castro St, San Francisco, CA 94114, USA'",
+#             "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not equals '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA' and selects destination from dropdown that is equals '1001 Castro Street - 1001 Castro St, San Francisco, CA 94114, USA'",
+#         },
+#         {
+#             "prompt": "See prices after successfully selects location from dropdown that contains 'Van Ness' and select destination from dropdown that contains 'Castro'",
+#             "prompt_for_task_generation": "See prices after successfully selects location from dropdown that contains 'Van Ness' and selects destination from dropdown that contains 'Castro'",
+#         },
+#         {
+#             "prompt": "See prices after successfully selects location from dropdown that is not contains '1000 Chestnut' and select destination from dropdown that is not contains '1001 Castro'",
+#             "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not contains '1000 Chestnut' and selects destination from dropdown that is not contains '1001 Castro'",
+#         },
+#         # {
+#         #     "prompt": "See prices where location not contains 'Chestnut' and destination not contains 'Hotel'",
+#         #     "prompt_for_task_generation": "See prices where location not contains 'Chestnut' and destination not contains 'Hotel'",
+#         # },
+#     ],
+# )
 SELECT_DATE_USE_CASE = UseCase(
     name="SELECT_DATE",
     description="The user selects a specific date for their trip or booking",
@@ -403,11 +401,10 @@ RESERVE_RIDE_USE_CASE = UseCase(
 ALL_USE_CASES = [
     # ENTER_LOCATION_USE_CASE,
     # ENTER_DESTINATION_USE_CASE,
-    SEE_PRICES_USE_CASE,
     # SELECT_DATE_USE_CASE,
     # SELECT_TIME_USE_CASE,
     # NEXT_PICKUP_USE_CASE,
     # SEARCH_RIDE_USE_CASE,
     # SELECT_CAR_USE_CASE,
-    # RESERVE_RIDE_USE_CASE,
+    RESERVE_RIDE_USE_CASE,
 ]

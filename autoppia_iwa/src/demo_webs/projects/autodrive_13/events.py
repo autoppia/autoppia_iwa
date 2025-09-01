@@ -9,10 +9,10 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 from ..shared_utils import validate_date_field, validate_time_field
 
 
-class EnterLocationEvent(Event, BaseEventValidator):
+class SearchLocationEvent(Event, BaseEventValidator):
     """event triggered when someone enter location"""
 
-    event_name: str = "ENTER_LOCATION"
+    event_name: str = "SEARCH_LOCATION"
     location: str
 
     class ValidationCriteria(BaseModel):
@@ -29,7 +29,7 @@ class EnterLocationEvent(Event, BaseEventValidator):
         )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "EnterLocationEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "SearchLocationEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
         return cls(
@@ -41,10 +41,10 @@ class EnterLocationEvent(Event, BaseEventValidator):
         )
 
 
-class EnterDestinationEvent(Event, BaseEventValidator):
+class SearchDestinationEvent(Event, BaseEventValidator):
     """event triggered when someone enter destination"""
 
-    event_name: str = "ENTER_DESTINATION"
+    event_name: str = "SEARCH_DESTINATION"
     destination: str
 
     class ValidationCriteria(BaseModel):
@@ -60,7 +60,7 @@ class EnterDestinationEvent(Event, BaseEventValidator):
         )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "EnterDestinationEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "SearchDestinationEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
         return cls(
@@ -613,8 +613,8 @@ def parse_datetime(value: str | None) -> datetime | dt_time | None:
 
 
 EVENTS = [
-    EnterLocationEvent,
-    EnterDestinationEvent,
+    SearchLocationEvent,
+    SearchDestinationEvent,
     SeePricesEvent,
     NextPickupEvent,
     SelectDateEvent,
@@ -627,8 +627,8 @@ EVENTS = [
 ]
 
 BACKEND_EVENT_TYPES = {
-    "ENTER_LOCATION": EnterLocationEvent,
-    "ENTER_DESTINATION": EnterDestinationEvent,
+    "SEARCH_LOCATION": SearchLocationEvent,
+    "SEARCH_DESTINATION": SearchDestinationEvent,
     "SEE_PRICES": SeePricesEvent,
     "NEXT_PICKUP": NextPickupEvent,
     "SELECT_TIME": SelectTimeEvent,

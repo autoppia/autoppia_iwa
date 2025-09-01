@@ -141,8 +141,8 @@ VIEW_HOTEL_USE_CASE = UseCase(
     additional_prompt_info=VIEW_HOTEL_INFO,
     examples=[
         {
-            "prompt": "I like the one in Murree with 5-star rating and free breakfast. Can you show me more about it?",
-            "prompt_for_task_generation": "View hotel in Murree with 5-star rating and free breakfast.",
+            "prompt": "View the hotel located in Murree with 5-star rating and free breakfast. Can you show me more about it?",
+            "prompt_for_task_generation": "View the hotel located in Murree with 5-star rating and free breakfast.",
         },
         {
             "prompt": "Open the second hotel from the list - the one hosted by Fatima since 2018, I think.",
@@ -630,13 +630,13 @@ BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
 
 ALL_USE_CASES = [
     SEARCH_HOTEL_USE_CASE,
-    VIEW_HOTEL_USE_CASE,
-    INCREASE_NUMBER_OF_GUESTS_USE_CASE,
-    RESERVE_HOTEL_USE_CASE,
-    EDIT_CHECK_IN_OUT_DATES_USE_CASE,
-    CONFIRM_AND_PAY_USE_CASE,
-    MESSAGE_HOST_USE_CASE,
-    SHARE_HOTEL_USE_CASE,
-    ADD_TO_WISHLIST_USE_CASE,
-    BACK_TO_ALL_HOTELS_USE_CASE,
+    # VIEW_HOTEL_USE_CASE,
+    # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
+    # RESERVE_HOTEL_USE_CASE,
+    # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
+    # CONFIRM_AND_PAY_USE_CASE,
+    # MESSAGE_HOST_USE_CASE,
+    # SHARE_HOTEL_USE_CASE,
+    # ADD_TO_WISHLIST_USE_CASE,
+    # BACK_TO_ALL_HOTELS_USE_CASE,
 ]
