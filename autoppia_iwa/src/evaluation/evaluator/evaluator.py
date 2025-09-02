@@ -5,7 +5,7 @@ import time
 from collections import defaultdict
 
 from loguru import logger
-from playwright.async_api import ViewportSize, async_playwright
+from playwright.async_api import async_playwright
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
@@ -347,12 +347,12 @@ class ConcurrentEvaluator(IEvaluator):
         async with async_playwright() as playwright:
             browser, context = None, None
             try:
-                browser_specifications = BrowserSpecification()
-                browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS)
+                browser_specifications = task.specifications or BrowserSpecification()
+                browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, args=[f"--window-size={browser_specifications.screen_width},{browser_specifications.screen_height}"])
                 # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
                 context = await browser.new_context(
                     extra_http_headers={"X-WebAgent-Id": web_agent_id},
-                    viewport=ViewportSize(width=browser_specifications.viewport_width, height=browser_specifications.viewport_height),
+                    no_viewport=True,
                 )
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
