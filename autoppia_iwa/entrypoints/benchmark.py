@@ -10,9 +10,6 @@ from loguru import logger
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import (
-    LocalTestGenerationPipeline,
-)
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
@@ -53,10 +50,10 @@ PROJECTS_TO_RUN: list[WebProject] = [
     # demo_web_projects[3],
     # demo_web_projects[4],
     # demo_web_projects[5],
-    demo_web_projects[7],
+    demo_web_projects[2],
 ]
 AGENTS: list[IWebAgent] = [
-    ApifiedWebAgent(id="2", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="2", name="AutoppiaAgent1", host="127.0.0.1", port=6000, timeout=120),
     # ApifiedWebAgent(id="3", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
 ]
 
@@ -77,10 +74,6 @@ AGENT_GLOBALS: dict[str, dict[str, float | int]] = defaultdict(lambda: {"success
 
 @visualize_task(visualizer)
 async def generate_tasks(project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
-    if config.evaluate_real_tasks and tasks_data:
-        single = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
-        return await LocalTestGenerationPipeline(project).add_tests_to_tasks([single])
-
     if not project.use_cases:
         logger.warning(f"Project '{project.name}' has no use cases, skipping.")
         return []
