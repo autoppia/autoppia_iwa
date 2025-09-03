@@ -43,15 +43,45 @@ def _ensure_page(page: Page | None, action_name: str) -> Page:
     return page
 
 
+async def _maybe_wait_navigation(page: Page, timeout_ms: int = 3000) -> None:
+    """Optionally wait for navigation if click triggers it."""
+    try:
+        await page.wait_for_event("framenavigated", timeout=timeout_ms)
+        await page.wait_for_load_state("domcontentloaded")
+    except PWTimeout:
+        pass
+
+
+async def _element_center(page: Page, selector_str: str) -> tuple[int, int]:
+    """Resolve selector center coordinates (scrolling into view first)."""
+    loc = page.locator(selector_str)
+    await loc.scroll_into_view_if_needed()
+    box = await loc.bounding_box()
+    if not box:
+        raise ValueError("Could not resolve bounding box for selector.")
+    x = int(box["x"] + box["width"] / 2)
+    y = int(box["y"] + box["height"] / 2)
+    return x, y
+
+
+async def _move_mouse_to(page: Page, selector: str | None, x: int | None, y: int | None, steps: int = 1) -> None:
+    """Move mouse to selector center or to explicit coordinates."""
+    if selector:
+        cx, cy = await _element_center(page, selector)
+        await page.mouse.move(cx, cy, steps=steps)
+        return
+    if x is not None and y is not None:
+        await page.mouse.move(x, y, steps=steps)
+        return
+    raise ValueError("Either a selector or (x, y) must be provided.")
+
+
 # -------------------------------------------------------------------
 # Concrete Action Implementations
 # -------------------------------------------------------------------
+class BaseClickAction(BaseActionWithSelector):
+    type: Literal["BaseClickAction"] = "BaseClickAction"
 
-
-class ClickAction(BaseActionWithSelector):
-    """Clicks an element identified by a selector, or at specific coordinates."""
-
-    type: Literal["ClickAction"] = "ClickAction"
     # Make selector optional if x,y are provided
     selector: Selector | None = Field(None, description="Selector for the element to click. Required if x, y are not provided.")
     x: int | None = Field(None, description="X-coordinate for the click, relative to the top-left corner of the viewport.")
@@ -68,27 +98,27 @@ class ClickAction(BaseActionWithSelector):
             logger.warning("Both 'selector' and coordinates (x, y) provided for ClickAction. Selector will be prioritized.")
         return values
 
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        pass
+
+
+class ClickAction(BaseClickAction):
+    """Clicks an element identified by a selector, or at specific coordinates."""
+
+    type: Literal["ClickAction"] = "ClickAction"
+
     @log_action("ClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "ClickAction")
 
-        # ---------- CLICK BY SELECTOR ----------------------------------------
+        # Click by selector
         if self.selector:
             sel = self.get_playwright_selector()
-
-            # Click Without Implicit Blocking
             await page.click(sel, no_wait_after=True)
-
-            # Conditional navigation waiting (max. 3s)
-            try:
-                await page.wait_for_event("framenavigated", timeout=3000)
-                await page.wait_for_load_state("domcontentloaded")
-            except PWTimeout:
-                # There was no navigation → follow
-                pass
+            await _maybe_wait_navigation(page)
             return
 
-        # ---------- Click by coordinates-------------------------------------
+        # Click by coordinates
         if self.x is not None and self.y is not None:
             await page.mouse.click(self.x, self.y)
             return
@@ -96,16 +126,144 @@ class ClickAction(BaseActionWithSelector):
         raise ValueError("Either a selector or (x, y) must be provided.")
 
 
-class DoubleClickAction(BaseActionWithSelector):
-    """Double-clicks an element identified by a selector."""
+class DoubleClickAction(BaseClickAction):
+    """Double-clicks an element identified by a selector or coordinates."""
 
     type: Literal["DoubleClickAction"] = "DoubleClickAction"
 
     @log_action("DoubleClickAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "DoubleClickAction")
-        selector_str = self.get_playwright_selector()
-        await page.dblclick(selector_str)
+
+        if self.selector:
+            selector_str = self.get_playwright_selector()
+            await page.dblclick(selector_str, no_wait_after=True)
+            await _maybe_wait_navigation(page)
+            return
+
+        if self.x is not None and self.y is not None:
+            await page.mouse.dblclick(x=self.x, y=self.y)
+            return
+
+        raise ValueError("Either a selector or (x, y) must be provided.")
+
+
+class RightClickAction(BaseClickAction):
+    """Right-clicks an element identified by a selector or coordinates."""
+
+    type: Literal["RightClickAction"] = "RightClickAction"
+
+    @log_action("RightClickAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "RightClickAction")
+
+        if self.selector:
+            sel = self.get_playwright_selector()
+            await page.click(sel, button="right", no_wait_after=True)
+            await _maybe_wait_navigation(page)
+            return
+
+        if self.x is not None and self.y is not None:
+            await page.mouse.click(self.x, self.y, button="right")
+            return
+
+        raise ValueError("Either a selector or (x, y) must be provided.")
+
+
+class MiddleClickAction(BaseClickAction):
+    """Middle-clicks an element identified by a selector or coordinates."""
+
+    type: Literal["MiddleClickAction"] = "MiddleClickAction"
+
+    @log_action("MiddleClickAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "MiddleClickAction")
+
+        if self.selector:
+            sel = self.get_playwright_selector()
+            await page.click(sel, button="middle", no_wait_after=True)
+            await _maybe_wait_navigation(page)
+            return
+
+        if self.x is not None and self.y is not None:
+            await page.mouse.click(self.x, self.y, button="middle")
+            return
+
+        raise ValueError("Either a selector or (x, y) must be provided.")
+
+
+class TripleClickAction(BaseClickAction):
+    """Triple-clicks an element identified by a selector or coordinates."""
+
+    type: Literal["TripleClickAction"] = "TripleClickAction"
+
+    @log_action("TripleClickAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "TripleClickAction")
+
+        if self.selector:
+            sel = self.get_playwright_selector()
+            await page.click(sel, click_count=3, no_wait_after=True)
+            return
+
+        if self.x is not None and self.y is not None:
+            await page.mouse.click(self.x, self.y, click_count=3)
+            return
+
+        raise ValueError("Either a selector or (x, y) must be provided.")
+
+
+class MouseDownAction(BaseClickAction):
+    """Presses the left mouse button down on a selector or at coordinates."""
+
+    type: Literal["MouseDownAction"] = "MouseDownAction"
+
+    @log_action("MouseDownAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "MouseDownAction")
+
+        sel = self.get_playwright_selector() if self.selector else None
+        await _move_mouse_to(page, sel, self.x, self.y)
+        await page.mouse.down(button="left")
+
+
+class MouseUpAction(BaseClickAction):
+    """Releases the left mouse button on a selector or at coordinates."""
+
+    type: Literal["MouseUpAction"] = "MouseUpAction"
+
+    @log_action("MouseUpAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "MouseUpAction")
+
+        sel = self.get_playwright_selector() if self.selector else None
+        # If a target is provided, move to it first (keeps behavior predictable).
+        if sel or (self.x is not None and self.y is not None):
+            await _move_mouse_to(page, sel, self.x, self.y)
+        await page.mouse.up(button="left")
+
+
+class MouseMoveAction(BaseClickAction):
+    """Moves the mouse to a selector center or to specific coordinates."""
+
+    type: Literal["MouseMoveAction"] = "MouseMoveAction"
+    steps: int = Field(1, description="Number of intermediate mouse move steps (animation).")
+
+    @log_action("MouseMoveAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "MouseMoveAction")
+
+        if self.selector:
+            sel = self.get_playwright_selector()
+            cx, cy = await _element_center(page, sel)
+            await page.mouse.move(cx, cy, steps=self.steps)
+            return
+
+        if self.x is not None and self.y is not None:
+            await page.mouse.move(self.x, self.y, steps=self.steps)
+            return
+
+        raise ValueError("Either a selector or (x, y) must be provided.")
 
 
 class NavigateAction(BaseAction):
@@ -550,6 +708,12 @@ class IdleAction(BaseAction):
 AllActionsUnion = Annotated[
     ClickAction
     | DoubleClickAction
+    | RightClickAction
+    | MiddleClickAction
+    | TripleClickAction
+    | MouseDownAction
+    | MouseUpAction
+    | MouseMoveAction
     | NavigateAction
     | TypeAction
     | SelectAction
@@ -580,6 +744,12 @@ ACTION_CLASS_MAP_LOWER = {
     "dragAndDrop": DragAndDropAction,
     "submit": SubmitAction,
     "doubleClick": DoubleClickAction,
+    "rightClick": RightClickAction,
+    "middleClick": MiddleClickAction,
+    "tripleClick": TripleClickAction,
+    "mouseDown": MouseDownAction,
+    "mouseUp": MouseUpAction,
+    "mouseMove": MouseMoveAction,
     "scroll": ScrollAction,
     "screenshot": ScreenshotAction,
     "wait": WaitAction,
@@ -600,6 +770,12 @@ ACTION_CLASS_MAP_CAPS = {
     "DragAndDropAction": DragAndDropAction,
     "SubmitAction": SubmitAction,
     "DoubleClickAction": DoubleClickAction,
+    "RightClickAction": RightClickAction,
+    "MiddleClickAction": MiddleClickAction,
+    "TripleClickAction": TripleClickAction,
+    "MouseDownAction": MouseDownAction,
+    "MouseUpAction": MouseUpAction,
+    "MouseMoveAction": MouseMoveAction,
     "ScrollAction": ScrollAction,
     "ScreenshotAction": ScreenshotAction,
     "WaitAction": WaitAction,
