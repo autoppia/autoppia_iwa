@@ -1,4 +1,3 @@
-from autoppia_iwa.config.config import WEB_3_AUTOZONE_JSON_FILEPATH
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest
 from autoppia_iwa.src.demo_webs.projects.omnizone_3.main import omnizone_project
@@ -121,26 +120,26 @@ async def main():
     await evaluate_scenario(task, search_scenarios, "Search Queries")
 
 
-def read_write_json_file():
-    import contextlib
-    import fcntl
-    import json
-
-    from autoppia_iwa.src.demo_webs.classes import BackendEvent
-
-    json_file_path = WEB_3_AUTOZONE_JSON_FILEPATH
-
-    with open(json_file_path) as f:
-        with contextlib.suppress(ImportError, ModuleNotFoundError):
-            fcntl.flock(f, fcntl.LOCK_SH)
-        try:
-            events_data = json.load(f)
-        finally:
-            with contextlib.suppress(NameError):
-                fcntl.flock(f, fcntl.LOCK_UN)
-
-    events = [BackendEvent(**event) for event in events_data]
-    print(events)
+# def read_write_json_file():
+#     import contextlib
+#     import fcntl
+#     import json
+#
+#     from autoppia_iwa.src.demo_webs.classes import BackendEvent
+#
+#     json_file_path = WEB_3_AUTOZONE_JSON_FILEPATH
+#
+#     with open(json_file_path) as f:
+#         with contextlib.suppress(ImportError, ModuleNotFoundError):
+#             fcntl.flock(f, fcntl.LOCK_SH)
+#         try:
+#             events_data = json.load(f)
+#         finally:
+#             with contextlib.suppress(NameError):
+#                 fcntl.flock(f, fcntl.LOCK_UN)
+#
+#     events = [BackendEvent(**event) for event in events_data]
+#     print(events)
 
 
 if __name__ == "__main__":

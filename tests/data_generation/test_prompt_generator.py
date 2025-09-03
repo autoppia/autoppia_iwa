@@ -1,7 +1,7 @@
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
@@ -26,7 +26,7 @@ class TestTaskPromptGenerator(unittest.IsolatedAsyncioTestCase):
             web_project[0].relevant_data = RELEVANT_DATA
 
             # Create task generator
-            generator = LocalTaskGenerationPipeline(web_project[0], llm_service=self.llm_service)
+            generator = GlobalTaskGenerationPipeline(web_project[0], llm_service=self.llm_service)
 
             # Generate tasks
             tasks = await generator.generate_per_url(START_URL)
