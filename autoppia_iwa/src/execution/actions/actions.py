@@ -1,5 +1,4 @@
 # actions.py
-import asyncio
 import json
 from functools import wraps
 from typing import Annotated, Any, Literal
@@ -388,72 +387,132 @@ class WaitAction(BaseAction):
 
 
 class ScrollAction(BaseAction):
-    """Scrolls the page up, down, to an element, or by a specific amount."""
+    """Scrolls the page up, down, left, right, to a text, or by a specific amount."""
 
     type: Literal["ScrollAction"] = "ScrollAction"
-    value: str | int | None = None
-    up: bool = False
-    down: bool = False
 
-    async def _scroll_by_value(self, page: Page, value: int) -> None:
-        """Scroll the page by a fixed amount."""
-        try:
-            if self.up:
-                await page.evaluate(f"window.scrollBy(0, -{value});")
-            elif self.down:
-                await page.evaluate(f"window.scrollBy(0, {value});")
-        except Exception as e:
-            print(f"Failed to scroll by value {value}: {e}\n\n\n Retrying with fallback.")
-            fallback_value = "window.innerHeight"
-            if self.up:
-                await page.evaluate(f"window.scrollBy(0, -{fallback_value});")
-            elif self.down:
-                await page.evaluate(f"window.scrollBy(0, {fallback_value});")
+    value: str | int | None = Field(
+        None,
+        description=(
+            "Scroll amount or target. "
+            "If int: scroll by that many px in the chosen direction. "
+            "If None: scroll by viewport size in the chosen direction. "
+            "If str: one of {'top','bottom','left','right','max','start','end'} or text to scroll into view."
+        ),
+    )
+    up: bool = Field(False, description="Scroll vertically up.")
+    down: bool = Field(False, description="Scroll vertically down.")
+    left: bool = Field(False, description="Scroll horizontally left.")
+    right: bool = Field(False, description="Scroll horizontally right.")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_directions(cls, values):
+        up = bool(values.get("up", False))
+        down = bool(values.get("down", False))
+        left = bool(values.get("left", False))
+        right = bool(values.get("right", False))
+        value = values.get("value", None)
+
+        dir_count = sum([up, down, left, right])
+
+        # If value is int or None, require exactly one direction flag.
+        if isinstance(value, int | type(None)) and dir_count != 1:
+            raise ValueError("ScrollAction requires exactly one of up/down/left/right when 'value' is int or None.")
+        # If value is a str keyword, we can infer direction. If it's arbitrary text, no flags are needed.
+        return values
+
+    async def _scroll_by_value(self, page: Page, dx: int, dy: int) -> None:
+        """Scroll window by dx, dy."""
+        await page.evaluate(
+            """({dx, dy}) => { window.scrollBy(dx, dy); }""",
+            {"dx": dx, "dy": dy},
+        )
 
     @staticmethod
     async def _scroll_to_text(page: Page, text: str) -> None:
-        """Scroll the page to a specific text element."""
-        locators = [
-            page.get_by_text(text, exact=False),
-            page.locator(f"text={text}"),
-            page.locator(f"//*[contains(text(), '{text}')]"),
-        ]
-        for locator in locators:
-            try:
-                if await locator.count() > 0 and await locator.first.is_visible():
-                    await locator.first.scroll_into_view_if_needed()
-                    # Allow time for the scroll to complete
-                    await asyncio.sleep(0.5)
-                    return
-            except Exception as e:
-                print(f"Failed to scroll to text '{text}' with locator: {e}")
-                continue
-        raise ValueError(f"Could not scroll to text: {text}")
+        """Scroll the page to make an element containing the given text visible."""
+        locator = page.get_by_text(text, exact=False).first
+        count = await locator.count()
+        if count == 0:
+            # Try a looser XPath contains fallback
+            locator = page.locator(f"xpath=//*[contains(normalize-space(string(.)), {json.dumps(text)})]").first
+            count = await locator.count()
+            if count == 0:
+                raise ValueError(f"Could not find text on page: {text}")
+        await locator.scroll_into_view_if_needed()
+
+    async def _scroll_to_edge(self, page: Page, axis: str, end: str) -> None:
+        """Scroll to an extreme along the axis: axis in {'x','y'}, end in {'start','end'}."""
+        # Use the scrolling element for consistent behavior
+        script = """
+            ({axis, end}) => {
+              const el = document.scrollingElement || document.documentElement;
+              if (axis === 'y') {
+                el.scrollTop = end === 'start' ? 0 : el.scrollHeight;
+              } else {
+                el.scrollLeft = end === 'start' ? 0 : el.scrollWidth;
+              }
+            }
+        """
+        await page.evaluate(script, {"axis": axis, "end": end})
 
     @log_action("ScrollAction")
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
-        """Execute the scroll action."""
         page = _ensure_page(page, "ScrollAction")
+
+        # If value is a directive string, handle it first.
+        if isinstance(self.value, str):
+            v = self.value.strip().lower()
+            if v in {"top", "start"}:
+                await self._scroll_to_edge(page, axis="y", end="start")
+                return
+            if v in {"bottom", "max", "end"}:
+                await self._scroll_to_edge(page, axis="y", end="end")
+                return
+            if v in {"left"}:
+                await self._scroll_to_edge(page, axis="x", end="start")
+                return
+            if v in {"right"}:
+                await self._scroll_to_edge(page, axis="x", end="end")
+                return
+
+            # Otherwise treat it as text to scroll to.
+            await self._scroll_to_text(page, self.value)
+            return
+
+        # Otherwise, we are scrolling by a numeric amount or by viewport size with a single direction flag.
         try:
-            if self.value is None:
-                scroll_amount = "window.innerHeight"
-                if self.up:
-                    await page.evaluate(f"window.scrollBy(0, -{scroll_amount});")
-                elif self.down:
-                    await page.evaluate(f"window.scrollBy(0, {scroll_amount});")
-            elif isinstance(self.value, int):
-                await self._scroll_by_value(page, self.value)
-            elif isinstance(self.value, str):
-                if self.value.lower() in ["max", "bottom"]:
-                    await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            # Determine axis and sign.
+            axis = "y" if (self.up or self.down) else "x"
+            positive = self.down or self.right  # positive increases scrollTop/scrollLeft
+            sign = 1 if positive else -1
+
+            if isinstance(self.value, int):
+                amount = abs(self.value)
+            else:
+                # Default step is viewport size on the chosen axis.
+                if axis == "y":
+                    inner = await page.evaluate("() => window.innerHeight")
                 else:
-                    await self._scroll_to_text(page, self.value)
-        except (Exception, ValueError) as e:
-            print(f"ScrollAction failed: {e}. Falling back to keyboard scroll.")
+                    inner = await page.evaluate("() => window.innerWidth")
+                amount = int(inner) if inner else 600  # fallback
+
+            dx, dy = (sign * amount, 0) if axis == "x" else (0, sign * amount)
+            await self._scroll_by_value(page, dx=dx, dy=dy)
+        except Exception as e:
+            # Fallback to keyboard scroll if JS scrolling fails.
+            action_logger.warning(f"ScrollAction failed with JS scrolling: {e}. Using keyboard fallback.")
             try:
-                await page.keyboard.press("PageDown" if self.down else "PageUp")
+                if self.left or (isinstance(self.value, str) and self.value.strip().lower() == "left"):
+                    await page.keyboard.press("ArrowLeft")
+                elif self.right or (isinstance(self.value, str) and self.value.strip().lower() == "right"):
+                    await page.keyboard.press("ArrowRight")
+                elif self.up or (isinstance(self.value, str) and self.value.strip().lower() in {"top", "start"}):
+                    await page.keyboard.press("PageUp")
+                else:
+                    await page.keyboard.press("PageDown")
             except Exception as kb_error:
-                print(f"Keyboard scroll also failed: {kb_error}")
                 raise ValueError(f"ScrollAction completely failed: {e}") from kb_error
 
 
