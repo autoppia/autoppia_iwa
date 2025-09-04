@@ -5,7 +5,6 @@ import os
 # Autoppia/third-party imports
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
 from autoppia_iwa.src.shared.utils_entrypoints.tasks import generate_tasks_for_web_project
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
@@ -49,29 +48,28 @@ async def main():
     # Container to store results: { agent_id: { task_id: {"score": ...} } }
 
     # Load or create demo web projects
-    web_projects = await initialize_demo_webs_projects(demo_web_projects)
-    if not web_projects:
+    if not demo_web_projects:
         logger.error("No demo web projects available.")
         return
 
     # Use the first project for demonstration
-    demo_project = web_projects[0]
+    demo_project = demo_web_projects[0]
     logger.info(f"Using project: {demo_project.name}")
 
     # Generate or load tasks for the project
-    tasks = await generate_tasks_for_web_project(
+    tasks_project = await generate_tasks_for_web_project(
         demo_project,
         use_cached_tasks=USE_CACHED_TASKS,
         task_cache_dir=TASKS_CACHE_DIR,
     )
 
-    if not tasks:
+    if not tasks_project:
         logger.error("No tasks available.")
         return
 
-    logger.info(f"Evaluating {len(tasks)} tasks with {len(AGENTS)} agents, {M} solution copies each...")
+    logger.info(f"Evaluating {len(tasks_project)} tasks with {len(AGENTS)} agents, {M} solution copies each...")
 
-    for task in tasks:
+    for task in tasks_project:
         print(task.prompt)
         for test in task.tests:
             print(test)
