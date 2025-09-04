@@ -1,9 +1,10 @@
 import unittest
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.application.tasks.local.local_task_generation import LocalTaskGenerationPipeline
+from autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 
 START_URL = "http://localhost:8000/login"
 RELEVANT_DATA = {"authorization": {"email": "employee@employee.com", "password": "employee"}}
@@ -21,10 +22,11 @@ class TestTaskPromptGenerator(unittest.IsolatedAsyncioTestCase):
         """Test the generation of prompts for a URL."""
         try:
             # Initialize demo web project and set relevant data
-            demo_web_projects[0].relevant_data = RELEVANT_DATA
+            web_project = await initialize_demo_webs_projects(demo_web_projects)
+            web_project[0].relevant_data = RELEVANT_DATA
 
             # Create task generator
-            generator = LocalTaskGenerationPipeline(demo_web_projects[0], llm_service=self.llm_service)
+            generator = GlobalTaskGenerationPipeline(web_project[0], llm_service=self.llm_service)
 
             # Generate tasks
             tasks = await generator.generate_per_url(START_URL)
