@@ -18,6 +18,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import (
     BenchmarkConfig,
+    get_projects_by_ids,
     setup_logging,
 )
 from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
@@ -36,7 +37,6 @@ from autoppia_iwa.src.shared.visualizator import (
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import get_projects_by_ids
 
 # ---------------------------------------------------------------------------
 # Configuration & globals
@@ -47,7 +47,7 @@ AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="3", name="AutoppiaAgent2", host="127.0.0.1", port=5000, timeout=120),
 ]
 
-# Definicion de proyectos a evaluar
+# Definition of projects to evaluate
 PROJECT_IDS_TO_RUN = ["autozone", "cinema", "books"]
 PROJECTS_TO_RUN: list[WebProject] = get_projects_by_ids(demo_web_projects, PROJECT_IDS_TO_RUN)
 
@@ -292,7 +292,6 @@ async def main() -> None:
         generate_project_report(evaluation_results, project, timing)
 
     logger.success("Benchmark finished ✔")
-
 
 
 if __name__ == "__main__":
