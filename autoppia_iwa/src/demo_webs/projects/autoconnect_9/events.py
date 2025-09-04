@@ -102,7 +102,7 @@ class PostStatusEvent(Event, BaseEventValidator):
     event_name: str = "POST_STATUS"
     user_name: str
     content: str
-    post_id: str
+    # post_id: str
 
     class ValidationCriteria(BaseModel):
         user_name: str | CriterionValue | None = None
@@ -113,9 +113,8 @@ class PostStatusEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.user_name, criteria.user_name),
+                # self._validate_field(self.user_name, criteria.user_name),
                 self._validate_field(self.content, criteria.content),
-                self._validate_field(self.post_id, criteria.post_id),
             ]
         )
 
@@ -130,7 +129,7 @@ class PostStatusEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             user_name=data.get("userName", ""),
             content=data.get("content", ""),
-            post_id=data.get("postId", ""),
+            # post_id=data.get("postId", ""),
         )
 
 
