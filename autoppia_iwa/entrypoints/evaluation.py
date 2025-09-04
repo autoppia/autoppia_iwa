@@ -9,7 +9,6 @@ from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
@@ -23,8 +22,7 @@ DEMO_WEB_PROJECT = [demo_web_projects[0]]
 
 
 async def generate_tasks():
-    test_projects = await initialize_demo_webs_projects(DEMO_WEB_PROJECT)
-    web_project = test_projects[0]
+    web_project = DEMO_WEB_PROJECT[0]
     config = TaskGenerationConfig()
     pipeline = TaskGenerationPipeline(web_project=web_project, config=config)
     tasks: list[Task] = await pipeline.generate()

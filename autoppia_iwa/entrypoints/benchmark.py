@@ -14,7 +14,6 @@ from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.demo_webs.utils import initialize_demo_webs_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import (
@@ -34,31 +33,25 @@ from autoppia_iwa.src.shared.visualizator import (
     visualize_list_of_evaluations,
     visualize_task,
 )
-from autoppia_iwa.src.shared.web_voyager_utils import TaskData
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import get_projects_by_ids
 
 # ---------------------------------------------------------------------------
 # Configuration & globals
 # ---------------------------------------------------------------------------
 
-PROJECTS_TO_RUN: list[WebProject] = [
-    # demo_web_projects[0],
-    # demo_web_projects[1],
-    # demo_web_projects[2],
-    # demo_web_projects[3],
-    # demo_web_projects[4],
-    # demo_web_projects[5],
-    demo_web_projects[6],
-    # demo_web_projects[7],
-]
 AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="2", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
     ApifiedWebAgent(id="3", name="AutoppiaAgent2", host="127.0.0.1", port=5000, timeout=120),
 ]
 
-config = BenchmarkConfig(projects_to_run=PROJECTS_TO_RUN, agents=AGENTS)
+# Definicion de proyectos a evaluar
+PROJECT_IDS_TO_RUN = ["autozone", "cinema", "books"]
+PROJECTS_TO_RUN: list[WebProject] = get_projects_by_ids(demo_web_projects, PROJECT_IDS_TO_RUN)
+
+config = BenchmarkConfig(agents=AGENTS, projects_to_run=PROJECTS_TO_RUN)
 
 setup_logging("benchmark.log")
 solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
@@ -74,18 +67,20 @@ AGENT_GLOBALS: dict[str, dict[str, float | int]] = defaultdict(lambda: {"success
 
 
 @visualize_task(visualizer)
-async def generate_tasks(project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
+async def generate_tasks(project: WebProject) -> list[Task]:
     if not project.use_cases:
         logger.warning(f"Project '{project.name}' has no use cases, skipping.")
         return []
 
-    return await generate_tasks_for_web_project(
+    tasks_project = await generate_tasks_for_web_project(
         project,
         config.use_cached_tasks,
         str(config.tasks_cache_dir),
         prompts_per_use_case=config.prompt_per_use_case,
         num_of_use_cases=config.num_of_use_cases,
     )
+
+    return tasks_project
 
 
 # ---------------------------------------------------------------------------
@@ -155,7 +150,7 @@ async def generate_solution(
             await backend.close()
 
 
-async def run_evaluation(project: WebProject, tasks: list[Task], timing: TimingMetrics, run_no: int):
+async def run_evaluation(project: WebProject, tasks: list[Task], timing: TimingMetrics):
     aggregated: dict[str, dict[str, dict]] = {}
     for task in tasks:
         sols = await asyncio.gather(*[generate_solution(project, ag, task, timing) for ag in config.agents])
@@ -178,13 +173,13 @@ async def run_evaluation(project: WebProject, tasks: list[Task], timing: TimingM
 # ---------------------------------------------------------------------------
 
 
-def show_stats(all_runs: list[dict], project: WebProject, timing: TimingMetrics) -> None:
+def generate_project_report(evaluation_results: list[dict], project: WebProject, timing: TimingMetrics) -> None:
     """Generate per-agent → per-project stats plus per-agent overall."""
     per_agent_scores: defaultdict[str, defaultdict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
     per_agent_times: defaultdict[str, defaultdict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
 
-    for run in all_runs:
-        for agent_id, task_dict in run.items():
+    for evaluation_result in evaluation_results:
+        for agent_id, task_dict in evaluation_result.items():
             agent_name = next((a.name for a in config.agents if a.id == agent_id), agent_id)
             for task_id, res in task_dict.items():
                 uc = res["task_use_case"].upper()
@@ -278,22 +273,26 @@ async def main() -> None:
     AppBootstrap()
     timing = TimingMetrics()
 
-    await initialize_demo_webs_projects(demo_web_projects)
+    for project in config.projects_to_run:
+        evaluation_results: list[dict] = []
 
-    for proj in config.projects_to_run:
-        all_runs: list[dict] = []
-        for run_idx in range(1, config.num_runs + 1):
+        for _ in range(config.num_runs):
             timing.start()
-            tasks = await generate_tasks(proj)
+            tasks = await generate_tasks(project)
+
             for t in tasks:
                 t.should_record = config.return_evaluation_gif
+
             if tasks:
-                all_runs.append(await run_evaluation(proj, tasks, timing, run_idx))
+                evaluation_result = await run_evaluation(project, tasks, timing)
+                evaluation_results.append(evaluation_result)
             else:
-                logger.warning(f"No tasks for {proj.name} - skipping run")
-        show_stats(all_runs, proj, timing)
+                logger.warning(f"No tasks for {project.name} - skipping run")
+
+        generate_project_report(evaluation_results, project, timing)
 
     logger.success("Benchmark finished ✔")
+
 
 
 if __name__ == "__main__":

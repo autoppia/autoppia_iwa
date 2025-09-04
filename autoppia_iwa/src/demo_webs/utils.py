@@ -17,6 +17,3 @@ def get_backend_url(index: int, symmetric=True):
     else:
         return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}"
 
-
-async def initialize_demo_webs_projects(demo_web_projects: list[WebProject]):
-    return demo_web_projects

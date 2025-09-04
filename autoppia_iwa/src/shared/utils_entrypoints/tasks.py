@@ -76,25 +76,31 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
         return None
 
 
-async def generate_tasks_for_web_project(demo_project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1) -> list[Task]:
+async def generate_tasks_for_web_project(
+        project: WebProject, 
+        use_cached_tasks: bool, 
+        task_cache_dir: str, 
+        prompts_per_use_case: int = 1, 
+        num_of_use_cases: int = 1
+        ) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
     """
     if use_cached_tasks:
-        cached_tasks = await load_tasks_from_json(demo_project, task_cache_dir)
+        cached_tasks = await load_tasks_from_json(project, task_cache_dir)
         if cached_tasks and len(cached_tasks) > 0:
-            print(f"Using {len(cached_tasks)} cached tasks for '{demo_project.name}'")
+            print(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
             return cached_tasks
         else:
-            print(f"No valid cached tasks found for '{demo_project.name}', generating new tasks...")
+            print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
 
     config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases)
 
-    print(f"Generating tasks for {demo_project.name}...")
-    pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
+    print(f"Generating tasks for {project.name}...")
+    pipeline = TaskGenerationPipeline(web_project=project, config=config)
     tasks = await pipeline.generate()
 
     if tasks:
-        await save_tasks_to_json(tasks, demo_project, task_cache_dir)
+        await save_tasks_to_json(tasks, project, task_cache_dir)
 
     return tasks
