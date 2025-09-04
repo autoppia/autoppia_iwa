@@ -565,6 +565,79 @@ class DragAndDropAction(BaseAction):
         await page.drag_and_drop(self.source_selector, self.target_selector)
 
 
+class LeftClickDragAction(BaseAction):
+    r"""Left-click drag from a start selector/(x,y) to a target selector/(x,y)."""
+
+    type: Literal["LeftClickDragAction"] = "LeftClickDragAction"
+
+    # Start point
+    selector: Selector | None = Field(None, description="Start selector. If omitted, x/y must be provided.")
+    x: int | None = Field(None, description="Start X coordinate.")
+    y: int | None = Field(None, description="Start Y coordinate.")
+
+    # Target point
+    targetSelector: Selector | None = Field(None, description="Target selector. If omitted, targetX/targetY must be provided.")
+    targetX: int | None = Field(None, description="Target X coordinate.")
+    targetY: int | None = Field(None, description="Target Y coordinate.")
+
+    steps: int = Field(1, description="Number of intermediate mouse move steps during the drag.")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_points(cls, values):
+        # Validate start
+        has_start_sel = values.get("selector") is not None
+        has_start_xy = values.get("x") is not None and values.get("y") is not None
+        if not (has_start_sel or has_start_xy):
+            raise ValueError("Provide a start 'selector' or both 'x' and 'y'.")
+
+        # Validate target
+        has_target_sel = values.get("targetSelector") is not None
+        has_target_xy = values.get("targetX") is not None and values.get("targetY") is not None
+        if not (has_target_sel or has_target_xy):
+            raise ValueError("Provide a target 'targetSelector' or both 'targetX' and 'targetY'.")
+
+        steps = values.get("steps", 1)
+        try:
+            steps = int(steps)
+        except Exception:
+            steps = 1
+        values["steps"] = max(1, steps)
+        return values
+
+    @log_action("LeftClickDragAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "LeftClickDragAction")
+
+        # Resolve start and move there
+        start_selector_str = self.selector.to_playwright_selector() if self.selector else None
+        await _move_mouse_to(page, start_selector_str, self.x, self.y, steps=1)
+
+        # Press and hold left button
+        await page.mouse.down(button="left")
+
+        # Resolve target and drag
+        if self.targetSelector:
+            target_sel_str = self.targetSelector.to_playwright_selector()
+            tx, ty = await _element_center(page, target_sel_str)
+            await page.mouse.move(tx, ty, steps=self.steps)
+            # Make sure we're hovering over the target element
+            await page.hover(target_sel_str)
+        else:
+            if self.targetX is None or self.targetY is None:
+                await page.mouse.up(button="left")
+                raise ValueError("Target coordinates must include both 'targetX' and 'targetY'.")
+
+            tx, ty = int(self.targetX), int(self.targetY)
+            await page.mouse.move(tx, ty, steps=self.steps)
+
+        # Wait briefly to ensure browser registers the position
+        await page.wait_for_timeout(50)
+
+        # Release the mouse button
+        await page.mouse.up(button="left")
+
+
 class ScreenshotAction(BaseAction):
     """Takes a screenshot of the current page."""
 
@@ -591,6 +664,43 @@ class SendKeysIWAAction(BaseAction):
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
         page = _ensure_page(page, "SendKeysIWAAction")
         await page.keyboard.press(self.keys)
+
+
+class HoldKeyAction(BaseAction):
+    """Hold a keyboard key down, optionally for a duration, and release it."""
+
+    type: Literal["HoldKeyAction"] = "HoldKeyAction"
+    key: str = Field(..., description="Keyboard key to hold/release. Use Playwright key names.")
+    duration_ms: int | float | None = Field(None, description="Optional duration in ms to hold before releasing.")
+    release: bool = Field(False, description="If true, only releases the key instead of pressing it.")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_params(cls, values):
+        key = values.get("key")
+        if not key or not isinstance(key, str):
+            raise ValueError("A valid 'key' string is required.")
+        dur = values.get("duration_ms")
+        rel = values.get("release", False)
+        if dur is not None and (not isinstance(dur, int | float) or dur < 0):
+            raise ValueError(r"'duration_ms' must be a non-negative number if provided.")
+        if rel and dur is not None:
+            # Releasing with a duration is ambiguous; enforce one behavior.
+            raise ValueError("Provide either 'release=True' or 'duration_ms', not both.")
+        return values
+
+    @log_action("HoldKeyAction")
+    async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
+        page = _ensure_page(page, "HoldKeyAction")
+
+        if self.release:
+            await page.keyboard.up(self.key)
+            return
+
+        await page.keyboard.down(self.key)
+        if self.duration_ms is not None:
+            await page.wait_for_timeout(int(self.duration_ms))
+            await page.keyboard.up(self.key)
 
 
 class GetDropDownOptionsAction(BaseActionWithSelector):
@@ -792,8 +902,10 @@ AllActionsUnion = Annotated[
     | SubmitAction
     | AssertAction
     | DragAndDropAction
+    | LeftClickDragAction
     | ScreenshotAction
     | SendKeysIWAAction
+    | HoldKeyAction
     | GetDropDownOptionsAction
     | SelectDropDownOptionAction
     | UndefinedAction
@@ -802,7 +914,7 @@ AllActionsUnion = Annotated[
 ]
 
 # -------------------------------------------------------------------
-# MAPS (as requested, appended at the end)
+# MAPS
 # -------------------------------------------------------------------
 
 ACTION_CLASS_MAP_LOWER = {
@@ -811,6 +923,7 @@ ACTION_CLASS_MAP_LOWER = {
     "hover": HoverAction,
     "navigate": NavigateAction,
     "dragAndDrop": DragAndDropAction,
+    "leftclickdrag": LeftClickDragAction,
     "submit": SubmitAction,
     "doubleClick": DoubleClickAction,
     "rightClick": RightClickAction,
@@ -827,6 +940,7 @@ ACTION_CLASS_MAP_LOWER = {
     "idle": IdleAction,
     "undefined": UndefinedAction,
     "sendkeysiwa": SendKeysIWAAction,
+    "holdkey": HoldKeyAction,
     "getdropdownoptionsaction": GetDropDownOptionsAction,
     "SelectDropDownOptionAction": SelectDropDownOptionAction,
 }
@@ -837,6 +951,7 @@ ACTION_CLASS_MAP_CAPS = {
     "HoverAction": HoverAction,
     "NavigateAction": NavigateAction,
     "DragAndDropAction": DragAndDropAction,
+    "LeftClickDragAction": LeftClickDragAction,
     "SubmitAction": SubmitAction,
     "DoubleClickAction": DoubleClickAction,
     "RightClickAction": RightClickAction,
@@ -853,6 +968,7 @@ ACTION_CLASS_MAP_CAPS = {
     "IdleAction": IdleAction,
     "UndefinedAction": UndefinedAction,
     "SendKeysIWAAction": SendKeysIWAAction,
+    "HoldKeyAction": HoldKeyAction,
     "GetDropDownOptionsAction": GetDropDownOptionsAction,
     "SelectDropDownOptionAction": SelectDropDownOptionAction,
 }
