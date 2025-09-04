@@ -449,9 +449,19 @@ class ScrollAction(BaseAction):
             ({axis, end}) => {
               const el = document.scrollingElement || document.documentElement;
               if (axis === 'y') {
-                el.scrollTop = end === 'start' ? 0 : el.scrollHeight;
+                if (end === 'start') {
+                  el.scrollTop = 0;
+                } else {
+                  // Clamp to maximum scrollable top
+                  el.scrollTop = Math.max(0, el.scrollHeight - el.clientHeight);
+                }
               } else {
-                el.scrollLeft = end === 'start' ? 0 : el.scrollWidth;
+                if (end === 'start') {
+                  el.scrollLeft = 0;
+                } else {
+                  // Clamp to maximum scrollable left
+                  el.scrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+                }
               }
             }
         """
