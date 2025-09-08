@@ -64,10 +64,10 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     }:
+        base = field_value
+        delta = random.uniform(1, 3)
         numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
         if numeric_values:
-            base = random.choice(numeric_values)
-            delta = random.uniform(1, 3)
             if operator == ComparisonOperator.GREATER_THAN:
                 return round(base - delta, 2)
             elif operator == ComparisonOperator.LESS_THAN:
@@ -92,8 +92,7 @@ def generate_view_matter_constraints() -> list[dict[str, Any]]:
         if not allowed_ops:
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(allowed_ops))
 
         field_value = matter_data.get(field)
         value = _generate_constraint_value(operator, field_value, field, dataset=MATTERS_DATA)
@@ -148,8 +147,7 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
     possible_fields = list(sample_values.keys())
 
     for field in possible_fields:
-        op_str = random.choice(FIELD_OPERATORS_MAP_MATTER[field])
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(random.choice(FIELD_OPERATORS_MAP_MATTER[field])))
         value = random.choice(sample_values[field])
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -172,8 +170,7 @@ def generate_view_client_constraints() -> list[dict[str, Any]]:
         if not allowed_ops:
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(allowed_ops))
 
         field_value = sample_client.get(field)
         value = _generate_constraint_value(operator, field_value, field, dataset=CLIENT_DATA)
@@ -190,8 +187,7 @@ def generate_search_client_constraints() -> list[dict[str, Any]]:
     field_map = {"name": "query"}
     field = "name"
     allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
-    op_str = random.choice(allowed_ops)
-    operator = ComparisonOperator(op_str)
+    operator = ComparisonOperator(random.choice(allowed_ops))
 
     sample_client = random.choice(CLIENT_DATA)
     field_value = sample_client.get(field)
@@ -244,7 +240,7 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
             return None
 
         # Pick base
-        base_kb, unit = random.choice(size_entries)
+        base_kb, unit = field_value.replace("KB", "").replace("MB", "").strip(), "KB" if "KB" in field_value else "MB"
         delta = random.randint(1, 20)
 
         if operator == ComparisonOperator.GREATER_THAN:
@@ -280,8 +276,7 @@ def generate_document_deleted_constraints() -> list[dict[str, Any]]:
         if not allowed_ops:
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(allowed_ops))
 
         field_value = document_data.get(field)
 
@@ -393,8 +388,7 @@ def generate_new_log_added_constraints() -> list[dict[str, Any]]:
         if not allowed_ops:
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = log_data.get(field)
 
         value = _generate_constraint_value(operator, field_value, field, dataset=NEW_LOGS_DATA)
@@ -417,8 +411,7 @@ def generate_delete_log_constraints() -> list[dict[str, Any]]:
         if not allowed_ops:
             continue
 
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
+        operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = log_data.get(field)
 
         value = _generate_constraint_value(operator, field_value, field, dataset=DEMO_LOGS)
