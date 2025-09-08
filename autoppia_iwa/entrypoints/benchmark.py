@@ -47,7 +47,7 @@ AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="3", name="AutoppiaAgent2", host="127.0.0.1", port=5000, timeout=120),
 ]
 
-# Definicion de proyectos a evaluar
+# Definition of projects to evaluate
 PROJECT_IDS_TO_RUN = ["autozone", "cinema", "books"]
 PROJECTS_TO_RUN: list[WebProject] = get_projects_by_ids(demo_web_projects, PROJECT_IDS_TO_RUN)
 
