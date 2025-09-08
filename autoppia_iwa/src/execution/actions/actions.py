@@ -80,7 +80,9 @@ class ClickAction(BaseActionWithSelector):
             await page.click(sel, no_wait_after=True)
 
             # Conditional navigation waiting (max. 3s)
+
             try:
+                # 3 000 ms
                 await page.wait_for_event("framenavigated", timeout=3000)
                 await page.wait_for_load_state("domcontentloaded")
             except PWTimeout:
