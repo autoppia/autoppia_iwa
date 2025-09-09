@@ -1,4 +1,6 @@
+import calendar
 import contextlib
+import datetime
 import random
 from typing import Any
 
@@ -307,7 +309,6 @@ def generate_document_deleted_constraints() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     return constraints_list
-    # return [{'field': 'version', 'operator': ComparisonOperator.NOT_EQUALS, 'value': 'v3'}, {'field': 'status', 'operator': ComparisonOperator.EQUALS, 'value': 'Signed'}, {'field': 'size', 'operator': ComparisonOperator.GREATER_THAN, 'value': '529 KB'}]
 
 
 def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
@@ -366,19 +367,15 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(op_str)
 
         if field == "date":
-            # Ensure generated date is within a feasible range
-            base_day = random.randint(1, 28)
-            if operator == ComparisonOperator.LESS_THAN:
-                value = f"2025-05-{base_day:02d}"
-                # Prevent dates too far in the past or before system start
-                if base_day < 2:
-                    value = "2025-05-02"
-            elif operator == ComparisonOperator.GREATER_THAN:
-                value = f"2025-05-{base_day:02d}"
-                if base_day > 27:
-                    value = "2025-05-27"
-            else:
-                value = f"2025-05-{base_day:02d}"
+            today = datetime.date.today()
+            # choose previous (-1), current (0) or next (+1) month
+            offset = random.choice([-1, 0, 1])
+            total_month_index = today.year * 12 + (today.month - 1) + offset
+            year = total_month_index // 12
+            month = (total_month_index % 12) + 1
+            max_day = calendar.monthrange(year, month)[1]
+            day = random.randint(1, max_day)
+            value = f"{year}-{month:02d}-{day:02d}"
 
         elif field == "time":
             hour = random.randint(8, 16)
