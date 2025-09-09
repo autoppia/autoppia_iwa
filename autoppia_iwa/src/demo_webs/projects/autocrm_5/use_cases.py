@@ -332,6 +332,21 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
 )
 
 
+LOG_DELETE_EXTRA_INFO = """
+Critical Requirements:
+1. Use at most one constraint per field: `matter`, `description`, or `hours`.
+2. Mirror the constraint operator and the value exactly in the generated prompt. Do not paraphrase operators (e.g. use the specified negation).
+
+Example constraint (Python dict):
+constraint: {'matter': {'operator': 'not_equals', 'value': 'Court Filing'}, 'hours': {'operator': 'not_equals', 'value': 2.3}, 'client': {'operator': 'not_contains', 'value': 'CoreConnect'}, 'status': {'operator': 'in_list', 'value': ['Billed', 'Billable']}}
+
+Prompts:
+✔️ CORRECT: Delete the time log where matter is NOT equal to 'Court Filing', hours is NOT equal to 2.3, client does NOT CONTAIN 'CoreConnect', and status is in the list ['Billed', 'Billable'].
+❌ INCORRECT: Delete the time log for 'Court Filing' that recorded hours NOT EQUAL to 2.3, where the client does NOT CONTAIN 'CoreConnect' and the status is in the list ['Billed', 'Billable'].
+
+Explanation: The incorrect prompt does not reflect the specified operator for `matter` (`not_equals`) — it uses a positive equality instead of the required negation. Use the exact operators and value formats shown in the constraint.
+""".strip()
+
 ###############################################################################
 # LOG_DELETE_USE_CASE
 ###############################################################################
@@ -341,6 +356,7 @@ LOG_DELETE_USE_CASE = UseCase(
     event=LogDelete,
     event_source_code=LogDelete.get_source_code_of_class(),
     constraints_generator=generate_delete_log_constraints,
+    additional_prompt_info=LOG_DELETE_EXTRA_INFO,
     examples=[
         {
             "prompt": "Delete the time log for 'Estate Planning' that recorded 2 hours.",

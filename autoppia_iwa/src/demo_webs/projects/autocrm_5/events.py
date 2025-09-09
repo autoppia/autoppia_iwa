@@ -13,7 +13,6 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 
 
 class Matter(BaseModel):
-    # id: str
     name: str
     client: str
     status: str
@@ -21,7 +20,6 @@ class Matter(BaseModel):
 
 
 class Client(BaseModel):
-    # id: str
     name: str
     email: str
     matters: int
@@ -31,7 +29,6 @@ class Client(BaseModel):
 
 
 class Document(BaseModel):
-    # id: str
     name: str
     size: str
     version: str
@@ -40,7 +37,6 @@ class Document(BaseModel):
 
 
 class CalendarEvent(BaseModel):
-    # id: str
     date: str
     label: str
     time: str
@@ -48,7 +44,6 @@ class CalendarEvent(BaseModel):
 
 
 class TimeLog(BaseModel):
-    # id: str
     matter: str
     client: str
     date: str
@@ -230,7 +225,6 @@ class ViewClientDetails(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.client.id, criteria.id),
                 self._validate_field(self.client.name, criteria.name),
                 self._validate_field(self.client.email, criteria.email),
                 self._validate_field(self.client.matters, criteria.matters),
@@ -509,7 +503,6 @@ class NewLogAdded(Event, BaseEventValidator):
     log: TimeLog
 
     class ValidationCriteria(BaseModel):
-        # id: str | CriterionValue | None = None
         matter: str | CriterionValue | None = None
         # client: str | CriterionValue | None = None
         # date: str | CriterionValue | None = None
@@ -522,7 +515,6 @@ class NewLogAdded(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.log.id, criteria.id),
                 self._validate_field(self.log.matter, criteria.matter),
                 # self._validate_field(self.log.client, criteria.client),
                 # self._validate_field(self.log.date, criteria.date),
@@ -551,7 +543,6 @@ class LogDelete(Event, BaseEventValidator):
     log: TimeLog
 
     class ValidationCriteria(BaseModel):
-        # id: str | CriterionValue | None = None
         matter: str | CriterionValue | None = None
         client: str | CriterionValue | None = None
         # date: str|CriterionValue|None = None
@@ -564,7 +555,6 @@ class LogDelete(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.log.id, criteria.id),
                 self._validate_field(self.log.matter, criteria.matter),
                 self._validate_field(self.log.client, criteria.client),
                 # self._validate_field(self.log.date, criteria.date),
