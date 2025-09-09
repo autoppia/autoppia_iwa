@@ -76,13 +76,7 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
         return None
 
 
-async def generate_tasks_for_web_project(
-        project: WebProject, 
-        use_cached_tasks: bool, 
-        task_cache_dir: str, 
-        prompts_per_use_case: int = 1, 
-        num_of_use_cases: int = 1
-        ) -> list[Task]:
+async def generate_tasks_for_web_project(project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
     """
