@@ -27,7 +27,6 @@ from .generation_functions import (
     generate_view_client_constraints,
     generate_view_matter_constraints,
 )
-from .replace_functions import replace_placeholders
 
 ###############################################################################
 # VIEW_USE_CASE
@@ -40,7 +39,6 @@ VIEW_MATTER_USE_CASE = UseCase(
     event=ViewMatterDetails,
     event_source_code=ViewMatterDetails.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
-    # replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Go to the Matters page and click on 'Estate Planning' to view the details of that particular matter",
@@ -88,7 +86,6 @@ ADD_NEW_MATTER_USE_CASE = UseCase(
     event=AddNewMatter,
     event_source_code=AddNewMatter.get_source_code_of_class(),
     constraints_generator=generate_add_matter_constraints,
-    # replace_func=replace_placeholders,
     additional_prompt_info=ADD_NEW_MATTER_EXTRA_INFO,
     examples=[
         {
@@ -113,7 +110,6 @@ ARCHIVE_MATTER_USE_CASE = UseCase(
     event=ArchiveMatter,
     event_source_code=ArchiveMatter.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
-    # replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Archive the matter whose status is set to 'Active'",
@@ -144,7 +140,6 @@ DELETE_MATTER_USE_CASE = UseCase(
     event=DeleteMatter,
     event_source_code=DeleteMatter.get_source_code_of_class(),
     constraints_generator=generate_view_matter_constraints,
-    # replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "Delete the matter whose status is set to 'Active'",
@@ -181,15 +176,14 @@ VIEW_CLIENT_DETAILS_USE_CASE = UseCase(
     event=ViewClientDetails,
     event_source_code=ViewClientDetails.get_source_code_of_class(),
     constraints_generator=generate_view_client_constraints,
-    replace_func=replace_placeholders,
     examples=[
         {
             "prompt": "View details of client, whose client name is 'jessica brown' and email is 'jbrown@samplemail.com'",
-            "prompt_for_task_generation": "View details of client, whose client name is '<client_name>' and email is '<client_email>'",
+            "prompt_for_task_generation": "View details of client, whose client name is 'jessica brown' and email is 'jbrown@samplemail.com'",
         },
         {
             "prompt": "View client details if its status is 'active', its email is 'team@smithco.com' and matters are not '3'",
-            "prompt_for_task_generation": "View client details if its status is '<client_status>', its email is '<client_email>' and matters are '<client_matter>'",
+            "prompt_for_task_generation": "View client details if its status is 'active', its email is 'team@smithco.com' and matters are not '3'",
         },
     ],
 )
@@ -222,7 +216,8 @@ SEARCH_CLIENT_USE_CASE = UseCase(
 
 DOCUMENT_DELETED_EXTRA_INFO = """
 Critical Requirements:
-1. Do not specify more than one constraint for the same field — name, size, version, status, or updated — in a single request.
+1. Mention all the constraint in the prompt accurately.
+2. Do not specify more than one constraint for the same field — name, size, version, status, or updated — in a single request.
 
 ✔️ CORRECT: Delete the document named 'Retainer-Agreement.pdf'.
 ✔️ CORRECT: Remove the document whose status is 'Draft' and whose name contains 'Proposal'.
@@ -240,20 +235,19 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
     event=DocumentDeleted,
     event_source_code=DocumentDeleted.get_source_code_of_class(),
     constraints_generator=generate_document_deleted_constraints,
-    replace_func=replace_placeholders,
     additional_prompt_info=DOCUMENT_DELETED_EXTRA_INFO,
     examples=[
         {
             "prompt": "Delete the document named 'Retainer-Agreement.pdf'.",
-            "prompt_for_task_generation": "Delete the document named '<document_name>'.",
+            "prompt_for_task_generation": "Delete the document named 'Retainer-Agreement.pdf'.",
         },
         {
             "prompt": "Remove any document that is marked as 'Draft'.",
-            "prompt_for_task_generation": "Remove any document that is marked as '<document_status>'.",
+            "prompt_for_task_generation": "Remove any document that is marked as 'Draft'.",
         },
         {
             "prompt": "Delete the document 'Patent-Application.pdf' if its status is 'Submitted'.",
-            "prompt_for_task_generation": "Delete the document '<document_name>' if its status is '<document_status>'.",
+            "prompt_for_task_generation": "Delete the document '<document_name>' if its status is 'Submitted'.",
         },
     ],
 )
@@ -277,7 +271,6 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
     event=NewCalendarEventAdded,
     event_source_code=NewCalendarEventAdded.get_source_code_of_class(),
     constraints_generator=generate_new_calendar_event_constraints,
-    # replace_func=replace_placeholders,
     additional_prompt_info=NEW_CALENDER_EVENT_EXTRA_INFO,
     examples=[
         {
@@ -297,11 +290,8 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
 
 ADD_NEW_LOG_EXTRA_INFO = """
 Critical Requirements:
-1. Do not specify more than one constraint for the same field — matter, description, or hours — in a single request.
-
-✔️ CORRECT: Add a time log for 'Trademark Filing' with hours NOT EQUAL to '2.5' and a description that is NOT 'Negotiation call'.
-✔️ CORRECT: Add a time log for 'Trademark Filing' with a description that is NOT 'Negotiation call' while ensuring the total hours are less than or equal to '4.5'.
-❌ INCORRECT: Add a time log for 'Trademark Filing' with hours NOT EQUAL to '2.5' and a description that is NOT 'Negotiation call' while ensuring the total hours are less than or equal to '4.5'.
+!. Must mention all the constraints in the prompt accurately.
+2. Do not specify more than one constraint for the same field — matter, description, or hours — in a single request.
 """.strip()
 
 ###############################################################################
@@ -313,32 +303,46 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
     event=NewLogAdded,
     event_source_code=NewLogAdded.get_source_code_of_class(),
     constraints_generator=generate_new_log_added_constraints,
-    # replace_func=replace_placeholders,
     additional_prompt_info=ADD_NEW_LOG_EXTRA_INFO,
     examples=[
         {
-            "prompt": "Add a time log for 'Trademark Filing' with 2.5 hours for 'Prepare documents'.",
-            "prompt_for_task_generation": "Add a time log for 'Trademark Filing' with '2.5' hours for 'Prepare documents'.",
+            "prompt": "Add a time log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
+            "prompt_for_task_generation": "Add a time log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
         },
         {
-            "prompt": "Log 3 hours for 'M&A Advice' to record 'Negotiation call'.",
-            "prompt_for_task_generation": "Log 3 hours for 'M&A Advice' to record 'Negotiation call'.",
+            "prompt": "Add a time log with matter 'M&A Advice', description 'Negotiation call', and hours '3'.",
+            "prompt_for_task_generation": "Add a time log with matter 'M&A Advice', description 'Negotiation call', and hours '3'.",
         },
         {
-            "prompt": "Create a new log for 'Startup Incorporation' with more than 3 hours for 'Setup docs'.",
-            "prompt_for_task_generation": "Create a new log for 'Startup Incorporation' with more than '3' hours for 'Setup docs'.",
+            "prompt": "Create a new time log with matter 'Startup Incorporation', description 'Setup docs', and hours greater than '3'.",
+            "prompt_for_task_generation": "Create a new time log with matter 'Startup Incorporation', description 'Setup docs', and hours greater than '3'.",
         },
         {
-            "prompt": "Log time for 'Tax Advisory' but make sure the hours are not 2.5, use 'Tax analysis' as description.",
-            "prompt_for_task_generation": "Log time for 'Tax Advisory' with hours not equal to '2.5' and description 'Tax analysis'.",
+            "prompt": "Add a time log with matter 'Tax Advisory', description 'Tax analysis', and hours not equal to '2.5'.",
+            "prompt_for_task_generation": "Add a time log with matter 'Tax Advisory', description 'Tax analysis', and hours not equal to '2.5'.",
         },
         {
-            "prompt": "Create a log for 'Trademark Renewal' for less than 1 hour, describing it as 'Online filing'.",
-            "prompt_for_task_generation": "Create a log for 'Trademark Renewal' with less than '1' hour and description 'Online filing'.",
+            "prompt": "Create a time log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
+            "prompt_for_task_generation": "Create a time log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
         },
     ],
 )
 
+
+LOG_DELETE_EXTRA_INFO = """
+Critical Requirements:
+1. Use at most one constraint per field: `matter`, `description`, or `hours`.
+2. Mirror the constraint operator and the value exactly in the generated prompt. Do not paraphrase operators (e.g. use the specified negation).
+
+Example constraint (Python dict):
+constraint: {'matter': {'operator': 'not_equals', 'value': 'Court Filing'}, 'hours': {'operator': 'not_equals', 'value': 2.3}, 'client': {'operator': 'not_contains', 'value': 'CoreConnect'}, 'status': {'operator': 'in_list', 'value': ['Billed', 'Billable']}}
+
+Prompts:
+✔️ CORRECT: Delete the time log where matter is NOT equal to 'Court Filing', hours is NOT equal to 2.3, client does NOT CONTAIN 'CoreConnect', and status is in the list ['Billed', 'Billable'].
+❌ INCORRECT: Delete the time log for 'Court Filing' that recorded hours NOT EQUAL to 2.3, where the client does NOT CONTAIN 'CoreConnect' and the status is in the list ['Billed', 'Billable'].
+
+Explanation: The incorrect prompt does not reflect the specified operator for `matter` (`not_equals`) — it uses a positive equality instead of the required negation. Use the exact operators and value formats shown in the constraint.
+""".strip()
 
 ###############################################################################
 # LOG_DELETE_USE_CASE
@@ -349,7 +353,7 @@ LOG_DELETE_USE_CASE = UseCase(
     event=LogDelete,
     event_source_code=LogDelete.get_source_code_of_class(),
     constraints_generator=generate_delete_log_constraints,
-    # replace_func=replace_placeholders,
+    additional_prompt_info=LOG_DELETE_EXTRA_INFO,
     examples=[
         {
             "prompt": "Delete the time log for 'Estate Planning' that recorded 2 hours.",
@@ -407,20 +411,19 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
     event=ChangeUserName,
     event_source_code=ChangeUserName.get_source_code_of_class(),
     constraints_generator=generate_change_user_name_constraints,
-    replace_func=replace_placeholders,
     additional_prompt_info=CHANGE_USER_NAME_EXTRA_INFO,
     examples=[
         {
             "prompt": "Change my user name to 'Muhammad Ali'.",
-            "prompt_for_task_generation": "Change my user name to '<new_name>'.",
+            "prompt_for_task_generation": "Change my user name to 'Muhammad Ali'.",
         },
         {
             "prompt": "Update my display name to 'Aisha Khan'.",
-            "prompt_for_task_generation": "Update my display name to '<new_name>'.",
+            "prompt_for_task_generation": "Update my display name to 'Aisha Khan'.",
         },
         {
             "prompt": "Set my user name to something that is not 'Guest User'.",
-            "prompt_for_task_generation": "Set my user name to something that is not '<forbidden_name>'.",
+            "prompt_for_task_generation": "Set my user name to something that is not 'Guest User'.",
         },
     ],
 )

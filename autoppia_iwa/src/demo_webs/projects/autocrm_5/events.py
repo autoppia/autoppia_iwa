@@ -1,4 +1,5 @@
 from datetime import date, datetime, time
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -12,7 +13,6 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOpera
 
 
 class Matter(BaseModel):
-    # id: str
     name: str
     client: str
     status: str
@@ -20,7 +20,6 @@ class Matter(BaseModel):
 
 
 class Client(BaseModel):
-    # id: str
     name: str
     email: str
     matters: int
@@ -30,7 +29,6 @@ class Client(BaseModel):
 
 
 class Document(BaseModel):
-    # id: str
     name: str
     size: str
     version: str
@@ -39,7 +37,6 @@ class Document(BaseModel):
 
 
 class CalendarEvent(BaseModel):
-    # id: str
     date: str
     label: str
     time: str
@@ -47,7 +44,6 @@ class CalendarEvent(BaseModel):
 
 
 class TimeLog(BaseModel):
-    # id: str
     matter: str
     client: str
     date: str
@@ -229,7 +225,6 @@ class ViewClientDetails(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.client.id, criteria.id),
                 self._validate_field(self.client.name, criteria.name),
                 self._validate_field(self.client.email, criteria.email),
                 self._validate_field(self.client.matters, criteria.matters),
@@ -284,7 +279,6 @@ class DocumentDeleted(Event, BaseEventValidator):
     document: Document
 
     class ValidationCriteria(BaseModel):
-        # id: str | CriterionValue | None = None
         size: str | CriterionValue | None = None
         version: str | CriterionValue | None = None
         # updated: str | CriterionValue | None = None
@@ -296,14 +290,75 @@ class DocumentDeleted(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.document.id, criteria.id),
                 self._validate_field(self.document.name, criteria.name),
-                self._validate_field(self.document.size, criteria.size),
+                self._validate_size_field(self.document.size, criteria.size),
                 self._validate_field(self.document.version, criteria.version),
                 # self._validate_field(self.document.updated, criteria.updated),
                 self._validate_field(self.document.status, criteria.status),
             ],
         )
+
+    def _parse_size_to_kb(self, val: Any) -> float | None:
+        """
+        Parse various size representations into KB as float.
+        Accepts int/float (assumed KB), strings like '490 KB', '1.5 MB', '1024B', or plain numbers.
+        Returns None when parsing fails.
+        """
+        if val is None:
+            return None
+        if isinstance(val, int | float):
+            return float(val)  # assume KB
+        if not isinstance(val, str):
+            return None
+
+        s = val.strip().upper().replace(",", "")
+        try:
+            if s.endswith("KB"):
+                return float(s[:-2].strip())
+            if s.endswith("MB"):
+                return float(s[:-2].strip()) * 1024.0
+            if s.endswith("B"):
+                # bytes -> KB
+                return float(s[:-1].strip()) / 1024.0
+            # no unit, assume KB
+            return float(s)
+        except Exception:
+            return None
+
+    def _validate_size_field(self, actual: str, criterion: str | CriterionValue | None) -> bool:
+        """
+        Custom validator for document size that understands units and numeric operators.
+        - If criterion is a plain string: equality check.
+        - If criterion is CriterionValue with numeric-parsable value: convert both to KB and compare.
+        """
+        if criterion is None:
+            return True
+
+        if isinstance(criterion, str):
+            return actual == criterion
+
+        if isinstance(criterion, CriterionValue):
+            op = criterion.operator
+            crit_val = criterion.value
+
+            actual_kb = self._parse_size_to_kb(actual)
+            crit_kb = self._parse_size_to_kb(crit_val)
+
+            if actual_kb is not None and crit_kb is not None:
+                if op == ComparisonOperator.EQUALS:
+                    return actual_kb == crit_kb
+                if op == ComparisonOperator.NOT_EQUALS:
+                    return actual_kb != crit_kb
+                if op == ComparisonOperator.GREATER_THAN:
+                    return actual_kb > crit_kb
+                if op == ComparisonOperator.LESS_THAN:
+                    return actual_kb < crit_kb
+                if op == ComparisonOperator.GREATER_EQUAL:
+                    return actual_kb >= crit_kb
+                if op == ComparisonOperator.LESS_EQUAL:
+                    return actual_kb <= crit_kb
+
+        return False
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "DocumentDeleted":
@@ -448,7 +503,6 @@ class NewLogAdded(Event, BaseEventValidator):
     log: TimeLog
 
     class ValidationCriteria(BaseModel):
-        # id: str | CriterionValue | None = None
         matter: str | CriterionValue | None = None
         # client: str | CriterionValue | None = None
         # date: str | CriterionValue | None = None
@@ -461,7 +515,6 @@ class NewLogAdded(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.log.id, criteria.id),
                 self._validate_field(self.log.matter, criteria.matter),
                 # self._validate_field(self.log.client, criteria.client),
                 # self._validate_field(self.log.date, criteria.date),
@@ -490,7 +543,6 @@ class LogDelete(Event, BaseEventValidator):
     log: TimeLog
 
     class ValidationCriteria(BaseModel):
-        # id: str | CriterionValue | None = None
         matter: str | CriterionValue | None = None
         client: str | CriterionValue | None = None
         # date: str|CriterionValue|None = None
@@ -503,7 +555,6 @@ class LogDelete(Event, BaseEventValidator):
             return True
         return all(
             [
-                # self._validate_field(self.log.id, criteria.id),
                 self._validate_field(self.log.matter, criteria.matter),
                 self._validate_field(self.log.client, criteria.client),
                 # self._validate_field(self.log.date, criteria.date),
