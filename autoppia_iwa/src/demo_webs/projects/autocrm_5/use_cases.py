@@ -290,11 +290,8 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
 
 ADD_NEW_LOG_EXTRA_INFO = """
 Critical Requirements:
-1. Do not specify more than one constraint for the same field — matter, description, or hours — in a single request.
-
-✔️ CORRECT: Add a time log for 'Trademark Filing' with hours NOT EQUAL to '2.5' and a description that is NOT 'Negotiation call'.
-✔️ CORRECT: Add a time log for 'Trademark Filing' with a description that is NOT 'Negotiation call' while ensuring the total hours are less than or equal to '4.5'.
-❌ INCORRECT: Add a time log for 'Trademark Filing' with hours NOT EQUAL to '2.5' and a description that is NOT 'Negotiation call' while ensuring the total hours are less than or equal to '4.5'.
+!. Must mention all the constraints in the prompt accurately.
+2. Do not specify more than one constraint for the same field — matter, description, or hours — in a single request.
 """.strip()
 
 ###############################################################################
@@ -309,24 +306,24 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
     additional_prompt_info=ADD_NEW_LOG_EXTRA_INFO,
     examples=[
         {
-            "prompt": "Add a time log for 'Trademark Filing' with 2.5 hours for 'Prepare documents'.",
-            "prompt_for_task_generation": "Add a time log for 'Trademark Filing' with '2.5' hours for 'Prepare documents'.",
+            "prompt": "Add a time log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
+            "prompt_for_task_generation": "Add a time log with matter 'Trademark Filing', description 'Prepare documents', and hours '2.5'.",
         },
         {
-            "prompt": "Log 3 hours for 'M&A Advice' to record 'Negotiation call'.",
-            "prompt_for_task_generation": "Log 3 hours for 'M&A Advice' to record 'Negotiation call'.",
+            "prompt": "Add a time log with matter 'M&A Advice', description 'Negotiation call', and hours '3'.",
+            "prompt_for_task_generation": "Add a time log with matter 'M&A Advice', description 'Negotiation call', and hours '3'.",
         },
         {
-            "prompt": "Create a new log for 'Startup Incorporation' with more than 3 hours for 'Setup docs'.",
-            "prompt_for_task_generation": "Create a new log for 'Startup Incorporation' with more than '3' hours for 'Setup docs'.",
+            "prompt": "Create a new time log with matter 'Startup Incorporation', description 'Setup docs', and hours greater than '3'.",
+            "prompt_for_task_generation": "Create a new time log with matter 'Startup Incorporation', description 'Setup docs', and hours greater than '3'.",
         },
         {
-            "prompt": "Log time for 'Tax Advisory' but make sure the hours are not 2.5, use 'Tax analysis' as description.",
-            "prompt_for_task_generation": "Log time for 'Tax Advisory' with hours not equal to '2.5' and description 'Tax analysis'.",
+            "prompt": "Add a time log with matter 'Tax Advisory', description 'Tax analysis', and hours not equal to '2.5'.",
+            "prompt_for_task_generation": "Add a time log with matter 'Tax Advisory', description 'Tax analysis', and hours not equal to '2.5'.",
         },
         {
-            "prompt": "Create a log for 'Trademark Renewal' for less than 1 hour, describing it as 'Online filing'.",
-            "prompt_for_task_generation": "Create a log for 'Trademark Renewal' with less than '1' hour and description 'Online filing'.",
+            "prompt": "Create a time log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
+            "prompt_for_task_generation": "Create a time log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
         },
     ],
 )
