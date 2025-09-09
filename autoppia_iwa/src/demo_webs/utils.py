@@ -1,9 +1,9 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parents[3]))
-
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
+
+sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 
 def get_frontend_url(index):
