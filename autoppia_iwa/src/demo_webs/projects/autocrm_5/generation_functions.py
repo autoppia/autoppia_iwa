@@ -1,3 +1,4 @@
+import contextlib
 import random
 from typing import Any
 
@@ -21,14 +22,23 @@ from .data import (
 )
 
 
-def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
-    value = None
+def _to_float_safe(value: Any) -> float | None:
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.replace(",", "").strip())
+        except Exception:
+            return None
+    return None
 
+
+def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
     if operator == ComparisonOperator.EQUALS:
         return field_value
 
     elif operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[field] for v in dataset if v.get(field) != field_value]
+        valid = [v[field] for v in dataset if v.get(field) != field_value and v.get(field) is not None]
         return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
@@ -43,7 +53,8 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
+        all_values = list({v for v in all_values})
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -53,9 +64,11 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = [v.get(field) for v in dataset if field in v and v.get(field) is not None]
+        all_values = list({v for v in all_values})
         if field_value in all_values:
-            all_values.remove(field_value)
+            with contextlib.suppress(ValueError):
+                all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
 
     elif operator in {
@@ -64,18 +77,18 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     }:
-        base = field_value
+        base = _to_float_safe(field_value)
+        if base is None:
+            return None
         delta = random.uniform(1, 3)
-        numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
-        if numeric_values:
-            if operator == ComparisonOperator.GREATER_THAN:
-                return round(base - delta, 2)
-            elif operator == ComparisonOperator.LESS_THAN:
-                return round(base + delta, 2)
-            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                return round(base, 2)
+        if operator == ComparisonOperator.GREATER_THAN:
+            return round(base - delta, 2)
+        elif operator == ComparisonOperator.LESS_THAN:
+            return round(base + delta, 2)
+        elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+            return round(base, 2)
 
-    return value
+    return None
 
 
 def generate_view_matter_constraints() -> list[dict[str, Any]]:
@@ -147,7 +160,7 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
     possible_fields = list(sample_values.keys())
 
     for field in possible_fields:
-        operator = ComparisonOperator(random.choice(random.choice(FIELD_OPERATORS_MAP_MATTER[field])))
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_MAP_MATTER[field]))
         value = random.choice(sample_values[field])
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -201,7 +214,7 @@ def generate_search_client_constraints() -> list[dict[str, Any]]:
 
 
 def _generate_value_for_document_field(field: str, field_value: str, operator: ComparisonOperator, all_documents: list[dict[str, Any]]) -> Any:
-    values = [d[field] for d in all_documents if field in d]
+    values = [d[field] for d in all_documents if field in d and d.get(field) is not None]
     values = list(set(values))
 
     if not values:
@@ -211,7 +224,7 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         return field_value
 
     elif operator == ComparisonOperator.NOT_EQUALS:
-        valid = [d[field] for d in all_documents if d.get(field) != field_value]
+        valid = [d[field] for d in all_documents if d.get(field) != field_value and d.get(field) is not None]
         return random.choice(valid) if valid else random.choice(values)
 
     elif (
@@ -228,19 +241,47 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         size_entries = []
         for s in values:
             try:
-                if "KB" in s:
-                    size_entries.append((float(s.replace("KB", "").strip()), "KB"))
-                elif "MB" in s:
-                    mb = float(s.replace("MB", "").strip())
-                    size_entries.append((mb * 1024, "MB"))
+                if isinstance(s, int | float):
+                    size_entries.append((float(s), "KB"))
+                elif isinstance(s, str):
+                    text = s.strip().upper()
+                    if text.endswith("KB"):
+                        num = float(text.replace("KB", "").strip())
+                        size_entries.append((num, "KB"))
+                    elif text.endswith("MB"):
+                        mb = float(text.replace("MB", "").strip())
+                        size_entries.append((mb * 1024, "MB"))
             except Exception:
                 continue
 
         if not size_entries:
             return None
 
-        # Pick base
-        base_kb, unit = field_value.replace("KB", "").replace("MB", "").strip(), "KB" if "KB" in field_value else "MB"
+        # Parse base value into KB and detect original unit
+        base_kb: float | None = None
+        unit = "KB"
+        if isinstance(field_value, int | float):
+            base_kb = float(field_value)
+            unit = "KB"
+        elif isinstance(field_value, str):
+            fv = field_value.strip().upper()
+            try:
+                if fv.endswith("KB"):
+                    base_kb = float(fv.replace("KB", "").strip())
+                    unit = "KB"
+                elif fv.endswith("MB"):
+                    base_kb = float(fv.replace("MB", "").strip()) * 1024
+                    unit = "MB"
+                else:
+                    base_kb = float(fv)
+                    unit = "KB"
+            except Exception:
+                base_kb = None
+
+        if base_kb is None:
+            return None
+
+        min_kb = min(kb for kb, _ in size_entries)
         delta = random.randint(1, 20)
 
         if operator == ComparisonOperator.GREATER_THAN:
@@ -248,9 +289,9 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         elif operator == ComparisonOperator.GREATER_EQUAL:
             new_kb = base_kb + random.randint(0, delta)
         elif operator == ComparisonOperator.LESS_THAN:
-            new_kb = max(min(kb for kb, _ in size_entries), base_kb - delta)
+            new_kb = max(min_kb, base_kb - delta)
         elif operator == ComparisonOperator.LESS_EQUAL:
-            new_kb = max(min(kb for kb, _ in size_entries), base_kb - random.randint(0, delta))
+            new_kb = max(min_kb, base_kb - random.randint(0, delta))
         else:
             new_kb = base_kb
 
@@ -258,7 +299,8 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         if unit == "MB":
             return f"{round(new_kb / 1024, 2)} MB"
         else:
-            return f"{int(new_kb)} KB"
+            # Keep KB as integer for readability
+            return f"{round(new_kb)} KB"
 
     return random.choice(values)
 
@@ -287,6 +329,7 @@ def generate_document_deleted_constraints() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     return constraints_list
+    # return [{'field': 'version', 'operator': ComparisonOperator.NOT_EQUALS, 'value': 'v3'}, {'field': 'status', 'operator': ComparisonOperator.EQUALS, 'value': 'Signed'}, {'field': 'size', 'operator': ComparisonOperator.GREATER_THAN, 'value': '529 KB'}]
 
 
 def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
@@ -310,7 +353,7 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
         "Customer Feedback Session",
         "Billing Discussion",
         "Churn Risk Review",
-        "QBR Meeting",  # Quarterly Business Review
+        "QBR Meeting",
         "Welcome Call",
         "Lead Assignment",
         "Marketing Campaign Review",
@@ -332,7 +375,7 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
         "Kickoff Call",
         "Client Escalation",
         "Feature Discussion",
-        "CSAT Follow-up",  # Customer Satisfaction follow-up
+        "CSAT Follow-up",
         "Implementation Review",
         "Introductory Meeting",
         "Decision Maker Call",
