@@ -237,27 +237,6 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         ]
         and field == "size"
     ):
-        # Extract all sizes in KB and track units
-        size_entries = []
-        for s in values:
-            try:
-                if isinstance(s, int | float):
-                    size_entries.append((float(s), "KB"))
-                elif isinstance(s, str):
-                    text = s.strip().upper()
-                    if text.endswith("KB"):
-                        num = float(text.replace("KB", "").strip())
-                        size_entries.append((num, "KB"))
-                    elif text.endswith("MB"):
-                        mb = float(text.replace("MB", "").strip())
-                        size_entries.append((mb * 1024, "MB"))
-            except Exception:
-                continue
-
-        if not size_entries:
-            return None
-
-        # Parse base value into KB and detect original unit
         base_kb: float | None = None
         unit = "KB"
         if isinstance(field_value, int | float):
@@ -281,17 +260,16 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
         if base_kb is None:
             return None
 
-        min_kb = min(kb for kb, _ in size_entries)
         delta = random.randint(1, 20)
 
         if operator == ComparisonOperator.GREATER_THAN:
-            new_kb = base_kb + delta
+            new_kb = base_kb - delta
         elif operator == ComparisonOperator.GREATER_EQUAL:
-            new_kb = base_kb + random.randint(0, delta)
+            new_kb = base_kb - random.randint(0, delta)
         elif operator == ComparisonOperator.LESS_THAN:
-            new_kb = max(min_kb, base_kb - delta)
+            new_kb = base_kb + delta
         elif operator == ComparisonOperator.LESS_EQUAL:
-            new_kb = max(min_kb, base_kb - random.randint(0, delta))
+            new_kb = base_kb + random.randint(0, delta)
         else:
             new_kb = base_kb
 
