@@ -48,7 +48,7 @@ AGENTS: list[IWebAgent] = [
 ]
 
 # Definition of projects to evaluate
-PROJECT_IDS_TO_RUN = ["autozone", "cinema", "books"]
+PROJECT_IDS_TO_RUN = ["work"]
 PROJECTS_TO_RUN: list[WebProject] = get_projects_by_ids(demo_web_projects, PROJECT_IDS_TO_RUN)
 
 config = BenchmarkConfig(agents=AGENTS, projects_to_run=PROJECTS_TO_RUN)
