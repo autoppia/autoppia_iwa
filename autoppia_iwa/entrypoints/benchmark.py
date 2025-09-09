@@ -36,7 +36,6 @@ from autoppia_iwa.src.shared.visualizator import (
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.shared.utils_entrypoints.benchmark_utils import get_projects_by_ids
 
 # ---------------------------------------------------------------------------
 # Configuration & globals
@@ -292,7 +291,6 @@ async def main() -> None:
         generate_project_report(evaluation_results, project, timing)
 
     logger.success("Benchmark finished ✔")
-
 
 
 if __name__ == "__main__":
