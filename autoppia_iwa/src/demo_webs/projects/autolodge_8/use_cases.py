@@ -186,7 +186,8 @@ ADD_TO_WISHLIST_USE_CASE = UseCase(
     description="Triggered when the user adds a hotel listing to their wishlist.",
     event=AddToWishlistEvent,
     event_source_code=AddToWishlistEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_hotel_constraints,  # reuse existing hotel constraint generator
+    # reuse existing hotel constraint generator
+    constraints_generator=generate_view_hotel_constraints,
     additional_prompt_info=ADD_TO_WISHLIST_INFO,
     examples=[
         {
@@ -232,7 +233,8 @@ SHARE_HOTEL_USE_CASE = UseCase(
     description="Triggered when the user shares a hotel listing with someone, typically via email.",
     event=ShareHotelEvent,
     event_source_code=ShareHotelEvent.get_source_code_of_class(),
-    constraints_generator=generate_share_hotel_constraints,  # Reuse hotel-based constraints
+    # Reuse hotel-based constraints
+    constraints_generator=generate_share_hotel_constraints,
     additional_prompt_info=SHARE_HOTEL_INFO,
     examples=[
         {
@@ -625,14 +627,14 @@ BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    # SEARCH_HOTEL_USE_CASE,
-    # VIEW_HOTEL_USE_CASE,
-    # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
+    SEARCH_HOTEL_USE_CASE,
+    VIEW_HOTEL_USE_CASE,
+    INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     RESERVE_HOTEL_USE_CASE,
-    # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
-    # CONFIRM_AND_PAY_USE_CASE,
-    # MESSAGE_HOST_USE_CASE,
-    # SHARE_HOTEL_USE_CASE,
-    # ADD_TO_WISHLIST_USE_CASE,
-    # BACK_TO_ALL_HOTELS_USE_CASE,
+    EDIT_CHECK_IN_OUT_DATES_USE_CASE,
+    CONFIRM_AND_PAY_USE_CASE,
+    MESSAGE_HOST_USE_CASE,
+    SHARE_HOTEL_USE_CASE,
+    ADD_TO_WISHLIST_USE_CASE,
+    BACK_TO_ALL_HOTELS_USE_CASE,
 ]
