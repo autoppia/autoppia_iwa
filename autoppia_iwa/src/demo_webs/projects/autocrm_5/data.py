@@ -45,7 +45,7 @@ NEW_LOGS_DATA = [
     {"matter": "Trademark Filing", "description": "Prepare documents", "hours": 2.5},
     {"matter": "NDA Review", "description": "Review clauses", "hours": 1.2},
     {"matter": "Shareholder Dispute", "description": "Strategy meeting", "hours": 4},
-    {"matter": "Franchise Agreement", "description": "Legal drafting", "hours": 2.75},
+    {"matter": "Franchise Agreement", "description": "Legal drafting", "hours": 2.7},
     {"matter": "Employment Contract", "description": "HR consultation", "hours": 1},
     {"matter": "Investor Due Diligence", "description": "Risk assessment", "hours": 3.3},
     {"matter": "Corporate Compliance", "description": "Documentation check", "hours": 2.1},
