@@ -373,7 +373,7 @@ RESERVE_HOTEL_USE_CASE = UseCase(
     additional_prompt_info=RESERVE_HOTEL_INFO,
     examples=[
         {
-            "prompt": "Book this hotel from 5th to 9th August for 2 people.",
+            "prompt": "Reserve hotel from 5th to 9th August for 2 guests.",
             "prompt_for_task_generation": "Reserve hotel from 5th to 9th August for 2 guests.",
         },
         {
@@ -385,19 +385,15 @@ RESERVE_HOTEL_USE_CASE = UseCase(
             "prompt_for_task_generation": "Reserve hotel for 1 guest from September 1st to 4th.",
         },
         {
-            "prompt": "Can you lock that in for us? We're two adults and one kid, check-in Friday, check-out Sunday.",
+            "prompt": "Reserve hotel for 3 guests from Friday to Sunday.",
             "prompt_for_task_generation": "Reserve hotel for 3 guests from Friday to Sunday.",
         },
         {
-            "prompt": "Yes, this one looks good. Go ahead and book it.",
-            "prompt_for_task_generation": "Reserve currently viewed hotel.",
-        },
-        {
-            "prompt": "Finalize this hotel for the Eid holidays - 4 people, 10th to 14th May.",
+            "prompt": "Reserve hotel from May 10th to 14th for 4 guests.",
             "prompt_for_task_generation": "Reserve hotel from May 10th to 14th for 4 guests.",
         },
         {
-            "prompt": "I want to stay here for three nights starting next Thursday. We're 2 people.",
+            "prompt": "Reserve hotel for 2 guests starting next Thursday for 3 nights.",
             "prompt_for_task_generation": "Reserve hotel for 2 guests starting next Thursday for 3 nights.",
         },
     ],
@@ -629,14 +625,14 @@ BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    SEARCH_HOTEL_USE_CASE,
-    VIEW_HOTEL_USE_CASE,
-    INCREASE_NUMBER_OF_GUESTS_USE_CASE,
+    # SEARCH_HOTEL_USE_CASE,
+    # VIEW_HOTEL_USE_CASE,
+    # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     RESERVE_HOTEL_USE_CASE,
-    EDIT_CHECK_IN_OUT_DATES_USE_CASE,
-    CONFIRM_AND_PAY_USE_CASE,
-    MESSAGE_HOST_USE_CASE,
-    SHARE_HOTEL_USE_CASE,
-    ADD_TO_WISHLIST_USE_CASE,
-    BACK_TO_ALL_HOTELS_USE_CASE,
+    # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
+    # CONFIRM_AND_PAY_USE_CASE,
+    # MESSAGE_HOST_USE_CASE,
+    # SHARE_HOTEL_USE_CASE,
+    # ADD_TO_WISHLIST_USE_CASE,
+    # BACK_TO_ALL_HOTELS_USE_CASE,
 ]

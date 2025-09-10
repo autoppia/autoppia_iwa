@@ -171,7 +171,7 @@ class HotelInfo(BaseModel):
                         return all(a not in amenities for a in val)
             return True
 
-        return all(
+        result = all(
             [
                 # self._validate_field(self.hotel_id, criteria.hotel_id),
                 date_to_valid,
@@ -192,13 +192,16 @@ class HotelInfo(BaseModel):
                 validate_amenities(self.amenities, criteria.amenities),
             ]
         )
+        if not result:
+            pass  # To stop debugger here
+        return result
 
     @classmethod
     def parse(cls, data) -> "HotelInfo":
-        data = data.get("hotel", {})
-        host = data.get("host", {})
+        hotel = data.get("hotel", {})
+        host = hotel.get("host", {})
         amenities = []
-        for a in data.get("amenities", []):
+        for a in hotel.get("amenities", []):
             if isinstance(a, dict):
                 if "title" in a:
                     amenities.append(a["title"])
@@ -207,22 +210,22 @@ class HotelInfo(BaseModel):
             elif isinstance(a, str):
                 amenities.append(a)
 
-        date_from = data.get("dateFrom") or data.get("datesFrom") or (data.get("dates") or {}).get("from")
-        date_to = data.get("datesTo") or (data.get("dates") or {}).get("to")
+        date_from = hotel.get("dateFrom") or hotel.get("datesFrom") or (hotel.get("dates") or {}).get("from")
+        date_to = hotel.get("datesTo") or (hotel.get("dates") or {}).get("to")
         return cls(
-            # hotel_id=data.get("id"),
-            title=data.get("title"),
-            location=data.get("location"),
-            price=data.get("price"),
-            rating=data.get("rating"),
-            reviews=data.get("reviews"),
-            guests=data.get("guests"),
-            max_guests=data.get("maxGuests", 0),
+            # hotel_id=hotel.get("id"),
+            title=hotel.get("title"),
+            location=hotel.get("location"),
+            price=hotel.get("price"),
+            rating=hotel.get("rating"),
+            reviews=hotel.get("reviews"),
+            guests=hotel.get("guests"),
+            max_guests=hotel.get("maxGuests", 0),
             datesFrom=parse_datetime(date_from),
             datesTo=parse_datetime(date_to),
-            baths=data.get("baths", 0),
-            bedrooms=data.get("bedrooms", 0),
-            beds=data.get("beds", 0),
+            baths=hotel.get("baths", 0),
+            bedrooms=hotel.get("bedrooms", 0),
+            beds=hotel.get("beds", 0),
             host_name=host.get("name"),
             # host_since=host.get("since"),
             # host_avatar=host.get("avatar"),
