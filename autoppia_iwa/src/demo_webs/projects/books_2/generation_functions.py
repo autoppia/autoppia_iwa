@@ -398,6 +398,9 @@ def generate_constraint_from_solution(book: dict, field: str, operator: Comparis
             else:
                 constraint["value"] = ["Non-existent genre"]
 
+    if "value" not in constraint:
+        return None
+
     # Verificar que el constraint generado es válido para la película solución
     criterion = CriterionValue(value=constraint["value"], operator=operator)
     if validate_criterion(book.get(field), criterion):
