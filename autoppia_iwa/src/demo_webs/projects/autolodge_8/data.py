@@ -1166,8 +1166,8 @@ ARRAY_OPERATORS = [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST]
 
 FIELD_OPERATORS_SEARCH_HOTEL_MAP = {
     "search_term": STRING_OPERATORS,
-    "datesFrom": LOGICAL_OPERATORS,
-    "datesTo": LOGICAL_OPERATORS,
+    # "datesFrom": LOGICAL_OPERATORS,
+    # "datesTo": LOGICAL_OPERATORS,
     "adults": LOGICAL_OPERATORS,
     "children": LOGICAL_OPERATORS,
     "infants": LOGICAL_OPERATORS,
@@ -1181,8 +1181,8 @@ FIELD_OPERATORS_VIEW_HOTEL_MAP = {
     "rating": LOGICAL_OPERATORS,
     "price": LOGICAL_OPERATORS,
     "reviews": LOGICAL_OPERATORS,
-    "datesFrom": LOGICAL_OPERATORS,
-    "datesTo": LOGICAL_OPERATORS,
+    # "datesFrom": LOGICAL_OPERATORS,
+    # "datesTo": LOGICAL_OPERATORS,
     "guests": LOGICAL_OPERATORS,
     "host_name": STRING_OPERATORS,
     # "host_since": LOGICAL_OPERATORS,
