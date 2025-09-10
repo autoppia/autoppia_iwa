@@ -177,6 +177,17 @@ DROPOFF_PREFERENCE_USE_CASE = UseCase(
         {"prompt": "Change dropoff preference to 'Front desk'.", "prompt_for_task_generation": "Change dropoff preference to 'Front desk'."},
     ],
 )
+PLACE_ORDER_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Place an order ...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'quantity': {'operator': 'less_than', 'value': 8}, 'item': {'operator': 'contains', 'value': 'Pho'}, 'restaurant': {'operator': 'contains', 'value': 'P'}}
+Correct:
+"Place an order where restaurant contains 'P' where the item contains 'Pho' and the quantity is less than 8."
+""".strip()
 
 PLACE_ORDER_USE_CASE = UseCase(
     name="PLACE_ORDER",
@@ -184,8 +195,16 @@ PLACE_ORDER_USE_CASE = UseCase(
     event=PlaceOrderEvent,
     event_source_code=PlaceOrderEvent.get_source_code_of_class(),
     constraints_generator=generate_place_order_constraints,
+    additional_prompt_info=PLACE_ORDER_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {"prompt": "Place an order for 'Pizza Palace' to be delivered to 123 Main St.", "prompt_for_task_generation": "Place an order for 'Pizza Palace' to be delivered to 123 Main St."},
+        {
+            "prompt": "Place an order where restaurant equals 'Pizza Palace' to be delivered to 123 Main St.",
+            "prompt_for_task_generation": "Place an order where restaurant equals 'Pizza Palace' to be delivered to 123 Main St.",
+        },
+        {
+            "prompt": "Place an order where restaurant contains 'World' to be delivered to 123 Main St.",
+            "prompt_for_task_generation": "Place an order where restaurant contains 'World' to be delivered to 123 Main St.",
+        },
         {"prompt": "Order 'Sushi World' for pickup at 5pm.", "prompt_for_task_generation": "Order 'Sushi World' for pickup at 5pm."},
         {"prompt": "Order 'Pepperoni Pizza' and 'California Roll' for delivery.", "prompt_for_task_generation": "Order 'Pepperoni Pizza' and 'California Roll' for delivery."},
         {"prompt": "Place an order with the dropoff preference 'Leave at door'.", "prompt_for_task_generation": "Place an order with the dropoff preference 'Leave at door'."},
@@ -274,34 +293,14 @@ BACK_TO_ALL_RESTAURANTS_USE_CASE = UseCase(
     ],
 )
 
-ADDRESS_ADDED_ADDITIONAL_PROMPT_INFO = """
-Critical requirements:
-1. The request must start with one of the following: "Place an order ...".
-2. Do not mention a single constraint more than once in the request.
-3. Do not add additional information in the prompt that is not mentioned in the constraints.
-4. Pay attention to the constraints:
-Example:
-constraints: {'quantity': {'operator': 'less_than', 'value': 8}, 'item': {'operator': 'contains', 'value': 'Pho'}, 'restaurant': {'operator': 'contains', 'value': 'P'}}
-Correct:
-"Place an order where restaurant contains 'P' where the item contains 'Pho' and the quantity is less than 8."
-""".strip()
-
 ADDRESS_ADDED_USE_CASE = UseCase(
     name="ADDRESS_ADDED",
     description="The user adds a new delivery or pickup address.",
     event=AddressAddedEvent,
     event_source_code=AddressAddedEvent.get_source_code_of_class(),
     constraints_generator=generate_address_added_constraints,
-    additional_prompt_info=ADDRESS_ADDED_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {
-            "prompt": "Place an order where restaurant equals 'Pizza Palace' to be delivered to 123 Main St.",
-            "prompt_for_task_generation": "Place an order where restaurant equals 'Pizza Palace' to be delivered to 123 Main St.",
-        },
-        {
-            "prompt": "Place an order where restaurant contains 'World' to be delivered to 123 Main St.",
-            "prompt_for_task_generation": "Place an order where restaurant contains 'World' to be delivered to 123 Main St.",
-        },
+        {"prompt": "Add a new delivery address: 456 Oak St.", "prompt_for_task_generation": "Add a new delivery address: 456 Oak St."},
         {"prompt": "Set my pickup address to 789 Pine Ave.", "prompt_for_task_generation": "Set my pickup address to 789 Pine Ave."},
         {"prompt": "Add an address for delivery mode.", "prompt_for_task_generation": "Add an address for delivery mode."},
         {"prompt": "Add a new address for pickup.", "prompt_for_task_generation": "Add a new address for pickup."},
