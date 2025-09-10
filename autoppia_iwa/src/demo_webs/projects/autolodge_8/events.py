@@ -171,7 +171,7 @@ class HotelInfo(BaseModel):
                         return all(a not in amenities for a in val)
             return True
 
-        return all(
+        result = all(
             [
                 # self._validate_field(self.hotel_id, criteria.hotel_id),
                 date_to_valid,
@@ -192,6 +192,9 @@ class HotelInfo(BaseModel):
                 validate_amenities(self.amenities, criteria.amenities),
             ]
         )
+        if not result:
+            pass  # To stop debugger here
+        return result
 
     @classmethod
     def parse(cls, data) -> "HotelInfo":
