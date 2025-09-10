@@ -43,13 +43,18 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ---------------------------------------------------------------------------
 
 AGENTS: list[IWebAgent] = [
-    ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7002, timeout=120),
-    ApifiedWebAgent(id="3", name="AutoppiaAgent3", host="127.0.0.1", port=7003, timeout=120),
+    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=5005, timeout=120),
+    # ApifiedWebAgent(id="3", name="AutoppiaAgent3", host="127.0.0.1", port=5050, timeout=120),
 ]
 
-# Definicion de proyectos a evaluar
-# PROJECT_IDS_TO_RUN = ["autozone", "cinema", "books"]
-PROJECT_IDS_TO_RUN = ["dining"]
+# Define web project to evaluate
+PROJECT_IDS_TO_RUN = [
+    # "autozone",
+    # "cinema",
+    # "books",
+    "crm",
+]
 PROJECTS_TO_RUN: list[WebProject] = get_projects_by_ids(demo_web_projects, PROJECT_IDS_TO_RUN)
 
 config = BenchmarkConfig(agents=AGENTS, projects_to_run=PROJECTS_TO_RUN)
