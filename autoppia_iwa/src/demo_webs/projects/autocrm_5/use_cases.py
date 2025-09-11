@@ -201,29 +201,23 @@ SEARCH_CLIENT_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Search for clients named 'Smith'.",
-            "prompt_for_task_generation": "Search for clients named <query>.",
+            "prompt_for_task_generation": "Search for clients named 'Smith'.",
         },
         {
             "prompt": "Find any clients whose name contains 'Brown'.",
-            "prompt_for_task_generation": "Find any clients whose name contains <query_part>.",
+            "prompt_for_task_generation": "Find any clients whose name contains 'Brown'.",
         },
         {
             "prompt": "Search for clients, excluding those matching 'Ventures'.",
-            "prompt_for_task_generation": "Search for clients, excluding those matching <query>.",
+            "prompt_for_task_generation": "Search for clients, excluding those matching 'Ventures'.",
         },
     ],
 )
 
 DOCUMENT_DELETED_EXTRA_INFO = """
 Critical Requirements:
-1. Mention all the constraint in the prompt accurately.
+1. Make sure to mention **all** the constraints in the prompt accurately.
 2. Do not specify more than one constraint for the same field — name, size, version, status, or updated — in a single request.
-
-✔️ CORRECT: Delete the document named 'Retainer-Agreement.pdf'.
-✔️ CORRECT: Remove the document whose status is 'Draft' and whose name contains 'Proposal'.
-✔️ CORRECT: Delete the document if its version is not 'v1.0' and its size is greater than '100 KB'.
-❌ INCORRECT: Delete the document named 'Patent-Application.pdf' and also where the name contains 'Application'. (Multiple constraints for the same field: name)
-❌ INCORRECT: Remove any document with size greater than '100 KB' and size less than '1 MB'. (Multiple constraints for the same field: size)
 """.strip()
 
 ###############################################################################
@@ -242,15 +236,24 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
             "prompt_for_task_generation": "Delete the document named 'Retainer-Agreement.pdf'.",
         },
         {
-            "prompt": "Remove any document that is marked as 'Draft'.",
-            "prompt_for_task_generation": "Remove any document that is marked as 'Draft'.",
+            "prompt": "Delete the document 'Patent-Application.pdf' if its status is 'Submitted'.",
+            "prompt_for_task_generation": "Delete the document 'Patent-Application.pdf' if its status is 'Submitted'.",
         },
         {
-            "prompt": "Delete the document 'Patent-Application.pdf' if its status is 'Submitted'.",
-            "prompt_for_task_generation": "Delete the document '<document_name>' if its status is 'Submitted'.",
+            "prompt": "Delete the document with version equal to 'v3' and status equal to 'Submitted' and whose name does not contain 'Expert-Testimony.pdf' and whose size equals '1.4 MB'",
+            "prompt_for_task_generation": "Delete the document with version equal to 'v3' and status equal to 'Submitted' and whose name does not contain 'Expert-Testimony.pdf' and whose size equals '1.4 MB'",
+        },
+        {
+            "prompt": "Delete the document with status equal to 'Submitted' and version equal to 'v5' and size less than or equal to '843 KB'.",
+            "prompt_for_task_generation": "Delete the document with status equal to 'Submitted' and version equal to 'v5' and size less than or equal to '843 KB'.",
+        },
+        {
+            "prompt": "Delete the document whose name does NOT contain 'Litigation-Plan.pdf' and whose size is equal to '98 KB' and whose version is NOT equal to 'v2'",
+            "prompt_for_task_generation": "Delete the document whose name does NOT contain 'Litigation-Plan.pdf' and whose size is equal to '98 KB' and whose version is NOT equal to 'v2'",
         },
     ],
 )
+
 NEW_CALENDER_EVENT_EXTRA_INFO = """
 Critical Requirements:
 1. Do not specify more than one constraint for the same field — label, time, date, or event_type — in a single request.
