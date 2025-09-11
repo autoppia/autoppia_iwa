@@ -26,12 +26,19 @@ from .generation_functions import (
     generate_view_restaurant_constraints,
 )
 
+SEARCH_RESTAURANT_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Search for restaurants...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
 SEARCH_RESTAURANT_USE_CASE = UseCase(
     name="SEARCH_DELIVERY_RESTAURANT",
     description="The user searches for restaurants using a query string.",
     event=SearchRestaurantEvent,
     event_source_code=SearchRestaurantEvent.get_source_code_of_class(),
     constraints_generator=generate_search_restaurant_constraints,
+    additional_prompt_info=SEARCH_RESTAURANT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "Search for restaurants serving Italian cuisine.", "prompt_for_task_generation": "Search for restaurants serving Italian cuisine."},
         {"prompt": "Find restaurants with 'Sushi' in their name.", "prompt_for_task_generation": "Find restaurants with 'Sushi' in their name."},
@@ -65,6 +72,13 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
         {"prompt": "Show details for the featured restaurant.", "prompt_for_task_generation": "Show details for the featured restaurant."},
     ],
 )
+ADD_TO_CART_MODAL_OPEN_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Open the add-to-cart modal ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
 
 ADD_TO_CART_MODAL_OPEN_USE_CASE = UseCase(
     name="ADD_TO_CART_MODAL_OPEN",
@@ -72,6 +86,7 @@ ADD_TO_CART_MODAL_OPEN_USE_CASE = UseCase(
     event=AddToCartModalOpenEvent,
     event_source_code=AddToCartModalOpenEvent.get_source_code_of_class(),
     constraints_generator=generate_add_to_cart_modal_open_constraints,
+    additional_prompt_info=ADD_TO_CART_MODAL_OPEN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'.", "prompt_for_task_generation": "Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace'."},
         {"prompt": "Show the add-to-cart modal for 'Salmon Nigiri'.", "prompt_for_task_generation": "Show the add-to-cart modal for 'Salmon Nigiri'."},
@@ -121,9 +136,18 @@ ITEM_INCREMENTED_USE_CASE = UseCase(
 
 ADD_TO_CART_ADDITIONAL_PROMPT_INFO = """
 Critical requirements:
-1. The request must start with one of the following: "Add to cart ...".
+1. The request must start with one of the following: "Add ..."
 2. Do not mention a single constraint more than once in the request.
-"""
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'item': {'operator': 'equals', 'value': 'Margherita Pizza'}, 'size': {'operator': 'equals', 'value': 'Large'}, 'quantity': {'operator': 'equals', 'value': 1}}
+Correct:
+"Add where item equals 'Margherita Pizza' and size equals 'Large' and quantity equals 1 to my cart."
+Incorrect:
+"Add 'Margherita Pizza' (Large) to my cart with extra olives."
+""".strip()
+
 
 ADD_TO_CART_USE_CASE = UseCase(
     name="ADD_TO_CART_MENU_ITEM",
@@ -143,8 +167,9 @@ ADD_TO_CART_USE_CASE = UseCase(
 
 OPEN_CHECKOUT_PAGE_ADDITIONAL_PROMPT_INFO = """
 Critical requirements:
-1. The request must start with one of the following: "Open checkout page after adding ...", "Add to cart ... and open checkout page.".
+1. The request must start with one of the following: "Open checkout page after adding ..." or "Go to checkout ..."
 2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
 """.strip()
 
 OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
@@ -162,6 +187,13 @@ OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
         {"prompt": "Go to checkout with a total of 2 items.", "prompt_for_task_generation": "Go to checkout with a total of 2 items."},
     ],
 )
+DROPOFF_PREFERENCE_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Set dropoff preference ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
 
 DROPOFF_PREFERENCE_USE_CASE = UseCase(
     name="DROPOFF_PREFERENCE",
@@ -169,8 +201,14 @@ DROPOFF_PREFERENCE_USE_CASE = UseCase(
     event=DropoffPreferenceEvent,
     event_source_code=DropoffPreferenceEvent.get_source_code_of_class(),
     constraints_generator=generate_dropoff_option_constraints,
+    additional_prompt_info=DROPOFF_PREFERENCE_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {"prompt": "Set dropoff preference to 'Leave at door'.", "prompt_for_task_generation": "Set dropoff preference to 'Leave at door'."},
+        {"prompt": "Set dropoff preference where dropoff_preference equals 'Leave at door'.", "prompt_for_task_generation": "Set dropoff preference where dropoff_preference equals 'Leave at door'."},
+        {"prompt": "Set dropoff preference where dropoff_preference contains 'door'.", "prompt_for_task_generation": "Set dropoff preference where dropoff_preference contains 'door'."},
+        {
+            "prompt": "Set dropoff preference where dropoff_preference not equals 'Call on arrival'.",
+            "prompt_for_task_generation": "Set dropoff preference where dropoff_preference not equals 'Call on arrival'.",
+        },
         {"prompt": "Choose 'Hand to me' as the dropoff option.", "prompt_for_task_generation": "Choose 'Hand to me' as the dropoff option."},
         {"prompt": "Select 'Ring bell' for delivery dropoff.", "prompt_for_task_generation": "Select 'Ring bell' for delivery dropoff."},
         {"prompt": "Set my delivery dropoff to 'Call on arrival'.", "prompt_for_task_generation": "Set my delivery dropoff to 'Call on arrival'."},
@@ -216,25 +254,6 @@ EMPTY_CART_EVENT_ADDITIONAL_PROMPT_INFO = """
 Critical requirements:
 1. The request must start with one of the following: "Empty my cart...", "Remove all items from the cart...", "Clear my shopping cart...", "Delete everything in my cart...", or "Start a new order by emptying the cart...".
 2. Do not mention a single constraint more than once in the request.
-
-Correct examples:
-- Empty my cart.
-- Remove all items from the cart.
-- Clear my shopping cart.
-- Delete everything in my cart.
-- Start a new order by emptying the cart.
-
-Incorrect examples:
-- Empty my cart and remove all items from the cart. (Repeated intent)
-- Clear my shopping cart where the quantity is less than 8 and the quantity is not equal to 2. (Multiple constraints on the same field)
-
-3. Pay attention to the constraints:
-Example:
-constraints: {'quantity': {'operator': 'less_than', 'value': 8}, 'item': {'operator': 'not_equals', 'value': 'Beef Pho'}, 'restaurant': {'operator': 'contains', 'value': 'P'}}
-Correct:
-"Empty my cart at a restaurant that contains 'P' where the item is not 'Beef Pho' and the quantity is less than 8."
-Incorrect:
-"Empty my cart where the quantity is less than 8 and the quantity is not equal to 2."
 """
 EMPTY_CART_USE_CASE = UseCase(
     name="EMPTY_CART",
@@ -259,7 +278,7 @@ Critical requirements:
 3. Make sure to mention the constraint name as specified in the constraints.
 Example:
 constraint: {'cuisine': 'Steakhouse'}
-    request: "Delete the review for the restaurant with cuisine 'Steakhouse'."
+request: "Delete the review for the restaurant with cuisine 'Steakhouse'."
 """.strip()
 
 DELETE_REVIEW_USE_CASE = UseCase(
@@ -277,6 +296,13 @@ DELETE_REVIEW_USE_CASE = UseCase(
         {"prompt": "Delete the review I wrote as 'Marco R.'.", "prompt_for_task_generation": "Delete the review I wrote as 'Marco R.'."},
     ],
 )
+BACK_TO_ALL_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Return to all ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
 
 BACK_TO_ALL_RESTAURANTS_USE_CASE = UseCase(
     name="BACK_TO_ALL_RESTAURANTS",
@@ -284,6 +310,7 @@ BACK_TO_ALL_RESTAURANTS_USE_CASE = UseCase(
     event=BackToAllRestaurantsEvent,
     event_source_code=BackToAllRestaurantsEvent.get_source_code_of_class(),
     constraints_generator=generate_view_restaurant_constraints,
+    additional_prompt_info=BACK_TO_ALL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "Go back to the list of all restaurants from 'Pizza Palace'.", "prompt_for_task_generation": "Go back to the list of all restaurants from 'Pizza Palace'."},
         {"prompt": "Return to all restaurants after viewing 'Sushi World'.", "prompt_for_task_generation": "Return to all restaurants after viewing 'Sushi World'."},
@@ -293,12 +320,20 @@ BACK_TO_ALL_RESTAURANTS_USE_CASE = UseCase(
     ],
 )
 
+ADDRESS_ADDED_ADDITIONAL_PROMPT_INFO = """
+Critical requirements:
+1. The request must start with one of the following: "Add an address ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+""".strip()
+
 ADDRESS_ADDED_USE_CASE = UseCase(
     name="ADDRESS_ADDED",
     description="The user adds a new delivery or pickup address.",
     event=AddressAddedEvent,
     event_source_code=AddressAddedEvent.get_source_code_of_class(),
     constraints_generator=generate_address_added_constraints,
+    additional_prompt_info=ADDRESS_ADDED_ADDITIONAL_PROMPT_INFO,
     examples=[
         {"prompt": "Add a new delivery address: 456 Oak St.", "prompt_for_task_generation": "Add a new delivery address: 456 Oak St."},
         {"prompt": "Set my pickup address to 789 Pine Ave.", "prompt_for_task_generation": "Set my pickup address to 789 Pine Ave."},
