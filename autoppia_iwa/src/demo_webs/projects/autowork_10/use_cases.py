@@ -8,7 +8,6 @@ from .events import (
     HireButtonClickedEvent,
     HireConsultantEvent,
     PostAJobEvent,
-    RemoveSkillEvent,
     SearchSkillEvent,
     SelectHiringTeamEvent,
     SubmitJobEvent,
@@ -22,7 +21,6 @@ from .generation_functions import (
     generate_hire_button_clicked_constraint,
     generate_hire_consultation_constraint,
     generate_job_posting_constraint,
-    generate_remove_skill_constraint,
     generate_search_skill_constraint,
     generate_select_hiring_team_constraint,
     generate_submit_job_constraint,
@@ -251,61 +249,6 @@ ADD_SKILL_USE_CASE = UseCase(
     ],
 )
 
-REMOVE_SKILL_USE_CASE = UseCase(
-    name="REMOVE_SKILL",
-    description="The user removes the added skill",
-    event=RemoveSkillEvent,
-    event_source_code=RemoveSkillEvent.get_source_code_of_class(),
-    constraints_generator=generate_remove_skill_constraint,
-    examples=[
-        {
-            "prompt": "The user remove the skill that is successfully added for job requirement",
-            "prompt_for_task_generation": "The user remove the skill that is successfully added for job requirement",
-        },
-        {
-            "prompt": "Remove skill when the skill is 'C++'",
-            "prompt_for_task_generation": "Remove skill when the skill is 'C++'",
-        },
-        {
-            "prompt": "Remove skill that contains 'Python'",
-            "prompt_for_task_generation": "Remove skill that contains 'Python'",
-        },
-    ],
-)
-
-# ATTACH_FILE_USE_CASE = UseCase(
-#     name="ATTACH_FILE",
-#     description="The user attaches a file",
-#     event=AttachFileClickedEvent,
-#     event_source_code=AttachFileClickedEvent.get_source_code_of_class(),
-#     constraints_generator=None,
-#     examples=[
-#         {
-#             "prompt": "The user clicks 'Attach file' button to attach file",
-#             "prompt_for_task_generation": "The user clicks 'Attach file' button to attach file",
-#         },
-#         {
-#             "prompt": "Attach a file whose name is 'generation_functions.py'",
-#             "prompt_for_task_generation": "Attach a file whose name is 'generation_functions.py'",
-#         },
-#         {
-#             "prompt": "Attach a file whose name is 'document.pdf'",
-#             "prompt_for_task_generation": "Attach a file whose name is 'document.pdf'",
-#         },
-#         {
-#             "prompt": "Attach a file when step is equal to 5",
-#             "prompt_for_task_generation": "Attach a file when step is equal to 5",
-#         },
-#         {
-#             "prompt": "Attach a file whose type is 'image/png'",
-#             "prompt_for_task_generation": "Attach a file whose type is 'image/png'",
-#         },
-#         {
-#             "prompt": "Attach a file whose type is 'application/pdf'",
-#             "prompt_for_task_generation": "Attach a file whose type is 'application/pdf'",
-#         },
-#     ],
-# )
 
 SUBMIT_JOB_USE_CASE = UseCase(
     name="SUBMIT_JOB",
@@ -381,7 +324,6 @@ ALL_USE_CASES = [
     WRITING_JOB_TITLE_USE_CASE,
     SEARCH_SKILL_USE_CASE,
     ADD_SKILL_USE_CASE,
-    REMOVE_SKILL_USE_CASE,
     SUBMIT_JOB_USE_CASE,
     CLOSE_JOB_POSTING_USE_CASE,
 ]

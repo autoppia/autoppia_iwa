@@ -14,7 +14,6 @@ from .data import (
     FIELD_OPERATORS_MAP_HIRING_CONSULTANT,
     FIELD_OPERATORS_MAP_HIRING_TEAM,
     FIELD_OPERATORS_MAP_POSTING_A_JOB,
-    FIELD_OPERATORS_MAP_REMOVE_SKILL,
     FIELD_OPERATORS_MAP_SEARCH_SKILL,
     FIELD_OPERATORS_MAP_SUBMIT_JOB,
     FIELD_OPERATORS_MAP_WRITING_A_JOB_TITLE,
@@ -265,10 +264,7 @@ def generate_job_posting_constraint() -> list[dict[str, Any]]:
 
 def generate_write_job_title_constraint() -> list[dict[str, Any]]:
     constraints_list = []
-    # possible_fields = ["query", "step"]
     possible_fields = ["query"]
-    # num_constraints= random.randint(1, len(possible_fields))
-    # selected_fields = random.sample(possible_field, num_constraints)
     query = [
         "Web Developers Jobs",
         "AI/ML Engineers Jobs",
@@ -289,7 +285,6 @@ def generate_write_job_title_constraint() -> list[dict[str, Any]]:
         "Software Testers Jobs",
         "Embedded Systems Engineers Jobs",
     ]
-    # step = [1]
 
     for field in possible_fields:
         allowed_ops = FIELD_OPERATORS_MAP_WRITING_A_JOB_TITLE.get(field, [])
@@ -302,11 +297,6 @@ def generate_write_job_title_constraint() -> list[dict[str, Any]]:
             field_value = random.choice(query)
             query_dataset = [{"query": q} for q in query]
             value = _generate_constraint_value(operator, field_value, field, dataset=query_dataset)
-
-            # else:
-            #     field_value = random.choice(step)
-            #     step_dataset = [{'step': s} for s in step]
-            #     value = _generate_constraint_value(operator, field_value, field, dataset=step_dataset)
 
             if value is not None:
                 constraint = create_constraint_dict(field, operator, value)
@@ -344,29 +334,6 @@ def generate_add_skill_constraint() -> list[dict[str, Any]]:
     sample_skill = random.choice(popular_skills_data)
     for field in selected_field:
         allowed_ops = FIELD_OPERATORS_MAP_ADD_SKILL.get(field, [])
-        if not allowed_ops:
-            continue
-
-        op_str = random.choice(allowed_ops)
-        operator = ComparisonOperator(op_str)
-        field_value = sample_skill.get(field, None)
-        value = _generate_constraint_value(operator, field_value, field, dataset=popular_skills_data)
-        if value is not None:
-            constraint = create_constraint_dict(field, operator, value)
-            constraints_list.append(constraint)
-
-    return constraints_list
-
-
-def generate_remove_skill_constraint() -> list[dict[str, Any]]:
-    constraints_list = []
-    possible_field = list(FIELD_OPERATORS_MAP_REMOVE_SKILL.keys())
-    num_constraints = random.randint(1, len(possible_field))
-    selected_field = random.sample(possible_field, num_constraints)
-    popular_skills_data = [{"query": q} for q in POPULAR_SKILLS]
-    sample_skill = random.choice(popular_skills_data)
-    for field in selected_field:
-        allowed_ops = FIELD_OPERATORS_MAP_REMOVE_SKILL.get(field, [])
         if not allowed_ops:
             continue
 
