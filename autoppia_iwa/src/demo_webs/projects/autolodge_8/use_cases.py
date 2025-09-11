@@ -60,24 +60,24 @@ SEARCH_HOTEL_USE_CASE = UseCase(
     additional_prompt_info=SEARCH_HOTEL_INFO,
     examples=[
         {
-            "prompt": "Search for hotels in Murree from July 25 to July 28 for 2 adults and 1 child",
-            "prompt_for_task_generation": "Search for hotels in <location> from <date_from> to <date_to> for <adults> adults and <children> children",
+            "prompt": "Search for hotels where search term is Murree from July 25 to July 28 for 2 adults and 1 child",
+            "prompt_for_task_generation": "Search for hotels where search term is Murree from July 25 to July 28 for 2 adults and 1 child",
         },
         {
-            "prompt": "Find hotels near Lake View for this weekend, 2 adults, no kids",
-            "prompt_for_task_generation": "Find hotels near <search_term> for <date_range>, <adults> adults",
+            "prompt": "Search for hotel where search term is Lake View, for 2 adults and no kids",
+            "prompt_for_task_generation": "Search for hotel where search term is Lake View, for 2 adults and no kids",
         },
         {
-            "prompt": "Look up beachside hotels from August 10 to August 12 for a family of 4 with a pet",
-            "prompt_for_task_generation": "Look up <search_term> hotels from <date_from> to <date_to> for <adults> adults, <children> children, and <pets> pets",
+            "prompt": "Search for hotels from August 10 to August 12 for a family of 4 with a pet",
+            "prompt_for_task_generation": "Search for hotels from August 10 to August 12 for a family of 4 with a pet",
         },
         {
-            "prompt": "Search for hotels in Skardu for next week",
-            "prompt_for_task_generation": "Search for hotels in <search_term> for <date_range>",
+            "prompt": "Search for hotels where search term is Skardu",
+            "prompt_for_task_generation": "Search for hotels where search term in Skardu",
         },
         {
-            "prompt": "Find a hotel near Mall Road for 3 adults and 1 infant",
-            "prompt_for_task_generation": "Find a hotel near <search_term> for <adults> adults and <infants> infants",
+            "prompt": "Find a hotel where search term is Mall Road for 3 adults and 1 infant",
+            "prompt_for_task_generation": "Find a hotel where search term is Mall Road for 3 adults and 1 infant",
         },
     ],
 )
@@ -628,13 +628,13 @@ BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
 
 ALL_USE_CASES = [
     SEARCH_HOTEL_USE_CASE,
-    VIEW_HOTEL_USE_CASE,
-    INCREASE_NUMBER_OF_GUESTS_USE_CASE,
-    RESERVE_HOTEL_USE_CASE,
-    EDIT_CHECK_IN_OUT_DATES_USE_CASE,
-    CONFIRM_AND_PAY_USE_CASE,
-    MESSAGE_HOST_USE_CASE,
-    SHARE_HOTEL_USE_CASE,
-    ADD_TO_WISHLIST_USE_CASE,
-    BACK_TO_ALL_HOTELS_USE_CASE,
+    # VIEW_HOTEL_USE_CASE,
+    # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
+    # RESERVE_HOTEL_USE_CASE,
+    # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
+    # CONFIRM_AND_PAY_USE_CASE,
+    # MESSAGE_HOST_USE_CASE,
+    # SHARE_HOTEL_USE_CASE,
+    # ADD_TO_WISHLIST_USE_CASE,
+    # BACK_TO_ALL_HOTELS_USE_CASE,
 ]
