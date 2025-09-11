@@ -75,16 +75,14 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         ComparisonOperator.GREATER_EQUAL,
         ComparisonOperator.LESS_EQUAL,
     }:
-        numeric_values = [v.get(field) for v in dataset if isinstance(v.get(field), int | float)]
-        if numeric_values:
-            base = random.choice(numeric_values)
-            delta = random.uniform(1, 3)
-            if operator == ComparisonOperator.GREATER_THAN:
-                return round(base - delta, 2)
-            elif operator == ComparisonOperator.LESS_THAN:
-                return round(base + delta, 2)
-            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                return round(base, 2)
+        base = field_value
+        delta = random.uniform(1, 3)
+        if operator == ComparisonOperator.GREATER_THAN:
+            return round(base - delta, 2)
+        elif operator == ComparisonOperator.LESS_THAN:
+            return round(base + delta, 2)
+        elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+            return round(base, 2)
 
     return value
 
