@@ -271,9 +271,29 @@ SHARE_HOTEL_USE_CASE = UseCase(
 INCREASE_NUMBER_OF_GUESTS_INFO = """
 CRITICAL REQUIREMENT:
 1. Mention increment of guests only in prompt.
-2. Do NOT any details other than number of guests.
-3. Start prompt with "Increase number of guests to X" or similar phrases.
+2. Do NOT add any details other than number of guests.
+3. Start prompt with "Increase number of guests where" or similar phrases.
+4. Keep the constraints values as it is in the prompt, and do not complete or correct them.
+
+✅ CORRECT EXAMPLE:
+Increase number of guests where guests_to is less than or equal to '2' and rating is greater than '4.1' and amenities contains 'owntown core' and location equals 'Toronto, Canada'
+
+❌ INCORRECT EXAMPLES:
+
+# ❌ Fixing or completing constraint values:
+Increase number of guests where guests_to is less than or equal to '2' and rating is greater than '4.1' and amenities contains 'downtown core' and location equals 'Toronto, Canada'
+# (The test data says 'owntown core' — do not correct it to 'downtown core')
+
+# ❌ Adding extra context/details:
+Increase number of guests where guests_to is less than or equal to '2' and rating is greater than '4.1' and amenities contains 'owntown core' and location equals 'Toronto, Canada' because we need to accommodate more people
+
+# ❌ Prompt doesn't start correctly:
+We need to increase the number of guests where guests_to is less than or equal to '2'...
+
+# ❌ Talks about other fields like price or availability:
+Increase number of guests and update availability where guests_to is less than or equal to '2'...
 """
+
 
 INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     name="INCREASE_NUMBER_OF_GUESTS",
@@ -284,28 +304,16 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     additional_prompt_info=INCREASE_NUMBER_OF_GUESTS_INFO,
     examples=[
         {
-            "prompt": "Increase number of guests to 3.",
-            "prompt_for_task_generation": "Increase number of guests to 3.",
+            "prompt": "Increase number of guests where guests_to is 3.",
+            "prompt_for_task_generation": "Increase number of guests where guests_to is 3.",
         },
         {
-            "prompt": "Increase guest count to 4.",
-            "prompt_for_task_generation": "Increase guest count to 4.",
+            "prompt": "Increase guests count to 4.",
+            "prompt_for_task_generation": "Increase guests count to 4.",
         },
         {
-            "prompt": "Make that 5 guests total.",
-            "prompt_for_task_generation": "Increase number of guests to 5.",
-        },
-        {
-            "prompt": "Need to include my cousin too, so now it's 6 people.",
-            "prompt_for_task_generation": "Need to include my cousin too, so now it's 6 people.",
-        },
-        {
-            "prompt": "Btw, we're adding 2 more friends. Increase guests by 2. ",
-            "prompt_for_task_generation": "Btw, we're adding 2 more friends. Increase guests by 2. ",
-        },
-        {
-            "prompt": "Oh I forgot about the kids - we're 2 adults and 2 children.",
-            "prompt_for_task_generation": "Increase number of guests to 4.",
+            "prompt": "Increase number of guests where guests are greater than 4.",
+            "prompt_for_task_generation": "Increase number of guests where guests are greater than 4.",
         },
     ],
 )
@@ -627,9 +635,9 @@ BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    SEARCH_HOTEL_USE_CASE,
+    # SEARCH_HOTEL_USE_CASE,
     # VIEW_HOTEL_USE_CASE,
-    # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
+    INCREASE_NUMBER_OF_GUESTS_USE_CASE,
     # RESERVE_HOTEL_USE_CASE,
     # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
     # CONFIRM_AND_PAY_USE_CASE,

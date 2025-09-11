@@ -324,13 +324,13 @@ class ShareHotelEvent(Event, BaseEventValidator, HotelInfo):
 class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
     event_name: str = "INCREASE_NUMBER_OF_GUESTS"
     # from_guests: int
-    to_guests: int
+    guests_to: int
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
         """Criteria for validating increase guests events"""
 
         # from_guests: int | CriterionValue | None = None
-        to_guests: int | CriterionValue | None = None
+        guests_to: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -338,7 +338,7 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
         return all(
             [
                 # self._validate_field(self.from_guests, criteria.from_guests),
-                self._validate_field(self.to_guests, criteria.to_guests),
+                self._validate_field(self.guests_to, criteria.guests_to),
                 HotelInfo._validate_criteria(self, criteria),
             ]
         )
@@ -354,7 +354,7 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             # from_guests=backend_event.data.get("from", 0),
-            to_guests=backend_event.data.get("to", 0),
+            guests_to=backend_event.data.get("to", 0),
             **hotel_info.model_dump(),
         )
 
