@@ -294,7 +294,6 @@ We need to increase the number of guests where guests_to is less than or equal t
 Increase number of guests and update availability where guests_to is less than or equal to '2'...
 """
 
-
 INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     name="INCREASE_NUMBER_OF_GUESTS",
     description="Triggered when the user increases the number of guests for a booking or search.",
@@ -389,7 +388,6 @@ Reserve the hotel for a stay with guests NOT equal to '1' at a location that doe
 Reserve the hotel for a stay with guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 """
 
-
 RESERVE_HOTEL_USE_CASE = UseCase(
     name="RESERVE_HOTEL",
     description="Triggered when the user confirms a reservation or booking for a hotel.",
@@ -438,7 +436,22 @@ CRITICAL REQUIREMENTS:
 4. 'checkin' and 'checkout' dates are actual values that needs to be updated, 'datesFrom' and 'datesTo' are actual available dates to find the hotel.
 Please mention the 'checkin' and 'checkout' dates in the prompt for update only.
 
-{}
+2. Keep the constraints values as it is in the prompt, and do not complete or correct them.
+    ⚠️ Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
+3. Do NOT split, rephrase, or interpret list values. Use them exactly as shown in event_criteria.
+    Example:
+        'amenities': {'operator': 'in_list', 'value': ['Ski-in, Ski-out']}
+
+    ✅ Correct: amenities in list ['Ski-in, Ski-out']
+    ❌ Incorrect: amenities include 'Ski-in' or 'Ski-out'
+
+EXAMPLES:
+
+✅ CORRECT:
+Reserve the hotel for a stay with guests NOT equal to '1' at a location that does NOT contain 'kjo' AND amenities NOT in list ['Self check-in', 'Fast WiFi'] AND title contains 'owe' AND rating less than '6.714277681586925' AND reviews greater equal '212'
+
+❌ INCORRECT:
+Reserve the hotel for a stay with guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 
 """
 
@@ -452,11 +465,7 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     examples=[
         {
             "prompt": "Change our check-in to August 10 and check-out to August 14.",
-            "prompt_for_task_generation": "Update check-in and check-out dates.",
-        },
-        {
-            "prompt": "Actually, we'll arrive a day earlier.",
-            "prompt_for_task_generation": "Change check-in date to a day earlier.",
+            "prompt_for_task_generation": "Change our check-in to August 10 and check-out to August 14.",
         },
         {
             "prompt": "Move our departure to Sunday.",
@@ -544,7 +553,23 @@ CONFIRM_AND_PAY_USE_CASE = UseCase(
 
 MESSAGE_HOST_INFO = """
 CRITICAL REQUIREMENTS:
-1. Use explicit phrases such as 'Message the host ...', 'Send the query to host ...', or similar.
+1. Use explicit phrases such as 'Message the host where message ...',or similar.
+2. Keep the constraints values as it is in the prompt, and do not complete or correct them.
+    ⚠️ Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
+3. Do NOT split, rephrase, or interpret list values. Use them exactly as shown in event_criteria.
+    Example:
+        'amenities': {'operator': 'in_list', 'value': ['Ski-in, Ski-out']}
+
+    ✅ Correct: amenities in list ['Ski-in, Ski-out']
+    ❌ Incorrect: amenities include 'Ski-in' or 'Ski-out'
+
+EXAMPLES:
+
+✅ CORRECT:
+Message the host with message equals 'Is early check-in possible?', guests NOT equal to '1' at a location that does NOT contain 'kjo' AND amenities NOT in list ['Self check-in', 'Fast WiFi'] AND title contains 'owe' AND rating less than '6.714277681586925' AND reviews greater equal '212'
+
+❌ INCORRECT:
+Message the host with message equals 'Is early check-in possible?', guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 """
 
 MESSAGE_HOST_USE_CASE = UseCase(
@@ -556,40 +581,17 @@ MESSAGE_HOST_USE_CASE = UseCase(
     additional_prompt_info=MESSAGE_HOST_INFO,
     examples=[
         {
-            "prompt": "Can you ask Natalie if early check-in is possible?",
-            "prompt_for_task_generation": "Send message to host Natalie asking about early check-in.",
+            "prompt": "Message host Natalie where message contains 'ly check-in possible?', title contains 'cozy' and location equals 'New York'",
+            "prompt_for_task_generation": "Message host Natalie where message contains 'ly check-in possible?', title contains 'cozy' and location equals 'New York'",
         },
+        {"prompt": "Message host where message equals 'I will be arriving around 10pm.'", "prompt_for_task_generation": "Message host where message equals 'I will be arriving around 10pm.'"},
+        {"prompt": "Message host John where message not contains 'no pets'", "prompt_for_task_generation": "Message host John where message not contains 'no pets'"},
+        {"prompt": "Message host where message not equals 'No amenities needed.'", "prompt_for_task_generation": "Message host where message not equals 'No amenities needed.'"},
+        {"prompt": "Message host where message equals 'Does the kitchen have a microwave?'", "prompt_for_task_generation": "Message host where message equals 'Does the kitchen have a microwave?'"},
+        {"prompt": "Message host Alex where message not contains 'no blanket'", "prompt_for_task_generation": "Message host Alex where message not contains 'no blanket'"},
         {
-            "prompt": "Tell the host I'll be arriving around 10pm.",
-            "prompt_for_task_generation": "Send message to the host informing them of a 10pm arrival.",
-        },
-        {
-            "prompt": "Let John know we might bring a pet.",
-            "prompt_for_task_generation": "Send message to host John asking if pets are allowed.",
-        },
-        {
-            "prompt": "Message the host: do they provide towels and soap?",
-            "prompt_for_task_generation": "Send question to the host about amenities like towels and soap.",
-        },
-        {
-            "prompt": "Write to the host and ask if the kitchen has a microwave.",
-            "prompt_for_task_generation": "Ask host via message whether kitchen includes a microwave.",
-        },
-        {
-            "prompt": "Please tell Alex we'll need an extra blanket.",
-            "prompt_for_task_generation": "Send message to host Alex requesting an extra blanket.",
-        },
-        {
-            "prompt": "Send this to Sarah: 'We loved the place. Thank you!'",
-            "prompt_for_task_generation": "Send thank you message to host Sarah.",
-        },
-        {
-            "prompt": "Ask the host if the pool is heated in winter.",
-            "prompt_for_task_generation": "Send question to host about winter pool heating.",
-        },
-        {
-            "prompt": "Message host: Is parking included or extra?",
-            "prompt_for_task_generation": "Send message to the host asking about parking costs.",
+            "prompt": "Message host Sarah where message equals 'We loved the place. Thank you!'",
+            "prompt_for_task_generation": "Message host Sarah where message equals 'We loved the place. Thank you!'",
         },
     ],
 )
@@ -654,8 +656,8 @@ ALL_USE_CASES = [
     # SEARCH_HOTEL_USE_CASE,
     # VIEW_HOTEL_USE_CASE,
     # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
-    RESERVE_HOTEL_USE_CASE,
-    # EDIT_CHECK_IN_OUT_DATES_USE_CASE,
+    # RESERVE_HOTEL_USE_CASE,
+    EDIT_CHECK_IN_OUT_DATES_USE_CASE,
     # CONFIRM_AND_PAY_USE_CASE,
     # MESSAGE_HOST_USE_CASE,
     # SHARE_HOTEL_USE_CASE,

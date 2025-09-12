@@ -7,6 +7,7 @@ from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue
 from autoppia_iwa.src.demo_webs.projects.shared_utils import validate_date_field
 
+from ...utils import datetime_from_utc_to_local
 from .data import parse_datetime
 
 
@@ -423,6 +424,8 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
         d_range = data.get("dateRange", {})
         checkin = parse_datetime(d_range.get("from"))
         checkout = parse_datetime(d_range.get("to"))
+        checkin = datetime_from_utc_to_local(checkin)
+        checkout = datetime_from_utc_to_local(checkout)
         hotel_info = HotelInfo.parse(data)
 
         return cls(
