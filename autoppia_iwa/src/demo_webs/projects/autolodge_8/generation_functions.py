@@ -432,6 +432,40 @@ def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[st
 
 def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
+    constraints = [
+        {"field": "guests_set", "operator": "equals", "value": 1},
+        {"field": "host_name", "operator": "contains", "value": "live"},
+        {"field": "price", "operator": "less_than", "value": 125},
+        {"field": "amenities", "operator": "in_list", "value": ["Writer's nook"]},
+        {"field": "rating", "operator": "less_equal", "value": 4.4},
+        {"field": "location", "operator": "not_equals", "value": "London, UK"},
+    ]
+    constraints = [
+        {"field": "guests_set", "operator": "equals", "value": 3},
+        {"field": "title", "operator": "not_equals", "value": "Rustic Farmhouse Getaway"},
+        {"field": "rating", "operator": "less_equal", "value": 4.9},
+        {"field": "reviews", "operator": "greater_equal", "value": 212},
+        {"field": "location", "operator": "not_contains", "value": "ijt"},
+        {"field": "host_name", "operator": "not_equals", "value": "Lucas"},
+        {"field": "amenities", "operator": "in_list", "value": ["Ski-in, Ski-out"]},
+    ]
+    # constraints_list = []
+    # for c in constraints:
+    #     c['operator'] = ComparisonOperator(c['operator'])
+    #     constraints_list.append(c)
+    constraints = {
+        "amenities": {"operator": "not_in_list", "value": ["Self check-in", "Fast WiFi"]},
+        "guests_set": {"operator": "not_equals", "value": 1},
+        "location": {"operator": "not_contains", "value": "kjo"},
+        "rating": {"operator": "less_than", "value": 6.714277681586925},
+        "reviews": {"operator": "greater_equal", "value": 212},
+        "title": {"operator": "contains", "value": "owe"},
+    }
+    constraints_list = []
+    for f, c in constraints.items():
+        op = ComparisonOperator(c["operator"])
+        constraints_list.append(create_constraint_dict(f, op, c["value"]))
+
     return constraints_list
 
 
