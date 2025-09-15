@@ -69,19 +69,16 @@ VIEW_EMAIL_USE_CASE = UseCase(
 )
 
 STAR_EMAIL_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1.  Use clear action phrases such as:
-   - "mark as starred"
-   - "flag as starred"
-   - "add to favorite"
-
-2. Mention Subject, Email ID, or Sender if available.
-3. Examples:
-    Correct: "Mark the email with Subject containing 'g Workshop' as starred."
-    Incorrect: "Mark the email with Subject containing 'g Workshop' as starred where isStarred is NOT equal to True.".
-4. IMPORTANT: Do **NOT** mention isStarred in the prompt.
-5. Only use natural phrasing and vary wording across prompts.
-"""
+Critical requirements:
+1. The request must start with one of the following: "Star the email...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'subject': {'operator': 'equals', 'value': 'Budget Approval Request'}, 'from_email': {'operator': 'equals', 'value': 'nico.wells@org.com'}, 'is_starred': {'operator': 'equals', 'value': False}}
+Correct:
+"Star the email where subject equals 'Budget Approval Request' and from_email equals 'nico.wells@org.com' and is_starred equals False."
+""".strip()
 
 STAR_EMAIL_USE_CASE = UseCase(
     name="STAR_AN_EMAIL",
@@ -92,24 +89,20 @@ STAR_EMAIL_USE_CASE = UseCase(
     additional_prompt_info=STAR_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Star the email from 'grace.lee@company.com' with subject 'Team Outing Plan'",
-            "prompt_for_task_generation": "Star the email from 'grace.lee@company.com' with subject 'Team Outing Plan'",
+            "prompt": "Star the email where from_email equals 'grace.lee@company.com' and subject equals 'Team Outing Plan'",
+            "prompt_for_task_generation": "Star the email where from_email 'grace.lee@company.com' and subject equals 'Team Outing Plan'",
         },
         {
-            "prompt": "Mark the email from 'bob.johnson@tech.org' as starred",
-            "prompt_for_task_generation": "Mark the email from 'bob.johnson@tech.org' as starred",
+            "prompt": "Star the email where from_email equals 'bob.johnson@tech.org' and is_starred equals 'False'",
+            "prompt_for_task_generation": "Star the email where from_email equals 'bob.johnson@tech.org' and is_starred equals 'False'",
         },
         {
-            "prompt": "Mark the email titled 'Newsletter Subscription' as unstarred",
-            "prompt_for_task_generation": "Mark the email titled 'Newsletter Subscription' as unstarred",
+            "prompt": "Star the email where subject equals 'Re: Lunch Plans' and is_starred equals 'False'",
+            "prompt_for_task_generation": "Star the email where subject equals 'Re: Lunch Plans' and is_starred equals 'False'",
         },
         {
             "prompt": "Star the email with ID 'email7'",
             "prompt_for_task_generation": "Star the email with ID 'email7'",
-        },
-        {
-            "prompt": "Mark the message about 'Lunch Plans' as favorite",
-            "prompt_for_task_generation": "Mark the message about 'Lunch Plans' as favorite",
         },
     ],
 )
