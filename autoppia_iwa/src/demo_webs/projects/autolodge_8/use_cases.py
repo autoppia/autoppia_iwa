@@ -338,28 +338,16 @@ RESERVE_HOTEL_USE_CASE = UseCase(
 
 EDIT_CHECK_IN_OUT_DATES_INFO = """
 CRITICAL REQUIREMENTS:
-1. The prompt should clearly confirm the updated check-in and/or check-out dates.
-2. Use explicit phrases such as 'Change check-in to...', 'Update check-out date...', or similar.
-3. Do not include unrelated booking or payment actions in this prompt.
-4. 'checkin' and 'checkout' dates are actual values that needs to be updated, 'datesFrom' and 'datesTo' are actual available dates to find the hotel.
-Please mention the 'checkin' and 'checkout' dates in the prompt for update only.
-
+1. Start the prompt like:
+    Example: Edit checkin checkout dates where checkin date <operator> <checkin-date> and checkout date <operator> <checkout-date> ...
 2. Keep the constraints values as it is in the prompt, and do not complete or correct them.
-    ⚠️ Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
+    Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
 3. Do NOT split, rephrase, or interpret list values. Use them exactly as shown in event_criteria.
     Example:
         'amenities': {'operator': 'in_list', 'value': ['Ski-in, Ski-out']}
 
-    ✅ Correct: amenities in list ['Ski-in, Ski-out']
-    ❌ Incorrect: amenities include 'Ski-in' or 'Ski-out'
-
-EXAMPLES:
-
-✅ CORRECT:
-Update the checkin and checkout dates for hotel where checkin date NOT EQUAL to '2025-06-30 00:00:00' and the check-out date to a date less than '2025-07-12 00:00:00' guests NOT equal to '1' at a location that does NOT contain 'kjo' AND amenities NOT in list ['Self check-in', 'Fast WiFi'] AND title contains 'owe' AND rating less than '6.714277681586925' AND reviews greater equal '212'
-
-❌ INCORRECT:
-Update the checkin and checkout dates for hotel where checkin date NOT EQUAL to '2025-06-30 00:00:00' and the check-out date to a date less than '2025-07-12 00:00:00'guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
+    Correct: amenities in list ['Ski-in, Ski-out']
+    Incorrect: amenities include 'Ski-in' or 'Ski-out'
 
 """
 
@@ -372,24 +360,24 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
     examples=[
         {
-            "prompt": "Update the reservation dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
-            "prompt_for_task_generation": "Update the reservation dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
+            "prompt": "Edit checkin checkout dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
         },
         {
-            "prompt": "Update the reservation dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
-            "prompt_for_task_generation": "Update the reservation dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
+            "prompt": "Edit checkin checkout dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
         },
         {
-            "prompt": "Update the reservation dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
-            "prompt_for_task_generation": "Update the reservation dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
+            "prompt": "Edit checkin checkout dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
         },
         {
-            "prompt": "Update the reservation dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
-            "prompt_for_task_generation": "Update the reservation dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
+            "prompt": "Edit checkin checkout dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
         },
         {
-            "prompt": "Update the reservation dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
-            "prompt_for_task_generation": "Update the reservation dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
+            "prompt": "Edit checkin checkout dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
         },
     ],
 )

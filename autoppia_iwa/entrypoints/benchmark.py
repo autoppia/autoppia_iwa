@@ -43,9 +43,9 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # ---------------------------------------------------------------------------
 
 AGENTS: list[IWebAgent] = [
-    # ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
-    # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=5010, timeout=120),
-    ApifiedWebAgent(id="3", name="AutoppiaAgent3", host="127.0.0.1", port=5050, timeout=120),
+    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
+    # ApifiedWebAgent(id="3", name="AutoppiaAgent3", host="127.0.0.1", port=5050, timeout=120),
 ]
 
 # Define web project to evaluate

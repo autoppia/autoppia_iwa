@@ -1178,8 +1178,6 @@ FIELD_OPERATORS_VIEW_HOTEL_MAP = {
     "rating": LOGICAL_OPERATORS,
     "price": LOGICAL_OPERATORS,
     "reviews": LOGICAL_OPERATORS,
-    # "datesFrom": LOGICAL_OPERATORS,
-    # "datesTo": LOGICAL_OPERATORS,
     "guests": LOGICAL_OPERATORS,
     "host_name": STRING_OPERATORS,
     "amenities": ARRAY_OPERATORS,
