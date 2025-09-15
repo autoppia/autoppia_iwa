@@ -149,9 +149,9 @@ def _generate_constraint_value(
             # Generic numeric logic
             delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
             if operator == ComparisonOperator.GREATER_THAN:
-                return base - delta
+                return round(base - delta, 2)
             elif operator == ComparisonOperator.LESS_THAN:
-                return base + delta
+                return round(base + delta, 2)
             elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
                 return base
 

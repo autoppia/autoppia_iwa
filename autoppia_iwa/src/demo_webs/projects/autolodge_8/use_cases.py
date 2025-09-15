@@ -183,6 +183,10 @@ CRITICAL REQUIREMENTS:
 Examples:
 Constraint: {'email': {'operator': 'equals', 'value': 'friend@example.com'}}
 Prompt: "Share the hotel with friend@example.com."
+
+Constraint: {'email': {'operator': 'contains', 'value': '.scott@design}}
+Prompt: "Share the hotel with email that contains '.scott@design'."
+MENTION the constraint operator defined in the prompt.
 """
 
 SHARE_HOTEL_USE_CASE = UseCase(
