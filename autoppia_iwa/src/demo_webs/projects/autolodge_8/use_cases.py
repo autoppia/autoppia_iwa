@@ -179,6 +179,7 @@ CRITICAL REQUIREMENTS:
 1. The prompt should clearly indicate the intent to share a hotel with someone via email or other means.
 2. If the constraints include amenities, price, rating, or location, mention them clearly in the prompt.
 3. If an email is part of the constraint, it should be reflected explicitly (e.g., "share with my friend at abc@example.com").
+4. Explicitly mention the email constraint operator in the prompt and all the constraint operators explicitly.
 
 Examples:
 Constraint: {'email': {'operator': 'equals', 'value': 'friend@example.com'}}
