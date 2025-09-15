@@ -300,7 +300,7 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            guests_to=backend_event.data.get("to", 0),
+            guests_to=(backend_event.data or {}).get("to", 0),
             **hotel_info.model_dump(),
         )
 

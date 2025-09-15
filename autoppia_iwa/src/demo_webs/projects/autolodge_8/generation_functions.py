@@ -711,22 +711,14 @@ def generate_share_hotel_constraints() -> list[dict[str, Any]]:
 
     constraint_list_for_view, hotel_dict = __generate_view_hotel_constraints()
 
-    selected_fields = ["email"]
-    sample_data = {"email": random.choice(emails_list)}
+    field = "email"
+    dataset = [{"email": email} for email in emails_list]
 
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_SHARE_HOTEL_MAP.get(field, [])
-        if not allowed_ops:
-            continue
+    allowed_ops = FIELD_OPERATORS_SHARE_HOTEL_MAP.get(field, [])
+    operator = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(emails_list)
+    value = _generate_constraint_value(operator, field_value, field, dataset)
 
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        field_value = sample_data.get(field)
-        value = (
-            _generate_constraint_value(operator, field_value, field, [{"email": email} for email in emails_list])
-            if field == "email"
-            else _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
-        )
-
-        constraints_list.append(create_constraint_dict(field, operator, value))
+    constraints_list.append(create_constraint_dict(field, operator, value))
     constraints_list.extend(constraint_list_for_view)
     return constraints_list
