@@ -356,10 +356,10 @@ Please mention the 'checkin' and 'checkout' dates in the prompt for update only.
 EXAMPLES:
 
 ✅ CORRECT:
-Reserve the hotel for a stay with guests NOT equal to '1' at a location that does NOT contain 'kjo' AND amenities NOT in list ['Self check-in', 'Fast WiFi'] AND title contains 'owe' AND rating less than '6.714277681586925' AND reviews greater equal '212'
+Update the checkin and checkout dates for hotel where checkin date NOT EQUAL to '2025-06-30 00:00:00' and the check-out date to a date less than '2025-07-12 00:00:00' guests NOT equal to '1' at a location that does NOT contain 'kjo' AND amenities NOT in list ['Self check-in', 'Fast WiFi'] AND title contains 'owe' AND rating less than '6.714277681586925' AND reviews greater equal '212'
 
 ❌ INCORRECT:
-Reserve the hotel for a stay with guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
+Update the checkin and checkout dates for hotel where checkin date NOT EQUAL to '2025-06-30 00:00:00' and the check-out date to a date less than '2025-07-12 00:00:00'guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 
 """
 
@@ -372,28 +372,24 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
     examples=[
         {
-            "prompt": "Change our check-in to August 10 and check-out to August 14.",
-            "prompt_for_task_generation": "Change our check-in to August 10 and check-out to August 14.",
+            "prompt": "Update the reservation dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
+            "prompt_for_task_generation": "Update the reservation dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
         },
         {
-            "prompt": "Move our departure to Sunday.",
-            "prompt_for_task_generation": "Change check-out date to Sunday.",
+            "prompt": "Update the reservation dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
+            "prompt_for_task_generation": "Update the reservation dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
         },
         {
-            "prompt": "Shift the whole trip to next weekend.",
-            "prompt_for_task_generation": "Edit both check-in and check-out dates to next weekend.",
+            "prompt": "Update the reservation dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
+            "prompt_for_task_generation": "Update the reservation dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
         },
         {
-            "prompt": "Make it a two-day trip starting on the 5th.",
-            "prompt_for_task_generation": "Set check-in to the 5th and check-out two days later.",
+            "prompt": "Update the reservation dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
+            "prompt_for_task_generation": "Update the reservation dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
         },
         {
-            "prompt": "Change only the check-out - we'll stay one extra night.",
-            "prompt_for_task_generation": "Extend check-out by one day.",
-        },
-        {
-            "prompt": "Push the trip forward by a week.",
-            "prompt_for_task_generation": "Move check-in and check-out one week later.",
+            "prompt": "Update the reservation dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
+            "prompt_for_task_generation": "Update the reservation dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
         },
     ],
 )
@@ -561,14 +557,14 @@ BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
 )
 
 ALL_USE_CASES = [
-    SEARCH_HOTEL_USE_CASE,
-    VIEW_HOTEL_USE_CASE,
-    INCREASE_NUMBER_OF_GUESTS_USE_CASE,
-    RESERVE_HOTEL_USE_CASE,
+    # SEARCH_HOTEL_USE_CASE,
+    # VIEW_HOTEL_USE_CASE,
+    # INCREASE_NUMBER_OF_GUESTS_USE_CASE,
+    # RESERVE_HOTEL_USE_CASE,
     EDIT_CHECK_IN_OUT_DATES_USE_CASE,
-    CONFIRM_AND_PAY_USE_CASE,
-    MESSAGE_HOST_USE_CASE,
-    SHARE_HOTEL_USE_CASE,
-    ADD_TO_WISHLIST_USE_CASE,
-    BACK_TO_ALL_HOTELS_USE_CASE,
+    # CONFIRM_AND_PAY_USE_CASE,
+    # MESSAGE_HOST_USE_CASE,
+    # SHARE_HOTEL_USE_CASE,
+    # ADD_TO_WISHLIST_USE_CASE,
+    # BACK_TO_ALL_HOTELS_USE_CASE,
 ]
