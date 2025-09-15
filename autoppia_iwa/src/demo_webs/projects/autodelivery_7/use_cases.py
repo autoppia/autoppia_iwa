@@ -77,6 +77,13 @@ Critical requirements:
 1. The request must start with one of the following: "Open the add-to-cart modal ..."
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'item': {'operator': 'equals', 'value': 'Margherita Pizza'}, 'restaurant': {'operator': 'equals', 'value': 'Pizza Palace'}, 'price': {'operator': 'equals', 'value': '10.99'}}'}}
+Correct:
+"Open the add-to-cart modal where item equals 'Margherita Pizza' and restaurant equals 'Pizza Palace' and price equals '10.99'."
+Incorrect:
+"Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace' with extra cheese."
 """.strip()
 
 
@@ -141,13 +148,20 @@ Critical requirements:
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
 4. Pay attention to the constraints:
 Example:
-constraints: {'item': {'operator': 'equals', 'value': 'Margherita Pizza'}, 'size': {'operator': 'equals', 'value': 'Large'}, 'quantity': {'operator': 'equals', 'value': 1}}
+constraints: {
+'item': {'operator': 'equals', 'value': 'Margherita Pizza'},
+'size': {'operator': 'equals', 'value': 'Large'},
+'quantity': {'operator': 'equals', 'value': '1'},
+'price': {'operator': 'equals', 'value': '10.99'},
+'restaurant': {'operator': 'equals', 'value': 'Pizza Palace'},
+'preferences': {'operator': 'equals', 'value': 'spicy'},
+'total_price': {'operator': 'equals', 'value': '10.99'}
+}
 Correct:
-"Add where item equals 'Margherita Pizza' and size equals 'Large' and quantity equals 1 to my cart."
+"Add when item equals 'Margherita Pizza' and size equals 'Large' and quantity equals '1' and price equals '10.99' and restaurant equals 'Pizza Palace' and preferences equals 'spicy' and total_price equals '10.99' to my cart."
 Incorrect:
 "Add 'Margherita Pizza' (Large) to my cart with extra olives."
 """.strip()
-
 
 ADD_TO_CART_USE_CASE = UseCase(
     name="ADD_TO_CART_MENU_ITEM",
@@ -157,20 +171,40 @@ ADD_TO_CART_USE_CASE = UseCase(
     constraints_generator=generate_add_to_cart_constraints,
     additional_prompt_info=ADD_TO_CART_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {"prompt": "Add 'Margherita Pizza' (Large) to my cart.", "prompt_for_task_generation": "Add 'Margherita Pizza' (Large) to my cart."},
-        {"prompt": "Add 'Salmon Nigiri' with no modifications.", "prompt_for_task_generation": "Add 'Salmon Nigiri' with no modifications."},
-        {"prompt": "Add two 'Pepperoni Pizza' (Medium) with 'No Sauce' option.", "prompt_for_task_generation": "Add two 'Pepperoni Pizza' (Medium) with 'No Sauce' option."},
-        {"prompt": "Add 'California Roll' and set quantity to 3.", "prompt_for_task_generation": "Add 'California Roll' and set quantity to 3."},
-        {"prompt": "Add 'Margherita Pizza' (Small) with 'No Cheese' and 'No Basil'.", "prompt_for_task_generation": "Add 'Margherita Pizza' (Small) with 'No Cheese' and 'No Basil'."},
+        {
+            "prompt": "Add when item equals 'Margherita Pizza' and size equals 'Large' to my cart.",
+            "prompt_for_task_generation": "Add when item equals 'Margherita Pizza' and size equals 'Large' to my cart.",
+        },
+        {"prompt": "Add when item equals 'Salmon Nigiri'.", "prompt_for_task_generation": "Add when item equals 'Salmon Nigiri'."},
+        {
+            "prompt": "Add when item equals 'Pepperoni Pizza' and size equals 'medium' and preferences equals 'No Sauce' and quantity equals '2'.",
+            "prompt_for_task_generation": "Add when item equals 'Pepperoni Pizza' and size equals 'medium' and preferences equals 'No Sauce' and quantity equals '2'.",
+        },
+        {"prompt": "Add when item equals 'California Roll' and quantity equals '3'.", "prompt_for_task_generation": "Add when item equals 'California Roll' and quantity equals '3'."},
+        {
+            "prompt": "Add when item equals 'Margherita Pizza' and size equals 'small' and preferences in-list ['No Cheese','No Basil'].",
+            "prompt_for_task_generation": "Add when item equals 'Margherita Pizza' and size equals 'small' and preferences in-list ['No Cheese','No Basil'].",
+        },
     ],
 )
 
 OPEN_CHECKOUT_PAGE_ADDITIONAL_PROMPT_INFO = """
 Critical requirements:
-1. The request must start with one of the following: "Open checkout page after adding ..." or "Go to checkout ..."
+1. The request must start with one of the following:"Go to checkout ..."
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
-""".strip()
+4. Pay attention to the constraints:
+Example:
+constraints: {
+'item': {'operator': 'equals', 'value': 'Margherita Pizza'},
+'price': {'operator': 'equals', 'value': '10.99'},
+'quantity': {'operator': 'equals', 'value': '3'}
+}
+Correct:
+"Go to the checkout page where item equals 'Margherita Pizza' and price equals '10.99' and quantity equals '3' in the cart."
+Incorrect:
+"Go to the checkout page with 3 items in the cart and apply discount code."
+"""
 
 OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
     name="OPEN_CHECKOUT_PAGE",
@@ -180,11 +214,19 @@ OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
     constraints_generator=generate_add_to_cart_constraints,
     additional_prompt_info=OPEN_CHECKOUT_PAGE_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {"prompt": "Go to the checkout page with 3 items in the cart.", "prompt_for_task_generation": "Go to the checkout page with 3 items in the cart."},
-        {"prompt": "Open checkout to review 'Margherita Pizza' and 'California Roll'.", "prompt_for_task_generation": "Open checkout to review 'Margherita Pizza' and 'California Roll'."},
-        {"prompt": "Proceed to checkout with all current items.", "prompt_for_task_generation": "Proceed to checkout with all current items."},
-        {"prompt": "Open the checkout page after adding 'Pepperoni Pizza'.", "prompt_for_task_generation": "Open the checkout page after adding 'Pepperoni Pizza'."},
-        {"prompt": "Go to checkout with a total of 2 items.", "prompt_for_task_generation": "Go to checkout with a total of 2 items."},
+        {
+            "prompt": "Go to the checkout page when item equals 'Margherita Pizza' in the cart.",
+            "prompt_for_task_generation": "Go to the checkout page when item equals 'Margherita Pizza' in the cart.",
+        },
+        {"prompt": "Go to the checkout page when item equals 'California Roll'.", "prompt_for_task_generation": "Go to checkout page when item equals 'California Roll'."},
+        {
+            "prompt": "Go to the checkout page when item equals 'Chicken Tikka Masala' and price equals '13.99' and quantity equals '3'.",
+            "prompt_for_task_generation": "Go to the checkout page when item equals 'Chicken Tikka Masala' and price equals '13.99' and quantity equals '3'.",
+        },
+        {
+            "prompt": "Go to the checkout page when item equals 'Classic Cheeseburger' and price equals '8.99' and quantity equals '2'.",
+            "prompt_for_task_generation": "Go to the checkout page when item equals 'Classic Cheeseburger' and price equals '8.99' and quantity equals '2'.",
+        },
     ],
 )
 DROPOFF_PREFERENCE_ADDITIONAL_PROMPT_INFO = """
@@ -192,6 +234,14 @@ Critical requirements:
 1. The request must start with one of the following: "Set dropoff preference ..."
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'delivery_preference': {'operator': 'equals', 'value': 'Leave at door'}, 'restaurant': {'operator': 'equals', 'value': 'Pho 88'}}
+Correct:'}}
+Correct:
+"Set dropoff preference where delivery_preference equals 'Leave at door' and restaurant equals 'Pho 88'."
+Incorrect:
+"Set dropoff preference to 'Leave at door' and also send a text when arriving."
 """.strip()
 
 
