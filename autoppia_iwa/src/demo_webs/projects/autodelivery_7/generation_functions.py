@@ -194,7 +194,17 @@ def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str, Any]
         if not allowed_ops:
             continue
         operator = ComparisonOperator(random.choice(allowed_ops))
-        value = _generate_constraint_value(operator, field_value, field, dataset=menu_dataset)
+        if field == "item" and operator == ComparisonOperator.CONTAINS:
+            retries = 0
+            value = _generate_constraint_value(operator, field_value, field, dataset=menu_dataset)
+            while value is not None and value.strip() == "&" and retries < 5:
+                value = _generate_constraint_value(operator, field_value, field, dataset=menu_dataset)
+                retries += 1
+            if value is not None and value.strip() == "&":
+                value = None
+        else:
+            value = _generate_constraint_value(operator, field_value, field, dataset=menu_dataset)
+
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list, item

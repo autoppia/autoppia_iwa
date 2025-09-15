@@ -77,6 +77,13 @@ Critical requirements:
 1. The request must start with one of the following: "Open the add-to-cart modal ..."
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'item': {'operator': 'equals', 'value': 'Margherita Pizza'}, 'restaurant': {'operator': 'equals', 'value': 'Pizza Palace'}, 'price': {'operator': 'equals', 'value': '10.99'}}'}}
+Correct:
+"Open the add-to-cart modal where item equals 'Margherita Pizza' and restaurant equals 'Pizza Palace' and price equals '10.99'."
+Incorrect:
+"Open the add-to-cart modal for 'Margherita Pizza' at 'Pizza Palace' with extra cheese."
 """.strip()
 
 
@@ -141,13 +148,20 @@ Critical requirements:
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
 4. Pay attention to the constraints:
 Example:
-constraints: {'item': {'operator': 'equals', 'value': 'Margherita Pizza'}, 'size': {'operator': 'equals', 'value': 'Large'}, 'quantity': {'operator': 'equals', 'value': 1}}
+constraints: {
+'item': {'operator': 'equals', 'value': 'Margherita Pizza'},
+'size': {'operator': 'equals', 'value': 'Large'},
+'quantity': {'operator': 'equals', 'value': '1'},
+'price': {'operator': 'equals', 'value': '10.99'},
+'restaurant': {'operator': 'equals', 'value': 'Pizza Palace'},
+'preferences': {'operator': 'equals', 'value': 'spicy'},
+'total_price': {'operator': 'equals', 'value': '10.99'}
+}
 Correct:
-"Add where item equals 'Margherita Pizza' and size equals 'Large' and quantity equals 1 to my cart."
+"Add when item equals 'Margherita Pizza' and size equals 'Large' and quantity equals '1' and price equals '10.99' and restaurant equals 'Pizza Palace' and preferences equals 'spicy' and total_price equals '10.99' to my cart."
 Incorrect:
 "Add 'Margherita Pizza' (Large) to my cart with extra olives."
 """.strip()
-
 
 ADD_TO_CART_USE_CASE = UseCase(
     name="ADD_TO_CART_MENU_ITEM",
@@ -157,20 +171,40 @@ ADD_TO_CART_USE_CASE = UseCase(
     constraints_generator=generate_add_to_cart_constraints,
     additional_prompt_info=ADD_TO_CART_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {"prompt": "Add 'Margherita Pizza' (Large) to my cart.", "prompt_for_task_generation": "Add 'Margherita Pizza' (Large) to my cart."},
-        {"prompt": "Add 'Salmon Nigiri' with no modifications.", "prompt_for_task_generation": "Add 'Salmon Nigiri' with no modifications."},
-        {"prompt": "Add two 'Pepperoni Pizza' (Medium) with 'No Sauce' option.", "prompt_for_task_generation": "Add two 'Pepperoni Pizza' (Medium) with 'No Sauce' option."},
-        {"prompt": "Add 'California Roll' and set quantity to 3.", "prompt_for_task_generation": "Add 'California Roll' and set quantity to 3."},
-        {"prompt": "Add 'Margherita Pizza' (Small) with 'No Cheese' and 'No Basil'.", "prompt_for_task_generation": "Add 'Margherita Pizza' (Small) with 'No Cheese' and 'No Basil'."},
+        {
+            "prompt": "Add when item equals 'Margherita Pizza' and size equals 'Large' to my cart.",
+            "prompt_for_task_generation": "Add when item equals 'Margherita Pizza' and size equals 'Large' to my cart.",
+        },
+        {"prompt": "Add when item equals 'Salmon Nigiri'.", "prompt_for_task_generation": "Add when item equals 'Salmon Nigiri'."},
+        {
+            "prompt": "Add when item equals 'Pepperoni Pizza' and size equals 'medium' and preferences equals 'No Sauce' and quantity equals '2'.",
+            "prompt_for_task_generation": "Add when item equals 'Pepperoni Pizza' and size equals 'medium' and preferences equals 'No Sauce' and quantity equals '2'.",
+        },
+        {"prompt": "Add when item equals 'California Roll' and quantity equals '3'.", "prompt_for_task_generation": "Add when item equals 'California Roll' and quantity equals '3'."},
+        {
+            "prompt": "Add when item equals 'Margherita Pizza' and size equals 'small' and preferences in-list ['No Cheese','No Basil'].",
+            "prompt_for_task_generation": "Add when item equals 'Margherita Pizza' and size equals 'small' and preferences in-list ['No Cheese','No Basil'].",
+        },
     ],
 )
 
 OPEN_CHECKOUT_PAGE_ADDITIONAL_PROMPT_INFO = """
 Critical requirements:
-1. The request must start with one of the following: "Open checkout page after adding ..." or "Go to checkout ..."
+1. The request must start with one of the following:"Go to checkout ..."
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
-""".strip()
+4. Pay attention to the constraints:
+Example:
+constraints: {
+'item': {'operator': 'equals', 'value': 'Margherita Pizza'},
+'price': {'operator': 'equals', 'value': '10.99'},
+'quantity': {'operator': 'equals', 'value': '3'}
+}
+Correct:
+"Go to the checkout page where item equals 'Margherita Pizza' and price equals '10.99' and quantity equals '3' in the cart."
+Incorrect:
+"Go to the checkout page with 3 items in the cart and apply discount code."
+"""
 
 OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
     name="OPEN_CHECKOUT_PAGE",
@@ -180,11 +214,19 @@ OPEN_CHECKOUT_PAGE_USE_CASE = UseCase(
     constraints_generator=generate_add_to_cart_constraints,
     additional_prompt_info=OPEN_CHECKOUT_PAGE_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {"prompt": "Go to the checkout page with 3 items in the cart.", "prompt_for_task_generation": "Go to the checkout page with 3 items in the cart."},
-        {"prompt": "Open checkout to review 'Margherita Pizza' and 'California Roll'.", "prompt_for_task_generation": "Open checkout to review 'Margherita Pizza' and 'California Roll'."},
-        {"prompt": "Proceed to checkout with all current items.", "prompt_for_task_generation": "Proceed to checkout with all current items."},
-        {"prompt": "Open the checkout page after adding 'Pepperoni Pizza'.", "prompt_for_task_generation": "Open the checkout page after adding 'Pepperoni Pizza'."},
-        {"prompt": "Go to checkout with a total of 2 items.", "prompt_for_task_generation": "Go to checkout with a total of 2 items."},
+        {
+            "prompt": "Go to the checkout page when item equals 'Margherita Pizza' in the cart.",
+            "prompt_for_task_generation": "Go to the checkout page when item equals 'Margherita Pizza' in the cart.",
+        },
+        {"prompt": "Go to the checkout page when item equals 'California Roll'.", "prompt_for_task_generation": "Go to checkout page when item equals 'California Roll'."},
+        {
+            "prompt": "Go to the checkout page when item equals 'Chicken Tikka Masala' and price equals '13.99' and quantity equals '3'.",
+            "prompt_for_task_generation": "Go to the checkout page when item equals 'Chicken Tikka Masala' and price equals '13.99' and quantity equals '3'.",
+        },
+        {
+            "prompt": "Go to the checkout page when item equals 'Classic Cheeseburger' and price equals '8.99' and quantity equals '2'.",
+            "prompt_for_task_generation": "Go to the checkout page when item equals 'Classic Cheeseburger' and price equals '8.99' and quantity equals '2'.",
+        },
     ],
 )
 DROPOFF_PREFERENCE_ADDITIONAL_PROMPT_INFO = """
@@ -192,6 +234,14 @@ Critical requirements:
 1. The request must start with one of the following: "Set dropoff preference ..."
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'delivery_preference': {'operator': 'equals', 'value': 'Leave at door'}, 'restaurant': {'operator': 'equals', 'value': 'Pho 88'}}
+Correct:'}}
+Correct:
+"Set dropoff preference where delivery_preference equals 'Leave at door' and restaurant equals 'Pho 88'."
+Incorrect:
+"Set dropoff preference to 'Leave at door' and also send a text when arriving."
 """.strip()
 
 
@@ -203,28 +253,43 @@ DROPOFF_PREFERENCE_USE_CASE = UseCase(
     constraints_generator=generate_dropoff_option_constraints,
     additional_prompt_info=DROPOFF_PREFERENCE_ADDITIONAL_PROMPT_INFO,
     examples=[
-        {"prompt": "Set dropoff preference where dropoff_preference equals 'Leave at door'.", "prompt_for_task_generation": "Set dropoff preference where dropoff_preference equals 'Leave at door'."},
-        {"prompt": "Set dropoff preference where dropoff_preference contains 'door'.", "prompt_for_task_generation": "Set dropoff preference where dropoff_preference contains 'door'."},
         {
-            "prompt": "Set dropoff preference where dropoff_preference not equals 'Call on arrival'.",
-            "prompt_for_task_generation": "Set dropoff preference where dropoff_preference not equals 'Call on arrival'.",
+            "prompt": "Set dropoff preference where delivery_preference equals 'Leave at door'.",
+            "prompt_for_task_generation": "Set dropoff preference where delivery_preference equals 'Leave at door'.",
         },
-        {"prompt": "Choose 'Hand to me' as the dropoff option.", "prompt_for_task_generation": "Choose 'Hand to me' as the dropoff option."},
-        {"prompt": "Select 'Ring bell' for delivery dropoff.", "prompt_for_task_generation": "Select 'Ring bell' for delivery dropoff."},
-        {"prompt": "Set my delivery dropoff to 'Call on arrival'.", "prompt_for_task_generation": "Set my delivery dropoff to 'Call on arrival'."},
-        {"prompt": "Change dropoff preference to 'Front desk'.", "prompt_for_task_generation": "Change dropoff preference to 'Front desk'."},
+        {"prompt": "Set dropoff preference where delivery_preference contains 'door'.", "prompt_for_task_generation": "Set dropoff preference where delivery_preference contains 'door'."},
+        {
+            "prompt": "Set dropoff preference where delivery_preference not equals 'Call on arrival'.",
+            "prompt_for_task_generation": "Set dropoff preference where delivery_preference not equals 'Call on arrival'.",
+        },
+        {"prompt": "Set dropoff preference where restaurant equals 'Pho 88'"},
+        {"prompt_for_task_generation": "Set dropoff preference where restaurant equals 'Pho 88'"},
+        {"prompt": "Set dropoff preference where restaurant equals 'Pho 88' and delivery_preference not equals 'Call on arrival'."},
+        {"prompt_for_task_generation": "Set dropoff preference where restaurant equals 'Pho 88' and delivery_preference not equals 'Call on arrival'."},
     ],
 )
 PLACE_ORDER_ADDITIONAL_PROMPT_INFO = """
 Critical requirements:
 1. The request must start with one of the following: "Place an order ...".
-2. Do not mention a single constraint more than once in the request.
-3. Do not add additional information in the prompt that is not mentioned in the constraints.
-4. Pay attention to the constraints:
+2. Do not repeat any constraint more than once in the request.
+3. Do not include any information in the request that is not explicitly listed in the constraints.
+4. It is MANDATORY to include every provided constraint in the request. Missing even a single constraint is strictly prohibited.
+5. Pay attention to the constraints:
 Example:
-constraints: {'quantity': {'operator': 'less_than', 'value': 8}, 'item': {'operator': 'contains', 'value': 'Pho'}, 'restaurant': {'operator': 'contains', 'value': 'P'}}
-Correct:
-"Place an order where restaurant contains 'P' where the item contains 'Pho' and the quantity is less than 8."
+{
+ 'restaurant': {'operator': 'equals', 'value': 'Pizza Palace'},
+ 'mode': {'operator': 'equals', 'value': 'delivery'},
+ 'item': {'operator': 'equals', 'value': 'Chocolate Lava Cake'},
+ 'address': {'operator': 'equals', 'value': '505 Cherry Circle, Fairview'},
+ 'preferences': {'operator': 'not in', 'value': ['high-protein', 'egg-free']},
+ 'username': {'operator': 'equals', 'value': 'Diana Patel'},
+ 'phone': {'operator': 'not equal', 'value': '+1-555-456-7890'},
+ 'quantity': {'operator': 'equals', 'value': '8'},
+ 'size': {'operator': 'equals', 'value': 'small'},
+ 'price': {"operator": "greater_than", "value": 3.943880555470603},
+}
+correct:
+"Place an order where restaurant equals 'Pizza Palace' and mode equals 'delivery' and item equals 'Chocolate Lava Cake' and address equals '505 Cherry Circle, Fairview' and preferences not in list '['high-protein', 'egg-free']' and username equals 'Diana Patel' and phone not equal '+1-555-456-7890' and quantity equals '8' and size equals 'small' and price greater_than '3.943880555470603'."
 """.strip()
 
 PLACE_ORDER_USE_CASE = UseCase(
@@ -236,17 +301,45 @@ PLACE_ORDER_USE_CASE = UseCase(
     additional_prompt_info=PLACE_ORDER_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Place an order where restaurant equals 'Pizza Palace' to be delivered to 123 Main St.",
-            "prompt_for_task_generation": "Place an order where restaurant equals 'Pizza Palace' to be delivered to 123 Main St.",
+            "prompt": "Place an order where restaurant equals 'Pizza Palace' and mode equals 'delivery' and item equals 'Chocolate Lava Cake'.",
+            "prompt_for_task_generation": "Place an order where restaurant equals 'Pizza Palace' and mode equals 'delivery' and item equals 'Chocolate Lava Cake'.",
         },
         {
-            "prompt": "Place an order where restaurant contains 'World' to be delivered to 123 Main St.",
-            "prompt_for_task_generation": "Place an order where restaurant contains 'World' to be delivered to 123 Main St.",
+            "prompt": "Place an order where restaurant contains 'World' and mode contains 'very' and quantity equals '8'.",
+            "prompt_for_task_generation": "Place an order where restaurant contains 'World' and mode contains 'very' and quantity equals '8'.",
         },
-        {"prompt": "Order 'Sushi World' for pickup at 5pm.", "prompt_for_task_generation": "Order 'Sushi World' for pickup at 5pm."},
-        {"prompt": "Order 'Pepperoni Pizza' and 'California Roll' for delivery.", "prompt_for_task_generation": "Order 'Pepperoni Pizza' and 'California Roll' for delivery."},
-        {"prompt": "Place an order with the dropoff preference 'Leave at door'.", "prompt_for_task_generation": "Place an order with the dropoff preference 'Leave at door'."},
-        {"prompt": "Order all items in my cart and pay by card.", "prompt_for_task_generation": "Order all items in my cart and pay by card."},
+        {
+            "prompt": "Place an order where item equals 'Chocolate Lava Cake' and mode equals 'pickup' and quantity equals '8'.",
+            "prompt_for_task_generation": "Place an order where item equals 'Chocolate Lava Cake' and mode equals 'pickup' and quantity equals '8'.",
+        },
+        {
+            "prompt": "Place an order where address equals '505 Cherry Circle, Fairview' and mode equals 'delivery' and preferences not in list '['high-protein', 'egg-free']'.",
+            "prompt_for_task_generation": "Place an order where address equals '505 Cherry Circle, Fairview' and mode equals 'delivery' and preferences not in list '['high-protein', 'egg-free']'.",
+        },
+        {
+            "prompt": "Place an order where username equals 'Diana Patel' and phone not equal '+1-555-456-7890'.",
+            "prompt_for_task_generation": "Place an order where username equals 'Diana Patel' and phone not equal '+1-555-456-7890'.",
+        },
+        {
+            "prompt": "Place an order where item equals 'Chocolate Lava Cake' and size equals 'small'.",
+            "prompt_for_task_generation": "Place an order where item equals 'Chocolate Lava Cake' and size equals 'small'.",
+        },
+        {
+            "prompt": "Place an order where restaurant equals 'Pizza Palace' and preferences not in list '['high-protein', 'egg-free']'.",
+            "prompt_for_task_generation": "Place an order where restaurant equals 'Pizza Palace' and preferences not in list '['high-protein', 'egg-free']'.",
+        },
+        {
+            "prompt": "Place an order where phone not equal '+1-555-456-7890' and mode equals 'delivery'.",
+            "prompt_for_task_generation": "Place an order where phone not equal '+1-555-456-7890' and mode equals 'delivery'.",
+        },
+        {
+            "prompt": "Place an order where username equals 'Diana Patel' and size equals 'small'.",
+            "prompt_for_task_generation": "Place an order where username equals 'Diana Patel' and size equals 'small'.",
+        },
+        {
+            "prompt": "Place an order where item equals 'Chocolate Lava Cake' and price greater_than '3.943880555470603'.",
+            "prompt_for_task_generation": "Place an order where item equals 'Chocolate Lava Cake' and price greater_than '3.943880555470603'.",
+        },
     ],
 )
 
