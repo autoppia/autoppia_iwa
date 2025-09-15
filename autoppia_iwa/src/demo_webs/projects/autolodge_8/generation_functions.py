@@ -514,7 +514,6 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-# Todo: debug dates constriants
 def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     reserve_constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
@@ -523,17 +522,6 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     possible_fields = [field for field in possible_fields if field not in ["checkin", "checkout"]]
     num_constraints = random.randint(1, len(possible_fields))
     random.sample(possible_fields, num_constraints)
-
-    # sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
-    # checkin = parse_datetime(sample_hotel.get("datesFrom", "2025-08-01"))
-    # checkout = parse_datetime(sample_hotel.get("datesTo", "2025-08-05"))
-    # source = "calendar_edit"
-    #
-    # sample_data = {
-    #     "checkin": checkin,
-    #     "checkout": checkout,
-    #     "source": source,
-    # }
 
     dates_from_str = sample_hotel.get("datesFrom", "2025-08-01")
     dates_to_str = sample_hotel.get("datesTo", "2025-08-10")
@@ -583,30 +571,7 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
             checkout_date = minimal_checkout + timedelta(days=offset)
             # checkout_value = checkout_date.isoformat()
             constraints_list.append(create_constraint_dict("checkout", checkout_op, checkout_date))
-    # field_map = {
-    #     'guests_set': 'guests',
-    # }
-    # for field in selected_fields:
-    #     if field in ["datesFrom", "datesTo", 'checkin', 'checkout', 'guests_set']:
-    #         continue
-    #     allowed_ops = FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.get(field, [])
-    #     if not allowed_ops:
-    #         continue
-    #
-    #     operator = ComparisonOperator(random.choice(allowed_ops))
-    #
-    #     value = sample_hotel[field]
-    #     if not value:
-    #         continue
-    #     value = _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
-    #     if not value:
-    #         continue
-    #     constraint = create_constraint_dict(field, operator, value)
-    #     constraints_list.append(constraint)
 
-    # for c in reserve_constraints_list:
-    #     if c['field'] not in ['datesFrom', 'datesTo', 'guests_set']:
-    #         constraints_list.append(c)
     constraints_list.extend(reserve_constraints_list)
 
     return constraints_list
