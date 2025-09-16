@@ -21,6 +21,8 @@ output.png
 
 # benchmark entry point logs
 benchmark.log
+prompt_test.log
+real_web_evaluation.log
 
 # For Task Comparison images
 results/*.png
@@ -33,6 +35,7 @@ logs/*
 # Stress test logs
 stress_test.log
 
+prompt_test_output/*
 
 data/solutions_cache/*
 data/tasks_cache/*
