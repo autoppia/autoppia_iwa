@@ -3,12 +3,10 @@ from .events import (
     AddToWishlistEvent,
     BackToAllHotelsEvent,
     ConfirmAndPayEvent,
-    # DecreaseNumberOfGuestsEvent,
     EditCheckInOutDatesEvent,
     IncreaseNumberOfGuestsEvent,
     MessageHostEvent,
     ReserveHotelEvent,
-    # SearchClearedEvent,
     SearchHotelEvent,
     ShareHotelEvent,
     ViewHotelEvent,
@@ -19,14 +17,10 @@ from .generation_functions import (
     generate_increase_guests_constraints,
     generate_message_host_constraints,
     generate_reserve_hotel_constraints,
-    # generate_search_cleared_constraints,
     generate_search_hotel_constraints,
     generate_share_hotel_constraints,
     generate_view_hotel_constraints,
 )
-
-# from .replace_functions import replace_hotel_placeholders
-
 
 ###############################################################################
 # SEARCH_HOTEL_USE_CASE
@@ -60,63 +54,27 @@ SEARCH_HOTEL_USE_CASE = UseCase(
     additional_prompt_info=SEARCH_HOTEL_INFO,
     examples=[
         {
-            "prompt": "Search for hotels in Murree from July 25 to July 28 for 2 adults and 1 child",
-            "prompt_for_task_generation": "Search for hotels in <location> from <date_from> to <date_to> for <adults> adults and <children> children",
+            "prompt": "Search for hotels where search term is Murree from July 25 to July 28 for 2 adults and 1 child",
+            "prompt_for_task_generation": "Search for hotels where search term is Murree from July 25 to July 28 for 2 adults and 1 child",
         },
         {
-            "prompt": "Find hotels near Lake View for this weekend, 2 adults, no kids",
-            "prompt_for_task_generation": "Find hotels near <search_term> for <date_range>, <adults> adults",
+            "prompt": "Search for hotel where search term is Lake View, for 2 adults and no kids",
+            "prompt_for_task_generation": "Search for hotel where search term is Lake View, for 2 adults and no kids",
         },
         {
-            "prompt": "Look up beachside hotels from August 10 to August 12 for a family of 4 with a pet",
-            "prompt_for_task_generation": "Look up <search_term> hotels from <date_from> to <date_to> for <adults> adults, <children> children, and <pets> pets",
+            "prompt": "Search for hotels from August 10 to August 12 for a family of 4 with a pet",
+            "prompt_for_task_generation": "Search for hotels from August 10 to August 12 for a family of 4 with a pet",
         },
         {
-            "prompt": "Search for hotels in Skardu for next week",
-            "prompt_for_task_generation": "Search for hotels in <search_term> for <date_range>",
+            "prompt": "Search for hotels where search term is Skardu",
+            "prompt_for_task_generation": "Search for hotels where search term in Skardu",
         },
         {
-            "prompt": "Find a hotel near Mall Road for 3 adults and 1 infant",
-            "prompt_for_task_generation": "Find a hotel near <search_term> for <adults> adults and <infants> infants",
+            "prompt": "Find a hotel where search term is Mall Road for 3 adults and 1 infant",
+            "prompt_for_task_generation": "Find a hotel where search term is Mall Road for 3 adults and 1 infant",
         },
     ],
 )
-
-###############################################################################
-# SEARCH_CLEARED_USE_CASE
-###############################################################################
-
-# SEARCH_CLEARED_INFO = """
-# Trigger this event when the user explicitly clears the search input box or resets a previously entered query.
-# This may indicate that they want to restart their search journey or correct a mistake.
-# """
-#
-# SEARCH_CLEARED_USE_CASE = UseCase(
-#     name="SEARCH_CLEARED",
-#     description="Triggered when the user clears the hotel search input.",
-#     event=SearchClearedEvent,
-#     event_source_code=SearchClearedEvent.get_source_code_of_class(),
-#     constraints_generator=generate_search_cleared_constraints,
-#     additional_prompt_info=SEARCH_CLEARED_INFO,
-#     examples=[
-#         {
-#             "prompt": "Clear the search box.",
-#             "prompt_for_task_generation": "Clear the search input box.",
-#         },
-#         {
-#             "prompt": "Forget what I just searched for.",
-#             "prompt_for_task_generation": "Forget the last search input.",
-#         },
-#         {
-#             "prompt": "Start over. Clear the current hotel search.",
-#             "prompt_for_task_generation": "Clear the current hotel search input.",
-#         },
-#         {
-#             "prompt": "Remove all search filters and queries.",
-#             "prompt_for_task_generation": "Clear all filters and queries from the hotel search input.",
-#         },
-#     ],
-# )
 
 ###############################################################################
 # VIEW_HOTEL_USE_CASE
@@ -186,7 +144,7 @@ ADD_TO_WISHLIST_USE_CASE = UseCase(
     description="Triggered when the user adds a hotel listing to their wishlist.",
     event=AddToWishlistEvent,
     event_source_code=AddToWishlistEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_hotel_constraints,  # reuse existing hotel constraint generator
+    constraints_generator=generate_view_hotel_constraints,
     additional_prompt_info=ADD_TO_WISHLIST_INFO,
     examples=[
         {
@@ -221,10 +179,15 @@ CRITICAL REQUIREMENTS:
 1. The prompt should clearly indicate the intent to share a hotel with someone via email or other means.
 2. If the constraints include amenities, price, rating, or location, mention them clearly in the prompt.
 3. If an email is part of the constraint, it should be reflected explicitly (e.g., "share with my friend at abc@example.com").
+4. Explicitly mention the email constraint operator in the prompt and all the constraint operators explicitly.
 
 Examples:
 Constraint: {'email': {'operator': 'equals', 'value': 'friend@example.com'}}
 Prompt: "Share the hotel with friend@example.com."
+
+Constraint: {'email': {'operator': 'contains', 'value': '.scott@design}}
+Prompt: "Share the hotel with email that contains '.scott@design'."
+MENTION the constraint operator defined in the prompt.
 """
 
 SHARE_HOTEL_USE_CASE = UseCase(
@@ -232,32 +195,28 @@ SHARE_HOTEL_USE_CASE = UseCase(
     description="Triggered when the user shares a hotel listing with someone, typically via email.",
     event=ShareHotelEvent,
     event_source_code=ShareHotelEvent.get_source_code_of_class(),
-    constraints_generator=generate_share_hotel_constraints,  # Reuse hotel-based constraints
+    constraints_generator=generate_share_hotel_constraints,
     additional_prompt_info=SHARE_HOTEL_INFO,
     examples=[
         {
-            "prompt": "Share the Murree hotel with a mountain view and hot tub with sara@example.com.",
-            "prompt_for_task_generation": "Share hotel in Murree with mountain view and hot tub with sara@example.com.",
+            "prompt": "Share the hotel listing with zoe.baker@civicgroup.org where the title does NOT contain lcu, location does NOT contain pep, rating equals 4.5, price is less than or equal to 198, reviews are less than or equal to 44, available from a date before 2025-07-16 00:00:00 to a date on or after 2025-07-16 00:00:00, for 5 guests, hosted by Brian, and amenities do NOT contain Art-inspired decor.",
+            "prompt_for_task_generation": "Share the hotel listing with zoe.baker@civicgroup.org where the title does NOT contain lcu, location does NOT contain pep, rating equals 4.5, price is less than or equal to 198, reviews are less than or equal to 44, available from a date before 2025-07-16 00:00:00 to a date on or after 2025-07-16 00:00:00, for 5 guests, hosted by Brian, and amenities do NOT contain Art-inspired decor.",
         },
         {
-            "prompt": "Can you send the Skardu riverside hotel listing to my brother at ali123@gmail.com?",
-            "prompt_for_task_generation": "Share hotel in Skardu with river view to ali123@gmail.com.",
+            "prompt": "Please email zoe.baker@civicgroup.org any hotel hosted by Brian that sleeps 5, costs at most $198, has a 4.5 rating, reviews ≤ 44, excludes 'Art-inspired decor', and is available around 2025-07-16.",
+            "prompt_for_task_generation": "Please email zoe.baker@civicgroup.org any hotel hosted by Brian that sleeps 5, costs at most $198, has a 4.5 rating, reviews ≤ 44, excludes 'Art-inspired decor', and is available around 2025-07-16.",
         },
         {
-            "prompt": "I want to share that 5-star hotel with free breakfast with my travel buddy.",
-            "prompt_for_task_generation": "Share 5-star hotel with free breakfast.",
+            "prompt": "Share with zoe.baker@civicgroup.org: Brian's 5-guest listing ≤198 USD, rating 4.5, reviews ≤44, exclude titles with 'lcu' and locations with 'pep', and no 'Art-inspired decor' in amenities. Availability must include 2025-07-16.",
+            "prompt_for_task_generation": "Share with zoe.baker@civicgroup.org: Brian's 5-guest listing ≤198 USD, rating 4.5, reviews ≤44, exclude titles with 'lcu' and locations with 'pep', and no 'Art-inspired decor' in amenities. Availability must include 2025-07-16.",
         },
         {
-            "prompt": "Send the listing hosted by Ayesha in Islamabad with a rooftop pool to my email.",
-            "prompt_for_task_generation": "Share hotel in Islamabad hosted by Ayesha with rooftop pool.",
+            "prompt": "Send to zoe.baker@civicgroup.org any hotel (host: Brian) for five guests, price up to $198, rating exactly 4.5, reviews up to 44, and do not include properties with 'Art-inspired decor'. Make sure availability covers the date 2025-07-16.",
+            "prompt_for_task_generation": "Send to zoe.baker@civicgroup.org any hotel (host: Brian) for five guests, price up to $198, rating exactly 4.5, reviews up to 44, and do not include properties with 'Art-inspired decor'. Make sure availability covers the date 2025-07-16.",
         },
         {
-            "prompt": "Forward the Karachi hotel with private parking and gym to omar@gmail.com.",
-            "prompt_for_task_generation": "Share hotel in Karachi with private parking and gym to omar@gmail.com.",
-        },
-        {
-            "prompt": "Let's share that villa in Nathia Gali with jacuzzi and fireplace with my friends.",
-            "prompt_for_task_generation": "Share villa in Nathia Gali with jacuzzi and fireplace.",
+            "prompt": "Share Brian's 5-person, ≤$198 hotel (rating 4.5, reviews ≤44) with zoe.baker@civicgroup.org; exclude 'lcu' in title, 'pep' in location, and any listing with 'Art-inspired decor'.",
+            "prompt_for_task_generation": "Share Brian's 5-person, ≤$198 hotel (rating 4.5, reviews ≤44) with zoe.baker@civicgroup.org; exclude 'lcu' in title, 'pep' in location, and any listing with 'Art-inspired decor'.",
         },
     ],
 )
@@ -269,8 +228,27 @@ SHARE_HOTEL_USE_CASE = UseCase(
 INCREASE_NUMBER_OF_GUESTS_INFO = """
 CRITICAL REQUIREMENT:
 1. Mention increment of guests only in prompt.
-2. Do NOT any details other than number of guests.
-3. Start prompt with "Increase number of guests to X" or similar phrases.
+2. Do NOT add any details other than number of guests.
+3. Start prompt with "Increase number of guests where" or similar phrases.
+4. Keep the constraints values as it is in the prompt, and do not complete or correct them.
+
+✅ CORRECT EXAMPLE:
+Increase number of guests where guests_to is less than or equal to '2' and rating is greater than '4.1' and amenities contains 'owntown core' and location equals 'Toronto, Canada'
+
+❌ INCORRECT EXAMPLES:
+
+# ❌ Fixing or completing constraint values:
+Increase number of guests where guests_to is less than or equal to '2' and rating is greater than '4.1' and amenities contains 'downtown core' and location equals 'Toronto, Canada'
+# (The test data says 'owntown core' — do not correct it to 'downtown core')
+
+# ❌ Adding extra context/details:
+Increase number of guests where guests_to is less than or equal to '2' and rating is greater than '4.1' and amenities contains 'owntown core' and location equals 'Toronto, Canada' because we need to accommodate more people
+
+# ❌ Prompt doesn't start correctly:
+We need to increase the number of guests where guests_to is less than or equal to '2'...
+
+# ❌ Talks about other fields like price or availability:
+Increase number of guests and update availability where guests_to is less than or equal to '2'...
 """
 
 INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
@@ -282,86 +260,41 @@ INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
     additional_prompt_info=INCREASE_NUMBER_OF_GUESTS_INFO,
     examples=[
         {
-            "prompt": "Increase number of guests to 3.",
-            "prompt_for_task_generation": "Increase number of guests to 3.",
+            "prompt": "Increase number of guests where guests_to is 3.",
+            "prompt_for_task_generation": "Increase number of guests where guests_to is 3.",
         },
         {
-            "prompt": "Increase guest count to 4.",
-            "prompt_for_task_generation": "Increase guest count to 4.",
+            "prompt": "Increase guests count to 4.",
+            "prompt_for_task_generation": "Increase guests count to 4.",
         },
         {
-            "prompt": "Make that 5 guests total.",
-            "prompt_for_task_generation": "Increase number of guests to 5.",
-        },
-        {
-            "prompt": "Need to include my cousin too, so now it's 6 people.",
-            "prompt_for_task_generation": "Need to include my cousin too, so now it's 6 people.",
-        },
-        {
-            "prompt": "Btw, we're adding 2 more friends. Increase guests by 2. ",
-            "prompt_for_task_generation": "Btw, we're adding 2 more friends. Increase guests by 2. ",
-        },
-        {
-            "prompt": "Oh I forgot about the kids - we're 2 adults and 2 children.",
-            "prompt_for_task_generation": "Increase number of guests to 4.",
+            "prompt": "Increase number of guests where guests are greater than 4.",
+            "prompt_for_task_generation": "Increase number of guests where guests are greater than 4.",
         },
     ],
 )
-
-###############################################################################
-# DECREASE_NUMBER_OF_GUESTS_USE_CASE
-###############################################################################
-
-# DECREASE_NUMBER_OF_GUESTS_INFO = """
-# Trigger this event when a user decreases the number of guests for a hotel booking or search.
-# This can be directly stated (e.g., 'make it 2 guests instead of 3') or implied (e.g., 'just me now').
-# """
-#
-# DECREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
-#     name="DECREASE_NUMBER_OF_GUESTS",
-#     description="Triggered when the user reduces the number of guests for a reservation or search.",
-#     event=DecreaseNumberOfGuestsEvent,
-#     event_source_code=DecreaseNumberOfGuestsEvent.get_source_code_of_class(),
-#     additional_prompt_info=DECREASE_NUMBER_OF_GUESTS_INFO,
-#     examples=[
-#         {
-#             "prompt": "Actually, it's just me now.",
-#             "prompt_for_task_generation": "Decrease guests to 1.",
-#         },
-#         {
-#             "prompt": "Make that 2 guests instead of 4.",
-#             "prompt_for_task_generation": "Decrease guests from 4 to 2.",
-#         },
-#         {
-#             "prompt": "Cancel the extra guest, only 3 of us are coming.",
-#             "prompt_for_task_generation": "Decrease guest count to 3.",
-#         },
-#         {
-#             "prompt": "My brother isn't coming anymore - we're now 2.",
-#             "prompt_for_task_generation": "Decrease guests from 3 to 2.",
-#         },
-#         {
-#             "prompt": "No kids this time, just the two of us.",
-#             "prompt_for_task_generation": "Decrease guests to 2.",
-#         },
-#         {
-#             "prompt": "Let's book it for 1 person only now.",
-#             "prompt_for_task_generation": "Decrease guests to 1.",
-#         },
-#         {
-#             "prompt": "Change it from 5 guests to 3.",
-#             "prompt_for_task_generation": "Decrease guests from 5 to 3.",
-#         },
-#     ],
-# )
-
 ###############################################################################
 # RESERVE_HOTEL_USE_CASE
 ###############################################################################
-
 RESERVE_HOTEL_INFO = """
 Important:
 1. Begin your request by phrases like: 'Reserve the hotel...', 'Book the hotel for...', or similar.
+2. Keep the constraints values as it is in the prompt, and do not complete or correct them.
+    ⚠️ Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
+3. Do NOT split, rephrase, or interpret list values. Use them exactly as shown in event_criteria.
+    Example:
+        'amenities': {'operator': 'in_list', 'value': ['Ski-in, Ski-out']}
+
+    ✅ Correct: amenities in list ['Ski-in, Ski-out']
+    ❌ Incorrect: amenities include 'Ski-in' or 'Ski-out'
+
+EXAMPLES:
+
+✅ CORRECT:
+Reserve the hotel for a stay with guests NOT equal to '1' at a location that does NOT contain 'kjo' AND amenities NOT in list ['Self check-in', 'Fast WiFi'] AND title contains 'owe' AND rating less than '6.714277681586925' AND reviews greater equal '212'
+
+❌ INCORRECT:
+Reserve the hotel for a stay with guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 """
 
 RESERVE_HOTEL_USE_CASE = UseCase(
@@ -373,7 +306,7 @@ RESERVE_HOTEL_USE_CASE = UseCase(
     additional_prompt_info=RESERVE_HOTEL_INFO,
     examples=[
         {
-            "prompt": "Book this hotel from 5th to 9th August for 2 people.",
+            "prompt": "Reserve hotel from 5th to 9th August for 2 guests.",
             "prompt_for_task_generation": "Reserve hotel from 5th to 9th August for 2 guests.",
         },
         {
@@ -385,19 +318,15 @@ RESERVE_HOTEL_USE_CASE = UseCase(
             "prompt_for_task_generation": "Reserve hotel for 1 guest from September 1st to 4th.",
         },
         {
-            "prompt": "Can you lock that in for us? We're two adults and one kid, check-in Friday, check-out Sunday.",
+            "prompt": "Reserve hotel for 3 guests from Friday to Sunday.",
             "prompt_for_task_generation": "Reserve hotel for 3 guests from Friday to Sunday.",
         },
         {
-            "prompt": "Yes, this one looks good. Go ahead and book it.",
-            "prompt_for_task_generation": "Reserve currently viewed hotel.",
-        },
-        {
-            "prompt": "Finalize this hotel for the Eid holidays - 4 people, 10th to 14th May.",
+            "prompt": "Reserve hotel from May 10th to 14th for 4 guests.",
             "prompt_for_task_generation": "Reserve hotel from May 10th to 14th for 4 guests.",
         },
         {
-            "prompt": "I want to stay here for three nights starting next Thursday. We're 2 people.",
+            "prompt": "Reserve hotel for 2 guests starting next Thursday for 3 nights.",
             "prompt_for_task_generation": "Reserve hotel for 2 guests starting next Thursday for 3 nights.",
         },
     ],
@@ -410,13 +339,16 @@ RESERVE_HOTEL_USE_CASE = UseCase(
 
 EDIT_CHECK_IN_OUT_DATES_INFO = """
 CRITICAL REQUIREMENTS:
-1. The prompt should clearly confirm the updated check-in and/or check-out dates.
-2. Use explicit phrases such as 'Change check-in to...', 'Update check-out date...', or similar.
-3. Do not include unrelated booking or payment actions in this prompt.
-4. 'checkin' and 'checkout' dates are actual values that needs to be updated, 'datesFrom' and 'datesTo' are actual available dates to find the hotel.
-Please mention the 'checkin' and 'checkout' dates in the prompt for update only.
+1. Start the prompt like:
+    Example: Edit checkin checkout dates where checkin date <operator> <checkin-date> and checkout date <operator> <checkout-date> ...
+2. Keep the constraints values as it is in the prompt, and do not complete or correct them.
+    Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
+3. Do NOT split, rephrase, or interpret list values. Use them exactly as shown in event_criteria.
+    Example:
+        'amenities': {'operator': 'in_list', 'value': ['Ski-in, Ski-out']}
 
-{}
+    Correct: amenities in list ['Ski-in, Ski-out']
+    Incorrect: amenities include 'Ski-in' or 'Ski-out'
 
 """
 
@@ -429,32 +361,24 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
     additional_prompt_info=EDIT_CHECK_IN_OUT_DATES_INFO,
     examples=[
         {
-            "prompt": "Change our check-in to August 10 and check-out to August 14.",
-            "prompt_for_task_generation": "Update check-in and check-out dates.",
+            "prompt": "Edit checkin checkout dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date greater than August 12, 2025 and check-out date less than or equal September 1, 2025.",
         },
         {
-            "prompt": "Actually, we'll arrive a day earlier.",
-            "prompt_for_task_generation": "Change check-in date to a day earlier.",
+            "prompt": "Edit checkin checkout dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date not equal to September 5, 2025 and check-out date equal to September 9, 2025.",
         },
         {
-            "prompt": "Move our departure to Sunday.",
-            "prompt_for_task_generation": "Change check-out date to Sunday.",
+            "prompt": "Edit checkin checkout dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date less than September 18, 2025 and check-out date greater than or equal September 22, 2025.",
         },
         {
-            "prompt": "Shift the whole trip to next weekend.",
-            "prompt_for_task_generation": "Edit both check-in and check-out dates to next weekend.",
+            "prompt": "Edit checkin checkout dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date equal to October 2, 2025 and check-out date greater than October 5, 2025.",
         },
         {
-            "prompt": "Make it a two-day trip starting on the 5th.",
-            "prompt_for_task_generation": "Set check-in to the 5th and check-out two days later.",
-        },
-        {
-            "prompt": "Change only the check-out - we'll stay one extra night.",
-            "prompt_for_task_generation": "Extend check-out by one day.",
-        },
-        {
-            "prompt": "Push the trip forward by a week.",
-            "prompt_for_task_generation": "Move check-in and check-out one week later.",
+            "prompt": "Edit checkin checkout dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
+            "prompt_for_task_generation": "Edit checkin checkout dates where check-in date not equal to October 11, 2025 and check-out date less than October 15, 2025.",
         },
     ],
 )
@@ -522,7 +446,23 @@ CONFIRM_AND_PAY_USE_CASE = UseCase(
 
 MESSAGE_HOST_INFO = """
 CRITICAL REQUIREMENTS:
-1. Use explicit phrases such as 'Message the host ...', 'Send the query to host ...', or similar.
+1. Use explicit phrases such as 'Message the host where message ...',or similar.
+2. Keep the constraints values as it is in the prompt, and do not complete or correct them.
+    ⚠️ Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
+3. Do NOT split, rephrase, or interpret list values. Use them exactly as shown in event_criteria.
+    Example:
+        'amenities': {'operator': 'in_list', 'value': ['Ski-in, Ski-out']}
+
+    ✅ Correct: amenities in list ['Ski-in, Ski-out']
+    ❌ Incorrect: amenities include 'Ski-in' or 'Ski-out'
+
+EXAMPLES:
+
+✅ CORRECT:
+Message the host with message equals 'Is early check-in possible?', guests NOT equal to '1' at a location that does NOT contain 'kjo' AND amenities NOT in list ['Self check-in', 'Fast WiFi'] AND title contains 'owe' AND rating less than '6.714277681586925' AND reviews greater equal '212'
+
+❌ INCORRECT:
+Message the host with message equals 'Is early check-in possible?', guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 """
 
 MESSAGE_HOST_USE_CASE = UseCase(
@@ -534,40 +474,17 @@ MESSAGE_HOST_USE_CASE = UseCase(
     additional_prompt_info=MESSAGE_HOST_INFO,
     examples=[
         {
-            "prompt": "Can you ask Natalie if early check-in is possible?",
-            "prompt_for_task_generation": "Send message to host Natalie asking about early check-in.",
+            "prompt": "Message host Natalie where message contains 'ly check-in possible?', title contains 'cozy' and location equals 'New York'",
+            "prompt_for_task_generation": "Message host Natalie where message contains 'ly check-in possible?', title contains 'cozy' and location equals 'New York'",
         },
+        {"prompt": "Message host where message equals 'I will be arriving around 10pm.'", "prompt_for_task_generation": "Message host where message equals 'I will be arriving around 10pm.'"},
+        {"prompt": "Message host John where message not contains 'no pets'", "prompt_for_task_generation": "Message host John where message not contains 'no pets'"},
+        {"prompt": "Message host where message not equals 'No amenities needed.'", "prompt_for_task_generation": "Message host where message not equals 'No amenities needed.'"},
+        {"prompt": "Message host where message equals 'Does the kitchen have a microwave?'", "prompt_for_task_generation": "Message host where message equals 'Does the kitchen have a microwave?'"},
+        {"prompt": "Message host Alex where message not contains 'no blanket'", "prompt_for_task_generation": "Message host Alex where message not contains 'no blanket'"},
         {
-            "prompt": "Tell the host I'll be arriving around 10pm.",
-            "prompt_for_task_generation": "Send message to the host informing them of a 10pm arrival.",
-        },
-        {
-            "prompt": "Let John know we might bring a pet.",
-            "prompt_for_task_generation": "Send message to host John asking if pets are allowed.",
-        },
-        {
-            "prompt": "Message the host: do they provide towels and soap?",
-            "prompt_for_task_generation": "Send question to the host about amenities like towels and soap.",
-        },
-        {
-            "prompt": "Write to the host and ask if the kitchen has a microwave.",
-            "prompt_for_task_generation": "Ask host via message whether kitchen includes a microwave.",
-        },
-        {
-            "prompt": "Please tell Alex we'll need an extra blanket.",
-            "prompt_for_task_generation": "Send message to host Alex requesting an extra blanket.",
-        },
-        {
-            "prompt": "Send this to Sarah: 'We loved the place. Thank you!'",
-            "prompt_for_task_generation": "Send thank you message to host Sarah.",
-        },
-        {
-            "prompt": "Ask the host if the pool is heated in winter.",
-            "prompt_for_task_generation": "Send question to host about winter pool heating.",
-        },
-        {
-            "prompt": "Message host: Is parking included or extra?",
-            "prompt_for_task_generation": "Send message to the host asking about parking costs.",
+            "prompt": "Message host Sarah where message equals 'We loved the place. Thank you!'",
+            "prompt_for_task_generation": "Message host Sarah where message equals 'We loved the place. Thank you!'",
         },
     ],
 )

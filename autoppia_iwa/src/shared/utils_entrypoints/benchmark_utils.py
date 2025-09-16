@@ -26,7 +26,7 @@ class BenchmarkConfig:
     num_of_use_cases: int = 0  # set to 0 if you want to run all
 
     # Runtime options
-    num_runs: int = 1
+    num_runs: int = 15
     max_parallel_agent_calls: int = 1
     return_evaluation_gif: bool = False
 
@@ -79,3 +79,14 @@ def setup_logging(log_file: str):
 
     # File logging
     logger.add(log_file, level="DEBUG", format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}", rotation="10 MB", retention="7 days")
+
+
+def get_projects_by_ids(all_projects: list[WebProject], ids_to_run: list[str]) -> list[WebProject]:
+    """
+    Devuelve los proyectos cuyo id esté en ids_to_run.
+    """
+    # indexar por id para búsqueda rápida
+    projects_by_id = {p.id: p for p in all_projects}
+
+    # devolver solo los que están en ids_to_run
+    return [projects_by_id[pid] for pid in ids_to_run if pid in projects_by_id]

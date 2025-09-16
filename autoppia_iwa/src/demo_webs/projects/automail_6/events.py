@@ -85,7 +85,8 @@ class StarEmailEvent(Event, BaseEventValidator):
             user_id=base.user_id,
             subject=data.get("subject", ""),
             from_email=data.get("from", ""),
-            is_starred=data.get("is_star", False),
+            # is_starred=data.get("is_star", False),
+            is_starred=not data.get("is_star", False),
         )
 
 
