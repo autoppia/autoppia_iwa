@@ -117,24 +117,24 @@ SELECT_FIVE_DAYS_USE_CASE = UseCase(
 
 SELECT_DAY_INFO = """
 CRITICAL REQUIREMENT:
-1. Begin your prompt with "Switch to day view" or similar phrases.
-2. Only mention changing the calendar view to single day view.
-3. Do not include other calendar interactions like adding events or selecting specific dates.
+1. Begin your prompt with "Switch to day view ..." or "Show me ...".
+2. Focus only changing the calendar view to day view.
+3. do not include any additional information like date and time.
 """
 
 SELECT_DAY_USE_CASE = UseCase(
     name="SELECT_DAY",
-    description="Triggered when the user switches to the day view in the calendar.",
+    description="User switches to the day view in the calendar.",
     event=SelectDayEvent,
     event_source_code=SelectDayEvent.get_source_code_of_class(),
     constraints_generator=False,
     additional_prompt_info=SELECT_DAY_INFO,
     examples=[
-        {"prompt": "Switch to day view please.", "prompt_for_task_generation": "Switch to day view."},
-        {"prompt": "I want to see the calendar in daily view.", "prompt_for_task_generation": "Change to day view."},
-        {"prompt": "Show me today's schedule in detail.", "prompt_for_task_generation": "Show calendar in day view."},
-        {"prompt": "Change the calendar to display a single day.", "prompt_for_task_generation": "Change calendar to single day view."},
-        {"prompt": "Can you zoom in to just show one day?", "prompt_for_task_generation": "Zoom to single day view."},
+        {"prompt": "Switch to day view please.", "prompt_for_task_generation": "Switch to day view please."},
+        {"prompt": "Switch to day view in the calendar.", "prompt_for_task_generation": "Switch to day view in calendar."},
+        {"prompt": "Show me day schedule in detail.", "prompt_for_task_generation": "Show me day schedule in detail."},
+        {"prompt": "Show me the calendar to single day view.", "prompt_for_task_generation": "Show me calendar to single day view."},
+        # {"prompt": "Can you zoom in to just show one day?", "prompt_for_task_generation": "Zoom to single day view."},
     ],
 )
 
