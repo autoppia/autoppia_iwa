@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from .classes import WebProject
-from .projects.autocalender_11.main import autocalender_project
+from .projects.autocalender_11.main import autocalendar_project
 from .projects.autocrm_5.main import crm_project
 from .projects.autodelivery_7.main import autodelivery_project
 from .projects.autolodge_8.main import lodge_project
@@ -15,5 +15,15 @@ from .projects.cinema_1.main import cinema_project
 from .projects.dining_4.main import dining_project
 from .projects.omnizone_3.main import omnizone_project
 
-
-demo_web_projects: list[WebProject] = [cinema_project, books_project, omnizone_project, dining_project, crm_project, automail_project, autodelivery_project, lodge_project, work_project,autocalender_project,]
+demo_web_projects: list[WebProject] = [
+    cinema_project,
+    books_project,
+    omnizone_project,
+    dining_project,
+    crm_project,
+    automail_project,
+    lodge_project,
+    autodelivery_project,
+    work_project,
+    autocalendar_project,
+]
