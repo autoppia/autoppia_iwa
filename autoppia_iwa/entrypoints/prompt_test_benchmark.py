@@ -25,19 +25,12 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # CONFIGURATIONS
 # ==============
 
-PROJECT_ID = "lodge"
-USE_CASE = "MESSAGE_HOST"
+PROJECT_ID = "autocalendar"
+USE_CASE = "EVENT_REMOVE_REMINDER"
 PROMPT_CONTENT = """
- Message the host where message does NOT contain 'ogj' AND host_name contains 'ria' AND reviews are greater than or equal to '44' AND title equals 'Rustic Barnhouse Getaway' AND amenities do NOT contain 'Scenic workspace' AND price is greater than '197' AND host_name is NOT equal to 'Lucas'
- """
-EVENT_CRITERIA = {
-    "amenities": {"operator": "not_contains", "value": "Scenic workspace"},
-    "host_name": {"operator": "not_equals", "value": "Lucas"},
-    "message": {"operator": "not_contains", "value": "ogj"},
-    "price": {"operator": "greater_than", "value": 197},
-    "reviews": {"operator": "greater_equal", "value": 44},
-    "title": "Rustic Barnhouse Getaway",
-}
+Please remove the reminder from the event where the time in minutes is greater than 1435. If it does not exist, add it first and then remove it.
+"""
+EVENT_CRITERIA = {"minutes": {"operator": "greater_than", "value": 1435}}
 
 
 @dataclass
