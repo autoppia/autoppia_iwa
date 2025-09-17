@@ -275,11 +275,12 @@ CHOOSE_CALENDAR_USE_CASE = UseCase(
 
 ADD_EVENT_INFO = """
 CRITICAL REQUIREMENT:
-ritical requirements:
-1. The request must start with one of the following: "Open the add-to-cart modal ..."
+Critical requirements:
+1. The request must start with one of the following: "Add an event ..."
 2. Do not mention a single constraint more than once in the request.
 3. Do not add additional information in the prompt that is not mentioned in the constraints.
-3. Pay attention to the constraints, mentioning exact constraint operator is crucial,
+4. Always use the exact field names, operators, and the complete values provided in the constraints. Do not shorten, split, or partially match the values. For example, if the constraint is contains 'on re' OR 'ar on product', then the generated prompt must also say contains 'on re' OR 'ar on product' exactly, not just 're' OR 'ar'.
+5. Pay attention to the constraints:
 Example:
 constraint:
 {"field": "title", "operator": "not_equals", "value": "Team Meeting"},
@@ -287,11 +288,19 @@ constraint:
 {"field": "date", "operator": "equals", "value": "2025-09-30"},
 {"field": "start_time", "operator": "equals", "value": "10:00"},
 {"field": "end_time", "operator": "equals", "value": "11:00"},
+{"field": "all_day", "operator": "equals", "value": "False"},
+{"field": "recurrence", "operator": "equals", "value": "Monthly"},
+{"field": "attendees", "operator": "equals", "value": "test@example.com"},
+{"field": "reminders", "operator": "equals", "value": "30"},
+{"field": "busy", "operator": "equals", "value": "True"},
+{"field": "visibility", "operator": "equals", "value": "Private"},
+{"field": "location", "operator": "equals", "value": "Library"},
+{"field": "description", "operator": "not_contains", "value": "updates"},
+{"field": "meeting_link", "operator": "equals", "value": "https://meet.example.com/abc-123"},
 prompt:
-CORRECT: 'Add an event whose title not equals "Team Meeting" and calendar equals "e Bu" and date equals '2025-09-30' and start_time equals '10:00' and end_time equals '11:00'.'
+CORRECT: 'Add an event whose title not equals "Team Meeting" and calendar equals "e Bu" and date equals '2025-09-30' and start_time equals '10:00' and end_time equals '11:00' and all_day equals 'False' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30' and busy equals 'True' and visibility equals 'Private' and location equals 'Library' and description not_contains 'updates' and meeting_links equals 'https://meet.example.com/abc-123'.'
 INCORRECT: 'Add an event "Team Meeting" to the "Work" calendar for tomorrow at 10:00 AM, ending at 11:00 AM.'
-4. You may use synonyms for "add" such as "schedule", "create", "put", or "set up".
-"""
+""".strip()
 
 ADD_EVENT_USE_CASE = UseCase(
     name="ADD_EVENT",
@@ -316,6 +325,10 @@ ADD_EVENT_USE_CASE = UseCase(
         {
             "prompt": "Add an event whose location equals 'Library' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30'.",
             "prompt_for_task_generation": "Add an event whose location equals 'Library' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30'.",
+        },
+        {
+            "prompt": "Add an event whose title not_contains 'Meeting' and calendar contains 'rk' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+            "prompt_for_task_generation": "Add an event whose title not_contains 'Meeting' and calendar contains 'rk' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
         },
     ],
 )
@@ -353,10 +366,32 @@ CELL_CLICKED_USE_CASE = UseCase(
 
 CANCEL_ADD_EVENT_INFO = """
 CRITICAL REQUIREMENT:
-1. Explicitly mention canceling or abandoning event creation.
-2. If a title or date is specified in the constraints, include that information.
-3. Make it clear that the user is stopping the event creation process.
-"""
+Critical requirements:
+1. The request must start with one of the following: "Cancel an event ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. **Always use the exact field names, operators, and the complete values provided in the constraints. Do not shorten, split, or partially match the values. For example, if the constraint is contains 'on re' OR 'ar on product', then the generated prompt must also say contains 'on re' OR 'ar on product' exactly, not just 're' OR 'ar'.
+5. Pay attention to the constraints:
+Example:
+constraint:
+{"field": "title", "operator": "not_equals", "value": "Team Meeting"},
+{"field": "calendar", "operator": "contains", "value": "e Bu"},
+{"field": "date", "operator": "equals", "value": "2025-09-30"},
+{"field": "start_time", "operator": "equals", "value": "10:00"},
+{"field": "end_time", "operator": "equals", "value": "11:00"},
+{"field": "all_day", "operator": "equals", "value": "False"},
+{"field": "recurrence", "operator": "equals", "value": "Monthly"},
+{"field": "attendees", "operator": "equals", "value": "test@example.com"},
+{"field": "reminders", "operator": "equals", "value": "30"},
+{"field": "busy", "operator": "equals", "value": "True"},
+{"field": "visibility", "operator": "equals", "value": "Private"},
+{"field": "location", "operator": "equals", "value": "Library"},
+{"field": "description", "operator": "contains", "value": "ar on product"},
+{"field": "meeting_link", "operator": "equals", "value": "https://meet.example.com/abc-123"},
+prompt:
+CORRECT: 'Cancel an event whose title not equals "Team Meeting" and calendar equals "e Bu" and date equals '2025-09-30' and start_time equals '10:00' and end_time equals '11:00' and all_day equals 'False' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30' and busy equals 'True' and visibility equals 'Private' and location equals 'Library' and description contains 'ar on product' and meeting_links equals 'https://meet.example.com/abc-123'.'
+INCORRECT: 'Cancel an event "Team Meeting" to the "Work" calendar for tomorrow at 10:00 AM, ending at 11:00 AM.'
+""".strip()
 
 CANCEL_ADD_EVENT_USE_CASE = UseCase(
     name="CANCEL_ADD_EVENT",
@@ -366,11 +401,26 @@ CANCEL_ADD_EVENT_USE_CASE = UseCase(
     constraints_generator=generate_add_event_constraints,
     additional_prompt_info=CANCEL_ADD_EVENT_INFO,
     examples=[
-        {"prompt": "Cancel creating this event.", "prompt_for_task_generation": "Cancel the event creation process."},
-        {"prompt": "Never mind, don't add the 'Meeting' event.", "prompt_for_task_generation": "Cancel adding the 'Meeting' event."},
-        {"prompt": "I made a mistake, cancel the event for tomorrow.", "prompt_for_task_generation": "Cancel creating the event for tomorrow."},
-        {"prompt": "Close the event creation dialog without saving.", "prompt_for_task_generation": "Cancel event creation."},
-        {"prompt": "Actually, don't create that event.", "prompt_for_task_generation": "Abandon event creation."},
+        {
+            "prompt": "Cancel an event whose title equals 'Team Meeting' and calendar equals 'Work' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+            "prompt_for_task_generation": "Cancel an event whose title equals 'Team Meeting' and calendar equals 'Work' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+        },
+        {
+            "prompt": "Cancel an event whose title equals 'Workout' and calendar equals 'Goals' and date equals '2025-09-25' and start_time equals '11:00' and end_time equals '12:00'.",
+            "prompt_for_task_generation": "Cancel an event whose title equals 'Workout' and calendar equals 'Goals' and date equals '2025-09-25' and start_time equals '11:00' and end_time equals '12:00'.",
+        },
+        {
+            "prompt": "Cancel an event whose visibility equals 'Private' and busy equals 'True' and description equals 'Team meeting to discuss project updates' and meeting_link equals 'https://meet.example.com/abc-123'.",
+            "prompt_for_task_generation": "Cancel an event whose visibility equals 'Private' and busy equals 'True' and description equals 'Team meeting to discuss project updates' and meeting_link equals 'https://meet.example.com/abc-123'.",
+        },
+        {
+            "prompt": "Cancel an event whose location equals 'Library' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30'.",
+            "prompt_for_task_generation": "Cancel an event whose location equals 'Library' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30'.",
+        },
+        {
+            "prompt": "Cancel an event whose title not_contains 'Meeting' and calendar contains 'rk' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+            "prompt_for_task_generation": "Cancel an event whose title not_contains 'Meeting' and calendar contains 'rk' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+        },
     ],
 )
 ###############################################################################
@@ -379,12 +429,32 @@ CANCEL_ADD_EVENT_USE_CASE = UseCase(
 
 DELETE_ADDED_EVENT_INFO = """
 CRITICAL REQUIREMENT:
-1. Explicitly mention deleting or removing an existing event from the calendar.
-2. Include the event title if specified in constraints.
-3. Optionally mention the date or calendar name if specified in constraints.
-4. Make it clear that the user is removing an already created event, not canceling its creation.
-5. The event does not exists, mention to create an event first and then delete it.
-"""
+Critical requirements:
+1. The request must start with one of the following: "Delete an added event ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. **Always use the exact field names, operators, and the complete values provided in the constraints. Do not shorten, split, or partially match the values. For example, if the constraint is contains 'on re' OR 'ar on product', then the generated prompt must also say contains 'on re' OR 'ar on product' exactly, not just 're' OR 'ar'.
+5. Pay attention to the constraints:
+Example:
+constraint:
+{"field": "title", "operator": "not_equals", "value": "Team Meeting"},
+{"field": "calendar", "operator": "contains", "value": "e Bu"},
+{"field": "date", "operator": "equals", "value": "2025-09-30"},
+{"field": "start_time", "operator": "equals", "value": "10:00"},
+{"field": "end_time", "operator": "equals", "value": "11:00"},
+{"field": "all_day", "operator": "equals", "value": "False"},
+{"field": "recurrence", "operator": "equals", "value": "Monthly"},
+{"field": "attendees", "operator": "equals", "value": "test@example.com"},
+{"field": "reminders", "operator": "equals", "value": "30"},
+{"field": "busy", "operator": "equals", "value": "True"},
+{"field": "visibility", "operator": "equals", "value": "Private"},
+{"field": "location", "operator": "equals", "value": "Library"},
+{"field": "description", "operator": "contains", "value": "ar on product"},
+{"field": "meeting_link", "operator": "equals", "value": "https://meet.example.com/abc-123"},
+prompt:
+CORRECT: 'Delete an added event whose title not equals "Team Meeting" and calendar equals "e Bu" and date equals '2025-09-30' and start_time equals '10:00' and end_time equals '11:00' and all_day equals 'False' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30' and busy equals 'True' and visibility equals 'Private' and location equals 'Library' and description contains 'ar on product' and meeting_links equals 'https://meet.example.com/abc-123'.'
+INCORRECT: 'Delete an added event "Team Meeting" to the "Work" calendar for tomorrow at 10:00 AM, ending at 11:00 AM.'
+""".strip()
 
 DELETE_ADDED_EVENT_USE_CASE = UseCase(
     name="DELETE_ADDED_EVENT",
@@ -394,11 +464,26 @@ DELETE_ADDED_EVENT_USE_CASE = UseCase(
     constraints_generator=generate_add_event_constraints,
     additional_prompt_info=DELETE_ADDED_EVENT_INFO,
     examples=[
-        {"prompt": "Delete the 'Team Meeting' event from my calendar.", "prompt_for_task_generation": "Remove 'Team Meeting' event from calendar."},
-        {"prompt": "Remove the 'Doctor appointment' on the 15th.", "prompt_for_task_generation": "Delete 'Doctor appointment' on the 15th."},
-        {"prompt": "I want to delete the 'Lunch' event from my 'Personal' calendar.", "prompt_for_task_generation": "Delete 'Lunch' event from 'Personal' calendar."},
-        {"prompt": "Please remove the 'Conference call' event.", "prompt_for_task_generation": "Delete the 'Conference call' event."},
-        {"prompt": "Delete the event titled 'Workout' for today.", "prompt_for_task_generation": "Remove the 'Workout' event scheduled for today."},
+        {
+            "prompt": "Delete an added event whose title equals 'Team Meeting' and calendar equals 'Work' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+            "prompt_for_task_generation": "Delete an added event whose title equals 'Team Meeting' and calendar equals 'Work' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+        },
+        {
+            "prompt": "Delete an added event whose title equals 'Workout' and calendar equals 'Goals' and date equals '2025-09-25' and start_time equals '11:00' and end_time equals '12:00'.",
+            "prompt_for_task_generation": "Delete an added event whose title equals 'Workout' and calendar equals 'Goals' and date equals '2025-09-25' and start_time equals '11:00' and end_time equals '12:00'.",
+        },
+        {
+            "prompt": "Delete an added event whose visibility equals 'Private' and busy equals 'True' and description equals 'Team meeting to discuss project updates' and meeting_link equals 'https://meet.example.com/abc-123'.",
+            "prompt_for_task_generation": "Delete an added event whose visibility equals 'Private' and busy equals 'True' and description equals 'Team meeting to discuss project updates' and meeting_link equals 'https://meet.example.com/abc-123'.",
+        },
+        {
+            "prompt": "Delete an added event whose location equals 'Library' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30'.",
+            "prompt_for_task_generation": "Delete an added event whose location equals 'Library' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30'.",
+        },
+        {
+            "prompt": "Delete an added event whose title not_contains 'Meeting' and calendar contains 'rk' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+            "prompt_for_task_generation": "Delete an added event whose title not_contains 'Meeting' and calendar contains 'rk' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+        },
     ],
 )
 
