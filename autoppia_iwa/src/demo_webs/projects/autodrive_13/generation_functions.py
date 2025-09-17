@@ -1,6 +1,6 @@
 import random
 from datetime import UTC, date, datetime, time, timedelta
-from random import choice
+from random import choice, randint, randrange
 from typing import Any
 
 from dateutil import parser
@@ -300,35 +300,61 @@ def generate_select_time_constraints() -> list[dict[str, Any]]:
 
 def generate_next_pickup_constraints() -> list[dict[str, Any]]:
     all_constraints = []
-    for field, ops in FIELD_OPERATORS_MAP_NEXT_PICKUP.items():
-        if field == "date":
-            current_date = datetime.now()
-            offset = random.randint(1, 7)
-            new_date = current_date.date() + timedelta(days=offset)
-            new_date = parser.parse(str(new_date))
-            op = ComparisonOperator(choice(ops))
-            if op == ComparisonOperator.LESS_THAN and new_date <= (current_date + timedelta(days=1)):
-                new_date = new_date + timedelta(days=1)
-            constraint = create_constraint_dict(field, op, new_date.date())
-            all_constraints.append(constraint)
+    current_datetime = datetime.now()
+    selected_date = None
 
-        if field == "time":
-            current_time = datetime.now()
-            offset_hours = random.randint(0, 23 - current_time.hour)
-            minute_slot = random.randrange(0, 60 - current_time.minute, 10)
+    # -------------------------
+    # Handle DATE constraint
+    # -------------------------
+    if "date" in FIELD_OPERATORS_MAP_NEXT_PICKUP:
+        ops = FIELD_OPERATORS_MAP_NEXT_PICKUP["date"]
+        field = "date"
 
-            future_dt = current_time + timedelta(hours=offset_hours)
-            # Ensure the new time is not before the current time
-            if future_dt.hour < current_time.hour or (future_dt.hour == current_time.hour and minute_slot < current_time.minute):
-                future_dt = current_time
-                minute_slot = ((current_time.minute + 9) // 10) * 10
+        offset = randint(0, 7)  # allow today as well (offset=0)
+        new_date = current_datetime.date() + timedelta(days=offset)
+        selected_date = new_date
+        new_date = parser.parse(str(new_date))
+
+        op = ComparisonOperator(choice(ops))
+        # Avoid making invalid constraints for < operator
+        if op == ComparisonOperator.LESS_THAN and new_date <= (current_datetime + timedelta(days=1)):
+            new_date = new_date + timedelta(days=1)
+
+        constraint = create_constraint_dict(field, op, new_date.date())
+        all_constraints.append(constraint)
+
+    # -------------------------
+    # Handle TIME constraint
+    # -------------------------
+    if "time" in FIELD_OPERATORS_MAP_NEXT_PICKUP:
+        ops = FIELD_OPERATORS_MAP_NEXT_PICKUP["time"]
+        field = "time"
+
+        if selected_date == current_datetime.date():
+            # Case: date is today → pick time from now onward
+            offset_hours = randint(0, 23 - current_datetime.hour)
+            minute_slot = randrange(0, 60 - current_datetime.minute, 10)
+
+            future_dt = current_datetime + timedelta(hours=offset_hours)
+            # Ensure not earlier than current time
+            if future_dt.hour < current_datetime.hour or (future_dt.hour == current_datetime.hour and minute_slot < current_datetime.minute):
+                future_dt = current_datetime
+                minute_slot = ((current_datetime.minute + 9) // 10) * 10
                 if minute_slot >= 60:
                     minute_slot = 0
                     future_dt += timedelta(hours=1)
+
             new_time = time(future_dt.hour, minute_slot)
-            op = ComparisonOperator(choice(ops))
-            constraint = create_constraint_dict(field, op, new_time)
-            all_constraints.append(constraint)
+
+        else:
+            # Case: future date → allow any random time
+            hour = randint(0, 23)
+            minute_slot = randrange(0, 60, 10)
+            new_time = time(hour, minute_slot)
+
+        op = ComparisonOperator(choice(ops))
+        constraint = create_constraint_dict(field, op, new_time)
+        all_constraints.append(constraint)
 
     return all_constraints
 
