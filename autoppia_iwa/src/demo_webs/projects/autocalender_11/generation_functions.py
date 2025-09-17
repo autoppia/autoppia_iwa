@@ -74,11 +74,14 @@ def _generate_constraint_value(
         return random.choice(valid) if valid else None
 
     if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
-        if len(field_value) > 2:
-            start = random.randint(0, max(0, len(field_value) - 2))
-            end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
-        return field_value
+        longest = max(field_value.split(), key=len)
+        random_picker_start = random.randint(0, len(longest) - 1)
+
+        if random_picker_start == len(longest) - 1:
+            return longest[random_picker_start]  # just return last char
+        else:
+            random_picker_end = random.randint(random_picker_start + 1, len(longest))
+            return longest[random_picker_start:random_picker_end]
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
         alphabet = "abcdefghijklmnopqrstuvwxyz"
