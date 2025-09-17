@@ -275,13 +275,20 @@ CHOOSE_CALENDAR_USE_CASE = UseCase(
 
 ADD_EVENT_INFO = """
 CRITICAL REQUIREMENT:
-1. Include all event details: title, calendar, date, start time, and end time.
-2. Start your request with "Add an event" or similar phrases.
+ritical requirements:
+1. The request must start with one of the following: "Open the add-to-cart modal ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
 3. Pay attention to the constraints, mentioning exact constraint operator is crucial,
 Example:
-constraint: {"field": "title", "operator": "not_equals", "value": "Team Meeting"}
+constraint:
+{"field": "title", "operator": "not_equals", "value": "Team Meeting"},
+{"field": "calendar", "operator": "contains", "value": "e Bu"},
+{"field": "date", "operator": "equals", "value": "2025-09-30"},
+{"field": "start_time", "operator": "equals", "value": "10:00"},
+{"field": "end_time", "operator": "equals", "value": "11:00"},
 prompt:
-CORRECT: 'Add an event whose title is not "Team Meeting" to the "Work" calendar for tomorrow at 10:00 AM, ending at 11:00 AM.'
+CORRECT: 'Add an event whose title not equals "Team Meeting" and calendar equals "e Bu" and date equals '2025-09-30' and start_time equals '10:00' and end_time equals '11:00'.'
 INCORRECT: 'Add an event "Team Meeting" to the "Work" calendar for tomorrow at 10:00 AM, ending at 11:00 AM.'
 4. You may use synonyms for "add" such as "schedule", "create", "put", or "set up".
 """
@@ -295,24 +302,20 @@ ADD_EVENT_USE_CASE = UseCase(
     additional_prompt_info=ADD_EVENT_INFO,
     examples=[
         {
-            "prompt": "Add an event 'Team Meeting' to the 'Work' calendar for tomorrow at 10:00 AM, ending at 11:00 AM.",
-            "prompt_for_task_generation": "Create event 'Team Meeting' in 'Work' calendar for tomorrow, 10:00 AM to 11:00 AM.",
+            "prompt": "Add an event whose title equals 'Team Meeting' and calendar equals 'Work' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
+            "prompt_for_task_generation": "Add an event whose title equals 'Team Meeting' and calendar equals 'Work' and date equals '2025-09-20' and start_time equals '10:00' and end_time equals '11:00'.",
         },
         {
-            "prompt": "Schedule 'Doctor Appointment' on the 'Personal' calendar for July 25th from 2:30 PM to 3:00 PM.",
-            "prompt_for_task_generation": "Add event 'Doctor Appointment' to 'Personal' calendar on July 25th, 2:30 PM - 3:00 PM.",
+            "prompt": "Add an event whose title equals 'Workout' and calendar equals 'Goals' and date equals '2025-09-25' and start_time equals '11:00' and end_time equals '12:00'.",
+            "prompt_for_task_generation": "Add an event whose title equals 'Workout' and calendar equals 'Goals' and date equals '2025-09-25' and start_time equals '11:00' and end_time equals '12:00'.",
         },
         {
-            "prompt": "New event in 'Fitness' calendar: 'Gym Session', today from 18:00 to 19:30.",
-            "prompt_for_task_generation": "Create event 'Gym Session' in 'Fitness' calendar, today, 18:00-19:30.",
+            "prompt": "Add an event whose visibility equals 'Private' and busy equals 'True' and description equals 'Team meeting to discuss project updates' and meeting_link equals 'https://meet.example.com/abc-123'.",
+            "prompt_for_task_generation": "Add an event whose visibility equals 'Private' and busy equals 'True' and description equals 'Team meeting to discuss project updates' and meeting_link equals 'https://meet.example.com/abc-123'.",
         },
         {
-            "prompt": "Add 'Family Dinner' to the 'Family' calendar for this Friday at 7 PM, lasting one hour.",
-            "prompt_for_task_generation": "Add event 'Family Dinner' to 'Family' calendar, this Friday, 7:00 PM to 8:00 PM.",
-        },
-        {
-            "prompt": "Put 'Project Deadline' on the 'Work' calendar for August 1st, starting at 9 AM and ending at 5 PM.",
-            "prompt_for_task_generation": "Create event 'Project Deadline' in 'Work' calendar for August 1st, 9:00 AM - 5:00 PM.",
+            "prompt": "Add an event whose location equals 'Library' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30'.",
+            "prompt_for_task_generation": "Add an event whose location equals 'Library' and recurrence equals 'Monthly' and attendees equals 'test@example.com' and reminders equals '30'.",
         },
     ],
 )

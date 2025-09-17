@@ -283,13 +283,10 @@ def generate_cell_clicked_constraints() -> list[dict[str, Any]]:
 def generate_add_event_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding a calendar event."""
     field_map = {
-        # "source": {"values": SOURCES},
         "title": {"values": EVENT_TITLES},
         "calendar": {"values": EXISTING_CALENDAR_NAMES},
         "date": {"dataset_generator": lambda: [{"date": (date.today() + timedelta(days=i)).strftime("%Y-%m-%d")} for i in range(-30, 30)]},
         "time": {},  # Special handler
-        # "color": {"values": COLORS},
-        # "is_editing": {"values": [True, False]},
         "all_day": {"values": [True, False]},
         "recurrence": {"values": RECURRENCE_OPTIONS},
         "attendees": {"values": ATTENDEE_EMAILS},
