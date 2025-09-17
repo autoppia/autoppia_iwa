@@ -8,7 +8,6 @@ from dateutil import parser
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
-    FIELD_OPERATORS_MAP_CANCEL_RESERVATION,
     FIELD_OPERATORS_MAP_ENTER_DESTINATION,
     FIELD_OPERATORS_MAP_ENTER_LOCATION,
     FIELD_OPERATORS_MAP_NEXT_PICKUP,
@@ -18,7 +17,6 @@ from .data import (
     FIELD_OPERATORS_MAP_SELECT_CAR,
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
-    FIELD_OPERATORS_MAP_TRIP_DETAILS,
     PLACES,
     RIDES,
 )
@@ -466,36 +464,4 @@ def generate_reserve_ride_constraints() -> list[dict[str, Any]]:
     constraint = create_constraint_dict("scheduled", op, date_time)
     constraints_list.append(constraint)
 
-    return constraints_list
-
-
-def generate_trip_details_constraints() -> list[dict[str, Any]]:
-    field_ops = FIELD_OPERATORS_MAP_TRIP_DETAILS
-    field_map = {
-        # "date": {"is_date": True, "field": "date"},
-        # "time": {"is_time": True, "field": "time"},
-        "destination": {"field": "label", "dataset": PLACES},
-        # "drop_off_label": "main",
-        "location": {"field": "label", "dataset": PLACES},
-        # "pick_up_label": "main",
-        # "price": {"field": "price", "dataset": RIDES},
-        "ride_name": {"field": "name", "dataset": RIDES},
-    }
-    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])
-    return constraints_list
-
-
-def generate_cancel_reservation_constraints() -> list[dict[str, Any]]:
-    field_ops = FIELD_OPERATORS_MAP_CANCEL_RESERVATION
-    field_map = {
-        "date": {"is_date": True, "field": "date"},
-        "time": {"is_time": True, "field": "time"},
-        "drop_off": "label",
-        "drop_off_label": "main",
-        "pick_up": "label",
-        "pick_up_label": "main",
-        "price": {"field": "price", "dataset": RIDES},
-        "ride_name": {"field": "name", "dataset": RIDES},
-    }
-    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map)
     return constraints_list
