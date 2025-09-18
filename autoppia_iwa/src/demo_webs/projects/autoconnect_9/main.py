@@ -6,7 +6,7 @@ from .use_cases import ALL_USE_CASES
 
 FRONTEND_PORT_INDEX = 8
 BACKEND_PORT_INDEX = 8
-autoconnect_project = WebProject(
+connect_project = WebProject(
     id="autoconnect",
     name="Autoppia AutoConnect",
     frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),

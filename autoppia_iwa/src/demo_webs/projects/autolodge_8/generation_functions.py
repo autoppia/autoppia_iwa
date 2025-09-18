@@ -462,17 +462,6 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
 
     constraints_list.extend(reserve_constraints_list)
 
-    # constraints = [{'field': 'checkin', 'operator': 'less_than', 'value': '2025-07-14'},
-    #  {'field': 'checkout', 'operator': 'not_equals', 'value': '2025-07-16'},
-    #  {'field': 'guests_set', 'operator': 'not_equals', 'value': 1},
-    #  {'field': 'amenities', 'operator': 'not_contains', 'value': 'Oceanfront'},
-    #  {'field': 'host_name', 'operator': 'not_contains', 'value': 'ogw'},
-    #  {'field': 'price', 'operator': 'greater_equal', 'value': 174}]
-    # constraints_list = []
-    # for c in constraints:
-    #     c['operator'] = ComparisonOperator(c['operator'])
-    #     constraints_list.append(c)
-
     return constraints_list
 
 

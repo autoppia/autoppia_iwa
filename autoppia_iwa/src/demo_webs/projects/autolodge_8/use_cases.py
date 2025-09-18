@@ -389,7 +389,24 @@ EDIT_CHECK_IN_OUT_DATES_USE_CASE = UseCase(
 
 CONFIRM_AND_PAY_INFO = """
 CRITICAL REQUIREMENT:
-1. Start the prompt with details confirmation
+1. Start the prompt with details confirmation like:
+    Please confirm the booking details for a stay where ...
+2. Keep the constraints values as it is in the prompt, and do not complete or correct them.
+    Do not add values not present in event_criteria (e.g., if guests = 1, do NOT write '1 and 2')
+3. Do NOT split, rephrase, or interpret list values. Use them exactly as shown in event_criteria.
+    Example:
+        'amenities': {'operator': 'in_list', 'value': ['Ski-in, Ski-out']}
+
+    Correct: amenities in list ['Ski-in, Ski-out']
+    Incorrect: amenities include 'Ski-in' or 'Ski-out'
+
+EXAMPLES:
+
+CORRECT:
+Please confirm the booking details for a stay where guests NOT equal to '1' at a location that does NOT contain 'kjo' AND amenities NOT in list ['Self check-in', 'Fast WiFi'] AND title contains 'owe' AND rating less than '6.714277681586925' AND reviews greater equal '212'
+
+INCORRECT:
+Please confirm the booking details for a stay where guests NOT equal to '1' AND '2'...  # (Added extra guest value not in criteria)
 """
 
 CONFIRM_AND_PAY_USE_CASE = UseCase(

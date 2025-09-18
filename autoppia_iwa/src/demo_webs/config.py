@@ -5,6 +5,7 @@ sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from .classes import WebProject
 from .projects.autocalender_11.main import autocalendar_project
+from .projects.autoconnect_9.main import connect_project
 from .projects.autocrm_5.main import crm_project
 from .projects.autodelivery_7.main import autodelivery_project
 from .projects.autolodge_8.main import lodge_project
@@ -25,5 +26,6 @@ demo_web_projects: list[WebProject] = [
     lodge_project,
     autodelivery_project,
     work_project,
+    connect_project,
     autocalendar_project,
 ]
