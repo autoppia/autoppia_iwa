@@ -176,15 +176,15 @@ def _generate_value_for_field(field_name: str) -> Any:
 
 # --- Constraint Generators ---
 def generate_view_restaurant_constraints():
-    return generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
+    return generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
 
 
 def generate_view_full_menu_constraints():
-    return generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
+    return generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
 
 
 def generate_collapse_menu_constraints():
-    return generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
+    return generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
 
 
 def generate_date_dropdown_opened_constraints():
@@ -214,7 +214,7 @@ def generate_constraints_for_single_field(field: str, allowed_operators: dict[st
 
 
 def generate_book_restaurant_constraints():
-    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_BOOK_RESTAURANT,
@@ -226,7 +226,7 @@ def generate_book_restaurant_constraints():
 
 
 def generate_country_selected_constraints():
-    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
     country_field = random.choice(["country_name", "country_code"])
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "selected_date", "selected_time"],
@@ -240,7 +240,7 @@ def generate_country_selected_constraints():
 
 
 def generate_occasion_selected_constraints():
-    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
@@ -253,7 +253,7 @@ def generate_occasion_selected_constraints():
 
 
 def generate_reservation_complete_constraints():
-    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "review", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "country_code", "phone_number", "occasion_typeselected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_RESERVATION_COMPLETE,

@@ -70,5 +70,5 @@ class TestRunner:
                 extra_data={key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}},
             )
             snapshot_results.append(test_result)
-        print("Running global tests", snapshot_results)
+        # print("Running global tests", snapshot_results)
         return snapshot_results

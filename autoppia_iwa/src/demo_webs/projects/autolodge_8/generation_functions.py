@@ -128,47 +128,13 @@ def _generate_constraint_value(
     }:
         base = field_value
         if isinstance(base, int | float):
-            if field == "rating":
-                min_val, max_val = 0.0, 5.0
-                if operator == ComparisonOperator.GREATER_THAN:
-                    if base > min_val:
-                        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
-                        return round(random.uniform(min_dataset, max(base - 0.5, min_dataset)), 2)
-                    else:
-                        return min((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=min_val)
-                elif operator == ComparisonOperator.LESS_THAN:
-                    if base < max_val:
-                        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
-                        return round(random.uniform(min(base + 0.1, max_dataset), max_dataset), 2)
-                    else:
-                        return max((v.get(field) for v in dataset if isinstance(v.get(field), int | float)), default=max_val)
-                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                    return round(base, 2)
-            elif field == "reviews":
-                min_val, max_val = 0, 1000  # Assume 1000 as a practical upper bound
-                if operator == ComparisonOperator.GREATER_THAN:
-                    if base > min_val:
-                        min_dataset = min((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=min_val)
-                        return max(min_dataset, base - random.randint(1, min(base, 20)))
-                    else:
-                        return min((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=min_val)
-                elif operator == ComparisonOperator.LESS_THAN:
-                    if base < max_val:
-                        max_dataset = max((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=max_val)
-                        return min(max_dataset, base + random.randint(1, 20))
-                    else:
-                        return max((v.get(field) for v in dataset if isinstance(v.get(field), int)), default=max_val)
-                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                    return base
-            else:
-                # Generic numeric logic
-                delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
-                if operator == ComparisonOperator.GREATER_THAN:
-                    return base - delta
-                elif operator == ComparisonOperator.LESS_THAN:
-                    return base + delta
-                elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
-                    return base
+            delta = random.uniform(0.5, 2.0) if isinstance(base, float) else random.randint(1, 5)
+            if operator == ComparisonOperator.GREATER_THAN:
+                return round(base - delta, 2)
+            elif operator == ComparisonOperator.LESS_THAN:
+                return round(base + delta, 2)
+            elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
+                return base
 
     # Fallback: return None
     return None
@@ -249,54 +215,6 @@ def generate_search_hotel_constraints() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     return constraints_list
-
-
-# def generate_search_cleared_constraints() -> list[dict[str, Any]]:
-#     constraints_list: list[dict[str, Any]] = []
-#
-#     field = "source"
-#     possible_sources = ["location", "date", "guests"]
-#
-#     allowed_ops = [
-#         ComparisonOperator.EQUALS.value,
-#         ComparisonOperator.NOT_EQUALS.value,
-#         ComparisonOperator.CONTAINS.value,
-#         ComparisonOperator.NOT_CONTAINS.value,
-#     ]
-#
-#     operator_str = random.choice(allowed_ops)
-#     operator = ComparisonOperator(operator_str)
-#
-#     source_value = random.choice(possible_sources)
-#
-#     if operator == ComparisonOperator.EQUALS:
-#         value = source_value
-#
-#     elif operator == ComparisonOperator.NOT_EQUALS:
-#         value = random.choice([s for s in possible_sources if s != source_value])
-#
-#     elif operator == ComparisonOperator.CONTAINS:
-#         # Substring of the selected source
-#         if len(source_value) > 3:
-#             start = random.randint(0, len(source_value) - 2)
-#             end = random.randint(start + 1, len(source_value))
-#             value = source_value[start:end]
-#         else:
-#             value = source_value
-#
-#     elif operator == ComparisonOperator.NOT_CONTAINS:
-#         # Substring not in any of the source values
-#         alphabet = "abcdefghijklmnopqrstuvwxyz"
-#         while True:
-#             random_substring = "".join(random.choices(alphabet, k=3))
-#             if all(random_substring not in s for s in possible_sources):
-#                 value = random_substring
-#                 break
-#
-#     constraint = create_constraint_dict(field, operator, value)
-#     constraints_list.append(constraint)
-#
-#     return constraints_list
 
 
 def _generate_num_of_guests_field_value(operator: str, actual_value: int, max_value: int) -> int:
@@ -457,12 +375,12 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
     max_value = hotel.get("maxGuests") or hotel.get("guests") or 2  # fallback if missing
 
     from_guests = 1
-    to_guests = random.randint(from_guests + 1, max_value)
+    guests_to = random.randint(from_guests + 1, max_value)
 
-    sample_event_data = {"from_guests": from_guests, "to_guests": to_guests}
+    sample_event_data = {"from_guests": from_guests, "guests_to": guests_to}
     sample_event_data.update(hotel)
 
-    selected_fields = ["to_guests"]
+    selected_fields = ["guests_to"]
 
     possible_fields = list(FIELD_OPERATORS_INCREASE_GUESTS_MAP.keys())
     possible_fields = [field for field in possible_fields if field not in selected_fields]
@@ -478,14 +396,13 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
         actual_value = sample_event_data.get(field)
         if not actual_value:
             continue
-        value = _generate_num_of_guests_field_value(operator, actual_value, max_value) if field == "to_guests" else _generate_constraint_value(operator, actual_value, field, HOTELS_DATA_MODIFIED)
+        value = _generate_num_of_guests_field_value(operator, actual_value, max_value) if field == "guests_to" else _generate_constraint_value(operator, actual_value, field, HOTELS_DATA_MODIFIED)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
 
 
-# Todo: debug dates constriants
 def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     reserve_constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
@@ -494,17 +411,6 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     possible_fields = [field for field in possible_fields if field not in ["checkin", "checkout"]]
     num_constraints = random.randint(1, len(possible_fields))
     random.sample(possible_fields, num_constraints)
-
-    # sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
-    # checkin = parse_datetime(sample_hotel.get("datesFrom", "2025-08-01"))
-    # checkout = parse_datetime(sample_hotel.get("datesTo", "2025-08-05"))
-    # source = "calendar_edit"
-    #
-    # sample_data = {
-    #     "checkin": checkin,
-    #     "checkout": checkout,
-    #     "source": source,
-    # }
 
     dates_from_str = sample_hotel.get("datesFrom", "2025-08-01")
     dates_to_str = sample_hotel.get("datesTo", "2025-08-10")
@@ -554,30 +460,7 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
             checkout_date = minimal_checkout + timedelta(days=offset)
             # checkout_value = checkout_date.isoformat()
             constraints_list.append(create_constraint_dict("checkout", checkout_op, checkout_date))
-    # field_map = {
-    #     'guests_set': 'guests',
-    # }
-    # for field in selected_fields:
-    #     if field in ["datesFrom", "datesTo", 'checkin', 'checkout', 'guests_set']:
-    #         continue
-    #     allowed_ops = FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.get(field, [])
-    #     if not allowed_ops:
-    #         continue
-    #
-    #     operator = ComparisonOperator(random.choice(allowed_ops))
-    #
-    #     value = sample_hotel[field]
-    #     if not value:
-    #         continue
-    #     value = _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
-    #     if not value:
-    #         continue
-    #     constraint = create_constraint_dict(field, operator, value)
-    #     constraints_list.append(constraint)
 
-    # for c in reserve_constraints_list:
-    #     if c['field'] not in ['datesFrom', 'datesTo', 'guests_set']:
-    #         constraints_list.append(c)
     constraints_list.extend(reserve_constraints_list)
 
     return constraints_list
@@ -632,16 +515,6 @@ def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
             payment_constraints.append(constraint)
-
-    # Add a few cost constraints
-    # cost_fields = ["total", "priceSubtotal"]
-    # for field in cost_fields:
-    #     if field in payment_data:
-    #         allowed_ops = FIELD_OPERATORS_CONFIRM_AND_PAY_MAP.get(field, [])
-    #         if allowed_ops:
-    #             operator = ComparisonOperator(random.choice(allowed_ops))
-    #             constraint = create_constraint_dict(field, operator, payment_data[field])
-    #             payment_constraints.append(constraint)
 
     constraints_list = reserve_constraints + payment_constraints
 
@@ -717,22 +590,14 @@ def generate_share_hotel_constraints() -> list[dict[str, Any]]:
 
     constraint_list_for_view, hotel_dict = __generate_view_hotel_constraints()
 
-    selected_fields = ["email"]
-    sample_data = {"email": random.choice(emails_list)}
+    field = "email"
+    dataset = [{"email": email} for email in emails_list]
 
-    for field in selected_fields:
-        allowed_ops = FIELD_OPERATORS_SHARE_HOTEL_MAP.get(field, [])
-        if not allowed_ops:
-            continue
+    allowed_ops = FIELD_OPERATORS_SHARE_HOTEL_MAP.get(field, [])
+    operator = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(emails_list)
+    value = _generate_constraint_value(operator, field_value, field, dataset)
 
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        field_value = sample_data.get(field)
-        value = (
-            _generate_constraint_value(operator, field_value, field, [{"email": email} for email in emails_list])
-            if field == "email"
-            else _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
-        )
-
-        constraints_list.append(create_constraint_dict(field, operator, value))
+    constraints_list.append(create_constraint_dict(field, operator, value))
     constraints_list.extend(constraint_list_for_view)
     return constraints_list

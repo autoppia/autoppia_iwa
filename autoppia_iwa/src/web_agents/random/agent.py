@@ -25,13 +25,15 @@ class RandomClickerWebAgent(BaseAgent):
         actions = []
         for _ in range(1):  # Generate 10 random click actions
             if self.is_random:
-                x = random.randint(0, task.specifications.screen_width - 1)  # Random x coordinate
-                y = random.randint(0, task.specifications.screen_height - 1)  # Random y coordinate
+                # Random x coordinate
+                x = random.randint(0, task.specifications.screen_width - 1)
+                # Random y coordinate
+                y = random.randint(0, task.specifications.screen_height - 1)
             else:
                 # This reduce overhead on evaluator.
                 x = 0
                 y = 0
 
-            actions.append(ClickAction(x=x, y=y))
+            actions.append(ClickAction(selector=None, x=x, y=y))
 
         return TaskSolution(task_id=task.id, actions=actions)

@@ -28,13 +28,19 @@ from .generation_functions import (
 )
 
 VIEW_EMAIL_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Each prompt must begin with the word 'View'.
-2. Always mention the Subject and Email if they are available.
-3. If only the email or only the subject is provided, mention just that one.
+Critical requirements:
+1. The request must start with one of the following: "View the email...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'subject': {'operator': 'equals', 'value': 'Win a Free Vacation!'}, 'from_email': {'operator': 'equals', 'value': 'spam@unknown.com'}}
+Correct:
+"View the email where subject equals 'Win a Free Vacation!' and email_from equals 'spam@unknown.com'."
+Incorrect:
+"View for spam@unknown.com email and Win a Free Vacation! subject."
+""".strip()
 
-ALL prompts must strictly follow this structure, using slightly different wording but maintaining the EXACT same constraint criteria.
-"""
 VIEW_EMAIL_USE_CASE = UseCase(
     name="VIEW_EMAIL",
     description="The user selects an email to view and read its contents.",
@@ -44,38 +50,35 @@ VIEW_EMAIL_USE_CASE = UseCase(
     additional_prompt_info=VIEW_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "View the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
-            "prompt_for_task_generation": "View the email from 'alice.smith@company.com' with subject 'Project Kickoff Meeting'",
+            "prompt": "View the email where email_from equals 'alice.smith@company.com' and subject equals 'Project Kickoff Meeting'",
+            "prompt_for_task_generation": "View the email where email_from equals 'alice.smith@company.com' and subject equals 'Project Kickoff Meeting'",
         },
         {
-            "prompt": "View the message from 'bob.johnson@tech.org'",
-            "prompt_for_task_generation": "View the message from 'bob.johnson@tech.org'",
+            "prompt": "View the email where email_from not equals 'bob.johnson@tech.org'",
+            "prompt_for_task_generation": "View the email where email_from not equals 'bob.johnson@tech.org'",
         },
         {
-            "prompt": "View the email with subject 'Newsletter Subscription'",
-            "prompt_for_task_generation": "View the email with subject 'Newsletter Subscription'",
+            "prompt": "View the email where subject equals 'Newsletter Subscription'",
+            "prompt_for_task_generation": "View the email where subject equals 'Newsletter Subscription'",
         },
         {
-            "prompt": "View the email that subject is about 'Community Forum Update'",
-            "prompt_for_task_generation": "View the email that subject is about 'Community Forum Update'",
+            "prompt": "View the email where subject contains 'Update'",
+            "prompt_for_task_generation": "View the email where subject contains 'Update'",
         },
     ],
 )
 
 STAR_EMAIL_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1.  Use clear action phrases such as:
-   - "mark as starred"
-   - "flag as starred"
-   - "add to favorite"
-
-2. Mention Subject, Email ID, or Sender if available.
-3. Examples:
-    Correct: "Mark the email with Subject containing 'g Workshop' as starred."
-    Incorrect: "Mark the email with Subject containing 'g Workshop' as starred where isStarred is NOT equal to True.".
-4. IMPORTANT: Do **NOT** mention isStarred in the prompt.
-5. Only use natural phrasing and vary wording across prompts.
-"""
+Critical requirements:
+1. The request must start with one of the following: "Star the email...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'subject': {'operator': 'equals', 'value': 'Budget Approval Request'}, 'from_email': {'operator': 'equals', 'value': 'nico.wells@org.com'}, 'is_starred': {'operator': 'equals', 'value': False}}
+Correct:
+"Star the email where subject equals 'Budget Approval Request' and from_email equals 'nico.wells@org.com' and is_starred equals False."
+""".strip()
 
 STAR_EMAIL_USE_CASE = UseCase(
     name="STAR_AN_EMAIL",
@@ -86,48 +89,36 @@ STAR_EMAIL_USE_CASE = UseCase(
     additional_prompt_info=STAR_EMAIL_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Star the email from 'grace.lee@company.com' with subject 'Team Outing Plan'",
-            "prompt_for_task_generation": "Star the email from 'grace.lee@company.com' with subject 'Team Outing Plan'",
+            "prompt": "Star the email where from_email equals 'grace.lee@company.com' and subject equals 'Team Outing Plan'",
+            "prompt_for_task_generation": "Star the email where from_email 'grace.lee@company.com' and subject equals 'Team Outing Plan'",
         },
         {
-            "prompt": "Mark the email from 'bob.johnson@tech.org' as starred",
-            "prompt_for_task_generation": "Mark the email from 'bob.johnson@tech.org' as starred",
+            "prompt": "Star the email where from_email equals 'bob.johnson@tech.org' and is_starred equals 'False'",
+            "prompt_for_task_generation": "Star the email where from_email equals 'bob.johnson@tech.org' and is_starred equals 'False'",
         },
         {
-            "prompt": "Mark the email titled 'Newsletter Subscription' as unstarred",
-            "prompt_for_task_generation": "Mark the email titled 'Newsletter Subscription' as unstarred",
+            "prompt": "Star the email where subject equals 'Re: Lunch Plans' and is_starred equals 'False'",
+            "prompt_for_task_generation": "Star the email where subject equals 'Re: Lunch Plans' and is_starred equals 'False'",
         },
         {
             "prompt": "Star the email with ID 'email7'",
             "prompt_for_task_generation": "Star the email with ID 'email7'",
         },
-        {
-            "prompt": "Mark the message about 'Lunch Plans' as favorite",
-            "prompt_for_task_generation": "Mark the message about 'Lunch Plans' as favorite",
-        },
     ],
 )
 
 MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENTS: Every prompt you generate MUST follow these rules:
+Critical requirements:
+1. The request must start with one of the following: "Mark the email...".
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Pay attention to the constraints:
+Example:
+constraints: {'from_email': {'operator': 'equals', 'value': 'me@gmail.com'}, 'subject': {'operator': 'equals', 'value': 'Feature Request Feedback'}, 'is_important': {'operator': 'equals', 'value': True}}}
+Correct:
+"Mark the email where from equals 'me@gmail.com' and subject equals 'Feature Request Feedback' and is_important equals 'True'."
+""".strip()
 
-1. Use clear action phrases such as:
-   - "mark as important" or "mark as not important"
-   - "flag as important or not important"
-
- The **is_important** MUST be reflected explicitly:
-    IMPORTANT:
-   - Use phrases like: "mark as important", or "flag as important", ONLY when 'is_important' is True.
-   - Use phrases like: "mark as not important", ONLY when 'is_important' is False.
-
-2. If the criteria specify that the email is NOT equal to a particular address, the prompt MUST mention that explicitly, e.g., "Mark the email with subject containing 'Coffee Catch-U' that is NOT from 'me@gmail.com' as important."
-   Examples:
-    Correct: "Mark the email with Subject containing 'g Workshop' as important."
-    Correct: "Mark the email with subject containing 'Coffee Catch-U' that is NOT from 'me@gmail.com' as important."
-    Incorrect: "Mark the email from 'me@gmail.com' that has a subject containing 'Coffee Catch-U' as important." (if the criteria is not_equals)
-3. IMPORTANT: Do **NOT** mention isImportant/is_important in the prompt.
-4. Phrase each prompt naturally and vary the wording, but keep the user intent consistent.
-"""
 
 MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     name="MARK_EMAIL_AS_IMPORTANT",
@@ -138,16 +129,12 @@ MARK_EMAIL_AS_IMPORTANT_USE_CASE = UseCase(
     additional_prompt_info=MARK_EMAIL_AS_IMPORTANT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Mark the email from 'david.brown@company.com' with subject 'Q2 Report Feedback' as important",
-            "prompt_for_task_generation": "Mark the email from 'david.brown@company.com' with subject 'Q2 Report Feedback' as important",
+            "prompt": "Mark the email where from equals 'david.brown@company.com' and subject equals 'Q2 Report Feedback' and is_important equals 'True'.",
+            "prompt_for_task_generation": "Mark the email where from equals 'david.brown@company.com' and subject equals 'Q2 Report Feedback' and is_important equals 'True'.",
         },
         {
-            "prompt": "Flag the email from 'alice.smith@company.com' as important",
-            "prompt_for_task_generation": "Flag the email from 'alice.smith@company.com' as important",
-        },
-        {
-            "prompt": "Set the message with subject 'Project Status Update' to high priority",
-            "prompt_for_task_generation": "Set the message with subject 'Project Status Update' to high priority",
+            "prompt": "Mark the email where from equals 'promo.bot@scam.com' and subject equals 'Amazing Deal Awaits!' and is_important equals 'False'.",
+            "prompt_for_task_generation": "Mark the email where from equals 'promo.bot@scam.com' and subject equals 'Amazing Deal Awaits!' and is_important equals 'False'.",
         },
         {
             "prompt": "Mark the email with ID 'email25' as important",

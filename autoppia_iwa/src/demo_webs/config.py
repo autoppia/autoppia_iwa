@@ -2,10 +2,13 @@ import sys
 from pathlib import Path
 
 from .classes import WebProject
+from .projects.autoconnect_9.main import connect_project
 from .projects.autocrm_5.main import crm_project
+from .projects.autodelivery_7.main import autodelivery_project
 from .projects.autodrive_13.main import drive_project
 from .projects.autolodge_8.main import lodge_project
 from .projects.automail_6.main import automail_project
+from .projects.autowork_10.main import work_project
 from .projects.books_2.main import books_project
 from .projects.cinema_1.main import cinema_project
 from .projects.dining_4.main import dining_project
@@ -21,11 +24,9 @@ demo_web_projects: list[WebProject] = [
     dining_project,
     crm_project,
     automail_project,
-    ...,
+    autodelivery_project,
     lodge_project,
-    ...,
-    ...,
-    ...,
-    ...,
+    connect_project,
+    work_project,
     drive_project,
 ]
