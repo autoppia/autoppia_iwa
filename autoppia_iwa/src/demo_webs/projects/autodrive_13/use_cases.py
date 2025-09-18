@@ -91,35 +91,6 @@ ENTER_DESTINATION_USE_CASE = UseCase(
         # },
     ],
 )
-# SEE_PRICES_USE_CASE = UseCase(
-#     name="SEE_PRICES",
-#     description="The user sees prices for a trip between a location and a destination",
-#     event=SeePricesEvent,
-#     event_source_code=SeePricesEvent.get_source_code_of_class(),
-#     constraints_generator=generate_see_prices_constraints,
-#     examples=[
-#         {
-#             "prompt": "See prices after successfully selects location from dropdown that is not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and selects destination from dropdown that is equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-#             "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not  equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and selects destination from dropdown that is equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-#         },
-#         {
-#             "prompt": "See prices after successfully selects location from dropdown that is not equals '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA' and selects destination from dropdown that is equals '1001 Castro Street - 1001 Castro St, San Francisco, CA 94114, USA'",
-#             "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not equals '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA' and selects destination from dropdown that is equals '1001 Castro Street - 1001 Castro St, San Francisco, CA 94114, USA'",
-#         },
-#         {
-#             "prompt": "See prices after successfully selects location from dropdown that contains 'Van Ness' and select destination from dropdown that contains 'Castro'",
-#             "prompt_for_task_generation": "See prices after successfully selects location from dropdown that contains 'Van Ness' and selects destination from dropdown that contains 'Castro'",
-#         },
-#         {
-#             "prompt": "See prices after successfully selects location from dropdown that is not contains '1000 Chestnut' and select destination from dropdown that is not contains '1001 Castro'",
-#             "prompt_for_task_generation": "See prices after successfully selects location from dropdown that is not contains '1000 Chestnut' and selects destination from dropdown that is not contains '1001 Castro'",
-#         },
-#         # {
-#         #     "prompt": "See prices where location not contains 'Chestnut' and destination not contains 'Hotel'",
-#         #     "prompt_for_task_generation": "See prices where location not contains 'Chestnut' and destination not contains 'Hotel'",
-#         # },
-#     ],
-# )
 SELECT_DATE_USE_CASE = UseCase(
     name="SELECT_DATE",
     description="The user selects a specific date for their trip or booking",
@@ -404,7 +375,7 @@ ALL_USE_CASES = [
     # SELECT_DATE_USE_CASE,
     # SELECT_TIME_USE_CASE,
     # NEXT_PICKUP_USE_CASE,
-    # SEARCH_RIDE_USE_CASE,
-    SELECT_CAR_USE_CASE,
+    SEARCH_RIDE_USE_CASE,
+    # SELECT_CAR_USE_CASE,
     # RESERVE_RIDE_USE_CASE,
 ]

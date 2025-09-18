@@ -276,7 +276,7 @@ FIELD_OPERATORS_MAP_SELECT_CAR = {
     # "ride_id": LOGICAL_OPERATORS,
     "ride_name": STRING_OPERATORS,
     # "ride_type": STRING_OPERATORS,
-    # "scheduled": LOGICAL_OPERATORS,
+    "scheduled": LOGICAL_OPERATORS,
     # "seats": LOGICAL_OPERATORS,
 }
 FIELD_OPERATORS_MAP_RESERVE_RIDE = {

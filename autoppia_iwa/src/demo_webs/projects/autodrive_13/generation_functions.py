@@ -189,24 +189,24 @@ def _generate_constraints(
             if new_field.get("is_datetime"):
                 days = new_field.get("days", 1)
                 new_field_name = new_field.get("field", "")
-                current_time = datetime.now(UTC) if new_field.get("utc") else datetime.now()
-                constraint_value = random_datetime(days=days, start=current_time)
+                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
+                constraint_value = random_datetime(days=days, start=current_datetime)
                 field_value = constraint_value
                 new_field = new_field_name
 
             elif new_field.get("is_date"):
-                current_date = datetime.now(UTC) if new_field.get("utc") else datetime.now()
+                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
                 offset = random.randint(1, 7)
-                new_date = current_date.date() + timedelta(days=offset)
+                new_date = current_datetime.date() + timedelta(days=offset)
                 new_date = parser.parse(str(new_date))
                 constraint_value = new_date
                 field_value = new_field
 
             elif new_field.get("is_time"):
-                current_time = datetime.now(UTC) if new_field.get("utc") else datetime.now()
+                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
                 offset_hours = random.randint(0, 23)
                 offset_minutes = random.randint(0, 59)
-                new_time = current_time + timedelta(hours=offset_hours, minutes=offset_minutes)
+                new_time = current_datetime + timedelta(hours=offset_hours, minutes=offset_minutes)
                 new_time = time(new_time.hour, new_time.minute)
                 constraint_value = new_time
                 field_value = new_field
@@ -261,12 +261,12 @@ def generate_select_date_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     for field, ops in FIELD_OPERATORS_MAP_SELECT_DATE.items():
         if field == "date":
-            current_date = datetime.now()
+            current_datetime = datetime.now()
             offset = random.randint(1, 7)
-            new_date = current_date.date() + timedelta(days=offset)
+            new_date = current_datetime.date() + timedelta(days=offset)
             new_date = parser.parse(str(new_date))
             op = ComparisonOperator(choice(ops))
-            if op == ComparisonOperator.LESS_THAN and new_date <= (current_date + timedelta(days=1)):
+            if op == ComparisonOperator.LESS_THAN and new_date <= (current_datetime + timedelta(days=1)):
                 new_date = new_date + timedelta(days=1)
             constraint = create_constraint_dict(field, op, new_date.date())
             all_constraints.append(constraint)
@@ -277,15 +277,15 @@ def generate_select_time_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     for field, ops in FIELD_OPERATORS_MAP_SELECT_TIME.items():
         if field == "time":
-            current_time = datetime.now()
-            offset_hours = random.randint(0, 23 - current_time.hour)
-            minute_slot = random.randrange(0, 60 - current_time.minute, 10)
+            current_datetime = datetime.now()
+            offset_hours = random.randint(0, 23 - current_datetime.hour)
+            minute_slot = random.randrange(0, 60 - current_datetime.minute, 10)
 
-            future_dt = current_time + timedelta(hours=offset_hours)
+            future_dt = current_datetime + timedelta(hours=offset_hours)
             # Ensure the new time is not before the current time
-            if future_dt.hour < current_time.hour or (future_dt.hour == current_time.hour and minute_slot < current_time.minute):
-                future_dt = current_time
-                minute_slot = ((current_time.minute + 9) // 10) * 10
+            if future_dt.hour < current_datetime.hour or (future_dt.hour == current_datetime.hour and minute_slot < current_datetime.minute):
+                future_dt = current_datetime
+                minute_slot = ((current_datetime.minute + 9) // 10) * 10
                 if minute_slot >= 60:
                     minute_slot = 0
                     future_dt += timedelta(hours=1)
@@ -357,6 +357,34 @@ def generate_next_pickup_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
+def _create_scheduled_constraint(field, ops):
+    op = ComparisonOperator(choice(ops))
+    current_datetime = datetime.now()
+    offset_hours = random.randint(0, 23 - current_datetime.hour)
+    minute_slot = random.randrange(0, 60 - current_datetime.minute, 10)
+    future_dt = current_datetime + timedelta(hours=offset_hours)
+
+    # Ensure the new time is not before the current time
+    if future_dt.hour < current_datetime.hour or (future_dt.hour == current_datetime.hour and minute_slot < current_datetime.minute):
+        future_dt = current_datetime
+        minute_slot = ((current_datetime.minute + 9) // 10) * 10
+        if minute_slot >= 60:
+            minute_slot = 0
+            future_dt += timedelta(hours=1)
+
+    new_time = time(future_dt.hour, minute_slot)
+    offset = random.randint(1, 7)
+    new_date = current_datetime.date() + timedelta(days=offset)
+    new_date = parser.parse(str(new_date))
+
+    if op == ComparisonOperator.LESS_THAN and new_date <= (current_datetime + timedelta(days=1)):
+        new_date = new_date + timedelta(days=1)
+
+    date_time = datetime.combine(new_date, new_time)
+    constraint = create_constraint_dict(field, op, date_time)
+    return constraint
+
+
 def generate_search_ride_constraints() -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
 
@@ -366,45 +394,50 @@ def generate_search_ride_constraints() -> list[dict[str, Any]]:
         # "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
     }
     constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])
-    ops = FIELD_OPERATORS_MAP_SEARCH_RIDE["scheduled"]
-    op = ComparisonOperator(choice(ops))
-    # current_time = datetime.now()
-    # seconds = random.randrange(0, 86400-current_time.second, 600)
-    # days = random.randint(1, 7)
-    # new_time = current_time + timedelta(seconds=seconds) + timedelta(days=days)
-    # time_constraint= create_constraint_dict("scheduled", op, new_time)
-    # constraints_list.append(time_constraint)
-    current_time = datetime.now()
-    offset_hours = random.randint(0, 23 - current_time.hour)
-    minute_slot = random.randrange(0, 60 - current_time.minute, 10)
 
-    future_dt = current_time + timedelta(hours=offset_hours)
-    # Ensure the new time is not before the current time
-    if future_dt.hour < current_time.hour or (future_dt.hour == current_time.hour and minute_slot < current_time.minute):
-        future_dt = current_time
-        minute_slot = ((current_time.minute + 9) // 10) * 10
-        if minute_slot >= 60:
-            minute_slot = 0
-            future_dt += timedelta(hours=1)
-    new_time = time(future_dt.hour, minute_slot)
-
-    current_date = datetime.now()
-    offset = random.randint(1, 7)
-    new_date = current_date.date() + timedelta(days=offset)
-    new_date = parser.parse(str(new_date))
-    if op == ComparisonOperator.LESS_THAN and new_date <= (current_date + timedelta(days=1)):
-        new_date = new_date + timedelta(days=1)
-
-    date_time = datetime.combine(new_date, new_time)
-
-    constraint = create_constraint_dict("scheduled", op, date_time)
-    constraints_list.append(constraint)
+    if "scheduled" in FIELD_OPERATORS_MAP_SEARCH_RIDE:
+        ops = FIELD_OPERATORS_MAP_SEARCH_RIDE["scheduled"]
+        # op = ComparisonOperator(choice(ops))
+        # # current_datetime = datetime.now()
+        # # seconds = random.randrange(0, 86400-current_datetime.second, 600)
+        # # days = random.randint(1, 7)
+        # # new_time = current_datetime + timedelta(seconds=seconds) + timedelta(days=days)
+        # # time_constraint= create_constraint_dict("scheduled", op, new_time)
+        # # constraints_list.append(time_constraint)
+        # current_datetime = datetime.now()
+        # offset_hours = random.randint(0, 23 - current_datetime.hour)
+        # minute_slot = random.randrange(0, 60 - current_datetime.minute, 10)
+        #
+        # future_dt = current_datetime + timedelta(hours=offset_hours)
+        # # Ensure the new time is not before the current time
+        # if future_dt.hour < current_datetime.hour or (future_dt.hour == current_datetime.hour and minute_slot < current_datetime.minute):
+        #     future_dt = current_datetime
+        #     minute_slot = ((current_datetime.minute + 9) // 10) * 10
+        #     if minute_slot >= 60:
+        #         minute_slot = 0
+        #         future_dt += timedelta(hours=1)
+        # new_time = time(future_dt.hour, minute_slot)
+        #
+        # current_datetime = datetime.now()
+        # offset = random.randint(1, 7)
+        # new_date = current_datetime.date() + timedelta(days=offset)
+        # new_date = parser.parse(str(new_date))
+        # if op == ComparisonOperator.LESS_THAN and new_date <= (current_datetime + timedelta(days=1)):
+        #     new_date = new_date + timedelta(days=1)
+        #
+        # date_time = datetime.combine(new_date, new_time)
+        #
+        # constraint = create_constraint_dict("scheduled", op, date_time)
+        # constraints_list.append(constraint)
+        constraint = _create_scheduled_constraint("scheduled", ops)
+        constraints_list.append(constraint)
 
     return constraints_list
 
 
 def generate_select_car_constraints() -> list[dict[str, Any]]:
-    field_ops = FIELD_OPERATORS_MAP_SELECT_CAR
+    fields_ops = FIELD_OPERATORS_MAP_SELECT_CAR.copy()
+    scheduled_ops = fields_ops.pop("scheduled")
     field_map = {
         # "discount_percentage": {"field": "discount_percentage", "dataset": [{"discount_percentage": d} for d in ["5%", "10%", "15%"]]},
         # "discount_percentage": {"field": "discount_percentage", "dataset": DISCOUNT_PERCENTAGE_DATA},
@@ -414,10 +447,10 @@ def generate_select_car_constraints() -> list[dict[str, Any]]:
         "destination": "label",
         # "ride_id": "id",
         "ride_name": {"field": "name", "dataset": RIDES},
-        # "scheduled": {"is_datetime": True, "days": 7, "field": "scheduled"},
         # "seats": {"field": "seats", "dataset": RIDES},
     }
-    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])  # selected_fields=["ride_name"]
+    constraints_list = _generate_constraints(PLACES, fields_ops, field_map=field_map, selected_fields=["location", "destination"])  # selected_fields=["ride_name"]
+    constraints_list.append(_create_scheduled_constraint("scheduled", scheduled_ops))
     return constraints_list
 
 
@@ -438,25 +471,25 @@ def generate_reserve_ride_constraints() -> list[dict[str, Any]]:
     constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])  # "ride_name"
     ops = FIELD_OPERATORS_MAP_RESERVE_RIDE["scheduled"]
     op = ComparisonOperator(choice(ops))
-    current_time = datetime.now()
-    offset_hours = random.randint(0, 23 - current_time.hour)
-    minute_slot = random.randrange(0, 60 - current_time.minute, 10)
+    current_datetime = datetime.now()
+    offset_hours = random.randint(0, 23 - current_datetime.hour)
+    minute_slot = random.randrange(0, 60 - current_datetime.minute, 10)
 
-    future_dt = current_time + timedelta(hours=offset_hours)
+    future_dt = current_datetime + timedelta(hours=offset_hours)
     # Ensure the new time is not before the current time
-    if future_dt.hour < current_time.hour or (future_dt.hour == current_time.hour and minute_slot < current_time.minute):
-        future_dt = current_time
-        minute_slot = ((current_time.minute + 9) // 10) * 10
+    if future_dt.hour < current_datetime.hour or (future_dt.hour == current_datetime.hour and minute_slot < current_datetime.minute):
+        future_dt = current_datetime
+        minute_slot = ((current_datetime.minute + 9) // 10) * 10
         if minute_slot >= 60:
             minute_slot = 0
             future_dt += timedelta(hours=1)
     new_time = time(future_dt.hour, minute_slot)
 
-    current_date = datetime.now()
+    current_datetime = datetime.now()
     offset = random.randint(1, 7)
-    new_date = current_date.date() + timedelta(days=offset)
+    new_date = current_datetime.date() + timedelta(days=offset)
     new_date = parser.parse(str(new_date))
-    if op == ComparisonOperator.LESS_THAN and new_date <= (current_date + timedelta(days=1)):
+    if op == ComparisonOperator.LESS_THAN and new_date <= (current_datetime + timedelta(days=1)):
         new_date = new_date + timedelta(days=1)
 
     date_time = datetime.combine(new_date, new_time)
