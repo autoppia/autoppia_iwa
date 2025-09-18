@@ -352,11 +352,16 @@ CELL_CLICKED_USE_CASE = UseCase(
     constraints_generator=generate_cell_clicked_constraints,
     additional_prompt_info=CELL_CLICKED_INFO,
     examples=[
-        {"prompt": "Select July 23rd in the month view.", "prompt_for_task_generation": "Click on July 23 cell in month view."},
-        {"prompt": "In the week view, click on Wednesday at 3 PM.", "prompt_for_task_generation": "Click on Wednesday 3 PM slot in week view."},
-        {"prompt": "I want to select 10 AM on the current day in the day view.", "prompt_for_task_generation": "Select 10 AM in the day view."},
-        {"prompt": "Click on the 15th of next month from the month view.", "prompt_for_task_generation": "Click on the 15th of next month in month view."},
-        {"prompt": "In the 5-day view, select Friday at noon.", "prompt_for_task_generation": "Click on Friday 12:00 PM in 5-day view."},
+        {"prompt": "Click on cell when date equals '2025-09-11' and view equals 'Month'.", "prompt_for_task_generation": "Click on cell when date equals '2025-09-11' and view equals 'Month'."},
+        {
+            "prompt": "Click on cell when view equals 'Week' and date equals '2025-09-30' and hour equals '3'.",
+            "prompt_for_task_generation": "Click on cell when view equals 'Week' and date equals '2025-09-30' and hour equals '3'.",
+        },
+        {
+            "prompt": "Click on cell when date not equals '2025-10-23' and view equals 'Day' and hour equals '7'.",
+            "prompt_for_task_generation": "Click on cell when date not equals '2025-10-23' and view equals 'Day' and hour equals '7'.",
+        },
+        {"prompt": "Click on cell when date  equals '2025-10-27' and view equals '5 days'.", "prompt_for_task_generation": "Click on cell when date not equals '2025-10-27' and view equals '5 days'."},
     ],
 )
 
