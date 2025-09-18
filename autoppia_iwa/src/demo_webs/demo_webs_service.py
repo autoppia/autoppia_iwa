@@ -64,8 +64,6 @@ class BackendDemoWebService:
         """
         from urllib.parse import urlparse
 
-        logger.info(f"self.base_url {self.base_url}, self.web_project {self.web_project}")
-
         parsed = urlparse(self.base_url)
         return bool(parsed.port and parsed.port > 8001)
 
@@ -97,7 +95,6 @@ class BackendDemoWebService:
             try:
                 endpoint = "http://localhost:8090/get_events/"
                 params = {"web_url": self.base_url, "web_agent_id": web_agent_id}
-                logger.info(f"AGENTID {web_agent_id}: URL: {len(self.base_url)}, project: {self.web_project}")
 
                 session = await self._get_session()
 
