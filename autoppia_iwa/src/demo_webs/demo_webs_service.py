@@ -64,6 +64,8 @@ class BackendDemoWebService:
         """
         from urllib.parse import urlparse
 
+        logger.info(f"self.base_url {self.base_url}, self.web_project {self.web_project}")
+
         parsed = urlparse(self.base_url)
         return bool(parsed.port and parsed.port > 8001)
 
