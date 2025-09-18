@@ -163,6 +163,41 @@ class CellClickedEvent(Event, BaseEventValidator):
         )
 
 
+class EventWizardOpenEvent(Event, BaseEventValidator):
+    """Event triggered when user adds a calendar event"""
+
+    event_name: str = "EVENT_WIZARD_OPEN"
+    title: str
+    date: datetime
+
+    class ValidationCriteria(BaseModel):
+        title: str | CriterionValue | None = None
+        date: datetime | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.title, criteria.title),
+                validate_date_field(self.date, criteria.date),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EVENT_WIZARD_OPEN":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            title=data.get("title", ""),
+            date=parse_datetime(data.get("date", "")),
+        )
+
+
 class AddEventEvent(Event, BaseEventValidator):
     """Event triggered when user adds a calendar event"""
 
@@ -254,12 +289,6 @@ class AddEventEvent(Event, BaseEventValidator):
             description=data.get("description", ""),
             meeting_link=data.get("meetingLink", ""),
         )
-
-
-class EventWizardOpenEvent(AddEventEvent):
-    """Event triggered when the event creation/editing wizard is opened."""
-
-    event_name: str = "EVENT_WIZARD_OPEN"
 
 
 class CancelAddEventEvent(AddEventEvent):

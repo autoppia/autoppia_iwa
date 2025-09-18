@@ -20,6 +20,7 @@ from .data import (
     FIELD_OPERATORS_EVENT_ATTENDEE_MAP,
     FIELD_OPERATORS_EVENT_REMINDER_MAP,
     FIELD_OPERATORS_SEARCH_SUBMIT_MAP,
+    FIELD_OPERATORS_WIZARD_OPEN,
     LOCATIONS,
     MEETING_LINKS,
     RECURRENCE_OPTIONS,
@@ -314,14 +315,12 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
 
 def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    possible_fields = list(FIELD_OPERATORS_ADD_EVENT_MAP.keys())
-    selected_fields = random.sample(possible_fields, k=random.randint(3, len(possible_fields)))
-    # Ensure start_time is present if end_time is selected
-    if "end_time" in selected_fields and "start_time" not in selected_fields:
-        selected_fields.append("start_time")
+    possible_fields = list(FIELD_OPERATORS_WIZARD_OPEN.keys())
+    selected_fields = random.sample(possible_fields, k=random.randint(1, len(possible_fields)))
+
     sample_event = random.choice(EVENTS_DATASET)
     for field in selected_fields:
-        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_ADD_EVENT_MAP[field]))
+        operator = ComparisonOperator(random.choice(FIELD_OPERATORS_WIZARD_OPEN[field]))
         if field == "title":
             field_value = sample_event.get("label", None)
             dataset = [{"title": v["label"]} for v in EVENTS_DATASET]
@@ -332,23 +331,6 @@ def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
             # Convert datetime to string format for validation
             field_value = dt.strftime("%Y-%m-%d")
             dataset = [{"date": parse_datetime(event["date"]).strftime("%Y-%m-%d")} for event in EVENTS_DATASET if "date" in event]
-        elif field in ["start_time", "end_time"]:
-            val = sample_event.get(field, [])
-            if len(val) == 2:
-                time_str = f"{val[0]}:{str(val[1]).zfill(2)}"
-                field_value = datetime.strptime(time_str, "%H:%M").time()
-                dataset = [
-                    {field: datetime.strptime(f"{event[field][0]}:{str(event[field][1]).zfill(2)}", "%H:%M").time()}
-                    for event in EVENTS_DATASET
-                    if field in event and isinstance(event[field], list) and len(event[field]) == 2
-                ]
-            else:
-                continue
-        elif field in ["reminders", "attendees"]:
-            field_value = sample_event.get(field, [])
-            if field_value and isinstance(field_value, list):
-                field_value = field_value[0]
-            dataset = [{field: v[field][0]} for v in EVENTS_DATASET if field in v and isinstance(v[field], list) and len(v[field]) > 0]
         else:
             field_value = sample_event.get(field, None)
             dataset = [{field: event.get(field, None)} for event in EVENTS_DATASET if field in event]
@@ -358,8 +340,6 @@ def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
         if value is not None:
             if field == "date" and isinstance(value, datetime):
                 value = value.strftime("%Y-%m-%d")
-            if field in ["attendees", "reminders"] and isinstance(value, list):
-                value = value[0]
             constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
