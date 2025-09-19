@@ -1,9 +1,9 @@
 import asyncio
 import base64
+import datetime
 import json
 import textwrap
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -25,18 +25,15 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 # CONFIGURATIONS
 # ==============
 
-PROJECT_ID = "lodge"
-USE_CASE = "MESSAGE_HOST"
+PROJECT_ID = "autolist"
+USE_CASE = "AUTOLIST_TASK_ADDED"
 PROMPT_CONTENT = """
- Message the host where message does NOT contain 'ogj' AND host_name contains 'ria' AND reviews are greater than or equal to '44' AND title equals 'Rustic Barnhouse Getaway' AND amenities do NOT contain 'Scenic workspace' AND price is greater than '197' AND host_name is NOT equal to 'Lucas'
- """
+Add a task whose name equals 'Localize app for German market' and description contains 'user interface and content for the German-speaking marke' and date equals '2025-09-04' and priority not_equals 'High'. """
 EVENT_CRITERIA = {
-    "amenities": {"operator": "not_contains", "value": "Scenic workspace"},
-    "host_name": {"operator": "not_equals", "value": "Lucas"},
-    "message": {"operator": "not_contains", "value": "ogj"},
-    "price": {"operator": "greater_than", "value": 197},
-    "reviews": {"operator": "greater_equal", "value": 44},
-    "title": "Rustic Barnhouse Getaway",
+    "date": {"operator": "equals", "value": datetime.date(2025, 9, 4)},
+    "description": {"operator": "contains", "value": " user interface and content for the German-speaking marke"},
+    "name": "Localize app for German market",
+    "priority": {"operator": "not_equals", "value": "High"},
 }
 
 
@@ -65,7 +62,7 @@ CONFIG = PromptTestConfig(
 
 
 def get_timestamp() -> str:
-    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    return datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
 async def save_file(path: Path, data: Any, is_binary: bool = False) -> None:
@@ -175,8 +172,8 @@ async def run_prompt_test():
                 result_data["gif_path"] = str(gif_path)
 
         if CONFIG.save_output:
-            json_path = output_dir / f"{timestamp}_{task.id}.json"
-            await save_file(json_path, result_data)
+            output_dir / f"{timestamp}_{task.id}.json"
+            # await save_file(json_path, result_data)
     except Exception as e:
         logger.exception(f"Error executing task: {e}")
         result_data["error"] = str(e)
