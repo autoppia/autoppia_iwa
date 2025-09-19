@@ -165,7 +165,7 @@ class ConcurrentEvaluator(IEvaluator):
             test_results_matrix = await run_global_tests(task, backend_events=backend_events)
 
             # test_results_matrix = await run_partial_tests(self.web_project, task, execution_history, web_agent_id)
-            logger.info(f"TEST RESULT MATRIX={test_results_matrix}, web_Agent_id {web_agent_id}...")
+            # logger.info(f"TEST RESULT MATRIX={test_results_matrix}, web_Agent_id {web_agent_id}...")
 
             stats.test_execution_time = time.time() - test_start_time
 
