@@ -138,11 +138,17 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
             random_day = random.randint(1, days_in_month)
             field_value = start_of_month + timedelta(days=random_day - 1)
             if operator == ComparisonOperator.GREATER_THAN:
-                min_day = min(field_value.day + 1, days_in_month)
-                field_value = field_value.replace(day=min_day)
+                if field_value.day == days_in_month:
+                    field_value = field_value - timedelta(days=5)
+                else:
+                    min_day = min(field_value.day + 1, days_in_month)
+                    field_value = field_value.replace(day=min_day)
             elif operator == ComparisonOperator.LESS_THAN:
-                max_day = max(field_value.day - 1, 1)
-                field_value = field_value.replace(day=max_day)
+                if field_value.day == 1:
+                    field_value = field_value + timedelta(days=5)
+                else:
+                    max_day = max(field_value.day - 1, 1)
+                    field_value = field_value.replace(day=max_day)
             elif operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL, ComparisonOperator.EQUALS}:
                 pass  # already set
             elif operator == ComparisonOperator.NOT_EQUALS:
