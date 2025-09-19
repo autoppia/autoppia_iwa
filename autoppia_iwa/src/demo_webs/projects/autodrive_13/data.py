@@ -264,51 +264,11 @@ FIELD_OPERATORS_MAP_SEARCH_RIDE = {
     "scheduled": LOGICAL_OPERATORS,
 }
 FIELD_OPERATORS_MAP_SELECT_CAR = {
-    # "discount_percentage": STRING_OPERATORS,
     "destination": STRING_OPERATORS,
-    # "drop_off": [EQUALS, NOT_EQUALS],
-    # "eta": STRING_OPERATORS,
-    # "is_recommended": LOGICAL_OPERATORS,
-    # "old_price": LOGICAL_OPERATORS,
     "location": STRING_OPERATORS,
-    # "price": LOGICAL_OPERATORS,
-    # "price_difference": LOGICAL_OPERATORS,
-    # "ride_id": LOGICAL_OPERATORS,
     "ride_name": STRING_OPERATORS,
-    # "ride_type": STRING_OPERATORS,
     "scheduled": LOGICAL_OPERATORS,
-    # "seats": LOGICAL_OPERATORS,
 }
 FIELD_OPERATORS_MAP_RESERVE_RIDE = {
-    # "discount_percentage": STRING_OPERATORS,
-    "destination": STRING_OPERATORS,
-    # "drop_off": [EQUALS, NOT_EQUALS],
-    # "eta": STRING_OPERATORS,
-    # "is_recommended": LOGICAL_OPERATORS,
-    # "old_price": LOGICAL_OPERATORS,
-    "location": STRING_OPERATORS,
-    # "price": LOGICAL_OPERATORS,
-    # "price_difference": LOGICAL_OPERATORS,
-    # "ride_id": LOGICAL_OPERATORS,
-    "ride_name": STRING_OPERATORS,
-    # "ride_type": STRING_OPERATORS,
-    "scheduled": LOGICAL_OPERATORS,
-    # "seats": LOGICAL_OPERATORS,
-    # **FIELD_OPERATORS_MAP_SELECT_CAR,
-}
-FIELD_OPERATORS_MAP_TRIP_DETAILS = {
-    # "date": LOGICAL_OPERATORS,
-    "destination": STRING_OPERATORS,
-    # "drop_off_label": STRING_OPERATORS,
-    # "id": STRING_OPERATORS,
-    # "payment": STRING_OPERATORS,
-    "location": STRING_OPERATORS,
-    # "pickup_label": STRING_OPERATORS,
-    # "price": LOGICAL_OPERATORS,
-    "ride_name": STRING_OPERATORS,
-    # "ride_index": LOGICAL_OPERATORS,
-    # "time": LOGICAL_OPERATORS,
-}
-FIELD_OPERATORS_MAP_CANCEL_RESERVATION = {
-    **FIELD_OPERATORS_MAP_TRIP_DETAILS,
+    **FIELD_OPERATORS_MAP_SELECT_CAR,
 }

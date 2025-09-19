@@ -44,10 +44,6 @@ ENTER_LOCATION_USE_CASE = UseCase(
             "prompt": "Enter and select a location from dropdown where location not contains '1001 Castro Street'",
             "prompt_for_task_generation": "Enter and select a location from dropdown where location not contains '1001 Castro Street'",
         },
-        # {
-        #     "prompt": "Enter location  where location not contains '1001 Castro Street'",
-        #     "prompt_for_task_generation": "Enter location  where location not contains '1001 Castro Street'",
-        # },
     ],
 )
 ENTER_DESTINATION_USE_CASE = UseCase(
@@ -73,22 +69,6 @@ ENTER_DESTINATION_USE_CASE = UseCase(
             "prompt": "Enter destination not contains '1000 Chestnut Street Apartments'",
             "prompt_for_task_generation": "Enter destination not contains '1000 Chestnut Street Apartments'",
         },
-        # {
-        #     "prompt": "Enter and select a destination from dropdown where destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-        #     "prompt_for_task_generation": "Enter and select a destination from dropdown where destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
-        # },
-        # {
-        #     "prompt": "Enter and select a destination from dropdown where destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
-        #     "prompt_for_task_generation": "Enter and select a destination from dropdown where destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
-        # },
-        # {
-        #     "prompt": "Enter and select a destination from dropdown where destination contains '1001 Castro Street'",
-        #     "prompt_for_task_generation": "Enter and select a destination from dropdown where destination contains '1001 Castro Street'",
-        # },
-        # {
-        #     "prompt": "Enter and select a destination from dropdown where destination not contains '1000 Chestnut Street Apartments'",
-        #     "prompt_for_task_generation": "Enter and select a destination from dropdown where destination not contains '1000 Chestnut Street Apartments'",
-        # },
     ],
 )
 SELECT_DATE_USE_CASE = UseCase(
@@ -199,22 +179,6 @@ SEARCH_RIDE_USE_CASE = UseCase(
     event_source_code=SearchRideEvent.get_source_code_of_class(),
     constraints_generator=generate_search_ride_constraints,
     examples=[
-        # {
-        #     "prompt": "Search ride with pickup '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA' and dropoff '1030 Post Street Apartments - 1030 Post St #112, San Francisco, CA 94109, USA'",
-        #     "prompt_for_task_generation": "Search ride with pickup '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA' and dropoff '1030 Post Street Apartments - 1030 Post St #112, San Francisco, CA 94109, USA'",
-        # },
-        # {
-        #     "prompt": "Search ride with pickup '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
-        #     "prompt_for_task_generation": "Search ride with pickup '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA' and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
-        # },
-        # {
-        #     "prompt": "Search ride where scheduled equals '2025-07-18 13:00:00'",
-        #     "prompt_for_task_generation": "Search ride where scheduled equals '2025-07-18 13:00:00'",
-        # },
-        # {
-        #     "prompt": "Search ride where scheduled greater than '2025-07-15 09:00:00'",
-        #     "prompt_for_task_generation": "Search ride where scheduled greater than '2025-07-15 09:00:00'",
-        # },
         {
             "prompt": "Search ride after successfully selects pickup location from dropdown that is not equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
             "prompt_for_task_generation": "Search ride after successfully selects pickup location from dropdown that is not equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
@@ -300,74 +264,6 @@ RESERVE_RIDE_USE_CASE = UseCase(
     ],
 )
 
-#
-# TRIP_DETAILS_USE_CASE = UseCase(
-#     name="TRIP_DETAILS",
-#     description="The user checks details of a specific trip, including pickup, dropoff, date, time and price.",
-#     event=TripDetailsEvent,
-#     event_source_code=TripDetailsEvent.get_source_code_of_class(),
-#     constraints_generator=generate_trip_details_constraints,
-#     examples=[
-#         {
-#             "prompt": "Show trip details where ride name equals 'AutoDriverX' and price equals 26.6",
-#             "prompt_for_task_generation": "Show trip details where ride name equals 'AutoDriverX' and price equals 26.6",
-#         },
-#         {
-#             "prompt": "Get trip details for pickup '100 Van Ness Ave, San Francisco, CA 94102' and dropoff '1030 Post St, San Francisco, CA 94109'",
-#             "prompt_for_task_generation": "Get trip details for pickup '100 Van Ness Ave, San Francisco, CA 94102' and dropoff '1030 Post St, San Francisco, CA 94109'",
-#         },
-#         {
-#             "prompt": "Retrieve trip details where price less than 30.0",
-#             "prompt_for_task_generation": "Retrieve trip details where price less than 30.0",
-#         },
-#         {
-#             "prompt": "Check trip details where scheduled date equals '2025-08-20' and time equals '14:30:00'",
-#             "prompt_for_task_generation": "Check trip details where scheduled date equals '2025-08-20' and time equals '14:30:00'",
-#         },
-#         {
-#             "prompt": "Find trip details where ride index equals 2 and ride name equals 'Comfort'",
-#             "prompt_for_task_generation": "Find trip details where ride index equals 2 and ride name equals 'Comfort'",
-#         },
-#         {
-#             "prompt": "Show trip details where pickup label equals '1 Hotel San Francisco' and dropoff label equals 'Ferry Building Marketplace'",
-#             "prompt_for_task_generation": "Show trip details where pickup label equals '1 Hotel San Francisco' and dropoff label equals 'Ferry Building Marketplace'",
-#         },
-#     ],
-# )
-# CANCEL_RESERVATION_USE_CASE = UseCase(
-#     name="CANCEL_RESERVATION",
-#     description="The user cancels a previously reserved ride, providing details such as ride name, pickup, dropoff, price, and scheduled date/time.",
-#     event=CancelReservationEvent,
-#     event_source_code=CancelReservationEvent.get_source_code_of_class(),
-#     constraints_generator=generate_cancel_reservation_constraints,
-#     examples=[
-#         {
-#             "prompt": "Cancel reservation with ride name 'AutoDriverX'",
-#             "prompt_for_task_generation": "Cancel reservation with ride name 'AutoDriverX'",
-#         },
-#         {
-#             "prompt": "Cancel reservation for pickup '500 Howard St, San Francisco, CA 94105' and dropoff 'Golden Gate Park, San Francisco, CA'",
-#             "prompt_for_task_generation": "Cancel reservation for pickup '500 Howard St, San Francisco, CA 94105' and dropoff 'Golden Gate Park, San Francisco, CA'",
-#         },
-#         {
-#             "prompt": "Cancel reservation where scheduled date equals '2025-09-12' and time equals '18:45:00'",
-#             "prompt_for_task_generation": "Cancel reservation where scheduled date equals '2025-09-12' and time equals '18:45:00'",
-#         },
-#         {
-#             "prompt": "Cancel reservation where price equals 22.5",
-#             "prompt_for_task_generation": "Cancel reservation where price equals 22.5",
-#         },
-#         {
-#             "prompt": "Cancel reservation with ride index equals 3 and ride name equals 'Comfort'",
-#             "prompt_for_task_generation": "Cancel reservation with ride index equals 3 and ride name equals 'Comfort'",
-#         },
-#         {
-#             "prompt": "Cancel reservation where pickup label equals 'Moscone Center' and dropoff label equals 'Pier 39'",
-#             "prompt_for_task_generation": "Cancel reservation where pickup label equals 'Moscone Center' and dropoff label equals 'Pier 39'",
-#         },
-#     ],
-# )
-#
 
 ALL_USE_CASES = [
     # ENTER_LOCATION_USE_CASE,
@@ -375,7 +271,7 @@ ALL_USE_CASES = [
     # SELECT_DATE_USE_CASE,
     # SELECT_TIME_USE_CASE,
     # NEXT_PICKUP_USE_CASE,
-    SEARCH_RIDE_USE_CASE,
+    # SEARCH_RIDE_USE_CASE,
     # SELECT_CAR_USE_CASE,
-    # RESERVE_RIDE_USE_CASE,
+    RESERVE_RIDE_USE_CASE,
 ]
