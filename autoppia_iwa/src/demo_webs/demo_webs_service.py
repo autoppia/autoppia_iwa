@@ -95,6 +95,7 @@ class BackendDemoWebService:
             try:
                 endpoint = "http://localhost:8090/get_events/"
                 params = {"web_url": self.base_url, "web_agent_id": web_agent_id}
+
                 session = await self._get_session()
 
                 async with session.get(endpoint, params=params) as response:

@@ -3,11 +3,9 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.di_container import DIContainer
 
 
 def get_cache_filename(project: WebProject, task_cache_dir: str) -> str:
@@ -78,46 +76,25 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
         return None
 
 
-async def generate_tasks_for_web_project(demo_project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1) -> list[Task]:
+async def generate_tasks_for_web_project(project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
     """
     if use_cached_tasks:
-        cached_tasks = await load_tasks_from_json(demo_project, task_cache_dir)
+        cached_tasks = await load_tasks_from_json(project, task_cache_dir)
         if cached_tasks and len(cached_tasks) > 0:
-            print(f"Using {len(cached_tasks)} cached tasks for '{demo_project.name}'")
+            print(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
             return cached_tasks
         else:
-            print(f"No valid cached tasks found for '{demo_project.name}', generating new tasks...")
+            print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
 
     config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases)
 
-    print(f"Generating tasks for {demo_project.name}...")
-    pipeline = TaskGenerationPipeline(web_project=demo_project, config=config)
+    print(f"Generating tasks for {project.name}...")
+    pipeline = TaskGenerationPipeline(web_project=project, config=config)
     tasks = await pipeline.generate()
 
     if tasks:
-        await save_tasks_to_json(tasks, demo_project, task_cache_dir)
+        await save_tasks_to_json(tasks, project, task_cache_dir)
 
     return tasks
-
-
-async def add_tests_to_tasks(tasks: list[Task], demo_project: WebProject, task_cache_dir: str) -> list[Task]:
-    """
-    Ensure each Task has test cases; if not present, generate them.
-    """
-    missing_tests = any(not getattr(t, "tests", None) for t in tasks)
-    if missing_tests:
-        print("Adding test cases to tasks...")
-        llm_service = DIContainer.llm_service()
-        test_pipeline = LocalTestGenerationPipeline(llm_service=llm_service, web_project=demo_project)
-        tasks_with_tests = await test_pipeline.add_tests_to_tasks(tasks)
-
-        if tasks_with_tests:
-            await save_tasks_to_json(tasks_with_tests, demo_project, task_cache_dir)
-            return tasks_with_tests
-        else:
-            return tasks
-    else:
-        print("All tasks already have test cases.")
-        return tasks

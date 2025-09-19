@@ -196,7 +196,6 @@ class TaskGenerationConfig(BaseModel):
     # save_task_in_db: bool = False
 
     # Task generation controls
-    generate_local_tasks: bool = False  # Generate page-specific tasks
     generate_global_tasks: bool = True  # Generate global use case tasks
 
     # Task quantity controls
