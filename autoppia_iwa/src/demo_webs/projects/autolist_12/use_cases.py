@@ -143,6 +143,7 @@ TASK_ADDED_USE_CASE = UseCase(
     additional_prompt_info=TASK_ADDED_INFO,
     examples=[
         {"prompt": "Add a task whose name equals 'Design new homepage mockup'.", "prompt_for_task_generation": "Add a task whose name equals 'Design new homepage mockup'."},
+        {"prompt": "Add a task whose name equals 'Design new homepage mockup'.", "prompt_for_task_generation": "Add a task whose name equals 'Design new homepage mockup'."},
         {
             "prompt": "Add a task whose description equals 'Build a detailed financial projection for the proposed 'Project Titan'.' and date equals '2025-09-28'.",
             "prompt_for_task_generation": "Add a task whose description equals 'Build a detailed financial projection for the proposed 'Project Titan'.' and date equals '2025-09-28'.",
@@ -417,9 +418,28 @@ TEAM_ROLE_ASSIGNED_USE_CASE = UseCase(
 ###############################################################################
 
 TEAM_CREATED_INFO = """
-CRITICAL REQUIREMENT: The prompt must confirm the creation of a team with a specific name.
-Use phrases like "create team", "name the team", "confirm team creation".
-"""
+CRITICAL REQUIREMENTS:
+1. The request must start with one of the following: "Create a team ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Always use the exact field names, operators, and the complete values provided in the constraints.
+5. You must preserve all special characters ((, ), ', ,, ", -, etc.) exactly as they appear in the value and must follow the below requirements:
+    - Do not remove special characters ((, ), ', ,, ", -, etc.).
+    - Do not replace special characters ((, ), ', ,, ", -, etc.).
+    - Do not shorten, split, or partially match the values. For example, if the constraint is contains 'on re' OR 'ar on product', then the generated prompt must also say contains 'on re' OR 'ar on product' exactly, not just 're' OR 'ar'.
+    - Use the full string exactly as provided.
+6. Pay attention to the constraints:
+Example:
+constraint:
+{"field": "name", "operator": "equals", "value": "Core Platform"},
+{"field": "description", "operator": "equals", "value": "Manages the core backend services, APIs, and infrastructure."},
+{"field": "member", "operator": "equals", "value": "John Doe"},
+{"field": "role", "operator": "equals", "value": "Developer"},
+
+prompt:
+CORRECT: 'Create a team whose name equals 'Core Platform' and description equals 'Manages the core backend services, APIs, and infrastructure.' and member equals 'John Doe' and role equals 'Developer'.'
+INCORRECT: 'Create a team name "Core Platform".'
+""".strip()
 
 TEAM_CREATED_USE_CASE = UseCase(
     name="AUTOLIST_TEAM_CREATED",
@@ -429,9 +449,16 @@ TEAM_CREATED_USE_CASE = UseCase(
     constraints_generator=generate_team_created_constraints,
     additional_prompt_info=TEAM_CREATED_INFO,
     examples=[
-        {"prompt": "Create the team and name it 'Gul Shair'.", "prompt_for_task_generation": "Create the team and name it 'Gul Shair'."},
-        {"prompt": "Let's name the team 'Project Phoenix'.", "prompt_for_task_generation": "Let's name the team 'Project Phoenix'."},
-        {"prompt": "Confirm team creation with the name 'Marketing'.", "prompt_for_task_generation": "Confirm team creation with the name 'Marketing'."},
+        {"prompt": "Create a team whose name equals 'Core Platform'.", "prompt_for_task_generation": "Create a team whose name equals 'Core Platform'."},
+        {
+            "prompt": "Create a team whose name equals 'Human Resources' and description equals 'Manages recruitment, employee relations, and company culture.'.",
+            "prompt_for_task_generation": "Create a team whose name equals 'Human Resources' and description equals 'Manages recruitment, employee relations, and company culture.' and member equals 'John Doe' and role equals 'Developer'.'.",
+        },
+        {
+            "prompt": "Create a team whose name equals 'Security Champions' and description equals 'Leads security initiatives, code reviews, and vulnerability management.'.",
+            "prompt_for_task_generation": "Create a team whose name equals 'Security Champions' and description equals 'Leads security initiatives, code reviews, and vulnerability management.'.",
+        },
+        {"prompt": "Create a team whose name equals 'Mobile (Android)' and member equals 'Alice Williams' and role equals 'Tester'."},
     ],
 )
 
