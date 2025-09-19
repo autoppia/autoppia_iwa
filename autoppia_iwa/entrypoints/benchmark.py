@@ -44,7 +44,7 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 AGENTS: list[IWebAgent] = [
     ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
-    ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
+    ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=5010, timeout=120),
     # ApifiedWebAgent(id="3", name="AutoppiaAgent3", host="127.0.0.1", port=5050, timeout=120),
 ]
 
@@ -57,7 +57,7 @@ PROJECT_IDS_TO_RUN = [
     # "autodelivery",
     # "automail",
     # "lodge",
-    "connect"
+    "autolist"
 ]
 PROJECTS_TO_RUN: list[WebProject] = get_projects_by_ids(demo_web_projects, PROJECT_IDS_TO_RUN)
 

@@ -44,12 +44,16 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, s
         valid = [v[source_key] for v in dataset if v.get(source_key) and v.get(source_key) != field_value]
         return random.choice(valid) if valid else None
 
-    if operator == ComparisonOperator.CONTAINS:
-        if len(field_value) > 2:
-            start = random.randint(0, max(0, len(field_value) - 2))
-            end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
-        return field_value
+    if operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
+        longest = max(field_value.split(), key=len)
+        random_picker_start = random.randint(0, len(longest) - 1)
+
+        if random_picker_start == len(longest) - 1:
+            return longest[random_picker_start]  # just return last char
+        else:
+            random_picker_end = random.randint(random_picker_start + 1, len(longest))
+            return longest[random_picker_start:random_picker_end]
+
     elif operator == ComparisonOperator.NOT_CONTAINS:
         alphabet = "abcdefghijklmnopqrstuvwxyz"
         for _ in range(100):
@@ -57,6 +61,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, s
             if test_str.lower() not in field_value.lower():
                 return test_str
         return "xyz"  # fallback
+
     elif operator == ComparisonOperator.IN_LIST:
         all_values = []
         for v in dataset:

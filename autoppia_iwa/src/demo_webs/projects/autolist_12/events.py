@@ -56,21 +56,14 @@ class SelectTaskPriorityEvent(Event, BaseEventValidator):
 
     event_name: str = "AUTOLIST_SELECT_TASK_PRIORITY"
     priority: str
-    # label: str
 
     class ValidationCriteria(BaseModel):
         priority: str | CriterionValue | None = None
-        # label: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.priority, criteria.priority),
-                # self._validate_field(self.label, criteria.label),
-            ]
-        )
+        return self._validate_field(self.priority, criteria.priority)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SelectTaskPriorityEvent":
@@ -154,13 +147,13 @@ class CancelTaskCreationEvent(Event, BaseEventValidator):
     name: str
     description: str
     date: datetime | None = None
-    priority: int
+    priority: str
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
         description: str | CriterionValue | None = None
         date: datetime | CriterionValue | None = None
-        priority: int | CriterionValue | None = None
+        priority: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -187,7 +180,7 @@ class CancelTaskCreationEvent(Event, BaseEventValidator):
             name=data.get("currentName", ""),
             description=data.get("currentDescription", ""),
             date=parse_datetime(data.get("selectedDate")),
-            priority=data.get("priority", 4),
+            priority=data.get("priority", ""),
         )
 
 
