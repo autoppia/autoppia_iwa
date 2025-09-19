@@ -111,11 +111,28 @@ SELECT_TASK_PRIORITY_USE_CASE = UseCase(
 ###############################################################################
 
 TASK_ADDED_INFO = """
-CRITICAL REQUIREMENT:
-1. The prompt mentions the creation of a task with its details.
-Use phrases like "add task", "save task", or "confirm task" and include details like name, description, date, and priority.
-2. DO NOT mention a single constraint more than once in the prompt.
-"""
+CRITICAL REQUIREMENTS:
+1. The request must start with one of the following: "Add a task ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Always use the exact field names, operators, and the complete values provided in the constraints.
+5. You must preserve all special characters ((, ), ', ,, ", -, etc.) exactly as they appear in the value and must follow the below requirements:
+    - Do not remove special characters ((, ), ', ,, ", -, etc.).
+    - Do not replace special characters ((, ), ', ,, ", -, etc.).
+    - Do not shorten, split, or partially match the values. For example, if the constraint is contains 'on re' OR 'ar on product', then the generated prompt must also say contains 'on re' OR 'ar on product' exactly, not just 're' OR 'ar'.
+    - Use the full string exactly as provided.
+6. Pay attention to the constraints:
+Example:
+constraint:
+{"field": "name", "operator": "equals", "value": "Build CI/CD pipeline"},
+{"field": "description", "operator": "equals", "value": "Write a detailed technical specification document for the upcoming 'Project X'."},
+{"field": "date", "operator": "equals", "value": "2025-09-27"},
+{"field": "priority", "operator": "equals", "value": "High"},
+
+prompt:
+CORRECT: 'Add a task whose name equals 'Build CI/CD pipeline' and description equals 'Write a detailed technical specification document for the upcoming 'Project X'' and date equals '2025-09-27' and priority equals 'High'.'
+INCORRECT: 'Add a task name "Build CI/CD pipeline", date '2025-09-27'.'
+""".strip()
 
 TASK_ADDED_USE_CASE = UseCase(
     name="AUTOLIST_TASK_ADDED",
@@ -125,20 +142,19 @@ TASK_ADDED_USE_CASE = UseCase(
     constraints_generator=generate_task_constraints,
     additional_prompt_info=TASK_ADDED_INFO,
     examples=[
+        {"prompt": "Add a task whose name equals 'Design new homepage mockup'.", "prompt_for_task_generation": "Add a task whose name equals 'Design new homepage mockup'."},
         {
-            "prompt": "Add a task named 'Buy groceries' with description 'Milk, Bread, Eggs' for tomorrow, priority high.",
-            "prompt_for_task_generation": "Add a task named 'Buy groceries' with description 'Milk, Bread, Eggs' for tomorrow, priority high.",
+            "prompt": "Add a task whose description equals 'Build a detailed financial projection for the proposed 'Project Titan'.' and date equals '2025-09-28'.",
+            "prompt_for_task_generation": "Add a task whose description equals 'Build a detailed financial projection for the proposed 'Project Titan'.' and date equals '2025-09-28'.",
         },
         {
-            "prompt": "Save the task 'Finish report' for this Friday.",
-            "prompt_for_task_generation": "Save the task 'Finish report' for this Friday.",
+            "prompt": "Add a task whose name equals 'Update API documentation' and priority equals 'Low'.",
+            "prompt_for_task_generation": "Add a task whose name equals 'Update API documentation' and priority equals 'Low'.",
         },
         {
-            "prompt": "Confirm the task: 'Call John', medium priority.",
-            "prompt_for_task_generation": "Confirm the task: 'Call John', medium priority.",
+            "prompt": "Add a task whose name equals 'Develop user profile page' and description equals 'Build the frontend and backend for the user's editable profile page' and priority equals 'Medium'.",
+            "prompt_for_task_generation": "Add a task whose name equals 'Develop user profile page' and description equals 'Build the frontend and backend for the user's editable profile page' and priority equals 'Medium'.",
         },
-        {"prompt": "Update task 'Team Meeting' with description 'Discuss Q3 results'.", "prompt_for_task_generation": "Update task 'Team Meeting' with description 'Discuss Q3 results'."},
-        {"prompt": "Save new task: 'Book flights', no due date, low priority.", "prompt_for_task_generation": "Save new task: 'Book flights', no due date, low priority."},
     ],
 )
 
@@ -172,9 +188,29 @@ CANCEL_TASK_CREATION_USE_CASE = UseCase(
 ###############################################################################
 
 EDIT_TASK_MODAL_OPENED_INFO = """
-CRITICAL REQUIREMENT: The prompt must indicate the user's intent to edit an existing task.
-Use phrases like "edit the task", "I want to change this task", "open for editing".
-"""
+CRITICAL REQUIREMENTS:
+1. The request must start with one of the following: "Edit task modal open ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Always use the exact field names, operators, and the complete values provided in the constraints.
+5. You must preserve all special characters ((, ), ', ,, ", -, etc.) exactly as they appear in the value and must follow the below requirements:
+    - Do not remove special characters ((, ), ', ,, ", -, etc.).
+    - Do not replace special characters ((, ), ', ,, ", -, etc.).
+    - Do not shorten, split, or partially match the values. For example, if the constraint is contains 'on re' OR 'ar on product', then the generated prompt must also say contains 'on re' OR 'ar on product' exactly, not just 're' OR 'ar'.
+    - Use the full string exactly as provided.
+6. Pay attention to the constraints:
+Example:
+constraint:
+{"field": "name", "operator": "equals", "value": "Build CI/CD pipeline"},
+{"field": "description", "operator": "equals", "value": "Write a detailed technical specification document for the upcoming 'Project X'."},
+{"field": "date", "operator": "equals", "value": "2025-09-27"},
+{"field": "priority", "operator": "equals", "value": "High"},
+
+prompt:
+CORRECT: 'Edit task modal open whose name equals 'Build CI/CD pipeline' and description equals 'Write a detailed technical specification document for the upcoming 'Project X'' and date equals '2025-09-27' and priority equals 'High'.'
+INCORRECT: 'Edit task modal open name "Build CI/CD pipeline", date '2025-09-27'.'
+""".strip()
+
 
 EDIT_TASK_MODAL_OPENED_USE_CASE = UseCase(
     name="AUTOLIST_EDIT_TASK_MODAL_OPENED",
@@ -184,11 +220,19 @@ EDIT_TASK_MODAL_OPENED_USE_CASE = UseCase(
     constraints_generator=generate_task_constraints,
     additional_prompt_info=EDIT_TASK_MODAL_OPENED_INFO,
     examples=[
-        {"prompt": "I need to edit the 'Buy groceries' task.", "prompt_for_task_generation": "I need to edit the 'Buy groceries' task."},
-        {"prompt": "Let me change the details for the 'Finish report' task.", "prompt_for_task_generation": "Let me change the details for the 'Finish report' task."},
-        {"prompt": "Open the 'Call John' task for editing.", "prompt_for_task_generation": "Open the 'Call John' task for editing."},
-        {"prompt": "I want to modify the 'Plan vacation' task.", "prompt_for_task_generation": "I want to modify the 'Plan vacation' task."},
-        {"prompt": "Click the edit icon on the 'Pay bills' task.", "prompt_for_task_generation": "Click the edit icon on the 'Pay bills' task."},
+        {"prompt": "Edit task modal open whose name equals 'Design new homepage mockup'.", "prompt_for_task_generation": "Edit task modal open whose name equals 'Design new homepage mockup'."},
+        {
+            "prompt": "Edit task modal open whose description equals 'Build a detailed financial projection for the proposed 'Project Titan'.' and date equals '2025-09-28'.",
+            "prompt_for_task_generation": "Edit task modal open whose description equals 'Build a detailed financial projection for the proposed 'Project Titan'.' and date equals '2025-09-28'.",
+        },
+        {
+            "prompt": "Edit task modal open whose name equals 'Update API documentation' and priority equals 'Low'.",
+            "prompt_for_task_generation": "Edit task modal open whose name equals 'Update API documentation' and priority equals 'Low'.",
+        },
+        {
+            "prompt": "Edit task modal open whose name equals 'Develop user profile page' and description equals 'Build the frontend and backend for the user's editable profile page' and priority equals 'Medium'.",
+            "prompt_for_task_generation": "Edit task modal open whose name equals 'Develop user profile page' and description equals 'Build the frontend and backend for the user's editable profile page' and priority equals 'Medium'.",
+        },
     ],
 )
 
@@ -197,9 +241,29 @@ EDIT_TASK_MODAL_OPENED_USE_CASE = UseCase(
 ###############################################################################
 
 COMPLETE_TASK_INFO = """
-CRITICAL REQUIREMENT: The prompt must clearly indicate that a task is being marked as complete.
-Use phrases like "mark as complete", "task done", "I finished this".
-"""
+CRITICAL REQUIREMENTS:
+1. The request must start with one of the following: "Complete task ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Always use the exact field names, operators, and the complete values provided in the constraints.
+5. You must preserve all special characters ((, ), ', ,, ", -, etc.) exactly as they appear in the value and must follow the below requirements:
+    - Do not remove special characters ((, ), ', ,, ", -, etc.).
+    - Do not replace special characters ((, ), ', ,, ", -, etc.).
+    - Do not shorten, split, or partially match the values. For example, if the constraint is contains 'on re' OR 'ar on product', then the generated prompt must also say contains 'on re' OR 'ar on product' exactly, not just 're' OR 'ar'.
+    - Use the full string exactly as provided.
+6. Pay attention to the constraints:
+Example:
+constraint:
+{"field": "name", "operator": "equals", "value": "Build CI/CD pipeline"},
+{"field": "description", "operator": "equals", "value": "Write a detailed technical specification document for the upcoming 'Project X'."},
+{"field": "date", "operator": "equals", "value": "2025-09-27"},
+{"field": "priority", "operator": "equals", "value": "High"},
+
+prompt:
+CORRECT: 'Complete task whose name equals 'Build CI/CD pipeline' and description equals 'Write a detailed technical specification document for the upcoming 'Project X'' and date equals '2025-09-27' and priority equals 'High'.'
+INCORRECT: 'Complete task name "Build CI/CD pipeline", date '2025-09-27'.'
+""".strip()
+
 
 COMPLETE_TASK_USE_CASE = UseCase(
     name="AUTOLIST_COMPLETE_TASK",
@@ -209,11 +273,19 @@ COMPLETE_TASK_USE_CASE = UseCase(
     constraints_generator=generate_task_constraints,
     additional_prompt_info=COMPLETE_TASK_INFO,
     examples=[
-        {"prompt": "Mark 'Buy groceries' as complete.", "prompt_for_task_generation": "Mark 'Buy groceries' as complete."},
-        {"prompt": "The 'Finish report' task is done.", "prompt_for_task_generation": "The 'Finish report' task is done."},
-        {"prompt": "I've finished calling John.", "prompt_for_task_generation": "I've finished calling John."},
-        {"prompt": "Check off 'Send email to client'.", "prompt_for_task_generation": "Check off 'Send email to client'."},
-        {"prompt": "This one is finished.", "prompt_for_task_generation": "This one is finished."},
+        {"prompt": "Complete task whose name equals 'Implement user authentication'.", "prompt_for_task_generation": "Complete task whose name equals 'Implement user authentication'."},
+        {
+            "prompt": "Complete task whose description equals 'Set up backend and frontend for user registration and login using JWT.' and date equals '2025-09-28'.",
+            "prompt_for_task_generation": "Complete task whose description equals 'Set up backend and frontend for user registration and login using JWT.' and date equals '2025-09-28'.",
+        },
+        {
+            "prompt": "Complete task whose name equals 'Draft Q3 marketing report' and priority equals 'Low'.",
+            "prompt_for_task_generation": "Complete task whose name equals 'Draft Q3 marketing report' and priority equals 'Low'.",
+        },
+        {
+            "prompt": "Complete task whose name equals 'Develop user profile page' and description equals 'Build the frontend and backend for the user's editable profile page' and priority equals 'Medium'.",
+            "prompt_for_task_generation": "Complete task whose name equals 'Develop user profile page' and description equals 'Build the frontend and backend for the user's editable profile page' and priority equals 'Medium'.",
+        },
     ],
 )
 
@@ -222,9 +294,29 @@ COMPLETE_TASK_USE_CASE = UseCase(
 ###############################################################################
 
 DELETE_TASK_INFO = """
-CRITICAL REQUIREMENT: The prompt must clearly indicate the user's intent to delete a task permanently.
-Use phrases like "delete this task", "remove this task", "get rid of this".
-"""
+CRITICAL REQUIREMENTS:
+1. The request must start with one of the following: "Delete task ..."
+2. Do not mention a single constraint more than once in the request.
+3. Do not add additional information in the prompt that is not mentioned in the constraints.
+4. Always use the exact field names, operators, and the complete values provided in the constraints.
+5. You must preserve all special characters ((, ), ', ,, ", -, etc.) exactly as they appear in the value and must follow the below requirements:
+    - Do not remove special characters ((, ), ', ,, ", -, etc.).
+    - Do not replace special characters ((, ), ', ,, ", -, etc.).
+    - Do not shorten, split, or partially match the values. For example, if the constraint is contains 'on re' OR 'ar on product', then the generated prompt must also say contains 'on re' OR 'ar on product' exactly, not just 're' OR 'ar'.
+    - Use the full string exactly as provided.
+6. Pay attention to the constraints:
+Example:
+constraint:
+{"field": "name", "operator": "equals", "value": "Build CI/CD pipeline"},
+{"field": "description", "operator": "equals", "value": "Write a detailed technical specification document for the upcoming 'Project X'."},
+{"field": "date", "operator": "equals", "value": "2025-09-27"},
+{"field": "priority", "operator": "equals", "value": "High"},
+
+prompt:
+CORRECT: 'Delete task whose name equals 'Build CI/CD pipeline' and description equals 'Write a detailed technical specification document for the upcoming 'Project X'' and date equals '2025-09-27' and priority equals 'High'.'
+INCORRECT: 'Delete task name "Build CI/CD pipeline", date '2025-09-27'.'
+""".strip()
+
 
 DELETE_TASK_USE_CASE = UseCase(
     name="AUTOLIST_DELETE_TASK",
@@ -234,11 +326,16 @@ DELETE_TASK_USE_CASE = UseCase(
     constraints_generator=generate_task_constraints,
     additional_prompt_info=DELETE_TASK_INFO,
     examples=[
-        {"prompt": "Delete the 'Buy groceries' task.", "prompt_for_task_generation": "Delete the 'Buy groceries' task."},
-        {"prompt": "Remove 'Finish report' from my list.", "prompt_for_task_generation": "Remove 'Finish report' from my list."},
-        {"prompt": "Get rid of the 'Call John' task.", "prompt_for_task_generation": "Get rid of the 'Call John' task."},
-        {"prompt": "I don't need this task anymore, remove it.", "prompt_for_task_generation": "I don't need this task anymore, remove it."},
-        {"prompt": "Trash the 'Old project notes' task.", "prompt_for_task_generation": "Trash the 'Old project notes' task."},
+        {"prompt": "Delete task whose name equals 'Fix login page CSS bug' from my list.", "prompt_for_task_generation": "Delete task whose name equals 'Fix login page CSS bug' from my list."},
+        {"prompt": "Delete task whose name not equals 'Finish report' from my list.", "prompt_for_task_generation": "Delete task whose name not equals 'Finish report' from my list."},
+        {
+            "prompt": "Delete task whose description equals 'Set up backend and frontend for user registration and login using JWT.' and date equals '2025-09-28'.",
+            "prompt_for_task_generation": "Delete task whose description equals 'Set up backend and frontend for user registration and login using JWT.' and date equals '2025-09-28'.",
+        },
+        {
+            "prompt": "Delete task whose name equals 'Develop user profile page' and description equals 'Build the frontend and backend for the user's editable profile page' and priority equals 'Medium'.",
+            "prompt_for_task_generation": "Delete task whose name equals 'Develop user profile page' and description equals 'Build the frontend and backend for the user's editable profile page' and priority equals 'Medium'.",
+        },
     ],
 )
 
