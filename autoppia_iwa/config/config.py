@@ -10,7 +10,7 @@ load_dotenv()
 # ============================
 # LLM CONFIGURATION
 # ============================
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "local" or "openai"
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")  # Can be "local", "openai", or "chutes"
 LLM_THRESHOLD = 100
 LLM_CONTEXT_WINDOW = int(os.getenv("LLM_CONTEXT_WINDOW", 10000))
 
@@ -23,9 +23,19 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_MAX_TOKENS = int(os.getenv("LLM_CONTEXT_WINDOW", 2000))
 OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", 0.8))
 
+# Chutes Configuration
+CHUTES_BASE_URL = os.getenv("CHUTES_BASE_URL", "https://your-username-your-chute.chutes.ai/v1")
+CHUTES_API_KEY = os.getenv("CHUTES_API_KEY")
+CHUTES_MODEL = os.getenv("CHUTES_MODEL", "meta-llama/Llama-3.1-8B-Instruct")
+CHUTES_MAX_TOKENS = int(os.getenv("CHUTES_MAX_TOKENS", 2048))
+CHUTES_TEMPERATURE = float(os.getenv("CHUTES_TEMPERATURE", 0.7))
+CHUTES_USE_BEARER = bool(strtobool(os.getenv("CHUTES_USE_BEARER", "False")))
+
 # Validate critical environment variables
 if LLM_PROVIDER == "openai" and not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY is required when LLM_PROVIDER is set to 'openai'.")
+if LLM_PROVIDER == "chutes" and not CHUTES_API_KEY:
+    raise ValueError("CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.")
 
 # ==================================
 # Database and File Configuration
