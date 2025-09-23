@@ -1,5 +1,4 @@
 import random
-from random import choice
 from typing import Any
 
 from ..criterion_helper import ComparisonOperator
@@ -153,10 +152,9 @@ def generate_is_read_constraints() -> list[dict[str, Any]]:
     fixed_field = "is_read"
     field_value = False
 
-    email = next((e for e in EMAILS_DATA_MODIFIED if e.get(fixed_field) is True), None)
-    if not email:
-        email = choice(EMAILS_DATA_MODIFIED)
-    op = ComparisonOperator(choice(FIELD_OPERATORS_IS_READ_MAP[fixed_field]))
+    eligible_emails = [e for e in EMAILS_DATA_MODIFIED if e.get(fixed_field) is True]
+    email = random.choice(EMAILS_DATA_MODIFIED) if not eligible_emails else random.choice(eligible_emails)
+    op = ComparisonOperator(random.choice(FIELD_OPERATORS_IS_READ_MAP[fixed_field]))
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_IS_READ_MAP if item != fixed_field]
@@ -180,7 +178,7 @@ def generate_is_read_constraints() -> list[dict[str, Any]]:
 def generate_is_important_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     fixed_field = "is_important"
-    email = choice(EMAILS_DATA_MODIFIED)
+    email = random.choice(EMAILS_DATA_MODIFIED)
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_IMPORTANT_MAP[fixed_field]))
     field_value = not email[fixed_field]
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
@@ -210,8 +208,8 @@ def generate_is_spam_constraints() -> list[dict[str, Any]]:
 
     email = next((e for e in EMAILS_DATA_MODIFIED if e.get(fixed_field) is True), None)
     if not email:
-        email = choice(EMAILS_DATA_MODIFIED)
-    op = ComparisonOperator(choice(FIELD_OPERATORS_IS_SPAM_MAP[fixed_field]))
+        email = random.choice(EMAILS_DATA_MODIFIED)
+    op = ComparisonOperator(random.choice(FIELD_OPERATORS_IS_SPAM_MAP[fixed_field]))
     constraints_list.append(create_constraint_dict(fixed_field, op, field_value))
 
     possible_fields = [item for item in FIELD_OPERATORS_IS_SPAM_MAP if item != fixed_field]
@@ -327,7 +325,7 @@ def generate_create_label_constraints() -> list[dict[str, Any]]:
             continue
 
         operator = ComparisonOperator(random.choice(allowed_ops))
-        field_value = choice(labels_and_colors).get(field)
+        field_value = random.choice(labels_and_colors).get(field)
         value = _generate_constraint_value(operator, field_value, field, labels_and_colors)
         constraints_list.append(create_constraint_dict(field, operator, value))
 
