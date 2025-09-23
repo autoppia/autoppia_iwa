@@ -90,31 +90,28 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                 num_source_value = float(source_value)
             except (ValueError, TypeError):
                 return None
-            numeric_pool = [float(v) for v in valid_pool if v is not None]
+
+            if num_source_value > 10:
+                delta = random.uniform(1, min(10, num_source_value / 2))
+            elif num_source_value > 1:
+                delta = random.uniform(0.1, min(1, num_source_value / 2))
+            else:
+                delta = random.uniform(0.01, max(0.05, num_source_value / 2))
 
             if operator == ComparisonOperator.GREATER_THAN:
-                candidates = [v for v in numeric_pool if v > num_source_value]
-                generated_value = random.choice(candidates) if candidates else num_source_value + random.randint(1, 5)
-
+                generated_value = max(0.01, num_source_value - delta)
             elif operator == ComparisonOperator.LESS_THAN:
-                candidates = [v for v in numeric_pool if v < num_source_value]
-                generated_value = random.choice(candidates) if candidates else max(0, num_source_value - random.randint(1, 5))
+                generated_value = num_source_value + delta
+            elif operator in [ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]:
+                generated_value = num_source_value
 
-            elif operator == ComparisonOperator.GREATER_EQUAL:
-                candidates = [v for v in numeric_pool if v >= num_source_value]
-                generated_value = random.choice(candidates) if candidates else num_source_value
-            elif operator == ComparisonOperator.LESS_EQUAL:
-                candidates = [v for v in numeric_pool if v <= num_source_value]
-                generated_value = random.choice(candidates) if candidates else num_source_value
-                if generated_value < 0 and field not in ["rating"]:
-                    generated_value = 0
-
-            generated_value = int(generated_value) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
+            # Cast to int for integer fields
+            generated_value = max(1, round(generated_value)) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
         else:
             # If no source_value, try to pick from pool or return None
             if valid_pool and all(isinstance(v, int | float) for v in valid_pool):
                 generated_value = random.choice([float(v) for v in valid_pool])
-                generated_value = int(generated_value) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
+                generated_value = max(1, round(generated_value)) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
             else:
                 return None  # Cannot generate numeric comparison without a numeric base
 
