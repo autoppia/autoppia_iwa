@@ -121,7 +121,7 @@ def generate_is_starred_constraints() -> list[dict[str, Any]]:
     if not eligible_emails:
         return []  # nothing to generate if all are starred
 
-    email = choice(eligible_emails)  # pick only from non-starred emails
+    email = random.choice(eligible_emails)  # pick only from non-starred emails
 
     # email = choice(EMAILS_DATA_MODIFIED)
     fixed_field = "is_starred"
