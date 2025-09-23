@@ -2,8 +2,7 @@ import sys
 from pathlib import Path
 
 from .classes import WebProject
-
-# from .projects.autoconnect_9.main import connect_project
+from .projects.autoconnect_9.main import connect_project
 from .projects.autocrm_5.main import crm_project
 from .projects.autodelivery_7.main import autodelivery_project
 from .projects.autolodge_8.main import lodge_project
@@ -26,5 +25,5 @@ demo_web_projects: list[WebProject] = [
     autodelivery_project,
     lodge_project,
     work_project,
-    # connect_project,
+    connect_project,
 ]
