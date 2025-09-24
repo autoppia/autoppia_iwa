@@ -1,7 +1,17 @@
 # 🔬 Benchmark Framework for Autoppia IWA
 
-This package provides a **clean and modular benchmark runner** for evaluating web agents on demo projects.
-It replaces the old monolithic benchmark script with a clear structure: **config → benchmark → run**.
+The **benchmark** acts as a sandbox where you can test **how good your web agents are**.
+
+To use it, you need to:
+1. Start the **demo web application** you want to test (e.g., `connect`, `cinema`, etc.).
+2. Select that web project in the benchmark configuration (`PROJECT_IDS`).
+3. Deploy your agent(s) on one or more ports and declare them in `run.py`.
+
+The benchmark will then:
+- **Generate tasks** for the selected projects.
+- **Send those tasks** to the agents you configured.
+- **Evaluate the solutions** returned by the agents.
+- Allow you to **compare multiple agents side by side**.
 
 ---
 
@@ -10,14 +20,10 @@ It replaces the old monolithic benchmark script with a clear structure: **config
 entrypoints/benchmark/
 
 ├─ __init__.py
-
-├─ **config.py**          # Central BenchmarkConfig dataclass
-
+├─ **config.py**              # Central BenchmarkConfig dataclass
 ├─ **tasks_generation.py**    # Wrapper to generate/load cached tasks per project
-
-├─ **benchmark.py**         # Benchmark class (orchestrates the flow)
-
-└─ **run.py**               # Entry point: configure everything in code and run
+├─ **benchmark.py**           # Benchmark class (orchestrates the flow)
+└─ **run.py**                 # Entry point: configure everything in code and run
 
 ---
 
@@ -26,7 +32,7 @@ entrypoints/benchmark/
 1. Go to your project root (where `autoppia_iwa` is located).
 2. Execute:
 
-    python -m entrypoints.benchmark.run
+    **python -m entrypoints.benchmark.run**
 
 ---
 
