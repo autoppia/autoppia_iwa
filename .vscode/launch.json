@@ -15,24 +15,7 @@
         "PYTHONPATH": "${workspaceFolder}"
       }
     },
-     {
-      "name": "Debug Benchmark",
-      "type": "python",          // Usa el depurador integrado de VS Code
-      "request": "launch",
-      "program": "${workspaceFolder}/autoppia_iwa/entrypoints/benchmark.py",
-      "cwd": "${workspaceFolder}",
 
-      // Si tu proyecto necesita variables de entorno, añádelas aquí
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}"
-      },
-
-      // Ejecuta en la terminal integrada para ver logs y entrada-salida
-      "console": "integratedTerminal",
-
-      // Ponlo en false si quieres saltar también a dependencias externas
-      "justMyCode": true
-    },
      {
       "name": "Debug Run New Benchmark",
       "type": "debugpy",
