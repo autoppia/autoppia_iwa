@@ -17,6 +17,7 @@ from .data import (
     FIELD_OPERATORS_STARRED_MAP,
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
 )
+from random import choice
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
@@ -121,7 +122,7 @@ def generate_is_starred_constraints() -> list[dict[str, Any]]:
     if not eligible_emails:
         return []  # nothing to generate if all are starred
 
-    email = choice(eligible_emails)  # pick only from non-starred emails
+    email = random.choice(eligible_emails)  # pick only from non-starred emails
 
     # email = choice(EMAILS_DATA_MODIFIED)
     fixed_field = "is_starred"
