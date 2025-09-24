@@ -258,17 +258,3 @@ class ConsolidatedSolutionCache:
             return []
 
         return list(cache[task_id].keys())
-
-
-# No longer needed as we're using TaskSolution directly
-
-
-async def load_task_solution(solution_data: SolutionData) -> TaskSolution:
-    """
-    Load a TaskSolution from cached SolutionData.
-    Args:
-        solution_data: The cached solution data
-    Returns:
-        TaskSolution object
-    """
-    return solution_data.solution

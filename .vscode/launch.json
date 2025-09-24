@@ -32,6 +32,18 @@
 
       // Ponlo en false si quieres saltar también a dependencias externas
       "justMyCode": true
+    },
+     {
+      "name": "Debug Run New Benchmark",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/autoppia_iwa/entrypoints/benchmark/run.py",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": true
     }
   ]
 }
