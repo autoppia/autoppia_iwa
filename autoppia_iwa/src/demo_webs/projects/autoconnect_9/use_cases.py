@@ -16,7 +16,15 @@ from .generation_functions import (
 
 ADDITIONAL_PROMPT_INFO = """
 IMPORTANT REQUIREMENTS:
-1. Start prompt with View user profile or view the profile of user"""
+1. Start prompt with View user profile or view the profile of user
+2. Always include specific user identifier (e.g., username, full name) in the prompt
+ Example:
+    {'username': {'operator': 'not_equals', 'value': 'sarahlee'}}
+Incorrect:
+ Prompt:  View the profile of user 'janedoe' where the username is NOT 'sarahlee'.
+Correct:
+    Prompt:  View the profile of user where the username is not equal to 'sarahlee'.
+ """
 
 VIEW_USER_PROFILE_USE_CASE = UseCase(
     name="VIEW_USER_PROFILE",
@@ -28,6 +36,10 @@ VIEW_USER_PROFILE_USE_CASE = UseCase(
         {
             "prompt": "View the profile of user 'janedoe'.",
             "prompt_for_task_generation": "View the profile of user 'janedoe'.",
+        },
+        {
+            "prompt": "View the profile of user where user's name is not equal to 'Smith'.",
+            "prompt_for_task_generation": "View the profile of user where user's name is not equal to 'Smith'.",
         },
         {
             "prompt": "Open Jane Doe's profile from a post header.",
