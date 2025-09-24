@@ -14,7 +14,6 @@ from .events import (
 from .generation_functions import (
     generate_autozone_products_constraints,
     generate_carousel_scroll_constraints,
-    generate_cart_operation_constraints,
     generate_checkout_constraints,
     generate_order_completed_constraints,
     generate_quantity_change_constraints,
@@ -137,8 +136,7 @@ ADD_TO_CART_USE_CASE = UseCase(
     description="The user adds items to their shopping cart.",
     event=AddToCartEvent,
     event_source_code=AddToCartEvent.get_source_code_of_class(),
-    constraints_generator=generate_cart_operation_constraints,
-    replace_func=replace_products_placeholders,
+    constraints_generator=generate_autozone_products_constraints,
     additional_prompt_info=ADD_TO_CART_INFO,
     examples=[
         {
