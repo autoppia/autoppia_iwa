@@ -91,9 +91,9 @@ class WebLLMAnalyzer:
                 json_result = self._parse_json_response(response)
                 # Convert relevant_fields if needed
                 if "relevant_fields" in json_result and isinstance(json_result["relevant_fields"], dict):
-                    rf = json_result["relevant_fields"]
+                    json_result["relevant_fields"]
                     # Convert to list of dicts with "type" and "attributes"
-                    json_result["relevant_fields"] = [{"type": k, "attributes": v} for k, v in rf.items()]
+                    json_result["relevant_fields"] = [{"type": k, "attributes": v} for k, v in rl.items()]
                 analysis = LLMWebAnalysis(**json_result)
                 break
             except Exception as e:
