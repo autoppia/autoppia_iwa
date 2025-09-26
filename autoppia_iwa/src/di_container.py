@@ -54,16 +54,41 @@ class DIContainer(containers.DeclarativeContainer):
 
     @staticmethod
     def _get_llm_service():
-        config = LLMConfig(
-            model=OPENAI_MODEL if LLM_PROVIDER == "openai" else "local",
-            temperature=OPENAI_TEMPERATURE,
-            max_tokens=OPENAI_MAX_TOKENS,
-        )
-
-        return LLMFactory.create_llm(
-            llm_type=LLM_PROVIDER,
-            config=config,
-            api_key=OPENAI_API_KEY,
-            endpoint_url=LOCAL_MODEL_ENDPOINT,
-            parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT,
-        )
+        if LLM_PROVIDER == "openai":
+            config = LLMConfig(
+                model=OPENAI_MODEL,
+                temperature=OPENAI_TEMPERATURE,
+                max_tokens=OPENAI_MAX_TOKENS,
+            )
+            return LLMFactory.create_llm(
+                llm_type="openai",
+                config=config,
+                api_key=OPENAI_API_KEY,
+            )
+        elif LLM_PROVIDER == "local":
+            config = LLMConfig(
+                model="local",
+                temperature=OPENAI_TEMPERATURE,
+                max_tokens=OPENAI_MAX_TOKENS,
+            )
+            return LLMFactory.create_llm(
+                llm_type="local",
+                config=config,
+                endpoint_url=LOCAL_MODEL_ENDPOINT,
+                parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT,
+            )
+        elif LLM_PROVIDER == "chutes":
+            config = LLMConfig(
+                model=CHUTES_MODEL,
+                temperature=CHUTES_TEMPERATURE,
+                max_tokens=CHUTES_MAX_TOKENS,
+            )
+            return LLMFactory.create_llm(
+                llm_type="chutes",
+                config=config,
+                base_url=CHUTES_BASE_URL,
+                api_key=CHUTES_API_KEY,
+                use_bearer=CHUTES_USE_BEARER,
+            )
+        else:
+            raise ValueError(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}")
