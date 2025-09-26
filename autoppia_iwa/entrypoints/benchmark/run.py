@@ -36,7 +36,7 @@ CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
     # Tasks
-    use_cached_tasks=True,  # load project tasks from JSON cache if available
+    use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
     num_use_cases=0,  # 0 = all use-cases
     # Execution
