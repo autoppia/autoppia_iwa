@@ -16,6 +16,8 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
     Returns None if a value cannot be generated for the given criteria combination.
     """
     source_value = product_data_source.get(field)
+    if field == "price":
+        source_value = parse_price(source_value)
     generated_value = None
 
     value_pool = []
@@ -88,31 +90,28 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
                 num_source_value = float(source_value)
             except (ValueError, TypeError):
                 return None
-            numeric_pool = [float(v) for v in valid_pool if v is not None]
+
+            if num_source_value > 10:
+                delta = random.uniform(1, min(10, num_source_value / 2))
+            elif num_source_value > 1:
+                delta = random.uniform(0.1, min(1, num_source_value / 2))
+            else:
+                delta = random.uniform(0.01, max(0.05, num_source_value / 2))
 
             if operator == ComparisonOperator.GREATER_THAN:
-                candidates = [v for v in numeric_pool if v > num_source_value]
-                generated_value = random.choice(candidates) if candidates else num_source_value + random.randint(1, 5)
-
+                generated_value = max(0.01, num_source_value - delta)
             elif operator == ComparisonOperator.LESS_THAN:
-                candidates = [v for v in numeric_pool if v < num_source_value]
-                generated_value = random.choice(candidates) if candidates else max(0, num_source_value - random.randint(1, 5))
+                generated_value = num_source_value + delta
+            elif operator in [ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]:
+                generated_value = num_source_value
 
-            elif operator == ComparisonOperator.GREATER_EQUAL:
-                candidates = [v for v in numeric_pool if v >= num_source_value]
-                generated_value = random.choice(candidates) if candidates else num_source_value
-            elif operator == ComparisonOperator.LESS_EQUAL:
-                candidates = [v for v in numeric_pool if v <= num_source_value]
-                generated_value = random.choice(candidates) if candidates else num_source_value
-                if generated_value < 0 and field not in ["rating"]:
-                    generated_value = 0
-
-            generated_value = int(generated_value) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
+            # Cast to int for integer fields
+            generated_value = max(1, round(generated_value)) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
         else:
             # If no source_value, try to pick from pool or return None
             if valid_pool and all(isinstance(v, int | float) for v in valid_pool):
                 generated_value = random.choice([float(v) for v in valid_pool])
-                generated_value = int(generated_value) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
+                generated_value = max(1, round(generated_value)) if field in ["quantity", "items", "total_items", "previous_quantity", "new_quantity"] else round(generated_value, 2)
             else:
                 return None  # Cannot generate numeric comparison without a numeric base
 
@@ -167,51 +166,20 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
 
 def generate_autozone_products_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    mappable_criteria_fields = ["item_name", "item_category", "item_brand", "item_rating", "item_price"]
-    criteria_to_product_key = {
-        "item_name": "title",
-        "item_category": "category",
-        "item_brand": "brand",
-        "item_rating": "rating",
-        "item_price": "price",
-    }
-
-    if not PRODUCTS_DATA:  # Handle empty PRODUCTS_DATA early
+    fields = ["title", "category", "brand", "rating", "price"]
+    if not PRODUCTS_DATA:
         return []
 
-    # Determine which criteria fields we can generate constraints for based on PRODUCTS_DATA
-    applicable_criteria_fields = [
-        cf
-        for cf in mappable_criteria_fields
-        # Check if product data contains the key
-        if criteria_to_product_key[cf] in PRODUCTS_DATA[0]
-    ]
-
-    if not applicable_criteria_fields:
-        return []
-
-    selected_criteria_fields = random.sample(applicable_criteria_fields, random.randint(1, min(3, len(applicable_criteria_fields))))
-    # Product guaranteed to exist due to earlier check
+    selected_criteria_fields = random.sample(fields, random.randint(1, min(3, len(fields))))
     product = random.choice(PRODUCTS_DATA)
 
     for criteria_field in selected_criteria_fields:
-        product_key = criteria_to_product_key.get(criteria_field)
-
-        op = None
-        if product_key and product_key in FIELD_OPERATORS_MAP_PRODUCTS:
-            allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[product_key]
-            if allowed_operators:
-                op_str = random.choice(allowed_operators)
-                op = ComparisonOperator(op_str)
-            else:
-                logger.warning(f"No allowed operators defined for product key '{product_key}' in FIELD_OPERATORS_MAP_PRODUCTS.")
-                continue
-
-        if op:
-            constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
-            if constraint_value is not None:
-                constraint_dict = create_constraint_dict(criteria_field, op, constraint_value)
-                constraints_list.append(constraint_dict)
+        allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[criteria_field]
+        op = ComparisonOperator(random.choice(allowed_operators))
+        constraint_value = generate_constraint_value(criteria_field, op, product, all_products_data=PRODUCTS_DATA)
+        if constraint_value is not None:
+            constraint_dict = create_constraint_dict(criteria_field, op, constraint_value)
+            constraints_list.append(constraint_dict)
         else:
             logger.warning(f"Could not select operator for criteria field '{criteria_field}'. Skipping constraint generation.")
 
@@ -225,86 +193,14 @@ def generate_search_query_constraints() -> list[dict[str, Any]]:
         ComparisonOperator.CONTAINS,
     ]
 
-    if query_operators:
-        op = random.choice(query_operators)
-        # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
-        constraint_value = generate_constraint_value("query", op, {}, all_products_data=PRODUCTS_DATA)
-        if constraint_value is not None:
-            constraints_list.append(create_constraint_dict("query", op, constraint_value))
+    op = random.choice(query_operators)
+    # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
+    constraint_value = generate_constraint_value("query", op, {}, all_products_data=PRODUCTS_DATA)
+    if constraint_value is not None:
+        constraints_list.append(create_constraint_dict("query", op, constraint_value))
 
     # Fallback
     return constraints_list if constraints_list else [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
-
-
-def generate_cart_operation_constraints() -> list[dict[str, Any]]:
-    constraints_list = []
-    if not PRODUCTS_DATA:
-        return []
-
-    product = random.choice(PRODUCTS_DATA)
-
-    item_identification_fields = "name"
-    criterion_alias_to_product_key = {"name": "title"}
-
-    product_key = criterion_alias_to_product_key.get(item_identification_fields)
-
-    if product_key and product_key in product:
-        op = None
-        if product_key in FIELD_OPERATORS_MAP_PRODUCTS:
-            allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[product_key]
-            if allowed_operators:
-                op_str = random.choice(allowed_operators)
-                op = ComparisonOperator(op_str)
-
-        if op:
-            constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
-            if constraint_value is not None:
-                constraints_list.append(create_constraint_dict(item_identification_fields, op, constraint_value))
-        else:
-            logger.warning(f"Could not select operator for product key '{product_key}' in cart operation constraints.")
-    else:
-        return []  # Need at least name or id that maps to product data
-
-    criterion_alias_to_product_key_attributes = {
-        "category": "category",
-        "brand": "brand",
-        "price": "price",
-        "rating": "rating",
-    }
-
-    # Filter product keys based on presence in the chosen product and allowed operators map
-    applicable_product_keys = [pk for pk in criterion_alias_to_product_key_attributes.values() if pk in product and pk in FIELD_OPERATORS_MAP_PRODUCTS]
-
-    selected_product_keys = random.sample(applicable_product_keys, random.randint(0, min(2, len(applicable_product_keys))))
-
-    for product_key in selected_product_keys:
-        criterion_alias = next(alias for alias, key in criterion_alias_to_product_key_attributes.items() if key == product_key)
-
-        allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS.get(product_key)
-        if not allowed_operators:
-            continue
-
-        op_str = random.choice(allowed_operators)
-        op = ComparisonOperator(op_str)
-
-        constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
-
-        if constraint_value is not None:
-            constraints_list.append(create_constraint_dict(criterion_alias, op, constraint_value))
-
-    # quantity_operators = [
-    #     ComparisonOperator.EQUALS,
-    #     ComparisonOperator.GREATER_EQUAL,
-    #     ComparisonOperator.LESS_EQUAL,
-    # ]
-    # if random.random() > 0.3 and quantity_operators:
-    #     op = random.choice(quantity_operators)
-    #     # Use a more realistic mock source value for quantity
-    #     quantity_value = generate_constraint_value("quantity", op, {"quantity": random.randint(1, 5)})
-    #     if quantity_value is not None:
-    #         constraints_list.append(create_constraint_dict("quantity", op, quantity_value))
-
-    return constraints_list
 
 
 def generate_quantity_change_constraints() -> list[dict[str, Any]]:
@@ -313,22 +209,13 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
         return []
 
     product = random.choice(PRODUCTS_DATA)
-    selected_id_field = "name"
     product_key = "title"
 
-    if product_key in product:
-        op = None
-        if product_key in FIELD_OPERATORS_MAP_PRODUCTS:
-            allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[product_key]
-            if allowed_operators:
-                op_str = random.choice(allowed_operators)
-                op = ComparisonOperator(op_str)
-        if op:
-            constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
-            if constraint_value is not None:
-                constraints_list.append(create_constraint_dict(selected_id_field, op, constraint_value))
-        else:
-            logger.warning(f"Could not select operator for product key '{product_key}' in quantity change constraints.")
+    allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[product_key]
+    op = ComparisonOperator(random.choice(allowed_operators))
+    constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
+    if constraint_value is not None:
+        constraints_list.append(create_constraint_dict(product_key, op, constraint_value))
 
     quantity_operators = [
         ComparisonOperator.EQUALS,
@@ -338,30 +225,27 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
         ComparisonOperator.GREATER_THAN,
     ]
     op = random.choice(quantity_operators)
-    value = None
-
+    threshold = None
     if op == ComparisonOperator.EQUALS:
-        value = random.randint(1, 10)
+        threshold = random.randint(1, 10)
 
     elif op == ComparisonOperator.GREATER_EQUAL:
         # choose a threshold such that it's ≤ 9 to allow room for GREATER values
         threshold = random.randint(1, 9)
-        value = threshold
 
     elif op == ComparisonOperator.LESS_EQUAL:
         # choose a threshold ≥ 2 to allow some values below it
         threshold = random.randint(2, 10)
-        value = threshold
 
     elif op == ComparisonOperator.GREATER_THAN:
         # choose a threshold < 10
         threshold = random.randint(1, 9)
-        value = threshold
 
     elif op == ComparisonOperator.LESS_THAN:
         # choose a threshold > 1
         threshold = random.randint(2, 10)
-        value = threshold
+
+    value = threshold
 
     # Ensure final value is always in 1-10 range
     if value is not None and 1 <= value <= 10:
