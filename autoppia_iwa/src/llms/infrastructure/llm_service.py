@@ -3,6 +3,7 @@ from openai import AsyncOpenAI, OpenAI
 
 from autoppia_iwa.src.llms.domain.interfaces import ILLM, LLMConfig
 
+
 class OpenAIService(ILLM):
     """
     Simple OpenAI-based LLM.
@@ -56,6 +57,7 @@ class OpenAIService(ILLM):
             return response.choices[0].message.content
         except Exception as e:
             raise RuntimeError(f"OpenAI Async Error: {e}") from e
+
 
 class LocalLLMService(ILLM):
     """
@@ -112,6 +114,7 @@ class LocalLLMService(ILLM):
         except httpx.HTTPError as e:
             raise RuntimeError(f"Local LLM Async Error: {e}") from e
 
+
 class ChutesLLMService(ILLM):
     """
     Chutes LLM using OpenAI-compatible API via HTTPX.
@@ -132,14 +135,25 @@ class ChutesLLMService(ILLM):
     def _prepare_payload(self, messages: list[dict[str, str]], json_format: bool = False, schema: dict | None = None) -> dict:
         payload = {
             "model": self.config.model,
-            "messages": messages,
+            "messages": list(messages),  # no mutar original
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
         }
-        if json_format and schema:
-            payload["response_format"] = {"type": "json_object"}
-            messages.insert(0, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
-            payload["messages"] = messages
+
+        if json_format:
+            sys_prompt = {
+                "role": "system",
+                "content": (
+                    "Your ONLY output must be a valid JSON array of strings, e.g.: "
+                    '["prompt1", "prompt2"]. '
+                    "Do not wrap it in an object, do not include keys, do not output <think>, explanations, or Markdown."
+                ),
+            }
+            payload["messages"].insert(0, sys_prompt)
+
+            if schema:
+                payload["messages"].insert(1, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
+
         return payload
 
     def _headers(self):
@@ -182,6 +196,7 @@ class ChutesLLMService(ILLM):
         except httpx.HTTPError as e:
             raise RuntimeError(f"Chutes LLM Async Error: {e}") from e
 
+
 class LLMFactory:
     """
     Simple factory to build the right LLM implementation
@@ -195,11 +210,6 @@ class LLMFactory:
         elif llm_type.lower() == "local":
             return LocalLLMService(config, endpoint_url=kwargs.get("endpoint_url"))
         elif llm_type.lower() == "chutes":
-            return ChutesLLMService(
-                config,
-                base_url=kwargs.get("base_url"),
-                api_key=kwargs.get("api_key"),
-                use_bearer=kwargs.get("use_bearer", False)
-            )
+            return ChutesLLMService(config, base_url=kwargs.get("base_url"), api_key=kwargs.get("api_key"), use_bearer=kwargs.get("use_bearer", False))
         else:
             raise ValueError(f"Unsupported LLM type: {llm_type}")

@@ -1,6 +1,12 @@
 from dependency_injector import containers, providers
 
 from autoppia_iwa.config.config import (
+    CHUTES_API_KEY,
+    CHUTES_BASE_URL,
+    CHUTES_MAX_TOKENS,
+    CHUTES_MODEL,
+    CHUTES_TEMPERATURE,
+    CHUTES_USE_BEARER,
     GENERATE_MILESTONES,
     LLM_PROVIDER,
     LOCAL_MODEL_ENDPOINT,
@@ -19,25 +25,6 @@ class DIContainer(containers.DeclarativeContainer):
     # Configuration
     config = providers.Configuration()
     wiring_config = containers.WiringConfiguration(packages=["autoppia_iwa.src"])
-
-    # Initialize MongoDB client as Singleton
-    # mongo_client = providers.Singleton(lambda: MongoClient(MONGODB_URL))
-
-    # Repository of analysis results as Factory
-    # analysis_repository = providers.Factory(
-    #     BaseMongoRepository,
-    #     mongo_client=mongo_client,
-    #     db_name=MONGODB_NAME,
-    #     collection_name=ANALYSIS_COLLECTION,
-    # )
-
-    # # Synthetic Task Repository
-    # synthetic_task_repository = providers.Factory(
-    #     BaseMongoRepository,
-    #     mongo_client=mongo_client,
-    #     db_name=MONGODB_NAME,
-    #     collection_name=TASKS_COLLECTION,
-    # )
 
     # LLM Service provider using Factory pattern
     llm_service = providers.Singleton(lambda: DIContainer._get_llm_service())

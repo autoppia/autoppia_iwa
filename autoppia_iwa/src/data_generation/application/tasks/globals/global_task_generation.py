@@ -130,7 +130,7 @@ class GlobalTaskGenerationPipeline:
         for attempt in range(self.max_retries):
             try:
                 resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
-                parsed_data = await self._parse_llm_response(resp_text)
+                parsed_data = self._parse_llm_response(resp_text)
                 if parsed_data:
                     return parsed_data
                 logger.warning(f"Attempt {attempt + 1}: Could not parse LLM response, retrying...")
@@ -144,51 +144,48 @@ class GlobalTaskGenerationPipeline:
         logger.error(f"All {self.max_retries} attempts to parse LLM response have failed.")
         return []
 
-    async def _parse_llm_response(self, resp_text: str) -> list[str]:
+    def _parse_llm_response(self, resp_text: Any) -> list[str]:
         """
-        Helper method to parse the LLM response as a list of strings.
+        Universal parser: siempre devuelve una lista de strings (prompts),
+        limpiando <think> y dicts con claves raras.
         """
         try:
-            # Clean up possible Markdown code blocks like ```json ... ```
-            cleaned_text = resp_text
-            if resp_text.strip().startswith("'```") or resp_text.strip().startswith("```"):
-                code_block_pattern = r"```(?:json)?\n([\s\S]*?)\n```"
-                matches = re.search(code_block_pattern, resp_text)
-                if matches:
-                    cleaned_text = matches.group(1)
-                else:
-                    lines = resp_text.strip().split("\n")
-                    if lines[0].startswith("'```") or lines[0].startswith("```"):
-                        cleaned_text = "\n".join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
+            # Si ya es lista (OpenAI)
+            if isinstance(resp_text, list):
+                return [str(item) for item in resp_text]
 
-            # Now parse the cleaned JSON
-            data = json.loads(cleaned_text)
-
-            # Ensure we have a list of strings
-            if isinstance(data, list):
-                # Convert any non-string items to strings if needed
-                return [str(item) for item in data]
-            else:
-                logger.warning(f"Expected a list but got {type(data)}.")
+            # Si ya es dict con lista (DeepSeek a veces devuelve {"prompts": [...]} o {"</think>": [...]})
+            if isinstance(resp_text, dict):
+                for v in resp_text.values():
+                    if isinstance(v, list):
+                        return [str(item) for item in v]
                 return []
 
-        except json.JSONDecodeError as je:
-            logger.error(f"JSON decode error: {je}")
-            # Attempt a simpler extraction: look for [ ... ]
-            try:
-                array_pattern = r'\[\s*".*?"\s*(?:,\s*".*?"\s*)*\]'
-                array_match = re.search(array_pattern, resp_text, re.DOTALL)
-                if array_match:
-                    extracted_json = array_match.group(0)
-                    data = json.loads(extracted_json)
-                    return [str(item) for item in data]
-            except Exception:
-                pass
-            return []
+            if isinstance(resp_text, str):
+                cleaned = resp_text.strip()
+
+                # 1) eliminar <think>...</think>
+                cleaned = re.sub(r"<think>.*?</think>", "", cleaned, flags=re.DOTALL).strip()
+
+                # 2) buscar primer array JSON válido
+                match = re.search(r"\[[\s\S]*\]", cleaned)
+                if match:
+                    array_str = match.group(0)
+                    data = json.loads(array_str)
+                    if isinstance(data, list):
+                        return [str(item) for item in data]
+
+                # 3) intentar parsear como dict
+                data = json.loads(cleaned)
+                if isinstance(data, dict):
+                    for v in data.values():
+                        if isinstance(v, list):
+                            return [str(item) for item in v]
 
         except Exception as e:
-            logger.error(f"Unexpected error parsing LLM response: {e!s}")
-            return []
+            logger.error(f"Error parsing LLM response: {e}")
+
+        return []
 
     @staticmethod
     def _assemble_task(
