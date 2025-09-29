@@ -1,8 +1,5 @@
-from datetime import datetime
-
-from dateutil import parser
-
 from ..operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, IN_LIST, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS, NOT_IN_LIST
+from ..shared_utils import parse_datetime
 
 DASHBOARD_HOTELS = [
     {
@@ -1106,30 +1103,6 @@ DASHBOARD_HOTELS = [
         ],
     },
 ]
-
-
-def parse_datetime(value: str | None) -> datetime | None:
-    if not value:
-        return None
-    try:
-        if isinstance(value, datetime):
-            return value
-        if isinstance(value, str):
-            try:
-                return datetime.fromisoformat(value)
-            except ValueError:
-                pass
-            for sep in ("T", " "):
-                if sep in value:
-                    date_part = value.split(sep)[0]
-                    try:
-                        return datetime.fromisoformat(date_part)
-                    except ValueError:
-                        pass
-            return parser.isoparse(value)
-        return None
-    except (ValueError, TypeError):
-        return None
 
 
 def get_modify_data(hotels_data=None):
