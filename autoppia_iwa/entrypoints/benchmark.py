@@ -57,7 +57,7 @@ PROJECT_IDS_TO_RUN = [
     # "autodelivery",
     # "automail",
     # "lodge",
-    "connect"
+    "autocalendar",
 ]
 PROJECTS_TO_RUN: list[WebProject] = get_projects_by_ids(demo_web_projects, PROJECT_IDS_TO_RUN)
 

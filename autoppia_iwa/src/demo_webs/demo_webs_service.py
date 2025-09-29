@@ -6,6 +6,7 @@ import aiohttp
 from aiohttp.client_exceptions import ClientError
 from loguru import logger
 
+from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 
@@ -93,7 +94,7 @@ class BackendDemoWebService:
 
         if self._should_use_proxy_api():
             try:
-                endpoint = "http://localhost:8090/get_events/"
+                endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/get_events/"
                 params = {"web_url": self.base_url, "web_agent_id": web_agent_id}
 
                 session = await self._get_session()
@@ -222,7 +223,7 @@ class BackendDemoWebService:
 
         if self._should_use_proxy_api():
             try:
-                endpoint = "http://localhost:8090/reset_events/"
+                endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
                 params = {"web_url": self.base_url}
                 session = await self._get_session()
 

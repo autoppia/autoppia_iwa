@@ -91,7 +91,8 @@ class GlobalTaskGenerationPipeline:
         # For each prompt string, create a Task
         # We'll fetch the HTML and screenshot just once for all tasks
         url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
-        html, clean_html, screenshot, screenshot_desc = "", "", "", ""  # await get_html_and_screenshot(url)
+        # await get_html_and_screenshot(url)
+        html, clean_html, screenshot, screenshot_desc = "", "", "", ""
 
         tasks: list[Task] = []
         for prompt_text in prompt_list:

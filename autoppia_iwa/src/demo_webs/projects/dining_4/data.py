@@ -541,7 +541,7 @@ RESTAURANT_COUNTRIES = [
 ]
 RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
-SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award-winning"]
+SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award Winners"]
 
 CUSINE = ["Japanese", "Mexican", "American"]
 OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED = {

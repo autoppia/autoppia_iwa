@@ -169,54 +169,6 @@ def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str
     return chart_path
 
 
-def plot_task_comparison(results, agents, tasks, output_dir: str) -> str:
-    """
-    Plot each agent's score on each task (up to 10 tasks).
-    Returns the path to the saved plot image.
-    """
-
-    os.makedirs(output_dir, exist_ok=True)
-
-    max_tasks_to_show = min(10, len(tasks))
-    selected_tasks = tasks[:max_tasks_to_show]
-
-    fig, ax = plt.subplots(figsize=(12, 6))
-
-    bar_width = 0.35
-    x = range(len(selected_tasks))
-    legend_handles = []
-
-    for i, agent in enumerate(agents):
-        agent_scores = []
-
-        for task in selected_tasks:
-            if (agent.id in results) and (task.id in results[agent.id]):
-                agent_scores.append(results[agent.id][task.id]["score"])
-            else:
-                agent_scores.append(0)
-
-        # Offset each agent's bars
-        bars = ax.bar([pos + (i * bar_width) for pos in x], agent_scores, width=bar_width, label=agent.name)
-        legend_handles.append(bars[0])
-
-    task_labels = [f"Task {i + 1}" for i in range(len(selected_tasks))]
-    ax.set_xticks([pos + bar_width / 2 for pos in x])
-    ax.set_xticklabels(task_labels, rotation=45, ha="right")
-    ax.set_ylabel("Score")
-    ax.set_title("Agent Performance by Task")
-    ax.set_ylim(0, 10)
-    ax.legend(handles=legend_handles, labels=[agent.name for agent in agents])
-
-    plt.tight_layout()
-
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    comparison_path = os.path.join(output_dir, f"task_comparison_{timestamp}.png")
-    plt.savefig(comparison_path)
-
-    print(f"\nTask comparison chart saved to '{comparison_path}'")
-    return comparison_path
-
-
 def _has_zero_score(results: dict) -> bool:
     """
     Devuelve True si en el diccionario results hay al menos
