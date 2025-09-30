@@ -198,7 +198,7 @@ class Benchmark:
             results = await self._evaluate_solutions_for_task(project, task, solutions, run_index)
 
             # Apply visualization if we have valid results and visualization is enabled
-            if self.config.enable_visualization and results and valid_solutions:
+            if results and valid_solutions:
                 try:
                     visualizer.show_list_of_evaluations(task, valid_solutions, results, validator_id)
                 except Exception as e:
@@ -223,8 +223,7 @@ class Benchmark:
             num_use_cases=self.config.num_use_cases,
         )
 
-        # Apply visualization if we have tasks and visualization is enabled
-        if self.config.enable_visualization and tasks:
+        if tasks:
             try:
                 for task in tasks:
                     visualizer.show_task_with_tests(task)
