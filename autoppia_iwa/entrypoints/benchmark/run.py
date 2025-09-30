@@ -19,15 +19,17 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
-    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5050, timeout=120),
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2",
     #                 host="127.0.0.1", port=7000, timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autozone", "cinema", "books", ...
-    "work",
+    "autozone",
+    # "cinema",
+    # "books",
+    # "work",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
@@ -39,6 +41,9 @@ CFG = BenchmarkConfig(
     use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
     num_use_cases=0,  # 0 = all use-cases
+    # Dynamic HTML parameters
+    enable_dynamic_html=True,
+    seed_value=2,  # (in range 1-300) for dynamic html
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
@@ -47,15 +52,38 @@ CFG = BenchmarkConfig(
     # Persistence
     save_results_json=True,
     plot_results=False,
+    # Visualization
+    enable_visualization=True,
 )
 
 
 def main():
-    if not CFG.projects:
-        logger.error("No valid projects in PROJECT_IDS.")
-        return
-    benchmark = Benchmark(CFG)
-    asyncio.run(benchmark.run())
+    """
+    Main entrypoint for the benchmark.
+    """
+    try:
+        logger.info("Initializing benchmark...")
+
+        # Validate configuration early
+        if not CFG.projects:
+            logger.error("No valid projects in PROJECT_IDS.")
+            return
+
+        if not CFG.agents:
+            logger.error("No agents configured in AGENTS.")
+            return
+
+        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs")
+
+        # Create and run benchmark
+        benchmark = Benchmark(CFG)
+        asyncio.run(benchmark.run())
+
+    except KeyboardInterrupt:
+        logger.warning("Benchmark interrupted by user")
+    except Exception as e:
+        logger.error(f"Benchmark failed: {e}", exc_info=True)
+        raise
 
 
 if __name__ == "__main__":

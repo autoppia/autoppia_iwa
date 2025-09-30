@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from loguru import logger
+
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.base import IWebAgent
@@ -21,6 +23,10 @@ class BenchmarkConfig:
     prompts_per_use_case: int = 1
     num_use_cases: int = 0  # 0 = use all available use-cases
 
+    # Dynamic HTML parameters
+    enable_dynamic_html: bool = False
+    seed_value: int = 2  # (in range 1-300) for dynamic html
+
     # Execution
     runs: int = 1
     max_parallel_agent_calls: int = 1
@@ -30,6 +36,9 @@ class BenchmarkConfig:
     # Persistence / plotting
     save_results_json: bool = True
     plot_results: bool = False
+
+    # Visualization
+    enable_visualization: bool = True
 
     # Paths
     base_dir: Path = field(default_factory=lambda: PROJECT_BASE_DIR.parent)
@@ -43,10 +52,29 @@ class BenchmarkConfig:
         """
         Prepare directory structure used by the benchmark.
         """
+        # Fix seed_value validation logic
+        if self.enable_dynamic_html and (not isinstance(self.seed_value, int) or not (1 <= self.seed_value <= 300)):
+            logger.error("'seed_value' must be an integer between 1 and 300")
+            raise ValueError(f"Invalid seed_value: {self.seed_value}. Must be an integer between 1 and 300.")
+
+        # Validate required fields
+        if not self.projects:
+            logger.warning("No projects configured - benchmark will not run")
+
+        if not self.agents:
+            logger.warning("No agents configured - benchmark will not run")
+
         self.data_dir = self.base_dir / "data"
         self.tasks_cache_dir = self.data_dir / "tasks_cache"
         self.solutions_cache_dir = self.data_dir / "solutions_cache"
         self.output_dir = self.base_dir / "results"
         self.recordings_dir = PROJECT_BASE_DIR / "recordings"
+
+        # Create directories with proper error handling
         for d in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir, self.recordings_dir):
-            d.mkdir(parents=True, exist_ok=True)
+            try:
+                d.mkdir(parents=True, exist_ok=True)
+                logger.debug(f"Ensured directory exists: {d}")
+            except Exception as e:
+                logger.error(f"Failed to create directory {d}: {e}")
+                raise
