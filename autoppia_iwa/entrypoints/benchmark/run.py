@@ -20,14 +20,25 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
     ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
-    # ApifiedWebAgent(id="2", name="AutoppiaAgent2",
-    #                 host="127.0.0.1", port=7000, timeout=120),
+    # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autozone", "cinema", "books", ...
-    "work",
+    # "autocinema",
+    # "autobooks",
+    # "autozone",
+    # "autodining",
+    # "autocrm",
+    # "automail",
+    # "autodelivery",
+    # "autolodge",
+    "autoconnect",
+    # "autowork",
+    # "autocalendar",
+    # "autolist",
+    # "autodrive",
+    # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
