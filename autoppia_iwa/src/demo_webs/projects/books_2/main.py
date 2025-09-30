@@ -8,7 +8,7 @@ from .use_cases import ALL_USE_CASES
 FRONTEND_PORT_INDEX = 1
 BACKEND_PORT_INDEX = 1
 books_project = WebProject(
-    id="books",
+    id="autobooks",
     name="Autoppia Books",
     frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),
     backend_url=get_backend_url(index=BACKEND_PORT_INDEX, symmetric=True),

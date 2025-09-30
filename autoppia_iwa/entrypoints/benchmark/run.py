@@ -19,17 +19,26 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
-    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5050, timeout=120),
-    # ApifiedWebAgent(id="2", name="AutoppiaAgent2",
-    #                 host="127.0.0.1", port=7000, timeout=120),
+    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autozone",
-    # "cinema",
-    # "books",
-    # "work",
+    # "autocinema",
+    # "autobooks",
+    # "autozone",
+    # "autodining",
+    # "autocrm",
+    # "automail",
+    # "autodelivery",
+    # "autolodge",
+    "autoconnect",
+    # "autowork",
+    # "autocalendar",
+    # "autolist",
+    # "autodrive",
+    # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
@@ -41,9 +50,6 @@ CFG = BenchmarkConfig(
     use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
     num_use_cases=0,  # 0 = all use-cases
-    # Dynamic HTML parameters
-    enable_dynamic_html=True,
-    seed_value=2,  # (in range 1-300) for dynamic html
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
@@ -52,8 +58,6 @@ CFG = BenchmarkConfig(
     # Persistence
     save_results_json=True,
     plot_results=False,
-    # Visualization
-    enable_visualization=True,
 )
 
 
