@@ -6,7 +6,7 @@ This is useful for agents to validate their work on-the-fly before timeout (120s
 typically take ~10-20s per response.
 
 Usage:
-    python -m autoppia_iwa.entrypoints.evaluation_endpoint
+    python -m autoppia_iwa.entrypoints.evaluation.endpoint
 
 The service will start on port 5060 by default and expose:
     POST /evaluate - Evaluate a task solution
@@ -27,16 +27,16 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from pydantic import AnyUrl, BaseModel, Field, NonNegativeFloat, constr
 
+from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-
-from .benchmark.task_generation import get_projects_by_ids
 
 # =====================
 # Constants / Settings
@@ -132,7 +132,7 @@ class EvaluationEndpointService:
         if not project_id:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="web_project_id is required")
         try:
-            projects = get_projects_by_ids([project_id])
+            projects = get_projects_by_ids(demo_web_projects, [project_id])
             if not projects:
                 raise KeyError(project_id)
             return projects[0]
@@ -311,7 +311,9 @@ async def evaluate_task_solution(
     except TimeoutError as err:
         logger.error("Evaluation timed out | task_id={} timeout={}s", request_model.task_id, request_model.timeout_seconds or service.default_timeout)
         raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="Evaluation timed out") from err
-    except HTTPException:
+    except HTTPException as httperr:
+        logger.error(httperr)
+
         raise  # bubble up explicit HTTP errors
     except Exception as e:
         logger.error("Evaluation failed | task_id={} err={}", request_model.task_id, e, exc_info=True)
