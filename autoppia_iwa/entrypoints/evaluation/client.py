@@ -227,7 +227,7 @@ async def example_usage():
     """Example of how to use the evaluation client in an agent"""
 
     prompt = "Show me details about a 'bluetooth speaker' priced at 79.99, with category 'Electronics', rated at 4.6 with brand 'JBL'. Navigate to its product detail page."
-    actions = [NavigateAction(url="http://localhost:8002/"), WaitAction(time_seconds=0.2)]
+    actions = [NavigateAction(url="http://localhost:8002/tech-6"), WaitAction(time_seconds=0.2)]
     criteria = [
         {"field": "title", "operator": "contains", "value": "bluetooth speaker"},
         {"field": "price", "operator": "equals", "value": 79.99},
