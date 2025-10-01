@@ -7,10 +7,7 @@ from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
-from autoppia_iwa.entrypoints.benchmark.utils.results import (
-    plot_results,
-    save_results_to_json,
-)
+from autoppia_iwa.entrypoints.benchmark.utils.results import plot_results, save_results_to_json
 from autoppia_iwa.entrypoints.benchmark.utils.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
