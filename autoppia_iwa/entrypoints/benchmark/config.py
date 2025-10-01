@@ -23,10 +23,6 @@ class BenchmarkConfig:
     prompts_per_use_case: int = 1
     num_use_cases: int = 0  # 0 = use all available use-cases
 
-    # Dynamic HTML parameters
-    enable_dynamic_html: bool = False
-    seed_value: int = 2  # (in range 1-300) for dynamic html
-
     # Execution
     runs: int = 1
     max_parallel_agent_calls: int = 1
@@ -52,11 +48,6 @@ class BenchmarkConfig:
         """
         Prepare directory structure used by the benchmark.
         """
-        # Fix seed_value validation logic
-        if self.enable_dynamic_html and (not isinstance(self.seed_value, int) or not (1 <= self.seed_value <= 300)):
-            logger.error("'seed_value' must be an integer between 1 and 300")
-            raise ValueError(f"Invalid seed_value: {self.seed_value}. Must be an integer between 1 and 300.")
-
         # Validate required fields
         if not self.projects:
             logger.warning("No projects configured - benchmark will not run")

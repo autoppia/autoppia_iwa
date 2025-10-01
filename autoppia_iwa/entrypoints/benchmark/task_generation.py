@@ -26,8 +26,6 @@ async def generate_tasks_for_project(
     Returns:
         list[Task]: generated or cached tasks.
     """
-    from loguru import logger
-
     try:
         if use_cached:
             try:
