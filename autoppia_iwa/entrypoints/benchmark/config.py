@@ -29,12 +29,13 @@ class BenchmarkConfig:
     use_cached_solutions: bool = False
     record_gif: bool = False
 
+    # Dynamic HTML Generation
+    enable_dynamic_html: bool = False
+    seed_value: int = 2
+
     # Persistence / plotting
     save_results_json: bool = True
     plot_results: bool = False
-
-    # Visualization
-    enable_visualization: bool = True
 
     # Paths
     base_dir: Path = field(default_factory=lambda: PROJECT_BASE_DIR.parent)

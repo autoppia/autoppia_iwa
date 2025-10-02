@@ -254,6 +254,8 @@ class Benchmark:
         # Inform evaluator whether to record GIFs
         for task in tasks:
             task.should_record = self.config.record_gif
+            if self.config.enable_dynamic_html and "?seed" not in task:
+                task.url = task.url + "?seed=" + str(self.config.seed_value)
 
         per_agent_results_for_run: dict[str, dict] = {}
 
