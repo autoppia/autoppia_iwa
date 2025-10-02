@@ -3,7 +3,7 @@
 # Usage: ./deploy_service.sh [port]
 
 PORT=${1:-5060}
-SERVICE_NAME="evaluation-service"
+SERVICE_NAME="evaluation-service-$PORT"
 
 echo "🚀 Deploying Evaluation Service with PM2 on port $PORT..."
 echo "📍 API will be available at: http://localhost:$PORT"
@@ -12,6 +12,8 @@ echo ""
 
 # Stop existing service (if running)
 pm2 delete "$SERVICE_NAME" >/dev/null 2>&1
+
+source ./.venv/bin/activate
 
 # Start new service
 pm2 start "python -m autoppia_iwa.entrypoints.evaluation.endpoint" \
