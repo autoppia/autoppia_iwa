@@ -165,7 +165,7 @@ class Benchmark:
         Evaluate all agent solutions produced for a single Task.
         Stores GIF recordings if evaluation returns them and recording is enabled.
         """
-        evaluator = ConcurrentEvaluator(project, EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20))
+        evaluator = ConcurrentEvaluator(project, EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20, should_record_gif=self.config.record_gif))
         results = await evaluator.evaluate_task_solutions(task, solutions)
 
         if self.config.record_gif:
