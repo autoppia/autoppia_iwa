@@ -47,6 +47,7 @@ class Benchmark:
         self._validate_config()
 
         setup_logging(log_file)
+        self.per_project_results = {}
 
     def _validate_config(self) -> None:
         """
@@ -388,7 +389,7 @@ class Benchmark:
 
         # Persist per-project stats
         json_root["agents"] = {project.name: project_block}
-
+        self.per_project_results[project.name] = json_root
         self.config.per_project_results.mkdir(parents=True, exist_ok=True)
         stub = project.name.lower().replace(" ", "_")
         out_path = self.config.per_project_results / f"{stub}_stats.json"
@@ -462,6 +463,8 @@ class Benchmark:
             self._timing_metrics.end()
 
         logger.success(f"Benchmark finished ✔ - {successful_projects}/{total_projects} projects completed successfully")
+
+        return self.per_project_results
 
     # Optional convenience alias if you prefer a more explicit public name
     async def execute(self) -> None:
