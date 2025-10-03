@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import json
 import time
 from collections import defaultdict
 
@@ -278,40 +279,121 @@ class Benchmark:
     # Global rollups and persistence
     # ---------------------------------------------------------------------
 
-    def _accumulate_global_agent_rollup(self, project_run_results: list[dict]) -> None:
+    def _accumulate_global_agent_rollup(self, project: WebProject, project_run_results: list[dict]) -> None:
         """
-        Update global per-agent rollups (success/total/avg-time) using
-        the list of per-run results for the current project.
-        """
-        per_agent_scores: dict[str, list[float]] = defaultdict(list)
-        per_agent_solution_times: dict[str, list[float]] = defaultdict(list)
+        Update global per-agent rollups and persist a per-project JSON
+        containing use-case breakdowns and overall stats.
 
+        `project_run_results` is a list (one per run) of dicts keyed by agent_id:
+            {
+              "<agent_id>": {
+                "<task_id>": { "prompt": str, "score": float, "task_use_case": str }
+              }
+            }
+        """
+        # For logging + global rollup (flat across all use cases)
+        per_agent_scores_flat: dict[str, list[float]] = defaultdict(list)
+        per_agent_times_flat: dict[str, list[float]] = defaultdict(list)
+
+        # For JSON persistence (nested by use case)
+        per_agent_usecase_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_times: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+
+        # Collect data from all runs
         for run_result in project_run_results:
             for agent in self.config.agents:
-                if agent.id not in run_result:
+                a_id = agent.id
+                a_name = agent.name
+                if a_id not in run_result:
                     continue
-                for task_id, res in run_result[agent.id].items():
-                    per_agent_scores[agent.name].append(res["score"])
-                    t = self._timing_metrics.solution_times.get(agent.id, {}).get(task_id, 0.0)
-                    per_agent_solution_times[agent.name].append(t)
 
-        # Update the global rollup state and log a one-line summary per agent
+                for task_id, res in run_result[a_id].items():
+                    use_case = res.get("task_use_case", "Unknown")
+                    score = float(res.get("score", 0.0))
+
+                    # Timing per (agent, task) recorded by TimingMetrics
+                    t = self._timing_metrics.solution_times.get(a_id, {}).get(task_id, 0.0)
+
+                    # Flat rolls (for logging + global)
+                    per_agent_scores_flat[a_name].append(score)
+                    per_agent_times_flat[a_name].append(t)
+
+                    # Use-case rolls (for JSON)
+                    per_agent_usecase_scores[a_name][use_case].append(score)
+                    per_agent_usecase_times[a_name][use_case].append(t)
+
+        # Update the global rollup state and log summaries
         for agent in self.config.agents:
-            scores = per_agent_scores[agent.name]
-            times = per_agent_solution_times[agent.name]
+            a_name = agent.name
+            scores = per_agent_scores_flat[a_name]
+            times = per_agent_times_flat[a_name]
 
             success_count = sum(1 for s in scores if s == 1.0)
             total_count = len(scores)
+            avg_time = (sum(times) / len(times)) if times else 0.0
+            success_rate = (success_count / total_count) if total_count else 0.0
 
-            rollup = self._global_agent_rollup[agent.name]
+            rollup = self._global_agent_rollup[a_name]
             rollup["success"] += success_count
             rollup["total"] += total_count
             rollup["time_sum"] += sum(times)
             rollup["time_cnt"] += len(times)
 
-            success_rate = (success_count / total_count) if total_count else 0.0
-            avg_time = (sum(times) / len(times)) if times else 0.0
-            logger.info(f"{agent.name:<20} | {success_rate * 100:6.2f}% ({success_count}/{total_count}) | avg {avg_time:.2f}s")
+            logger.info(f"{a_name:<20} | {success_rate * 100:6.2f}% ({success_count}/{total_count}) | avg {avg_time:.2f}s")
+
+        # Build per-project JSON payload
+        json_root: dict = {"agents": {}}
+        project_block: dict = {}
+
+        for agent in self.config.agents:
+            a_name = agent.name
+
+            # Per-use-case block
+            uc_block: dict[str, dict] = {}
+            all_scores: list[float] = []
+            all_times: list[float] = []
+
+            for uc, scores in per_agent_usecase_scores[a_name].items():
+                times = per_agent_usecase_times[a_name][uc]
+                succ = sum(1 for s in scores if s == 1.0)
+                tot = len(scores)
+                avg_t = (sum(times) / len(times)) if times else 0.0
+
+                uc_block[uc] = {
+                    "success_count": succ,
+                    "total": tot,
+                    "success_rate": round((succ / tot), 3) if tot else 0.0,
+                    "avg_solution_time": round(avg_t, 3),
+                }
+
+                all_scores.extend(scores)
+                all_times.extend(times)
+
+            succ_all = sum(1 for s in all_scores if s == 1.0)
+            tot_all = len(all_scores)
+            avg_all_time = (sum(all_times) / len(all_times)) if all_times else 0.0
+            rate_all = (succ_all / tot_all) if tot_all else 0.0
+
+            project_block[a_name] = {
+                "use_cases": uc_block,
+                "overall": {
+                    "success_count": succ_all,
+                    "total": tot_all,
+                    "success_rate": round(rate_all, 3),
+                    "avg_solution_time": round(avg_all_time, 3),
+                },
+            }
+
+            logger.info(f"{a_name:<20} | {rate_all * 100:6.2f}% ({succ_all}/{tot_all}) | avg {avg_all_time:.2f}s")
+
+        # Persist per-project stats
+        json_root["agents"] = {project.name: project_block}
+
+        self.config.per_project_results.mkdir(parents=True, exist_ok=True)
+        stub = project.name.lower().replace(" ", "_")
+        out_path = self.config.per_project_results / f"{stub}_stats.json"
+        out_path.write_text(json.dumps(json_root, indent=2))
+        logger.info(f"Stats written to {out_path}")
 
     # ---------------------------------------------------------------------
     # Public API
@@ -351,7 +433,7 @@ class Benchmark:
 
                     if project_run_results:
                         # Update global stats and persist artifacts for the last run of this project
-                        self._accumulate_global_agent_rollup(project_run_results)
+                        self._accumulate_global_agent_rollup(project, project_run_results)
                         successful_projects += 1
 
                         last_run_result = project_run_results[-1]

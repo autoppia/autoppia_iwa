@@ -42,6 +42,7 @@ class BenchmarkConfig:
     tasks_cache_dir: Path = field(init=False)
     solutions_cache_dir: Path = field(init=False)
     output_dir: Path = field(init=False)
+    per_project_results: Path = field(init=False)
     recordings_dir: Path = field(init=False)
 
     def __post_init__(self):
@@ -59,6 +60,7 @@ class BenchmarkConfig:
         self.tasks_cache_dir = self.data_dir / "tasks_cache"
         self.solutions_cache_dir = self.data_dir / "solutions_cache"
         self.output_dir = self.base_dir / "results"
+        self.per_project_results = self.base_dir / "per_project_results"
         self.recordings_dir = PROJECT_BASE_DIR / "recordings"
 
         # Create directories with proper error handling
