@@ -162,30 +162,73 @@ class GlobalTaskGenerationPipeline:
                 return []
 
             if isinstance(resp_text, str):
-                cleaned = resp_text.strip()
+                # Clean the response first
+                cleaned = self._clean_list_response(resp_text)
 
-                # 1) eliminar <think>...</think>
-                cleaned = re.sub(r"<think>.*?</think>", "", cleaned, flags=re.DOTALL).strip()
-
-                # 2) buscar primer array JSON válido
-                match = re.search(r"\[[\s\S]*\]", cleaned)
-                if match:
-                    array_str = match.group(0)
-                    data = json.loads(array_str)
+                # Try to parse as JSON array
+                try:
+                    data = json.loads(cleaned)
                     if isinstance(data, list):
                         return [str(item) for item in data]
-
-                # 3) intentar parsear como dict
-                data = json.loads(cleaned)
-                if isinstance(data, dict):
-                    for v in data.values():
-                        if isinstance(v, list):
-                            return [str(item) for item in v]
+                except json.JSONDecodeError:
+                    pass
 
         except Exception as e:
             logger.error(f"Error parsing LLM response: {e}")
 
         return []
+
+    def _clean_list_response(self, content: str) -> str:
+        """
+        Clean response to ensure it's a valid JSON array of strings.
+        Removes markdown, think tags, and other unwanted formatting.
+        """
+        import json
+
+        if not content:
+            return "[]"
+
+        # First, remove <think>...</think> blocks completely (including multiline)
+        content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL | re.IGNORECASE)
+
+        # Remove any remaining XML-like tags
+        content = re.sub(r"<[^>]+>", "", content)
+
+        # Remove markdown code blocks
+        content = re.sub(r"```(?:json)?\s*\n?", "", content)
+        content = re.sub(r"```\s*$", "", content)
+
+        # Remove any text before the first [ and after the last ]
+        content = content.strip()
+        start_idx = content.find("[")
+        end_idx = content.rfind("]")
+
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            content = content[start_idx : end_idx + 1]
+
+        # Try to validate and fix JSON
+        try:
+            parsed = json.loads(content)
+            if isinstance(parsed, list):
+                # Ensure all items are strings
+                cleaned_list = [str(item) for item in parsed]
+                return json.dumps(cleaned_list)
+            else:
+                # If it's not a list, wrap it
+                return json.dumps([str(parsed)])
+        except json.JSONDecodeError:
+            # If parsing fails, try to extract array-like content
+            array_match = re.search(r"\[[\s\S]*?\]", content)
+            if array_match:
+                try:
+                    parsed = json.loads(array_match.group())
+                    if isinstance(parsed, list):
+                        return json.dumps([str(item) for item in parsed])
+                except json.JSONDecodeError:
+                    pass
+
+        # Fallback: return empty array
+        return "[]"
 
     @staticmethod
     def _assemble_task(

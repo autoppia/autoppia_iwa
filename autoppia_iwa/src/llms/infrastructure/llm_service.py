@@ -139,20 +139,31 @@ class ChutesLLMService(ILLM):
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
         }
-
+        system_prompt = None
+        for msg in list(messages):
+            if msg["role"] == "system":
+                system_prompt = msg["content"]
+                payload["messages"].remove(msg)
+                break
         if json_format:
-            sys_prompt = {
-                "role": "system",
-                "content": (
-                    "Your ONLY output must be a valid JSON array of strings, e.g.: "
-                    '["prompt1", "prompt2"]. '
-                    "Do not wrap it in an object, do not include keys, do not output <think>, explanations, or Markdown."
-                ),
-            }
-            payload["messages"].insert(0, sys_prompt)
+            # Enhanced system prompt for strict list format
+            sys_prompt_content = (
+                "CRITICAL: Your ONLY output must be a valid JSON array of strings. "
+                'Example: ["item1", "item2", "item3"]. '
+                "DO NOT include:\n"
+                "- Markdown formatting (```json, ```)\n"
+                "- <think> tags or any XML-like tags\n"
+                "- Explanations or additional text\n"
+                "- Object wrappers with keys\n"
+                "- Any text before or after the array\n"
+                "Return ONLY the JSON array, nothing else."
+            )
 
             if schema:
-                payload["messages"].insert(1, {"role": "system", "content": f"You must respond with JSON that matches this schema: {schema}"})
+                sys_prompt_content += f"\n\nSchema requirements: {schema}"
+            system_prompt = f"{sys_prompt_content}\n\n{system_prompt}" if system_prompt else sys_prompt_content
+        if system_prompt:
+            payload["messages"].insert(0, {"role": "system", "content": system_prompt})
 
         return payload
 
@@ -175,7 +186,9 @@ class ChutesLLMService(ILLM):
                 data = response.json()
                 if return_raw:
                     return data
-                return data["choices"][0]["message"]["content"]
+
+                content = data["choices"][0]["message"]["content"]
+                return content
         except httpx.HTTPError as e:
             raise RuntimeError(f"Chutes LLM Sync Error: {e}") from e
 
@@ -192,7 +205,9 @@ class ChutesLLMService(ILLM):
                 data = response.json()
                 if return_raw:
                     return data
-                return data["choices"][0]["message"]["content"]
+
+                content = data["choices"][0]["message"]["content"]
+                return content
         except httpx.HTTPError as e:
             raise RuntimeError(f"Chutes LLM Async Error: {e}") from e
 
