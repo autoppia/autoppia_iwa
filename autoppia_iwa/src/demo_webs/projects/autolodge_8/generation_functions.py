@@ -7,7 +7,7 @@ from loguru import logger
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
 
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
-from ..shared_utils import create_constraint_dict
+from ..shared_utils import create_constraint_dict, parse_datetime
 from .data import (
     FIELD_OPERATORS_CONFIRM_AND_PAY_MAP,
     FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP,
@@ -18,7 +18,6 @@ from .data import (
     FIELD_OPERATORS_SHARE_HOTEL_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
     HOTELS_DATA_MODIFIED,
-    parse_datetime,
 )
 
 

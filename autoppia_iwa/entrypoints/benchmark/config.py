@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from loguru import logger
+
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.web_agents.base import IWebAgent
@@ -31,22 +33,41 @@ class BenchmarkConfig:
     save_results_json: bool = True
     plot_results: bool = False
 
+    # Visualization
+    enable_visualization: bool = True
+
     # Paths
     base_dir: Path = field(default_factory=lambda: PROJECT_BASE_DIR.parent)
     data_dir: Path = field(init=False)
     tasks_cache_dir: Path = field(init=False)
     solutions_cache_dir: Path = field(init=False)
     output_dir: Path = field(init=False)
+    per_project_results: Path = field(init=False)
     recordings_dir: Path = field(init=False)
 
     def __post_init__(self):
         """
         Prepare directory structure used by the benchmark.
         """
+        # Validate required fields
+        if not self.projects:
+            logger.warning("No projects configured - benchmark will not run")
+
+        if not self.agents:
+            logger.warning("No agents configured - benchmark will not run")
+
         self.data_dir = self.base_dir / "data"
         self.tasks_cache_dir = self.data_dir / "tasks_cache"
         self.solutions_cache_dir = self.data_dir / "solutions_cache"
         self.output_dir = self.base_dir / "results"
+        self.per_project_results = self.base_dir / "per_project_results"
         self.recordings_dir = PROJECT_BASE_DIR / "recordings"
+
+        # Create directories with proper error handling
         for d in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir, self.recordings_dir):
-            d.mkdir(parents=True, exist_ok=True)
+            try:
+                d.mkdir(parents=True, exist_ok=True)
+                logger.debug(f"Ensured directory exists: {d}")
+            except Exception as e:
+                logger.error(f"Failed to create directory {d}: {e}")
+                raise

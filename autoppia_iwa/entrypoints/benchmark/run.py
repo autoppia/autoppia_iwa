@@ -20,14 +20,25 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
     ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
-    # ApifiedWebAgent(id="2", name="AutoppiaAgent2",
-    #                 host="127.0.0.1", port=7000, timeout=120),
+    # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autozone", "cinema", "books", ...
-    "work",
+    # "autocinema",
+    # "autobooks",
+    # "autozone",
+    # "autodining",
+    # "autocrm",
+    # "automail",
+    # "autodelivery",
+    # "autolodge",
+    "autoconnect",
+    # "autowork",
+    # "autocalendar",
+    # "autolist",
+    # "autodrive",
+    # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
@@ -51,11 +62,32 @@ CFG = BenchmarkConfig(
 
 
 def main():
-    if not CFG.projects:
-        logger.error("No valid projects in PROJECT_IDS.")
-        return
-    benchmark = Benchmark(CFG)
-    asyncio.run(benchmark.run())
+    """
+    Main entrypoint for the benchmark.
+    """
+    try:
+        logger.info("Initializing benchmark...")
+
+        # Validate configuration early
+        if not CFG.projects:
+            logger.error("No valid projects in PROJECT_IDS.")
+            return
+
+        if not CFG.agents:
+            logger.error("No agents configured in AGENTS.")
+            return
+
+        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs")
+
+        # Create and run benchmark
+        benchmark = Benchmark(CFG)
+        asyncio.run(benchmark.run())
+
+    except KeyboardInterrupt:
+        logger.warning("Benchmark interrupted by user")
+    except Exception as e:
+        logger.error(f"Benchmark failed: {e}", exc_info=True)
+        raise
 
 
 if __name__ == "__main__":

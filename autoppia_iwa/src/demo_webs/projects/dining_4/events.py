@@ -35,7 +35,7 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
     """Event triggered when the date dropdown is opened."""
 
     event_name: str = "DATE_DROPDOWN_OPENED"
-    selected_date: datetime
+    selected_date: datetime | None = None
 
     class ValidationCriteria(BaseModel):
         selected_date: datetime | CriterionValue | None = None
@@ -52,44 +52,54 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
         if isinstance(criteria.selected_date, CriterionValue):
             raw_value = criteria.selected_date.value
             if isinstance(raw_value, str):
-                criteria_dt = isoparse(raw_value)
+                criteria_dt = isoparse(raw_value).date()
             elif isinstance(raw_value, datetime):
+                criteria_dt = raw_value.date()
+            elif isinstance(raw_value, date):
                 criteria_dt = raw_value
             else:
                 return False
         elif isinstance(criteria.selected_date, datetime):
+            criteria_dt = criteria.selected_date.date()
+        elif isinstance(criteria.selected_date, date):
             criteria_dt = criteria.selected_date
         else:
             return False
 
-        event_dt = self.selected_date
+            # --- Normalize event date ---
+        event_date = None
+        if isinstance(self.selected_date, datetime):
+            event_date = self.selected_date.date()
+        elif isinstance(self.selected_date, date):
+            event_date = self.selected_date
 
-        # --- ONLYAAAA-MM-DD -------------------------------------
-        event_date = event_dt.date() if isinstance(event_dt, datetime) else event_dt
-        criteria_date = criteria_dt.date() if isinstance(criteria_dt, datetime) else criteria_dt
+        if event_date is None:
+            return False
 
         # --- Operador -------------------------------------------------------------
         op = getattr(criteria.selected_date, "operator", ComparisonOperator.EQUALS)
 
         if op == ComparisonOperator.EQUALS:
-            return event_date == criteria_date
+            return event_date == criteria_dt
         elif op == ComparisonOperator.GREATER_THAN:
-            return event_date > criteria_date
+            return event_date > criteria_dt
         elif op == ComparisonOperator.LESS_THAN:
-            return event_date < criteria_date
+            return event_date < criteria_dt
         elif op == ComparisonOperator.GREATER_EQUAL:
-            return event_date >= criteria_date
+            return event_date >= criteria_dt
         elif op == ComparisonOperator.LESS_EQUAL:
-            return event_date <= criteria_date
+            return event_date <= criteria_dt
         else:
             return False
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "DateDropdownOpenedEvent":
         base_event = Event.parse(backend_event)
-        selected_date_str = backend_event.data.get("date")
-
-        parsed_date = isoparse(selected_date_str) if selected_date_str else None
+        data = backend_event.data
+        selected_date_str = data.get("date")
+        parsed_date = None
+        if selected_date_str:
+            parsed_date = isoparse(selected_date_str).date()
 
         return cls(
             event_name=base_event.event_name,
@@ -363,6 +373,7 @@ class CollapseMenuEvent(Event, BaseEventValidator):
         reviews: int | CriterionValue | None = None
         bookings: int | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
+        people: int | CriterionValue | None = None
 
         class Config:
             title = "Collapse Menu Validation"
@@ -408,6 +419,11 @@ class CollapseMenuEvent(Event, BaseEventValidator):
             action=data.get("action", ""),
             time=data.get("time", ""),
             selected_date=parsed_date,
+            desc=data.get("desc", ""),
+            rating=data.get("rating", 0),
+            cuisine=data.get("cuisine", ""),
+            reviews=data.get("reviews", 0),
+            bookings=data.get("bookings", 0),
             people=int(data.get("people", 0)),
             menu=[MenuCategory.parse_from_data(cat_data) for cat_data in menu_data if isinstance(cat_data, dict)],
         )
@@ -513,8 +529,7 @@ class BookRestaurantEvent(Event, BaseEventValidator):
         parsed_date: date | None = None
         if date_str:
             try:
-                # admite tanto "YYYY-MM-DD" como "YYYY-MM-DDTHH:MM:SSZ"
-                parsed_date = datetime.fromisoformat(date_str).date() if "T" in date_str else date.fromisoformat(date_str)
+                parsed_date = datetime.fromisoformat(date_str).date()
             except ValueError:
                 logger.warning("Could not parse date string '%s' for BookRestaurantEvent", date_str, exc_info=True)
 

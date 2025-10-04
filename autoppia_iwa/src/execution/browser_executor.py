@@ -23,7 +23,7 @@ class PlaywrightBrowserExecutor:
         self.action_execution_results: list[ActionExecutionResult] = []
         self.backend_demo_webs_service: BackendDemoWebService = backend_demo_webs_service
 
-    async def execute_single_action(self, action: BaseAction, web_agent_id: str, iteration: int, is_web_real: bool) -> ActionExecutionResult:
+    async def execute_single_action(self, action: BaseAction, web_agent_id: str, iteration: int, is_web_real: bool, should_record: bool = False) -> ActionExecutionResult:
         """
         Executes a single action and records results, including browser snapshots.
 
@@ -40,8 +40,10 @@ class PlaywrightBrowserExecutor:
 
         try:
             # Capture state before action execution
-            snapshot_before = {"html": "", "screenshot": "", "url": "", "error": ""}
-            # await self._capture_snapshot()
+            if should_record:
+                snapshot_before = await self._capture_snapshot()
+            else:
+                snapshot_before = {"html": "", "screenshot": "", "url": "", "error": ""}
             start_time = datetime.now()
 
             # Execute the action
@@ -50,9 +52,12 @@ class PlaywrightBrowserExecutor:
 
             # Capture backend events and updated browser state
             await self.page.wait_for_load_state("domcontentloaded")
+
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
-            # await self._capture_snapshot()
-            snapshot_after = {"html": "", "screenshot": "", "url": "", "error": ""}
+            if should_record:
+                snapshot_after = await self._capture_snapshot()
+            else:
+                snapshot_after = {"html": "", "screenshot": "", "url": "", "error": ""}
 
             # Create a detailed browser snapshot
             browser_snapshot = BrowserSnapshot(
@@ -78,7 +83,10 @@ class PlaywrightBrowserExecutor:
 
         except Exception as e:
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
-            snapshot_error = await self._capture_snapshot()
+            if should_record:
+                snapshot_error = await self._capture_snapshot()
+            else:
+                snapshot_error = {"html": "", "screenshot": "", "url": "", "error": ""}
 
             # Create error snapshot
             browser_snapshot = BrowserSnapshot(
