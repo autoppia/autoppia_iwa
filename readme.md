@@ -1,5 +1,34 @@
 # Infinite Web Arena (IWA)
 
+## Chutes LLM Integration
+
+You can use [Chutes](https://chutes.ai) as your LLM backend, replacing OpenAI. Chutes provides OpenAI-compatible endpoints with your own models and API keys.
+
+### Configuration
+
+Set the following environment variables in your `.env` file or environment:
+
+```
+LLM_PROVIDER=chutes
+CHUTES_BASE_URL=https://your-username-your-chute.chutes.ai/v1
+CHUTES_API_KEY=cpk_your_api_key_here
+CHUTES_MODEL=meta-llama/Llama-3.1-8B-Instruct
+CHUTES_MAX_TOKENS=2048
+CHUTES_TEMPERATURE=0.7
+CHUTES_USE_BEARER=False  # Set to True if your API key must be sent as Bearer token
+```
+
+- `CHUTES_BASE_URL` should be the base URL of your deployed Chute (ending with `/v1`).
+- `CHUTES_API_KEY` is your Chutes API key (see Chutes dashboard).
+- `CHUTES_MODEL` is the model name deployed in your Chute.
+- `CHUTES_USE_BEARER` (optional): If True, sends the API key as `Authorization: Bearer ...` header. Otherwise, uses `X-API-Key`.
+
+### Usage
+
+Once configured, all LLM calls will use your Chutes deployment. No code changes are needed—just set the environment variables and run your application or tests.
+
+For more information on deploying a Chute, see [Chutes documentation](https://docs.chutes.ai/).
+
 ## Synthetic Evaluation Benchmark for Web Agents
 
 Welcome to **Infinite Web Arena (IWA)**, a revolutionary **autonomous web agent evaluation framework** that transcends traditional benchmarking limitations. Unlike existing benchmarks that rely on human-curated datasets and manual validation, IWA creates an **infinitely scalable evaluation environment** through **generative AI** and **synthetic data**. This automation enables continuous testing against novel web scenarios without human bottlenecks, ensuring comprehensive evaluation of web agents' capabilities.
@@ -170,4 +199,3 @@ rm -rf ~/.autoppia_cache/solutions/
 
 ---
 
-_Built with ❤️ by the Autoppia Team_
