@@ -130,7 +130,7 @@ class GlobalTaskGenerationPipeline:
         for attempt in range(self.max_retries):
             try:
                 resp_text = await self.llm_service.async_predict(messages=messages, json_format=True)
-                parsed_data = await self._parse_llm_response(resp_text)
+                parsed_data = self._parse_llm_response(resp_text)
                 if parsed_data:
                     return parsed_data
                 logger.warning(f"Attempt {attempt + 1}: Could not parse LLM response, retrying...")
@@ -144,51 +144,91 @@ class GlobalTaskGenerationPipeline:
         logger.error(f"All {self.max_retries} attempts to parse LLM response have failed.")
         return []
 
-    async def _parse_llm_response(self, resp_text: str) -> list[str]:
+    def _parse_llm_response(self, resp_text: Any) -> list[str]:
         """
-        Helper method to parse the LLM response as a list of strings.
+        Universal parser: siempre devuelve una lista de strings (prompts),
+        limpiando <think> y dicts con claves raras.
         """
         try:
-            # Clean up possible Markdown code blocks like ```json ... ```
-            cleaned_text = resp_text
-            if resp_text.strip().startswith("'```") or resp_text.strip().startswith("```"):
-                code_block_pattern = r"```(?:json)?\n([\s\S]*?)\n```"
-                matches = re.search(code_block_pattern, resp_text)
-                if matches:
-                    cleaned_text = matches.group(1)
-                else:
-                    lines = resp_text.strip().split("\n")
-                    if lines[0].startswith("'```") or lines[0].startswith("```"):
-                        cleaned_text = "\n".join(lines[1:-1] if lines[-1].endswith("```") else lines[1:])
+            # Si ya es lista (OpenAI)
+            if isinstance(resp_text, list):
+                return [str(item) for item in resp_text]
 
-            # Now parse the cleaned JSON
-            data = json.loads(cleaned_text)
-
-            # Ensure we have a list of strings
-            if isinstance(data, list):
-                # Convert any non-string items to strings if needed
-                return [str(item) for item in data]
-            else:
-                logger.warning(f"Expected a list but got {type(data)}.")
+            # Si ya es dict con lista (DeepSeek a veces devuelve {"prompts": [...]} o {"</think>": [...]})
+            if isinstance(resp_text, dict):
+                for v in resp_text.values():
+                    if isinstance(v, list):
+                        return [str(item) for item in v]
                 return []
 
-        except json.JSONDecodeError as je:
-            logger.error(f"JSON decode error: {je}")
-            # Attempt a simpler extraction: look for [ ... ]
-            try:
-                array_pattern = r'\[\s*".*?"\s*(?:,\s*".*?"\s*)*\]'
-                array_match = re.search(array_pattern, resp_text, re.DOTALL)
-                if array_match:
-                    extracted_json = array_match.group(0)
-                    data = json.loads(extracted_json)
-                    return [str(item) for item in data]
-            except Exception:
-                pass
-            return []
+            if isinstance(resp_text, str):
+                # Clean the response first
+                cleaned = self._clean_list_response(resp_text)
+
+                # Try to parse as JSON array
+                try:
+                    data = json.loads(cleaned)
+                    if isinstance(data, list):
+                        return [str(item) for item in data]
+                except json.JSONDecodeError:
+                    pass
 
         except Exception as e:
-            logger.error(f"Unexpected error parsing LLM response: {e!s}")
-            return []
+            logger.error(f"Error parsing LLM response: {e}")
+
+        return []
+
+    def _clean_list_response(self, content: str) -> str:
+        """
+        Clean response to ensure it's a valid JSON array of strings.
+        Removes markdown, think tags, and other unwanted formatting.
+        """
+        import json
+
+        if not content:
+            return "[]"
+
+        # First, remove <think>...</think> blocks completely (including multiline)
+        content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL | re.IGNORECASE)
+
+        # Remove any remaining XML-like tags
+        content = re.sub(r"<[^>]+>", "", content)
+
+        # Remove markdown code blocks
+        content = re.sub(r"```(?:json)?\s*\n?", "", content)
+        content = re.sub(r"```\s*$", "", content)
+
+        # Remove any text before the first [ and after the last ]
+        content = content.strip()
+        start_idx = content.find("[")
+        end_idx = content.rfind("]")
+
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            content = content[start_idx : end_idx + 1]
+
+        # Try to validate and fix JSON
+        try:
+            parsed = json.loads(content)
+            if isinstance(parsed, list):
+                # Ensure all items are strings
+                cleaned_list = [str(item) for item in parsed]
+                return json.dumps(cleaned_list)
+            else:
+                # If it's not a list, wrap it
+                return json.dumps([str(parsed)])
+        except json.JSONDecodeError:
+            # If parsing fails, try to extract array-like content
+            array_match = re.search(r"\[[\s\S]*?\]", content)
+            if array_match:
+                try:
+                    parsed = json.loads(array_match.group())
+                    if isinstance(parsed, list):
+                        return json.dumps([str(item) for item in parsed])
+                except json.JSONDecodeError:
+                    pass
+
+        # Fallback: return empty array
+        return "[]"
 
     @staticmethod
     def _assemble_task(
