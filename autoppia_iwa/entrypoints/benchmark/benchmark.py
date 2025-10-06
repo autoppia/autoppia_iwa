@@ -269,10 +269,12 @@ class Benchmark:
             # Aggregate results by agent
             for ev in evaluations:
                 use_case_name = getattr(task.use_case, "name", "Unknown")
+                actions = [a.action.model_dump() for a in getattr(ev, "execution_history", [])]
                 per_agent_results_for_run.setdefault(ev.web_agent_id, {})[task.id] = {
                     "prompt": task.prompt,
                     "score": ev.final_score,
                     "task_use_case": use_case_name,
+                    "actions": actions,
                 }
 
         return per_agent_results_for_run
@@ -300,6 +302,8 @@ class Benchmark:
         # For JSON persistence (nested by use case)
         per_agent_usecase_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_times: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_prompt: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_actions: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
 
         # Collect data from all runs
         for run_result in project_run_results:
@@ -324,6 +328,9 @@ class Benchmark:
                     per_agent_usecase_scores[a_name][use_case].append(score)
                     per_agent_usecase_times[a_name][use_case].append(t)
 
+                    per_agent_usecase_prompt[a_name][use_case].append(res.get("prompt", ""))
+                    per_agent_usecase_actions[a_name][use_case].append(res.get("actions", []))
+
         # Update the global rollup state and log summaries
         for agent in self.config.agents:
             a_name = agent.name
@@ -346,6 +353,7 @@ class Benchmark:
         # Build per-project JSON payload
         json_root: dict = {"agents": {}}
         project_block: dict = {}
+        response_project_block: dict = {}
 
         for agent in self.config.agents:
             a_name = agent.name
@@ -354,6 +362,7 @@ class Benchmark:
             uc_block: dict[str, dict] = {}
             all_scores: list[float] = []
             all_times: list[float] = []
+            new_uc_block: dict[str, dict] = {}
 
             for uc, scores in per_agent_usecase_scores[a_name].items():
                 times = per_agent_usecase_times[a_name][uc]
@@ -367,6 +376,13 @@ class Benchmark:
                     "success_rate": round((succ / tot), 3) if tot else 0.0,
                     "avg_solution_time": round(avg_t, 3),
                 }
+                new_uc_block = uc_block.copy()
+                new_uc_block[uc].update(
+                    {
+                        "prompt": per_agent_usecase_prompt[a_name][uc],
+                        "actions": per_agent_usecase_actions[a_name][uc],
+                    }
+                )
 
                 all_scores.extend(scores)
                 all_times.extend(times)
@@ -385,12 +401,14 @@ class Benchmark:
                     "avg_solution_time": round(avg_all_time, 3),
                 },
             }
+            response_project_block = project_block.copy()
+            response_project_block[a_name].update({"use_cases": new_uc_block})
 
             logger.info(f"{a_name:<20} | {rate_all * 100:6.2f}% ({succ_all}/{tot_all}) | avg {avg_all_time:.2f}s")
 
         # Persist per-project stats
         json_root["agents"] = {project.name: project_block}
-        self.per_project_results[project.name] = json_root
+        self.per_project_results = {project.name: response_project_block}
         self.config.per_project_results.mkdir(parents=True, exist_ok=True)
         stub = project.name.lower().replace(" ", "_")
         out_path = self.config.per_project_results / f"{stub}_stats.json"
