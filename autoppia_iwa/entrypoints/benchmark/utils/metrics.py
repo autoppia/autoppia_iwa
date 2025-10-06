@@ -40,13 +40,23 @@ class TimingMetrics:
 
     def get_avg_solution_time(self, agent_id: str) -> float:
         """Get the average solution time for a specific agent."""
-        times = self.solution_times.get(agent_id, {}).values()
-        return statistics.mean(times) if times else 0.0
+        times = list(self.solution_times.get(agent_id, {}).values())
+        if not times:
+            return 0.0
+        try:
+            return statistics.mean(times)
+        except statistics.StatisticsError:
+            return 0.0
 
     def get_avg_evaluation_time(self, agent_id: str) -> float:
         """Get the average evaluation time for a specific agent."""
-        times = self.evaluation_times.get(agent_id, {}).values()
-        return statistics.mean(times) if times else 0.0
+        times = list(self.evaluation_times.get(agent_id, {}).values())
+        if not times:
+            return 0.0
+        try:
+            return statistics.mean(times)
+        except statistics.StatisticsError:
+            return 0.0
 
 
 def compute_statistics(values: list[float]) -> dict:
