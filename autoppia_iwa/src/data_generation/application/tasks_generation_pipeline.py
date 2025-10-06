@@ -44,7 +44,9 @@ class TaskGenerationPipeline:
             # 1) Generate global tasks if configured
             if self.task_config.generate_global_tasks:
                 logger.info("Generating global tasks")
-                global_tasks = await self.global_pipeline.generate(prompts_per_use_case=self.task_config.prompts_per_use_case, num_use_cases=self.task_config.num_use_cases)
+                global_tasks = await self.global_pipeline.generate(
+                    prompts_per_use_case=self.task_config.prompts_per_use_case, num_use_cases=self.task_config.num_use_cases, use_cases=self.task_config.use_cases
+                )
 
                 logger.info(f"Generated {len(global_tasks)} global tasks")
 

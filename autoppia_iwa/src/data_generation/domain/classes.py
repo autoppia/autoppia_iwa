@@ -202,3 +202,4 @@ class TaskGenerationConfig(BaseModel):
     prompts_per_use_case: int = 1  # Number of task variations to generate per use case
     num_use_cases: int = 3  # Number of use_cases to consider for global task generation
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline
+    use_cases: list[str] | None = None  # Specific use cases to focus on, will override num_use_cases if set, for current project

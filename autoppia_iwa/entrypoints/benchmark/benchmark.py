@@ -220,6 +220,7 @@ class Benchmark:
             cache_dir=str(self.config.tasks_cache_dir),
             prompts_per_use_case=self.config.prompts_per_use_case,
             num_use_cases=self.config.num_use_cases,
+            use_cases=self.config.use_cases,
         )
 
         if tasks:

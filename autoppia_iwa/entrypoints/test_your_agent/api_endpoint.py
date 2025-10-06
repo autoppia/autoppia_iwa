@@ -25,8 +25,9 @@ class AgentConfig(BaseModel):
     ip: str
     port: int
     projects: list[str]
-    use_cases: int
+    num_use_cases: int
     runs: int
+    use_cases: list[str] | None = None
     timeout: int = 120
     id: str = "1"
     name: str = "TestAgent"
@@ -60,8 +61,9 @@ async def test_your_agent(config: AgentConfig):
             projects=projects,
             agents=[agent],
             use_cached_tasks=False,
-            prompts_per_use_case=config.use_cases,
-            num_use_cases=config.use_cases,
+            prompts_per_use_case=config.num_use_cases,
+            num_use_cases=config.num_use_cases,
+            use_cases=config.use_cases,
             runs=config.runs,
             max_parallel_agent_calls=1,
             use_cached_solutions=False,

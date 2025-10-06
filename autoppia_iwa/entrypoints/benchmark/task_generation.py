@@ -19,6 +19,7 @@ async def generate_tasks_for_project(
     cache_dir: str,
     prompts_per_use_case: int,
     num_use_cases: int,
+    use_cases: list[str] | None = None,
 ):
     """
     Generate tasks for the given project, preferring cache when requested.
@@ -45,6 +46,7 @@ async def generate_tasks_for_project(
             task_cache_dir=cache_dir,
             prompts_per_use_case=prompts_per_use_case,
             num_of_use_cases=num_use_cases,
+            use_cases=use_cases,
         )
 
         if tasks:
