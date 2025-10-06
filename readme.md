@@ -1,73 +1,108 @@
 # Infinite Web Arena (IWA)
 
-## Chutes LLM Integration
+## 🌐 What is Infinite Web Arena?
 
-You can use [Chutes](https://chutes.ai) as your LLM backend, replacing OpenAI. Chutes provides OpenAI-compatible endpoints with your own models and API keys.
+**Infinite Web Arena (IWA)** is a groundbreaking **autonomous web agent evaluation framework** that solves the fundamental scalability problem in web automation testing.
 
-### Configuration
+### The Problem with Traditional Benchmarks
 
-Set the following environment variables in your `.env` file or environment:
+Traditional web agent benchmarks face critical limitations:
+- 🚫 **Limited datasets**: Rely on manually curated tasks that agents can memorize
+- 🚫 **Human bottlenecks**: Require manual task creation and validation
+- 🚫 **Static environments**: Fixed websites that don't evolve
+- 🚫 **Expensive scaling**: Each new test scenario needs human intervention
 
-```
-LLM_PROVIDER=chutes
-CHUTES_BASE_URL=https://your-username-your-chute.chutes.ai/v1
-CHUTES_API_KEY=cpk_your_api_key_here
-CHUTES_MODEL=meta-llama/Llama-3.1-8B-Instruct
-CHUTES_MAX_TOKENS=2048
-CHUTES_TEMPERATURE=0.7
-CHUTES_USE_BEARER=False  # Set to True if your API key must be sent as Bearer token
-```
+### The IWA Solution
 
-- `CHUTES_BASE_URL` should be the base URL of your deployed Chute (ending with `/v1`).
-- `CHUTES_API_KEY` is your Chutes API key (see Chutes dashboard).
-- `CHUTES_MODEL` is the model name deployed in your Chute.
-- `CHUTES_USE_BEARER` (optional): If True, sends the API key as `Authorization: Bearer ...` header. Otherwise, uses `X-API-Key`.
+IWA creates an **infinitely scalable evaluation environment** where everything is automated:
 
-### Usage
+- 🌍 **Infinite Websites**: Meta-programming and LLMs generate unlimited website variations
+- 🎯 **Infinite Tasks**: AI autonomously creates diverse, realistic web interaction tasks
+- ✅ **Automated Validation**: Smart testing verifies success without human involvement
+- 🔄 **Continuous Evolution**: New challenges prevent memorization and ensure robust learning
 
-Once configured, all LLM calls will use your Chutes deployment. No code changes are needed—just set the environment variables and run your application or tests.
-
-For more information on deploying a Chute, see [Chutes documentation](https://docs.chutes.ai/).
-
-## Synthetic Evaluation Benchmark for Web Agents
-
-Welcome to **Infinite Web Arena (IWA)**, a revolutionary **autonomous web agent evaluation framework** that transcends traditional benchmarking limitations. Unlike existing benchmarks that rely on human-curated datasets and manual validation, IWA creates an **infinitely scalable evaluation environment** through **generative AI** and **synthetic data**. This automation enables continuous testing against novel web scenarios without human bottlenecks, ensuring comprehensive evaluation of web agents' capabilities.
+**The result?** A self-sustaining evaluation ecosystem that can test web agents against an endless stream of novel scenarios, providing truly comprehensive capability assessment.
 
 ---
 
-## Core Features
+## 🎯 Core Features
 
 ### 🔄 Dynamic Web Generation
 
-- Meta-programming and LLMs create infinite variants of websites
-- Continuously introduces new challenges that prevent memorization
-- Ensures agents face realistic, evolving scenarios
+- **Meta-programming** and **LLMs** create infinite variants of websites
+- Continuously introduces new challenges that prevent **memorization**
+- Ensures agents face **realistic**, **evolving** scenarios
 
 ### 🤖 Automated Task & Test Generation
 
-- LLMs autonomously produce tasks and corresponding tests
-- No dependency on human task designers
-- Generates validation criteria before execution
+- **LLMs** autonomously produce tasks and corresponding tests
+- **No dependency** on human task designers
+- Generates **validation criteria** before execution
 
 ### 🌐 Browser Execution & Analysis
 
-- Launches real browser instances for authentic web interaction
-- Records and analyzes every agent action and DOM state
-- Captures complete interaction flow for evaluation
-- Enables deep inspection of agent decision-making
+- Launches **real browser instances** for authentic web interaction
+- Records and analyzes every **agent action** and **DOM state**
+- Captures complete **interaction flow** for evaluation
+- Enables deep inspection of **agent decision-making**
 
 ### 📊 Smart Evaluation System
 
-- Combines predefined tests with LLM-based analysis
-- Evaluates success through both quantitative and qualitative metrics
-- Leverages the key insight that verifying a task is simpler than performing it
-- Provides granular scoring across multiple success criteria
+- Combines **predefined tests** with **LLM-based analysis**
+- Evaluates success through both **quantitative** and **qualitative** metrics
+- Leverages the key insight that **verifying a task is simpler than performing it**
 
-<br>
+---
 
-## 🔍 The Key to Validation: Tests
+## 🧪 IWA Benchmark
 
-The strength of IWA lies in its holistic testing methodology. By managing both frontend and backend environments, we can evaluate web agent behavior across multiple layers, ensuring a comprehensive assessment of their capabilities. Directly integrating GenAI into web agent validation introduces a circular dependency, as it requires the validation logic to surpass the intelligence of the agents being tested. The solution is to distill the problem to its core and anchor it to a logical combination of predefined "conditions" or "events." Ultimately, success is determined by a logical function of these conditions, which, when true, unambiguously defines success in the task.
+The **IWA Benchmark** is your testing ground for developing and evaluating web agents. It provides a complete evaluation pipeline that simulates real-world validator behavior in a controlled environment.
+
+### What the Benchmark Does
+
+The benchmark orchestrates a complete evaluation workflow:
+
+1. **📋 Task Generation**: Uses LLMs to generate diverse web interaction tasks for demo applications (e-commerce sites, CRMs, email clients, booking systems, etc.)
+
+2. **🤖 Agent Execution**: Sends tasks to your agent(s) via HTTP API and collects their action sequences
+
+3. **✅ Validation & Scoring**: Executes agent actions in real browsers, monitors frontend/backend events, and evaluates success using predefined test criteria
+
+4. **📊 Performance Analysis**: Generates comprehensive metrics including success rates, execution times, and comparative reports between multiple agents
+
+### Why Use the Benchmark?
+
+- 🎯 **Test before you deploy**: Validate your agent's capabilities without production risks
+- 📊 **Compare implementations**: Run multiple agents side-by-side to identify the best approach
+- 🐛 **Debug efficiently**: Get detailed logs, GIF recordings, and error traces
+- 💡 **Understand scoring**: Learn how validators evaluate tasks to optimize your rewards
+- 🔄 **Iterate quickly**: Use cached tasks and solutions for faster development cycles
+
+###  Test your agent
+
+
+```bash
+# Quick Test Run
+cd autoppia_iwa_module
+python -m autoppia_iwa.entrypoints.benchmark.run
+```
+
+**→ [Benchmark Guide](autoppia_iwa/entrypoints/benchmark/README.md)**
+
+---
+
+
+## 🔍 How Validation Works: The Key is Testing
+
+IWA's strength lies in its **holistic testing methodology**. By controlling both frontend and backend environments, we evaluate web agent behavior across multiple layers, ensuring comprehensive capability assessment.
+
+### The Validation Challenge
+
+**The problem**: Directly using GenAI for validation creates a circular dependency—the validator would need to be smarter than the agents being tested.
+
+**The solution**: Distill validation to its essence through **predefined conditions and events**. Instead of asking an AI "did this work?", we define precise, logical criteria that unambiguously determine success.
+
+Success is a **logical function of conditions**: when specific events fire with correct parameters, the task is objectively complete. This approach is both more reliable and more scalable than subjective evaluation.
 
 ### 🖥️ Frontend Tests
 
@@ -123,77 +158,37 @@ Tests: Verify Purchase() event with parameters
 
 ---
 
-## 🚀 Getting Started
+## 🎮 Advanced Benchmark Features
 
-1. Clone the repository
-2. Install dependencies:
+The benchmark provides powerful capabilities for comprehensive agent development and testing:
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run setup script:
+### 📊 Output & Metrics
 
-   ```bash
-   bash setup.sh
-   ```
+- ✅ **Success/failure rates**: Detailed scoring for each task and agent
+- ⏱️ **Execution time analysis**: Performance profiling and bottleneck identification
+- 🎬 **GIF recordings**: Visual playback of agent interactions
+- 📈 **Comparison charts**: Side-by-side agent performance visualization
+- 📝 **Debug logs**: Complete traces of actions, events, and errors
+- 💾 **Smart caching**: Reuse tasks and solutions for faster iteration
 
-📖 For a detailed guide, check out the [Setup Guide](docs/guides/setup.md).
+### ⚙️ Customization Options
 
----
+- **Multi-agent testing**: Compare different implementations simultaneously
+- **Project selection**: Choose specific demo websites to evaluate
+- **Parallel execution**: Configure concurrent agent calls for stress testing
+- **Statistical runs**: Execute multiple iterations for robust metrics
+- **Real-world evaluation**: Test against actual production websites
 
-## 🧪 Running the Benchmark
-
-The benchmark evaluates different agents against generated tasks, tests, and websites. Configure and execute with ease:
-
-### 🛠️ Configuration Variables (in `benchmark.py`)
-
-| Variable                     | Description                       | Example                  |
-| ---------------------------- | --------------------------------- | ------------------------ |
-| `PROJECTS_TO_RUN`            | List of demo projects to evaluate | `[demo_web_projects[0]]` |
-| `PROMPT_PER_USE_CASE_CONST`  | Prompts per use case              | `1`                      |
-| `PLOT_BENCHMARK_RESULTS`     | Plot result graphs                | `False`                  |
-| `SAVE_EVALUATION_RESULTS`    | Save result JSONs                 | `False`                  |
-| `USE_CACHED_TASKS_CONST`     | Use pre-generated tasks           | `False`                  |
-| `USE_CACHED_SOLUTIONS_CONST` | Use precomputed agent solutions   | `False`                  |
-| `EVALUATE_REAL_TASKS_CONST`  | Evaluate on real web URLs         | `False`                  |
-| `RETURN_EVALUATION_GIF`      | Record UI interactions as GIF     | `True`                   |
-| `LOG_FILE`                   | Benchmark log file path           | `"benchmark.log"`        |
-
-### ⚙️ Example Agent Configuration
-
-Edit the `AGENTS` list to define which agents to test:
-
-```python
-AGENTS = [
-    ApifiedWebAgent(id="2", name="OpenAICUA", host="127.0.0.1", port=5005, timeout=300),
-    # ApifiedWebAgent(id="3", name="AnthropicCUA", port=5010, ...)
-]
-```
-
-Ensure all services are up before starting.
-
-### ▶️ Run the Benchmark
-
-```bash
-python benchmark.py
-```
-
-### 📁 Outputs
-
-* **GIFs**: Saved in `recordings/<agent_name>/<task_id>.gif`
-* **Logs**: Stored in `benchmark.log`
-* **Metrics** (optional): JSONs and plots in `config.output_dir`
-
-### 🧹 Reset Cache (Optional)
-
-```bash
-rm -rf ~/.autoppia_cache/tasks/
-rm -rf ~/.autoppia_cache/solutions/
-```
+**→ See the comprehensive [Benchmark Guide](autoppia_iwa/entrypoints/benchmark/README.md)** for detailed configuration and usage instructions.
 
 ---
+## 🆘 Support & Contact
 
-## 📜 License
+**Need help?** Contact our team on Discord:
+
+- **@Daryxx**
+- **@Riiveer**
+
 
 © 2024 Autoppia. All rights reserved.
 

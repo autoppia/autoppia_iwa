@@ -1,9 +1,9 @@
 import asyncio
 import base64
+import datetime
 import json
 import textwrap
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -58,7 +58,7 @@ CONFIG = PromptTestConfig(
 
 
 def get_timestamp() -> str:
-    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    return datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
 async def save_file(path: Path, data: Any, is_binary: bool = False) -> None:
@@ -168,8 +168,8 @@ async def run_prompt_test():
                 result_data["gif_path"] = str(gif_path)
 
         if CONFIG.save_output:
-            json_path = output_dir / f"{timestamp}_{task.id}.json"
-            await save_file(json_path, result_data)
+            output_dir / f"{timestamp}_{task.id}.json"
+            # await save_file(json_path, result_data)
     except Exception as e:
         logger.exception(f"Error executing task: {e}")
         result_data["error"] = str(e)
