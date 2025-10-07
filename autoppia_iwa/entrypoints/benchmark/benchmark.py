@@ -379,7 +379,7 @@ class Benchmark:
                 new_uc_block = uc_block.copy()
                 new_uc_block[uc].update(
                     {
-                        "prompt": per_agent_usecase_prompt[a_name][uc],
+                        "prompts": per_agent_usecase_prompt[a_name][uc],
                         "actions": per_agent_usecase_actions[a_name][uc],
                     }
                 )
@@ -419,7 +419,7 @@ class Benchmark:
     # Public API
     # ---------------------------------------------------------------------
 
-    async def run(self) -> None:
+    async def run(self) -> dict:
         """
         Execute the complete benchmark across all configured projects and runs.
         This is the main entrypoint you should call.

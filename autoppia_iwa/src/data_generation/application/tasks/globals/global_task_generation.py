@@ -46,9 +46,10 @@ class GlobalTaskGenerationPipeline:
         if use_cases:
             selective_use_cases = [uc for uc in web_use_cases if uc.name in use_cases]
             if not selective_use_cases:
-                logger.warning("No matching use cases found for the provided names.")
+                use_case_msg = num_use_cases if num_use_cases else "all"
+                logger.warning(f"No matching use cases found for the provided names. Using {use_case_msg} use cases instead.")
             else:
-                logger.warning("Selecting only the specified use cases for task generation.")
+                logger.info("Selecting only the specified use cases for task generation.")
                 web_use_cases = selective_use_cases
 
         if num_use_cases and not selective_use_cases:
