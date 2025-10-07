@@ -361,7 +361,7 @@ class ConcurrentEvaluator(IEvaluator):
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
                     try:
-                        result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real)
+                        result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real, should_record=self.config.should_record_gif)
                         action_results.append(result)
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
