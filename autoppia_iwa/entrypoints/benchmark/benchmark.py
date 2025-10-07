@@ -304,6 +304,7 @@ class Benchmark:
         per_agent_usecase_times: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_prompt: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_actions: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_task_ids: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
 
         # Collect data from all runs
         for run_result in project_run_results:
@@ -330,6 +331,7 @@ class Benchmark:
 
                     per_agent_usecase_prompt[a_name][use_case].append(res.get("prompt", ""))
                     per_agent_usecase_actions[a_name][use_case].append(res.get("actions", []))
+                    per_agent_usecase_task_ids[a_name][use_case].append(task_id)
 
         # Update the global rollup state and log summaries
         for agent in self.config.agents:
@@ -376,13 +378,22 @@ class Benchmark:
                     "success_rate": round((succ / tot), 3) if tot else 0.0,
                     "avg_solution_time": round(avg_t, 3),
                 }
-                new_uc_block = uc_block.copy()
-                new_uc_block[uc].update(
-                    {
-                        "prompts": per_agent_usecase_prompt[a_name][uc],
-                        "actions": per_agent_usecase_actions[a_name][uc],
+
+                new_uc_block[uc] = {}
+                for task_id, prompt, action, t, score in zip(
+                    per_agent_usecase_task_ids[a_name][uc],
+                    per_agent_usecase_prompt[a_name][uc],
+                    per_agent_usecase_actions[a_name][uc],
+                    per_agent_usecase_times[a_name][uc],
+                    per_agent_usecase_scores[a_name][uc],
+                    strict=False,
+                ):
+                    new_uc_block[uc][task_id] = {
+                        "success": score,
+                        "time": round(t, 3),
+                        "prompt": prompt,
+                        "actions": action,
                     }
-                )
 
                 all_scores.extend(scores)
                 all_times.extend(times)
