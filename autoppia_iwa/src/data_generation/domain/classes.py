@@ -47,14 +47,12 @@ class Task(BaseModel):
     milestones: list["Task"] | None = Field(default=None, description="Ordered list of Subtasks that must be completed sequentially")
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     success_criteria: str | None = Field(default=None, description="Clear definition of conditions that indicate successful task completion")
-    use_case: UseCase | None = None
+    use_case: Any = Field(default=None, description="UseCase instance associated with this task")
     should_record: bool = False
 
     _original_prompt: str = PrivateAttr()
 
-    class Config:
-        extra = "allow"
-        arbitrary_types_allowed = True
+    model_config = {"extra": "allow", "arbitrary_types_allowed": True}
 
     def __init__(self, **data):
         original_prompt = data.get("original_prompt", data.get("prompt", ""))
