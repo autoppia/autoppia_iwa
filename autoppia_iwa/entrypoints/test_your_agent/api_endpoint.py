@@ -1,5 +1,6 @@
 import os
 import sys
+import uuid
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -29,8 +30,6 @@ class AgentConfig(BaseModel):
     runs: int
     use_cases: list[str] | None = None
     timeout: int = 120
-    id: str = "1"
-    name: str = "TestAgent"
     should_record_gif: bool = False
     save_results_json: bool = False
     plot_results: bool = False
@@ -53,10 +52,13 @@ async def test_your_agent(config: AgentConfig):
         if not projects:
             raise HTTPException(status_code=400, detail="Invalid project IDs provided.")
 
-        # Configure the agent
-        agent = ApifiedWebAgent(id=config.id, name=config.name, host=config.ip, port=config.port, timeout=config.timeout)
+        # Generate unique id and name for each agent
+        unique_id = str(uuid.uuid4())
+        unique_name = f"TestAgent_{unique_id[:8]}"
 
-        # Create benchmark configuration
+        # Configure the agent
+        agent = ApifiedWebAgent(id=unique_id, name=unique_name, host=config.ip, port=config.port, timeout=config.timeout)
+
         benchmark_config = BenchmarkConfig(
             projects=projects,
             agents=[agent],

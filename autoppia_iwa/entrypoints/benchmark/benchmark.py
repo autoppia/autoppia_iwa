@@ -84,6 +84,7 @@ class Benchmark:
         agent_dir.mkdir(exist_ok=True)
         (agent_dir / f"{task_id}_run_{run_index}.gif").write_bytes(base64.b64decode(b64_gif))
         logger.info(f"GIF saved: {agent_name} -> {task_id} (run {run_index})")
+        return base64.b64decode(b64_gif)
 
     # ---------------------------------------------------------------------
     # Core per-task/per-agent execution
@@ -275,6 +276,7 @@ class Benchmark:
                     "score": ev.final_score,
                     "task_use_case": use_case_name,
                     "actions": actions,
+                    "base64_gif": ev.gif_recording if self.config.record_gif else None,
                 }
 
         return per_agent_results_for_run
@@ -305,6 +307,7 @@ class Benchmark:
         per_agent_usecase_prompt: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_actions: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_task_ids: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_gifs: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
 
         # Collect data from all runs
         for run_result in project_run_results:
@@ -332,6 +335,7 @@ class Benchmark:
                     per_agent_usecase_prompt[a_name][use_case].append(res.get("prompt", ""))
                     per_agent_usecase_actions[a_name][use_case].append(res.get("actions", []))
                     per_agent_usecase_task_ids[a_name][use_case].append(task_id)
+                    per_agent_usecase_gifs[a_name][use_case].append(res.get("base64_gif", None))
 
         # Update the global rollup state and log summaries
         for agent in self.config.agents:
@@ -380,12 +384,13 @@ class Benchmark:
                 }
 
                 new_uc_block[uc] = {}
-                for task_id, prompt, action, t, score in zip(
+                for task_id, prompt, action, t, score, gif in zip(
                     per_agent_usecase_task_ids[a_name][uc],
                     per_agent_usecase_prompt[a_name][uc],
                     per_agent_usecase_actions[a_name][uc],
                     per_agent_usecase_times[a_name][uc],
                     per_agent_usecase_scores[a_name][uc],
+                    per_agent_usecase_gifs[a_name][uc],
                     strict=False,
                 ):
                     new_uc_block[uc][task_id] = {
@@ -393,6 +398,7 @@ class Benchmark:
                         "time": round(t, 3),
                         "prompt": prompt,
                         "actions": action,
+                        "base64_gif": gif,
                     }
 
                 all_scores.extend(scores)
