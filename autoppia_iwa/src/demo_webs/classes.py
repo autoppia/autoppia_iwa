@@ -3,7 +3,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
