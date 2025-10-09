@@ -425,7 +425,7 @@ class Benchmark:
 
         # Persist per-project stats
         json_root["agents"] = {project.name: project_block}
-        self.per_project_results = {project.name: response_project_block}
+        self.per_project_results[project.name] = response_project_block
         self.config.per_project_results.mkdir(parents=True, exist_ok=True)
         stub = project.name.lower().replace(" ", "_")
         out_path = self.config.per_project_results / f"{stub}_stats.json"
