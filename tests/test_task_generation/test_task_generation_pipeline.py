@@ -177,7 +177,6 @@ class TestGlobalTaskGenerationPipeline(unittest.TestCase):
         self.assertEqual(result[0].prompt, "Modified prompt")
         self.assertEqual(result[0].web_project_id, "test_project")
         self.assertEqual(result[0].url, "http://test.com")
-        self.assertEqual(result[0].scope, "global")
 
     async def test_generate_tasks_for_use_case_with_constraints(self):
         """Test task generation for use case with constraints."""
@@ -273,7 +272,7 @@ class TestGlobalTaskGenerationPipeline(unittest.TestCase):
             html="<html>Test</html>",
             clean_html="<html>Test</html>",
             screenshot=None,
-            screenshot_desc="Test screenshot",
+            screenshot_desc="",
             use_case=mock_use_case,
             relevant_data={"key": "value"},
         )
@@ -283,7 +282,6 @@ class TestGlobalTaskGenerationPipeline(unittest.TestCase):
         self.assertEqual(task.web_project_id, "test_project")
         self.assertEqual(task.url, "http://test.com")
         self.assertEqual(task.prompt, "Test prompt")
-        self.assertEqual(task.scope, "global")
         self.assertEqual(task.relevant_data, {"key": "value"})
         self.assertEqual(task.use_case, mock_use_case)
 
@@ -431,7 +429,6 @@ class TestTaskValidation(unittest.TestCase):
         # Assertions
         self.assertEqual(task.prompt, "Test task")
         self.assertEqual(task.url, "http://test.com")
-        self.assertEqual(task.scope, "local")
         self.assertFalse(task.is_web_real)
         self.assertIsInstance(task.specifications, BrowserSpecification)
 
@@ -445,26 +442,17 @@ class TestTaskValidation(unittest.TestCase):
         task = Task(
             prompt="Test task",
             url="http://test.com",
-            scope="global",
             is_web_real=True,
             web_project_id="test_project",
-            html="<html>Test</html>",
-            clean_html="<html>Test</html>",
-            interactive_elements="button,form",
-            screenshot="base64_image",
-            screenshot_description="Test screenshot",
             tests=[],
             relevant_data={"key": "value"},
-            success_criteria="Complete the task",
             use_case=use_case,
             should_record=True,
         )
 
         # Assertions
-        self.assertEqual(task.scope, "global")
         self.assertTrue(task.is_web_real)
         self.assertEqual(task.web_project_id, "test_project")
-        self.assertEqual(task.html, "<html>Test</html>")
         self.assertEqual(task.relevant_data, {"key": "value"})
         self.assertEqual(task.use_case, use_case)
         self.assertTrue(task.should_record)

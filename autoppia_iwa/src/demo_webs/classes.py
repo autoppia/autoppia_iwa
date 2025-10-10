@@ -3,17 +3,18 @@ from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class UseCase(BaseModel):
     """Represents a use case in the application"""
 
+    model_config = {"arbitrary_types_allowed": True}
+
     name: str
     description: str
 
-    event: type[Event]
+    event: Any = Field(..., description="Event class (type[Event])")
     event_source_code: str
     examples: list[dict]
     replace_func: Callable[[str], str] | None = Field(default=None, exclude=True)
@@ -27,9 +28,6 @@ class UseCase(BaseModel):
         "Default to 'None'. Set 'False' when no dynamic constraints are needed and hence no events_criteria in CheckEventTest is generated.",
     )
     additional_prompt_info: str | None = Field(default=None)
-
-    class Config:
-        arbitrary_types_allowed = True
 
     def apply_replacements(self, text: str, *args, **kwargs) -> str:
         if self.replace_func and isinstance(text, str):
@@ -150,6 +148,12 @@ class UseCase(BaseModel):
 
 
 class WebProject(BaseModel):
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "validate_assignment": False,
+        "from_attributes": True,
+    }
+
     id: str = Field(..., description="Unique identifier of the web project")
     name: str = Field(..., min_length=1, description="Name of the web project")
     backend_url: str = Field(..., description="URL of the backend server")
@@ -157,10 +161,10 @@ class WebProject(BaseModel):
     is_web_real: bool = False
     urls: list[str] = []
     domain_analysis: DomainAnalysis | None = None
-    events: list[type] = Field(default_factory=dict, description="Structured events information")
+    events: list[type] = Field(default_factory=list, description="Structured events information")
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
-    models: list[Any] = []
-    use_cases: list[UseCase] = None
+    models: list[Any] = Field(default_factory=list)
+    use_cases: list[Any] = Field(default_factory=list, description="List of UseCase instances")
 
 
 class BackendEvent(BaseModel):

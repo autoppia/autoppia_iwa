@@ -30,15 +30,6 @@ Do not add overlapping tests that validate same thing or partial things that oth
 These are example tests that demonstrate proper validation. Use them as inspiration, but adapt them to the specific details of the given task.
 {examples}
 
-#### **Partial HTML Context** (truncated for brevity)
-{truncated_html}
-
-#### **Screenshot Description**
-{screenshot_desc}
-
-#### **Interactive Elements** (JSON array)
-{interactive_elements}
-
 ### IMPORTANT: CRITERIA STRUCTURE FORMAT
 Each field in event_criteria can follow either of these structures:
 1. Simple structure (uses "equals" operator by default):

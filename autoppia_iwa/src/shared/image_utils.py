@@ -1,39 +1,3 @@
-import base64
-import io
-
-from PIL import Image
-
-
-def print_task_screenshot_in_terminal(task, width=80):
-    """
-    Prints a Task's screenshot image in the terminal as simple ASCII art.
-
-    Args:
-        task (Task): The task containing a base64 encoded screenshot
-        width (int): Width of the ASCII art in characters. Defaults to 80.
-
-    Returns:
-        bool: True if successful, False if there was an error.
-    """
-    if not task.screenshot:
-        print("No screenshot available in this task.")
-        return False
-
-    try:
-        # Decode the base64 string to bytes
-        img_bytes = base64.b64decode(task.screenshot)
-
-        # Create a PIL Image from bytes
-        image = Image.open(io.BytesIO(img_bytes))
-
-        # Use simple ASCII art - no terminal detection that might cause ioctl errors
-        return simple_ascii_art(image, width)
-
-    except Exception as e:
-        print(f"Error displaying screenshot: {e}")
-        return False
-
-
 def simple_ascii_art(image, width=80):
     """Convert and print image as ASCII art with no terminal operations"""
     try:

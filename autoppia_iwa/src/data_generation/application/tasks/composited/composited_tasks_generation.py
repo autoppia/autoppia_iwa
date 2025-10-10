@@ -7,7 +7,6 @@ from typing import Any
 
 from dependency_injector.wiring import Provide
 from loguru import logger
-from PIL import Image
 
 # Import your existing GlobalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.application.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
@@ -17,8 +16,6 @@ from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.utils_entrypoint import transform_image_into_base64
-from autoppia_iwa.src.shared.web_utils import get_html_and_screenshot
 
 # Import the composited prompt template
 from .prompts import COMPOSITED_TASK_GENERATION_PROMPT
@@ -89,17 +86,12 @@ class CompositedTasksGenerationPipeline:
         # 4) Build new composited tasks from these prompts
         final_composited_tasks = []
         chosen_url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
-        html, clean_html, screenshot, screenshot_desc = await get_html_and_screenshot(chosen_url)
 
         for composite_prompt in combined_prompts:
             try:
                 task_obj = self._assemble_composite_task(
                     composite_prompt=composite_prompt,
                     url=chosen_url,
-                    html=html,
-                    clean_html=clean_html,
-                    screenshot=screenshot,
-                    screenshot_desc=screenshot_desc,
                     relevant_data=self.web_project.relevant_data,
                 )
                 final_composited_tasks.append(task_obj)
@@ -184,25 +176,15 @@ class CompositedTasksGenerationPipeline:
         self,
         composite_prompt: str,
         url: str,
-        html: str,
-        clean_html: str,
-        screenshot: Image.Image | None,
-        screenshot_desc: str,
         relevant_data: dict[str, Any],
     ) -> Task:
         """
         Builds a new Task object that merges multiple sub-tasks into one multi-step prompt.
-        You can optionally store which tasks contributed to this composite in `milestones`.
         """
         return Task(
-            scope="global",  # or "composite", if you prefer
             web_project_id=self.web_project.id,
             url=url,
             prompt=composite_prompt,
-            html=str(html),
-            clean_html=str(clean_html),
-            screenshot_description=screenshot_desc,
-            screenshot=str(transform_image_into_base64(screenshot)) if screenshot else "",
             specifications=BrowserSpecification(),
             relevant_data=relevant_data,
             use_case=None,  # Typically no single use_case for a composite

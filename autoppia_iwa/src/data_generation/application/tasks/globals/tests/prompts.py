@@ -18,9 +18,6 @@ Analyze the following provided information to inform your test generation:
 2.  **Use Case Details (`{use_case_name}`, `{use_case_description}`):** Provides context about the overall goal the task contributes to. Helps understand the *intent* behind the task.
 3.  **Event Source Code (`{event_source_code}`):** **Crucial for identifying potential `event_name` values and available fields (`fieldName`) for `event_criteria`.** Look for relevant event types (e.g., `form_submission`, `element_interaction`, `page_state_change`) and their associated data structures.
 4.  **Use Case Test Examples (`{examples}`):** Study these manually created examples for inspiration on structuring tests and applying logic. **Do not copy them directly; adapt the principles** to the *current* task.
-5.  **Partial HTML Snapshot (`{truncated_html}`):** Helps understand the page structure and identify potential element attributes or text content relevant to the task validation. Useful for correlating task actions with observable page changes.
-6.  **Screenshot Description (`{screenshot_desc}`):** Provides a textual summary of the final state, which can help confirm the expected outcome.
-7.  **Interactive Elements (`{interactive_elements}`):** Lists elements the agent could interact with. Can help cross-reference actions mentioned in the task prompt with actual page components.
 
 ## Output Specification: `CheckEventTest` JSON Structure
 
@@ -142,9 +139,6 @@ CHECK_EVENT_TEST_GENERATION_USER_PROMPT = """
 * **Use Case Description:** `{use_case_description}`
 * **Event Source Code:** `{event_source_code}`
 * **Use Case Test Examples:** `{examples}`
-* **Partial HTML Snapshot:** `{truncated_html}`
-* **Screenshot Description:** `{screenshot_desc}`
-* **Interactive Elements:** `{interactive_elements}`
 
 ---
 

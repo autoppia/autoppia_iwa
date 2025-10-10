@@ -73,9 +73,6 @@ class GlobalTestGenerationPipeline:
         """
         # 1) Extract relevant info
         use_case: UseCase = task.use_case
-        truncated_html = task.clean_html[: self.truncate_html_chars] if task.clean_html else ""
-        screenshot_desc = task.screenshot_description or ""
-        interactive_elements = task.interactive_elements or "[]"
 
         # Convert test_examples to a JSON string for the prompt
         examples = json.dumps(use_case.examples, indent=2)
@@ -87,9 +84,6 @@ class GlobalTestGenerationPipeline:
             task_prompt=task.prompt,
             examples=examples,
             event_source_code=use_case.event_source_code,
-            truncated_html=truncated_html,
-            screenshot_desc=screenshot_desc,
-            interactive_elements=str(interactive_elements),
         )
 
         # 3) Call the LLM with retries

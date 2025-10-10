@@ -509,7 +509,7 @@ class SearchBookEvent(Event, BaseEventValidator):
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, query=data.get("query"))
 
 
-class AddCommentEvent(Event):
+class AddCommentEvent(Event, BaseEventValidator):
     """Event triggered when a user adds a comment to a book"""
 
     event_name: str = "ADD_COMMENT_BOOK"
@@ -599,7 +599,7 @@ class ContactEvent(Event, BaseEventValidator):
         )
 
 
-class FilterBookEvent(Event):
+class FilterBookEvent(Event, BaseEventValidator):
     """Event triggered when a user filters books by genre and/or year"""
 
     event_name: str = "FILTER_BOOK"
@@ -691,7 +691,7 @@ class PurchaseBookEvent(Event, BaseEventValidator):
         )
 
 
-class ShoppingCartEvent(Event):
+class ShoppingCartEvent(Event, BaseEventValidator):
     """Event triggered when a user adds a book to shopping cart"""
 
     event_name: str = "SHOPPING_CART"
