@@ -31,8 +31,6 @@ class AgentConfig(BaseModel):
     use_cases: list[str] | None = None
     timeout: int = 120
     should_record_gif: bool = False
-    save_results_json: bool = False
-    plot_results: bool = False
 
 
 @app.post("/test-your-agent")
@@ -63,15 +61,15 @@ async def test_your_agent(config: AgentConfig):
             projects=projects,
             agents=[agent],
             use_cached_tasks=False,
-            prompts_per_use_case=config.num_use_cases,
+            prompts_per_use_case=1,
             num_use_cases=config.num_use_cases,
             use_cases=config.use_cases,
             runs=config.runs,
             max_parallel_agent_calls=1,
             use_cached_solutions=False,
             record_gif=config.should_record_gif,
-            save_results_json=config.save_results_json,
-            plot_results=config.plot_results,
+            save_results_json=False,
+            plot_results=False,
         )
 
         # Run the benchmark
