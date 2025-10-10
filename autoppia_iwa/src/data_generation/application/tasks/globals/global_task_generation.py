@@ -12,7 +12,6 @@ from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.utils import transform_image_into_base64
 
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 
@@ -89,10 +88,7 @@ class GlobalTaskGenerationPipeline:
         # Call the LLM (with retry logic) and parse the list of strings result
         prompt_list = await self._call_llm_with_retry(llm_prompt, additional_system_prompt=additional_system_prompt)
         # For each prompt string, create a Task
-        # We'll fetch the HTML and screenshot just once for all tasks
         url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
-        # await get_html_and_screenshot(url)
-        html, clean_html, screenshot, screenshot_desc = "", "", "", ""
 
         tasks: list[Task] = []
         for prompt_text in prompt_list:
@@ -102,10 +98,10 @@ class GlobalTaskGenerationPipeline:
                     web_project_id=self.web_project.id,
                     url=url,
                     prompt=replaced_prompt,
-                    html=html,
-                    clean_html=clean_html,
-                    screenshot=screenshot,
-                    screenshot_desc=screenshot_desc,
+                    html="",
+                    clean_html="",
+                    screenshot=None,
+                    screenshot_desc="",
                     use_case=use_case,
                     relevant_data=self.web_project.relevant_data,
                 )
@@ -238,14 +234,9 @@ class GlobalTaskGenerationPipeline:
         Assembles a final Task object from the prompt string and loaded page info.
         """
         return Task(
-            scope="global",
             web_project_id=web_project_id,
             prompt=prompt,
             url=url,
-            html=str(html),
-            clean_html=str(clean_html),
-            screenshot_description=screenshot_desc,
-            screenshot=str(transform_image_into_base64(screenshot)) if screenshot else "",
             specifications=BrowserSpecification(),
             relevant_data=relevant_data,
             use_case=use_case,

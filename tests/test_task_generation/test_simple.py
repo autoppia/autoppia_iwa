@@ -22,7 +22,6 @@ class MockTask:
         self.url = url
         self.web_project_id = web_project_id
         self.tests = []
-        self.scope = "local"
         self.is_web_real = False
         self.relevant_data = {}
 
@@ -108,7 +107,6 @@ class TestTaskCreation(unittest.TestCase):
         self.assertEqual(task.prompt, "Test task")
         self.assertEqual(task.url, "http://test.com")
         self.assertEqual(task.web_project_id, "test_project")
-        self.assertEqual(task.scope, "local")
         self.assertFalse(task.is_web_real)
 
     def test_task_prepare_for_agent(self):

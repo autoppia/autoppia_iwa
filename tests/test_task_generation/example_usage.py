@@ -155,7 +155,6 @@ def example_validation():
     print(f"Created valid task: {valid_task.prompt}")
     print(f"Task ID: {valid_task.id}")
     print(f"Task URL: {valid_task.url}")
-    print(f"Task scope: {valid_task.scope}")
 
     # Test task properties
     print(f"Task with relevant data: {valid_task.prompt_with_relevant_data}")

@@ -252,7 +252,6 @@ class TestTaskModelValidation(unittest.TestCase):
         # Assertions
         self.assertEqual(task.prompt, "Test task")
         self.assertEqual(task.url, "http://test.com")
-        self.assertEqual(task.scope, "local")
         self.assertFalse(task.is_web_real)
         self.assertIsInstance(task.specifications, BrowserSpecification)
 
