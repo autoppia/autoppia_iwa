@@ -27,7 +27,7 @@ def generate_login_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id> AND password equals PASSWORD"
+    constraints_str = "username equals <username> AND password equals <password>"
 
     return parse_constraints_str(constraints_str)
 
@@ -40,7 +40,7 @@ def generate_logout_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <web_agent_id>"
+    constraints_str = "username equals <username> AND password equals <password>"
     return parse_constraints_str(constraints_str)
 
 
@@ -68,7 +68,7 @@ def generate_delete_book_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "id equals <web_agent_id> "
+    constraints_str = "id equals <web_agent_id>"
 
     # Convertir el string a la estructura de datos
     if constraints_str:
