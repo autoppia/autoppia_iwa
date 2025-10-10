@@ -29,7 +29,7 @@ class GlobalTaskGenerationPipeline:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 
-    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5) -> list[Task]:
+    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5, use_cases: list[str] | None = None) -> list[Task]:
         """
         Generate tasks for all use cases in the web project.
         """
@@ -40,13 +40,23 @@ class GlobalTaskGenerationPipeline:
             logger.warning("No use cases found in web project.")
             return all_tasks
 
-        use_cases = self.web_project.use_cases
-        if num_use_cases:
-            use_cases = random.sample(use_cases, min(num_use_cases, len(use_cases)))
+        web_use_cases = self.web_project.use_cases
+        selective_use_cases = []
+        if use_cases:
+            selective_use_cases = [uc for uc in web_use_cases if uc.name in use_cases]
+            if not selective_use_cases:
+                use_case_msg = num_use_cases if num_use_cases else "all"
+                logger.warning(f"No matching use cases found for the provided names. Using {use_case_msg} use cases instead.")
+            else:
+                logger.info("Selecting only the specified use cases for task generation.")
+                web_use_cases = selective_use_cases
 
-        logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each. Selected {len(use_cases)} use cases.")
+        if num_use_cases and not selective_use_cases:
+            web_use_cases = random.sample(web_use_cases, min(num_use_cases, len(web_use_cases)))
 
-        for use_case in use_cases:
+        logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each. Selected {len(web_use_cases)} use cases.")
+
+        for use_case in web_use_cases:
             logger.info(f"Generating tasks for use case: {use_case.name}")
             try:
                 tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case)
