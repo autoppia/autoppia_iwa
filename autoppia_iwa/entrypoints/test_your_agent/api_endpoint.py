@@ -4,6 +4,7 @@ import uuid
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from pydantic import BaseModel
 
@@ -20,6 +21,14 @@ DEFAULT_PORT: int = 5050
 DEFAULT_HOST: str = "0.0.0.0"
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class AgentConfig(BaseModel):
