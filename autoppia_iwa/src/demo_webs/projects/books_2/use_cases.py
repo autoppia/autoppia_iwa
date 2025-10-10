@@ -79,9 +79,9 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
     Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 3. KEEP THE CONSTRAINTS VALUE IN PROMPT SAME AS THEY ARE IN CONSTRAINTS.
     Example:
-    criteria: {'username': '<web_agent_id>', 'password': 'password123'}
-
-    prompt: "First, authenticate with username '<web_agent_id>' and password 'password123'."
+    constraint: 'username' equals '<web_agent_id>' AND 'password' equals 'password123'
+    Then prompt should be like:
+    prompt: "authenticate with username '<web_agent_id>' and password 'password123'."
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
@@ -92,7 +92,7 @@ LOGIN_USE_CASE = UseCase(
     event_source_code=LoginEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
     constraints_generator=generate_login_constraints,
-    additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
+    # additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>",
@@ -130,7 +130,7 @@ LOGOUT_USE_CASE = UseCase(
     event_source_code=LogoutEvent.get_source_code_of_class(),
     replace_func=login_replace_func,
     constraints_generator=generate_logout_constraints,
-    additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
+    # additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
             "prompt": "Login for the following username:<username> and password:<password>, then logout",
