@@ -199,7 +199,7 @@ class ConcurrentEvaluator(IEvaluator):
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,
-                final_score=1 if final_score >= 0.25 else final_score,
+                final_score=final_score,  # Use actual score, don't artificially boost to 1.0
                 raw_score=raw_score,
                 test_results_matrix=test_results_matrix,
                 feedback=feedback,
