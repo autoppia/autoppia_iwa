@@ -1,6 +1,7 @@
 import os
 import sys
 import uuid
+from urllib.parse import urlparse
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -33,7 +34,7 @@ app.add_middleware(
 
 class AgentConfig(BaseModel):
     ip: str
-    port: int
+    port: int | None = None
     projects: list[str]
     num_use_cases: int
     runs: int
@@ -64,7 +65,15 @@ async def test_your_agent(config: AgentConfig):
         unique_name = f"TestAgent_{unique_id[:8]}"
 
         # Configure the agent
-        agent = ApifiedWebAgent(id=unique_id, name=unique_name, host=config.ip, port=config.port, timeout=config.timeout)
+        # If ip is a full URL (has scheme) or contains a path, use it directly as base_url.
+        # If ip is a hostname/IP and port is provided, include port; otherwise omit.
+        parsed = urlparse(config.ip)
+        if parsed.scheme:
+            base_url = config.ip.rstrip("/")
+            agent = ApifiedWebAgent(id=unique_id, name=unique_name, timeout=config.timeout, base_url=base_url)
+        else:
+            # Treat ip as host
+            agent = ApifiedWebAgent(id=unique_id, name=unique_name, host=config.ip, port=config.port, timeout=config.timeout)
 
         benchmark_config = BenchmarkConfig(
             projects=projects,

@@ -32,8 +32,8 @@ Or use the provided deployment script to deploy with PM2:
 
 ```json
 {
-  "ip": "127.0.0.1",
-  "port": 5000,
+  "ip": "127.0.0.1", // or full base URL like "http://127.0.0.1:5000" or "https://agent.example.com"
+  "port": 5000,       // optional; omit if ip is a full URL or you want default port
   "projects": ["DemoWeb1"],
   "num_use_cases": 5,
   "runs": 3,
@@ -46,6 +46,13 @@ Or use the provided deployment script to deploy with PM2:
   "plot_results": false
 }
 ```
+
+#### Behavior
+
+- If `ip` includes a scheme (e.g., starts with `http://` or `https://`), the service will use it as the base URL and ignore `port`.
+- If `ip` is a plain hostname/IP (e.g., `127.0.0.1`), the service will:
+  - include `:port` if `port` is provided
+  - omit the port otherwise (e.g., `http://127.0.0.1`).
 
 #### Response
 
