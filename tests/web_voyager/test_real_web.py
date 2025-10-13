@@ -7,15 +7,15 @@ from pathlib import Path
 from loguru import logger
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
+from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
+from autoppia_iwa.entrypoints.benchmark.utils.results import plot_results, print_performance_statistics, save_results_to_json
+from autoppia_iwa.entrypoints.benchmark.utils.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.data_generation.domain.tests_classes import JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.shared.utils_entrypoints.metrics import TimingMetrics
-from autoppia_iwa.src.shared.utils_entrypoints.results import plot_results, plot_task_comparison, print_performance_statistics, save_results_to_json
-from autoppia_iwa.src.shared.utils_entrypoints.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
 from autoppia_iwa.src.shared.web_voyager_utils import TaskData, generate_hash, load_real_tasks
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
@@ -31,7 +31,7 @@ class WebVoyagerConfig:
 
     use_cached_solutions: bool = False
 
-    num_of_urls: int = 10
+    num_of_urls: int = 1
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
@@ -191,7 +191,7 @@ async def run_evaluation(demo_project: WebProject, tasks: list[Task], timing_met
 
     print_performance_statistics(results, AGENTS, timing_metrics)
     plot_results(results, AGENTS, timing_metrics, str(config.output_dir))
-    plot_task_comparison(results, AGENTS, tasks, str(config.output_dir))
+    # plot_task_comparison(results, AGENTS, tasks, str(config.output_dir))
     save_results_to_json(results, AGENTS, timing_metrics, str(config.output_dir))
 
 
