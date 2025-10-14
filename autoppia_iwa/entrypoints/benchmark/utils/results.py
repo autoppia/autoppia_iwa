@@ -25,8 +25,8 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
             for task_id, data in results[agent.id].items():
                 agent_scores.append(data["score"])
                 agent_tasks[task_id] = {
-                    "use_case": data["task_use_case"],
-                    "prompt": data["prompt"],
+                    # "use_case": data["task_use_case"],
+                    # "prompt": data["prompt"],
                     "score": data["score"],
                     "solution_time": timing_metrics.solution_times.get(agent.id, {}).get(task_id, 0),
                     "evaluation_time": timing_metrics.evaluation_times.get(agent.id, {}).get(task_id, 0),

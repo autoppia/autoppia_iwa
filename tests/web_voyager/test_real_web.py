@@ -52,7 +52,7 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 # Define agents
 AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(name="Random-clicker"),
-    ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=150),
+    ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=250),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
@@ -71,7 +71,7 @@ async def generate_tasks(tasks_data: TaskData) -> list[Task]:
 
 
 @visualize_evaluation(visualizer)
-async def evaluate_task_solution(web_project: WebProject, task: Task, task_solution: TaskSolution) -> EvaluationResult:
+async def evaluate_task_solution(web_project: WebProject, task: Task, task_solution: TaskSolution, validator_id: str) -> EvaluationResult:
     """Evaluate a task solution."""
     evaluator = ConcurrentEvaluator(
         web_project=web_project,
@@ -179,7 +179,7 @@ async def evaluate_solutions(
     for task in tasks:
         logger.info(f"  Evaluating solution for Task {task.id}...")
         task_solution = solutions[task.id]
-        eval_result = await evaluate_task_solution(demo_project, task, task_solution)
+        eval_result = await evaluate_task_solution(demo_project, task, task_solution, "benchmark_evaluator")
         results[task.id] = {"score": eval_result.final_score, "evaluation_result": eval_result}
     return results
 

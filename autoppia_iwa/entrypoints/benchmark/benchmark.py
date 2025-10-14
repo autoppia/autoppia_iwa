@@ -11,18 +11,14 @@ from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.entrypoints.benchmark.utils.results import plot_results, save_results_to_json
 from autoppia_iwa.entrypoints.benchmark.utils.solutions import ConsolidatedSolutionCache
-from autoppia_iwa.src.data_generation.application.tasks.local.tests.test_generation_pipeline import LocalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
+from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_evaluation, visualize_task
-from autoppia_iwa.src.shared.web_voyager_utils import TaskData, load_real_tasks
-from autoppia_iwa.src.web_agents.base import BaseAgent, IWebAgent
+from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
+from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.web_analysis.application.web_analysis_pipeline import WebAnalysisPipeline
 
 from .task_generation import generate_tasks_for_project
 
@@ -473,141 +469,3 @@ class Benchmark:
         Alias to `run()` for a more explicit call site name.
         """
         await self.run()
-
-    @visualize_task(visualizer)
-    async def generate_tasks(self, demo_project: WebProject, tasks_data: TaskData | None = None) -> list[Task]:
-        """Generate tasks with caching support."""
-        if self.config.evaluate_real_tasks and tasks_data:
-            task = Task(url=tasks_data.web, prompt=tasks_data.ques, is_web_real=True)
-            return await LocalTestGenerationPipeline(demo_project).add_tests_to_tasks([task])
-
-        return await generate_tasks_for_project(
-            demo_project,
-            self.config.use_cached_tasks,
-            str(self.config.tasks_cache_dir),
-            self.config.prompts_per_use_case,
-            self.config.num_use_cases,
-        )
-
-    @visualize_evaluation(visualizer)
-    async def evaluate_task_solution(self, web_project: WebProject, task: Task, task_solution: TaskSolution) -> EvaluationResult:
-        """Evaluate a task solution."""
-        evaluator = ConcurrentEvaluator(
-            web_project=web_project,
-            config=EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20),
-            # config=EvaluatorConfig(save_results_in_db=False, enable_grouping_tasks=False, chunk_size=20),
-        )
-        return await evaluator.evaluate_single_task_solution(task, task_solution)
-
-    async def generate_solutions(self, agent: BaseAgent, tasks: list[Task], timing_metrics: TimingMetrics) -> dict[str, TaskSolution]:
-        """Generate or load solutions for a given agent and tasks."""
-        solutions = {}
-        logger.info(f"\nAgent: {agent.name}")
-
-        for task in tasks:
-            task_solution: TaskSolution | None = None
-
-            # Check if solution should be loaded from cache
-            if self.config.use_cached_solutions and self._solution_cache.solution_exists(task.id, agent.id):
-                logger.info(f"  Loading cached solution for Task {task.id}...")
-                try:
-                    task_solution = await self._solution_cache.load_solution(task.id, agent.id)
-                    if task_solution:
-                        logger.info(f"    Successfully loaded cached solution with {len(task_solution.actions)} actions")
-                    else:
-                        logger.warning(f"    Failed to load cached solution for {task.id}, will generate new one")
-                except Exception as e:
-                    logger.error(f"    Error loading cached solution: {e!s}")
-
-            # Generate new solution if needed
-            if task_solution is None:
-                logger.info(f"  Generating new solution for Task {task.id}...")
-                start_time = time.time()
-
-                # Solve the task
-                solution = await agent.solve_task(task)
-                actions = solution.actions or []
-                task_solution = TaskSolution(task_id=task.id, actions=actions, web_agent_id=agent.id)
-
-                # Measure solution time
-                end_time = time.time()
-                solution_time = end_time - start_time
-                timing_metrics.record_solution_time(agent.id, task.id, solution_time)
-                logger.info(f"    Solution generated in {solution_time:.2f} seconds with {len(actions)} actions")
-
-                # Cache the solution for future use
-                try:
-                    success = self._solution_cache.save_solution(task_solution=task_solution, agent_id=agent.id, agent_name=agent.name)
-                    if success:
-                        logger.info("Solution cached successfully for future runs")
-                    else:
-                        logger.warning("Failed to cache solution")
-                except Exception as e:
-                    logger.error(f"Error caching solution: {e!s}")
-
-            # Store solution for evaluation phase
-            solutions[task.id] = task_solution
-
-        return solutions
-
-    async def evaluate_solutions(
-        self,
-        agent: BaseAgent,
-        tasks: list[Task],
-        solutions: dict[str, TaskSolution],
-        demo_project: WebProject,
-    ) -> dict[str, dict]:
-        """Evaluate task solutions."""
-        results = {}
-        logger.info(f"\nEvaluating solutions for Agent: {agent.name}")
-
-        for task in tasks:
-            logger.info(f"  Evaluating solution for Task {task.id}...")
-            task_solution = solutions[task.id]
-            eval_result = await self.evaluate_task_solution(demo_project, task, task_solution)
-            results[task.id] = {"score": eval_result.final_score, "evaluation_result": eval_result}
-        return results
-
-    async def run_evaluation(self, demo_project: WebProject, agents, tasks: list[Task], timing_metrics: TimingMetrics):
-        """Orchestrate solution generation and evaluation."""
-        all_solutions = {agent.id: await self.generate_solutions(agent, tasks, timing_metrics) for agent in agents}
-        results = {agent.id: await self.evaluate_solutions(agent, tasks, all_solutions[agent.id], demo_project) for agent in agents}
-        return results
-        # print_performance_statistics(results, AGENTS, timing_metrics)
-        # plot_results(results, AGENTS, timing_metrics, str(config.output_dir))
-        # plot_task_comparison(results, AGENTS, tasks, str(config.output_dir))
-        # save_results_to_json(results, AGENTS, timing_metrics, str(config.output_dir))
-
-    async def run_real_tasks(self):
-        """Evaluate real tasks from TaskData."""
-        self._timing_metrics.start()
-        tasks_data = load_real_tasks(self.config.num_of_urls)
-        web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
-
-        for td in tasks_data:
-            project = web_projects.get(td.id)
-            if project:
-                await _load_web_analysis(project)
-                tasks = await self.generate_tasks(project, td)
-                if tasks:
-                    await self.run_evaluation(project, self.config.agents, tasks, self._timing_metrics)
-
-
-async def _run_web_analysis(
-    demo_web_project: WebProject,
-    llm_service: ILLM,
-):
-    """
-    Executes the web analysis pipeline to gather information from the target page.
-    """
-    analyzer = WebAnalysisPipeline(start_url=demo_web_project.frontend_url, llm_service=llm_service)
-    return await analyzer.analyze(
-        save_results_in_db=False,
-        enable_crawl=True,
-    )
-
-
-async def _load_web_analysis(demo_web_project: WebProject):
-    web_analysis = await _run_web_analysis(demo_web_project)
-    demo_web_project.domain_analysis = web_analysis
-    demo_web_project.urls = web_analysis.urls
