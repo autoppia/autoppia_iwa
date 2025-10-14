@@ -28,8 +28,6 @@ class BenchmarkConfig:
     max_parallel_agent_calls: int = 1
     use_cached_solutions: bool = False
     record_gif: bool = False
-    evaluate_real_tasks: bool = False
-    num_of_urls: int = 1  # number of URLs to load
 
     # Persistence / plotting
     save_results_json: bool = True

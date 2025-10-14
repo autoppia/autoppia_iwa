@@ -39,6 +39,7 @@ class WebVoyagerConfig:
     tasks_cache_dir: Path = data_dir / "tasks_cache"
     solutions_cache_dir: Path = data_dir / "solutions_cache"
     output_dir: Path = base_dir / "results"
+    should_record_gif: bool = True
 
     def __post_init__(self):
         for directory in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir):
@@ -79,6 +80,7 @@ async def evaluate_task_solution(web_project: WebProject, task: Task, task_solut
             # save_results_in_db=False,
             enable_grouping_tasks=False,
             chunk_size=20,
+            should_record_gif=True,
         ),
     )
     result = await evaluator.evaluate_single_task_solution(task, task_solution)
