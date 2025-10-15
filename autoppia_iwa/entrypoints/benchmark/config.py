@@ -17,6 +17,7 @@ class BenchmarkConfig:
 
     projects: list[WebProject] = field(default_factory=list)
     agents: list[IWebAgent] = field(default_factory=list)
+    use_cases: list[str] | None = None
 
     # Task generation
     use_cached_tasks: bool = False

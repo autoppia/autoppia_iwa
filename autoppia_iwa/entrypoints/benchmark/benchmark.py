@@ -47,6 +47,7 @@ class Benchmark:
         self._validate_config()
 
         setup_logging(log_file)
+        self.per_project_results = {}
 
     def _validate_config(self) -> None:
         """
@@ -83,6 +84,7 @@ class Benchmark:
         agent_dir.mkdir(exist_ok=True)
         (agent_dir / f"{task_id}_run_{run_index}.gif").write_bytes(base64.b64decode(b64_gif))
         logger.info(f"GIF saved: {agent_name} -> {task_id} (run {run_index})")
+        return base64.b64decode(b64_gif)
 
     # ---------------------------------------------------------------------
     # Core per-task/per-agent execution
@@ -219,6 +221,7 @@ class Benchmark:
             cache_dir=str(self.config.tasks_cache_dir),
             prompts_per_use_case=self.config.prompts_per_use_case,
             num_use_cases=self.config.num_use_cases,
+            use_cases=self.config.use_cases,
         )
 
         if tasks:
@@ -267,10 +270,13 @@ class Benchmark:
             # Aggregate results by agent
             for ev in evaluations:
                 use_case_name = getattr(task.use_case, "name", "Unknown")
+                actions = [a.action.model_dump() for a in getattr(ev, "execution_history", [])]
                 per_agent_results_for_run.setdefault(ev.web_agent_id, {})[task.id] = {
                     "prompt": task.prompt,
                     "score": ev.final_score,
                     "task_use_case": use_case_name,
+                    "actions": actions,
+                    "base64_gif": ev.gif_recording if self.config.record_gif else None,
                 }
 
         return per_agent_results_for_run
@@ -298,6 +304,10 @@ class Benchmark:
         # For JSON persistence (nested by use case)
         per_agent_usecase_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_times: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_prompt: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_actions: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_task_ids: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_gifs: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
 
         # Collect data from all runs
         for run_result in project_run_results:
@@ -322,6 +332,11 @@ class Benchmark:
                     per_agent_usecase_scores[a_name][use_case].append(score)
                     per_agent_usecase_times[a_name][use_case].append(t)
 
+                    per_agent_usecase_prompt[a_name][use_case].append(res.get("prompt", ""))
+                    per_agent_usecase_actions[a_name][use_case].append(res.get("actions", []))
+                    per_agent_usecase_task_ids[a_name][use_case].append(task_id)
+                    per_agent_usecase_gifs[a_name][use_case].append(res.get("base64_gif", None))
+
         # Update the global rollup state and log summaries
         for agent in self.config.agents:
             a_name = agent.name
@@ -344,6 +359,7 @@ class Benchmark:
         # Build per-project JSON payload
         json_root: dict = {"agents": {}}
         project_block: dict = {}
+        response_project_block: dict = {}
 
         for agent in self.config.agents:
             a_name = agent.name
@@ -352,6 +368,7 @@ class Benchmark:
             uc_block: dict[str, dict] = {}
             all_scores: list[float] = []
             all_times: list[float] = []
+            new_uc_block: dict[str, dict] = {}
 
             for uc, scores in per_agent_usecase_scores[a_name].items():
                 times = per_agent_usecase_times[a_name][uc]
@@ -365,6 +382,24 @@ class Benchmark:
                     "success_rate": round((succ / tot), 3) if tot else 0.0,
                     "avg_solution_time": round(avg_t, 3),
                 }
+
+                new_uc_block[uc] = {}
+                for task_id, prompt, action, t, score, gif in zip(
+                    per_agent_usecase_task_ids[a_name][uc],
+                    per_agent_usecase_prompt[a_name][uc],
+                    per_agent_usecase_actions[a_name][uc],
+                    per_agent_usecase_times[a_name][uc],
+                    per_agent_usecase_scores[a_name][uc],
+                    per_agent_usecase_gifs[a_name][uc],
+                    strict=False,
+                ):
+                    new_uc_block[uc][task_id] = {
+                        "success": score,
+                        "time": round(t, 3),
+                        "prompt": prompt,
+                        "actions": action,
+                        "base64_gif": gif,
+                    }
 
                 all_scores.extend(scores)
                 all_times.extend(times)
@@ -383,12 +418,14 @@ class Benchmark:
                     "avg_solution_time": round(avg_all_time, 3),
                 },
             }
+            response_project_block = project_block.copy()
+            response_project_block[a_name].update({"use_cases": new_uc_block})
 
             logger.info(f"{a_name:<20} | {rate_all * 100:6.2f}% ({succ_all}/{tot_all}) | avg {avg_all_time:.2f}s")
 
         # Persist per-project stats
         json_root["agents"] = {project.name: project_block}
-
+        self.per_project_results[project.name] = response_project_block
         self.config.per_project_results.mkdir(parents=True, exist_ok=True)
         stub = project.name.lower().replace(" ", "_")
         out_path = self.config.per_project_results / f"{stub}_stats.json"
@@ -399,7 +436,7 @@ class Benchmark:
     # Public API
     # ---------------------------------------------------------------------
 
-    async def run(self) -> None:
+    async def run(self) -> dict:
         """
         Execute the complete benchmark across all configured projects and runs.
         This is the main entrypoint you should call.
@@ -462,6 +499,8 @@ class Benchmark:
             self._timing_metrics.end()
 
         logger.success(f"Benchmark finished ✔ - {successful_projects}/{total_projects} projects completed successfully")
+
+        return self.per_project_results
 
     # Optional convenience alias if you prefer a more explicit public name
     async def execute(self) -> None:

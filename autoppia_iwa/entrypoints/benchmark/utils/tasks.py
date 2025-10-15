@@ -76,7 +76,9 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
         return None
 
 
-async def generate_tasks_for_web_project(project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1) -> list[Task]:
+async def generate_tasks_for_web_project(
+    project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1, use_cases: list[str] | None = None
+) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
     """
@@ -88,7 +90,7 @@ async def generate_tasks_for_web_project(project: WebProject, use_cached_tasks: 
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
 
-    config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases)
+    config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases, use_cases=use_cases)
 
     print(f"Generating tasks for {project.name}...")
     pipeline = TaskGenerationPipeline(web_project=project, config=config)
