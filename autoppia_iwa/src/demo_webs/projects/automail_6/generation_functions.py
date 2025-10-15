@@ -143,7 +143,7 @@ def generate_is_starred_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(op_str)
 
         field_value = email.get(field)
-        value = _generate_constraint_value(operator, field_value, field, EMAILS_DATA_MODIFIED)
+        value = _generate_constraint_value(operator, field_value, field, eligible_emails)
         constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
 
