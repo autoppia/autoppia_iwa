@@ -32,6 +32,7 @@ class WebVoyagerConfig:
     use_cached_solutions: bool = False
 
     num_of_urls: int = 1
+    task_indices: list[int] = None  # e.g., [0, 2, 5] to select specific tasks by index and override num_of_urls
 
     # Paths
     base_dir: Path = PROJECT_BASE_DIR.parent
@@ -44,6 +45,7 @@ class WebVoyagerConfig:
     def __post_init__(self):
         for directory in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir):
             directory.mkdir(parents=True, exist_ok=True)
+        self.task_indices = [1]
 
 
 # Initialize configuration & solution cache
@@ -54,6 +56,7 @@ solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
 AGENTS: list[IWebAgent] = [
     # RandomClickerWebAgent(name="Random-clicker"),
     ApifiedWebAgent(name="Browser-Use", host="localhost", port=5000, timeout=250),
+    # ApifiedWebAgent(name="OpenAI-CUA", host="localhost", port=5000, timeout=400),
     # ApifiedWebAgent(name="Autoppia-Agent", host="localhost", port=9002, timeout=120),
 ]
 
@@ -205,7 +208,7 @@ async def main():
     timing_metrics = TimingMetrics()
     timing_metrics.start()
 
-    tasks_data = load_real_tasks(config.num_of_urls)
+    tasks_data = load_real_tasks(config.num_of_urls, config.task_indices)
     web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
 
     for td in tasks_data:
