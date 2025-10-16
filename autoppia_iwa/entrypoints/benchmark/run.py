@@ -59,8 +59,6 @@ CFG = BenchmarkConfig(
     # Persistence
     save_results_json=True,
     plot_results=False,
-    evaluate_real_tasks=True,
-    num_of_urls=1,
 )
 
 

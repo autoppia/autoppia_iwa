@@ -369,6 +369,8 @@ class JudgeBaseOnHTML(BaseTaskTest):
         except Exception:
             result_str = result
 
+        logger.info(f"HTML Judge LLM response: {result_str}")
+
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
         final_result = match.group(1).lower() == "true" if match else False
         save_usage_record(task_prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
@@ -427,8 +429,9 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         except Exception:
             result_str = result
 
-        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
+        logger.info(f"Screenshots Judge LLM response: {result_str}")
 
+        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
         final_result = match.group(1).lower() == "true" if match else False
         save_usage_record(prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
 
