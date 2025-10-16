@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import uuid
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -49,11 +50,18 @@ def load_jsonl_file(file_path: Path) -> list[dict]:
     return tasks
 
 
-def load_real_tasks(num_of_urls: int = 0, by_indices: list | None = None) -> list[TaskData]:
+def load_real_tasks(num_of_urls: int = 0, task: dict | None = None, by_indices: list | None = None) -> list[TaskData]:
     """Load real tasks, excluding impossible ones."""
+
+    if task.get("url") and task.get("prompt"):
+        unique_id = str(uuid.uuid4())
+        unique_name = f"custom_web_{unique_id[:8]}"
+        return [TaskData(web=task["url"], ques=task["prompt"], id=unique_id, web_name=unique_name)]
+
     if not num_of_urls and not by_indices:
         raise ValueError("Either num_of_urls or by_indices must be provided and non-zero.")
-    data_dir = PROJECT_BASE_DIR.parent / "data"
+
+    data_dir = PROJECT_BASE_DIR / "entrypoints" / "judge_benchmark"
     print("Loading real tasks...")
     original_tasks = load_jsonl_file(data_dir / "web_voyager_tasks/web_voyager_data.jsonl")
     impossible_tasks_ids = set(load_jsonl_file(data_dir / "web_voyager_tasks/web_voyager_impossible_tasks.json"))

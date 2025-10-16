@@ -7,7 +7,7 @@ import asyncio
 
 from loguru import logger
 
-from autoppia_iwa.entrypoints.web_voyager.test_real_web import WebVoyagerBenchmark, WebVoyagerConfig
+from autoppia_iwa.entrypoints.judge_benchmark.test_real_web import WebVoyagerBenchmark, WebVoyagerConfig
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # =========================
@@ -20,13 +20,17 @@ AGENTS = [
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
     ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
 ]
+url = "https://www.allrecipes.com/"
+prompt = "Provide a recipe for vegetarian lasagna with more than 100 reviews and a rating of at least 4.5 stars suitable for 6 people."
 
 # 2) Benchmark parameters
 CFG = WebVoyagerConfig(
     agents=AGENTS,
     # Tasks
-    num_of_urls=1,
-    task_indices=[1],
+    url=url,
+    prompt=prompt,
+    # num_of_urls=1,
+    # task_indices=[1],
 )
 
 

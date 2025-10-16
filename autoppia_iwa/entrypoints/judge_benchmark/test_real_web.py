@@ -33,17 +33,19 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 class WebVoyagerConfig:
     """Configuration for the benchmark test."""
 
-    use_cached_solutions: bool = False
+    url: str | None = None
+    prompt: str | None = None
     num_of_urls: int = 1
-    task_indices: list[int] = field(default_factory=list)  # e.g., [0, 2, 5] to select specific tasks by index and override num_of_urls
     agents: list[IWebAgent] = field(default_factory=list)
+    task_indices: list[int] = field(default_factory=list)  # e.g., [0, 2, 5] to select specific tasks by index and override num_of_urls
+    should_record_gif: bool = True
+    use_cached_solutions: bool = False
 
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
     tasks_cache_dir: Path = data_dir / "tasks_cache"
     solutions_cache_dir: Path = data_dir / "solutions_cache"
     output_dir: Path = base_dir / "results"
-    should_record_gif: bool = True
 
     def __post_init__(self):
         for directory in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir):
@@ -229,7 +231,8 @@ class WebVoyagerBenchmark:
         timing_metrics = TimingMetrics()
         timing_metrics.start()
 
-        tasks_data = load_real_tasks(self.config.num_of_urls, self.config.task_indices)
+        task = {"url": self.config.url, "prompt": self.config.prompt}
+        tasks_data = load_real_tasks(num_of_urls=self.config.num_of_urls, task=task, by_indices=self.config.task_indices)
         web_projects = {t.id: WebProject(id=t.id, name=t.web_name, frontend_url=t.web, backend_url=t.web, is_web_real=True) for t in tasks_data}
 
         for td in tasks_data:
