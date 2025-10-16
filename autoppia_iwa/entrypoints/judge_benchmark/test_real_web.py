@@ -218,7 +218,8 @@ class WebVoyagerBenchmark:
         print_performance_statistics(results, self.agents, timing_metrics)
         plot_results(results, self.agents, timing_metrics, str(self.config.output_dir))
         # plot_task_comparison(results, self.agents, tasks, str(self.config.output_dir))
-        save_results_to_json(results, self.agents, timing_metrics, str(self.config.output_dir))
+        results = save_results_to_json(results, self.agents, timing_metrics, str(self.config.output_dir))
+        return results
 
     # ------------------------------------------------------------------------
     # MAIN EXECUTION ENTRYPOINT
@@ -229,6 +230,7 @@ class WebVoyagerBenchmark:
         AppBootstrap()
         timing_metrics = TimingMetrics()
         timing_metrics.start()
+        results = {}
 
         task = {"url": self.config.url, "prompt": self.config.prompt}
         tasks_data = load_real_tasks(num_of_urls=self.config.num_of_urls, task=task, by_indices=self.config.task_indices)
@@ -239,9 +241,10 @@ class WebVoyagerBenchmark:
             if project:
                 tasks = await self.generate_tasks(td)
                 if tasks:
-                    await self.run_evaluation(project, tasks, timing_metrics)
+                    results[td.id] = await self.run_evaluation(project, tasks, timing_metrics)
 
         logger.info("Benchmark Evaluation Complete!")
+        return results
 
 
 # ------------------------------------------------------------------------

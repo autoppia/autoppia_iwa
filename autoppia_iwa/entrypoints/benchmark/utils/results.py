@@ -1,13 +1,14 @@
 import json
 import os
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 
 from .metrics import TimingMetrics, compute_statistics
 
 
-def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> str:
+def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> dict[str, str | float | dict[Any, Any]]:
     """
     Save comprehensive results to a JSON file and return the file path.
     """
@@ -54,7 +55,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
         json.dump(output_data, f, indent=2)
 
     print(f"\nDetailed results saved to '{filename}'")
-    return filename
+    return output_data
 
 
 def print_performance_statistics(results, agents, timing_metrics: TimingMetrics):
