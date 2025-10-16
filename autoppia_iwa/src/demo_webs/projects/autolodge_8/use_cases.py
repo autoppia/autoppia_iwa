@@ -99,8 +99,8 @@ VIEW_HOTEL_USE_CASE = UseCase(
     additional_prompt_info=VIEW_HOTEL_INFO,
     examples=[
         {
-            "prompt": "I like the one in Murree with 5-star rating and free breakfast. Can you show me more about it?",
-            "prompt_for_task_generation": "View hotel in Murree with 5-star rating and free breakfast.",
+            "prompt": "View the hotel located in Murree with 5-star rating and free breakfast. Can you show me more about it?",
+            "prompt_for_task_generation": "View the hotel located in Murree with 5-star rating and free breakfast.",
         },
         {
             "prompt": "Open the second hotel from the list - the one hosted by Fatima since 2018, I think.",

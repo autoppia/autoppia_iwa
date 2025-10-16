@@ -180,6 +180,38 @@ The benchmark provides powerful capabilities for comprehensive agent development
 - **Real-world evaluation**: Test against actual production websites
 
 **→ See the comprehensive [Benchmark Guide](autoppia_iwa/entrypoints/benchmark/README.md)** for detailed configuration and usage instructions.
+---
+## 🧭 Browser-use Agent
+
+Run real browser actions during benchmarks using the lightweight `browser-use` integration.
+
+### ⚙️ Setup
+- Use the root setup script (installs Python deps and Playwright browsers):
+  ```bash
+  bash setup.sh
+  ```
+- Or install manually:
+  ```bash
+  pip install -r requirements.txt
+  playwright install --with-deps
+  ```
+
+### 🚀 Quickstart
+- Agent source: `autoppia_iwa/src/web_agents/browser-use/agent.py`
+- Minimal usage inside IWA flows:
+  ```python
+  from autoppia_iwa.src.web_agents.browser_use.agent import BrowserUseWebAgent, BrowserUseConfig
+
+  agent = BrowserUseWebAgent(BrowserUseConfig(headless=True))
+  solution = await agent.solve_task(task)  # TaskSolution with recording
+  ```
+
+### 🔧 Evaluation Notes
+- Evaluators can replay/analyze actions; if needed, adapt `AgentHistoryList` into IWA `BaseAction` items before returning the `TaskSolution` (see the Browser-use readme for a sketch).
+
+### 📖 Learn More
+- Full guide: [Browser-use readme](autoppia_iwa/src/web_agents/browser-use/readme.md)
+
 
 ---
 ## 🆘 Support & Contact

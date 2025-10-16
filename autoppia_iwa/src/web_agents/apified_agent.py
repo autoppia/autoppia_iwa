@@ -14,10 +14,20 @@ class ApifiedWebAgent(IWebAgent):
     Calls a remote /solve_task endpoint and rebuilds a TaskSolution.
     """
 
-    def __init__(self, host: str, port: int, id: str | None = None, name: str | None = None, timeout=180):
+    def __init__(self, host: str | None = None, port: int | None = None, id: str | None = None, name: str | None = None, timeout=180, base_url: str | None = None):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
-        self.base_url = f"http://{host}:{port}"
+        if base_url:
+            # Respect provided base_url as-is
+            self.base_url = base_url.rstrip("/")
+        else:
+            if host is None:
+                raise ValueError("host must be provided when base_url is not set")
+            # If port is provided, include it; otherwise omit
+            if port is not None:
+                self.base_url = f"http://{host}:{port}"
+            else:
+                self.base_url = f"http://{host}"
         self.timeout = timeout
         super().__init__()
 

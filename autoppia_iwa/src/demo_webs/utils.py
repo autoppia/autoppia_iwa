@@ -23,3 +23,9 @@ def datetime_from_utc_to_local(utc_datetime: datetime) -> datetime:
     if utc_datetime.tzinfo is None:
         utc_datetime = utc_datetime.replace(tzinfo=UTC)
     return utc_datetime.astimezone()  # converts to local timezone
+
+
+def log_event(event):
+    print("=" * 50)
+    print(event)
+    print("=" * 50)

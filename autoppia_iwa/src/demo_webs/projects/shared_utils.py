@@ -169,3 +169,59 @@ def validate_date_field(field_value, criterion):
         return comp_table[ComparisonOperator.EQUALS](field_value, criterion.date())
     else:
         return criterion is None or field_value == criterion
+
+
+def validate_time_field(field_value, criterion):
+    """
+    Validates a time field against a criterion, independent of any class context.
+    Handles ComparisonOperator and CriterionValue, and supports string, time, and datetime inputs.
+    Returns True if the field matches the criterion, False otherwise.
+    """
+    from datetime import datetime, time
+
+    from .criterion_helper import ComparisonOperator, CriterionValue
+
+    comp_table = {
+        ComparisonOperator.EQUALS: lambda s, c: s == c,
+        ComparisonOperator.NOT_EQUALS: lambda s, c: s != c,
+        ComparisonOperator.GREATER_THAN: lambda s, c: s > c,
+        ComparisonOperator.GREATER_EQUAL: lambda s, c: s >= c,
+        ComparisonOperator.LESS_THAN: lambda s, c: s < c,
+        ComparisonOperator.LESS_EQUAL: lambda s, c: s <= c,
+    }
+
+    def to_time(val):
+        if isinstance(val, str):
+            try:
+                # Accepts "HH:MM[:SS[.ffffff]]"
+                return time.fromisoformat(val)
+            except Exception:
+                return None
+        elif isinstance(val, datetime):
+            return val.time()
+        elif isinstance(val, time):
+            return val
+        return None
+
+    if isinstance(criterion, CriterionValue):
+        op = criterion.operator
+        comp_time = to_time(criterion.value)
+        field_time = to_time(field_value)
+        if comp_time is None or field_time is None:
+            return False
+        try:
+            return comp_table[op](field_time, comp_time)
+        except KeyError:
+            logger.error("Unknown comparison operator for time field: %s", op)
+            return False
+        except Exception as e:
+            logger.error(f"Error validating time field: {e}")
+            return False
+    elif isinstance(criterion, datetime) and isinstance(field_value, datetime):
+        return comp_table[ComparisonOperator.EQUALS](field_value.time(), criterion.time())
+    elif isinstance(criterion, time) and isinstance(field_value, datetime):
+        return comp_table[ComparisonOperator.EQUALS](field_value.time(), criterion)
+    elif isinstance(criterion, datetime) and isinstance(field_value, time):
+        return comp_table[ComparisonOperator.EQUALS](field_value, criterion.time())
+    else:
+        return criterion is None or field_value == criterion
