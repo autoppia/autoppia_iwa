@@ -1,70 +1,97 @@
 
-# Web Voyager
+## Judge Benchmark (Web Voyager)
 
-Web Voyager is a benchmarking framework for evaluating web agents on real-world web tasks. It automates the process of generating tasks, running agents, and collecting performance metrics using LLM-based and rule-based evaluation strategies.
+A simple benchmark to evaluate web agents on real websites. It runs tasks, collects solutions, and evaluates them using rule- and LLM-based judges. No runtime flags or CLI are needed—just edit one file and run.
 
-## Features
+### What you get
+- **Task sources**: Either a custom URL + prompt, or tasks from the bundled dataset
+- **Agent evaluation**: Works with agents exposing a local HTTP API
+- **Outputs**: Plots, JSON summaries, rich console tables, and usage logs
 
-- **Task Generation:** Create realistic web tasks from datasets or custom prompts.
-- **Agent Evaluation:** Supports multiple agent types (e.g., browser automation, LLM-based).
-- **Metrics & Logging:** Tracks cost, duration, token usage, and success rates.
-- **Visualization:** Plots and prints performance statistics.
-- **Extensible:** Easily add new agents, tasks, or evaluation criteria.
+---
 
-## Configuration
+## Quick start
 
-Edit the configuration in `autoppia_iwa/entrypoints/judge_benchmark/run.py`:
+1) Start your agent (example shown uses BrowserUse on `127.0.0.1:5000`).
 
-- **Agents:** Define agents and their endpoints.
-- **Task Source:** Set URLs and prompts, or use indices to select tasks.
-- **Benchmark Options:** Adjust number of tasks, caching, GIF recording, etc.
+2) Open and edit `autoppia_iwa/entrypoints/judge_benchmark/run.py`.
 
-Example:
+Pick ONE mode by flipping a single boolean:
+
+- Mode A – custom task (recommended for a quick smoke test)
+  - Set `USE_CUSTOM_TASK = True`
+  - Set `CUSTOM_URL` and `CUSTOM_PROMPT`
+
+- Mode B – dataset selection
+  - Set `USE_CUSTOM_TASK = False`
+  - Either set `NUM_OF_URLS = N` (first N tasks) OR set `TASK_INDICES = [i, j, ...]`
+
+Minimal example inside `run.py`:
 ```python
+# Agent
 AGENTS = [
-    ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
 ]
-CFG = WebVoyagerConfig(
-    agents=AGENTS,
-    url="https://www.allrecipes.com/",
-    prompt="Provide a recipe for vegetarian lasagna...",
-)
+
+# Choose how to select tasks
+USE_CUSTOM_TASK = True  # or False to use the dataset
+
+# Custom task (used when USE_CUSTOM_TASK=True)
+CUSTOM_URL = "https://www.allrecipes.com/"
+CUSTOM_PROMPT = "Provide a vegetarian lasagna recipe..."
+
+# Dataset selection (used when USE_CUSTOM_TASK=False)
+NUM_OF_URLS = 1
+TASK_INDICES = []  # e.g. [0, 2, 5]
+
+# Run options
+RECORD_GIF = True
+USE_CACHED_SOLUTIONS = False
 ```
 
-## How to Run
+3) Run the benchmark:
+```bash
+python -m autoppia_iwa.entrypoints.judge_benchmark.run
+```
 
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+---
 
-2. **Start your agent(s):**
-   Make sure the agents you configured are running and accessible.
+## Outputs
+- Results (plots and JSON) are saved under `results/`
+- Evaluation log: `real_web_evaluation.log` (at project root)
+- Judge usage logs: `judge_tests_usage_logs.jsonl` (created automatically when LLM-based judges run)
 
-3. **Run the benchmark:**
-   ```bash
-   python -m autoppia_iwa.entrypoints.judge_benchmark.run
-   ```
+You can also summarize judge usage logs:
+```bash
+python -m autoppia_iwa.entrypoints.judge_benchmark.benchmark_llm_tests
+# Optional: specify a different file
+# python -m autoppia_iwa.entrypoints.judge_benchmark.benchmark_llm_tests --src /path/to/judge_tests_usage_logs.jsonl
+```
 
-4. **View results:**
-   Results, logs, and plots are saved in the `results/` directory.
+---
 
-## Advanced Usage
+## Dataset location
+By default, tasks are loaded from:
+- `autoppia_iwa/entrypoints/judge_benchmark/web_voyager_tasks/web_voyager_data.jsonl`
 
-- **Custom Tasks:**
-  Pass a custom URL and prompt to `WebVoyagerConfig`.
-- **Task Selection:**
-  Use `task_indices` to select specific tasks from the dataset.
-- **Caching:**
-  Enable solution caching for faster repeated runs.
+If not found, it falls back to:
+- `data/web_voyager_tasks/web_voyager_data.jsonl`
 
-## File Structure
+Impossible tasks (if present) are filtered using `web_voyager_impossible_tasks.json` in the same directory. If the file is missing, all tasks are considered possible.
 
-- `entrypoints/judge_benchmark/run.py` — Main entrypoint for running benchmarks.
-- `entrypoints/judge_benchmark/test_real_web.py` — Benchmark orchestration logic.
-- `src/shared/web_voyager_utils.py` — Utilities for loading tasks and data.
-- `src/evaluation/evaluator/evaluator.py` — Evaluation logic for agent solutions.
+---
 
-## License
+## Tips & troubleshooting
+- Ensure your agent is reachable at the host/port you configured in `AGENTS`
+- If GIFs are not needed, set `RECORD_GIF = False`
+- To reuse previous agent runs, set `USE_CACHED_SOLUTIONS = True`
+- If you see no plots or JSON, check `real_web_evaluation.log` for errors
+- LLM provider setup (e.g., OpenAI API key) is managed via environment variables in `autoppia_iwa/config/config.py`
 
-See `LICENSE` for details.
+---
+
+## File map
+- `entrypoints/judge_benchmark/run.py` — edit-and-run entrypoint
+- `entrypoints/judge_benchmark/test_real_web.py` — orchestration & evaluation
+- `src/shared/web_voyager_utils.py` — dataset loading helpers
+- `entrypoints/benchmark/utils/*` — metrics, results, plotting utilities

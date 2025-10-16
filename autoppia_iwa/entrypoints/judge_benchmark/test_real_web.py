@@ -26,8 +26,6 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
-# from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-
 
 @dataclass
 class WebVoyagerConfig:
@@ -75,7 +73,7 @@ class WebVoyagerBenchmark:
         # Configure logging
         logger.remove()
         logger.add(
-            "real_web_evaluation.log",
+            str(PROJECT_BASE_DIR / "real_web_evaluation.log"),
             rotation="10 MB",
             level="DEBUG",
             format="{time} | {level: <8} | {message}",
@@ -106,7 +104,7 @@ class WebVoyagerBenchmark:
                 # save_results_in_db=False,
                 enable_grouping_tasks=False,
                 chunk_size=20,
-                should_record_gif=True,
+                should_record_gif=self.config.should_record_gif,
             ),
         )
         result = await evaluator.evaluate_single_task_solution(task, task_solution)
@@ -129,7 +127,8 @@ class WebVoyagerBenchmark:
 
         log_file = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"
         if not log_file.exists():
-            raise FileNotFoundError(f"Log file not found: {log_file}")
+            logger.warning(f"Judge usage log not found at {log_file}; skipping feedback update.")
+            return
 
         task_prompt_hash = generate_hash(task.prompt)
         total_iterations = len(result.execution_history)

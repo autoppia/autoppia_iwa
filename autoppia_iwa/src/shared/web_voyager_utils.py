@@ -61,13 +61,23 @@ def load_real_tasks(num_of_urls: int = 0, task: dict | None = None, by_indices: 
     if not num_of_urls and not by_indices:
         raise ValueError("Either num_of_urls or by_indices must be provided and non-zero.")
 
-    data_dir = PROJECT_BASE_DIR / "entrypoints" / "judge_benchmark"
+    # Prefer dataset colocated with judge_benchmark; fallback to global data directory
+    primary_dir = PROJECT_BASE_DIR / "entrypoints" / "judge_benchmark" / "web_voyager_tasks"
+    fallback_dir = PROJECT_BASE_DIR.parent / "data" / "web_voyager_tasks"
+
     print("Loading real tasks...")
-    original_tasks = load_jsonl_file(data_dir / "web_voyager_tasks/web_voyager_data.jsonl")
-    impossible_tasks_ids = set(load_jsonl_file(data_dir / "web_voyager_tasks/web_voyager_impossible_tasks.json"))
+    dataset_dir = primary_dir if (primary_dir / "web_voyager_data.jsonl").exists() else fallback_dir
+
+    original_tasks = load_jsonl_file(dataset_dir / "web_voyager_data.jsonl")
+    impossible_raw = load_jsonl_file(dataset_dir / "web_voyager_impossible_tasks.json")
+    try:
+        impossible_tasks_ids = set(impossible_raw)
+    except TypeError:
+        # If file contains list of dicts or invalid content, ignore gracefully
+        impossible_tasks_ids = set()
     if by_indices:
         return [TaskData(**original_tasks[i]) for i in by_indices if i < len(original_tasks) and original_tasks[i]["id"] not in impossible_tasks_ids]
-    return [TaskData(**task) for task in original_tasks if task["id"] not in impossible_tasks_ids][:num_of_urls]
+    return [TaskData(**task) for task in original_tasks if task.get("id") not in impossible_tasks_ids][:num_of_urls]
 
 
 def generate_hash(input_string: str) -> str:
