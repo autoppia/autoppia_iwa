@@ -49,7 +49,7 @@ async def generate_tasks_for_project(
             use_cases=use_cases,
         )
 
-        if tasks:
+        if tasks and cache_dir:
             logger.info(f"[tasks] Generated {len(tasks)} tasks for '{project.name}'")
             try:
                 await save_tasks_to_json(tasks, project, cache_dir)
