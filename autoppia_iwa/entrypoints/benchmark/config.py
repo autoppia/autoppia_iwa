@@ -34,6 +34,9 @@ class BenchmarkConfig:
     save_results_json: bool = True
     plot_results: bool = False
 
+    # Dynamic HTML
+    enable_dynamic_html: bool = False
+
     # Visualization
     enable_visualization: bool = True
 
