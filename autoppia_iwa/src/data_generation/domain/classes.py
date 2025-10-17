@@ -1,5 +1,5 @@
 # file: data_generation/domain/classes.py
-
+import random
 import uuid
 from typing import Annotated, Any
 
@@ -41,8 +41,10 @@ class Task(BaseModel):
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     use_case: Any = Field(default=None, description="UseCase instance associated with this task")
     should_record: bool = False
+    assign_seed: bool = True
 
     _original_prompt: str = PrivateAttr()
+    _seed_value: int = PrivateAttr()
 
     model_config = {"extra": "allow", "arbitrary_types_allowed": True}
 
@@ -50,6 +52,9 @@ class Task(BaseModel):
         original_prompt = data.get("original_prompt", data.get("prompt", ""))
         super().__init__(**data)
         object.__setattr__(self, "_original_prompt", original_prompt)
+        if self.assign_seed:
+            object.__setattr__(self, "_seed_value", random.randint(0, 300))
+            object.__setattr__(self, "url", self.url.strip() + "?seed=" + str(self._seed_value))
 
     @property
     def prompt_with_relevant_data(self) -> str:

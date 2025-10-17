@@ -257,6 +257,7 @@ class Benchmark:
         # Inform evaluator whether to record GIFs
         for task in tasks:
             task.should_record = self.config.record_gif
+            task.assign_seed = self.config.enable_dynamic_html
 
         per_agent_results_for_run: dict[str, dict] = {}
 
@@ -345,16 +346,12 @@ class Benchmark:
 
             success_count = sum(1 for s in scores if s == 1.0)
             total_count = len(scores)
-            avg_time = (sum(times) / len(times)) if times else 0.0
-            success_rate = (success_count / total_count) if total_count else 0.0
 
             rollup = self._global_agent_rollup[a_name]
             rollup["success"] += success_count
             rollup["total"] += total_count
             rollup["time_sum"] += sum(times)
             rollup["time_cnt"] += len(times)
-
-            logger.info(f"{a_name:<20} | {success_rate * 100:6.2f}% ({success_count}/{total_count}) | avg {avg_time:.2f}s")
 
         # Build per-project JSON payload
         json_root: dict = {"agents": {}}

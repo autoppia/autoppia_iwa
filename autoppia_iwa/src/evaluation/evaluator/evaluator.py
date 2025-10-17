@@ -12,10 +12,9 @@ from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
-
-# Import all needed helpers from evaluation_helper.py
 from autoppia_iwa.src.evaluation.evaluator.utils import (
     display_single_evaluation_summary,
+    extract_seed_from_url,
     generate_feedback,
     hash_actions,
     initialize_test_results_matrix,
@@ -24,6 +23,7 @@ from autoppia_iwa.src.evaluation.evaluator.utils import (
     run_global_tests,
 )
 from autoppia_iwa.src.evaluation.interfaces import IEvaluator
+from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
@@ -134,6 +134,39 @@ class ConcurrentEvaluator(IEvaluator):
                 stats=stats,
                 gif_recording="",
             )
+
+        # Validate NavigateAction seed usage against assigned seed in task.url
+        try:
+            assigned_seed = extract_seed_from_url(task.url)
+        except Exception:
+            assigned_seed = None
+
+        if assigned_seed is not None:
+            has_navigate = any(isinstance(a, NavigateAction) for a in actions)
+            if has_navigate:
+                violation = False
+                for a in actions:
+                    if isinstance(a, NavigateAction) and getattr(a, "url", None):
+                        nav_seed = extract_seed_from_url(a.url)  # type: ignore[arg-type]
+                        if nav_seed is None or nav_seed != assigned_seed:
+                            violation = True
+                            break
+                if violation:
+                    stats.total_time = time.time() - stats.start_time
+                    stats.had_errors = False
+                    stats.error_message = "Seed missing or mismatched in NavigateAction URL(s)."
+                    test_results_matrix = initialize_test_results_matrix(task, len(actions))
+                    return EvaluationResult(
+                        web_agent_id=web_agent_id,
+                        final_score=0,
+                        raw_score=0,
+                        test_results_matrix=test_results_matrix,
+                        feedback=None,
+                        execution_history=[],
+                        evaluation_time=stats.total_time,
+                        stats=stats,
+                        gif_recording="",
+                    )
 
         logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
         evaluation_gif = ""
