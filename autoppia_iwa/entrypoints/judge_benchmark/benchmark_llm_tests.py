@@ -1,13 +1,14 @@
+import argparse
 from pathlib import Path
 from typing import Any
 
 from rich.console import Console
 from rich.table import Table
 
+from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.shared.web_voyager_utils import load_jsonl_file
 
-# Constants
-SRC_PATH = Path("autoppia_iwa/judge_tests_usage_logs.jsonl")
+DEFAULT_SRC_PATH = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"
 
 
 def calculate_metrics_by_test_type(data: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
@@ -92,7 +93,11 @@ def display_metrics_by_test_type(metrics_by_test_type: dict[str, dict[str, float
 
 def main():
     """Main function to load data, calculate metrics, and display results."""
-    data = load_jsonl_file(SRC_PATH)
+    parser = argparse.ArgumentParser(description="Summarize judge usage logs and compute per-test metrics.")
+    parser.add_argument("--src", type=str, default=str(DEFAULT_SRC_PATH), help="Path to judge_tests_usage_logs.jsonl")
+    args = parser.parse_args()
+
+    data = load_jsonl_file(Path(args.src))
     if not data:
         print("No valid data found in the file.")
         return

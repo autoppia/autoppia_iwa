@@ -1,13 +1,14 @@
 import json
 import os
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 
 from .metrics import TimingMetrics, compute_statistics
 
 
-def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> str:
+def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> dict[str, str | float | dict[Any, Any]]:
     """
     Save comprehensive results to a JSON file and return the file path.
     """
@@ -25,8 +26,8 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
             for task_id, data in results[agent.id].items():
                 agent_scores.append(data["score"])
                 agent_tasks[task_id] = {
-                    "use_case": data["task_use_case"],
-                    "prompt": data["prompt"],
+                    "use_case": data.get("task_use_case"),
+                    "prompt": data.get("prompt"),
                     "score": data["score"],
                     "solution_time": timing_metrics.solution_times.get(agent.id, {}).get(task_id, 0),
                     "evaluation_time": timing_metrics.evaluation_times.get(agent.id, {}).get(task_id, 0),
@@ -54,7 +55,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
         json.dump(output_data, f, indent=2)
 
     print(f"\nDetailed results saved to '{filename}'")
-    return filename
+    return output_data
 
 
 def print_performance_statistics(results, agents, timing_metrics: TimingMetrics):
