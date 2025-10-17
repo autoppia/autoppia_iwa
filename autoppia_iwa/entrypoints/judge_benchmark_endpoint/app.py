@@ -27,14 +27,41 @@ app.add_middleware(
 
 
 class RealWebTaskConfig(BaseModel):
-    url: str
-    prompt: str
+    url: str = ""
+    prompt: str = ""
     agent_host: str = "127.0.0.1"
     agent_port: int = 5000
     agent_timeout: int = 120
+    task_indices: list = []
+    num_of_urls: int = 1
+
+    def validate_payload(self):
+        errors = []
+        # Custom task mode: url and prompt must be non-empty
+        if self.url and self.prompt:
+            if not isinstance(self.url, str) or not self.url.strip():
+                errors.append("`url` must be a non-empty string.")
+            if not isinstance(self.prompt, str) or not self.prompt.strip():
+                errors.append("`prompt` must be a non-empty string.")
+        # Dataset selection mode: at least one of num_of_urls or task_indices must be set
+        else:
+            if (not self.num_of_urls or self.num_of_urls < 1) and not self.task_indices:
+                errors.append("Either `num_of_urls` must be >= 1 or `task_indices` must be a non-empty list.")
+            if self.task_indices and not all(isinstance(i, int) and i >= 0 for i in self.task_indices):
+                errors.append("All `task_indices` must be non-negative integers.")
+
+        if not isinstance(self.agent_port, int) or self.agent_port <= 0:
+            errors.append("`agent_port` must be a positive integer.")
+        if not isinstance(self.agent_timeout, int) or self.agent_timeout <= 0:
+            errors.append("`agent_timeout` must be a positive integer.")
+        if not isinstance(self.num_of_urls, int) or self.num_of_urls < 0:
+            errors.append("`num_of_urls` must be a non-negative integer.")
+
+        if errors:
+            raise ValueError("Payload validation failed: " + "; ".join(errors))
 
 
-@app.post("/judge-benchmark/run-real-web-task")
+@app.post("/test-judge-agent")
 async def run_real_web_task(config: RealWebTaskConfig):
     try:
         # Generate unique agent id and name
@@ -52,7 +79,8 @@ async def run_real_web_task(config: RealWebTaskConfig):
             agents=[agent],
             url=config.url,
             prompt=config.prompt,
-            num_of_urls=1,
+            num_of_urls=config.num_of_urls,
+            task_indices=config.task_indices,
             # should_record_gif=True,
             # use_cached_solutions=False,
         )

@@ -14,7 +14,7 @@ pm2 delete "$SERVICE_NAME" >/dev/null 2>&1
 source ./.venv/bin/activate
 
 # Start new service
-pm2 start "python -m autoppia_iwa/entrypoints/judge_benchmark_endpoint/app.py" \
+pm2 start "python -m autoppia_iwa.entrypoints.judge_benchmark_endpoint.app" \
   --name "$SERVICE_NAME" -- "$PORT"
 
 # Save PM2 process list so it restarts on reboot
