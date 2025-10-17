@@ -346,8 +346,6 @@ class Benchmark:
 
             success_count = sum(1 for s in scores if s == 1.0)
             total_count = len(scores)
-            (sum(times) / len(times)) if times else 0.0
-            (success_count / total_count) if total_count else 0.0
 
             rollup = self._global_agent_rollup[a_name]
             rollup["success"] += success_count
