@@ -19,7 +19,7 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
-    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5055, timeout=120),
+    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=9000, timeout=120),
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
 ]
 
@@ -27,13 +27,13 @@ AGENTS = [
 PROJECT_IDS = [
     # "autocinema",
     # "autobooks",
-    # "autozone",
+    "autozone",
     # "autodining",
     # "autocrm",
     # "automail",
     # "autodelivery",
     # "autolodge",
-    "autoconnect",
+    # "autoconnect",
     # "autowork",
     # "autocalendar",
     # "autolist",
@@ -49,14 +49,14 @@ CFG = BenchmarkConfig(
     # Tasks
     use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
-    num_use_cases=0,  # 0 = all use-cases
+    num_use_cases=1,  # 0 = all use-cases
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic HTML
-    enable_dynamic_html=True,
+    enable_dynamic_html=False,
     # Persistence
     save_results_json=True,
     plot_results=False,

@@ -52,9 +52,8 @@ class Task(BaseModel):
         original_prompt = data.get("original_prompt", data.get("prompt", ""))
         super().__init__(**data)
         object.__setattr__(self, "_original_prompt", original_prompt)
-        if self.assign_seed:
-            object.__setattr__(self, "_seed_value", random.randint(0, 300))
-            object.__setattr__(self, "url", self.url.strip() + "?seed=" + str(self._seed_value))
+        # Don't add seed automatically - let the benchmark decide when to add it
+        object.__setattr__(self, "_seed_value", None)
 
     @property
     def prompt_with_relevant_data(self) -> str:
@@ -65,6 +64,15 @@ class Task(BaseModel):
     @property
     def original_prompt(self) -> str:
         return self._original_prompt
+
+    def assign_seed_to_url(self) -> None:
+        """
+        Assign a random seed to the task URL if assign_seed is True.
+        This method should be called by the benchmark when enable_dynamic_html is True.
+        """
+        if self.assign_seed and self._seed_value is None:
+            object.__setattr__(self, "_seed_value", random.randint(0, 300))
+            object.__setattr__(self, "url", self.url.strip() + "?seed=" + str(self._seed_value))
 
     def model_dump(self, *args, **kwargs) -> dict:
         # Example override to hide screenshot if needed
@@ -188,4 +196,5 @@ class TaskGenerationConfig(BaseModel):
     prompts_per_use_case: int = 1  # Number of task variations to generate per use case
     num_use_cases: int = 3  # Number of use_cases to consider for global task generation
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline
-    use_cases: list[str] | None = None  # Specific use cases to focus on, will override num_use_cases if set, for current project
+    # Specific use cases to focus on, will override num_use_cases if set, for current project
+    use_cases: list[str] | None = None

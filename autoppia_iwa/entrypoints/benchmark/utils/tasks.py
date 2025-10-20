@@ -77,7 +77,7 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
 
 
 async def generate_tasks_for_web_project(
-    project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1, use_cases: list[str] | None = None
+    project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1, use_cases: list[str] | None = None, enable_dynamic_html: bool = False
 ) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
@@ -86,6 +86,11 @@ async def generate_tasks_for_web_project(
         cached_tasks = await load_tasks_from_json(project, task_cache_dir)
         if cached_tasks and len(cached_tasks) > 0:
             print(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
+            # Configure cached tasks with seed if dynamic HTML is enabled
+            for task in cached_tasks:
+                task.assign_seed = enable_dynamic_html
+                if enable_dynamic_html and "?seed=" not in task.url:
+                    task.assign_seed_to_url()
             return cached_tasks
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
@@ -97,6 +102,12 @@ async def generate_tasks_for_web_project(
     tasks = await pipeline.generate()
 
     if tasks:
+        # Configure tasks with seed if dynamic HTML is enabled
+        for task in tasks:
+            task.assign_seed = enable_dynamic_html
+            if enable_dynamic_html:
+                task.assign_seed_to_url()
+
         await save_tasks_to_json(tasks, project, task_cache_dir)
 
     return tasks

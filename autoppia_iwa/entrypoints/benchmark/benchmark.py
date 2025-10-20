@@ -222,6 +222,7 @@ class Benchmark:
             prompts_per_use_case=self.config.prompts_per_use_case,
             num_use_cases=self.config.num_use_cases,
             use_cases=self.config.use_cases,
+            enable_dynamic_html=self.config.enable_dynamic_html,
         )
 
         if tasks:
@@ -254,10 +255,9 @@ class Benchmark:
             logger.warning(f"No tasks for project '{project.name}' — skipping run {run_index}")
             return {}
 
-        # Inform evaluator whether to record GIFs
+        # Configure task settings for this run
         for task in tasks:
             task.should_record = self.config.record_gif
-            task.assign_seed = self.config.enable_dynamic_html
 
         per_agent_results_for_run: dict[str, dict] = {}
 
