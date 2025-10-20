@@ -391,13 +391,24 @@ class ConcurrentEvaluator(IEvaluator):
                 page = await context.new_page()
 
                 browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
+
+                logger.info(f"🎬 Starting execution of {len(actions)} actions for web_agent_id={web_agent_id}")
+
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
                     try:
+                        logger.info(f"  ▶️  Action {i + 1}/{len(actions)}: {action.type} - {vars(action)}")
+
                         result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real, should_record=self.config.should_record_gif)
                         action_results.append(result)
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
+
+                        # Log action result
+                        if result and result.success:
+                            logger.info(f"  ✅ Action {i + 1} SUCCESS in {elapsed:.2f}s")
+                        else:
+                            logger.warning(f"  ❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
 
                         self.action_type_timing[action.type].append(elapsed)
 
@@ -406,11 +417,13 @@ class ConcurrentEvaluator(IEvaluator):
                             await asyncio.sleep(self.config.task_delay_in_seconds)
 
                     except Exception as e:
-                        logger.error(f"Action {i + 1}/{len(actions)} failed: {e}")
+                        logger.error(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}")
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
 
                         break
+
+                logger.info(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions")
 
                 return action_results, action_execution_times
 

@@ -32,7 +32,12 @@ class TestRunner:
             List[TestResult]: Results of all tests for the current snapshot.
         """
         snapshot_results = []  # Store results for this snapshot
-        for test in self.tests:
+        for test_idx, test in enumerate(self.tests, 1):
+            from loguru import logger
+            logger.info(f"  🧪 Running Test {test_idx}/{len(self.tests)}: {test.type}")
+            logger.info(f"     Description: {test.description}")
+            logger.info(f"     Criteria: {getattr(test, 'event_criteria', 'N/A')}")
+
             success = await test.execute_test(
                 web_project=web_project,
                 current_iteration=current_action_index,
@@ -41,6 +46,12 @@ class TestRunner:
                 browser_snapshots=browser_snapshots,
                 total_iterations=total_iterations,
             )
+
+            # Log test result
+            if success:
+                logger.info(f"  ✅ Test {test_idx} PASSED")
+            else:
+                logger.warning(f"  ❌ Test {test_idx} FAILED")
 
             # Create TestResult instance with extra_data
             test_result = TestResult(
