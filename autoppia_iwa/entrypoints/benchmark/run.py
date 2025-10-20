@@ -25,9 +25,9 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autocinema",
+    "autocinema",
     # "autobooks",
-    "autozone",
+    # "autozone",
     # "autodining",
     # "autocrm",
     # "automail",
@@ -56,7 +56,7 @@ CFG = BenchmarkConfig(
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic HTML
-    enable_dynamic_html=False,
+    enable_dynamic_html=True,
     # Persistence
     save_results_json=True,
     plot_results=False,

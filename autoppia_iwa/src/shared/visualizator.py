@@ -32,10 +32,13 @@ class SubnetVisualizer:
         # Panel to show the task prompt
         task_id = task.id if hasattr(task, "id") else "Unknown"
         prompt = task.prompt if hasattr(task, "prompt") else "No prompt available"
+        task_url = task.url if hasattr(task, "url") else "No URL available"
 
         self.console.print("\n" + "=" * 80)
 
-        task_panel = Panel(prompt, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
+        # Create task content with URL
+        task_content = f"{prompt}\n\n[dim]URL: {task_url}[/dim]"
+        task_panel = Panel(task_content, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
         self.console.print(task_panel)
 
         # Table of configured tests
@@ -83,8 +86,11 @@ class SubnetVisualizer:
         # 1. Show task details
         task_id = task.id if hasattr(task, "id") else "Unknown"
         prompt = task.prompt if hasattr(task, "prompt") else "No prompt available"
+        task_url = task.url if hasattr(task, "url") else "No URL available"
 
-        task_panel = Panel(prompt, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
+        # Create task content with URL
+        task_content = f"{prompt}\n\n[dim]URL: {task_url}[/dim]"
+        task_panel = Panel(task_content, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
         self.console.print(task_panel)
 
         # 2. Table of executed actions (shown first now)
