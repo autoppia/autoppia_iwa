@@ -79,12 +79,12 @@ class TestRunner:
         for test_idx, test in enumerate(self.tests, 1):
             test_name = getattr(test, 'event_name', 'Unknown')
             test_criteria = getattr(test, 'event_criteria', {})
-            
+
             logger.info(f"   🧪 Test {test_idx}/{len(self.tests)}: {test_name}")
             logger.info(f"      - Criteria: {test_criteria}")
             logger.info(f"      - Test type: {type(test).__name__}")
             logger.info(f"      - Test description: {getattr(test, 'description', 'No description')}")
-            
+
             # 🔍 DEBUG: Log what we're looking for vs what we have
             if backend_events:
                 for event_idx, event in enumerate(backend_events, 1):
@@ -92,11 +92,11 @@ class TestRunner:
                     logger.info(f"         - Event data: {getattr(event, 'data', 'No data')}")
                     logger.info(f"         - Event metadata: {getattr(event, 'metadata', 'No metadata')}")
                     logger.info(f"         - Event attributes: {vars(event)}")
-            
+
             success = await test.execute_global_test(
                 backend_events=backend_events,
             )
-            
+
             logger.info(f"      - Result: {'✅ PASSED' if success else '❌ FAILED'}")
 
             # Create TestResult instance with extra_data
