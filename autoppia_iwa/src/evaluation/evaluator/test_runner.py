@@ -2,7 +2,7 @@ from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.evaluation.classes import TestResult
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
-from autoppia_iwa.src.shared.logger import logger
+from loguru import logger
 
 
 class TestRunner:
