@@ -159,15 +159,13 @@ class SubnetVisualizer:
 
             if isinstance(evaluation_result, dict):
                 # Si es un diccionario, accedemos con la notación de diccionario
-                raw_score = evaluation_result.get("raw_score", 0.0)
                 final_score = evaluation_result.get("final_score", 0.0)
             else:
                 # Si es un objeto, accedemos con la notación de atributos
-                raw_score = evaluation_result.raw_score if hasattr(evaluation_result, "raw_score") else 0.0
                 final_score = evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
 
-            scores_table.add_row("Raw Score:", f"{raw_score:.4f}")
-            scores_table.add_row("Adjusted Score:", Text(f"{final_score:.4f}", style="bold green" if final_score > 0.5 else "bold red"))
+            # Only show final score
+            scores_table.add_row("Score:", Text(f"{final_score:.4f}", style="bold green" if final_score > 0.5 else "bold red"))
 
             scores_panel = Panel(scores_table, title="[bold blue]SCORES[/bold blue]", border_style="blue", padding=(1, 1))
             self.console.print("\n")
