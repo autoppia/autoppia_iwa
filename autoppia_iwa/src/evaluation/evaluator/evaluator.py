@@ -405,7 +405,7 @@ class ConcurrentEvaluator(IEvaluator):
                         action_execution_times.append(elapsed)
 
                         # Log action result
-                        if result and result.success:
+                        if result and result.successfully_executed:
                             logger.info(f"  ✅ Action {i + 1} SUCCESS in {elapsed:.2f}s")
                         else:
                             logger.warning(f"  ❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
