@@ -186,27 +186,22 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 # TEST / FEEDBACK HELPERS
 # ---------------------------------------------------------------------------------
-async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> list[list[TestResult]]:
+async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> list[TestResult]:
     """
-    Runs all task tests after each action, building a test results matrix.
+    Runs all task tests once after all actions are executed.
 
     Args:
-        web_project: The web project being tested.
         task (Task): The task being evaluated (contains the list of tests).
-        execution_history (List[ActionExecutionResult]): History of all executed actions.
+        backend_events (List[BackendEvent]): Backend events captured during execution.
 
     Returns:
-        List[List[TestResult]]: A matrix where each row corresponds to an action and
-                                each column to a test, indicating pass/fail results.
+        List[TestResult]: A list of test results (one per test).
     """
     test_runner = TestRunner(task.tests)
-    # I did to keep the structure similar to the partial tests
-    test_results_matrix: list[list[TestResult]] = []
     test_results = await test_runner.run_global_tests(
         backend_events=backend_events,
     )
-    test_results_matrix.append(test_results)
-    return test_results_matrix
+    return test_results
 
 
 async def run_partial_tests(web_project: WebProject, task: Task, execution_history: list[ActionExecutionResult]) -> list[list[TestResult]]:
@@ -244,19 +239,19 @@ async def run_partial_tests(web_project: WebProject, task: Task, execution_histo
     return test_results_matrix
 
 
-def generate_feedback(task: Task, execution_history: list[ActionExecutionResult], test_results_matrix: list[list[TestResult]]) -> Feedback:
+def generate_feedback(task: Task, execution_history: list[ActionExecutionResult], test_results: list[TestResult]) -> Feedback:
     """
     Generates feedback based on the given test results.
 
     Args:
         task (Task): The task being evaluated (contains the prompt or description).
         execution_history (List[ActionExecutionResult]): History of executed actions.
-        test_results_matrix (List[List[TestResult]]): The matrix of pass/fail test results.
+        test_results (List[TestResult]): The list of test results.
 
     Returns:
         Feedback: The generated feedback for this task solution.
     """
-    return FeedbackGenerator.generate_feedback(task_prompt=task.prompt, execution_history=execution_history, test_results_matrix=test_results_matrix)
+    return FeedbackGenerator.generate_feedback(task_prompt=task.prompt, execution_history=execution_history, test_results=test_results)
 
 
 # ---------------------------------------------------------------------------------
@@ -401,31 +396,23 @@ def hash_actions(actions: list[BaseAction]) -> str:
         return ""
 
 
-def initialize_test_results_matrix(task: Task, num_actions: int):
+def initialize_test_results(task: Task):
     """
-    Initialize a test results matrix based on the number of tests in the task and actions.
-    All test results are initialized with success=False.
+    Initialize test results list with all tests marked as failed.
+    Used when an error occurs before tests can be run.
 
     Args:
         task (Task): The Task object containing tests
-        num_actions (int): Number of actions
 
     Returns:
-        List[List[TestResult]]: A matrix of test results
+        List[TestResult]: A list of test results initialized with success=False
     """
-    # Determine the number of rows in the matrix
-    num_rows = num_actions if num_actions else 1
-
-    test_results_matrix = []
-    for _ in range(num_rows):
-        row = []
-        for test in task.tests:
-            # Build a TestResult with success=False; copy any extra info from the test if needed
-            extra_data = {key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}}
-            row.append(TestResult(success=False, extra_data=extra_data))
-        test_results_matrix.append(row)
-
-    return test_results_matrix
+    test_results = []
+    for test in task.tests:
+        # Build a TestResult with success=False; copy any extra info from the test if needed
+        extra_data = {key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}}
+        test_results.append(TestResult(success=False, extra_data=extra_data))
+    return test_results
 
 
 def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0):

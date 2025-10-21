@@ -8,6 +8,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from autoppia_iwa.src.evaluation.classes import TestResult
+
 
 class SubnetVisualizer:
     """
@@ -64,7 +66,7 @@ class SubnetVisualizer:
         validator_id,
         task,
         actions,
-        test_results_matrix,
+        test_results,
         evaluation_result=None,
         feedback=None,
     ):
@@ -76,7 +78,7 @@ class SubnetVisualizer:
             agent_id: ID of the evaluated agent
             task: The evaluated task
             actions: List of actions taken
-            test_results_matrix: Matrix of test results
+            test_results: List of test results
             evaluation_result: The evaluation result object
             feedback: Optional additional feedback
         """
@@ -112,7 +114,7 @@ class SubnetVisualizer:
             self.console.print("\n[yellow]No actions were executed[/yellow]")
 
         # 3. Table of configured tests with their results (now shown after the actions)
-        if hasattr(task, "tests") and task.tests and test_results_matrix and len(test_results_matrix) > 0:
+        if hasattr(task, "tests") and task.tests and test_results and len(test_results) > 0:
             tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE, expand=True)
             tests_table.add_column("Test #", style="dim", width=6)
             tests_table.add_column("Type", style="cyan", width=22)
@@ -121,17 +123,13 @@ class SubnetVisualizer:
 
             for idx, test in enumerate(task.tests):
                 # Ensure there's a result for this test
-                if idx < len(test_results_matrix[0]):
-                    test_passed = False
-                    for action_idx in range(len(test_results_matrix)):
-                        if isinstance(test_results_matrix[action_idx][idx], dict):
-                            if test_results_matrix[action_idx][idx]["success"]:
-                                test_passed = True
-                                break
-                        else:
-                            if test_results_matrix[action_idx][idx].success:
-                                test_passed = True
-                                break
+                if idx < len(test_results):
+                    # Get the test result directly from the list
+                    test_result = test_results[idx]
+                    if isinstance(test_result, dict):
+                        test_passed = test_result.get("success", False)
+                    else:
+                        test_passed = test_result.success
 
                     # Get detailed test description
                     test_type = type(test).__name__
@@ -141,14 +139,14 @@ class SubnetVisualizer:
                     result_text = "✅ PASS" if test_passed else "❌ FAIL"
                     result_style = "green" if test_passed else "red"
 
-                    tests_table.add_row(str(idx + 1), test_type, description, attributes, Text(result_text, style=result_style))
+                    tests_table.add_row(str(idx + 1), test_type, description, Text(result_text, style=result_style))
 
             tests_panel = Panel(tests_table, title="[bold magenta]TESTS AND RESULTS[/bold magenta]", border_style="magenta", padding=(1, 1))
             self.console.print("\n")
             self.console.print(tests_panel)
         else:
             self.console.print(f"DEBUG: task.tests = {task.tests}")
-            self.console.print(f"DEBUG: test_results_matrix = {test_results_matrix}")
+            self.console.print(f"DEBUG: test_results = {test_results}")
             self.console.print("\n[yellow]No configured tests or available results[/yellow]")
 
         # 4. Show scores
@@ -203,7 +201,7 @@ class SubnetVisualizer:
                 validator_id=validator_id,
                 task=task,
                 actions=sol.actions,
-                test_results_matrix=evaluation_result.test_results_matrix if hasattr(evaluation_result, "test_results_matrix") else [],
+                test_results=evaluation_result.test_results if hasattr(evaluation_result, "test_results") else [],
                 evaluation_result=evaluation_result if evaluation_result else None,
                 feedback=evaluation_result.feedback if hasattr(evaluation_result, "feedback") else None,
             )
@@ -387,7 +385,7 @@ def visualize_evaluation(visualizer):
                 task=task,
                 validator_id=validator_id,
                 actions=task_solution.actions,
-                test_results_matrix=result.test_results_matrix if hasattr(result, "test_results_matrix") else [],
+                test_results=result.test_results if hasattr(result, "test_results") else [],
                 evaluation_result=result,
                 feedback=result.feedback if hasattr(result, "feedback") else None,
             )
@@ -484,7 +482,7 @@ def test_visualization():
     evaluation_result = EvaluationResult()
 
     # Call the visualization function
-    visualizer.show_full_evaluation(agent_id=agent_id, validator_id="test", task=task, actions=actions, test_results_matrix=test_results_matrix, evaluation_result=evaluation_result)
+    visualizer.show_full_evaluation(agent_id=agent_id, validator_id="test", task=task, actions=actions, test_results=test_results_matrix[0] if test_results_matrix else [], evaluation_result=evaluation_result)
 
 
 def test_multiple_evaluations():

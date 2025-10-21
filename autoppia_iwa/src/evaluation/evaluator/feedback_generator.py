@@ -18,24 +18,10 @@ class FeedbackGenerator:
         return max(0, (extra_time / 5.0) * 0.5)
 
     @staticmethod
-    def flatten_test_results_matrix(test_results_matrix: list[list["TestResult"]]) -> list["TestResult"]:
-        """
-        Flatten a matrix of test results into a single list.
-
-        Args:
-            test_results_matrix: A matrix where each row corresponds to an action
-                                and each column corresponds to a test.
-
-        Returns:
-            A flattened list of test results.
-        """
-        return [test for action_tests in test_results_matrix for test in action_tests]
-
-    @staticmethod
     def generate_feedback(
         task_prompt: str,
         execution_history: list["ActionExecutionResult"],
-        test_results_matrix: list[list["TestResult"]],
+        test_results: list["TestResult"],
         expected_time: float = 50.0,
     ) -> "Feedback":
         """
@@ -43,8 +29,7 @@ class FeedbackGenerator:
         Args:
             task_prompt (str): The description of the evaluated task.
             execution_history (List[ActionExecutionResult]): History of executed actions.
-            test_results_matrix (List[List[TestResult]]): Matrix of test results where each row
-                corresponds to an action and each column corresponds to a test.
+            test_results (List[TestResult]): List of test results.
             expected_time (float): The expected time to complete the task (in seconds).
         Returns:
             Feedback: Structured feedback object summarizing the evaluation.
@@ -63,19 +48,16 @@ class FeedbackGenerator:
         # ---------------------------
         # Test results processing
         # ---------------------------
-        # Flatten the test results matrix for processing
-        flattened_test_results = FeedbackGenerator.flatten_test_results_matrix(test_results_matrix)
-
-        # Count passed and failed tests directly from the flattened list
-        passed_tests = sum(1 for test in flattened_test_results if test.success)
-        total_tests = len(flattened_test_results)
+        # Count passed and failed tests
+        passed_tests = sum(1 for test in test_results if test.success)
+        total_tests = len(test_results)
         failed_tests = total_tests - passed_tests
 
         # Calculate test score
         test_score = FeedbackGenerator.calculate_score(passed_tests, total_tests)
 
         # Count critical failures
-        critical_failures = sum(1 for test in flattened_test_results if test.extra_data and "event_name" in test.extra_data and not test.success)
+        critical_failures = sum(1 for test in test_results if test.extra_data and "event_name" in test.extra_data and not test.success)
         critical_penalty = critical_failures * 2
 
         # ---------------------------
@@ -104,6 +86,6 @@ class FeedbackGenerator:
             total_execution_time=total_execution_time,
             time_penalty=round(time_penalty, 1),
             critical_test_penalty=critical_penalty,
-            test_results=flattened_test_results,
+            test_results=test_results,
             execution_history=execution_history,
         )

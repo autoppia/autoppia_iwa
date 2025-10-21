@@ -97,10 +97,10 @@ class EvaluationResult(BaseModel):
     """Encapsulates the output of a task evaluation."""
 
     final_score: float = 0
-    # List of test evaluation results
-    test_results_matrix: list[list[TestResult]]
+    # List of test evaluation results (one per test)
+    test_results: list[TestResult] = Field(default_factory=list)
     # History of all actions executed
-    execution_history: list[ActionExecutionResult]
+    execution_history: list[ActionExecutionResult] = Field(default_factory=list)
     feedback: Feedback | None = None  # Feedback generated during the evaluation
     web_agent_id: str | None = None
     raw_score: float = 0.0
