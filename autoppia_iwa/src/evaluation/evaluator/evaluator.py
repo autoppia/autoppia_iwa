@@ -181,14 +181,29 @@ class ConcurrentEvaluator(IEvaluator):
             execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
 
             if self.config.should_record_gif:
+                logger.info(f"🎬 GIF Recording enabled for web_agent_id={web_agent_id}")
                 all_screenshots = []
                 if execution_history:
                     all_screenshots.append(execution_history[0].browser_snapshot.screenshot_before)
 
                     for h in execution_history:
                         all_screenshots.append(h.browser_snapshot.screenshot_after)
-
-                evaluation_gif = make_gif_from_screenshots(all_screenshots) if all_screenshots else None
+                
+                logger.info(f"🎬 Collected {len(all_screenshots)} screenshots for GIF creation")
+                
+                if all_screenshots:
+                    evaluation_gif = make_gif_from_screenshots(all_screenshots)
+                    if evaluation_gif:
+                        gif_size = len(evaluation_gif) if isinstance(evaluation_gif, bytes) else len(str(evaluation_gif))
+                        logger.info(f"🎬 GIF created successfully: {gif_size} bytes (base64 encoded)")
+                    else:
+                        logger.warning(f"⚠️  GIF creation failed: make_gif_from_screenshots returned None")
+                        evaluation_gif = None
+                else:
+                    logger.warning(f"⚠️  No screenshots collected for GIF")
+                    evaluation_gif = None
+            else:
+                logger.info(f"📷 GIF Recording disabled (should_record_gif=False)")
 
             stats.action_execution_times = action_execution_times
 

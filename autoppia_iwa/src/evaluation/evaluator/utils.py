@@ -331,8 +331,10 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
     pil_images: list[Image.Image] = []
 
     if not all_base64_strings:
-        logger.info("Input list 'all_base64_strings' is empty. Returning empty bytes.")
+        logger.warning("🎬 GIF Creation: Input list 'all_base64_strings' is empty. Returning empty bytes.")
         return b""
+    
+    logger.info(f"🎬 GIF Creation: Starting with {len(all_base64_strings)} screenshots")
 
     for idx, b64_string in enumerate(all_base64_strings):
         try:
@@ -380,9 +382,10 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             continue
 
     if not pil_images:
-        logger.info("No images were successfully decoded or processed. Returning empty bytes.")
+        logger.warning("🎬 GIF Creation: No images were successfully decoded or processed. Returning empty bytes.")
         return b""
 
+    logger.info(f"🎬 GIF Creation: Processing {len(pil_images)} PIL images into animated GIF")
     gif_buffer = io.BytesIO()
     try:
         pil_images[0].save(
@@ -398,9 +401,9 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             # Use 1 if frames should not be disposed (e.g., drawn on top of each other).
         )
         raw_gif_bytes = gif_buffer.getvalue()
-        logger.info(f"Successfully created GIF with {len(pil_images)} frames.")
+        logger.info(f"🎬 GIF Creation: Successfully created GIF with {len(pil_images)} frames, size: {len(raw_gif_bytes)} bytes (raw)")
     except Exception as e_gif:
-        logger.error(f"Error occurred while saving the GIF: {e_gif}", exc_info=True)
+        logger.error(f"🎬 GIF Creation: Error occurred while saving the GIF: {e_gif}", exc_info=True)
         return b""
     finally:
         for img_obj in pil_images:
@@ -408,7 +411,9 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
         if not gif_buffer.closed:
             gif_buffer.close()
 
-    return base64.b64encode(raw_gif_bytes)
+    encoded_gif = base64.b64encode(raw_gif_bytes)
+    logger.info(f"🎬 GIF Creation: Base64 encoded GIF size: {len(encoded_gif)} bytes")
+    return encoded_gif
 
 
 def extract_seed_from_url(url: str) -> int | None:
