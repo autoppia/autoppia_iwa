@@ -202,6 +202,14 @@ class ConcurrentEvaluator(IEvaluator):
             if backend_events:
                 for idx, event in enumerate(backend_events, 1):
                     logger.info(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
+                    # 🔍 DEBUG: Log full event data
+                    logger.info(f"      - Full event data: {event}")
+                    if hasattr(event, 'data') and event.data:
+                        logger.info(f"      - Event data: {event.data}")
+                    if hasattr(event, 'metadata') and event.metadata:
+                        logger.info(f"      - Event metadata: {event.metadata}")
+                    # Log all attributes of the event
+                    logger.info(f"      - Event attributes: {vars(event)}")
 
             test_results_matrix = await run_global_tests(task, backend_events=backend_events)
 
