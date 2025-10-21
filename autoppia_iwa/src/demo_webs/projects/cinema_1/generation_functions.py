@@ -736,6 +736,9 @@ def generate_edit_profile_constraints():
 
     # Select random fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))
+    # Ensure "website" is always included
+    if "website" not in selected_fields:
+        selected_fields.append("website")
 
     for field in selected_fields:
         # Get valid operators for this field from the map
