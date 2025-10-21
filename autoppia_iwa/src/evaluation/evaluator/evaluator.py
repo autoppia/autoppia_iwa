@@ -229,7 +229,7 @@ class ConcurrentEvaluator(IEvaluator):
             logger.info(f"🔍 DEBUG - Calculating Raw Score:")
             logger.info(f"   - test_results exists: {test_results is not None}")
             logger.info(f"   - test_results length: {len(test_results) if test_results else 0}")
-            
+
             if test_results:
                 num_tests = len(test_results)
                 stats.total_tests = num_tests
