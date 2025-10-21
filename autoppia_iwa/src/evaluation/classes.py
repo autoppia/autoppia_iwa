@@ -123,10 +123,7 @@ class EvaluatorConfig(BaseModel):
     task_delay_in_seconds: float = Field(default=0.1, gt=0)
     chunk_size: int = Field(default=20, gt=0)
     browser_timeout: float = Field(default=10000, gt=0)
-    event_monitor_interval: float = Field(default=0.1, gt=0, le=0.5)
     enable_grouping_tasks: bool = Field(default=True)
-    normalize_score_with_random_clicker: bool = Field(default=True)
-    cache_random_clicker_results: bool = Field(default=True)
     normalize_scores: bool = Field(default=True)
     verbose_logging: bool = Field(default=False)  # Default to minimal logging
     debug_mode: bool = Field(default=False)  # Even more minimal logging

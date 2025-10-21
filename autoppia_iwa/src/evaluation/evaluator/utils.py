@@ -17,7 +17,6 @@ from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGen
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # ---------------------------------------------------------------------------------
 # DISPLAY/REPORTING HELPERS
@@ -274,108 +273,6 @@ async def log_progress(total_groups: int, interval: int = 10):
             logger.info(f"Progress: {completed}/{total_groups} groups ({completed / total_groups * 100:.0f}%)")
     except asyncio.CancelledError:
         pass
-
-
-async def monitor_browser(web_project: WebProject, task_url: str, page: Page, web_agent_id: str, monitor_interval: float = 1.0):
-    """
-    Monitors browser navigation events and sends them to the backend.
-
-    Args:
-        web_project (WebProject): The web project being evaluated
-        task_url (str): URL of the task
-        page (Page): Playwright page object
-        web_agent_id (str): ID of the web agent
-        monitor_interval (float): Interval in seconds to check page status
-    """
-
-    # def on_frame_navigated(frame):
-    #     if frame.url:
-    #         asyncio.create_task(_handle_frame_navigation(web_project, frame.url, task_url, web_agent_id))
-
-    # async def _handle_frame_navigation(web_project, url, task_url, web_agent_id):
-    #     try:
-    #         backend_demo_web_service = BackendDemoWebService(web_project)
-    #         # await backend_demo_web_service.send_event(url, web_agent_id)
-    #         await backend_demo_web_service.close()
-    #     except Exception as e:
-    #         logger.error(f"Error handling frame navigation: {e}")
-
-    # page.on("framenavigated", on_frame_navigated)
-    try:
-        while not page.is_closed():
-            await asyncio.sleep(monitor_interval)
-    except asyncio.CancelledError:
-        pass
-
-
-async def get_random_clicker_performance(
-    web_project: WebProject,
-    task: Task,
-    config: EvaluatorConfig,
-    random_clicker_cache: dict[str, tuple[list[int], float]],
-    backend_demo_webs_service: BackendDemoWebService,
-    evaluate_in_browser_func,
-) -> tuple[list[int], float]:
-    """
-    Returns the random clicker baseline performance (passing test indices, and score),
-    either from cache or by computing it.
-
-    Args:
-        task (Task): The task to evaluate.
-        config (EvaluatorConfig): Global evaluator configuration (caching, timeouts, etc.).
-        random_clicker_cache (Dict[str, Tuple[List[int], float]]): A cache dict to avoid re-evaluating.
-        backend_demo_webs_service (BackendDemoWebService): Service to reset backend DB for simulated tasks.
-        evaluate_in_browser_func (callable): A function to execute actions in the browser,
-                                             with signature: (task, web_agent_id, actions, is_web_real).
-
-    Returns:
-        Tuple[List[int], float]: A tuple of (list of passed test indices, random clicker score).
-    """
-    # Check cache first
-    if config.cache_random_clicker_results and task.id in random_clicker_cache:
-        if config.verbose_logging:
-            logger.debug(f"Using cached random clicker results for task {task.id}")
-        return random_clicker_cache[task.id]
-
-    # Build a random clicker solution
-    random_clicker = RandomClickerWebAgent(name="Random-clicker")
-    task_solution = await random_clicker.solve_task(task=task)
-    random_actions = task_solution.actions
-
-    if not random_actions:
-        return [], 0.0
-
-    random_web_agent_id = f"random-clicker-{task.id}"
-
-    # Reset backend if needed
-    # if not task.is_web_real:
-    #     await backend_demo_webs_service.reset_all_events(random_web_agent_id)
-
-    # Execute random clicker actions in browser
-    random_execution_history, _ = await evaluate_in_browser_func(task, random_web_agent_id, random_actions, task.is_web_real)
-
-    # Run tests
-    random_test_results = await run_partial_tests(web_project, task, random_execution_history)
-
-    passed_tests: list[int] = []
-    random_score = 0.0
-    if random_test_results and len(random_test_results[0]) > 0:
-        num_tests = len(random_test_results[0])
-        passed_count = 0
-        for test_index in range(num_tests):
-            for action_idx in range(len(random_test_results)):
-                if random_test_results[action_idx][test_index].success:
-                    passed_tests.append(test_index)
-                    passed_count += 1
-                    break
-        if num_tests > 0:
-            random_score = passed_count / num_tests
-
-    # Cache if needed
-    if config.cache_random_clicker_results:
-        random_clicker_cache[task.id] = (passed_tests, random_score)
-
-    return passed_tests, random_score
 
 
 def hash_actions(actions: list[BaseAction]) -> str:
