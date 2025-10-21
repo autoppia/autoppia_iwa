@@ -195,16 +195,16 @@ class ConcurrentEvaluator(IEvaluator):
             # Run tests
             test_start_time = time.time()
             backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-            
+
             # 🔍 DEBUG: Log backend events
             logger.info(f"🔍 DEBUG - Backend Events Retrieved:")
             logger.info(f"   - Number of events: {len(backend_events) if backend_events else 0}")
             if backend_events:
                 for idx, event in enumerate(backend_events, 1):
                     logger.info(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
-            
+
             test_results_matrix = await run_global_tests(task, backend_events=backend_events)
-            
+
             # 🔍 DEBUG: Log test results matrix
             logger.info(f"🔍 DEBUG - Test Results Matrix:")
             logger.info(f"   - Matrix dimensions: {len(test_results_matrix) if test_results_matrix else 0}x{len(test_results_matrix[0]) if test_results_matrix and test_results_matrix[0] else 0}")
@@ -221,7 +221,7 @@ class ConcurrentEvaluator(IEvaluator):
             logger.info(f"🔍 DEBUG - Calculating Raw Score:")
             logger.info(f"   - test_results_matrix exists: {test_results_matrix is not None}")
             logger.info(f"   - test_results_matrix length: {len(test_results_matrix) if test_results_matrix else 0}")
-            
+
             if test_results_matrix and len(test_results_matrix[0]) > 0:
                 num_tests = len(test_results_matrix[0])
                 stats.total_tests = num_tests

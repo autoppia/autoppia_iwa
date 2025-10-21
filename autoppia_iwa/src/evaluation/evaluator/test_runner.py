@@ -73,19 +73,19 @@ class TestRunner:
         logger.info(f"🔍 DEBUG - TestRunner.run_global_tests:")
         logger.info(f"   - Number of tests to run: {len(self.tests)}")
         logger.info(f"   - Backend events available: {len(backend_events) if backend_events else 0}")
-        
+
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
             test_name = getattr(test, 'event_name', 'Unknown')
             test_criteria = getattr(test, 'event_criteria', {})
-            
+
             logger.info(f"   🧪 Test {test_idx}/{len(self.tests)}: {test_name}")
             logger.info(f"      - Criteria: {test_criteria}")
-            
+
             success = await test.execute_global_test(
                 backend_events=backend_events,
             )
-            
+
             logger.info(f"      - Result: {'✅ PASSED' if success else '❌ FAILED'}")
 
             # Create TestResult instance with extra_data
@@ -94,6 +94,6 @@ class TestRunner:
                 extra_data={key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}},
             )
             snapshot_results.append(test_result)
-        
+
         logger.info(f"   - Total results: {len(snapshot_results)}")
         return snapshot_results
