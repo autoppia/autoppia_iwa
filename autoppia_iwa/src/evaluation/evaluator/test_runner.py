@@ -34,6 +34,7 @@ class TestRunner:
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
             from loguru import logger
+
             logger.info(f"  🧪 Running Test {test_idx}/{len(self.tests)}: {test.type}")
             logger.info(f"     Description: {test.description}")
             logger.info(f"     Criteria: {getattr(test, 'event_criteria', 'N/A')}")

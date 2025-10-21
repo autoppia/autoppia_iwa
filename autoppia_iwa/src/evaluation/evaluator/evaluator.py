@@ -7,7 +7,7 @@ from collections import defaultdict
 from loguru import logger
 from playwright.async_api import async_playwright
 
-from autoppia_iwa.config.config import EVALUATOR_HEADLESS
+from autoppia_iwa.config.config import EVALUATOR_HEADLESS, VALIDATOR_ID
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
@@ -384,7 +384,7 @@ class ConcurrentEvaluator(IEvaluator):
                 browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, args=[f"--window-size={browser_specifications.screen_width},{browser_specifications.screen_height}"])
                 # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
                 context = await browser.new_context(
-                    extra_http_headers={"X-WebAgent-Id": web_agent_id},
+                    extra_http_headers={"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID},
                     no_viewport=True,
                 )
                 context.set_default_timeout(self.config.browser_timeout)
@@ -405,7 +405,7 @@ class ConcurrentEvaluator(IEvaluator):
                         action_execution_times.append(elapsed)
 
                         # Log action result
-                        if result and result.success:
+                        if result and result.successfully_executed:
                             logger.info(f"  ✅ Action {i + 1} SUCCESS in {elapsed:.2f}s")
                         else:
                             logger.warning(f"  ❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")

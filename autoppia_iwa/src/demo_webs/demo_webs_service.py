@@ -6,7 +6,7 @@ import aiohttp
 from aiohttp.client_exceptions import ClientError
 from loguru import logger
 
-from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
+from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, VALIDATOR_ID
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 
@@ -95,7 +95,7 @@ class BackendDemoWebService:
         if self._should_use_proxy_api():
             try:
                 endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/get_events/"
-                params = {"web_url": self.base_url, "web_agent_id": web_agent_id}
+                params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
 
                 session = await self._get_session()
 
@@ -110,7 +110,7 @@ class BackendDemoWebService:
 
         try:
             endpoint = f"{self.base_url}events/list/"
-            headers = {"X-WebAgent-Id": web_agent_id}
+            headers = {"X-WebAgent-Id": web_agent_id, "validator_id": VALIDATOR_ID}
             session = await self._get_session()
 
             async with session.get(endpoint, headers=headers) as response:
@@ -204,7 +204,8 @@ class BackendDemoWebService:
             if session:
                 await session.close()
 
-    async def reset_database(self, override_url: str | None = None) -> bool:
+    # todo: pass web-agent-id in usage of following function
+    async def reset_database(self, override_url: str | None = None, web_agent_id: str | None = "1") -> bool:
         """
         Resets the entire database (requires admin/superuser permissions).
 
@@ -224,7 +225,7 @@ class BackendDemoWebService:
         if self._should_use_proxy_api():
             try:
                 endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
-                params = {"web_url": self.base_url}
+                params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
                 session = await self._get_session()
 
                 async with session.delete(endpoint, params=params) as response:
@@ -279,6 +280,7 @@ class BackendDemoWebService:
             "event_name": event_name,
             "data": data,
             "web_agent_id": web_agent_id,
+            "validator_id": VALIDATOR_ID,
         }
 
         endpoint = f"{self.base_url}events/add/"

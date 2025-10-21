@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from loguru import logger
 
+from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.entrypoints.benchmark.utils.results import plot_results, save_results_to_json
@@ -266,7 +267,7 @@ class Benchmark:
             task_solutions = await asyncio.gather(*[self._solve_task_with_agent(project, agent, task, run_index) for agent in self.config.agents])
 
             # Evaluate solutions with visualization
-            evaluations = await self._evaluate_solutions_for_task_with_visualization(project, task, task_solutions, "benchmark_evaluator", run_index)
+            evaluations = await self._evaluate_solutions_for_task_with_visualization(project, task, task_solutions, VALIDATOR_ID, run_index)
 
             # Aggregate results by agent
             for ev in evaluations:
