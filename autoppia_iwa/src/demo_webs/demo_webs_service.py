@@ -111,7 +111,7 @@ class BackendDemoWebService:
 
         try:
             endpoint = f"{self.base_url}events/list/"
-            headers = {"X-WebAgent-Id": web_agent_id, "validator_id": VALIDATOR_ID}
+            headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID}
             session = await self._get_session()
 
             async with session.get(endpoint, headers=headers) as response:
