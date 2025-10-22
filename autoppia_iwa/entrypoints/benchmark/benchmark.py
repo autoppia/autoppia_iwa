@@ -107,7 +107,7 @@ class Benchmark:
             backend = None
             try:
                 backend = BackendDemoWebService(project)
-                await backend.reset_database()
+                await backend.reset_database(web_agent_id=agent.id)
 
                 # Prefer cached solution if enabled and present
                 if self.config.use_cached_solutions:

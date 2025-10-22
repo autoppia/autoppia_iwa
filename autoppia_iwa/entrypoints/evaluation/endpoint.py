@@ -163,7 +163,7 @@ class EvaluationEndpointService:
 
         backend = BackendDemoWebService(project)
         try:
-            await backend.reset_database()
+            await backend.reset_database(web_agent_id=req.web_agent_id)
 
             evaluator_config = EvaluatorConfig(
                 enable_grouping_tasks=False,

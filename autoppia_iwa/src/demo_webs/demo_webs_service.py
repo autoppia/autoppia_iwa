@@ -22,7 +22,7 @@ class BackendDemoWebService:
     - Support for both real and demo web projects
     """
 
-    def __init__(self, web_project: WebProject) -> None:
+    def __init__(self, web_project: WebProject, web_agent_id: str = "unknown_agent") -> None:
         """
         Initialize a single aiohttp session holder and store the web_project.
 
@@ -32,6 +32,7 @@ class BackendDemoWebService:
         self._session: aiohttp.ClientSession | None = None
         self.web_project: WebProject = web_project
         self.base_url = web_project.backend_url
+        self.web_agent_id = web_agent_id
 
         # Configure JSON parser (prefer orjson for performance)
         self._configure_json_parser()
@@ -117,7 +118,8 @@ class BackendDemoWebService:
                 response.raise_for_status()  # Raise on 4xx/5xx
                 events_data = await response.json(loads=self._json_parser.loads)
                 logger.info(f"FETCH events for {web_agent_id}: {len(events_data)} encontrados")
-
+                if not events_data:
+                    print("No events received.")
                 # print(events_data, [BackendEvent(**event) for event in events_data])
                 return [BackendEvent(**event) for event in events_data]
         except ClientError as e:
@@ -204,8 +206,7 @@ class BackendDemoWebService:
             if session:
                 await session.close()
 
-    # todo: pass web-agent-id in usage of following function
-    async def reset_database(self, override_url: str | None = None, web_agent_id: str | None = "1") -> bool:
+    async def reset_database(self, override_url: str | None = None, web_agent_id: str | None = None) -> bool:
         """
         Resets the entire database (requires admin/superuser permissions).
 
@@ -225,7 +226,7 @@ class BackendDemoWebService:
         if self._should_use_proxy_api():
             try:
                 endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
-                params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
+                params = {"web_url": self.base_url, "web_agent_id": web_agent_id or self.web_agent_id, "validator_id": VALIDATOR_ID}
                 session = await self._get_session()
 
                 async with session.delete(endpoint, params=params) as response:

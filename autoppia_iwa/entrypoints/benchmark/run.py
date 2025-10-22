@@ -41,7 +41,9 @@ PROJECT_IDS = [
     # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
-USE_CASES = ["VIEW_USER_PROFILE"]
+USE_CASES = [
+    # "VIEW_USER_PROFILE"
+]
 
 # 3) Benchmark parameters
 CFG = BenchmarkConfig(

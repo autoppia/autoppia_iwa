@@ -61,7 +61,7 @@ class ConcurrentEvaluator(IEvaluator):
             logger.info(f"Evaluating Single task solution for task {task.id}...")
 
             logger.info("Resetting Project Environment & Database.")
-            await self.backend_demo_webs_service.reset_database()
+            await self.backend_demo_webs_service.reset_database(web_agent_id=task_solution.web_agent_id)
 
             result = await self._evaluate_single_task_solution(task, task_solution)
 
@@ -83,7 +83,9 @@ class ConcurrentEvaluator(IEvaluator):
             logger.info(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
 
             logger.info("Resetting Project Environment & Database.")
-            await self.backend_demo_webs_service.reset_database()
+            web_agent_ids = {sol.web_agent_id for sol in task_solutions if sol.web_agent_id}
+            for web_agent_id in web_agent_ids:
+                await self.backend_demo_webs_service.reset_database(web_agent_id=web_agent_id)
 
             results = await self._group_and_evaluate_task_solutions(task, task_solutions)
 
