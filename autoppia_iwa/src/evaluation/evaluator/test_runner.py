@@ -1,8 +1,9 @@
+from loguru import logger
+
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.evaluation.classes import TestResult
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
-from loguru import logger
 
 
 class TestRunner:
@@ -35,6 +36,7 @@ class TestRunner:
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
             from loguru import logger
+
             logger.info(f"  🧪 Running Test {test_idx}/{len(self.tests)}: {test.type}")
             logger.info(f"     Description: {test.description}")
             logger.info(f"     Criteria: {getattr(test, 'event_criteria', 'N/A')}")
@@ -71,14 +73,14 @@ class TestRunner:
         Run all tests after executing the
         """
         # 🔍 DEBUG: Log test execution details
-        logger.info(f"🔍 DEBUG - TestRunner.run_global_tests:")
+        logger.info("🔍 DEBUG - TestRunner.run_global_tests:")
         logger.info(f"   - Number of tests to run: {len(self.tests)}")
         logger.info(f"   - Backend events available: {len(backend_events) if backend_events else 0}")
 
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
-            test_name = getattr(test, 'event_name', 'Unknown')
-            test_criteria = getattr(test, 'event_criteria', {})
+            test_name = getattr(test, "event_name", "Unknown")
+            test_criteria = getattr(test, "event_criteria", {})
 
             logger.info(f"   🧪 Test {test_idx}/{len(self.tests)}: {test_name}")
             logger.info(f"      - Criteria: {test_criteria}")

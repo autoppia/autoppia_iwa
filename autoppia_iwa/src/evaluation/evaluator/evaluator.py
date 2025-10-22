@@ -188,22 +188,22 @@ class ConcurrentEvaluator(IEvaluator):
 
                     for h in execution_history:
                         all_screenshots.append(h.browser_snapshot.screenshot_after)
-                
+
                 logger.info(f"🎬 Collected {len(all_screenshots)} screenshots for GIF creation")
-                
+
                 if all_screenshots:
                     evaluation_gif = make_gif_from_screenshots(all_screenshots)
                     if evaluation_gif:
                         gif_size = len(evaluation_gif) if isinstance(evaluation_gif, bytes) else len(str(evaluation_gif))
                         logger.info(f"🎬 GIF created successfully: {gif_size} bytes (base64 encoded)")
                     else:
-                        logger.warning(f"⚠️  GIF creation failed: make_gif_from_screenshots returned None")
+                        logger.warning("⚠️  GIF creation failed: make_gif_from_screenshots returned None")
                         evaluation_gif = None
                 else:
-                    logger.warning(f"⚠️  No screenshots collected for GIF")
+                    logger.warning("⚠️  No screenshots collected for GIF")
                     evaluation_gif = None
             else:
-                logger.info(f"📷 GIF Recording disabled (should_record_gif=False)")
+                logger.info("📷 GIF Recording disabled (should_record_gif=False)")
 
             stats.action_execution_times = action_execution_times
 
@@ -212,16 +212,16 @@ class ConcurrentEvaluator(IEvaluator):
             backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
 
             # 🔍 DEBUG: Log backend events
-            logger.info(f"🔍 DEBUG - Backend Events Retrieved:")
+            logger.info("🔍 DEBUG - Backend Events Retrieved:")
             logger.info(f"   - Number of events: {len(backend_events) if backend_events else 0}")
             if backend_events:
                 for idx, event in enumerate(backend_events, 1):
                     logger.info(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
                     # 🔍 DEBUG: Log full event data
                     logger.info(f"      - Full event data: {event}")
-                    if hasattr(event, 'data') and event.data:
+                    if hasattr(event, "data") and event.data:
                         logger.info(f"      - Event data: {event.data}")
-                    if hasattr(event, 'metadata') and event.metadata:
+                    if hasattr(event, "metadata") and event.metadata:
                         logger.info(f"      - Event metadata: {event.metadata}")
                     # Log all attributes of the event
                     logger.info(f"      - Event attributes: {vars(event)}")
@@ -229,7 +229,7 @@ class ConcurrentEvaluator(IEvaluator):
             test_results = await run_global_tests(task, backend_events=backend_events)
 
             # 🔍 DEBUG: Log test results
-            logger.info(f"🔍 DEBUG - Test Results:")
+            logger.info("🔍 DEBUG - Test Results:")
             logger.info(f"   - Number of tests: {len(test_results) if test_results else 0}")
             logger.info(f"   - Test results: {test_results}")
 
@@ -241,7 +241,7 @@ class ConcurrentEvaluator(IEvaluator):
             num_tests = 0
 
             # 🔍 DEBUG: Log test calculation details
-            logger.info(f"🔍 DEBUG - Calculating Raw Score:")
+            logger.info("🔍 DEBUG - Calculating Raw Score:")
             logger.info(f"   - test_results exists: {test_results is not None}")
             logger.info(f"   - test_results length: {len(test_results) if test_results else 0}")
 
@@ -260,7 +260,7 @@ class ConcurrentEvaluator(IEvaluator):
                     logger.info(f"   - Tests passed: {tests_passed_count}/{num_tests}")
                     logger.info(f"   - Raw score: {raw_score:.4f}")
             else:
-                logger.warning(f"   ⚠️  No tests to evaluate (empty test results)")
+                logger.warning("   ⚠️  No tests to evaluate (empty test results)")
 
             stats.tests_passed = tests_passed_count
             stats.raw_score = raw_score

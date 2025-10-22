@@ -7,12 +7,10 @@ from collections import defaultdict
 
 from loguru import logger
 from PIL import Image, UnidentifiedImageError
-from playwright.async_api import Page
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.classes import EvaluationStats, EvaluatorConfig, Feedback, TestResult
+from autoppia_iwa.src.evaluation.classes import EvaluationStats, Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -333,7 +331,7 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
     if not all_base64_strings:
         logger.warning("🎬 GIF Creation: Input list 'all_base64_strings' is empty. Returning empty bytes.")
         return b""
-    
+
     logger.info(f"🎬 GIF Creation: Starting with {len(all_base64_strings)} screenshots")
 
     for idx, b64_string in enumerate(all_base64_strings):

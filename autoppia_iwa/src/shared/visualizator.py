@@ -8,8 +8,6 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from autoppia_iwa.src.evaluation.classes import TestResult
-
 
 class SubnetVisualizer:
     """
@@ -126,10 +124,7 @@ class SubnetVisualizer:
                 if idx < len(test_results):
                     # Get the test result directly from the list
                     test_result = test_results[idx]
-                    if isinstance(test_result, dict):
-                        test_passed = test_result.get("success", False)
-                    else:
-                        test_passed = test_result.success
+                    test_passed = test_result.get("success", False) if isinstance(test_result, dict) else test_result.success
 
                     # Get detailed test description
                     test_type = type(test).__name__
@@ -155,12 +150,7 @@ class SubnetVisualizer:
             scores_table.add_column("Type", style="yellow", justify="right", width=25)
             scores_table.add_column("Value", style="cyan", width=10)
 
-            if isinstance(evaluation_result, dict):
-                # Si es un diccionario, accedemos con la notación de diccionario
-                final_score = evaluation_result.get("final_score", 0.0)
-            else:
-                # Si es un objeto, accedemos con la notación de atributos
-                final_score = evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
+            final_score = evaluation_result.get("final_score", 0.0) if isinstance(evaluation_result, dict) else evaluation_result.final_score if hasattr(evaluation_result, "final_score") else 0.0
 
             # Only show final score
             scores_table.add_row("Score:", Text(f"{final_score:.4f}", style="bold green" if final_score > 0.5 else "bold red"))
@@ -482,7 +472,9 @@ def test_visualization():
     evaluation_result = EvaluationResult()
 
     # Call the visualization function
-    visualizer.show_full_evaluation(agent_id=agent_id, validator_id="test", task=task, actions=actions, test_results=test_results_matrix[0] if test_results_matrix else [], evaluation_result=evaluation_result)
+    visualizer.show_full_evaluation(
+        agent_id=agent_id, validator_id="test", task=task, actions=actions, test_results=test_results_matrix[0] if test_results_matrix else [], evaluation_result=evaluation_result
+    )
 
 
 def test_multiple_evaluations():
