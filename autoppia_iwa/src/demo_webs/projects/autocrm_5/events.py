@@ -637,7 +637,7 @@ EVENTS = [
 
 BACKEND_EVENT_TYPES = {
     "ADD_NEW_MATTER": AddNewMatter,
-    "ArchiveMatter": ArchiveMatter,
+    "ARCHIVE_MATTER": ArchiveMatter,
     "VIEW_MATTER_DETAILS": ViewMatterDetails,
     "DELETE_MATTER": DeleteMatter,
     "VIEW_CLIENT_DETAILS": ViewClientDetails,
