@@ -17,7 +17,7 @@ from autoppia_iwa.src.evaluation.evaluator.utils import (
     extract_seed_from_url,
     generate_feedback,
     hash_actions,
-    initialize_test_results_matrix,
+    initialize_test_results,
     log_progress,
     make_gif_from_screenshots,
     run_global_tests,
@@ -124,12 +124,12 @@ class ConcurrentEvaluator(IEvaluator):
             stats.had_errors = True
             stats.error_message = "No actions provided"
             stats.total_time = time.time() - stats.start_time
-            test_results_matrix = initialize_test_results_matrix(task, 0)
+            test_results = initialize_test_results(task)
             return EvaluationResult(
                 web_agent_id=web_agent_id,
                 final_score=0,
                 raw_score=0,
-                test_results_matrix=test_results_matrix,
+                test_results=test_results,
                 feedback=None,
                 execution_history=[],
                 evaluation_time=0.1,
@@ -157,12 +157,12 @@ class ConcurrentEvaluator(IEvaluator):
                     stats.total_time = time.time() - stats.start_time
                     stats.had_errors = False
                     stats.error_message = "Seed missing or mismatched in NavigateAction URL(s)."
-                    test_results_matrix = initialize_test_results_matrix(task, len(actions))
+                    test_results = initialize_test_results(task)
                     return EvaluationResult(
                         web_agent_id=web_agent_id,
                         final_score=0,
                         raw_score=0,
-                        test_results_matrix=test_results_matrix,
+                        test_results=test_results,
                         feedback=None,
                         execution_history=[],
                         evaluation_time=stats.total_time,
@@ -183,6 +183,7 @@ class ConcurrentEvaluator(IEvaluator):
             execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
 
             if self.config.should_record_gif:
+                logger.info(f"🎬 GIF Recording enabled for web_agent_id={web_agent_id}")
                 all_screenshots = []
                 if execution_history:
                     all_screenshots.append(execution_history[0].browser_snapshot.screenshot_before)
@@ -190,17 +191,49 @@ class ConcurrentEvaluator(IEvaluator):
                     for h in execution_history:
                         all_screenshots.append(h.browser_snapshot.screenshot_after)
 
-                evaluation_gif = make_gif_from_screenshots(all_screenshots) if all_screenshots else None
+                logger.info(f"🎬 Collected {len(all_screenshots)} screenshots for GIF creation")
+
+                if all_screenshots:
+                    evaluation_gif = make_gif_from_screenshots(all_screenshots)
+                    if evaluation_gif:
+                        gif_size = len(evaluation_gif) if isinstance(evaluation_gif, bytes) else len(str(evaluation_gif))
+                        logger.info(f"🎬 GIF created successfully: {gif_size} bytes (base64 encoded)")
+                    else:
+                        logger.warning("⚠️  GIF creation failed: make_gif_from_screenshots returned None")
+                        evaluation_gif = None
+                else:
+                    logger.warning("⚠️  No screenshots collected for GIF")
+                    evaluation_gif = None
+            else:
+                logger.info("📷 GIF Recording disabled (should_record_gif=False)")
 
             stats.action_execution_times = action_execution_times
 
             # Run tests
             test_start_time = time.time()
             backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
-            test_results_matrix = await run_global_tests(task, backend_events=backend_events)
 
-            # test_results_matrix = await run_partial_tests(self.web_project, task, execution_history, web_agent_id)
-            # logger.info(f"TEST RESULT MATRIX={test_results_matrix}, web_Agent_id {web_agent_id}...")
+            # 🔍 DEBUG: Log backend events
+            logger.info("🔍 DEBUG - Backend Events Retrieved:")
+            logger.info(f"   - Number of events: {len(backend_events) if backend_events else 0}")
+            if backend_events:
+                for idx, event in enumerate(backend_events, 1):
+                    logger.info(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
+                    # 🔍 DEBUG: Log full event data
+                    logger.info(f"      - Full event data: {event}")
+                    if hasattr(event, "data") and event.data:
+                        logger.info(f"      - Event data: {event.data}")
+                    if hasattr(event, "metadata") and event.metadata:
+                        logger.info(f"      - Event metadata: {event.metadata}")
+                    # Log all attributes of the event
+                    logger.info(f"      - Event attributes: {vars(event)}")
+
+            test_results = await run_global_tests(task, backend_events=backend_events)
+
+            # 🔍 DEBUG: Log test results
+            logger.info("🔍 DEBUG - Test Results:")
+            logger.info(f"   - Number of tests: {len(test_results) if test_results else 0}")
+            logger.info(f"   - Test results: {test_results}")
 
             stats.test_execution_time = time.time() - test_start_time
 
@@ -209,16 +242,27 @@ class ConcurrentEvaluator(IEvaluator):
             tests_passed_count = 0
             num_tests = 0
 
-            if test_results_matrix and len(test_results_matrix[0]) > 0:
-                num_tests = len(test_results_matrix[0])
-                stats.total_tests = num_tests
+            # 🔍 DEBUG: Log test calculation details
+            logger.info("🔍 DEBUG - Calculating Raw Score:")
+            logger.info(f"   - test_results exists: {test_results is not None}")
+            logger.info(f"   - test_results length: {len(test_results) if test_results else 0}")
 
-                for test_index in range(num_tests):
-                    if any(row[test_index].success for row in test_results_matrix):
+            if test_results:
+                num_tests = len(test_results)
+                stats.total_tests = num_tests
+                logger.info(f"   - Number of tests: {num_tests}")
+
+                for test_index, test_result in enumerate(test_results):
+                    logger.info(f"   - Test {test_index + 1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
+                    if test_result.success:
                         tests_passed_count += 1
 
                 if num_tests > 0:
                     raw_score = tests_passed_count / num_tests
+                    logger.info(f"   - Tests passed: {tests_passed_count}/{num_tests}")
+                    logger.info(f"   - Raw score: {raw_score:.4f}")
+            else:
+                logger.warning("   ⚠️  No tests to evaluate (empty test results)")
 
             stats.tests_passed = tests_passed_count
             stats.raw_score = raw_score
@@ -230,13 +274,13 @@ class ConcurrentEvaluator(IEvaluator):
             stats.total_time = time.time() - stats.start_time
 
             # Generate feedback
-            feedback = generate_feedback(task, execution_history, test_results_matrix)
+            feedback = generate_feedback(task, execution_history, test_results)
 
             return EvaluationResult(
                 web_agent_id=web_agent_id,
                 final_score=final_score,  # Use actual score, don't artificially boost to 1.0
                 raw_score=raw_score,
-                test_results_matrix=test_results_matrix,
+                test_results=test_results,
                 feedback=feedback,
                 execution_history=execution_history,
                 evaluation_time=stats.total_time,
@@ -253,7 +297,7 @@ class ConcurrentEvaluator(IEvaluator):
                 web_agent_id=web_agent_id,
                 final_score=0,
                 raw_score=0,
-                test_results_matrix=initialize_test_results_matrix(task, len(actions)),
+                test_results=initialize_test_results(task),
                 feedback=None,
                 execution_history=[],
                 evaluation_time=0,
@@ -363,7 +407,7 @@ class ConcurrentEvaluator(IEvaluator):
                         web_agent_id=sol.web_agent_id,
                         final_score=0,
                         raw_score=0,
-                        test_results_matrix=initialize_test_results_matrix(task, len(sol.actions)),
+                        test_results=initialize_test_results(task),
                         feedback=None,
                         execution_history=[],
                         evaluation_time=0,

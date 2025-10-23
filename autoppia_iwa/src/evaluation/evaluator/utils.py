@@ -7,17 +7,14 @@ from collections import defaultdict
 
 from loguru import logger
 from PIL import Image, UnidentifiedImageError
-from playwright.async_api import Page
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.classes import EvaluationStats, EvaluatorConfig, Feedback, TestResult
+from autoppia_iwa.src.evaluation.classes import EvaluationStats, Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator
 from autoppia_iwa.src.evaluation.evaluator.test_runner import TestRunner
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
 
 # ---------------------------------------------------------------------------------
 # DISPLAY/REPORTING HELPERS
@@ -186,27 +183,22 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 # TEST / FEEDBACK HELPERS
 # ---------------------------------------------------------------------------------
-async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> list[list[TestResult]]:
+async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> list[TestResult]:
     """
-    Runs all task tests after each action, building a test results matrix.
+    Runs all task tests once after all actions are executed.
 
     Args:
-        web_project: The web project being tested.
         task (Task): The task being evaluated (contains the list of tests).
-        execution_history (List[ActionExecutionResult]): History of all executed actions.
+        backend_events (List[BackendEvent]): Backend events captured during execution.
 
     Returns:
-        List[List[TestResult]]: A matrix where each row corresponds to an action and
-                                each column to a test, indicating pass/fail results.
+        List[TestResult]: A list of test results (one per test).
     """
     test_runner = TestRunner(task.tests)
-    # I did to keep the structure similar to the partial tests
-    test_results_matrix: list[list[TestResult]] = []
     test_results = await test_runner.run_global_tests(
         backend_events=backend_events,
     )
-    test_results_matrix.append(test_results)
-    return test_results_matrix
+    return test_results
 
 
 async def run_partial_tests(web_project: WebProject, task: Task, execution_history: list[ActionExecutionResult]) -> list[list[TestResult]]:
@@ -244,19 +236,19 @@ async def run_partial_tests(web_project: WebProject, task: Task, execution_histo
     return test_results_matrix
 
 
-def generate_feedback(task: Task, execution_history: list[ActionExecutionResult], test_results_matrix: list[list[TestResult]]) -> Feedback:
+def generate_feedback(task: Task, execution_history: list[ActionExecutionResult], test_results: list[TestResult]) -> Feedback:
     """
     Generates feedback based on the given test results.
 
     Args:
         task (Task): The task being evaluated (contains the prompt or description).
         execution_history (List[ActionExecutionResult]): History of executed actions.
-        test_results_matrix (List[List[TestResult]]): The matrix of pass/fail test results.
+        test_results (List[TestResult]): The list of test results.
 
     Returns:
         Feedback: The generated feedback for this task solution.
     """
-    return FeedbackGenerator.generate_feedback(task_prompt=task.prompt, execution_history=execution_history, test_results_matrix=test_results_matrix)
+    return FeedbackGenerator.generate_feedback(task_prompt=task.prompt, execution_history=execution_history, test_results=test_results)
 
 
 # ---------------------------------------------------------------------------------
@@ -281,108 +273,6 @@ async def log_progress(total_groups: int, interval: int = 10):
         pass
 
 
-async def monitor_browser(web_project: WebProject, task_url: str, page: Page, web_agent_id: str, monitor_interval: float = 1.0):
-    """
-    Monitors browser navigation events and sends them to the backend.
-
-    Args:
-        web_project (WebProject): The web project being evaluated
-        task_url (str): URL of the task
-        page (Page): Playwright page object
-        web_agent_id (str): ID of the web agent
-        monitor_interval (float): Interval in seconds to check page status
-    """
-
-    # def on_frame_navigated(frame):
-    #     if frame.url:
-    #         asyncio.create_task(_handle_frame_navigation(web_project, frame.url, task_url, web_agent_id))
-
-    # async def _handle_frame_navigation(web_project, url, task_url, web_agent_id):
-    #     try:
-    #         backend_demo_web_service = BackendDemoWebService(web_project)
-    #         # await backend_demo_web_service.send_event(url, web_agent_id)
-    #         await backend_demo_web_service.close()
-    #     except Exception as e:
-    #         logger.error(f"Error handling frame navigation: {e}")
-
-    # page.on("framenavigated", on_frame_navigated)
-    try:
-        while not page.is_closed():
-            await asyncio.sleep(monitor_interval)
-    except asyncio.CancelledError:
-        pass
-
-
-async def get_random_clicker_performance(
-    web_project: WebProject,
-    task: Task,
-    config: EvaluatorConfig,
-    random_clicker_cache: dict[str, tuple[list[int], float]],
-    backend_demo_webs_service: BackendDemoWebService,
-    evaluate_in_browser_func,
-) -> tuple[list[int], float]:
-    """
-    Returns the random clicker baseline performance (passing test indices, and score),
-    either from cache or by computing it.
-
-    Args:
-        task (Task): The task to evaluate.
-        config (EvaluatorConfig): Global evaluator configuration (caching, timeouts, etc.).
-        random_clicker_cache (Dict[str, Tuple[List[int], float]]): A cache dict to avoid re-evaluating.
-        backend_demo_webs_service (BackendDemoWebService): Service to reset backend DB for simulated tasks.
-        evaluate_in_browser_func (callable): A function to execute actions in the browser,
-                                             with signature: (task, web_agent_id, actions, is_web_real).
-
-    Returns:
-        Tuple[List[int], float]: A tuple of (list of passed test indices, random clicker score).
-    """
-    # Check cache first
-    if config.cache_random_clicker_results and task.id in random_clicker_cache:
-        if config.verbose_logging:
-            logger.debug(f"Using cached random clicker results for task {task.id}")
-        return random_clicker_cache[task.id]
-
-    # Build a random clicker solution
-    random_clicker = RandomClickerWebAgent(name="Random-clicker")
-    task_solution = await random_clicker.solve_task(task=task)
-    random_actions = task_solution.actions
-
-    if not random_actions:
-        return [], 0.0
-
-    random_web_agent_id = f"random-clicker-{task.id}"
-
-    # Reset backend if needed
-    # if not task.is_web_real:
-    #     await backend_demo_webs_service.reset_all_events(random_web_agent_id)
-
-    # Execute random clicker actions in browser
-    random_execution_history, _ = await evaluate_in_browser_func(task, random_web_agent_id, random_actions, task.is_web_real)
-
-    # Run tests
-    random_test_results = await run_partial_tests(web_project, task, random_execution_history)
-
-    passed_tests: list[int] = []
-    random_score = 0.0
-    if random_test_results and len(random_test_results[0]) > 0:
-        num_tests = len(random_test_results[0])
-        passed_count = 0
-        for test_index in range(num_tests):
-            for action_idx in range(len(random_test_results)):
-                if random_test_results[action_idx][test_index].success:
-                    passed_tests.append(test_index)
-                    passed_count += 1
-                    break
-        if num_tests > 0:
-            random_score = passed_count / num_tests
-
-    # Cache if needed
-    if config.cache_random_clicker_results:
-        random_clicker_cache[task.id] = (passed_tests, random_score)
-
-    return passed_tests, random_score
-
-
 def hash_actions(actions: list[BaseAction]) -> str:
     """
     Hash a list of actions so we can identify identical solutions by comparing their hash.
@@ -401,31 +291,23 @@ def hash_actions(actions: list[BaseAction]) -> str:
         return ""
 
 
-def initialize_test_results_matrix(task: Task, num_actions: int):
+def initialize_test_results(task: Task):
     """
-    Initialize a test results matrix based on the number of tests in the task and actions.
-    All test results are initialized with success=False.
+    Initialize test results list with all tests marked as failed.
+    Used when an error occurs before tests can be run.
 
     Args:
         task (Task): The Task object containing tests
-        num_actions (int): Number of actions
 
     Returns:
-        List[List[TestResult]]: A matrix of test results
+        List[TestResult]: A list of test results initialized with success=False
     """
-    # Determine the number of rows in the matrix
-    num_rows = num_actions if num_actions else 1
-
-    test_results_matrix = []
-    for _ in range(num_rows):
-        row = []
-        for test in task.tests:
-            # Build a TestResult with success=False; copy any extra info from the test if needed
-            extra_data = {key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}}
-            row.append(TestResult(success=False, extra_data=extra_data))
-        test_results_matrix.append(row)
-
-    return test_results_matrix
+    test_results = []
+    for test in task.tests:
+        # Build a TestResult with success=False; copy any extra info from the test if needed
+        extra_data = {key: value for key, value in test.model_dump().items() if key not in {"description", "test_type"}}
+        test_results.append(TestResult(success=False, extra_data=extra_data))
+    return test_results
 
 
 def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0):
@@ -447,8 +329,10 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
     pil_images: list[Image.Image] = []
 
     if not all_base64_strings:
-        logger.info("Input list 'all_base64_strings' is empty. Returning empty bytes.")
+        logger.warning("🎬 GIF Creation: Input list 'all_base64_strings' is empty. Returning empty bytes.")
         return b""
+
+    logger.info(f"🎬 GIF Creation: Starting with {len(all_base64_strings)} screenshots")
 
     for idx, b64_string in enumerate(all_base64_strings):
         try:
@@ -496,9 +380,10 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             continue
 
     if not pil_images:
-        logger.info("No images were successfully decoded or processed. Returning empty bytes.")
+        logger.warning("🎬 GIF Creation: No images were successfully decoded or processed. Returning empty bytes.")
         return b""
 
+    logger.info(f"🎬 GIF Creation: Processing {len(pil_images)} PIL images into animated GIF")
     gif_buffer = io.BytesIO()
     try:
         pil_images[0].save(
@@ -514,9 +399,9 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             # Use 1 if frames should not be disposed (e.g., drawn on top of each other).
         )
         raw_gif_bytes = gif_buffer.getvalue()
-        logger.info(f"Successfully created GIF with {len(pil_images)} frames.")
+        logger.info(f"🎬 GIF Creation: Successfully created GIF with {len(pil_images)} frames, size: {len(raw_gif_bytes)} bytes (raw)")
     except Exception as e_gif:
-        logger.error(f"Error occurred while saving the GIF: {e_gif}", exc_info=True)
+        logger.error(f"🎬 GIF Creation: Error occurred while saving the GIF: {e_gif}", exc_info=True)
         return b""
     finally:
         for img_obj in pil_images:
@@ -524,7 +409,9 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
         if not gif_buffer.closed:
             gif_buffer.close()
 
-    return base64.b64encode(raw_gif_bytes)
+    encoded_gif = base64.b64encode(raw_gif_bytes)
+    logger.info(f"🎬 GIF Creation: Base64 encoded GIF size: {len(encoded_gif)} bytes")
+    return encoded_gif
 
 
 def extract_seed_from_url(url: str) -> int | None:

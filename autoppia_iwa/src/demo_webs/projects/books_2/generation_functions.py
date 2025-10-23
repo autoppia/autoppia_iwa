@@ -27,7 +27,8 @@ def generate_login_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <username> AND password equals <password>"
+
+    constraints_str = "username equals <web_agent_id> AND password equals PASSWORD"
 
     return parse_constraints_str(constraints_str)
 
@@ -40,7 +41,7 @@ def generate_logout_constraints():
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = "username equals <username> AND password equals <password>"
+    constraints_str = "username equals <web_agent_id>"
     return parse_constraints_str(constraints_str)
 
 
@@ -723,7 +724,8 @@ def generate_edit_profile_constraints():
 
     # Select random fields to edit
     selected_fields = sample(editable_fields, k=choice([1, 2, 3]))
-
+    if "website" not in selected_fields:
+        selected_fields.append("website")
     for field in selected_fields:
         # Get valid operators for this field from the map
         valid_operators = FIELD_OPERATORS_MAP_EDIT_USER.get(field, [])

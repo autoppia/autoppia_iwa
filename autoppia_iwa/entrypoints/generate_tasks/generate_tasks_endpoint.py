@@ -4,6 +4,7 @@ from typing import Any
 
 import uvicorn
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.entrypoints.benchmark.task_generation import (
@@ -98,6 +99,13 @@ app = FastAPI(
 )
 
 app.include_router(router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # =====================

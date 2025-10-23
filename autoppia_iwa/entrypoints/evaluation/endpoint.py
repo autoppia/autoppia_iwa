@@ -63,7 +63,7 @@ class EvaluationRequest(BaseModel):
     tests: list[dict[str, Any]] = Field(..., min_items=0, description="List of tests to validate the solution")
     actions: list[dict[str, Any]] = Field(..., min_items=0, description="List of actions to execute")
     web_agent_id: StrId = Field(..., description="Identifier for the web agent")
-    web_project_id: StrId | None = Field(None, description="Optional web project ID")
+    web_project_id: StrId = Field(..., description="Web project ID")
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data")
     should_record: bool = Field(default=False, description="Whether to record GIF of execution")
     timeout_seconds: NonNegativeFloat | None = Field(None, description="Optional hard timeout for this evaluation (defaults to service timeout)")
