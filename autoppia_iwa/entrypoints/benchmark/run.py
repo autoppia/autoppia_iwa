@@ -19,21 +19,21 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
-    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="2", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
     # "autocinema",
-    # "autobooks",
+    "autobooks",
     # "autozone",
     # "autodining",
     # "autocrm",
     # "automail",
     # "autodelivery",
     # "autolodge",
-    "autoconnect",
+    # "autoconnect",
     # "autowork",
     # "autocalendar",
     # "autolist",
@@ -42,7 +42,9 @@ PROJECT_IDS = [
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
-    # "VIEW_USER_PROFILE"
+    # "VIEW_USER_PROFILE",
+    # "FILM_DETAIL",
+    # "EDIT_USER_BOOK"
 ]
 
 # 3) Benchmark parameters
@@ -52,7 +54,7 @@ CFG = BenchmarkConfig(
     # Tasks
     use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
-    num_use_cases=0,  # 0 = all use-cases
+    num_use_cases=1,  # 0 = all use-cases
     use_cases=USE_CASES,
     # Execution
     runs=1,  # how many runs do you want?

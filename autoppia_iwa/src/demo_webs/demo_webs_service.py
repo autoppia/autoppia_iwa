@@ -238,8 +238,10 @@ class BackendDemoWebService:
 
         endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
         session = await self._get_session()
+        headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID}
+
         try:
-            async with session.post(endpoint, timeout=30) as response:
+            async with session.post(endpoint, headers=headers, timeout=30) as response:
                 response.raise_for_status()
 
                 try:
