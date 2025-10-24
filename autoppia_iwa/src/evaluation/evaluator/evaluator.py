@@ -204,6 +204,13 @@ class ConcurrentEvaluator(IEvaluator):
                     stats.total_time = time.time() - stats.start_time
                     stats.had_errors = False
                     stats.error_message = "Seed missing or mismatched in NavigateAction URL(s)."
+
+                    # Log seed mismatch early return
+                    _log_evaluation_event(
+                        f"SEED MISMATCH - Skipping browser execution (expected seed={assigned_seed})",
+                        context=f"ACTION EXECUTION | agent={web_agent_id}"
+                    )
+
                     test_results = initialize_test_results(task)
                     return EvaluationResult(
                         web_agent_id=web_agent_id,
