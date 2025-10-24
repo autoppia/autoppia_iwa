@@ -7,6 +7,28 @@ from aiohttp.client_exceptions import ClientError
 from loguru import logger
 
 
+EVALUATION_LEVEL_NAME = "EVALUATION"
+EVALUATION_LEVEL_NO = 25
+
+
+def _ensure_evaluation_level() -> None:
+    """Register the custom EVALUATION level when logging fallback is used."""
+    try:
+        logger.level(EVALUATION_LEVEL_NAME)
+    except ValueError:
+        logger.level(EVALUATION_LEVEL_NAME, EVALUATION_LEVEL_NO)
+
+
+def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
+    """Log generic evaluation events with the EVALUATION level."""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
+        log_evaluation_event(message, context=context)
+    except ImportError:
+        _ensure_evaluation_level()
+        logger.log(EVALUATION_LEVEL_NAME, message if context == "GENERAL" else f"[{context}] {message}")
+
+
 def _log_backend_test(message: str):
     """Helper function to log backend test messages with EVALUATION level"""
     try:
@@ -14,7 +36,7 @@ def _log_backend_test(message: str):
         log_backend_test(message)
     except ImportError:
         # Fallback to regular debug logging if import fails
-        logger.debug(f"[GET BACKEND TEST] {message}")
+        _log_evaluation_event(f"[GET BACKEND TEST] {message}", context="GET_BACKEND_TEST")
 
 
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
@@ -161,14 +183,20 @@ class BackendDemoWebService:
         try:
             async with session.delete(endpoint, headers=headers, timeout=10) as response:
                 if response.status in (200, 204):
-                    logger.info(f"Successfully reset events for web_agent '{web_agent_id}'. Status: {response.status}")
+                    _log_evaluation_event(
+                        f"Successfully reset events for web_agent '{web_agent_id}'. Status: {response.status}",
+                        context="EVENTS_RESET",
+                    )
                     return True
 
                 try:
                     response_json = await response.json(loads=self._json_parser.loads)
                     msg = response_json.get("message", "")
                     if "have been deleted successfully" in msg.lower():
-                        logger.info(f"Backend confirmed successful reset for '{web_agent_id}' (via message). Status: {response.status}")
+                        _log_evaluation_event(
+                            f"Backend confirmed successful reset for '{web_agent_id}' (via message). Status: {response.status}",
+                            context="EVENTS_RESET",
+                        )
                         return True
                     else:
                         logger.error(f"Reset operation returned non-success status {response.status} with message: '{msg}'")
@@ -202,7 +230,7 @@ class BackendDemoWebService:
                 response.raise_for_status()
 
                 if response.status in (200, 204):
-                    logger.info("Successfully reset all events.")
+                    _log_evaluation_event("Successfully reset all events.", context="EVENTS_RESET")
                     return True
                 else:
                     logger.warning(f"Reset all events operation completed with unexpected status: {response.status}")
@@ -227,9 +255,9 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
-        logger.info("Starting Reset Database")
+        _log_evaluation_event("Starting Reset Database", context="DB_RESET")
         if self.web_project.is_web_real:
-            logger.info("Not resetting DB as its real website")
+            _log_evaluation_event("Not resetting DB as its real website", context="DB_RESET")
             return False
 
         if self._should_use_proxy_api():
@@ -240,7 +268,7 @@ class BackendDemoWebService:
 
                 async with session.delete(endpoint, params=params) as response:
                     if response.status in (200, 202):
-                        logger.info("Database reset via API successful")
+                        _log_evaluation_event("Database reset via API successful", context="DB_RESET")
                         return True
             except Exception as e:
                 logger.warning(f"API reset failed: {e}. Falling back to file reset.")
@@ -254,11 +282,11 @@ class BackendDemoWebService:
                 try:
                     response_data = await response.json(loads=self._json_parser.loads)
                     if response_data.get("status") == "success":
-                        logger.info(f"Database reset: {response_data.get('message')}")
+                        _log_evaluation_event(f"Database reset: {response_data.get('message')}", context="DB_RESET")
                         return True
                 except Exception:
                     if response.status in (200, 202):
-                        logger.info("Database reset initiated successfully.")
+                        _log_evaluation_event("Database reset initiated successfully.", context="DB_RESET")
                         return True
                     else:
                         logger.warning(f"Database reset completed with unexpected status: {response.status}")

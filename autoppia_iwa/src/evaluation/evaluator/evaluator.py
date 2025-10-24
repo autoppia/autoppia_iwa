@@ -7,14 +7,31 @@ from collections import defaultdict
 from loguru import logger
 
 
+EVALUATION_LEVEL_NAME = "EVALUATION"
+EVALUATION_LEVEL_NO = 25
+
+
+def _ensure_evaluation_level() -> None:
+    """Register the EVALUATION level if it is missing."""
+    try:
+        logger.level(EVALUATION_LEVEL_NAME)
+    except ValueError:
+        logger.level(EVALUATION_LEVEL_NAME, EVALUATION_LEVEL_NO)
+
+
+def _log_evaluation_fallback(message: str) -> None:
+    """Fallback logger that emits messages at the EVALUATION level."""
+    _ensure_evaluation_level()
+    logger.log(EVALUATION_LEVEL_NAME, message)
+
+
 def _log_action_execution(message: str):
     """Helper function to log action execution with EVALUATION level"""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_action_execution
         log_action_execution(message)
     except ImportError:
-        # Fallback to regular info logging if import fails
-        logger.info(f"[ACTION EXECUTION] {message}")
+        _log_evaluation_fallback(f"[ACTION EXECUTION] {message}")
 
 
 def _log_gif_creation(message: str):
@@ -23,8 +40,16 @@ def _log_gif_creation(message: str):
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_gif_creation
         log_gif_creation(message)
     except ImportError:
-        # Fallback to regular info logging if import fails
-        logger.info(f"[GIF CREATION] {message}")
+        _log_evaluation_fallback(f"[GIF CREATION] {message}")
+
+
+def _log_evaluation_event(message: str, context: str = "GENERAL"):
+    """Helper function to log generic evaluation events with EVALUATION level."""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
+        log_evaluation_event(message, context=context)
+    except ImportError:
+        _log_evaluation_fallback(message if context == "GENERAL" else f"[{context}] {message}")
 
 
 from playwright.async_api import async_playwright
@@ -80,9 +105,9 @@ class ConcurrentEvaluator(IEvaluator):
         Evaluate a single task solution (actions + agent) for a given task.
         """
         try:
-            logger.info(f"Evaluating Single task solution for task {task.id}...")
+            _log_evaluation_event(f"Evaluating single task solution for task {task.id}...")
 
-            logger.info("Resetting Project Environment & Database.")
+            _log_evaluation_event("Resetting Project Environment & Database.")
             await self.backend_demo_webs_service.reset_database()
 
             result = await self._evaluate_single_task_solution(task, task_solution)
@@ -102,9 +127,9 @@ class ConcurrentEvaluator(IEvaluator):
         Evaluate multiple solutions for the same task, optionally grouping identical ones.
         """
         try:
-            logger.info(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
+            _log_evaluation_event(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
 
-            logger.info("Resetting Project Environment & Database.")
+            _log_evaluation_event("Resetting Project Environment & Database.")
             await self.backend_demo_webs_service.reset_database()
 
             results = await self._group_and_evaluate_task_solutions(task, task_solutions)
@@ -190,7 +215,7 @@ class ConcurrentEvaluator(IEvaluator):
                         gif_recording="",
                     )
 
-        logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
+        _log_evaluation_event(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
         evaluation_gif = ""
         try:
             # If simulated, reset the DB first
@@ -222,7 +247,7 @@ class ConcurrentEvaluator(IEvaluator):
                     _log_gif_creation("❌ GIF CREATION ERROR")
                     evaluation_gif = None
             else:
-                logger.info("📷 GIF Recording disabled (should_record_gif=False)")
+                _log_evaluation_event("📷 GIF Recording disabled (should_record_gif=False)", context="GIF")
 
             stats.action_execution_times = action_execution_times
 
@@ -337,14 +362,17 @@ class ConcurrentEvaluator(IEvaluator):
                 hash_key = hash_actions(solution.actions)
                 grouped_indices[hash_key].append(idx)
             if self.config.verbose_logging:
-                logger.info(f"Grouped {len(task_solutions)} solutions into {len(grouped_indices)} groups")
+                _log_evaluation_event(f"Grouped {len(task_solutions)} solutions into {len(grouped_indices)} groups", context="GROUPING")
         else:
             for idx, solution in enumerate(task_solutions):
                 unique_hash = hash_actions(solution.actions) + f"_{idx}"
                 grouped_indices[unique_hash].append(idx)
 
         for key, g_indices in grouped_indices.items():
-            logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
+            _log_evaluation_event(
+                f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}",
+                context="GROUPING",
+            )
 
         # Shuffle grouped tasks for random evaluation order
         grouped_task_list = list(grouped_indices.values())

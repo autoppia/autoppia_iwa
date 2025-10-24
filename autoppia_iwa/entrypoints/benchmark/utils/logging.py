@@ -71,6 +71,11 @@ def log_action_execution(message: str):
     get_evaluation_logger("ACTION_EXECUTION").log("EVALUATION", f"[ACTION EXECUTION] {message}")
 
 
+def log_evaluation_event(message: str, context: str = "GENERAL"):
+    """Log generic evaluation events with EVALUATION level"""
+    get_evaluation_logger(context).log("EVALUATION", message)
+
+
 def log_gif_creation(message: str):
     """Log GIF creation with EVALUATION level"""
     get_evaluation_logger("GIF_CREATION").log("EVALUATION", f"[GIF CREATION] {message}")
