@@ -211,27 +211,21 @@ class ConcurrentEvaluator(IEvaluator):
             test_start_time = time.time()
             backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
 
-            # 🔍 DEBUG: Log backend events
-            logger.info("🔍 DEBUG - Backend Events Retrieved:")
-            logger.info(f"   - Number of events: {len(backend_events) if backend_events else 0}")
-            if backend_events:
-                for idx, event in enumerate(backend_events, 1):
-                    logger.info(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
-                    # 🔍 DEBUG: Log full event data
-                    logger.info(f"      - Full event data: {event}")
-                    if hasattr(event, "data") and event.data:
-                        logger.info(f"      - Event data: {event.data}")
-                    if hasattr(event, "metadata") and event.metadata:
-                        logger.info(f"      - Event metadata: {event.metadata}")
-                    # Log all attributes of the event
-                    logger.info(f"      - Event attributes: {vars(event)}")
+            # 🔍 DEBUG: Log backend events (simplified)
+            if self.config.debug_mode:
+                logger.debug("🔍 DEBUG - Backend Events Retrieved:")
+                logger.debug(f"   - Number of events: {len(backend_events) if backend_events else 0}")
+                if backend_events:
+                    for idx, event in enumerate(backend_events, 1):
+                        logger.debug(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
 
             test_results = await run_global_tests(task, backend_events=backend_events)
 
-            # 🔍 DEBUG: Log test results
-            logger.info("🔍 DEBUG - Test Results:")
-            logger.info(f"   - Number of tests: {len(test_results) if test_results else 0}")
-            logger.info(f"   - Test results: {test_results}")
+            # 🔍 DEBUG: Log test results (simplified)
+            if self.config.debug_mode:
+                logger.debug("🔍 DEBUG - Test Results:")
+                logger.debug(f"   - Number of tests: {len(test_results) if test_results else 0}")
+                logger.debug(f"   - Test results: {test_results}")
 
             stats.test_execution_time = time.time() - test_start_time
 
@@ -240,27 +234,33 @@ class ConcurrentEvaluator(IEvaluator):
             tests_passed_count = 0
             num_tests = 0
 
-            # 🔍 DEBUG: Log test calculation details
-            logger.info("🔍 DEBUG - Calculating Raw Score:")
-            logger.info(f"   - test_results exists: {test_results is not None}")
-            logger.info(f"   - test_results length: {len(test_results) if test_results else 0}")
+            # 🔍 DEBUG: Log test calculation details (simplified)
+            if self.config.debug_mode:
+                logger.debug("🔍 DEBUG - Calculating Raw Score:")
+                logger.debug(f"   - test_results exists: {test_results is not None}")
+                logger.debug(f"   - test_results length: {len(test_results) if test_results else 0}")
 
             if test_results:
                 num_tests = len(test_results)
                 stats.total_tests = num_tests
-                logger.info(f"   - Number of tests: {num_tests}")
+
+                if self.config.debug_mode:
+                    logger.debug(f"   - Number of tests: {num_tests}")
 
                 for test_index, test_result in enumerate(test_results):
-                    logger.info(f"   - Test {test_index + 1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
+                    if self.config.debug_mode:
+                        logger.debug(f"   - Test {test_index + 1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
                     if test_result.success:
                         tests_passed_count += 1
 
                 if num_tests > 0:
                     raw_score = tests_passed_count / num_tests
-                    logger.info(f"   - Tests passed: {tests_passed_count}/{num_tests}")
-                    logger.info(f"   - Raw score: {raw_score:.4f}")
+                    if self.config.debug_mode:
+                        logger.debug(f"   - Tests passed: {tests_passed_count}/{num_tests}")
+                        logger.debug(f"   - Raw score: {raw_score:.4f}")
             else:
-                logger.warning("   ⚠️  No tests to evaluate (empty test results)")
+                if self.config.debug_mode:
+                    logger.warning("   ⚠️  No tests to evaluate (empty test results)")
 
             stats.tests_passed = tests_passed_count
             stats.raw_score = raw_score
