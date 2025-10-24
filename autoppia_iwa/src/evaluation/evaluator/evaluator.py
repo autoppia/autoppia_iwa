@@ -436,7 +436,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                 browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
 
-                logger.info(f"🎬 Starting execution of {len(actions)} actions for web_agent_id={web_agent_id}")
+                logger.info(f"[ACTION EXECUTION] 🎬 Starting execution of {len(actions)} actions for web_agent_id={web_agent_id}")
 
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
@@ -448,7 +448,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                         # Log only errors when actions fail
                         if result and not result.successfully_executed:
-                            logger.error(f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
+                            logger.error(f"[ACTION EXECUTION] ❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
 
                         self.action_type_timing[action.type].append(elapsed)
 
@@ -457,13 +457,13 @@ class ConcurrentEvaluator(IEvaluator):
                             await asyncio.sleep(self.config.task_delay_in_seconds)
 
                     except Exception as e:
-                        logger.error(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}")
+                        logger.error(f"[ACTION EXECUTION] ❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}")
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
 
                         break
 
-                logger.info(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions")
+                logger.info(f"[ACTION EXECUTION] 🏁 Finished executing {len(action_results)}/{len(actions)} actions")
 
                 return action_results, action_execution_times
 
