@@ -4,6 +4,7 @@ from loguru import logger
 
 # Add custom EVALUATION level
 EVALUATION_LEVEL_NUM = 25  # Between INFO (20) and WARNING (30)
+TASK_GENERATION_LEVEL_NUM = 23  # Between INFO and EVALUATION
 
 
 def evaluation_level(record):
@@ -13,6 +14,7 @@ def evaluation_level(record):
 
 # Add the custom level to loguru
 logger.level("EVALUATION", EVALUATION_LEVEL_NUM, color="<blue>")
+logger.level("TASK_GENERATION", TASK_GENERATION_LEVEL_NUM, color="<magenta>")
 
 # ==================================
 # ======= LOGGING SETUP ============
@@ -74,6 +76,19 @@ def log_action_execution(message: str):
 def log_evaluation_event(message: str, context: str = "GENERAL"):
     """Log generic evaluation events with EVALUATION level"""
     get_evaluation_logger(context).log("EVALUATION", message)
+
+
+def get_task_generation_logger(context: str):
+    """
+    Get a logger with TASK_GENERATION level and specific context.
+    """
+    return logger.bind(task_generation_context=context)
+
+
+def log_task_generation_event(message: str, context: str = "TASK_GENERATION"):
+    """Log task generation events with TASK_GENERATION level"""
+    prefix = "" if context == "TASK_GENERATION" else f"[{context}] "
+    get_task_generation_logger(context).log("TASK_GENERATION", f"{prefix}{message}")
 
 
 def log_gif_creation(message: str):

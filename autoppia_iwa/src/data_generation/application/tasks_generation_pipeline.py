@@ -12,6 +12,30 @@ from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
 
 
+TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
+TASK_GENERATION_LEVEL_NO = 23
+
+
+def _ensure_task_generation_level() -> None:
+    """Register the TASK_GENERATION level if it's missing."""
+    try:
+        logger.level(TASK_GENERATION_LEVEL_NAME)
+    except ValueError:
+        logger.level(TASK_GENERATION_LEVEL_NAME, TASK_GENERATION_LEVEL_NO)
+
+
+def _log_task_generation(message: str, context: str = "TASK_GENERATION") -> None:
+    """Helper to log task generation events using the TASK_GENERATION level."""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_task_generation_event
+
+        log_task_generation_event(message, context=context)
+    except ImportError:
+        _ensure_task_generation_level()
+        prefix = "" if context == "TASK_GENERATION" else f"[{context}] "
+        logger.log(TASK_GENERATION_LEVEL_NAME, f"{prefix}{message}")
+
+
 class TaskGenerationPipeline:
     def __init__(
         self,
@@ -37,18 +61,18 @@ class TaskGenerationPipeline:
             List of Task objects with added tests
         """
         start_time = datetime.now()
-        logger.info("Starting combined task generation pipeline")
+        _log_task_generation("Starting combined task generation pipeline")
         all_tasks = []
 
         try:
             # 1) Generate global tasks if configured
             if self.task_config.generate_global_tasks:
-                logger.info("Generating global tasks")
+                _log_task_generation("Generating global tasks")
                 global_tasks = await self.global_pipeline.generate(
                     prompts_per_use_case=self.task_config.prompts_per_use_case, num_use_cases=self.task_config.num_use_cases, use_cases=self.task_config.use_cases
                 )
 
-                logger.info(f"Generated {len(global_tasks)} global tasks")
+                _log_task_generation(f"Generated {len(global_tasks)} global tasks")
 
                 # Add tests to tasks
                 global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
@@ -67,11 +91,11 @@ class TaskGenerationPipeline:
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:
                 random.shuffle(all_tasks)
                 all_tasks = all_tasks[: self.task_config.final_task_limit]
-                logger.info(f"Applied final task limit: {len(all_tasks)} tasks")
+                _log_task_generation(f"Applied final task limit: {len(all_tasks)} tasks", context="LIMIT")
 
             # Log completion
             total_time = (datetime.now() - start_time).total_seconds()
-            logger.info(f"Task generation completed in {total_time:.2f} seconds. Generated {len(all_tasks)} tasks.")
+            _log_task_generation(f"Task generation completed in {total_time:.2f} seconds. Generated {len(all_tasks)} tasks.")
             return all_tasks
 
         except Exception as e:

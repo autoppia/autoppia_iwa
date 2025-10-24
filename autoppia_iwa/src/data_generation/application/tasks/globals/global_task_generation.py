@@ -16,6 +16,30 @@ from autoppia_iwa.src.llms.domain.interfaces import ILLM
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 
 
+TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
+TASK_GENERATION_LEVEL_NO = 23
+
+
+def _ensure_task_generation_level() -> None:
+    """Ensure the TASK_GENERATION level exists when fallback logging is used."""
+    try:
+        logger.level(TASK_GENERATION_LEVEL_NAME)
+    except ValueError:
+        logger.level(TASK_GENERATION_LEVEL_NAME, TASK_GENERATION_LEVEL_NO)
+
+
+def _log_task_generation(message: str, context: str = "TASK_GENERATION") -> None:
+    """Log task generation events with TASK_GENERATION level or fallback."""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_task_generation_event
+
+        log_task_generation_event(message, context=context)
+    except ImportError:
+        _ensure_task_generation_level()
+        prefix = "" if context == "TASK_GENERATION" else f"[{context}] "
+        logger.log(TASK_GENERATION_LEVEL_NAME, f"{prefix}{message}")
+
+
 class GlobalTaskGenerationPipeline:
     def __init__(
         self,
@@ -48,20 +72,20 @@ class GlobalTaskGenerationPipeline:
                 use_case_msg = num_use_cases if num_use_cases else "all"
                 logger.warning(f"No matching use cases found for the provided names. Using {use_case_msg} use cases instead.")
             else:
-                logger.info("Selecting only the specified use cases for task generation.")
+                _log_task_generation("Selecting only the specified use cases for task generation.")
                 web_use_cases = selective_use_cases
 
         if num_use_cases and not selective_use_cases:
             web_use_cases = random.sample(web_use_cases, min(num_use_cases, len(web_use_cases)))
 
-        logger.info(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each. Selected {len(web_use_cases)} use cases.")
+        _log_task_generation(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each. Selected {len(web_use_cases)} use cases.")
 
         for use_case in web_use_cases:
-            logger.info(f"Generating tasks for use case: {use_case.name}")
+            _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
             try:
                 tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case)
                 all_tasks.extend(tasks_for_use_case)
-                logger.info(f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}'")
+                _log_task_generation(f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}'", context="USE_CASE")
             except Exception as e:
                 logger.error(f"Error generating tasks for {use_case.name}: {e!s}")
                 import traceback
@@ -69,7 +93,7 @@ class GlobalTaskGenerationPipeline:
                 traceback.print_exc()
                 continue
 
-        logger.info(f"Total generated tasks across all use cases: {len(all_tasks)}")
+        _log_task_generation(f"Total generated tasks across all use cases: {len(all_tasks)}", context="SUMMARY")
         return all_tasks
 
     async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5) -> list[Task]:
