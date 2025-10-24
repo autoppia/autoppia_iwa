@@ -29,14 +29,15 @@ def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
         logger.log(EVALUATION_LEVEL_NAME, message if context == "GENERAL" else f"[{context}] {message}")
 
 
-def _log_backend_test(message: str):
+def _log_backend_test(message: str, web_agent_id: str | None = None):
     """Helper function to log backend test messages with EVALUATION level"""
+    agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_backend_test
-        log_backend_test(message)
+        log_backend_test(f"{agent_prefix}{message}")
     except ImportError:
         # Fallback to regular debug logging if import fails
-        _log_evaluation_event(f"[GET BACKEND TEST] {message}", context="GET_BACKEND_TEST")
+        _log_evaluation_event(f"[GET BACKEND TEST] {agent_prefix}{message}", context="GET_BACKEND_TEST")
 
 
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
@@ -149,7 +150,7 @@ class BackendDemoWebService:
             async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()  # Raise on 4xx/5xx
                 events_data = await response.json(loads=self._json_parser.loads)
-                _log_backend_test(f"FETCH events for {web_agent_id}: {len(events_data)} encontrados")
+                _log_backend_test(f"FETCH events: {len(events_data)} encontrados", web_agent_id=web_agent_id)
 
                 # print(events_data, [BackendEvent(**event) for event in events_data])
                 return [BackendEvent(**event) for event in events_data]

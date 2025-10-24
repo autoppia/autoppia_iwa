@@ -183,13 +183,14 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 # TEST / FEEDBACK HELPERS
 # ---------------------------------------------------------------------------------
-async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> list[TestResult]:
+async def run_global_tests(task: Task, backend_events: list[BackendEvent], web_agent_id: str | None = None) -> list[TestResult]:
     """
     Runs all task tests once after all actions are executed.
 
     Args:
         task (Task): The task being evaluated (contains the list of tests).
         backend_events (List[BackendEvent]): Backend events captured during execution.
+        web_agent_id (str): The web agent ID being evaluated.
 
     Returns:
         List[TestResult]: A list of test results (one per test).
@@ -197,6 +198,7 @@ async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> li
     test_runner = TestRunner(task.tests)
     test_results = await test_runner.run_global_tests(
         backend_events=backend_events,
+        web_agent_id=web_agent_id,
     )
     return test_results
 
