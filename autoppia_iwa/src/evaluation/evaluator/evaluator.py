@@ -370,8 +370,8 @@ class ConcurrentEvaluator(IEvaluator):
 
         for key, g_indices in grouped_indices.items():
             _log_evaluation_event(
-                f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}",
-                context="GROUPING",
+                f"Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}",
+                context="GROUPING TASK SOLUTIONS",
             )
 
         # Shuffle grouped tasks for random evaluation order

@@ -255,9 +255,9 @@ class BackendDemoWebService:
         Returns:
             bool: True if reset was successful, False otherwise.
         """
-        _log_evaluation_event("Starting Reset Database", context="DB_RESET")
+        _log_evaluation_event("Starting Reset Database", context="RESETING DB")
         if self.web_project.is_web_real:
-            _log_evaluation_event("Not resetting DB as its real website", context="DB_RESET")
+            _log_evaluation_event("Not resetting DB as its real website", context="RESETING DB")
             return False
 
         if self._should_use_proxy_api():
@@ -268,7 +268,7 @@ class BackendDemoWebService:
 
                 async with session.delete(endpoint, params=params) as response:
                     if response.status in (200, 202):
-                        _log_evaluation_event("Database reset via API successful", context="DB_RESET")
+                        _log_evaluation_event("Database reset via API successful", context="RESETING DB")
                         return True
             except Exception as e:
                 logger.warning(f"API reset failed: {e}. Falling back to file reset.")
@@ -282,11 +282,11 @@ class BackendDemoWebService:
                 try:
                     response_data = await response.json(loads=self._json_parser.loads)
                     if response_data.get("status") == "success":
-                        _log_evaluation_event(f"Database reset: {response_data.get('message')}", context="DB_RESET")
+                        _log_evaluation_event(f"Database reset: {response_data.get('message')}", context="RESETING DB")
                         return True
                 except Exception:
                     if response.status in (200, 202):
-                        _log_evaluation_event("Database reset initiated successfully.", context="DB_RESET")
+                        _log_evaluation_event("Database reset initiated successfully.", context="RESETING DB")
                         return True
                     else:
                         logger.warning(f"Database reset completed with unexpected status: {response.status}")
