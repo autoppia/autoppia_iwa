@@ -5,7 +5,28 @@ import time
 from collections import defaultdict
 
 from loguru import logger
-from autoppia_iwa.entrypoints.benchmark.utils.logging import log_action_execution, log_gif_creation
+
+
+def _log_action_execution(message: str):
+    """Helper function to log action execution with EVALUATION level"""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_action_execution
+        log_action_execution(message)
+    except ImportError:
+        # Fallback to regular info logging if import fails
+        logger.info(f"[ACTION EXECUTION] {message}")
+
+
+def _log_gif_creation(message: str):
+    """Helper function to log GIF creation with EVALUATION level"""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_gif_creation
+        log_gif_creation(message)
+    except ImportError:
+        # Fallback to regular info logging if import fails
+        logger.info(f"[GIF CREATION] {message}")
+
+
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
@@ -182,7 +203,7 @@ class ConcurrentEvaluator(IEvaluator):
             execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
 
             if self.config.should_record_gif:
-                log_gif_creation("🎬 GIF ENABLED")
+                _log_gif_creation("🎬 GIF ENABLED")
                 all_screenshots = []
                 if execution_history:
                     all_screenshots.append(execution_history[0].browser_snapshot.screenshot_before)
@@ -193,12 +214,12 @@ class ConcurrentEvaluator(IEvaluator):
                 if all_screenshots:
                     evaluation_gif = make_gif_from_screenshots(all_screenshots)
                     if evaluation_gif:
-                        log_gif_creation("✅ GIF CREATION SUCCESS")
+                        _log_gif_creation("✅ GIF CREATION SUCCESS")
                     else:
-                        log_gif_creation("❌ GIF CREATION ERROR")
+                        _log_gif_creation("❌ GIF CREATION ERROR")
                         evaluation_gif = None
                 else:
-                    log_gif_creation("❌ GIF CREATION ERROR")
+                    _log_gif_creation("❌ GIF CREATION ERROR")
                     evaluation_gif = None
             else:
                 logger.info("📷 GIF Recording disabled (should_record_gif=False)")
@@ -434,7 +455,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                 browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
 
-                log_action_execution(f"🎬 Starting execution of {len(actions)} actions for web_agent_id={web_agent_id}")
+                _log_action_execution(f"🎬 Starting execution of {len(actions)} actions for web_agent_id={web_agent_id}")
 
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
@@ -446,7 +467,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                         # Log only errors when actions fail
                         if result and not result.successfully_executed:
-                            log_action_execution(f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
+                            _log_action_execution(f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
 
                         self.action_type_timing[action.type].append(elapsed)
 
@@ -455,13 +476,13 @@ class ConcurrentEvaluator(IEvaluator):
                             await asyncio.sleep(self.config.task_delay_in_seconds)
 
                     except Exception as e:
-                        log_action_execution(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}")
+                        _log_action_execution(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}")
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
 
                         break
 
-                log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions")
+                _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions")
 
                 return action_results, action_execution_times
 
