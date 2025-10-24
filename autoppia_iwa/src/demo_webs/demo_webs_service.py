@@ -5,6 +5,7 @@ from typing import Any
 import aiohttp
 from aiohttp.client_exceptions import ClientError
 from loguru import logger
+from autoppia_iwa.entrypoints.benchmark.utils.logging import log_backend_test
 
 from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
@@ -116,7 +117,7 @@ class BackendDemoWebService:
             async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()  # Raise on 4xx/5xx
                 events_data = await response.json(loads=self._json_parser.loads)
-                logger.info(f"FETCH events for {web_agent_id}: {len(events_data)} encontrados")
+                log_backend_test(f"FETCH events for {web_agent_id}: {len(events_data)} encontrados")
 
                 # print(events_data, [BackendEvent(**event) for event in events_data])
                 return [BackendEvent(**event) for event in events_data]

@@ -1,4 +1,5 @@
 from loguru import logger
+from autoppia_iwa.entrypoints.benchmark.utils.logging import log_backend_test
 
 from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
@@ -73,33 +74,33 @@ class TestRunner:
         Run all tests after executing the
         """
         # 🔍 DEBUG: Log test execution details
-        logger.info("🔍 DEBUG - TestRunner.run_global_tests:")
-        logger.info(f"   - Number of tests to run: {len(self.tests)}")
-        logger.info(f"   - Backend events available: {len(backend_events) if backend_events else 0}")
+        log_backend_test("🔍 DEBUG - TestRunner.run_global_tests:")
+        log_backend_test(f"   - Number of tests to run: {len(self.tests)}")
+        log_backend_test(f"   - Backend events available: {len(backend_events) if backend_events else 0}")
 
         snapshot_results = []  # Store results for this snapshot
         for test_idx, test in enumerate(self.tests, 1):
             test_name = getattr(test, "event_name", "Unknown")
             test_criteria = getattr(test, "event_criteria", {})
 
-            logger.info(f"   🧪 Test {test_idx}/{len(self.tests)}: {test_name}")
-            logger.info(f"      - Criteria: {test_criteria}")
-            logger.info(f"      - Test type: {type(test).__name__}")
-            logger.info(f"      - Test description: {getattr(test, 'description', 'No description')}")
+            log_backend_test(f"   🧪 Test {test_idx}/{len(self.tests)}: {test_name}")
+            log_backend_test(f"      - Criteria: {test_criteria}")
+            log_backend_test(f"      - Test type: {type(test).__name__}")
+            log_backend_test(f"      - Test description: {getattr(test, 'description', 'No description')}")
 
             # 🔍 DEBUG: Log what we're looking for vs what we have
             if backend_events:
                 for event_idx, event in enumerate(backend_events, 1):
-                    logger.info(f"      - Available Event {event_idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
-                    logger.info(f"         - Event data: {getattr(event, 'data', 'No data')}")
-                    logger.info(f"         - Event metadata: {getattr(event, 'metadata', 'No metadata')}")
-                    logger.info(f"         - Event attributes: {vars(event)}")
+                    log_backend_test(f"      - Available Event {event_idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
+                    log_backend_test(f"         - Event data: {getattr(event, 'data', 'No data')}")
+                    log_backend_test(f"         - Event metadata: {getattr(event, 'metadata', 'No metadata')}")
+                    log_backend_test(f"         - Event attributes: {vars(event)}")
 
             success = await test.execute_global_test(
                 backend_events=backend_events,
             )
 
-            logger.info(f"      - Result: {'✅ PASSED' if success else '❌ FAILED'}")
+            log_backend_test(f"      - Result: {'✅ PASSED' if success else '❌ FAILED'}")
 
             # Create TestResult instance with extra_data
             test_result = TestResult(
@@ -108,5 +109,5 @@ class TestRunner:
             )
             snapshot_results.append(test_result)
 
-        logger.info(f"   - Total results: {len(snapshot_results)}")
+        log_backend_test(f"   - Total results: {len(snapshot_results)}")
         return snapshot_results

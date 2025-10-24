@@ -5,6 +5,7 @@ import time
 from collections import defaultdict
 
 from loguru import logger
+from autoppia_iwa.entrypoints.benchmark.utils.logging import log_action_execution, log_gif_creation
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS
@@ -181,7 +182,7 @@ class ConcurrentEvaluator(IEvaluator):
             execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
 
             if self.config.should_record_gif:
-                logger.info(f"🎬 GIF Recording enabled for web_agent_id={web_agent_id}")
+                log_gif_creation("🎬 GIF ENABLED")
                 all_screenshots = []
                 if execution_history:
                     all_screenshots.append(execution_history[0].browser_snapshot.screenshot_before)
@@ -189,18 +190,15 @@ class ConcurrentEvaluator(IEvaluator):
                     for h in execution_history:
                         all_screenshots.append(h.browser_snapshot.screenshot_after)
 
-                logger.info(f"🎬 Collected {len(all_screenshots)} screenshots for GIF creation")
-
                 if all_screenshots:
                     evaluation_gif = make_gif_from_screenshots(all_screenshots)
                     if evaluation_gif:
-                        gif_size = len(evaluation_gif) if isinstance(evaluation_gif, bytes) else len(str(evaluation_gif))
-                        logger.info(f"🎬 GIF created successfully: {gif_size} bytes (base64 encoded)")
+                        log_gif_creation("✅ GIF CREATION SUCCESS")
                     else:
-                        logger.warning("⚠️  GIF creation failed: make_gif_from_screenshots returned None")
+                        log_gif_creation("❌ GIF CREATION ERROR")
                         evaluation_gif = None
                 else:
-                    logger.warning("⚠️  No screenshots collected for GIF")
+                    log_gif_creation("❌ GIF CREATION ERROR")
                     evaluation_gif = None
             else:
                 logger.info("📷 GIF Recording disabled (should_record_gif=False)")
@@ -436,7 +434,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                 browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
 
-                logger.info(f"[ACTION EXECUTION] 🎬 Starting execution of {len(actions)} actions for web_agent_id={web_agent_id}")
+                log_action_execution(f"🎬 Starting execution of {len(actions)} actions for web_agent_id={web_agent_id}")
 
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
@@ -448,7 +446,7 @@ class ConcurrentEvaluator(IEvaluator):
 
                         # Log only errors when actions fail
                         if result and not result.successfully_executed:
-                            logger.error(f"[ACTION EXECUTION] ❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
+                            log_action_execution(f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
 
                         self.action_type_timing[action.type].append(elapsed)
 
@@ -457,13 +455,13 @@ class ConcurrentEvaluator(IEvaluator):
                             await asyncio.sleep(self.config.task_delay_in_seconds)
 
                     except Exception as e:
-                        logger.error(f"[ACTION EXECUTION] ❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}")
+                        log_action_execution(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}")
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
 
                         break
 
-                logger.info(f"[ACTION EXECUTION] 🏁 Finished executing {len(action_results)}/{len(actions)} actions")
+                log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions")
 
                 return action_results, action_execution_times
 
