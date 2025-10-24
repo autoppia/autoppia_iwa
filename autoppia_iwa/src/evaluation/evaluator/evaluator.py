@@ -441,18 +441,14 @@ class ConcurrentEvaluator(IEvaluator):
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
                     try:
-                        logger.info(f"  ▶️  Action {i + 1}/{len(actions)}: {action.type} - {vars(action)}")
-
                         result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real, should_record=self.config.should_record_gif)
                         action_results.append(result)
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
 
-                        # Log action result
-                        if result and result.successfully_executed:
-                            logger.info(f"  ✅ Action {i + 1} SUCCESS in {elapsed:.2f}s")
-                        else:
-                            logger.warning(f"  ❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
+                        # Log only errors when actions fail
+                        if result and not result.successfully_executed:
+                            logger.error(f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
 
                         self.action_type_timing[action.type].append(elapsed)
 
