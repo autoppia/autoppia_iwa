@@ -91,16 +91,16 @@ def get_task_generation_logger(context: str):
 def log_task_generation_event(message: str, context: str = "TASK_GENERATION"):
     """Log task generation events with INFO level"""
     if context == "TASK_GENERATION":
-        logger.info(f"<magenta>[TASK_GENERATION]</magenta> {message}")
+        logger.info(f"[TASK_GENERATION] {message}")
     else:
-        logger.info(f"<magenta>[TASK_GENERATION] [{context}]</magenta> {message}")
+        logger.info(f"[TASK_GENERATION] [{context}] {message}")
 
 
 def log_gif_creation(message: str):
     """Log GIF creation with INFO level"""
-    logger.info(f"<green>[EVALUATION] [GIF CREATION]</green> {message}")
+    logger.info(f"[EVALUATION] [GIF CREATION] {message}")
 
 
 def log_backend_test(message: str):
     """Log backend test with INFO level"""
-    logger.info(f"<green>[EVALUATION] [GET BACKEND TEST]</green> {message}")
+    logger.info(f"[EVALUATION] [GET BACKEND TEST] {message}")
