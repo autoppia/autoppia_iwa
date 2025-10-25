@@ -25,11 +25,11 @@ def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
         log_evaluation_event(message, context=context)
     except ImportError:
-        # Fallback to INFO level with EVALUATION tag
+        # Fallback to INFO level with colored EVALUATION tag
         if context == "GENERAL":
-            logger.info(f"[EVALUATION] {message}")
+            logger.info(f"<green>[EVALUATION]</green> {message}")
         else:
-            logger.info(f"[EVALUATION] [{context}] {message}")
+            logger.info(f"<green>[EVALUATION] [{context}]</green> {message}")
 
 
 def _log_backend_test(message: str, web_agent_id: str | None = None):

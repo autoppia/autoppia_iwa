@@ -70,15 +70,15 @@ def get_evaluation_logger(context: str):
 
 def log_action_execution(message: str):
     """Log action execution with INFO level"""
-    logger.info(f"[EVALUATION] [ACTION EXECUTION] {message}")
+    logger.info(f"<green>[EVALUATION] [ACTION EXECUTION]</green> {message}")
 
 
 def log_evaluation_event(message: str, context: str = "GENERAL"):
     """Log generic evaluation events with INFO level"""
     if context == "GENERAL":
-        logger.info(f"[EVALUATION] {message}")
+        logger.info(f"<green>[EVALUATION]</green> {message}")
     else:
-        logger.info(f"[EVALUATION] [{context}] {message}")
+        logger.info(f"<green>[EVALUATION] [{context}]</green> {message}")
 
 
 def get_task_generation_logger(context: str):
@@ -91,16 +91,16 @@ def get_task_generation_logger(context: str):
 def log_task_generation_event(message: str, context: str = "TASK_GENERATION"):
     """Log task generation events with INFO level"""
     if context == "TASK_GENERATION":
-        logger.info(f"[TASK_GENERATION] {message}")
+        logger.info(f"<magenta>[TASK_GENERATION]</magenta> {message}")
     else:
-        logger.info(f"[TASK_GENERATION] [{context}] {message}")
+        logger.info(f"<magenta>[TASK_GENERATION] [{context}]</magenta> {message}")
 
 
 def log_gif_creation(message: str):
     """Log GIF creation with INFO level"""
-    logger.info(f"[EVALUATION] [GIF CREATION] {message}")
+    logger.info(f"<green>[EVALUATION] [GIF CREATION]</green> {message}")
 
 
 def log_backend_test(message: str):
     """Log backend test with INFO level"""
-    logger.info(f"[EVALUATION] [GET BACKEND TEST] {message}")
+    logger.info(f"<green>[EVALUATION] [GET BACKEND TEST]</green> {message}")
