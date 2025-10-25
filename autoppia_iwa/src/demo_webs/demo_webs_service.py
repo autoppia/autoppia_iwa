@@ -20,13 +20,16 @@ def _ensure_evaluation_level() -> None:
 
 
 def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
-    """Log generic evaluation events with the EVALUATION level."""
+    """Log generic evaluation events with INFO level."""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
         log_evaluation_event(message, context=context)
     except ImportError:
-        _ensure_evaluation_level()
-        logger.log(EVALUATION_LEVEL_NAME, message if context == "GENERAL" else f"[{context}] {message}")
+        # Fallback to INFO level with EVALUATION tag
+        if context == "GENERAL":
+            logger.info(f"[EVALUATION] {message}")
+        else:
+            logger.info(f"[EVALUATION] [{context}] {message}")
 
 
 def _log_backend_test(message: str, web_agent_id: str | None = None):

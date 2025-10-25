@@ -20,9 +20,8 @@ def _ensure_evaluation_level() -> None:
 
 
 def _log_evaluation_fallback(message: str) -> None:
-    """Fallback logger that emits messages at the EVALUATION level."""
-    _ensure_evaluation_level()
-    logger.log(EVALUATION_LEVEL_NAME, message)
+    """Fallback logger that emits messages at INFO level with EVALUATION tag."""
+    logger.info(f"[EVALUATION] {message}")
 
 
 def _log_action_execution(message: str, web_agent_id: str | None = None):
