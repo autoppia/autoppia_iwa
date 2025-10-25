@@ -70,15 +70,15 @@ def get_evaluation_logger(context: str):
 
 def log_action_execution(message: str):
     """Log action execution with INFO level"""
-    logger.info(f"<green>[EVALUATION] [ACTION EXECUTION]</green> {message}")
+    logger.info(f"[EVALUATION] [ACTION EXECUTION] {message}")
 
 
 def log_evaluation_event(message: str, context: str = "GENERAL"):
     """Log generic evaluation events with INFO level"""
     if context == "GENERAL":
-        logger.info(f"<green>[EVALUATION]</green> {message}")
+        logger.info(f"[EVALUATION] {message}")
     else:
-        logger.info(f"<green>[EVALUATION] [{context}]</green> {message}")
+        logger.info(f"[EVALUATION] [{context}] {message}")
 
 
 def get_task_generation_logger(context: str):
