@@ -108,7 +108,7 @@ class ConcurrentEvaluator(IEvaluator):
         try:
             _log_evaluation_event(f"Evaluating single task solution for task {task.id}...")
 
-            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETING DATABASE")
+            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETTING DATABASE")
             await self.backend_demo_webs_service.reset_database()
 
             result = await self._evaluate_single_task_solution(task, task_solution)
@@ -130,7 +130,7 @@ class ConcurrentEvaluator(IEvaluator):
         try:
             _log_evaluation_event(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
 
-            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETING DATABASE")
+            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETTING DATABASE")
             await self.backend_demo_webs_service.reset_database()
 
             results = await self._group_and_evaluate_task_solutions(task, task_solutions)
