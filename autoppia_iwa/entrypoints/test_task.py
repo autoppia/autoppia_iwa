@@ -125,7 +125,7 @@ async def run_prompt_test():
     agent = ApifiedWebAgent(id="1", name="TestAgent", host=CONFIG.agent_host, port=CONFIG.agent_port, timeout=CONFIG.agent_timeout)
     task.should_record = CONFIG.save_output
     backend = BackendDemoWebService(project)
-    await backend.reset_database()
+    await backend.reset_database(web_agent_id=agent.id)
 
     try:
         logger.info(f"Starting task execution with agent {agent.name}...")

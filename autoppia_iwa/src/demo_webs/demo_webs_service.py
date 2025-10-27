@@ -6,6 +6,8 @@ import aiohttp
 from aiohttp.client_exceptions import ClientError
 from loguru import logger
 
+from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, VALIDATOR_ID
+from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
@@ -23,6 +25,7 @@ def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
     """Log generic evaluation events with INFO level."""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
+
         log_evaluation_event(message, context=context)
     except ImportError:
         # Fallback to INFO level with EVALUATION tag
@@ -37,14 +40,11 @@ def _log_backend_test(message: str, web_agent_id: str | None = None):
     agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_backend_test
+
         log_backend_test(f"{agent_prefix}{message}")
     except ImportError:
         # Fallback to regular debug logging if import fails
         _log_evaluation_event(f"[GET BACKEND TEST] {agent_prefix}{message}", context="GET_BACKEND_TEST")
-
-
-from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
-from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 
 class BackendDemoWebService:
@@ -59,7 +59,7 @@ class BackendDemoWebService:
     - Support for both real and demo web projects
     """
 
-    def __init__(self, web_project: WebProject) -> None:
+    def __init__(self, web_project: WebProject, web_agent_id: str = "unknown_agent") -> None:
         """
         Initialize a single aiohttp session holder and store the web_project.
 
@@ -69,6 +69,7 @@ class BackendDemoWebService:
         self._session: aiohttp.ClientSession | None = None
         self.web_project: WebProject = web_project
         self.base_url = web_project.backend_url
+        self.web_agent_id = web_agent_id
 
         # Configure JSON parser (prefer orjson for performance)
         self._configure_json_parser()
@@ -132,13 +133,15 @@ class BackendDemoWebService:
         if self._should_use_proxy_api():
             try:
                 endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/get_events/"
-                params = {"web_url": self.base_url, "web_agent_id": web_agent_id}
+                params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
 
                 session = await self._get_session()
 
                 async with session.get(endpoint, params=params) as response:
                     response.raise_for_status()
                     events_data = await response.json(loads=self._json_parser.loads)
+                    if not events_data:
+                        print("No events received.")
                     # print(events_data, [BackendEvent(**event.get("data", {})) for event in events_data])
                     return [BackendEvent(**event.get("data", {})) for event in events_data]
 
@@ -147,7 +150,7 @@ class BackendDemoWebService:
 
         try:
             endpoint = f"{self.base_url}events/list/"
-            headers = {"X-WebAgent-Id": web_agent_id}
+            headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID}
             session = await self._get_session()
 
             async with session.get(endpoint, headers=headers) as response:
@@ -247,7 +250,7 @@ class BackendDemoWebService:
             if session:
                 await session.close()
 
-    async def reset_database(self, override_url: str | None = None) -> bool:
+    async def reset_database(self, override_url: str | None = None, web_agent_id: str | None = None) -> bool:
         """
         Resets the entire database (requires admin/superuser permissions).
 
@@ -267,7 +270,7 @@ class BackendDemoWebService:
         if self._should_use_proxy_api():
             try:
                 endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
-                params = {"web_url": self.base_url}
+                params = {"web_url": self.base_url, "web_agent_id": web_agent_id or self.web_agent_id, "validator_id": VALIDATOR_ID}
                 session = await self._get_session()
 
                 async with session.delete(endpoint, params=params) as response:
@@ -279,8 +282,10 @@ class BackendDemoWebService:
 
         endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
         session = await self._get_session()
+        headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID}
+
         try:
-            async with session.post(endpoint, timeout=30) as response:
+            async with session.post(endpoint, headers=headers, timeout=30) as response:
                 response.raise_for_status()
 
                 try:
@@ -322,6 +327,7 @@ class BackendDemoWebService:
             "event_name": event_name,
             "data": data,
             "web_agent_id": web_agent_id,
+            "validator_id": VALIDATOR_ID,
         }
 
         endpoint = f"{self.base_url}events/add/"
