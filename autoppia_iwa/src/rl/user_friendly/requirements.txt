@@ -1,0 +1,26 @@
+# User-Friendly RL Environment Requirements
+# Core dependencies for the user-friendly RL framework
+
+# Core ML dependencies
+torch>=2.1.0
+numpy>=2.0.0
+
+# Web automation dependencies
+playwright>=1.49.0
+
+# Logging and utilities
+loguru>=0.7.3
+
+# Async support
+aiohttp>=3.10.0
+
+# Note: gymnasium is required by AsyncWebAgentEnv (autoppia_iwa.src.rl.env)
+# but not directly imported by user-friendly RL files
+# gymnasium>=0.29.0  # Uncomment if using AsyncWebAgentEnv directly
+
+# Optional: For advanced policies (CNN, etc.)
+# torchvision>=0.16.0  # Uncomment if using CNN policies
+
+# Optional: For visualization and analysis
+# matplotlib>=3.9.0    # Uncomment if using plotting features
+# seaborn>=0.12.0      # Uncomment if using advanced plotting
