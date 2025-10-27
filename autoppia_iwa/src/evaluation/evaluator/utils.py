@@ -183,13 +183,14 @@ def display_batch_evaluation_summary(
 # ---------------------------------------------------------------------------------
 # TEST / FEEDBACK HELPERS
 # ---------------------------------------------------------------------------------
-async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> list[TestResult]:
+async def run_global_tests(task: Task, backend_events: list[BackendEvent], web_agent_id: str | None = None) -> list[TestResult]:
     """
     Runs all task tests once after all actions are executed.
 
     Args:
         task (Task): The task being evaluated (contains the list of tests).
         backend_events (List[BackendEvent]): Backend events captured during execution.
+        web_agent_id (str): The web agent ID being evaluated.
 
     Returns:
         List[TestResult]: A list of test results (one per test).
@@ -197,6 +198,7 @@ async def run_global_tests(task: Task, backend_events: list[BackendEvent]) -> li
     test_runner = TestRunner(task.tests)
     test_results = await test_runner.run_global_tests(
         backend_events=backend_events,
+        web_agent_id=web_agent_id,
     )
     return test_results
 
@@ -329,10 +331,7 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
     pil_images: list[Image.Image] = []
 
     if not all_base64_strings:
-        logger.warning("🎬 GIF Creation: Input list 'all_base64_strings' is empty. Returning empty bytes.")
         return b""
-
-    logger.info(f"🎬 GIF Creation: Starting with {len(all_base64_strings)} screenshots")
 
     for idx, b64_string in enumerate(all_base64_strings):
         try:
@@ -380,10 +379,7 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             continue
 
     if not pil_images:
-        logger.warning("🎬 GIF Creation: No images were successfully decoded or processed. Returning empty bytes.")
         return b""
-
-    logger.info(f"🎬 GIF Creation: Processing {len(pil_images)} PIL images into animated GIF")
     gif_buffer = io.BytesIO()
     try:
         pil_images[0].save(
@@ -399,9 +395,8 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             # Use 1 if frames should not be disposed (e.g., drawn on top of each other).
         )
         raw_gif_bytes = gif_buffer.getvalue()
-        logger.info(f"🎬 GIF Creation: Successfully created GIF with {len(pil_images)} frames, size: {len(raw_gif_bytes)} bytes (raw)")
     except Exception as e_gif:
-        logger.error(f"🎬 GIF Creation: Error occurred while saving the GIF: {e_gif}", exc_info=True)
+        logger.error(f"❌ GIF CREATION ERROR: {e_gif}", exc_info=True)
         return b""
     finally:
         for img_obj in pil_images:
@@ -410,7 +405,6 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             gif_buffer.close()
 
     encoded_gif = base64.b64encode(raw_gif_bytes)
-    logger.info(f"🎬 GIF Creation: Base64 encoded GIF size: {len(encoded_gif)} bytes")
     return encoded_gif
 
 

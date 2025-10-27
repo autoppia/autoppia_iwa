@@ -5,6 +5,56 @@ import time
 from collections import defaultdict
 
 from loguru import logger
+
+EVALUATION_LEVEL_NAME = "EVALUATION"
+EVALUATION_LEVEL_NO = 25
+
+
+def _ensure_evaluation_level() -> None:
+    """Register the EVALUATION level if it is missing."""
+    try:
+        logger.level(EVALUATION_LEVEL_NAME)
+    except ValueError:
+        logger.level(EVALUATION_LEVEL_NAME, EVALUATION_LEVEL_NO)
+
+
+def _log_evaluation_fallback(message: str) -> None:
+    """Fallback logger that emits messages at INFO level with EVALUATION tag."""
+    logger.info(f"[EVALUATION] {message}")
+
+
+def _log_action_execution(message: str, web_agent_id: str | None = None):
+    """Helper function to log action execution with EVALUATION level"""
+    agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_action_execution
+
+        log_action_execution(f"{agent_prefix}{message}")
+    except ImportError:
+        _log_evaluation_fallback(f"[ACTION EXECUTION] {agent_prefix}{message}")
+
+
+def _log_gif_creation(message: str, web_agent_id: str | None = None):
+    """Helper function to log GIF creation with EVALUATION level"""
+    agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_gif_creation
+
+        log_gif_creation(f"{agent_prefix}{message}")
+    except ImportError:
+        _log_evaluation_fallback(f"[GIF CREATION] {agent_prefix}{message}")
+
+
+def _log_evaluation_event(message: str, context: str = "GENERAL"):
+    """Helper function to log generic evaluation events with EVALUATION level."""
+    try:
+        from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
+
+        log_evaluation_event(message, context=context)
+    except ImportError:
+        _log_evaluation_fallback(message if context == "GENERAL" else f"[{context}] {message}")
+
+
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS, VALIDATOR_ID
@@ -58,9 +108,9 @@ class ConcurrentEvaluator(IEvaluator):
         Evaluate a single task solution (actions + agent) for a given task.
         """
         try:
-            logger.info(f"Evaluating Single task solution for task {task.id}...")
+            _log_evaluation_event(f"Evaluating single task solution for task {task.id}...")
 
-            logger.info("Resetting Project Environment & Database.")
+            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETTING DATABASE")
             await self.backend_demo_webs_service.reset_database(web_agent_id=task_solution.web_agent_id)
 
             result = await self._evaluate_single_task_solution(task, task_solution)
@@ -80,9 +130,9 @@ class ConcurrentEvaluator(IEvaluator):
         Evaluate multiple solutions for the same task, optionally grouping identical ones.
         """
         try:
-            logger.info(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
+            _log_evaluation_event(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
 
-            logger.info("Resetting Project Environment & Database.")
+            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETTING DATABASE")
             web_agent_ids = {sol.web_agent_id for sol in task_solutions if sol.web_agent_id}
             for web_agent_id in web_agent_ids:
                 await self.backend_demo_webs_service.reset_database(web_agent_id=web_agent_id)
@@ -157,6 +207,10 @@ class ConcurrentEvaluator(IEvaluator):
                     stats.total_time = time.time() - stats.start_time
                     stats.had_errors = False
                     stats.error_message = "Seed missing or mismatched in NavigateAction URL(s)."
+
+                    # Log seed mismatch early return
+                    _log_evaluation_event(f"SEED MISMATCH - Skipping browser execution (expected seed={assigned_seed})", context=f"ACTION EXECUTION | agent={web_agent_id}")
+
                     test_results = initialize_test_results(task)
                     return EvaluationResult(
                         web_agent_id=web_agent_id,
@@ -170,7 +224,7 @@ class ConcurrentEvaluator(IEvaluator):
                         gif_recording="",
                     )
 
-        logger.info(f"Evaluating real actions for web_agent_id={web_agent_id}, Task {task.id}...")
+        _log_evaluation_event("Executing actions in browser", context=f"ACTION EXECUTION | agent={web_agent_id}")
         evaluation_gif = ""
         try:
             # If simulated, reset the DB first
@@ -183,7 +237,7 @@ class ConcurrentEvaluator(IEvaluator):
             execution_history, action_execution_times = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
 
             if self.config.should_record_gif:
-                logger.info(f"🎬 GIF Recording enabled for web_agent_id={web_agent_id}")
+                _log_gif_creation("🎬 GIF ENABLED", web_agent_id=web_agent_id)
                 all_screenshots = []
                 if execution_history:
                     all_screenshots.append(execution_history[0].browser_snapshot.screenshot_before)
@@ -191,21 +245,18 @@ class ConcurrentEvaluator(IEvaluator):
                     for h in execution_history:
                         all_screenshots.append(h.browser_snapshot.screenshot_after)
 
-                logger.info(f"🎬 Collected {len(all_screenshots)} screenshots for GIF creation")
-
                 if all_screenshots:
                     evaluation_gif = make_gif_from_screenshots(all_screenshots)
                     if evaluation_gif:
-                        gif_size = len(evaluation_gif) if isinstance(evaluation_gif, bytes) else len(str(evaluation_gif))
-                        logger.info(f"🎬 GIF created successfully: {gif_size} bytes (base64 encoded)")
+                        _log_gif_creation("✅ GIF CREATION SUCCESS", web_agent_id=web_agent_id)
                     else:
-                        logger.warning("⚠️  GIF creation failed: make_gif_from_screenshots returned None")
+                        _log_gif_creation("❌ GIF CREATION ERROR", web_agent_id=web_agent_id)
                         evaluation_gif = None
                 else:
-                    logger.warning("⚠️  No screenshots collected for GIF")
+                    _log_gif_creation("❌ GIF CREATION ERROR", web_agent_id=web_agent_id)
                     evaluation_gif = None
             else:
-                logger.info("📷 GIF Recording disabled (should_record_gif=False)")
+                _log_evaluation_event("📷 GIF Recording disabled (should_record_gif=False)", context="GIF")
 
             stats.action_execution_times = action_execution_times
 
@@ -213,27 +264,21 @@ class ConcurrentEvaluator(IEvaluator):
             test_start_time = time.time()
             backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
 
-            # 🔍 DEBUG: Log backend events
-            logger.info("🔍 DEBUG - Backend Events Retrieved:")
-            logger.info(f"   - Number of events: {len(backend_events) if backend_events else 0}")
-            if backend_events:
-                for idx, event in enumerate(backend_events, 1):
-                    logger.info(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
-                    # 🔍 DEBUG: Log full event data
-                    logger.info(f"      - Full event data: {event}")
-                    if hasattr(event, "data") and event.data:
-                        logger.info(f"      - Event data: {event.data}")
-                    if hasattr(event, "metadata") and event.metadata:
-                        logger.info(f"      - Event metadata: {event.metadata}")
-                    # Log all attributes of the event
-                    logger.info(f"      - Event attributes: {vars(event)}")
+            # 🔍 DEBUG: Log backend events (simplified)
+            if self.config.debug_mode:
+                logger.debug("🔍 DEBUG - Backend Events Retrieved:")
+                logger.debug(f"   - Number of events: {len(backend_events) if backend_events else 0}")
+                if backend_events:
+                    for idx, event in enumerate(backend_events, 1):
+                        logger.debug(f"   - Event {idx}: {event.event_name if hasattr(event, 'event_name') else 'unknown'}")
 
-            test_results = await run_global_tests(task, backend_events=backend_events)
+            test_results = await run_global_tests(task, backend_events=backend_events, web_agent_id=web_agent_id)
 
-            # 🔍 DEBUG: Log test results
-            logger.info("🔍 DEBUG - Test Results:")
-            logger.info(f"   - Number of tests: {len(test_results) if test_results else 0}")
-            logger.info(f"   - Test results: {test_results}")
+            # 🔍 DEBUG: Log test results (simplified)
+            if self.config.debug_mode:
+                logger.debug("🔍 DEBUG - Test Results:")
+                logger.debug(f"   - Number of tests: {len(test_results) if test_results else 0}")
+                logger.debug(f"   - Test results: {test_results}")
 
             stats.test_execution_time = time.time() - test_start_time
 
@@ -242,27 +287,33 @@ class ConcurrentEvaluator(IEvaluator):
             tests_passed_count = 0
             num_tests = 0
 
-            # 🔍 DEBUG: Log test calculation details
-            logger.info("🔍 DEBUG - Calculating Raw Score:")
-            logger.info(f"   - test_results exists: {test_results is not None}")
-            logger.info(f"   - test_results length: {len(test_results) if test_results else 0}")
+            # 🔍 DEBUG: Log test calculation details (simplified)
+            if self.config.debug_mode:
+                logger.debug("🔍 DEBUG - Calculating Raw Score:")
+                logger.debug(f"   - test_results exists: {test_results is not None}")
+                logger.debug(f"   - test_results length: {len(test_results) if test_results else 0}")
 
             if test_results:
                 num_tests = len(test_results)
                 stats.total_tests = num_tests
-                logger.info(f"   - Number of tests: {num_tests}")
+
+                if self.config.debug_mode:
+                    logger.debug(f"   - Number of tests: {num_tests}")
 
                 for test_index, test_result in enumerate(test_results):
-                    logger.info(f"   - Test {test_index + 1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
+                    if self.config.debug_mode:
+                        logger.debug(f"   - Test {test_index + 1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
                     if test_result.success:
                         tests_passed_count += 1
 
                 if num_tests > 0:
                     raw_score = tests_passed_count / num_tests
-                    logger.info(f"   - Tests passed: {tests_passed_count}/{num_tests}")
-                    logger.info(f"   - Raw score: {raw_score:.4f}")
+                    if self.config.debug_mode:
+                        logger.debug(f"   - Tests passed: {tests_passed_count}/{num_tests}")
+                        logger.debug(f"   - Raw score: {raw_score:.4f}")
             else:
-                logger.warning("   ⚠️  No tests to evaluate (empty test results)")
+                if self.config.debug_mode:
+                    logger.warning("   ⚠️  No tests to evaluate (empty test results)")
 
             stats.tests_passed = tests_passed_count
             stats.raw_score = raw_score
@@ -320,14 +371,17 @@ class ConcurrentEvaluator(IEvaluator):
                 hash_key = hash_actions(solution.actions)
                 grouped_indices[hash_key].append(idx)
             if self.config.verbose_logging:
-                logger.info(f"Grouped {len(task_solutions)} solutions into {len(grouped_indices)} groups")
+                _log_evaluation_event(f"Grouped {len(task_solutions)} solutions into {len(grouped_indices)} groups", context="GROUPING")
         else:
             for idx, solution in enumerate(task_solutions):
                 unique_hash = hash_actions(solution.actions) + f"_{idx}"
                 grouped_indices[unique_hash].append(idx)
 
         for key, g_indices in grouped_indices.items():
-            logger.info(f"[DEBUG] Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}")
+            _log_evaluation_event(
+                f"Group key={key}, indices={g_indices}, web_agent_ids={[task_solutions[i].web_agent_id for i in g_indices]}",
+                context="GROUPING TASK SOLUTIONS",
+            )
 
         # Shuffle grouped tasks for random evaluation order
         grouped_task_list = list(grouped_indices.values())
@@ -372,6 +426,15 @@ class ConcurrentEvaluator(IEvaluator):
         async with semaphore:
             rep_index = group_indices[0]
             representative = task_solutions[rep_index]
+
+            # Log which group is being evaluated
+            web_agent_ids = [task_solutions[i].web_agent_id for i in group_indices]
+            if len(group_indices) > 1:
+                _log_evaluation_event(
+                    f"Evaluating group (identical actions) - representative={representative.web_agent_id}, cloning for {len(group_indices) - 1} others: {web_agent_ids[1:]}", context="GROUPING TASK"
+                )
+            else:
+                _log_evaluation_event(f"Evaluating unique solution - web_agent_id={representative.web_agent_id}", context="GROUPING TASK")
 
             try:
                 rep_result = await self._evaluate_single_task_solution(task, representative)
@@ -438,23 +501,19 @@ class ConcurrentEvaluator(IEvaluator):
 
                 browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
 
-                logger.info(f"🎬 Starting execution of {len(actions)} actions for web_agent_id={web_agent_id}")
+                _log_action_execution(f"🎬 Starting execution of {len(actions)} actions", web_agent_id=web_agent_id)
 
                 for i, action in enumerate(actions):
                     start_time_action = time.time()
                     try:
-                        logger.info(f"  ▶️  Action {i + 1}/{len(actions)}: {action.type} - {vars(action)}")
-
                         result = await browser_executor.execute_single_action(action, web_agent_id, iteration=i, is_web_real=is_web_real, should_record=self.config.should_record_gif)
                         action_results.append(result)
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
 
-                        # Log action result
-                        if result and result.successfully_executed:
-                            logger.info(f"  ✅ Action {i + 1} SUCCESS in {elapsed:.2f}s")
-                        else:
-                            logger.warning(f"  ❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}")
+                        # Log only errors when actions fail
+                        if result and not result.successfully_executed:
+                            _log_action_execution(f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')}", web_agent_id=web_agent_id)
 
                         self.action_type_timing[action.type].append(elapsed)
 
@@ -463,13 +522,13 @@ class ConcurrentEvaluator(IEvaluator):
                             await asyncio.sleep(self.config.task_delay_in_seconds)
 
                     except Exception as e:
-                        logger.error(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}")
+                        _log_action_execution(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e}", web_agent_id=web_agent_id)
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
 
                         break
 
-                logger.info(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions")
+                _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions", web_agent_id=web_agent_id)
 
                 return action_results, action_execution_times
 
