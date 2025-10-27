@@ -63,10 +63,10 @@ class AsyncWebAgentEnv(gym.Env):
             {
                 "image": spaces.Box(0, 255, shape=(H, W, 3), dtype=np.uint8),
                 "url": spaces.Text(max_length=2048),
-                "html": spaces.Text(max_length=500_000) if include_html else spaces.Text(0),
+                "html": spaces.Text(max_length=500_000) if include_html else spaces.Text(max_length=1),
                 "task_prompt": spaces.Text(max_length=4096),
                 "step": spaces.Box(low=0, high=max_steps, shape=(), dtype=np.int32),
-                "history": spaces.Text(max_length=20000) if history_k > 0 else spaces.Text(0),
+                "history": spaces.Text(max_length=20000) if history_k > 0 else spaces.Text(max_length=1),
             }
         )
         self.action_space = spaces.Text(max_length=16384) if action_mode == "json" else spaces.Dict({"type": spaces.Text(max_length=64)})
