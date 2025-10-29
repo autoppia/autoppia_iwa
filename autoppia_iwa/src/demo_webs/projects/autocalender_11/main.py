@@ -4,8 +4,8 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 from .events import CALENDAR_EVENTS
 from .use_cases import ALL_USE_CASES
 
-FRONTEND_URL = f"{DEMO_WEBS_ENDPOINT}:8009/"
-BACKEND_URL = f"{DEMO_WEBS_ENDPOINT}:8009/"
+FRONTEND_URL = f"{DEMO_WEBS_ENDPOINT}:8010/"
+BACKEND_URL = f"{DEMO_WEBS_ENDPOINT}:8010/"
 
 autocalendar_project = WebProject(
     id="autocalendar",
