@@ -168,8 +168,17 @@ class Benchmark:
         Evaluate all agent solutions produced for a single Task.
         Stores GIF recordings if evaluation returns them and recording is enabled.
         """
-        evaluator = ConcurrentEvaluator(project, EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20, should_record_gif=self.config.record_gif))
-        results = await evaluator.evaluate_task_solutions(task, solutions)
+        # Filter out None solutions defensively
+        valid_solutions = [s for s in solutions if s is not None]
+        if not valid_solutions:
+            logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
+            return []
+
+        evaluator = ConcurrentEvaluator(
+            project,
+            EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20, should_record_gif=self.config.record_gif),
+        )
+        results = await evaluator.evaluate_task_solutions(task, valid_solutions)
 
         if self.config.record_gif:
             for res in results:
@@ -194,7 +203,7 @@ class Benchmark:
             # Filter out None solutions for visualization
             valid_solutions = [sol for sol in solutions if sol is not None]
 
-            # Call the actual evaluation method
+            # Call the actual evaluation method (will filter None internally)
             results = await self._evaluate_solutions_for_task(project, task, solutions, run_index)
 
             # Apply visualization if we have valid results and visualization is enabled

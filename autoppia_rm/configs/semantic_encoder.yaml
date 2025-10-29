@@ -1,0 +1,7 @@
+in_dim: 768
+affordance_dim: 16
+batch: 64
+lr: 1.0e-4
+epochs: 5
+val_every: 1
+num_workers: 4

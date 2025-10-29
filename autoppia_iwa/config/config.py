@@ -54,7 +54,7 @@ EVALUATOR_HEADLESS = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "True")))
 # ============================
 # Application Configuration
 # ============================
-GENERATE_MILESTONES = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "False")))
+GENERATE_MILESTONES = bool(strtobool(os.getenv("GENERATE_MILESTONES", "False")))
 
 # ============================
 # Project Base Directory Path

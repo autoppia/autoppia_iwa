@@ -6,7 +6,7 @@ import io
 from collections import defaultdict
 
 from loguru import logger
-from PIL import Image, UnidentifiedImageError
+# Avoid importing Pillow at module import time; import lazily in functions that need it.
 
 from autoppia_iwa.src.data_generation.domain.classes import Task
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
@@ -328,7 +328,9 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
         str: The base64 encoded content of the generated GIF image. Returns empty bytes (b"") if an error occurs
                or no images are processed.
     """
-    pil_images: list[Image.Image] = []
+    # Local import to avoid hard dependency when GIF generation is unused
+    from PIL import Image, UnidentifiedImageError  # type: ignore
+    pil_images: list = []
 
     if not all_base64_strings:
         return b""

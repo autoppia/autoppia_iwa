@@ -3,6 +3,8 @@ Thin wrapper for generating tasks with optional per-project caching.
 Keeps your existing generation pipeline and JSON cache format.
 """
 
+from urllib.parse import urljoin, urlsplit
+
 from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.utils.tasks import (
@@ -11,6 +13,35 @@ from autoppia_iwa.entrypoints.benchmark.utils.tasks import (
     save_tasks_to_json,
 )
 from autoppia_iwa.src.demo_webs.classes import WebProject
+
+
+def _retarget_task_urls(tasks, project: WebProject) -> None:
+    """Ensure cached or generated task URLs align with the current DEMO endpoint."""
+    base = (project.frontend_url or "").strip()
+    if not base:
+        return
+    if not base.endswith("/"):
+        base = base + "/"
+    base_parts = urlsplit(base)
+    for task in tasks:
+        try:
+            original = (getattr(task, "url", "") or "").strip()
+            parts = urlsplit(original)
+            path = parts.path or ""
+            joined = urljoin(base, path.lstrip("/")) if path else base
+            if not path and base.endswith("/") and not joined.endswith("/"):
+                joined += "/"
+            if parts.query:
+                joined = f"{joined.split('?', 1)[0]}?{parts.query}"
+            if parts.fragment:
+                joined = f"{joined.split('#', 1)[0]}#{parts.fragment}"
+            if not path and base_parts.path not in ("", "/"):
+                joined = urljoin(base, base_parts.path.lstrip("/"))
+            task.url = joined
+        except Exception as exc:
+            logger.warning(
+                f"[tasks] Failed to retarget cached task URL '{getattr(task, 'url', None)}': {exc}"
+            )
 
 
 async def generate_tasks_for_project(
@@ -33,6 +64,7 @@ async def generate_tasks_for_project(
             try:
                 cached = await load_tasks_from_json(project, cache_dir)
                 if cached:
+                    _retarget_task_urls(cached, project)
                     logger.info(f"[tasks] Using cache ({len(cached)} tasks) for '{project.name}'")
                     return cached
                 else:
@@ -51,6 +83,8 @@ async def generate_tasks_for_project(
             enable_dynamic_html=enable_dynamic_html,
         )
 
+        if tasks:
+            _retarget_task_urls(tasks, project)
         if tasks and cache_dir:
             logger.info(f"[tasks] Generated {len(tasks)} tasks for '{project.name}'")
             try:

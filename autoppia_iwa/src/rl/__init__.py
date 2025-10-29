@@ -1,13 +1,11 @@
-"""Reinforcement learning environment helpers for Infinite Web Arena (IWA)."""
+"""RL environment exports used by training and wrappers."""
 
 from typing import Any
-
-from .validator.iwa_evaluator_client import IWAValidator, ValidatorFeedback
 
 _ENV_IMPORT_ERROR: Exception | None = None
 
 try:  # pragma: no cover - optional dependency path
-    from .envs.iwa_gym_env import IWAWebEnv, MacroAction
+    from .envs.iwa_env import IWAWebEnv, MacroAction
 except ModuleNotFoundError as exc:  # pragma: no cover - handled lazily
     IWAWebEnv = None  # type: ignore[assignment]
     MacroAction = None  # type: ignore[assignment]
@@ -22,4 +20,4 @@ def __getattr__(name: str) -> Any:  # pragma: no cover - simple delegation
     raise AttributeError(f"module 'rl' has no attribute '{name}'")
 
 
-__all__ = ["IWAWebEnv", "MacroAction", "IWAValidator", "ValidatorFeedback"]
+__all__ = ["IWAWebEnv", "MacroAction"]

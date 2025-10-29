@@ -8,17 +8,38 @@ from pathlib import Path
 from typing import Literal
 
 from bs4 import BeautifulSoup
-from dependency_injector.wiring import Provide
+try:  # Optional: allow running without dependency_injector (e.g., Py3.13 wheels)
+    from dependency_injector.wiring import Provide  # type: ignore
+except Exception:  # pragma: no cover - lightweight fallback for environments without the package
+    class Provide:  # type: ignore
+        """Minimal stub so annotations like Provide[DIContainer.llm_service] don't break imports.
+
+        Note: Tests that rely on DI-injected services (e.g., LLM-based judge tests)
+        should not run when this stub is active. Simpler tests such as CheckUrlTest
+        and FindInHtmlTest will continue to work.
+        """
+
+        def __class_getitem__(cls, item):
+            return None
 from loguru import logger
-from openai.types.chat import ChatCompletion
+try:  # Optional: avoid forcing openai dependency for non-LLM tests
+    from openai.types.chat import ChatCompletion  # type: ignore
+except Exception:  # pragma: no cover - fallback type stub
+    class ChatCompletion:  # type: ignore
+        pass
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
-from autoppia_iwa.src.di_container import DIContainer
+try:  # Optional: avoid importing DI machinery when not installed
+    from autoppia_iwa.src.di_container import DIContainer  # type: ignore
+except Exception:  # pragma: no cover - fallback DI stub
+    class DIContainer:  # type: ignore
+        llm_service = object()
 from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
-from autoppia_iwa.src.shared.web_utils import clean_html, generate_html_differences
+# Avoid importing heavy optional deps (e.g., Pillow) at module import time.
+# Import helpers locally inside methods that need them.
 
 from .tests_prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
 from .tests_schemas import HTMLBasedTestResponse, ScreenshotTestResponse
@@ -314,6 +335,8 @@ class JudgeBaseOnHTML(BaseTaskTest):
             logger.warning("No HTML content found in browser snapshots.")
             return False
 
+        # Local import to avoid heavy deps during non-LLM tests
+        from autoppia_iwa.src.shared.web_utils import generate_html_differences
         differences = generate_html_differences(all_htmls)
         # differences = generate_html_differences_with_xmldiff(all_htmls)
         if not differences:
@@ -334,6 +357,8 @@ class JudgeBaseOnHTML(BaseTaskTest):
 
         all_htmls = [html for snap in browser_snapshots for html in ([snap.prev_html, snap.current_html] if snap == browser_snapshots[0] else [snap.current_html]) if html]
 
+        # Local import to avoid heavy deps during non-LLM tests
+        from autoppia_iwa.src.shared.web_utils import clean_html
         cleaned_htmls = []
         for html in all_htmls:
             try:

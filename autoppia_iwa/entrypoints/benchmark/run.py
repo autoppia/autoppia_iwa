@@ -1,6 +1,8 @@
 """
 Code-first entrypoint: configure projects, agents, runs, and options here.
-Then run with:  python -m entrypoints.benchmark.run
+
+Run with:
+  python -m autoppia_iwa.entrypoints.benchmark.run
 """
 
 import asyncio
@@ -17,39 +19,63 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 # 💡 Code configuration
 # =========================
 
-# 1) Agents (ports where your agents are listening)
+# Define external HTTP SOTA agents (examples). Uncomment to enable.
+# Ensure unique `id` per agent.
+
+# BROWSER_USE_AGENT = ApifiedWebAgent(
+#     id="browser_use",
+#     name="BrowserUse",
+#     host="browser-use-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# OPENAI_CUA_AGENT = ApifiedWebAgent(
+#     id="openai_cua",
+#     name="OpenAI CUA",
+#     host="openai-cua-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# CLAUDE_CUA_AGENT = ApifiedWebAgent(
+#     id="claude_cua",
+#     name="Claude CUA",
+#     host="anthropic-cua-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# Group SOTA agent examples (commented). Uncomment to use, or set
+# `AGENTS = SOTA_AGENTS` below after uncommenting individual agents.
+SOTA_AGENTS = [
+    # BROWSER_USE_AGENT,
+    # OPENAI_CUA_AGENT,
+    # CLAUDE_CUA_AGENT,
+]
+
+# Active agents to run. Configure your local simple_api agent here.
+# Daryxx Finetuned served by simple_api on localhost:6789
 AGENTS = [
-    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=9000, timeout=120),
-    # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
+    ApifiedWebAgent(id="2", name="AutoppiaAgent1",
+                    host="84.247.180.192", port=6789, timeout=120)
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
-PROJECT_IDS = [
-    "autocinema",
-    # "autobooks",
-    # "autozone",
-    # "autodining",
-    # "autocrm",
-    # "automail",
-    # "autodelivery",
-    # "autolodge",
-    # "autoconnect",
-    # "autowork",
-    # "autocalendar",
-    # "autolist",
-    # "autodrive",
-    # add more project ids here
-]
+# Default: benchmark all demo web projects
+# Benchmark all demo web projects by default. This will yield ~1 task per website
+# given the prompts_per_use_case and num_use_cases settings below.
+PROJECT_IDS = [p.id for p in demo_web_projects]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
-# 3) Benchmark parameters
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
     # Tasks
     use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
-    num_use_cases=1,  # 0 = all use-cases
+    num_use_cases=0,  # 0 = all use-cases
+    use_cases=USE_CASES,
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
@@ -79,7 +105,8 @@ def main():
             logger.error("No agents configured in AGENTS.")
             return
 
-        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs")
+        logger.info(
+            f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs")
 
         # Create and run benchmark
         benchmark = Benchmark(CFG)
