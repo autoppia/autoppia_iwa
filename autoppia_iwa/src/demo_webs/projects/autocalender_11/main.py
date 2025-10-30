@@ -5,7 +5,7 @@ from .events import CALENDAR_EVENTS
 from .use_cases import ALL_USE_CASES
 
 FRONTEND_URL = f"{DEMO_WEBS_ENDPOINT}:8010/"
-BACKEND_URL = f"{DEMO_WEBS_ENDPOINT}:8010/"
+BACKEND_URL = f"{DEMO_WEBS_ENDPOINT}:8090/"
 
 autocalendar_project = WebProject(
     id="autocalendar",

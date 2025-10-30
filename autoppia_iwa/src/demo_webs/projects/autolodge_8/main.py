@@ -5,7 +5,7 @@ from .events import EVENTS
 from .use_cases import ALL_USE_CASES
 
 FRONTEND_URL = f"{DEMO_WEBS_ENDPOINT}:8007/"
-BACKEND_URL = f"{DEMO_WEBS_ENDPOINT}:8007/"
+BACKEND_URL = f"{DEMO_WEBS_ENDPOINT}:8090/"
 lodge_project = WebProject(
     id="autolodge",
     name="Autoppia Lodge",

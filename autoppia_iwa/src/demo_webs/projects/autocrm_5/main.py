@@ -5,7 +5,7 @@ from .events import EVENTS
 from .use_cases import ALL_USE_CASES
 
 FRONTEND_URL = f"{DEMO_WEBS_ENDPOINT}:8004/"
-BACKEND_URL = f"{DEMO_WEBS_ENDPOINT}:8004/"
+BACKEND_URL = f"{DEMO_WEBS_ENDPOINT}:8090/"
 
 crm_project = WebProject(
     id="autocrm",

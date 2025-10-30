@@ -68,7 +68,8 @@ class BackendDemoWebService:
         """
         self._session: aiohttp.ClientSession | None = None
         self.web_project: WebProject = web_project
-        self.base_url = web_project.backend_url
+        self.backend_url = web_project.backend_url
+        self.frontend_url = web_project.frontend_url
         self.web_agent_id = web_agent_id
 
         # Configure JSON parser (prefer orjson for performance)
@@ -99,11 +100,11 @@ class BackendDemoWebService:
 
     def _should_use_proxy_api(self) -> bool:
         """
-        Determines whether the proxy API (e.g., port 80002, 8003, 8004 ...) should be used based on the base_url port.
+        Determines whether the proxy API (e.g., port 8002, 8003, 8004 ...) should be used based on the base_url port.
         """
         from urllib.parse import urlparse
 
-        parsed = urlparse(self.base_url)
+        parsed = urlparse(self.backend_url)
         return bool(parsed.port and parsed.port > 8001)
 
     async def close(self) -> None:
@@ -132,8 +133,8 @@ class BackendDemoWebService:
 
         if self._should_use_proxy_api():
             try:
-                endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/get_events/"
-                params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
+                endpoint = f"{self.backend_url.rstrip('/')}/get_events/"
+                params = {"web_url": self.frontend_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
 
                 session = await self._get_session()
 
@@ -142,14 +143,14 @@ class BackendDemoWebService:
                     events_data = await response.json(loads=self._json_parser.loads)
                     if not events_data:
                         print("No events received.")
-                    # print(events_data, [BackendEvent(**event.get("data", {})) for event in events_data])
+                    print(events_data, [BackendEvent(**event.get("data", {})) for event in events_data])
                     return [BackendEvent(**event.get("data", {})) for event in events_data]
 
             except Exception as e:
                 logger.warning(f"Failed to get events from API: {e}. Falling back to file cache.")
 
         try:
-            endpoint = f"{self.base_url}events/list/"
+            endpoint = f"{self.backend_url}events/list/"
             headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID}
             session = await self._get_session()
 
@@ -158,7 +159,7 @@ class BackendDemoWebService:
                 events_data = await response.json(loads=self._json_parser.loads)
                 _log_backend_test(f"FETCH events: {len(events_data)} encontrados", web_agent_id=web_agent_id)
 
-                # print(events_data, [BackendEvent(**event) for event in events_data])
+                print(events_data, [BackendEvent(**event) for event in events_data])
                 return [BackendEvent(**event) for event in events_data]
         except ClientError as e:
             logger.error(f"Network error while fetching backend events: {e}")
@@ -183,7 +184,7 @@ class BackendDemoWebService:
         if self.web_project.is_web_real:
             return False
 
-        endpoint = f"{self.base_url}events/reset/"
+        endpoint = f"{self.backend_url}events/reset/"
         headers = {"X-WebAgent-Id": web_agent_id}
         session = await self._get_session()
 
@@ -229,7 +230,7 @@ class BackendDemoWebService:
         if self.web_project.is_web_real:
             return False
 
-        endpoint = f"{self.base_url}events/reset/all/"
+        endpoint = f"{self.backend_url}events/reset/all/"
         session = await self._get_session()
 
         try:
@@ -269,8 +270,8 @@ class BackendDemoWebService:
 
         if self._should_use_proxy_api():
             try:
-                endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
-                params = {"web_url": self.base_url, "web_agent_id": web_agent_id or self.web_agent_id, "validator_id": VALIDATOR_ID}
+                endpoint = f"{self.backend_url.rstrip('/')}/reset_events/"
+                params = {"web_url": self.frontend_url, "web_agent_id": web_agent_id or self.web_agent_id, "validator_id": VALIDATOR_ID}
                 session = await self._get_session()
 
                 async with session.delete(endpoint, params=params) as response:
@@ -280,7 +281,7 @@ class BackendDemoWebService:
             except Exception as e:
                 logger.warning(f"API reset failed: {e}. Falling back to file reset.")
 
-        endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
+        endpoint = override_url or f"{self.backend_url.rstrip('/')}/management_admin/reset_db/"
         session = await self._get_session()
         headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID}
 
@@ -330,7 +331,7 @@ class BackendDemoWebService:
             "validator_id": VALIDATOR_ID,
         }
 
-        endpoint = f"{self.base_url}events/add/"
+        endpoint = f"{self.backend_url}events/add/"
         headers = {"X-WebAgent-Id": web_agent_id}
 
         try:
