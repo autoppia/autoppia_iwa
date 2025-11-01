@@ -14,9 +14,10 @@ class ApifiedWebAgent(IWebAgent):
     Calls a remote /solve_task endpoint and rebuilds a TaskSolution.
     """
 
-    def __init__(self, host: str | None = None, port: int | None = None, id: str | None = None, name: str | None = None, timeout=180, base_url: str | None = None):
+    def __init__(self, host: str | None = None, port: int | None = None, id: str | None = None, name: str | None = None, timeout=180, base_url: str | None = None, endpoint: str | None = None):
         self.id = id or generate_random_web_agent_id()
         self.name = name or f"Agent {self.id}"
+        self.endpoint = endpoint or "solve_task"
         if base_url:
             # Respect provided base_url as-is
             self.base_url = base_url.rstrip("/")
@@ -35,7 +36,7 @@ class ApifiedWebAgent(IWebAgent):
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
-                async with session.post(f"{self.base_url}/solve_task", json=task.clean_task()) as response:
+                async with session.post(f"{self.base_url}/{self.endpoint.lstrip('/')}", json=task.clean_task()) as response:
                     response_json = await response.json()
 
                     # Extract data

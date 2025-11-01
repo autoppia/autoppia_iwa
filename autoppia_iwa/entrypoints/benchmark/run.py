@@ -21,12 +21,13 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 AGENTS = [
     ApifiedWebAgent(id="2", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
+    # ApifiedWebAgent(id="001", name="AutoppiaAgent1", host=os.getenv('AGENT_HOST'), port=os.getenv('AGENT_PORT'), timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autocinema",
-    "autobooks",
+    "autocinema",
+    # "autobooks",
     # "autozone",
     # "autodining",
     # "autocrm",
@@ -45,6 +46,7 @@ USE_CASES = [
     # "VIEW_USER_PROFILE",
     # "FILM_DETAIL",
     # "EDIT_USER_BOOK"
+    "PURCHASE_BOOK"
 ]
 
 # 3) Benchmark parameters
