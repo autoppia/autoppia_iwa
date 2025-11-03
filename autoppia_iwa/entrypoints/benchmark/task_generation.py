@@ -21,6 +21,7 @@ async def generate_tasks_for_project(
     num_use_cases: int,
     use_cases: list[str] | None = None,
     enable_dynamic_html: bool = False,
+    enable_dynamic_structure: bool = False,
 ):
     """
     Generate tasks for the given project, preferring cache when requested.
@@ -49,6 +50,7 @@ async def generate_tasks_for_project(
             num_of_use_cases=num_use_cases,
             use_cases=use_cases,
             enable_dynamic_html=enable_dynamic_html,
+            enable_dynamic_structure=enable_dynamic_structure,
         )
 
         if tasks and cache_dir:

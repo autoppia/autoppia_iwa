@@ -224,6 +224,7 @@ class Benchmark:
             num_use_cases=self.config.num_use_cases,
             use_cases=self.config.use_cases,
             enable_dynamic_html=self.config.enable_dynamic_html,
+            enable_dynamic_structure=self.config.enable_dynamic_structure,
         )
 
         if tasks:
@@ -382,7 +383,7 @@ class Benchmark:
                 }
 
                 new_uc_block[uc] = {}
-                for task_id, prompt, action, t, score, gif in zip(
+                for task_id, _prompt, _action, t, score, gif in zip(
                     per_agent_usecase_task_ids[a_name][uc],
                     per_agent_usecase_prompt[a_name][uc],
                     per_agent_usecase_actions[a_name][uc],
@@ -394,8 +395,8 @@ class Benchmark:
                     new_uc_block[uc][task_id] = {
                         "success": score,
                         "time": round(t, 3),
-                        "prompt": prompt,
-                        "actions": action,
+                        # "prompt": prompt,
+                        # "actions": action,
                         "base64_gif": gif,
                     }
 

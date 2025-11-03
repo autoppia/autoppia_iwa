@@ -2,6 +2,7 @@
 import random
 import uuid
 from typing import Annotated, Any
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydantic import BaseModel, Field, PrivateAttr
 
@@ -68,11 +69,43 @@ class Task(BaseModel):
     def assign_seed_to_url(self) -> None:
         """
         Assign a random seed to the task URL if assign_seed is True.
-        This method should be called by the benchmark when enable_dynamic_html is True.
+        Avoids overwriting an existing seed or breaking query structure.
         """
-        if self.assign_seed and self._seed_value is None:
-            object.__setattr__(self, "_seed_value", random.randint(0, 300))
-            object.__setattr__(self, "url", self.url.strip() + "?seed=" + str(self._seed_value))
+        if self.assign_seed:
+            if self._seed_value is None:
+                object.__setattr__(self, "_seed_value", random.randint(0, 300))
+            # object.__setattr__(self, "_seed_value", 2)
+
+            parsed = urlparse(self.url)
+            query_params = parse_qs(parsed.query)
+
+            # Only add if 'seed' not already in URL
+            if "seed" not in query_params:
+                query_params["seed"] = [str(self._seed_value)]
+
+                new_query = urlencode(query_params, doseq=True)
+                new_url = urlunparse(parsed._replace(query=new_query))
+                object.__setattr__(self, "url", new_url)
+
+    def assign_seed_structure_to_url(self) -> None:
+        """
+        Assign a random seed-structure to the task URL if assign_seed is True.
+        Avoids overwriting an existing seed-structure or breaking query structure.
+        """
+        if self.assign_seed:
+            if self._seed_value is None:
+                object.__setattr__(self, "_seed_value", random.randint(0, 300))
+
+            parsed = urlparse(self.url)
+            query_params = parse_qs(parsed.query)
+
+            # Only add if 'seed-structure' not already in URL
+            if "seed-structure" not in query_params:
+                query_params["seed-structure"] = [str(self._seed_value)]
+
+                new_query = urlencode(query_params, doseq=True)
+                new_url = urlunparse(parsed._replace(query=new_query))
+                object.__setattr__(self, "url", new_url)
 
     def model_dump(self, *args, **kwargs) -> dict:
         # Example override to hide screenshot if needed

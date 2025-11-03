@@ -62,7 +62,8 @@ CFG = BenchmarkConfig(
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic HTML
-    enable_dynamic_html=True,
+    enable_dynamic_html=False,
+    enable_dynamic_structure=True,
     # Persistence
     save_results_json=True,
     plot_results=False,

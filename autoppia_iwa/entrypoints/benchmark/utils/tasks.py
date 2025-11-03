@@ -77,7 +77,14 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
 
 
 async def generate_tasks_for_web_project(
-    project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1, use_cases: list[str] | None = None, enable_dynamic_html: bool = False
+    project: WebProject,
+    use_cached_tasks: bool,
+    task_cache_dir: str,
+    prompts_per_use_case: int = 1,
+    num_of_use_cases: int = 1,
+    use_cases: list[str] | None = None,
+    enable_dynamic_html: bool = False,
+    enable_dynamic_structure: bool = False,
 ) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
@@ -88,9 +95,11 @@ async def generate_tasks_for_web_project(
             print(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
             # Configure cached tasks with seed if dynamic HTML is enabled
             for task in cached_tasks:
-                task.assign_seed = enable_dynamic_html
+                task.assign_seed = enable_dynamic_html or enable_dynamic_structure
                 if enable_dynamic_html and "?seed=" not in task.url:
                     task.assign_seed_to_url()
+                if enable_dynamic_structure and "?seed-structure=" not in task.url:
+                    task.assign_seed_structure_to_url()
             return cached_tasks
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
@@ -104,9 +113,11 @@ async def generate_tasks_for_web_project(
     if tasks:
         # Configure tasks with seed if dynamic HTML is enabled
         for task in tasks:
-            task.assign_seed = enable_dynamic_html
+            task.assign_seed = enable_dynamic_html or enable_dynamic_structure
             if enable_dynamic_html:
                 task.assign_seed_to_url()
+            if enable_dynamic_structure:
+                task.assign_seed_structure_to_url()
 
         await save_tasks_to_json(tasks, project, task_cache_dir)
 

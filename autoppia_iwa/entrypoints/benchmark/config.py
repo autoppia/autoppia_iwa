@@ -36,6 +36,7 @@ class BenchmarkConfig:
 
     # Dynamic HTML
     enable_dynamic_html: bool = False
+    enable_dynamic_structure: bool = False
 
     # Visualization
     enable_visualization: bool = True
