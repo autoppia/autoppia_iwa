@@ -96,9 +96,9 @@ async def generate_tasks_for_web_project(
             # Configure cached tasks with seed if dynamic HTML is enabled
             for task in cached_tasks:
                 task.assign_seed = enable_dynamic_html or enable_dynamic_structure
-                if enable_dynamic_html and "?seed=" not in task.url:
+                if enable_dynamic_html:
                     task.assign_seed_to_url()
-                if enable_dynamic_structure and "?seed-structure=" not in task.url:
+                if enable_dynamic_structure:
                     task.assign_seed_structure_to_url()
             return cached_tasks
         else:

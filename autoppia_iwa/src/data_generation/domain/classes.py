@@ -46,6 +46,7 @@ class Task(BaseModel):
 
     _original_prompt: str = PrivateAttr()
     _seed_value: int = PrivateAttr()
+    _seed_structure_value: int = PrivateAttr()
 
     model_config = {"extra": "allow", "arbitrary_types_allowed": True}
 
@@ -55,6 +56,7 @@ class Task(BaseModel):
         object.__setattr__(self, "_original_prompt", original_prompt)
         # Don't add seed automatically - let the benchmark decide when to add it
         object.__setattr__(self, "_seed_value", None)
+        object.__setattr__(self, "_seed_structure_value", None)
 
     @property
     def prompt_with_relevant_data(self) -> str:
@@ -74,7 +76,6 @@ class Task(BaseModel):
         if self.assign_seed:
             if self._seed_value is None:
                 object.__setattr__(self, "_seed_value", random.randint(0, 300))
-            # object.__setattr__(self, "_seed_value", 2)
 
             parsed = urlparse(self.url)
             query_params = parse_qs(parsed.query)
@@ -93,15 +94,15 @@ class Task(BaseModel):
         Avoids overwriting an existing seed-structure or breaking query structure.
         """
         if self.assign_seed:
-            if self._seed_value is None:
-                object.__setattr__(self, "_seed_value", random.randint(0, 300))
+            if self._seed_structure_value is None:
+                object.__setattr__(self, "_seed_structure_value", random.randint(0, 300))
 
             parsed = urlparse(self.url)
             query_params = parse_qs(parsed.query)
 
             # Only add if 'seed-structure' not already in URL
             if "seed-structure" not in query_params:
-                query_params["seed-structure"] = [str(self._seed_value)]
+                query_params["seed-structure"] = [str(self._seed_structure_value)]
 
                 new_query = urlencode(query_params, doseq=True)
                 new_url = urlunparse(parsed._replace(query=new_query))
