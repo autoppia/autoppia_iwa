@@ -75,3 +75,8 @@ USE_APIFIED_AGENT = bool(strtobool(os.getenv("USE_APIFIED_AGENT", "false")))
 AGENT_HOST = os.getenv("AGENT_HOST", "localhost")
 AGENT_PORT = int(os.getenv("AGENT_PORT", "8080"))
 OPERATOR_ENDPOINT = os.getenv("OPERATOR_ENDPOINT", "localhost:4000")
+
+# ============================
+# Validator Configuration
+# ============================
+VALIDATOR_ID = os.getenv("VALIDATOR_ID", "custom_validator")

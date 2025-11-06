@@ -46,7 +46,10 @@ class RewardBlender:
         vec = self._encode(url, html_text, semantic_hint)
         outputs = self.model(vec)
         reward = outputs["R"].item()
-        phi = outputs["p_success"].item()
+        phi_tensor = outputs.get("score")
+        if phi_tensor is None:
+            phi_tensor = outputs["p_success"]
+        phi = phi_tensor.item()
         shaped = binary_reward + self.alpha * reward + self.beta * (self.gamma * phi - self.prev_phi)
         self.prev_phi = phi
         return float(shaped)

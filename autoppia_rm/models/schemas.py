@@ -18,7 +18,7 @@ class BackendEvent(BaseModel):
 
     event_name: str = Field(..., description="Identifier of the backend event")
     payload: Dict[str, Any] = Field(default_factory=dict)
-    timestamp: Optional[float] = Field(default=None, description="Event timestamp (seconds)")
+    timestamp: Optional[float | str] = Field(default=None, description="Event timestamp (seconds or ISO string)")
 
 
 class BaseAction(BaseModel):
@@ -100,4 +100,3 @@ class ObsPublic(BaseModel):
 class ObsAugmented(BaseModel):
     public: ObsPublic
     semantic: SemanticLabel
-

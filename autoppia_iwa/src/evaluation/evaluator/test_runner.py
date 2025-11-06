@@ -8,6 +8,7 @@ def _log_backend_test(message: str, web_agent_id: str | None = None):
     agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_backend_test
+
         log_backend_test(f"{agent_prefix}{message}")
     except ImportError:
         # Fallback to regular debug logging if import fails

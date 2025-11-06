@@ -15,7 +15,6 @@ from autoppia_iwa.src.llms.domain.interfaces import ILLM
 
 from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 
-
 TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
 TASK_GENERATION_LEVEL_NO = 23
 

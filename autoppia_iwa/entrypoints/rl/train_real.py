@@ -10,7 +10,7 @@ Requires:
 This script is code-configured: edit TrainCfg below and run directly.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 import pprint
 
@@ -26,6 +26,23 @@ from autoppia_iwa.entrypoints.benchmark.task_generation import (
 )
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
+from autoppia_iwa.src.rl.offline import BehaviorCloningConfig, BehaviorCloningTrainer, HttpTrajectoryProvider
+
+
+@dataclass(slots=True)
+class BCWarmstartCfg:
+    enabled: bool = False
+    provider_url: str = ""
+    limit_trajectories: int | None = 256
+    max_steps: int | None = None
+    batch_size: int = 128
+    epochs: int = 3
+    learning_rate: float = 5e-4
+    grad_clip: float = 0.5
+    validation_split: float = 0.1
+    num_workers: int = 0
+    log_interval: int = 20
+    seed: int = 1337
 
 
 @dataclass(slots=True)
@@ -59,6 +76,7 @@ class TrainCfg:
     save_dir: str = "/data/rl_models"  # align with RL benchmark hardcoded path
     save_name: str = "ppo_real.zip"
     checkpoint_every: int = 10_000  # save every N steps
+    bc: BCWarmstartCfg = field(default_factory=BCWarmstartCfg)
 
 
 def make_env(cfg: TrainCfg):
@@ -157,6 +175,41 @@ def train(cfg: TrainCfg) -> str:
         max_grad_norm=cfg.max_grad_norm,
         tensorboard_log=(cfg.tensorboard_log if _has_tensorboard() else None),
     )
+
+    if cfg.bc.enabled:
+        if not cfg.bc.provider_url:
+            logger.warning("BC warm-start enabled but no provider_url configured; skipping.")
+        else:
+            logger.info(
+                "Starting BC warm-start using provider %s (limit=%s steps_limit=%s)",
+                cfg.bc.provider_url,
+                cfg.bc.limit_trajectories,
+                cfg.bc.max_steps,
+            )
+            try:
+                provider = HttpTrajectoryProvider(cfg.bc.provider_url)
+                bc_cfg = BehaviorCloningConfig(
+                    batch_size=cfg.bc.batch_size,
+                    epochs=cfg.bc.epochs,
+                    learning_rate=cfg.bc.learning_rate,
+                    grad_clip=cfg.bc.grad_clip,
+                    validation_split=cfg.bc.validation_split,
+                    max_trajectories=cfg.bc.limit_trajectories,
+                    max_steps=cfg.bc.max_steps,
+                    num_workers=cfg.bc.num_workers,
+                    log_interval=cfg.bc.log_interval,
+                    seed=cfg.bc.seed,
+                )
+                bc_trainer = BehaviorCloningTrainer(model.policy, bc_cfg)
+                bc_stats = bc_trainer.fit(provider)
+                logger.info("BC warm-start metrics:\n%s", pprint.pformat(bc_stats, indent=2))
+                # Reset PPO optimizer to ensure clean schedule after BC updates
+                model.policy.optimizer = model.policy.optimizer_class(
+                    model.policy.parameters(),
+                    lr=model.lr_schedule(1.0),
+                )
+            except Exception as bc_exc:  # pragma: no cover - safety net
+                logger.warning(f"BC warm-start failed ({bc_exc}); proceeding with PPO training only.")
 
     # Periodic checkpoints
     ckpt_dir = ensure_dir(os.path.join(cfg.save_dir, "checkpoints"))

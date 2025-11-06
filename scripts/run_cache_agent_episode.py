@@ -11,6 +11,8 @@ import signal
 import subprocess
 import sys
 import time
+from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -49,6 +51,18 @@ async def _generate_tasks(project_id: str, count: int, use_cached: bool, cache_d
     if not tasks:
         raise RuntimeError("Task generation returned no tasks")
     return tasks[:count]
+
+
+def _sanitize_payload(obj):
+    if isinstance(obj, dict):
+        return {key: _sanitize_payload(value) for key, value in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize_payload(item) for item in obj]
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, Enum):
+        return obj.value
+    return obj
 
 
 async def _evaluate_task(task: Task, solution: TaskSolution, project_id: str) -> tuple[dict, dict]:
@@ -112,16 +126,17 @@ def _serialize_evaluation(task: Task, solution: TaskSolution, evaluation_result)
     return payload
 
 
-def _agent_alive(port: int) -> bool:
+def _agent_alive(base_url: str) -> bool:
     try:
-        response = requests.get(f"http://127.0.0.1:{port}/info", timeout=2.0)
+        response = requests.get(f"{base_url}/info", timeout=2.0)
         return response.status_code == 200
     except requests.RequestException:
         return False
 
 
 def _start_agent(port: int, agent_number: int) -> subprocess.Popen | None:
-    if _agent_alive(port):
+    base_url = f"http://127.0.0.1:{port}"
+    if _agent_alive(base_url):
         logger.info("Agent already running on port %d, reusing existing instance", port)
         return None
     repo_root = Path(__file__).resolve().parents[1]
@@ -147,8 +162,8 @@ def _start_agent(port: int, agent_number: int) -> subprocess.Popen | None:
     return proc
 
 
-def _wait_for_agent(port: int, timeout: float = 60.0) -> None:
-    url = f"http://127.0.0.1:{port}/info"
+def _wait_for_agent(base_url: str, timeout: float = 60.0) -> None:
+    url = f"{base_url}/info"
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
@@ -162,12 +177,14 @@ def _wait_for_agent(port: int, timeout: float = 60.0) -> None:
     raise TimeoutError(f"Agent API did not respond within {timeout} seconds")
 
 
-def _solve_task_http(task: Task, port: int, web_agent_id: str) -> TaskSolution:
+def _solve_task_http(task: Task, base_url: str, web_agent_id: str) -> TaskSolution:
     payload = task.serialize()
     payload["assign_seed"] = False
     payload["web_agent_id"] = web_agent_id
-    url = f"http://127.0.0.1:{port}/solve_task"
-    response = requests.post(url, json=payload, timeout=120)
+    # Some remote agents still expect legacy task schemas without serialized use_case payloads.
+    payload.pop("use_case", None)
+    payload = _sanitize_payload(payload)
+    response = requests.post(f"{base_url}/solve_task", json=payload, timeout=120)
     if response.status_code != 200:
         raise RuntimeError(f"Agent API error {response.status_code}: {response.text}")
     data = response.json()
@@ -209,24 +226,39 @@ def main() -> None:
     parser.add_argument("--cache-dir", default=DEFAULT_CACHE_DIR, help="Task cache directory")
     parser.add_argument("--output", default=None, help="Output JSONL path")
     parser.add_argument("--web-agent-id", default="cache_agent", help="Identifier to attach to TaskSolution")
+    parser.add_argument(
+        "--base-url",
+        default=None,
+        help="Explicit base URL for an already running /solve_task API (e.g. http://host:port)",
+    )
+    parser.add_argument(
+        "--spawn-simple-api",
+        action="store_true",
+        help="Start the bundled simple_api process locally (ignored when --base-url is provided)",
+    )
     args = parser.parse_args()
 
     output_path = Path(args.output) if args.output else DEFAULT_OUTPUT_DIR / f"{args.project_id}_cache_agent.jsonl"
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    proc = _start_agent(args.agent_port, args.agent_number)
-    time.sleep(1.0)
+    if args.base_url:
+        base_url = args.base_url.rstrip("/")
+        proc = None
+    else:
+        base_url = f"http://127.0.0.1:{args.agent_port}"
+        proc = _start_agent(args.agent_port, args.agent_number) if args.spawn_simple_api else None
+        time.sleep(1.0)
     try:
-        _wait_for_agent(args.agent_port)
+        _wait_for_agent(base_url)
         tasks = asyncio.run(_generate_tasks(args.project_id, args.count, args.use_cached, args.cache_dir))
         logger.info(f"Generated {len(tasks)} task(s) for project {args.project_id}")
 
         for task in tasks:
-            solution = _solve_task_http(task, args.agent_port, args.web_agent_id)
+            solution = _solve_task_http(task, base_url, args.web_agent_id)
             episode_payload, stats = asyncio.run(_evaluate_task(task, solution, args.project_id))
 
             with output_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(episode_payload, ensure_ascii=False) + "\n")
+                handle.write(json.dumps(_sanitize_payload(episode_payload), ensure_ascii=False) + "\n")
 
             logger.info(
                 "Stored episode {eid} (score={score:.2f} raw={raw:.2f} actions={actions})",

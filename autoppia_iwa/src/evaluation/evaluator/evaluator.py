@@ -6,7 +6,6 @@ from collections import defaultdict
 
 from loguru import logger
 
-
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
 
@@ -29,6 +28,7 @@ def _log_action_execution(message: str, web_agent_id: str | None = None):
     agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_action_execution
+
         log_action_execution(f"{agent_prefix}{message}")
     except ImportError:
         _log_evaluation_fallback(f"[ACTION EXECUTION] {agent_prefix}{message}")
@@ -39,6 +39,7 @@ def _log_gif_creation(message: str, web_agent_id: str | None = None):
     agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_gif_creation
+
         log_gif_creation(f"{agent_prefix}{message}")
     except ImportError:
         _log_evaluation_fallback(f"[GIF CREATION] {agent_prefix}{message}")
@@ -48,6 +49,7 @@ def _log_evaluation_event(message: str, context: str = "GENERAL"):
     """Helper function to log generic evaluation events with EVALUATION level."""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
+
         log_evaluation_event(message, context=context)
     except ImportError:
         _log_evaluation_fallback(message if context == "GENERAL" else f"[{context}] {message}")
@@ -55,7 +57,7 @@ def _log_evaluation_event(message: str, context: str = "GENERAL"):
 
 from playwright.async_api import async_playwright
 
-from autoppia_iwa.config.config import EVALUATOR_HEADLESS
+from autoppia_iwa.config.config import EVALUATOR_HEADLESS, VALIDATOR_ID
 from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
@@ -108,8 +110,8 @@ class ConcurrentEvaluator(IEvaluator):
         try:
             _log_evaluation_event(f"Evaluating single task solution for task {task.id}...")
 
-            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETING DATABASE")
-            await self.backend_demo_webs_service.reset_database()
+            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETTING DATABASE")
+            await self.backend_demo_webs_service.reset_database(web_agent_id=task_solution.web_agent_id)
 
             result = await self._evaluate_single_task_solution(task, task_solution)
 
@@ -130,8 +132,10 @@ class ConcurrentEvaluator(IEvaluator):
         try:
             _log_evaluation_event(f"Evaluating {len(task_solutions)} solutions for task {task.id}...")
 
-            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETING DATABASE")
-            await self.backend_demo_webs_service.reset_database()
+            _log_evaluation_event("Resetting Project Environment & Database.", context="RESETTING DATABASE")
+            web_agent_ids = {sol.web_agent_id for sol in task_solutions if sol.web_agent_id}
+            for web_agent_id in web_agent_ids:
+                await self.backend_demo_webs_service.reset_database(web_agent_id=web_agent_id)
 
             results = await self._group_and_evaluate_task_solutions(task, task_solutions)
 
@@ -205,10 +209,7 @@ class ConcurrentEvaluator(IEvaluator):
                     stats.error_message = "Seed missing or mismatched in NavigateAction URL(s)."
 
                     # Log seed mismatch early return
-                    _log_evaluation_event(
-                        f"SEED MISMATCH - Skipping browser execution (expected seed={assigned_seed})",
-                        context=f"ACTION EXECUTION | agent={web_agent_id}"
-                    )
+                    _log_evaluation_event(f"SEED MISMATCH - Skipping browser execution (expected seed={assigned_seed})", context=f"ACTION EXECUTION | agent={web_agent_id}")
 
                     test_results = initialize_test_results(task)
                     return EvaluationResult(
@@ -223,7 +224,7 @@ class ConcurrentEvaluator(IEvaluator):
                         gif_recording="",
                     )
 
-        _log_evaluation_event(f"Executing actions in browser", context=f"ACTION EXECUTION | agent={web_agent_id}")
+        _log_evaluation_event("Executing actions in browser", context=f"ACTION EXECUTION | agent={web_agent_id}")
         evaluation_gif = ""
         try:
             # If simulated, reset the DB first
@@ -430,14 +431,10 @@ class ConcurrentEvaluator(IEvaluator):
             web_agent_ids = [task_solutions[i].web_agent_id for i in group_indices]
             if len(group_indices) > 1:
                 _log_evaluation_event(
-                    f"Evaluating group (identical actions) - representative={representative.web_agent_id}, cloning for {len(group_indices)-1} others: {web_agent_ids[1:]}",
-                    context="GROUPING TASK"
+                    f"Evaluating group (identical actions) - representative={representative.web_agent_id}, cloning for {len(group_indices) - 1} others: {web_agent_ids[1:]}", context="GROUPING TASK"
                 )
             else:
-                _log_evaluation_event(
-                    f"Evaluating unique solution - web_agent_id={representative.web_agent_id}",
-                    context="GROUPING TASK"
-                )
+                _log_evaluation_event(f"Evaluating unique solution - web_agent_id={representative.web_agent_id}", context="GROUPING TASK")
 
             try:
                 rep_result = await self._evaluate_single_task_solution(task, representative)
@@ -496,7 +493,7 @@ class ConcurrentEvaluator(IEvaluator):
                 browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, args=[f"--window-size={browser_specifications.screen_width},{browser_specifications.screen_height}"])
                 # browser = await playwright.chromium.launch(headless=EVALUATOR_HEADLESS, slow_mo=2000)
                 context = await browser.new_context(
-                    extra_http_headers={"X-WebAgent-Id": web_agent_id},
+                    extra_http_headers={"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID},
                     no_viewport=True,
                 )
                 context.set_default_timeout(self.config.browser_timeout)

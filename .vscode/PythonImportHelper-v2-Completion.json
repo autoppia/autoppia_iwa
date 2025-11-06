@@ -313,6 +313,14 @@
         "documentation": {}
     },
     {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
         "label": "strtobool",
         "importPath": "distutils.util",
         "description": "distutils.util",
@@ -1087,6 +1095,14 @@
     },
     {
         "label": "timedelta",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
         "importPath": "datetime",
         "description": "datetime",
         "isExtraImport": true,
@@ -2752,6 +2768,22 @@
         "documentation": {}
     },
     {
+        "label": "BackendEvent",
+        "importPath": "autoppia_iwa.src.demo_webs.classes",
+        "description": "autoppia_iwa.src.demo_webs.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.classes",
+        "documentation": {}
+    },
+    {
+        "label": "WebProject",
+        "importPath": "autoppia_iwa.src.demo_webs.classes",
+        "description": "autoppia_iwa.src.demo_webs.classes",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.src.demo_webs.classes",
+        "documentation": {}
+    },
+    {
         "label": "WebProject",
         "importPath": "autoppia_iwa.src.demo_webs.classes",
         "description": "autoppia_iwa.src.demo_webs.classes",
@@ -2943,6 +2975,374 @@
         "description": "collections",
         "isExtraImport": true,
         "detail": "collections",
+        "documentation": {}
+    },
+    {
+        "label": "VALIDATOR_ID",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_BASE_DIR",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_BASE_DIR",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_BASE_DIR",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "DEMO_WEBS_ENDPOINT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "DEMO_WEBS_ENDPOINT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "VALIDATOR_ID",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "DEMO_WEBS_ENDPOINT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "DEMO_WEBS_STARTING_PORT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "EVALUATOR_HEADLESS",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "VALIDATOR_ID",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "EVALUATOR_HEADLESS",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_BASE_DIR",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_MODEL",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "LLM_CONTEXT_WINDOW",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_API_KEY",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_BASE_URL",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_MAX_TOKENS",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_MODEL",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_TEMPERATURE",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_USE_BEARER",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "GENERATE_MILESTONES",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "LLM_PROVIDER",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "LOCAL_MODEL_ENDPOINT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "LOCAL_PARALLEL_MODEL_ENDPOINT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_API_KEY",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_MAX_TOKENS",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_MODEL",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_TEMPERATURE",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_API_KEY",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_BASE_URL",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_MODEL",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_MAX_TOKENS",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_TEMPERATURE",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "CHUTES_USE_BEARER",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "LLM_PROVIDER",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "LOCAL_MODEL_ENDPOINT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_API_KEY",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_MAX_TOKENS",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_MODEL",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "OPENAI_TEMPERATURE",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_BASE_DIR",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_BASE_DIR",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "AGENT_HOST",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "AGENT_NAME",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "AGENT_PORT",
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "isExtraImport": true,
+        "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
     {
@@ -3464,342 +3864,6 @@
         "description": "dataclasses",
         "isExtraImport": true,
         "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "PROJECT_BASE_DIR",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "PROJECT_BASE_DIR",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "PROJECT_BASE_DIR",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "DEMO_WEBS_ENDPOINT",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "DEMO_WEBS_ENDPOINT",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "DEMO_WEBS_STARTING_PORT",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "EVALUATOR_HEADLESS",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "EVALUATOR_HEADLESS",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "PROJECT_BASE_DIR",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_MODEL",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "LLM_CONTEXT_WINDOW",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_API_KEY",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_BASE_URL",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_MAX_TOKENS",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_MODEL",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_TEMPERATURE",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_USE_BEARER",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "GENERATE_MILESTONES",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "LLM_PROVIDER",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "LOCAL_MODEL_ENDPOINT",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "LOCAL_PARALLEL_MODEL_ENDPOINT",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_API_KEY",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_MAX_TOKENS",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_MODEL",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_TEMPERATURE",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_API_KEY",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_BASE_URL",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_MODEL",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_MAX_TOKENS",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_TEMPERATURE",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "CHUTES_USE_BEARER",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "LLM_PROVIDER",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "LOCAL_MODEL_ENDPOINT",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_API_KEY",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_MAX_TOKENS",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_MODEL",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "OPENAI_TEMPERATURE",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "PROJECT_BASE_DIR",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "PROJECT_BASE_DIR",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "AGENT_HOST",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "AGENT_NAME",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
-        "documentation": {}
-    },
-    {
-        "label": "AGENT_PORT",
-        "importPath": "autoppia_iwa.config.config",
-        "description": "autoppia_iwa.config.config",
-        "isExtraImport": true,
-        "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
     {
@@ -5951,6 +6015,14 @@
         "documentation": {}
     },
     {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
         "label": "RLModelAgent",
         "importPath": "autoppia_iwa.src.web_agents.rl",
         "description": "autoppia_iwa.src.web_agents.rl",
@@ -7400,6 +7472,14 @@
         "documentation": {}
     },
     {
+        "label": "Enum",
+        "importPath": "enum",
+        "description": "enum",
+        "isExtraImport": true,
+        "detail": "enum",
+        "documentation": {}
+    },
+    {
         "label": "DomainAnalysis",
         "importPath": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
         "description": "autoppia_iwa.src.web_analysis.domain.analysis_classes",
@@ -8082,51 +8162,156 @@
         "documentation": {}
     },
     {
-        "label": "config_path",
-        "importPath": "autoppia_rm.utils",
-        "description": "autoppia_rm.utils",
+        "label": "torch",
+        "kind": 6,
         "isExtraImport": true,
-        "detail": "autoppia_rm.utils",
+        "importPath": "torch",
+        "description": "torch",
+        "detail": "torch",
         "documentation": {}
     },
     {
-        "label": "config_path",
-        "importPath": "autoppia_rm.utils",
-        "description": "autoppia_rm.utils",
+        "label": "accuracy_score",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
         "isExtraImport": true,
-        "detail": "autoppia_rm.utils",
+        "detail": "sklearn.metrics",
         "documentation": {}
     },
     {
-        "label": "config_path",
-        "importPath": "autoppia_rm.utils",
-        "description": "autoppia_rm.utils",
+        "label": "average_precision_score",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
         "isExtraImport": true,
-        "detail": "autoppia_rm.utils",
+        "detail": "sklearn.metrics",
         "documentation": {}
     },
     {
-        "label": "config_path",
-        "importPath": "autoppia_rm.utils",
-        "description": "autoppia_rm.utils",
+        "label": "brier_score_loss",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
         "isExtraImport": true,
-        "detail": "autoppia_rm.utils",
+        "detail": "sklearn.metrics",
         "documentation": {}
     },
     {
-        "label": "config_path",
-        "importPath": "autoppia_rm.utils",
-        "description": "autoppia_rm.utils",
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
         "isExtraImport": true,
-        "detail": "autoppia_rm.utils",
+        "detail": "sklearn.metrics",
         "documentation": {}
     },
     {
-        "label": "config_path",
-        "importPath": "autoppia_rm.utils",
-        "description": "autoppia_rm.utils",
+        "label": "f1_score",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
         "isExtraImport": true,
-        "detail": "autoppia_rm.utils",
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "roc_auc_score",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "Dataset",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "DataLoader",
+        "importPath": "torch.utils.data",
+        "description": "torch.utils.data",
+        "isExtraImport": true,
+        "detail": "torch.utils.data",
+        "documentation": {}
+    },
+    {
+        "label": "RewardDataset",
+        "importPath": "autoppia_rm.datasets.loaders",
+        "description": "autoppia_rm.datasets.loaders",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.datasets.loaders",
+        "documentation": {}
+    },
+    {
+        "label": "_load_vector",
+        "importPath": "autoppia_rm.datasets.loaders",
+        "description": "autoppia_rm.datasets.loaders",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.datasets.loaders",
+        "documentation": {}
+    },
+    {
+        "label": "PrefPairDataset",
+        "importPath": "autoppia_rm.datasets.loaders",
+        "description": "autoppia_rm.datasets.loaders",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.datasets.loaders",
+        "documentation": {}
+    },
+    {
+        "label": "RewardDataset",
+        "importPath": "autoppia_rm.datasets.loaders",
+        "description": "autoppia_rm.datasets.loaders",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.datasets.loaders",
+        "documentation": {}
+    },
+    {
+        "label": "SemanticDataset",
+        "importPath": "autoppia_rm.datasets.loaders",
+        "description": "autoppia_rm.datasets.loaders",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.datasets.loaders",
+        "documentation": {}
+    },
+    {
+        "label": "RewardConfig",
+        "importPath": "autoppia_rm.training.train_reward_model",
+        "description": "autoppia_rm.training.train_reward_model",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.training.train_reward_model",
+        "documentation": {}
+    },
+    {
+        "label": "RewardModel",
+        "importPath": "autoppia_rm.training.train_reward_model",
+        "description": "autoppia_rm.training.train_reward_model",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.training.train_reward_model",
+        "documentation": {}
+    },
+    {
+        "label": "load_config",
+        "importPath": "autoppia_rm.training.train_reward_model",
+        "description": "autoppia_rm.training.train_reward_model",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.training.train_reward_model",
         "documentation": {}
     },
     {
@@ -8135,6 +8320,62 @@
         "description": "autoppia_rm.training.train_reward_model",
         "isExtraImport": true,
         "detail": "autoppia_rm.training.train_reward_model",
+        "documentation": {}
+    },
+    {
+        "label": "config_path",
+        "importPath": "autoppia_rm.utils",
+        "description": "autoppia_rm.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.utils",
+        "documentation": {}
+    },
+    {
+        "label": "config_path",
+        "importPath": "autoppia_rm.utils",
+        "description": "autoppia_rm.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.utils",
+        "documentation": {}
+    },
+    {
+        "label": "config_path",
+        "importPath": "autoppia_rm.utils",
+        "description": "autoppia_rm.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.utils",
+        "documentation": {}
+    },
+    {
+        "label": "config_path",
+        "importPath": "autoppia_rm.utils",
+        "description": "autoppia_rm.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.utils",
+        "documentation": {}
+    },
+    {
+        "label": "config_path",
+        "importPath": "autoppia_rm.utils",
+        "description": "autoppia_rm.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.utils",
+        "documentation": {}
+    },
+    {
+        "label": "config_path",
+        "importPath": "autoppia_rm.utils",
+        "description": "autoppia_rm.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.utils",
+        "documentation": {}
+    },
+    {
+        "label": "config_path",
+        "importPath": "autoppia_rm.utils",
+        "description": "autoppia_rm.utils",
+        "isExtraImport": true,
+        "detail": "autoppia_rm.utils",
         "documentation": {}
     },
     {
@@ -8243,39 +8484,6 @@
         "documentation": {}
     },
     {
-        "label": "torch",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "torch",
-        "description": "torch",
-        "detail": "torch",
-        "documentation": {}
-    },
-    {
-        "label": "Dataset",
-        "importPath": "torch.utils.data",
-        "description": "torch.utils.data",
-        "isExtraImport": true,
-        "detail": "torch.utils.data",
-        "documentation": {}
-    },
-    {
-        "label": "DataLoader",
-        "importPath": "torch.utils.data",
-        "description": "torch.utils.data",
-        "isExtraImport": true,
-        "detail": "torch.utils.data",
-        "documentation": {}
-    },
-    {
-        "label": "DataLoader",
-        "importPath": "torch.utils.data",
-        "description": "torch.utils.data",
-        "isExtraImport": true,
-        "detail": "torch.utils.data",
-        "documentation": {}
-    },
-    {
         "label": "encode_text",
         "importPath": "autoppia_rm.utils.text",
         "description": "autoppia_rm.utils.text",
@@ -8332,30 +8540,6 @@
         "importPath": "torch.nn.functional",
         "description": "torch.nn.functional",
         "detail": "torch.nn.functional",
-        "documentation": {}
-    },
-    {
-        "label": "PrefPairDataset",
-        "importPath": "autoppia_rm.datasets.loaders",
-        "description": "autoppia_rm.datasets.loaders",
-        "isExtraImport": true,
-        "detail": "autoppia_rm.datasets.loaders",
-        "documentation": {}
-    },
-    {
-        "label": "RewardDataset",
-        "importPath": "autoppia_rm.datasets.loaders",
-        "description": "autoppia_rm.datasets.loaders",
-        "isExtraImport": true,
-        "detail": "autoppia_rm.datasets.loaders",
-        "documentation": {}
-    },
-    {
-        "label": "SemanticDataset",
-        "importPath": "autoppia_rm.datasets.loaders",
-        "description": "autoppia_rm.datasets.loaders",
-        "isExtraImport": true,
-        "detail": "autoppia_rm.datasets.loaders",
         "documentation": {}
     },
     {
@@ -10854,7 +11038,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "DEMO_WEBS_STARTING_PORT = int(os.getenv(\"DEMO_WEBS_STARTING_PORT\", \"8000\"))\n# ============================\n# Agent Configurations\n# ============================\nAGENT_NAME = os.getenv(\"AGENT_NAME\")\nUSE_APIFIED_AGENT = bool(strtobool(os.getenv(\"USE_APIFIED_AGENT\", \"false\")))\nAGENT_HOST = os.getenv(\"AGENT_HOST\", \"localhost\")\nAGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")",
+        "peekOfCode": "DEMO_WEBS_STARTING_PORT = int(os.getenv(\"DEMO_WEBS_STARTING_PORT\", \"8000\"))\n# ============================\n# Agent Configurations\n# ============================\nAGENT_NAME = os.getenv(\"AGENT_NAME\")\nUSE_APIFIED_AGENT = bool(strtobool(os.getenv(\"USE_APIFIED_AGENT\", \"false\")))\nAGENT_HOST = os.getenv(\"AGENT_HOST\", \"localhost\")\nAGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")\n# ============================",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -10863,7 +11047,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "AGENT_NAME = os.getenv(\"AGENT_NAME\")\nUSE_APIFIED_AGENT = bool(strtobool(os.getenv(\"USE_APIFIED_AGENT\", \"false\")))\nAGENT_HOST = os.getenv(\"AGENT_HOST\", \"localhost\")\nAGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")",
+        "peekOfCode": "AGENT_NAME = os.getenv(\"AGENT_NAME\")\nUSE_APIFIED_AGENT = bool(strtobool(os.getenv(\"USE_APIFIED_AGENT\", \"false\")))\nAGENT_HOST = os.getenv(\"AGENT_HOST\", \"localhost\")\nAGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")\n# ============================\n# Validator Configuration\n# ============================\nVALIDATOR_ID = os.getenv(\"VALIDATOR_ID\", \"custom_validator\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -10872,7 +11056,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "USE_APIFIED_AGENT = bool(strtobool(os.getenv(\"USE_APIFIED_AGENT\", \"false\")))\nAGENT_HOST = os.getenv(\"AGENT_HOST\", \"localhost\")\nAGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")",
+        "peekOfCode": "USE_APIFIED_AGENT = bool(strtobool(os.getenv(\"USE_APIFIED_AGENT\", \"false\")))\nAGENT_HOST = os.getenv(\"AGENT_HOST\", \"localhost\")\nAGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")\n# ============================\n# Validator Configuration\n# ============================\nVALIDATOR_ID = os.getenv(\"VALIDATOR_ID\", \"custom_validator\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -10881,7 +11065,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "AGENT_HOST = os.getenv(\"AGENT_HOST\", \"localhost\")\nAGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")",
+        "peekOfCode": "AGENT_HOST = os.getenv(\"AGENT_HOST\", \"localhost\")\nAGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")\n# ============================\n# Validator Configuration\n# ============================\nVALIDATOR_ID = os.getenv(\"VALIDATOR_ID\", \"custom_validator\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -10890,7 +11074,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "AGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")",
+        "peekOfCode": "AGENT_PORT = int(os.getenv(\"AGENT_PORT\", \"8080\"))\nOPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")\n# ============================\n# Validator Configuration\n# ============================\nVALIDATOR_ID = os.getenv(\"VALIDATOR_ID\", \"custom_validator\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -10899,7 +11083,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.config.config",
         "description": "autoppia_iwa.config.config",
-        "peekOfCode": "OPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")",
+        "peekOfCode": "OPERATOR_ENDPOINT = os.getenv(\"OPERATOR_ENDPOINT\", \"localhost:4000\")\n# ============================\n# Validator Configuration\n# ============================\nVALIDATOR_ID = os.getenv(\"VALIDATOR_ID\", \"custom_validator\")",
+        "detail": "autoppia_iwa.config.config",
+        "documentation": {}
+    },
+    {
+        "label": "VALIDATOR_ID",
+        "kind": 5,
+        "importPath": "autoppia_iwa.config.config",
+        "description": "autoppia_iwa.config.config",
+        "peekOfCode": "VALIDATOR_ID = os.getenv(\"VALIDATOR_ID\", \"custom_validator\")",
         "detail": "autoppia_iwa.config.config",
         "documentation": {}
     },
@@ -11151,7 +11344,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark.run",
         "description": "autoppia_iwa.entrypoints.benchmark.run",
-        "peekOfCode": "AGENTS = [\n    ApifiedWebAgent(id=\"2\", name=\"AutoppiaAgent1\",\n                    host=\"84.247.180.192\", port=6789, timeout=120)\n]\n# 2) Projects to evaluate (by id from demo_web_projects)\n# Default: benchmark all demo web projects\n# Benchmark all demo web projects by default. This will yield ~1 task per website\n# given the prompts_per_use_case and num_use_cases settings below.\nPROJECT_IDS = [p.id for p in demo_web_projects]\nPROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)",
+        "peekOfCode": "AGENTS = [\n    ApifiedWebAgent(id=\"2\", name=\"AutoppiaAgent1\",\n                    host=\"84.247.180.192\", port=6789, timeout=120)\n    # ApifiedWebAgent(id=\"2\", name=\"AutoppiaAgent2\", host=\"127.0.0.1\", port=7000, timeout=120),\n]\n# 2) Projects to evaluate (by id from demo_web_projects)\nPROJECT_IDS = [\n    # \"autocinema\",\n    \"autobooks\",\n    # \"autozone\",",
         "detail": "autoppia_iwa.entrypoints.benchmark.run",
         "documentation": {}
     },
@@ -11160,7 +11353,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark.run",
         "description": "autoppia_iwa.entrypoints.benchmark.run",
-        "peekOfCode": "PROJECT_IDS = [p.id for p in demo_web_projects]\nPROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)\nCFG = BenchmarkConfig(\n    projects=PROJECTS,\n    agents=AGENTS,\n    # Tasks\n    use_cached_tasks=False,  # load project tasks from JSON cache if available\n    prompts_per_use_case=1,\n    num_use_cases=0,  # 0 = all use-cases\n    use_cases=USE_CASES,",
+        "peekOfCode": "PROJECT_IDS = [\n    # \"autocinema\",\n    \"autobooks\",\n    # \"autozone\",\n    # \"autodining\",\n    # \"autocrm\",\n    # \"automail\",\n    # \"autodelivery\",\n    # \"autolodge\",\n    # \"autoconnect\",",
         "detail": "autoppia_iwa.entrypoints.benchmark.run",
         "documentation": {}
     },
@@ -11169,7 +11362,16 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark.run",
         "description": "autoppia_iwa.entrypoints.benchmark.run",
-        "peekOfCode": "PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)\nCFG = BenchmarkConfig(\n    projects=PROJECTS,\n    agents=AGENTS,\n    # Tasks\n    use_cached_tasks=False,  # load project tasks from JSON cache if available\n    prompts_per_use_case=1,\n    num_use_cases=0,  # 0 = all use-cases\n    use_cases=USE_CASES,\n    # Execution",
+        "peekOfCode": "PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)\nUSE_CASES = [\n    # \"VIEW_USER_PROFILE\",\n    # \"FILM_DETAIL\",\n    # \"EDIT_USER_BOOK\"\n]\nCFG = BenchmarkConfig(\n    projects=PROJECTS,\n    agents=AGENTS,\n    # Tasks",
+        "detail": "autoppia_iwa.entrypoints.benchmark.run",
+        "documentation": {}
+    },
+    {
+        "label": "USE_CASES",
+        "kind": 5,
+        "importPath": "autoppia_iwa.entrypoints.benchmark.run",
+        "description": "autoppia_iwa.entrypoints.benchmark.run",
+        "peekOfCode": "USE_CASES = [\n    # \"VIEW_USER_PROFILE\",\n    # \"FILM_DETAIL\",\n    # \"EDIT_USER_BOOK\"\n]\nCFG = BenchmarkConfig(\n    projects=PROJECTS,\n    agents=AGENTS,\n    # Tasks\n    use_cached_tasks=False,  # load project tasks from JSON cache if available",
         "detail": "autoppia_iwa.entrypoints.benchmark.run",
         "documentation": {}
     },
@@ -11178,7 +11380,7 @@
         "kind": 5,
         "importPath": "autoppia_iwa.entrypoints.benchmark.run",
         "description": "autoppia_iwa.entrypoints.benchmark.run",
-        "peekOfCode": "CFG = BenchmarkConfig(\n    projects=PROJECTS,\n    agents=AGENTS,\n    # Tasks\n    use_cached_tasks=False,  # load project tasks from JSON cache if available\n    prompts_per_use_case=1,\n    num_use_cases=0,  # 0 = all use-cases\n    use_cases=USE_CASES,\n    # Execution\n    runs=1,  # how many runs do you want?",
+        "peekOfCode": "CFG = BenchmarkConfig(\n    projects=PROJECTS,\n    agents=AGENTS,\n    # Tasks\n    use_cached_tasks=False,  # load project tasks from JSON cache if available\n    prompts_per_use_case=1,\n    num_use_cases=1,  # 0 = all use-cases\n    use_cases=USE_CASES,\n    # Execution\n    runs=1,  # how many runs do you want?",
         "detail": "autoppia_iwa.entrypoints.benchmark.run",
         "documentation": {}
     },
@@ -11421,7 +11623,7 @@
         "kind": 6,
         "importPath": "autoppia_iwa.entrypoints.test_your_agent.api_endpoint",
         "description": "autoppia_iwa.entrypoints.test_your_agent.api_endpoint",
-        "peekOfCode": "class AgentConfig(BaseModel):\n    ip: str\n    port: int | None = None\n    projects: list[str]\n    num_use_cases: int\n    runs: int\n    use_cases: list[str] | None = None\n    timeout: int = 120\n    should_record_gif: bool = False\n@app.post(\"/test-your-agent\")",
+        "peekOfCode": "class AgentConfig(BaseModel):\n    ip: str\n    port: int | None = None\n    projects: list[str]\n    num_use_cases: int\n    runs: int\n    use_cases: list[str] | None = None\n    timeout: int = 120\n    should_record_gif: bool = False\n    enable_dynamic_html: bool = True",
         "detail": "autoppia_iwa.entrypoints.test_your_agent.api_endpoint",
         "documentation": {}
     },
@@ -21119,6 +21321,24 @@
         "documentation": {}
     },
     {
+        "label": "evaluate",
+        "kind": 2,
+        "importPath": "autoppia_rm.cli.evaluate_reward_model",
+        "description": "autoppia_rm.cli.evaluate_reward_model",
+        "peekOfCode": "def evaluate(config_path: Path, checkpoint: Path | None) -> None:\n    cfg = load_config(config_path)\n    checkpoint = checkpoint if checkpoint is not None else cfg.ckpt_path\n    model = _load_model(cfg, checkpoint)\n    print(f\"Using checkpoint: {checkpoint}\")\n    for split in (\"val\", \"test\"):\n        try:\n            dataset = RewardDataset(cfg, split=split)\n        except FileNotFoundError:\n            print(f\"[warn] Missing reward dataset for split '{split}' – skipping.\")",
+        "detail": "autoppia_rm.cli.evaluate_reward_model",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "autoppia_rm.cli.evaluate_reward_model",
+        "description": "autoppia_rm.cli.evaluate_reward_model",
+        "peekOfCode": "def main(argv: list[str] | None = None) -> None:\n    parser = argparse.ArgumentParser(description=\"Evaluate reward / partial-score model performance.\")\n    parser.add_argument(\n        \"--config\",\n        type=Path,\n        default=get_config_path(\"rm_train.yaml\"),\n        help=\"Path to reward-model YAML config.\",\n    )\n    parser.add_argument(\n        \"--checkpoint\",",
+        "detail": "autoppia_rm.cli.evaluate_reward_model",
+        "documentation": {}
+    },
+    {
         "label": "main",
         "kind": 2,
         "importPath": "autoppia_rm.cli.extract_llm_features",
@@ -21150,7 +21370,7 @@
         "kind": 5,
         "importPath": "autoppia_rm.cli.make_splits",
         "description": "autoppia_rm.cli.make_splits",
-        "peekOfCode": "RAW_DIR = Path(\"data/rm/raw_evaluations\")\nSPLIT_DIR = Path(\"data/rm/splits\")\nFEATURE_DIR = Path(\"data/rm/features\")\nSPLIT_DIR.mkdir(parents=True, exist_ok=True)\nFEATURE_DIR.mkdir(parents=True, exist_ok=True)\ndef _iter_episodes() -> Iterable[dict]:\n    for path in RAW_DIR.glob(\"*.jsonl\"):\n        with path.open() as handle:\n            for line in handle:\n                line = line.strip()",
+        "peekOfCode": "RAW_DIR = Path(\"data/rm/raw_evaluations\")\nSPLIT_DIR = Path(\"data/rm/splits\")\nFEATURE_DIR = Path(\"data/rm/features\")\nSPLIT_DIR.mkdir(parents=True, exist_ok=True)\nFEATURE_DIR.mkdir(parents=True, exist_ok=True)\ndef _iter_episodes() -> Iterable[dict]:\n    for path in RAW_DIR.glob(\"*.jsonl\"):\n        if path.name.endswith(\"_old.jsonl\"):\n            continue\n        with path.open() as handle:",
         "detail": "autoppia_rm.cli.make_splits",
         "documentation": {}
     },
@@ -21159,7 +21379,7 @@
         "kind": 5,
         "importPath": "autoppia_rm.cli.make_splits",
         "description": "autoppia_rm.cli.make_splits",
-        "peekOfCode": "SPLIT_DIR = Path(\"data/rm/splits\")\nFEATURE_DIR = Path(\"data/rm/features\")\nSPLIT_DIR.mkdir(parents=True, exist_ok=True)\nFEATURE_DIR.mkdir(parents=True, exist_ok=True)\ndef _iter_episodes() -> Iterable[dict]:\n    for path in RAW_DIR.glob(\"*.jsonl\"):\n        with path.open() as handle:\n            for line in handle:\n                line = line.strip()\n                if not line:",
+        "peekOfCode": "SPLIT_DIR = Path(\"data/rm/splits\")\nFEATURE_DIR = Path(\"data/rm/features\")\nSPLIT_DIR.mkdir(parents=True, exist_ok=True)\nFEATURE_DIR.mkdir(parents=True, exist_ok=True)\ndef _iter_episodes() -> Iterable[dict]:\n    for path in RAW_DIR.glob(\"*.jsonl\"):\n        if path.name.endswith(\"_old.jsonl\"):\n            continue\n        with path.open() as handle:\n            for line in handle:",
         "detail": "autoppia_rm.cli.make_splits",
         "documentation": {}
     },
@@ -21168,7 +21388,7 @@
         "kind": 5,
         "importPath": "autoppia_rm.cli.make_splits",
         "description": "autoppia_rm.cli.make_splits",
-        "peekOfCode": "FEATURE_DIR = Path(\"data/rm/features\")\nSPLIT_DIR.mkdir(parents=True, exist_ok=True)\nFEATURE_DIR.mkdir(parents=True, exist_ok=True)\ndef _iter_episodes() -> Iterable[dict]:\n    for path in RAW_DIR.glob(\"*.jsonl\"):\n        with path.open() as handle:\n            for line in handle:\n                line = line.strip()\n                if not line:\n                    continue",
+        "peekOfCode": "FEATURE_DIR = Path(\"data/rm/features\")\nSPLIT_DIR.mkdir(parents=True, exist_ok=True)\nFEATURE_DIR.mkdir(parents=True, exist_ok=True)\ndef _iter_episodes() -> Iterable[dict]:\n    for path in RAW_DIR.glob(\"*.jsonl\"):\n        if path.name.endswith(\"_old.jsonl\"):\n            continue\n        with path.open() as handle:\n            for line in handle:\n                line = line.strip()",
         "detail": "autoppia_rm.cli.make_splits",
         "documentation": {}
     },
@@ -21474,7 +21694,7 @@
         "kind": 6,
         "importPath": "autoppia_rm.models.schemas",
         "description": "autoppia_rm.models.schemas",
-        "peekOfCode": "class BackendEvent(BaseModel):\n    \"\"\"Minimal representation of a backend event captured during evaluation.\"\"\"\n    event_name: str = Field(..., description=\"Identifier of the backend event\")\n    payload: Dict[str, Any] = Field(default_factory=dict)\n    timestamp: Optional[float] = Field(default=None, description=\"Event timestamp (seconds)\")\nclass BaseAction(BaseModel):\n    \"\"\"Simplified action description.\"\"\"\n    kind: str\n    args: Dict[str, Any] = Field(default_factory=dict)\nclass BrowserSnapshot(BaseModel):",
+        "peekOfCode": "class BackendEvent(BaseModel):\n    \"\"\"Minimal representation of a backend event captured during evaluation.\"\"\"\n    event_name: str = Field(..., description=\"Identifier of the backend event\")\n    payload: Dict[str, Any] = Field(default_factory=dict)\n    timestamp: Optional[float | str] = Field(default=None, description=\"Event timestamp (seconds or ISO string)\")\nclass BaseAction(BaseModel):\n    \"\"\"Simplified action description.\"\"\"\n    kind: str\n    args: Dict[str, Any] = Field(default_factory=dict)\nclass BrowserSnapshot(BaseModel):",
         "detail": "autoppia_rm.models.schemas",
         "documentation": {}
     },

@@ -66,7 +66,22 @@ class RewardDataset(Dataset):
         row = self.rows[index]
         vec = _load_vector(row["rid"])  # type: ignore[arg-type]
         success = torch.tensor(float(row.get("y_success", 0)), dtype=torch.float32)
-        return {"x": vec, "y_success": success}
+        payload: Dict[str, torch.Tensor] = {"x": vec, "y_success": success}
+
+        if "final_score" in row:
+            payload["y_score"] = torch.tensor(float(row.get("final_score", 0.0)), dtype=torch.float32)
+        elif "raw_score" in row:
+            payload["y_score"] = torch.tensor(float(row.get("raw_score", 0.0)), dtype=torch.float32)
+
+        if "tests_passed" in row and "tests_total" in row:
+            tests_passed = float(row.get("tests_passed", 0))
+            tests_total = float(row.get("tests_total", 0))
+            payload["tests_passed"] = torch.tensor(tests_passed, dtype=torch.float32)
+            payload["tests_total"] = torch.tensor(tests_total, dtype=torch.float32)
+            if tests_total > 0:
+                payload["tests_ratio"] = torch.tensor(tests_passed / tests_total, dtype=torch.float32)
+
+        return payload
 
 
 class SemanticDataset(Dataset):

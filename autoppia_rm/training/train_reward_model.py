@@ -7,6 +7,7 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from loguru import logger
 from torch.utils.data import DataLoader
 
@@ -24,6 +25,7 @@ class RewardConfig:
     epochs: int = 5
     lambda_succ: float = 0.5
     lambda_align: float = 0.1
+    lambda_score: float = 1.0
     num_workers: int = 4
     pref_pairs_per_epoch: int = 10_000
     reward_samples_per_epoch: int = 2_000
@@ -61,6 +63,7 @@ def train(cfg: RewardConfig) -> None:
         total_pref = 0.0
         total_succ = 0.0
         total_align = 0.0
+        total_score = 0.0
 
         reward_iter = iter(loader_reward)
         for batch in loader_pairs:
@@ -82,20 +85,27 @@ def train(cfg: RewardConfig) -> None:
             out_r = model(xr)
             succ = loss_success(out_r["p_success"], yr)
             align = alignment_loss(out_r["R"], out_r["p_success"])
+            if "y_score" in reward_batch:
+                ys = reward_batch["y_score"].to(device)
+                score = F.mse_loss(out_r["score"], ys)
+            else:
+                score = torch.tensor(0.0, device=device)
             total_succ += succ.item()
             total_align += align.item()
+            total_score += score.item()
 
-            loss = pref + cfg.lambda_succ * succ + cfg.lambda_align * align
+            loss = pref + cfg.lambda_succ * succ + cfg.lambda_align * align + cfg.lambda_score * score
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
         logger.info(
-            "Epoch %d: pref=%.4f succ=%.4f align=%.4f",
+            "Epoch {}: pref={:.4f} succ={:.4f} align={:.4f} score={:.4f}",
             epoch,
             total_pref / max(1, len(loader_pairs)),
             total_succ / max(1, len(loader_pairs)),
             total_align / max(1, len(loader_pairs)),
+            total_score / max(1, len(loader_pairs)),
         )
 
         # Validation: track how often R_pos > R_neg and BCE on val set
@@ -114,15 +124,28 @@ def train(cfg: RewardConfig) -> None:
 
             val_loss = 0.0
             val_total = 0
+            val_score_mse = 0.0
+            val_score_total = 0
             for batch in loader_reward_val:
                 xr = batch["x"].to(device)
                 yr = batch["y_success"].to(device)
                 out_r = model(xr)
                 val_loss += loss_success(out_r["p_success"], yr).item() * xr.size(0)
                 val_total += xr.size(0)
+                if "y_score" in batch:
+                    ys = batch["y_score"].to(device)
+                    val_score_mse += F.mse_loss(out_r["score"], ys, reduction="sum").item()
+                    val_score_total += xr.size(0)
             val_loss /= max(1, val_total)
+            val_score_mse = val_score_mse / max(1, val_score_total)
 
-        logger.info("Epoch %d: pref_win=%.3f val_bce=%.4f", epoch, pref_win, val_loss)
+        logger.info(
+            "Epoch {}: pref_win={:.3f} val_bce={:.4f} val_score_mse={:.4f}",
+            epoch,
+            pref_win,
+            val_loss,
+            val_score_mse,
+        )
 
         cfg.ckpt_path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(model.state_dict(), cfg.ckpt_path)

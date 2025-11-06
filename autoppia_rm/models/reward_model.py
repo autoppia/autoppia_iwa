@@ -19,10 +19,11 @@ class RewardModel(nn.Module):
         )
         self.head_reward = nn.Linear(hidden, 1)
         self.head_success = nn.Sequential(nn.Linear(hidden, 1), nn.Sigmoid())
+        self.head_score = nn.Sequential(nn.Linear(hidden, 1), nn.Sigmoid())
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:  # type: ignore[override]
         h = self.backbone(x)
         reward = self.head_reward(h).squeeze(-1)
         success = self.head_success(h).squeeze(-1)
-        return {"R": reward, "p_success": success}
-
+        score = self.head_score(h).squeeze(-1)
+        return {"R": reward, "p_success": success, "score": score}

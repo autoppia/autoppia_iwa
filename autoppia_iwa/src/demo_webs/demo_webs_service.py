@@ -1,7 +1,7 @@
-from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
-from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
-import os
+from __future__ import annotations
+
 import json
+import os
 from contextlib import suppress
 from typing import Any
 
@@ -9,6 +9,8 @@ import aiohttp
 from aiohttp.client_exceptions import ClientError
 from loguru import logger
 
+from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, VALIDATOR_ID
+from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
@@ -16,6 +18,7 @@ EVALUATION_LEVEL_NO = 25
 
 def _ensure_evaluation_level() -> None:
     """Register the custom EVALUATION level when logging fallback is used."""
+
     try:
         logger.level(EVALUATION_LEVEL_NAME)
     except ValueError:
@@ -24,8 +27,10 @@ def _ensure_evaluation_level() -> None:
 
 def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
     """Log generic evaluation events with INFO level."""
+
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_evaluation_event
+
         log_evaluation_event(message, context=context)
     except ImportError:
         # Fallback to INFO level with EVALUATION tag
@@ -35,22 +40,21 @@ def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
             logger.info(f"[EVALUATION] [{context}] {message}")
 
 
-def _log_backend_test(message: str, web_agent_id: str | None = None):
-    """Helper function to log backend test messages with EVALUATION level"""
+def _log_backend_test(message: str, web_agent_id: str | None = None) -> None:
+    """Helper function to log backend test messages with EVALUATION level."""
+
     agent_prefix = f"[agent={web_agent_id}] " if web_agent_id else ""
     try:
         from autoppia_iwa.entrypoints.benchmark.utils.logging import log_backend_test
+
         log_backend_test(f"{agent_prefix}{message}")
     except ImportError:
-        # Fallback to regular debug logging if import fails
-        _log_evaluation_event(
-            f"[GET BACKEND TEST] {agent_prefix}{message}", context="GET_BACKEND_TEST")
+        _log_evaluation_event(f"[GET BACKEND TEST] {agent_prefix}{message}", context="GET_BACKEND_TEST")
 
 
 class BackendDemoWebService:
     """
     Service for interacting with the backend of demo web endpoints.
-    Manages API calls and event operations efficiently.
 
     Features:
     - Automatic JSON parser selection (orjson if available)
@@ -59,24 +63,20 @@ class BackendDemoWebService:
     - Support for both real and demo web projects
     """
 
-    def __init__(self, web_project: WebProject) -> None:
-        """
-        Initialize a single aiohttp session holder and store the web_project.
-
-        Args:
-            web_project: The web project containing the backend_url to use
-        """
+    def __init__(self, web_project: WebProject, web_agent_id: str = "unknown_agent") -> None:
         self._session: aiohttp.ClientSession | None = None
-        self.web_project: WebProject = web_project
+        self.web_project = web_project
         self.base_url = web_project.backend_url
-        # validator required by proxy API and backend headers
-        self.validator_id = os.getenv("VALIDATOR_ID", "validator_001")
+        self.web_agent_id = web_agent_id
+        # Allow environment overrides for validator id to ease local testing
+        self.validator_id = os.getenv("VALIDATOR_ID", VALIDATOR_ID or "validator_001")
 
         # Configure JSON parser (prefer orjson for performance)
         self._configure_json_parser()
 
     def _configure_json_parser(self) -> None:
         """Configure the JSON parser, preferring orjson if available."""
+
         self._json_parser = json
         self._json_decode_error = json.JSONDecodeError
         self._read_mode = "r"
@@ -85,110 +85,96 @@ class BackendDemoWebService:
             import orjson
 
             self._json_parser = orjson
-            self._json_decode_error = orjson.JSONDecodeError  # type: ignore
+            self._json_decode_error = orjson.JSONDecodeError  # type: ignore[attr-defined]
             self._read_mode = "rb"
             logger.debug("Using orjson for faster JSON processing")
 
     async def _get_session(self) -> aiohttp.ClientSession:
-        """
-        Lazy creation of aiohttp session, re-using it if open.
-        """
+        """Lazy creation of aiohttp session, re-using it if open."""
+
         if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession(
-                json_serialize=self._json_parser.dumps)
+            self._session = aiohttp.ClientSession(json_serialize=self._json_parser.dumps)
             logger.debug("Created new aiohttp session")
         return self._session
 
     def _should_use_proxy_api(self) -> bool:
         """
-        Determines whether the proxy API (e.g., port 80002, 8003, 8004 ...) should be used based on the base_url port.
+        Determines whether the proxy API (e.g., port 8002, 8003, 8004 ...) should be used based on the base_url port.
         """
+
         from urllib.parse import urlparse
 
         parsed = urlparse(self.base_url)
         return bool(parsed.port and parsed.port > 8001)
 
     async def close(self) -> None:
-        """
-        Close the underlying aiohttp session if it exists.
-        Safe to call multiple times.
-        """
+        """Close the underlying aiohttp session if it exists."""
+
         if self._session is not None:
             with suppress(Exception):
                 await self._session.close()
-                self._session = None
-                logger.debug("Closed aiohttp session")
+            self._session = None
+            logger.debug("Closed aiohttp session")
 
     async def get_backend_events(self, web_agent_id: str) -> list[BackendEvent]:
         """
         Get events for a specific web agent.
 
         Args:
-            web_agent_id: The agent ID to get events for
-
-        Returns:
-            List of BackendEvent objects for the specified agent
+            web_agent_id: The agent ID to get events for.
         """
+
         if self.web_project.is_web_real:
             return []
 
+        validator_id = self.validator_id
+
         if self._should_use_proxy_api():
             try:
-                endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/get_events/"
+                endpoint = f"{DEMO_WEBS_ENDPOINT.rstrip('/')}:8090/get_events/"
                 params = {
                     "web_url": self.base_url.rstrip("/"),
                     "web_agent_id": web_agent_id,
-                    "validator_id": self.validator_id,
+                    "validator_id": validator_id,
                 }
 
                 session = await self._get_session()
-
                 async with session.get(endpoint, params=params) as response:
                     response.raise_for_status()
                     events_data = await response.json(loads=self._json_parser.loads)
                     return [BackendEvent(**event.get("data", {})) for event in events_data]
 
-            except Exception as e:
-                logger.warning(
-                    f"Failed to get events from API: {e}. Falling back to file cache.")
+            except Exception as exc:
+                logger.warning("Failed to get events from proxy API (%s). Falling back to backend.", exc)
 
         try:
             endpoint = f"{self.base_url}events/list/"
-            headers = {"X-WebAgent-Id": web_agent_id}
+            headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": validator_id}
             session = await self._get_session()
 
             async with session.get(endpoint, headers=headers) as response:
-                response.raise_for_status()  # Raise on 4xx/5xx
+                response.raise_for_status()
                 events_data = await response.json(loads=self._json_parser.loads)
-                _log_backend_test(
-                    f"FETCH events: {len(events_data)} encontrados", web_agent_id=web_agent_id)
-
+                _log_backend_test(f"FETCH events: {len(events_data)} encontrados", web_agent_id=web_agent_id)
                 return [BackendEvent(**event) for event in events_data]
-        except ClientError as e:
-            logger.error(f"Network error while fetching backend events: {e}")
-        except self._json_decode_error as e:
-            logger.error(f"Error parsing JSON response from network: {e}")
-        except ValueError as e:
-            logger.error(f"Error parsing JSON response (ValueError): {e}")
-        except Exception as e:
-            logger.error(f"Unexpected error fetching backend events: {e}")
+        except ClientError as exc:
+            logger.error(f"Network error while fetching backend events: {exc}")
+        except self._json_decode_error as exc:
+            logger.error(f"Error parsing JSON response from network: {exc}")
+        except ValueError as exc:
+            logger.error(f"Error parsing JSON response (ValueError): {exc}")
+        except Exception as exc:
+            logger.error(f"Unexpected error fetching backend events: {exc}")
         return []
 
     async def reset_web_agent_events(self, web_agent_id: str) -> bool:
-        """
-        Resets events for a specific user/web_agent.
+        """Reset events for a specific user/web_agent."""
 
-        Args:
-            web_agent_id (str): Identifier for the web_agent.
-
-        Returns:
-            bool: True if reset was successful, False otherwise.
-        """
         if self.web_project.is_web_real:
             return False
 
         endpoint = f"{self.base_url}events/reset/"
-        headers = {"X-WebAgent-Id": web_agent_id}
+        headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": self.validator_id}
         session = await self._get_session()
 
         try:
@@ -209,31 +195,25 @@ class BackendDemoWebService:
                             context="EVENTS_RESET",
                         )
                         return True
-                    else:
-                        logger.error(
-                            f"Reset operation returned non-success status {response.status} with message: '{msg}'")
-
+                    logger.error(
+                        f"Reset operation returned non-success status {response.status} with message: '{msg}'",
+                    )
                 except Exception as json_parse_error:
                     logger.error(
-                        f"Reset operation failed for '{web_agent_id}'. Status: {response.status}. Could not parse JSON response body: {json_parse_error}")
+                        f"Reset operation failed for '{web_agent_id}'. Status: {response.status}. "
+                        f"Could not parse JSON response body: {json_parse_error}",
+                    )
 
-                response.raise_for_status()
-        except ClientError as e:
-            logger.error(
-                f"Network or HTTP error resetting events for web_agent '{web_agent_id}' at {endpoint}: {e}")
-        except Exception as e:
-            logger.error(
-                f"Unexpected error resetting events for web_agent '{web_agent_id}': {e}")
+        except ClientError as exc:
+            logger.error(f"Network error resetting events for '{web_agent_id}' at {endpoint}: {exc}")
+        except Exception as exc:
+            logger.error(f"Unexpected error resetting events for '{web_agent_id}': {exc}")
 
         return False
 
     async def reset_all_events(self) -> bool:
-        """
-        Resets all events in the system regardless of user/web_agent.
+        """Reset all events in the system regardless of user/web_agent."""
 
-        Returns:
-            bool: True if reset was successful, False otherwise.
-        """
         if self.web_project.is_web_real:
             return False
 
@@ -241,105 +221,81 @@ class BackendDemoWebService:
         session = await self._get_session()
 
         try:
-            async with session.delete(endpoint, timeout=10) as response:
+            async with session.delete(endpoint, headers={"X-Validator-Id": self.validator_id}, timeout=10) as response:
                 response.raise_for_status()
-
                 if response.status in (200, 204):
-                    _log_evaluation_event(
-                        "Successfully reset all events.", context="EVENTS_RESET")
+                    _log_evaluation_event("Successfully reset all events.", context="EVENTS_RESET")
                     return True
-                else:
-                    logger.warning(
-                        f"Reset all events operation completed with unexpected status: {response.status}")
-                    return False
+                logger.warning(f"Reset all events completed with unexpected status: {response.status}")
+        except Exception as exc:
+            logger.error(f"Failed to reset all events: {exc}")
+        return False
 
-        except Exception as e:
-            logger.error(f"Failed to reset all events: {e}")
-            return False
-        finally:
-            if session:
-                await session.close()
-
-    async def reset_database(self, override_url: str | None = None) -> bool:
+    async def reset_database(self, override_url: str | None = None, web_agent_id: str | None = None) -> bool:
         """
-        Resets the entire database (requires admin/superuser permissions).
+        Reset the entire database (requires admin/superuser permissions).
 
         Args:
-            override_url (Optional[str]): If provided, use this full endpoint URL
-                (e.g., 'http://localhost:5435/management_admin/reset_db/')
-                instead of self.base_url.
-
-        Returns:
-            bool: True if reset was successful, False otherwise.
+            override_url: Optional endpoint override (e.g., http://.../reset_db/).
+            web_agent_id: Optional agent id; defaults to the instance's id.
         """
-        _log_evaluation_event("Starting Reset Database", context="RESETING DB")
+
+        _log_evaluation_event("Starting Reset Database", context="RESETTING DB")
         if self.web_project.is_web_real:
-            _log_evaluation_event(
-                "Not resetting DB as its real website", context="RESETING DB")
+            _log_evaluation_event("Not resetting DB as it's a real website", context="RESETTING DB")
             return False
+
+        agent_id = web_agent_id or self.web_agent_id
+        validator_id = self.validator_id
+
         if self._should_use_proxy_api():
             try:
-                # Use proxy API to reset events for this web (scoped by validator and agent)
-                endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
+                endpoint = f"{DEMO_WEBS_ENDPOINT.rstrip('/')}:8090/reset_events/"
                 params = {
                     "web_url": self.base_url.rstrip("/"),
-                    # RL evaluator uses a fixed web_agent_id
-                    "web_agent_id": "rl-env",
-                    "validator_id": self.validator_id,
+                    "web_agent_id": agent_id,
+                    "validator_id": validator_id,
                 }
                 session = await self._get_session()
 
                 async with session.delete(endpoint, params=params) as response:
                     if response.status in (200, 202):
-                        _log_evaluation_event(
-                            "Database reset via API successful", context="RESETING DB")
+                        _log_evaluation_event("Database reset via proxy API successful", context="RESETTING DB")
                         return True
-            except Exception as e:
-                logger.warning(
-                    f"API reset failed: {e}. Falling back to file reset.")
+            except Exception as exc:
+                logger.warning("Proxy API reset failed (%s). Falling back to backend reset.", exc)
 
         endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
+        headers = {"X-WebAgent-Id": agent_id, "X-Validator-Id": validator_id}
         session = await self._get_session()
+
         try:
-            headers = {"X-Validator-Id": self.validator_id}
             async with session.post(endpoint, headers=headers, timeout=30) as response:
                 response.raise_for_status()
-
                 try:
                     response_data = await response.json(loads=self._json_parser.loads)
-                    if response_data.get("status") == "success":
-                        _log_evaluation_event(
-                            f"Database reset: {response_data.get('message')}", context="RESETING DB")
-                        return True
                 except Exception:
-                    if response.status in (200, 202):
-                        _log_evaluation_event(
-                            "Database reset initiated successfully.", context="RESETING DB")
-                        return True
-                    else:
-                        logger.warning(
-                            f"Database reset completed with unexpected status: {response.status}")
-                        return False
+                    response_data = None
 
-        except Exception as e:
-            logger.error(f"Failed to reset database: {e}")
-            return False
-        finally:
-            if session:
-                await session.close()
+                if isinstance(response_data, dict) and response_data.get("status") == "success":
+                    _log_evaluation_event(
+                        f"Database reset: {response_data.get('message')}",
+                        context="RESETTING DB",
+                    )
+                    return True
+
+                if response.status in (200, 202):
+                    _log_evaluation_event("Database reset initiated successfully.", context="RESETTING DB")
+                    return True
+
+                logger.warning(f"Database reset completed with unexpected status: {response.status}")
+        except Exception as exc:
+            logger.error(f"Failed to reset database: {exc}")
+        return False
 
     async def send_event(self, event_name: str, data: dict[str, Any], web_agent_id: str) -> bool:
-        """
-        Sends an event to the backend for a given web_agent_id.
+        """Send an event to the backend for a given web_agent_id."""
 
-        Args:
-            event_name (str): Type of the event (e.g., "page_view", "button_click")
-            data (Dict[str, Any]): Additional data related to the event
-            web_agent_id (str): The ID of the web agent
-
-        Returns:
-            bool: True if the event was sent successfully, False otherwise.
-        """
         if self.web_project.is_web_real:
             return False
 
@@ -347,19 +303,19 @@ class BackendDemoWebService:
             "event_name": event_name,
             "data": data,
             "web_agent_id": web_agent_id,
+            "validator_id": self.validator_id,
         }
 
         endpoint = f"{self.base_url}events/add/"
-        headers = {"X-WebAgent-Id": web_agent_id}
+        headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": self.validator_id}
 
         try:
             session = await self._get_session()
             async with session.post(endpoint, json=payload, headers=headers, timeout=10) as response:
                 response.raise_for_status()
                 return True
-
-        except ClientError as e:
-            logger.error(f"Failed to send {event_name} event: {e}")
-        except Exception as e:
-            logger.error(f"Unexpected error sending {event_name} event: {e}")
+        except ClientError as exc:
+            logger.error(f"Failed to send event '{event_name}': {exc}")
+        except Exception as exc:
+            logger.error(f"Unexpected error sending event '{event_name}': {exc}")
         return False

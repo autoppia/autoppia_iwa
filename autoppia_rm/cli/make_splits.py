@@ -18,6 +18,8 @@ FEATURE_DIR.mkdir(parents=True, exist_ok=True)
 
 def _iter_episodes() -> Iterable[dict]:
     for path in RAW_DIR.glob("*.jsonl"):
+        if path.name.endswith("_old.jsonl"):
+            continue
         with path.open() as handle:
             for line in handle:
                 line = line.strip()
@@ -75,7 +77,7 @@ def make_splits(seed: int = 1337, train_p: float = 0.8, val_p: float = 0.1) -> N
                 semantic_ids.append(f"{eid}_{idx}")
         _write_json(SPLIT_DIR / f"semantic_{split}.json", semantic_ids)
 
-    # Reward metadata: last step per episode with success label
+    # Reward metadata: last step per episode with success label and final score
     for split, split_ids in split_map.items():
         rows = []
         for eid in split_ids:
@@ -87,8 +89,22 @@ def make_splits(seed: int = 1337, train_p: float = 0.8, val_p: float = 0.1) -> N
             if last_idx is None:
                 continue
             rid = f"{eid}_{last_idx}"
-            y_success = 1 if float(episode.get("final_score", 0.0)) > 0.5 else 0
-            rows.append({"rid": rid, "y_success": y_success})
+            final_score = float(episode.get("final_score", 0.0) or 0.0)
+            raw_score = float(episode.get("raw_score", final_score) or final_score)
+            tests = episode.get("evaluation_tests", [])
+            total_tests = len(tests)
+            tests_passed = sum(1 for test in tests if bool(test.get("success")))
+            y_success = 1 if final_score > 0.5 else 0
+            rows.append(
+                {
+                    "rid": rid,
+                    "y_success": y_success,
+                    "final_score": final_score,
+                    "raw_score": raw_score,
+                    "tests_passed": tests_passed,
+                    "tests_total": total_tests,
+                }
+            )
         _write_json(FEATURE_DIR / f"{split}_finals.json", rows)
 
 

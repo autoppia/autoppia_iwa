@@ -85,6 +85,20 @@ class IWAWebEnv(gym.Env):
         self._history: Deque[int] = deque(maxlen=self.history_len)
         self._step = 0
         self._last_partial = PartialScore()
+        self._reward_blender = None
+        reward_model_path = self.cfg.get("reward_model_path")
+        if reward_model_path:
+            try:
+                from autoppia_rm.rl.reward_wrapper import RewardBlender
+
+                alpha = float(self.cfg.get("reward_alpha", 0.5))
+                beta = float(self.cfg.get("reward_beta", 0.5))
+                gamma = float(self.cfg.get("reward_gamma", 0.995))
+                self._reward_blender = RewardBlender(reward_model_path, alpha=alpha, beta=beta, gamma=gamma)
+                logger.info(f"Loaded RewardBlender from {reward_model_path}")
+            except Exception as e:
+                logger.warning(f"Failed to initialize RewardBlender ({e}). Continuing without shaped reward.")
+                self._reward_blender = None
 
     # -------------------------
     # Helpers
@@ -192,6 +206,11 @@ class IWAWebEnv(gym.Env):
         self._history.clear()
         self._step = 0
         self._last_partial = self._evaluator.get_partial_score()
+        if self._reward_blender:
+            try:
+                self._reward_blender.reset()
+            except Exception as e:
+                logger.warning(f"RewardBlender reset failed: {e}")
 
         # Estado inicial de DOM y Top‑K
         logger.info("ENV.reset: snapshot start")
@@ -304,6 +323,14 @@ class IWAWebEnv(gym.Env):
         reward = float(delta - 0.001 - (0.05 if invalid else 0.0))
         if partial.success:
             reward += 1.0
+        base_reward = reward
+        shaped_reward = reward
+        if self._reward_blender:
+            try:
+                shaped_reward = float(self._reward_blender.step_reward(url or "", html or "", reward))
+            except Exception as e:
+                logger.warning(f"RewardBlender shaping failed: {e}")
+                shaped_reward = reward
 
         self._last_partial = partial
         terminated = bool(partial.success)
@@ -333,8 +360,10 @@ class IWAWebEnv(gym.Env):
             "action_desc": action_desc,
             "current_url": url,
             "backend_event_names": backend_event_names,
+            "base_reward": float(base_reward),
+            "shaped_reward": float(shaped_reward),
         }
-        return obs, reward, terminated, truncated, info
+        return obs, shaped_reward, terminated, truncated, info
 
     def close(self):  # type: ignore[override]
         try:
