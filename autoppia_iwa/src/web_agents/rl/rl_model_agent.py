@@ -7,16 +7,16 @@ from typing import Optional
 
 from loguru import logger
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.rl.envs.iwa_env import IWAWebEnv
-from autoppia_iwa.src.rl.utils.solutions import history_to_task_solution
+from autoppia_iwa.src.data_generation.tasks.classes import Task
+from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
+from autoppia_iwa.src.rl.agent.utils.solutions import history_to_task_solution
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 @dataclass(slots=True)
 class RLModelAgentConfig:
-    model_path: str = "/data/rl_models/ppo_real.zip"
+    model_path: str = "/data/rl/models/ppo_real.zip"
     topk: int = 12
     max_steps: int = 30
     deterministic: bool = True

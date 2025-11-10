@@ -2,7 +2,7 @@ import asyncio
 
 import aiohttp
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.base import IWebAgent
@@ -36,23 +36,18 @@ class ApifiedWebAgent(IWebAgent):
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
                 async with session.post(f"{self.base_url}/solve_task", json=task.clean_task()) as response:
+                    response.raise_for_status()
                     response_json = await response.json()
+            except Exception as e:  # noqa: BLE001
+                raise RuntimeError(f"Error during HTTP request to {self.base_url}/solve_task: {e}") from e
 
-                    # Extract data
-                    actions_data = response_json.get("actions", [])
-                    web_agent_id = response_json.get("web_agent_id", "unknown")
-                    recording_str = response_json.get("recording", "")
+            actions_data = response_json.get("actions", [])
+            web_agent_id = response_json.get("web_agent_id", "unknown")
+            recording_str = response_json.get("recording", "")
 
-                # Rebuild
-                rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
-                # print(f"Rebuilt Actions: {rebuilt_actions}")
-                task_solution = TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
-
-                return task_solution
-            except Exception as e:
-                print(f"Error during HTTP request: {e}")
-                # print(traceback.format_exc())
-                return TaskSolution(task_id=task.id, actions=[], web_agent_id="unknown")
+        rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
+        task_solution = TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
+        return task_solution
 
     def solve_task_sync(self, task: Task) -> TaskSolution:
         return asyncio.run(self.solve_task(task))

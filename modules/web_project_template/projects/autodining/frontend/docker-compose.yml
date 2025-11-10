@@ -1,0 +1,35 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ENABLE_DYNAMIC_HTML: ${ENABLE_DYNAMIC_HTML:-false}
+        ENABLE_DATA_GENERATION: ${ENABLE_DATA_GENERATION:-false}
+        ENABLE_DB_MODE: ${ENABLE_DB_MODE:-false}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8090}
+        API_URL: ${API_URL:-http://app:8080}
+        NEXT_PUBLIC_ENABLE_DB_MODE: ${NEXT_PUBLIC_ENABLE_DB_MODE:-false}
+        DATA_SEED_VALUE: ${DATA_SEED_VALUE:-}
+        NEXT_PUBLIC_DATA_SEED_VALUE: ${NEXT_PUBLIC_DATA_SEED_VALUE:-}
+
+    ports:
+      - "127.0.0.1:${WEB_PORT}:8003"
+    restart: always
+    environment:
+      - API_URL=${API_URL:-http://app:8080}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8090}
+      - PORT=8003
+      - NODE_ENV=production
+      - ENABLE_DYNAMIC_HTML=${ENABLE_DYNAMIC_HTML:-false}
+      - ENABLE_DATA_GENERATION=${ENABLE_DATA_GENERATION:-false}
+      - ENABLE_DB_MODE=${ENABLE_DB_MODE:-false}
+      - NEXT_PUBLIC_ENABLE_DB_MODE=${NEXT_PUBLIC_ENABLE_DB_MODE:-false}
+      - DATA_SEED_VALUE=${DATA_SEED_VALUE:-}
+      - NEXT_PUBLIC_DATA_SEED_VALUE=${NEXT_PUBLIC_DATA_SEED_VALUE:-}
+    networks:
+      - apps_net
+
+networks:
+  apps_net:
+    external: true

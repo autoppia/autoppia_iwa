@@ -3,7 +3,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
 
-from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 class UseCase(BaseModel):
@@ -17,6 +17,10 @@ class UseCase(BaseModel):
     event: Any = Field(..., description="Event class (type[Event])")
     event_source_code: str
     examples: list[dict]
+    success_task_solutions: list[tuple[str, TaskSolution]] = Field(
+        default_factory=list,
+        description="Optional list of (prompt, TaskSolution) pairs guaranteed to satisfy this use case.",
+    )
     replace_func: Callable[[str], str] | None = Field(default=None, exclude=True)
 
     # Only one field for constraints - the structured data
@@ -159,12 +163,12 @@ class WebProject(BaseModel):
     backend_url: str = Field(..., description="URL of the backend server")
     frontend_url: str = Field(..., description="URL of the frontend application")
     is_web_real: bool = False
+    sandbox_mode: bool = Field(default=False, description="True if the project must run in sandbox mode")
     urls: list[str] = []
-    domain_analysis: DomainAnalysis | None = None
     events: list[type] = Field(default_factory=list, description="Structured events information")
+    use_cases: list[UseCase] | None = Field(default=None, description="Optional list of canonical use cases for this project")
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
     models: list[Any] = Field(default_factory=list)
-    use_cases: list[Any] = Field(default_factory=list, description="List of UseCase instances")
 
 
 class BackendEvent(BaseModel):

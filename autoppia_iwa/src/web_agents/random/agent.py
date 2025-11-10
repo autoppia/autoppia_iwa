@@ -1,6 +1,6 @@
 import random
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import ClickAction
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
@@ -36,4 +36,4 @@ class RandomClickerWebAgent(BaseAgent):
 
             actions.append(ClickAction(selector=None, x=x, y=y))
 
-        return TaskSolution(task_id=task.id, actions=actions)
+        return TaskSolution(task_id=task.id, actions=actions, web_agent_id=self.id or self.name)

@@ -12,6 +12,7 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # =========================
@@ -54,11 +55,9 @@ SOTA_AGENTS = [
 ]
 
 # Active agents to run. Configure your local simple_api agent here.
-# Daryxx Finetuned served by simple_api on localhost:6789
 AGENTS = [
-    ApifiedWebAgent(id="2", name="AutoppiaAgent1",
-                    host="84.247.180.192", port=6789, timeout=120)
-    # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
+    ApifiedWebAgent(id="openai-cua", name="OpenAI CUA (local)",
+                    host="127.0.0.1", port=13111, timeout=400)
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
@@ -88,19 +87,20 @@ USE_CASES = [
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
-    # Tasks
-    use_cached_tasks=False,  # load project tasks from JSON cache if available
-    prompts_per_use_case=1,
-    num_use_cases=1,  # 0 = all use-cases
+    use_cached_tasks=False,
+    prompts_per_use_case=10,
+    num_use_cases=1,  
     use_cases=USE_CASES,
-    # Execution
-    runs=1,  # how many runs do you want?
-    max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
-    use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
-    record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic HTML
+    runs=1, 
+    max_parallel_agent_calls=1, 
+    use_cached_solutions=False,
+    record_gif=False,
     enable_dynamic_html=True,
-    # Persistence
+    dynamic_phase_config=DynamicPhaseConfig(
+        enable_d1_structure=True,
+        enable_d3_attributes=True,
+        enable_d4_overlays=True,
+    ),
     save_results_json=True,
     plot_results=False,
 )

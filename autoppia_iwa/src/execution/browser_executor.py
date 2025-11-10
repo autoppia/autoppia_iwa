@@ -3,7 +3,7 @@ from datetime import datetime
 
 from playwright.async_api import Page
 
-from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
+from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
@@ -39,6 +39,8 @@ class PlaywrightBrowserExecutor:
             raise RuntimeError("Playwright page is not initialized.")
 
         try:
+            await self._before_action(action, iteration)
+
             # Capture state before action execution
             if should_record:
                 snapshot_before = await self._capture_snapshot()
@@ -52,6 +54,7 @@ class PlaywrightBrowserExecutor:
 
             # Capture backend events and updated browser state
             await self.page.wait_for_load_state("domcontentloaded")
+            await self._after_action(action, iteration)
 
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             # Always capture URL/HTML for tests; only include screenshot if recording is enabled
@@ -92,6 +95,7 @@ class PlaywrightBrowserExecutor:
             )
 
         except Exception as e:
+            await self._on_action_error(action, iteration, e)
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             if should_record:
                 snapshot_error = await self._capture_snapshot()
@@ -149,3 +153,21 @@ class PlaywrightBrowserExecutor:
         except Exception as e:
             # Gracefully handle any errors during snapshot
             return {"html": "", "screenshot": "", "url": "", "error": str(e)}
+
+    async def _before_action(self, action: BaseAction, iteration: int) -> None:
+        """
+        Hook executed right before each action. Subclasses can override to inject dynamic behavior.
+        """
+        return None
+
+    async def _after_action(self, action: BaseAction, iteration: int) -> None:
+        """
+        Hook executed after action execution (and after DOMContentLoaded) but before snapshots.
+        """
+        return None
+
+    async def _on_action_error(self, action: BaseAction, iteration: int, error: Exception) -> None:
+        """
+        Hook executed when an action fails. Subclasses may perform cleanup or reporting.
+        """
+        return None

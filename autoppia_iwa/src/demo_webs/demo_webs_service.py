@@ -4,25 +4,17 @@ import json
 import os
 from contextlib import suppress
 from typing import Any
+from urllib.parse import urlparse
 
 import aiohttp
 from aiohttp.client_exceptions import ClientError
 from loguru import logger
 
-from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, VALIDATOR_ID
+from autoppia_iwa.config.config import DEMO_WEB_SERVICE_PORT, VALIDATOR_ID
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
-
-
-def _ensure_evaluation_level() -> None:
-    """Register the custom EVALUATION level when logging fallback is used."""
-
-    try:
-        logger.level(EVALUATION_LEVEL_NAME)
-    except ValueError:
-        logger.level(EVALUATION_LEVEL_NAME, EVALUATION_LEVEL_NO)
 
 
 def _log_evaluation_event(message: str, context: str = "GENERAL") -> None:
@@ -67,6 +59,7 @@ class BackendDemoWebService:
         self._session: aiohttp.ClientSession | None = None
         self.web_project = web_project
         self.base_url = web_project.backend_url
+        self._backend_port = self._extract_backend_port()
         self.web_agent_id = web_agent_id
         # Allow environment overrides for validator id to ease local testing
         self.validator_id = os.getenv("VALIDATOR_ID", VALIDATOR_ID or "validator_001")
@@ -97,15 +90,17 @@ class BackendDemoWebService:
             logger.debug("Created new aiohttp session")
         return self._session
 
-    def _should_use_proxy_api(self) -> bool:
-        """
-        Determines whether the proxy API (e.g., port 8002, 8003, 8004 ...) should be used based on the base_url port.
-        """
-
-        from urllib.parse import urlparse
-
+    def _extract_backend_port(self) -> int | None:
         parsed = urlparse(self.base_url)
-        return bool(parsed.port and parsed.port > 8001)
+        return parsed.port
+
+    def _should_use_proxy_api(self) -> bool:
+        """Determine whether we should proxy backend calls via the shared webs_server."""
+
+        return bool(self._backend_port and self._backend_port == DEMO_WEB_SERVICE_PORT)
+
+    def _proxy_base_url(self) -> str:
+        return self.base_url.rstrip("/")
 
     async def close(self) -> None:
         """Close the underlying aiohttp session if it exists."""
@@ -131,7 +126,7 @@ class BackendDemoWebService:
 
         if self._should_use_proxy_api():
             try:
-                endpoint = f"{DEMO_WEBS_ENDPOINT.rstrip('/')}:8090/get_events/"
+                endpoint = f"{self._proxy_base_url()}/get_events/"
                 params = {
                     "web_url": self.base_url.rstrip("/"),
                     "web_agent_id": web_agent_id,
@@ -250,7 +245,7 @@ class BackendDemoWebService:
 
         if self._should_use_proxy_api():
             try:
-                endpoint = f"{DEMO_WEBS_ENDPOINT.rstrip('/')}:8090/reset_events/"
+                endpoint = f"{self._proxy_base_url()}/reset_events/"
                 params = {
                     "web_url": self.base_url.rstrip("/"),
                     "web_agent_id": agent_id,

@@ -11,6 +11,8 @@ This document explains what is implemented today for training and evaluating RL�
 - Benchmark integration: a local `RLPolicyAgent` is wired into the benchmark to generate `TaskSolution`s.
 - Training pipeline stubs: PPO‑RNN trainer, checkpoint evaluation, and BC dataset collection.
 
+> **Note:** The RL codebase now lives under `autoppia_iwa/src/rl/agent/…`. Paths below still refer to their historical locations for quick reference; prepend `agent/` (for example, `autoppia_iwa/src/rl/agent/envs/iwa_gym_env.py`) when navigating the repo.
+
 ## Key Components (files)
 
 - Environment and core RL helpers:
@@ -85,7 +87,7 @@ Collect a small BC dataset (optional)
 ## Run the Benchmark with the RL Agent
 
 - Ensure Playwright browsers if you plan to use real demos: `playwright install`
-- Optional: set a trained model path (defaults to `/data/rl_models/ppo_real.zip`):
+- Optional: set a trained model path (defaults to `/data/rl/models/ppo_real.zip`):
   - `export RL_MODEL_PATH=/path/to/ppo_real.zip`
 - Run benchmark for the in-repo RL agent:
   - `python -m autoppia_iwa.entrypoints.rl.benchmark`

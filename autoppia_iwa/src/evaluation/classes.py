@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
+from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
 
 class TestResult(BaseModel):
@@ -24,29 +25,6 @@ class Feedback(BaseModel):
     critical_test_penalty: int  # Penalty points for failing critical tests
     test_results: list[TestResult]  # Detailed test results
     execution_history: list[ActionExecutionResult]  # Detailed execution logs
-
-    def to_text(self) -> str:
-        """Generates a human-readable textual summary."""
-        feedback = f"Task: '{self.task_prompt}'\n"
-        feedback += f"Final Score: {self.final_score}/10\n"
-        feedback += f"Executed Actions: {self.executed_actions}, Failed Actions: {self.failed_actions}\n"
-        feedback += f"Tests Passed: {self.passed_tests}, Tests Failed: {self.failed_tests}\n"
-        feedback += f"Total Execution Time: {self.total_execution_time:.2f}s\n"
-        feedback += f"Time Penalty: {self.time_penalty:.1f} points\n"
-        feedback += f"Critical Test Penalty: {self.critical_test_penalty} points\n"
-        feedback += "\nTest Results:\n"
-        for test in self.test_results:
-            feedback += f"  - Test '{test.description}' ({test.test_type}): {'PASSED' if test.success else 'FAILED'}\n"
-            if test.extra_data:
-                feedback += f"      Extra Data: {test.extra_data}\n"
-
-        feedback += "\nExecution History:\n"
-        for record in self.execution_history:
-            feedback += f"  - Action: {record.action_event}, Success: {record.successfully_executed}, Time: {record.execution_time:.2f}s\n"
-            if record.error:
-                feedback += f"      Error: {record.error}\n"
-
-        return feedback
 
 
 class EvaluationStats(BaseModel):
@@ -112,9 +90,11 @@ class EvaluationResult(BaseModel):
     def model_dump(self, *args, **kwargs):
         base_dump = super().model_dump(*args, **kwargs)
         base_dump["execution_history"] = [action.model_dump() for action in self.execution_history]
-        # Remove unwanted keys from feedback
-        base_dump["feedback"].pop("execution_history", None)
-        base_dump["feedback"].pop("test_results", None)
+        # Remove unwanted keys from feedback if present
+        feedback_dump = base_dump.get("feedback")
+        if isinstance(feedback_dump, dict):
+            feedback_dump.pop("execution_history", None)
+            feedback_dump.pop("test_results", None)
         return base_dump
 
 
@@ -128,3 +108,4 @@ class EvaluatorConfig(BaseModel):
     verbose_logging: bool = Field(default=False)  # Default to minimal logging
     debug_mode: bool = Field(default=False)  # Even more minimal logging
     should_record_gif: bool = Field(default=False, description="Record evaluation on browser executions.")
+    dynamic_phase_config: DynamicPhaseConfig | None = Field(default=None, description="Optional DOM mutation configuration (D1/D3/D4 phases).")

@@ -19,14 +19,14 @@ from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
 from stable_baselines3.common.callbacks import CheckpointCallback, BaseCallback
 
-from autoppia_iwa.src.rl.envs.iwa_env import IWAWebEnv
+from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
 from autoppia_iwa.entrypoints.benchmark.task_generation import (
     get_projects_by_ids,
     generate_tasks_for_project,
 )
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
-from autoppia_iwa.src.rl.offline import BehaviorCloningConfig, BehaviorCloningTrainer, HttpTrajectoryProvider
+from autoppia_iwa.src.rl.agent.offline import BehaviorCloningConfig, BehaviorCloningTrainer, HttpTrajectoryProvider
 
 
 @dataclass(slots=True)
@@ -52,7 +52,7 @@ class TrainCfg:
     max_steps: int = 20
     # Skip first two demo websites; start from index 2
     project_start_index: int = 2
-    tasks_cache_dir: str = "data/tasks_cache"
+    tasks_cache_dir: str = "data/cache/tasks"
     use_cached_tasks: bool = True
 
     # PPO
@@ -73,7 +73,7 @@ class TrainCfg:
 
     # Logging / outputs
     tensorboard_log: str = "runs/tb"
-    save_dir: str = "/data/rl_models"  # align with RL benchmark hardcoded path
+    save_dir: str = "/data/rl/models"  # align with RL benchmark hardcoded path
     save_name: str = "ppo_real.zip"
     checkpoint_every: int = 10_000  # save every N steps
     bc: BCWarmstartCfg = field(default_factory=BCWarmstartCfg)
@@ -116,8 +116,8 @@ def ensure_dir(path: str) -> str:
         return path
     except Exception as e:
         logger.warning(
-            f"Failed to create {path}: {e}. Falling back to local ./data/rl_models")
-        fallback = os.path.join("data", "rl_models")
+            f"Failed to create {path}: {e}. Falling back to local ./data/rl/models")
+        fallback = os.path.join("data", "rl", "models")
         os.makedirs(fallback, exist_ok=True)
         return fallback
 
@@ -346,7 +346,7 @@ def train(cfg: TrainCfg) -> str:
 
         # Also save a copy to repo-local path for convenience
         try:
-            local_dir = ensure_dir(os.path.join("data", "rl_models"))
+            local_dir = ensure_dir(os.path.join("data", "rl", "models"))
             local_out = os.path.join(local_dir, cfg.save_name)
             model.save(local_out)
             logger.info(f"Saved local copy to: {local_out}")

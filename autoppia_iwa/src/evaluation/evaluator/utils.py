@@ -8,7 +8,7 @@ from collections import defaultdict
 from loguru import logger
 # Avoid importing Pillow at module import time; import lazily in functions that need it.
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 from autoppia_iwa.src.evaluation.classes import EvaluationStats, Feedback, TestResult
 from autoppia_iwa.src.evaluation.evaluator.feedback_generator import FeedbackGenerator

@@ -7,7 +7,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from autoppia_iwa.config.config import OPENAI_MODEL
-from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.web_agents.base import BaseAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 

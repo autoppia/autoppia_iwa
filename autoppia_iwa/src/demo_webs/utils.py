@@ -2,7 +2,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
+from autoppia_iwa.config.config import DEMO_WEB_SERVICE_PORT, DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
 
 sys.path.append(str(Path(__file__).resolve().parents[3]))
 
@@ -16,6 +16,10 @@ def get_backend_url(index: int, symmetric=True):
         return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}"
     else:
         return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}"
+
+
+def get_backend_service_url():
+    return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEB_SERVICE_PORT) + '/'}"
 
 
 def datetime_from_utc_to_local(utc_datetime: datetime) -> datetime:

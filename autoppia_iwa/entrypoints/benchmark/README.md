@@ -339,23 +339,23 @@ CFG = BenchmarkConfig(
 
 1. **Generate/Load Tasks**
 
-   - **Cache**: `data/tasks_cache/<project>_tasks.json`
+   - **Cache**: `data/cache/tasks/<project>_tasks.json`
    - **Generate**: Via LLM pipeline → save to cache
 
 2. **Solve Tasks**
 
    - **Send** tasks to configured agents
-   - **Cache**: `data/solutions_cache/solutions.json` (optional)
+   - **Cache**: `data/cache/solutions/solutions.json` (optional)
 
 3. **Evaluate Solutions**
 
    - **Score** each solution using validator logic
-   - **Record**: GIFs saved to `recordings/<agent>/` (optional)
+   - **Record**: GIFs saved to `data/benchmark/recordings/<agent>/` (optional)
 
 4. **Save Results**
 
-   - **JSON**: `results/benchmark_results_<timestamp>.json`
-   - **Plots**: `results/stress_test_chart_<timestamp>.png` (optional)
+   - **JSON**: `data/benchmark/results/benchmark_results_<timestamp>.json`
+   - **Plots**: `data/benchmark/results/stress_test_chart_<timestamp>.png` (optional)
 
 5. **Print Statistics**
    - **Per agent**: Success rate, average time
@@ -367,11 +367,11 @@ CFG = BenchmarkConfig(
 
 | File Type           | Location                                     | Description               |
 | ------------------- | -------------------------------------------- | ------------------------- |
-| **Tasks Cache**     | `data/tasks_cache/<project>_tasks.json`      | Generated tasks for reuse |
-| **Solutions Cache** | `data/solutions_cache/solutions.json`        | Agent responses for reuse |
-| **Results**         | `results/benchmark_results_<timestamp>.json` | Performance metrics       |
-| **GIF Recordings**  | `recordings/<agent>/<task_id>_run_<n>.gif`   | Task execution videos     |
-| **Plots**           | `results/stress_test_chart_<timestamp>.png`  | Performance charts        |
+| **Tasks Cache**     | `data/cache/tasks/<project>_tasks.json`      | Generated tasks for reuse |
+| **Solutions Cache** | `data/cache/solutions/solutions.json`        | Agent responses for reuse |
+| **Results**         | `data/benchmark/results/benchmark_results_<timestamp>.json` | Performance metrics       |
+| **GIF Recordings**  | `data/benchmark/recordings/<agent>/<task_id>_run_<n>.gif`   | Task execution videos     |
+| **Plots**           | `data/benchmark/results/stress_test_chart_<timestamp>.png`  | Performance charts        |
 
 ---
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 
 import httpx
@@ -61,4 +60,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

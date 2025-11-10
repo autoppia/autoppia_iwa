@@ -5,7 +5,7 @@ from typing import Any
 _ENV_IMPORT_ERROR: Exception | None = None
 
 try:  # pragma: no cover - optional dependency path
-    from .envs.iwa_env import IWAWebEnv, MacroAction
+    from .agent.envs.iwa_env import IWAWebEnv, MacroAction
 except ModuleNotFoundError as exc:  # pragma: no cover - handled lazily
     IWAWebEnv = None  # type: ignore[assignment]
     MacroAction = None  # type: ignore[assignment]
@@ -20,4 +20,15 @@ def __getattr__(name: str) -> Any:  # pragma: no cover - simple delegation
     raise AttributeError(f"module 'rl' has no attribute '{name}'")
 
 
-__all__ = ["IWAWebEnv", "MacroAction"]
+from .agent.evaluators.instrumented import JsInstrumentedEvaluator, InstrumentationConfig
+from .agent.benchmark.instrumented import InstrumentedBenchmark
+from .callbacks import EpisodeDiagnostics
+
+__all__ = [
+    "IWAWebEnv",
+    "MacroAction",
+    "JsInstrumentedEvaluator",
+    "InstrumentationConfig",
+    "InstrumentedBenchmark",
+    "EpisodeDiagnostics",
+]

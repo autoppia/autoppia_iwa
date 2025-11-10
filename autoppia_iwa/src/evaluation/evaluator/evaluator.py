@@ -58,7 +58,7 @@ def _log_evaluation_event(message: str, context: str = "GENERAL"):
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.config.config import EVALUATOR_HEADLESS, VALIDATOR_ID
-from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
+from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
@@ -76,8 +76,10 @@ from autoppia_iwa.src.evaluation.interfaces import IEvaluator
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
+from autoppia_iwa.src.execution.dynamic import DynamicPlaywrightExecutor
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.di_container import DIContainer
 
 
 class ConcurrentEvaluator(IEvaluator):
@@ -499,7 +501,23 @@ class ConcurrentEvaluator(IEvaluator):
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
 
-                browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
+                dynamic_config = self.config.dynamic_phase_config
+                dynamic_enabled = dynamic_config.any_enabled() if dynamic_config else False
+                if dynamic_enabled:
+                    try:
+                        seed_value = extract_seed_from_url(task.url)
+                    except Exception:
+                        seed_value = None
+                    browser_executor = DynamicPlaywrightExecutor(
+                        browser_specifications,
+                        page,
+                        self.backend_demo_webs_service,
+                        dynamic_config=dynamic_config,
+                        project_id=self.web_project.id,
+                        seed=seed_value,
+                    )
+                else:
+                    browser_executor = PlaywrightBrowserExecutor(browser_specifications, page, self.backend_demo_webs_service)
 
                 _log_action_execution(f"🎬 Starting execution of {len(actions)} actions", web_agent_id=web_agent_id)
 

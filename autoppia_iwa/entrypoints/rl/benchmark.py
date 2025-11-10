@@ -27,7 +27,7 @@ from autoppia_iwa.src.web_agents.rl import RLModelAgent, RLModelAgentConfig
 # =========================
 
 # Hardcoded model path (no .env needed)
-RL_MODEL_PATH = "/data/rl_models/ppo_real.zip"
+RL_MODEL_PATH = "/data/rl/models/ppo_real.zip"
 
 RL_AGENT = RLModelAgent(
     id="rl-model",
