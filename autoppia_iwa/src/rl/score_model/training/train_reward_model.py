@@ -39,6 +39,8 @@ def load_config(path: str | Path | None) -> RewardConfig:
 
     path = Path(path)
     data = yaml.safe_load(path.read_text())
+    if "ckpt_path" in data:
+        data["ckpt_path"] = Path(data["ckpt_path"])
     return RewardConfig(**data)
 
 

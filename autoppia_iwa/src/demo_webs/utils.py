@@ -12,6 +12,15 @@ def get_frontend_url(index):
 
 
 def get_backend_url(index: int, symmetric=True):
+    """Return backend base URL.
+
+    For newer projects (index > 1) we route through the shared demo-web service
+    port so the proxy backend (Playwright instrumentation) can capture events.
+    """
+
+    if index > 1:
+        return get_backend_service_url()
+
     if symmetric:
         return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}"
     else:

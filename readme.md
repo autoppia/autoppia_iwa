@@ -170,7 +170,7 @@ The benchmark provides powerful capabilities for comprehensive agent development
 - 📈 **Comparison charts**: Side-by-side agent performance visualization
 - 📝 **Debug logs**: Complete traces of actions, events, and errors
 - 💾 **Smart caching**: Reuse tasks and solutions for faster iteration
-- 📚 **Sandbox analytics**: Ingest miner datasets and flag unresolved/trivial tasks with `python -m modules.web_verification.entrypoints.analyze_sandbox …` (see `docs/guides/sandbox_analysis.md`)
+- 📚 **Sandbox analytics**: Ingest miner datasets and flag unresolved/trivial tasks with `python -m modules.web_verification analyze-sandbox …` (see `docs/guides/sandbox_analysis.md`)
 
 ### ⚙️ Customization Options
 

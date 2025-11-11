@@ -23,7 +23,7 @@ AUTOPPIA_BACKEND_URL=http://localhost:8090 docker compose up --build
 To regenerate the IWA module from this config:
 
 ```bash
-python -m modules.web_verification.entrypoints.generate_module \
+python -m modules.web_verification generate-module \
   --config web_project_template/projects/autodining/config.yaml \
   --output-root modules/web_verification/sandbox_analysis/generated_projects \
   --force

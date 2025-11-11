@@ -34,24 +34,10 @@ if LLM_PROVIDER == "openai" and not OPENAI_API_KEY:
 if LLM_PROVIDER == "chutes" and not CHUTES_API_KEY:
     raise ValueError("CHUTES_API_KEY is required when LLM_PROVIDER is set to 'chutes'.")
 
-# ==================================
-# Database and File Configuration
-# ==================================
-# MONGODB_URL = os.getenv("MONGODB_URL")
-# MONGODB_NAME = "workflow"
-ANALYSIS_COLLECTION = "web_analysis"
-TASKS_COLLECTION = "tasks"
-DOCUMENTS_DIR = "data/web_analysis_files"
-
 # ============================
 # Application Configuration
 # ============================
 EVALUATOR_HEADLESS = bool(strtobool(os.getenv("EVALUATOR_HEADLESS", "True")))
-
-# ============================
-# Application Configuration
-# ============================
-GENERATE_MILESTONES = bool(strtobool(os.getenv("GENERATE_MILESTONES", "False")))
 
 # ============================
 # Project Base Directory Path
@@ -72,7 +58,6 @@ AGENT_NAME = os.getenv("AGENT_NAME")
 USE_APIFIED_AGENT = bool(strtobool(os.getenv("USE_APIFIED_AGENT", "false")))
 AGENT_HOST = os.getenv("AGENT_HOST", "localhost")
 AGENT_PORT = int(os.getenv("AGENT_PORT", "8080"))
-OPERATOR_ENDPOINT = os.getenv("OPERATOR_ENDPOINT", "localhost:4000")
 
 # ============================
 # Validator Configuration

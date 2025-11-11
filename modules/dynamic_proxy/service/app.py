@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import base64
 import inspect
 import json
 from pathlib import Path
@@ -9,11 +8,15 @@ from typing import Any, Awaitable, Callable, Iterable
 
 import httpx
 from fastapi import FastAPI, Request, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import AnyHttpUrl, BaseModel, Field
 from starlette.datastructures import QueryParams
 
 from modules.dynamic_proxy.core.config import DynamicPhaseConfig
 from modules.dynamic_proxy.core.engine import MutationEngine, MutationResult
+
+
+RUNTIME_DIR = Path(__file__).resolve().parents[1] / "runtime"
 
 
 class ProxyProjectConfig(BaseModel):
@@ -31,6 +34,7 @@ class ProxyProjectConfig(BaseModel):
     audit_root: str | None = Field(default="data/dynamic_proxy_audit")
     inject_client_runtime: bool = False
     seed_modulus: int = 32
+    runtime_seed_modulus: int = 10000
 
 
 class ProxyAuditWriter:
@@ -99,7 +103,11 @@ def create_project_proxy_app(
         palette_dir=config.palette_dir,
         seed_modulus=config.seed_modulus,
     )
+    runtime_levels = {"D1": bool(config.enable_d1), "D3": bool(config.enable_d3), "D4": bool(config.enable_d4)}
     if config.inject_client_runtime:
+        phase_config.enable_d1_structure = False
+        phase_config.enable_d3_attributes = False
+        phase_config.enable_d4_overlays = False
         phase_config.apply_dom_mutations = False
         phase_config.force_generate_plan = True
     else:
@@ -112,6 +120,8 @@ def create_project_proxy_app(
         docs_url=None,
         redoc_url=None,
     )
+    if RUNTIME_DIR.exists():
+        app.mount("/dynamic", StaticFiles(directory=str(RUNTIME_DIR), html=False), name="dynamic-assets")
 
     @app.on_event("startup")
     async def _startup() -> None:
@@ -149,81 +159,36 @@ def create_project_proxy_app(
         flag = params.get("iwa_dynamic")
         return bool(flag and flag.strip() in {"0", "false", "False"})
 
-    def _build_client_runtime_script(plan_payload: dict[str, Any], seed: int) -> str:
-        payload = {
-            "project_id": config.project_id,
-            "seed": seed,
-            "plan": {
-                "d1": plan_payload.get("d1") or [],
-                "d3": plan_payload.get("d3") or [],
-            },
-        }
-        if not payload["plan"]["d1"] and not payload["plan"]["d3"]:
-            return ""
-        encoded = base64.b64encode(json.dumps(payload, ensure_ascii=False).encode("utf-8")).decode("ascii")
-        script = (
-            "(function(){"
-            f"const payload=JSON.parse(atob('{encoded}'));"
-            "const store=window.__iwaClientRuntimeStore||(window.__iwaClientRuntimeStore={});"
-            "const key=payload.project_id+':'+payload.seed;"
-            "if(store[key]){return;}"
-            "const plan=payload.plan||{};"
-            "const d1=plan.d1||[];"
-            "const d3=plan.d3||[];"
-            "if(!d1.length&&!d3.length){return;}"
-            "const insertedAttr='data-iwa-node-id';"
-            "const wrapperAttr='data-iwa-wrapper-id';"
-            "const contentAttr='data-iwa-content-id';"
-            "const attrAttr='data-iwa-attr-id';"
-            "const templateCache={};"
-            "const getNodes=(instr)=>{const key=instr.id||instr.target||'node';if(!templateCache[key]){const tpl=document.createElement('template');tpl.innerHTML=instr.html||'';templateCache[key]=Array.from(tpl.content.childNodes);}return templateCache[key];};"
-            "const cloneNodes=(nodes,id)=>nodes.map(node=>{const clone=node.cloneNode(true);if(clone.nodeType===1){clone.setAttribute(insertedAttr,id);}return clone;});"
-            "const removeInserted=(id)=>{document.querySelectorAll('['+insertedAttr+'=\"'+id+'\"]').forEach(node=>{if(node.parentNode){node.parentNode.removeChild(node);}});};"
-            "const insertNodes=(parent,before,nodes)=>{if(!parent){return;}nodes.forEach(node=>parent.insertBefore(node,before));};"
-            "const applyStructural=(instr)=>{"
-            "if(!instr||!instr.target){return false;}"
-            "const target=document.querySelector(instr.target);"
-            "if(!target){return false;}"
-            "const op=instr.operation||'append_child';"
-            "const id=instr.id||instr.target||'d1';"
-            "const nodes=getNodes(instr);"
-            "const parent=target.parentNode;"
-            "if(op==='wrap_with'){const wrappers=nodes.filter(node=>node.nodeType===1);if(!wrappers.length){return false;}const wrapper=wrappers[0].cloneNode(true);wrapper.setAttribute(wrapperAttr,id);if(parent){parent.insertBefore(wrapper,target);}else{(document.body||document.documentElement).appendChild(wrapper);}wrapper.appendChild(target);return true;}"
-            "if(op==='replace_inner_html'){target.innerHTML=instr.html||'';target.setAttribute(contentAttr,id);return true;}"
-            "if(op==='insert_before'){if(!parent||!nodes.length){return false;}removeInserted(id);insertNodes(parent,target,cloneNodes(nodes,id));return true;}"
-            "if(op==='insert_after'){if(!parent||!nodes.length){return false;}removeInserted(id);insertNodes(parent,target.nextSibling,cloneNodes(nodes,id));return true;}"
-            "if(op==='prepend_child'){if(!nodes.length){return false;}removeInserted(id);const clones=cloneNodes(nodes,id);const first=target.firstChild;clones.forEach(node=>target.insertBefore(node,first));return true;}"
-            "if(op==='append_child'){if(!nodes.length){return false;}removeInserted(id);cloneNodes(nodes,id).forEach(node=>target.appendChild(node));return true;}"
-            "if(op==='shuffle_children'){return false;}"
-            "return false;"
-            "};"
-            "const applyAttributes=(instr)=>{"
-            "if(!instr||!instr.target){return false;}"
-            "const target=document.querySelector(instr.target);"
-            "if(!target){return false;}"
-            "const op=instr.operation||'set_attribute';"
-            "const id=instr.id||instr.target||'d3';"
-            "if(op==='set_attribute'&&instr.attribute){if(target.getAttribute(instr.attribute)===instr.value){return false;}target.setAttribute(instr.attribute,instr.value||'');target.setAttribute(attrAttr+'-'+id,'1');return true;}"
-            "if(op==='append_class'&&instr.value){if(target.classList.contains(instr.value)){return false;}target.classList.add(instr.value);target.setAttribute(attrAttr+'-'+id,'1');return true;}"
-            "if(op==='replace_text'){if(target.textContent===(instr.text||'')){return false;}target.textContent=instr.text||'';target.setAttribute(attrAttr+'-'+id,'1');return true;}"
-            "return false;"
-            "};"
-            "const applyAll=()=>{let changed=false;d1.forEach(instr=>{try{if(applyStructural(instr)){changed=true;}}catch(e){}});d3.forEach(instr=>{try{if(applyAttributes(instr)){changed=true;}}catch(e){}});return changed;};"
-            "const start=()=>{const runtime={active:true,pending:false};store[key]=runtime;const run=()=>{applyAll();};const observer=new MutationObserver(()=>{if(!runtime.active){return;}if(runtime.pending){return;}runtime.pending=true;requestAnimationFrame(()=>{runtime.pending=false;applyAll();});});const root=document.body||document.documentElement;run();observer.observe(root,{childList:true,subtree:true});runtime.observer=observer;};"
-            "if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',start,{once:true});}else{start();}"
-            "})();"
-        )
-        return f"<script data-iwa-client-runtime=\"true\">{script}</script>"
+    def _normalize_seed_value(seed: int) -> int:
+        modulus = config.runtime_seed_modulus or 0
+        return seed % modulus if modulus > 0 else seed
 
-    def _inject_client_runtime(html: str, plan_payload: dict[str, Any], seed: int) -> str:
-        script_tag = _build_client_runtime_script(plan_payload, seed)
-        if not script_tag:
-            return html
+    def _inject_universal_runtime(content: bytes, seed: int, site_key: str | None) -> bytes:
+        payload = {
+            "seed": seed,
+            "levels": {
+                "D1": bool(runtime_levels.get("D1")),
+                "D3": bool(runtime_levels.get("D3")),
+                "D4": bool(runtime_levels.get("D4")),
+            },
+            "siteKey": site_key or config.project_id,
+        }
+        snippet = (
+            f"<script>window.__DYN_CONFIG__ = {json.dumps(payload, ensure_ascii=False)};</script>\n"
+            '<script src="/dynamic/runtime.js"></script>'
+        )
+        try:
+            html = content.decode("utf-8", errors="ignore")
+        except Exception:
+            return content
         lower = html.lower()
-        marker = lower.rfind("</body>")
-        if marker == -1:
-            return html + script_tag
-        return html[:marker] + script_tag + html[marker:]
+        head_idx = lower.find("</head>")
+        if head_idx != -1:
+            return (html[:head_idx] + snippet + html[head_idx:]).encode("utf-8")
+        body_idx = lower.find("<body")
+        if body_idx != -1:
+            return (html[:body_idx] + snippet + html[body_idx:]).encode("utf-8")
+        return (snippet + html).encode("utf-8")
 
     async def _mutate_if_needed(content: bytes, full_url: str, charset_hint: str, is_head: bool, seed: int) -> tuple[bytes, MutationResult | None]:
         if is_head:
@@ -237,8 +202,6 @@ def create_project_proxy_app(
             html = content.decode("utf-8", errors="ignore")
         result = engine.mutate_html(html, full_url, seed)
         mutated_html = result.html
-        if config.inject_client_runtime and result.plan:
-            mutated_html = _inject_client_runtime(mutated_html, result.plan, seed)
         return mutated_html.encode("utf-8"), result
 
     @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])
@@ -260,6 +223,9 @@ def create_project_proxy_app(
         content = upstream_response.content
         result: MutationResult | None = None
         content_type = upstream_response.headers.get("content-type", "")
+        runtime_seed: int | None = None
+        if config.inject_client_runtime and not _should_skip_mutation(request.query_params):
+            runtime_seed = _normalize_seed_value(_extract_seed(request.query_params))
         mutate = (
             not _should_skip_mutation(request.query_params)
             and "text/html" in content_type
@@ -274,10 +240,16 @@ def create_project_proxy_app(
                 await app.state.audit_writer.write(result.audit_record)
 
         response_headers = _filter_headers(upstream_response.headers.items())
+        runtime_injected = False
+        if runtime_seed is not None and "text/html" in content_type and upstream_response.status_code not in (204, 304):
+            site_key = request.url.hostname or config.project_id
+            content = _inject_universal_runtime(content, runtime_seed, site_key)
+            runtime_injected = True
         if mutate:
-            # Mutated payloads are always returned as plain UTF-8, so remove the upstream encoding marker.
             response_headers.pop("content-encoding", None)
             response_headers["x-iwa-mutated"] = "1"
+        elif runtime_injected:
+            response_headers.pop("content-encoding", None)
         response_headers["content-length"] = str(len(content))
         return Response(content=content, status_code=upstream_response.status_code, headers=response_headers, media_type=content_type or None)
 

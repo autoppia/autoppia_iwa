@@ -3,21 +3,32 @@
 from __future__ import annotations
 
 import json
+import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import numpy as np
 import torch
 from torch.utils.data import Dataset
 
 from ..utils.text import encode_text
 
 
-FEATURE_DIR = Path("data/rm/features")
-PAIRS_PATH = Path("data/rm/pairs/pairs.jsonl")
-SPLITS_DIR = Path("data/rm/splits")
+FEATURE_DIR = Path(os.getenv("SCORE_MODEL_FEATURE_DIR", "data/rm/features"))
+VECTOR_DIR = Path(os.getenv("SCORE_MODEL_VECTOR_DIR", FEATURE_DIR / "vectors"))
+PAIRS_PATH = Path(os.getenv("SCORE_MODEL_PAIRS_PATH", "data/rm/pairs/pairs.jsonl"))
+SPLITS_DIR = Path(os.getenv("SCORE_MODEL_SPLITS_DIR", "data/rm/splits"))
 
 
-def _load_vector(row_id: str) -> torch.Tensor:
+@lru_cache(maxsize=65_536)
+def _load_vector_cache(row_id: str) -> np.ndarray:
+    """Return cached feature vector, preferring precomputed tensors."""
+
+    vec_path = VECTOR_DIR / f"{row_id}.npy"
+    if vec_path.exists():
+        return np.load(vec_path, allow_pickle=False)
+
     obs_path = FEATURE_DIR / f"{row_id}.obs.json"
     sem_path = FEATURE_DIR / f"{row_id}.sem.json"
     if not obs_path.exists() or not sem_path.exists():
@@ -25,10 +36,17 @@ def _load_vector(row_id: str) -> torch.Tensor:
 
     obs = json.loads(obs_path.read_text())
     sem = json.loads(sem_path.read_text())
-
     obs_vec = encode_text(obs.get("dom_excerpt", ""), obs.get("url_tokens", []))
     sem_vec = encode_text(json.dumps(sem, ensure_ascii=False))
-    return torch.tensor(obs_vec + sem_vec, dtype=torch.float32)
+    data = np.asarray(obs_vec + sem_vec, dtype=np.float32)
+    VECTOR_DIR.mkdir(parents=True, exist_ok=True)
+    np.save(vec_path, data, allow_pickle=False)
+    return data
+
+
+def _load_vector(row_id: str) -> torch.Tensor:
+    data = _load_vector_cache(row_id)
+    return torch.tensor(data, dtype=torch.float32)
 
 
 class PrefPairDataset(Dataset):

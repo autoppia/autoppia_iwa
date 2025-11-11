@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from modules.web_verification.verify_project import SECTION_DECK, verify_project
+from modules.web_verification.phases.procedural.verify_project import SECTION_DECK, verify_project
 
-DECKS_DIR = Path(__file__).resolve().parents[2] / "modules" / "web_verification" / "deck" / "examples"
+DECKS_DIR = Path(__file__).resolve().parents[2] / "modules" / "web_verification" / "phases" / "deck" / "examples"
 
 
 def _deck(slug: str) -> Path:

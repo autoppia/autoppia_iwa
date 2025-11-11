@@ -38,7 +38,7 @@ full copy of **Project 4 (Autodining)** as the canonical example.
    - Keep the per-project `docker-compose.yml` runnable locally
 3. When ready, submit the repo. Autoppia’s pipeline will:
    - Clone the repo
-   - Run `python -m modules.web_verification.entrypoints.generate_module projects/<slug>/config.yaml`
+   - Run `python -m modules.web_verification generate-module projects/<slug>/config.yaml`
    - Execute Phase 1/2 checks (deck + Playwright)
    - Deploy the Docker Compose stack to sandbox if both phases pass
 
@@ -50,7 +50,7 @@ frontend selectors must be adjusted.
 To validate the extractor logic against a real project:
 
 ```bash
-python -m modules.web_verification.entrypoints.generate_module \
+python -m modules.web_verification generate-module \
   --config web_project_template/projects/autodining/config.yaml \
   --output-root modules/web_verification/sandbox_analysis/generated_projects \
   --force
@@ -68,7 +68,7 @@ verify that events, use cases, and prompts align with the real project.
 Once your repo exposes `config.yaml`, you (or the Autoppia bot) can run:
 
 ```bash
-python -m modules.web_verification.entrypoints.verify \
+python -m modules.web_verification verify \
   --config web_project_template/projects/autodining/config.yaml \
   --deck path/to/deck.deck.json
 ```

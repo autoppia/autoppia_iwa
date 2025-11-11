@@ -9,7 +9,6 @@ from autoppia_iwa.config.config import (
     CHUTES_MODEL,
     CHUTES_TEMPERATURE,
     CHUTES_USE_BEARER,
-    GENERATE_MILESTONES,
     LLM_PROVIDER,
     OPENAI_API_KEY,
     OPENAI_MAX_TOKENS,
@@ -28,9 +27,6 @@ class DIContainer(containers.DeclarativeContainer):
 
     # LLM Service provider using Factory pattern
     llm_service = providers.Singleton(lambda: DIContainer._get_llm_service())
-
-    # Milestone Configuration
-    generate_milestones = GENERATE_MILESTONES
 
     @classmethod
     def register_service(cls, service_name: str, service_instance):

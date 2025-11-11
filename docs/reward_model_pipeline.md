@@ -3,6 +3,11 @@
 This document summarises the end-to-end process for training and integrating the
 learned reward model that augments binary test rewards during PPO training.
 
+> **New:** the ingestion + preparation pieces now live under
+> `autoppia_iwa/src/rl/score_model/pipeline/`. See
+> [`docs/score_model_pipeline.md`](score_model_pipeline.md) for the detailed phase
+> breakdown and CLI usage.
+
 ## Directory overview
 
 ```
@@ -21,11 +26,11 @@ data/rm/               # Reward model data (raw dumps, cached artefacts)
 
 ## Quick data collection
 
-If you have access to the production task API you can mirror fresh evaluations
+If you have access to the leaderboard API you can mirror fresh evaluations
 before running the reward-model builders. See `docs/prod_data_ingestion.md` for
-the full API reference and the `fetch_prod_data.py` helper.
+details on pulling datasets with `build_score_model_training_dataset.py`.
 
-Otherwise, run a tiny benchmark batch with JS instrumentation enabled to populate `data/rm/raw_traces`:
+Otherwise, run a tiny benchmark batch with JS instrumentation enabled to populate `data/rm/raw_traces`, or replay real leaderboard solutions via `replay_leaderboard_solutions.py` (recommended for production-like data):
 
 ```bash
 python -m autoppia_iwa.src.rl.agent.entrypoints.collect_js_traces --projects autobooks autocalendar --runs 1 --prompts-per-use-case 1
@@ -119,3 +124,8 @@ Override `--output-dir` or `--capture-screenshots` to tweak what goes into each 
 - Preference sampling parameters can be tuned in `autoppia_iwa/src/rl/score_model/configs/rm_train.yaml`.
 - The reward wrapper expects HTML and URL at each step; plug into
   `IWAWebEnv.step` after snapshot retrieval.
+```bash
+python -m autoppia_iwa.src.rl.score_model.cli.replay_leaderboard_solutions \
+    --dataset data/score_model_pipeline/datasets/leaderboard_full_20251110_234743.jsonl \
+    --output-dir data/score_model_pipeline/raw_traces/leaderboard_full_20251110_234743
+```

@@ -22,7 +22,14 @@ from sklearn.metrics import (
 )
 from torch.utils.data import DataLoader
 
-from ..datasets.loaders import RewardDataset, _load_vector
+try:  # pragma: no cover
+    from tqdm import tqdm
+except Exception as exc:  # pragma: no cover
+    raise RuntimeError(
+        "tqdm is required for evaluate_reward_model. Install it in your environment (pip install tqdm)."
+    ) from exc
+
+from ..datasets.loaders import FEATURE_DIR, PAIRS_PATH, RewardDataset, _load_vector
 from ..training.train_reward_model import RewardConfig, RewardModel, load_config
 from ..utils import config_path as get_config_path
 
@@ -89,11 +96,12 @@ def _evaluate_success_head(model: RewardModel, dataset: RewardDataset, batch_siz
     return metrics
 
 
-def _evaluate_preference_head(model: RewardModel, cfg: RewardConfig, pairs_path: Path) -> dict[str, float]:
-    if not pairs_path.exists():
+def _evaluate_preference_head(model: RewardModel, cfg: RewardConfig, pairs_path: Path | None = None) -> dict[str, float]:
+    target_path = pairs_path or PAIRS_PATH
+    if not target_path.exists():
         return {}
 
-    rows = [json.loads(line) for line in pairs_path.read_text().splitlines() if line.strip()]
+    rows = [json.loads(line) for line in target_path.read_text().splitlines() if line.strip()]
     if not rows:
         return {}
 
@@ -102,10 +110,11 @@ def _evaluate_preference_head(model: RewardModel, cfg: RewardConfig, pairs_path:
     if not eval_rows:
         eval_rows = rows
 
+    iterator = tqdm(eval_rows, desc="Pref eval", unit="pair") if tqdm is not None else eval_rows
     win = 0
     total = 0
     with torch.no_grad():
-        for row in eval_rows:
+        for row in iterator:
             x_pos = _load_vector(row["pos_id"])
             x_neg = _load_vector(row["neg_id"])
             out_pos = model(x_pos.unsqueeze(0))
@@ -116,7 +125,7 @@ def _evaluate_preference_head(model: RewardModel, cfg: RewardConfig, pairs_path:
     return {"pref_win_rate": win / max(1, total), "pairs_evaluated": total}
 
 
-def evaluate(config_path: Path, checkpoint: Path | None) -> None:
+def evaluate(config_path: Path, checkpoint: Path | None, pairs_path: Path | None = None) -> None:
     cfg = load_config(config_path)
     checkpoint = checkpoint if checkpoint is not None else cfg.ckpt_path
     model = _load_model(cfg, checkpoint)
@@ -137,7 +146,7 @@ def evaluate(config_path: Path, checkpoint: Path | None) -> None:
                 value = metrics[name]
                 print(f"  {name:>12}: {value:.4f}")
 
-    pref_metrics = _evaluate_preference_head(model, cfg, Path("data/rm/pairs/pairs.jsonl"))
+    pref_metrics = _evaluate_preference_head(model, cfg, pairs_path)
     if pref_metrics:
         print("\nPreference-head metrics:")
         for name, value in pref_metrics.items():
@@ -161,8 +170,14 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help="Override checkpoint path (defaults to cfg.ckpt_path).",
     )
+    parser.add_argument(
+        "--pairs",
+        type=Path,
+        default=None,
+        help="Optional path to preference pairs JSONL (defaults to SCORE_MODEL_PAIRS_PATH env).",
+    )
     args = parser.parse_args(argv)
-    evaluate(args.config, args.checkpoint)
+    evaluate(args.config, args.checkpoint, args.pairs)
 
 
 if __name__ == "__main__":

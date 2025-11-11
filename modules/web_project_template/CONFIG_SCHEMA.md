@@ -1,6 +1,6 @@
 # Config Schema
 
-`python -m modules.web_verification.entrypoints.generate_module` accepts either **YAML** (`.yml`/`.yaml`) or
+`python -m modules.web_verification generate-module` accepts either **YAML** (`.yml`/`.yaml`) or
 **JSON** configs with the following structure. All fields are required unless
 noted.
 

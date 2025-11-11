@@ -2,20 +2,9 @@
 Web verification utilities (deck module generation, screenshot capture, etc.).
 """
 
-from .module_generator import ConfigError, ModuleGenerator, generate_module_from_config, load_config
-from .run_deck_pipeline import evaluate_project
-from .screenshot_capture import capture_pages, capture_sync
-from .sandbox_analysis import (
-    DatasetEntry,
-    SolutionRecord,
-    compute_project_metrics,
-    compute_seed_variability,
-    detect_agent_memorization,
-    find_trivial_tasks,
-    find_unresolved_tasks,
-    load_dataset,
-)
-from .verify_project import (
+from .phases.procedural.module_generator import ConfigError, ModuleGenerator, generate_module_from_config, load_config
+from .phases.procedural.run_deck_pipeline import evaluate_project
+from .phases.procedural.verify_project import (
     AnalysisSection,
     ProjectReport,
     SECTION_DECK,
@@ -27,7 +16,18 @@ from .verify_project import (
     SECTION_USE_CASES,
     verify_project,
 )
-from .visual_inspector import SCREENSHOT_DIR as VISUAL_INSPECTOR_SCREENSHOT_DIR, run_inspector
+from .phases.visual.screenshot_capture import capture_pages, capture_sync
+from .phases.visual.visual_inspector import SCREENSHOT_DIR as VISUAL_INSPECTOR_SCREENSHOT_DIR, run_inspector
+from .phases.sandbox import (
+    DatasetEntry,
+    SolutionRecord,
+    compute_project_metrics,
+    compute_seed_variability,
+    detect_agent_memorization,
+    find_trivial_tasks,
+    find_unresolved_tasks,
+    load_dataset,
+)
 
 __all__ = [
     "ConfigError",

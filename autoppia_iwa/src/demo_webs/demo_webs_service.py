@@ -126,6 +126,7 @@ class BackendDemoWebService:
 
         if self._should_use_proxy_api():
             try:
+                logger.info(f"Calling {self._proxy_base_url()}")
                 endpoint = f"{self._proxy_base_url()}/get_events/"
                 params = {
                     "web_url": self.base_url.rstrip("/"),

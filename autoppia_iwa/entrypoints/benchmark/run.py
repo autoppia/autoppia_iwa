@@ -56,8 +56,13 @@ SOTA_AGENTS = [
 
 # Active agents to run. Configure your local simple_api agent here.
 AGENTS = [
-    ApifiedWebAgent(id="openai-cua", name="OpenAI CUA (local)",
-                    host="127.0.0.1", port=13111, timeout=400)
+    ApifiedWebAgent(
+        id="autoppia-agent-1",
+        name="AutoppiaAgent1",
+        host="149.102.131.200",
+        port=7000,
+        timeout=120,
+    )
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)

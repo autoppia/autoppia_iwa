@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from modules.web_verification.verify_project import SECTION_PROCEDURAL, verify_project
+from modules.web_verification.phases.procedural.verify_project import SECTION_PROCEDURAL, verify_project
 
 PROJECTS_DIR = Path("autoppia_iwa/src/demo_webs/projects")
 PROJECT_SLUGS = sorted(

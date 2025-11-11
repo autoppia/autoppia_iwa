@@ -1,10 +1,13 @@
 # Prod Task/Solution Ingestion
 
 Use this guide to mirror production task activity into the local reward-model
-dataset. The workflow is:
+dataset. The workflow is now fully driven by the leaderboard endpoint so we can
+pull canonical `task+solution+score` tuples without juggling multiple services:
 
-1. Fetch tasks + solutions from the production API into `data/rm/raw_evaluations/`.
-2. Run the usual reward-model builders (`make_splits.py`, `build_obs_and_labels.py`, etc.).
+1. Fetch tasks + solutions from `https://api-leaderboard.autoppia.com/api/v1/tasks/with-solutions`.
+2. Store the raw dump under `data/score_model_pipeline/raw/`.
+3. Reuse the prepared dataset (`build_score_model_training_dataset.py`) for
+   feature extraction + training.
 
 ## API access
 
@@ -116,34 +119,54 @@ curl -H "Authorization: Bearer $TOKEN" \
      "$BASE_URL/tasks/task_123/solutions?page=1&page_size=50"
 ```
 
-## Downloader CLI
+## Leaderboard-powered CLI
 
-Use `autoppia_iwa/src/rl/score_model/cli/fetch_prod_data.py` to mirror tasks +
-solutions into the repo:
+Use `autoppia_iwa/src/rl/score_model/cli/build_score_model_training_dataset.py`
+to mirror leaderboard data straight into the new pipeline directories:
 
 ```bash
-export AUTOPPIA_PROD_BASE_URL="https://your.host/api"
-export AUTOPPIA_PROD_API_TOKEN="secret"
-
-python -m autoppia_iwa.src.rl.score_model.cli.fetch_prod_data \
-    --task-status done --task-status partial \
-    --task-page-size 200 \
-    --solution-page-size 200 \
-    --output data/rm/raw_evaluations/prod_tasks.jsonl
+python -m autoppia_iwa.src.rl.score_model.cli.build_score_model_training_dataset \
+    --website autocinema --website autobooks \
+    --success true --success false \
+    --pages-per-filter 5 \
+    --limit 200 \
+    --dedupe-strategy task_solution
 ```
 
 Flags:
 
 | Flag | Description |
 |------|-------------|
-| `--task-status` | Repeatable status filters (defaults to `done`). |
-| `--max-tasks` | Limit number of tasks for smoke tests. |
-| `--include-empty` | Keep tasks without solutions. |
-| `--sleep-ms` | Backoff between paged requests. |
+| `--website`, `--use-case`, `--miner-uid` | Repeatable filters to avoid duplicate pulls. |
+| `--success` | `true`, `false`, or `all` to control pass/fail coverage. |
+| `--pages-per-filter` / `--limit` | Pagination knobs (limit ≤ 500). |
+| `--output-prefix` | Custom filename prefix for datasets + metrics. |
 
-Each JSONL row contains `{ "task": {...}, "solutions": [...], "fetched_at": "..." }`.
-Point downstream scripts (e.g. `make_splits.py`) at this raw dump once you wire
-the conversion into `EvaluationEpisode` format.
+Outputs land in:
+
+- `data/score_model_pipeline/raw/<prefix>.jsonl` – raw leaderboard payload.
+- `data/score_model_pipeline/datasets/<prefix>.jsonl` – flattened samples for training.
+- `data/score_model_pipeline/metrics/<prefix>.json` – summary counts/filters.
+
+Downstream scripts (`build_dom_event_features.py`, `train_reward_model.py`, etc.)
+can now consume the `datasets/*.jsonl` files directly without rebuilding ad-hoc
+splits.
+
+## Replaying solutions for DOM/JS traces
+
+To capture per-action DOM snapshots, JS events, backend payloads, and optional
+screenshots, replay the flattened dataset through the instrumented evaluator:
+
+```bash
+python -m autoppia_iwa.src.rl.score_model.cli.replay_leaderboard_solutions \
+  --dataset data/score_model_pipeline/datasets/leaderboard_full_20251110_234743.jsonl \
+  --output-dir data/score_model_pipeline/raw_traces/leaderboard_full_20251110_234743 \
+  --limit 2000 --per-website-limit 300
+```
+
+Those traces live under `output-dir` and plug directly into
+`build_dom_event_features.py`, enabling feature sets based on actual DOM diffs
+and runtime events instead of text-only summaries.
 
 ## Gotchas
 

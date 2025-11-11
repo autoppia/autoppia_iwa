@@ -315,22 +315,20 @@ class IWAWebEnv(gym.Env):
         partial = self._evaluator.get_partial_score()
         logger.info(f"ENV.step: partial done tests={partial.tests_passed}/{partial.total_tests}")
 
-        # Reward shaping simple: delta tests + pequeño step_penalty, penaliza inválidas
-        prev = self._last_partial
-        delta = 0.0
-        if partial.total_tests > 0 and prev.total_tests == partial.total_tests:
-            delta = max(0.0, float(partial.tests_passed - prev.tests_passed) / max(1, partial.total_tests))
-        reward = float(delta - 0.001 - (0.05 if invalid else 0.0))
-        if partial.success:
-            reward += 1.0
-        base_reward = reward
-        shaped_reward = reward
+        # Reward = partial raw score blended with reward model. Override to 1.0 on global success.
+        base_reward = float(partial.raw_score)
+        step_penalty = 0.001
+        invalid_penalty = 0.05 if invalid else 0.0
+        base_reward = max(0.0, base_reward - step_penalty - invalid_penalty)
+        shaped_reward = base_reward
         if self._reward_blender:
             try:
-                shaped_reward = float(self._reward_blender.step_reward(url or "", html or "", reward))
+                shaped_reward = float(self._reward_blender.step_reward(url or "", html or "", base_reward))
             except Exception as e:
                 logger.warning(f"RewardBlender shaping failed: {e}")
-                shaped_reward = reward
+                shaped_reward = base_reward
+        if partial.success:
+            shaped_reward = 1.0
 
         self._last_partial = partial
         terminated = bool(partial.success)

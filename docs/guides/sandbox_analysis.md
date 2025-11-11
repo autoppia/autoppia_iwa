@@ -1,6 +1,6 @@
 # Sandbox Dataset Analysis
 
-Use `python -m modules.web_verification.entrypoints.analyze_sandbox` to audit datasets collected from sandbox miners/agents.
+Use `python -m modules.web_verification analyze-sandbox` to audit datasets collected from sandbox miners/agents.
 
 ## Dataset format
 
@@ -14,7 +14,7 @@ Use `python -m modules.web_verification.entrypoints.analyze_sandbox` to audit da
 ## Running the analyzer
 
 ```bash
-python -m modules.web_verification.entrypoints.analyze_sandbox data/sandbox_dump.json \
+python -m modules.web_verification analyze-sandbox data/sandbox_dump.json \
   --report data/sandbox_analysis_report.json \
   --success-threshold 0.99 \
   --sample 5
