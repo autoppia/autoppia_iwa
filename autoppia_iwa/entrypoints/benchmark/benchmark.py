@@ -7,6 +7,7 @@ from collections import defaultdict
 from loguru import logger
 
 from autoppia_iwa.config.config import VALIDATOR_ID
+from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.entrypoints.benchmark.utils.results import plot_results, save_results_to_json
@@ -20,7 +21,6 @@ from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
-from .config import BenchmarkConfig
 from .task_generation import generate_tasks_for_project
 
 visualizer = SubnetVisualizer()

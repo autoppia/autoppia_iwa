@@ -5,6 +5,29 @@ import time
 from collections import defaultdict
 
 from loguru import logger
+from playwright.async_api import async_playwright
+
+from autoppia_iwa.config.config import EVALUATOR_HEADLESS, VALIDATOR_ID
+from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
+from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
+from autoppia_iwa.src.evaluation.evaluator.utils import (
+    display_single_evaluation_summary,
+    extract_seed_from_url,
+    generate_feedback,
+    hash_actions,
+    initialize_test_results,
+    log_progress,
+    make_gif_from_screenshots,
+    run_global_tests,
+)
+from autoppia_iwa.src.evaluation.interfaces import IEvaluator
+from autoppia_iwa.src.execution.actions.actions import NavigateAction
+from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
+from autoppia_iwa.src.execution.classes import ActionExecutionResult
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
 EVALUATION_LEVEL_NO = 25
@@ -53,31 +76,6 @@ def _log_evaluation_event(message: str, context: str = "GENERAL"):
         log_evaluation_event(message, context=context)
     except ImportError:
         _log_evaluation_fallback(message if context == "GENERAL" else f"[{context}] {message}")
-
-
-from playwright.async_api import async_playwright
-
-from autoppia_iwa.config.config import EVALUATOR_HEADLESS, VALIDATOR_ID
-from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification, Task
-from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
-from autoppia_iwa.src.evaluation.evaluator.utils import (
-    display_single_evaluation_summary,
-    extract_seed_from_url,
-    generate_feedback,
-    hash_actions,
-    initialize_test_results,
-    log_progress,
-    make_gif_from_screenshots,
-    run_global_tests,
-)
-from autoppia_iwa.src.evaluation.interfaces import IEvaluator
-from autoppia_iwa.src.execution.actions.actions import NavigateAction
-from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor
-from autoppia_iwa.src.execution.classes import ActionExecutionResult
-from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 class ConcurrentEvaluator(IEvaluator):

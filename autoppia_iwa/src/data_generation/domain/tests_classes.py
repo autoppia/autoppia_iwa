@@ -369,6 +369,8 @@ class JudgeBaseOnHTML(BaseTaskTest):
         except Exception:
             result_str = result
 
+        logger.info(f"HTML Judge LLM response: {result_str}")
+
         match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
         final_result = match.group(1).lower() == "true" if match else False
         save_usage_record(task_prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
@@ -406,7 +408,11 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         """
         user_msg = f"Task: '{prompt}'\nSuccess Criteria: '{self.success_criteria}'"
 
-        screenshots_after = [snap.screenshot_after for snap in browser_snapshots[-4:]]
+        screenshots_after = [snap.screenshot_after for snap in browser_snapshots[-4:] if snap.screenshot_after]
+        if not screenshots_after:
+            logger.warning("No screenshots found in the latest browser snapshots.")
+            return False
+
         screenshot_content = [{"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{screenshot}"}} for screenshot in screenshots_after]
         json_schema = ScreenshotTestResponse.model_json_schema()
         formatted_sys_msg = SCREENSHOT_TEST_SYSTEM_PROMPT.format(json_schema=json_schema)
@@ -423,8 +429,9 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
         except Exception:
             result_str = result
 
-        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
+        logger.info(f"Screenshots Judge LLM response: {result_str}")
 
+        match = re.search(r'"evaluation_result"\s*:\s*(true|false)', result_str, re.IGNORECASE)
         final_result = match.group(1).lower() == "true" if match else False
         save_usage_record(prompt, result, duration, self.type, final_result=final_result, total_iteration=total_iteration)
 

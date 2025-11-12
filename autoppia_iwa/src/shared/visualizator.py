@@ -253,7 +253,7 @@ class SubnetVisualizer:
 
             attributes["content"] = test.content
 
-        elif "HTML" in test_type or test_type == "JudgeBaseOnHTML" or test_type == "OpinionBasedHTMLTest":
+        elif "HTML" in test_type or test_type in ["JudgeBaseOnHTML", "OpinionBasedHTMLTest", "JudgeBaseOnScreenshot"]:
             # For HTML opinion tests, show the success criteria
             if hasattr(test, "success_criteria"):
                 criteria = test.success_criteria
@@ -262,7 +262,7 @@ class SubnetVisualizer:
                 description = f"Success criteria: '{criteria}'"
             elif hasattr(test, "query"):
                 description = f"Query: '{test.query}'"
-
+            attributes["success_criteria"] = test.success_criteria if hasattr(test, "success_criteria") else test.query if hasattr(test, "query") else ""
         elif "Event" in test_type or test_type == "CheckEventTest":
             # For event tests, show the event name
             if hasattr(test, "event_name"):
