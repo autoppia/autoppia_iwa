@@ -41,8 +41,7 @@ class AgentConfig(BaseModel):
     use_cases: list[str] | None = None
     timeout: int = 120
     should_record_gif: bool = False
-    enable_dynamic_html: bool = False
-    enable_dynamic_structure: bool = False
+    dynamic: list[str] = []  # Array of v1, v2, v3 (or combinations)
 
 
 @app.post("/test-your-agent")
@@ -90,8 +89,7 @@ async def test_your_agent(config: AgentConfig):
             record_gif=config.should_record_gif,
             save_results_json=False,
             plot_results=False,
-            enable_dynamic_html=config.enable_dynamic_html,
-            enable_dynamic_structure=config.enable_dynamic_structure,
+            dynamic=config.dynamic,
         )
 
         # Run the benchmark

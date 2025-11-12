@@ -4,7 +4,7 @@ import uuid
 from typing import Annotated, Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 # Import your test classes:
 from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
@@ -42,13 +42,32 @@ class Task(BaseModel):
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     use_case: Any = Field(default=None, description="UseCase instance associated with this task")
     should_record: bool = False
-    assign_seed: bool = True
+    dynamic: list[str] = Field(default_factory=lambda: ["v1"], description="Array of dynamic features to apply: v1 (assign seed), v2 (future), v3 (assign seed structure). Can select any combination.")
 
     _original_prompt: str = PrivateAttr()
     _seed_value: int = PrivateAttr()
     _seed_structure_value: int = PrivateAttr()
 
     model_config = {"extra": "allow", "arbitrary_types_allowed": True}
+
+    @field_validator("dynamic")
+    @classmethod
+    def validate_dynamic(cls, v: list[str]) -> list[str]:
+        """Validate that dynamic array only contains v1, v2, or v3."""
+        valid_values = {"v1", "v2", "v3"}
+        if not isinstance(v, list):
+            raise ValueError("dynamic must be a list")
+        invalid_values = [val for val in v if val not in valid_values]
+        if invalid_values:
+            raise ValueError(f"dynamic array can only contain 'v1', 'v2', or 'v3'. Found invalid values: {invalid_values}")
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_list = []
+        for val in v:
+            if val not in seen:
+                seen.add(val)
+                unique_list.append(val)
+        return unique_list
 
     def __init__(self, **data):
         original_prompt = data.get("original_prompt", data.get("prompt", ""))
@@ -70,10 +89,10 @@ class Task(BaseModel):
 
     def assign_seed_to_url(self) -> None:
         """
-        Assign a random seed to the task URL if assign_seed is True.
+        Assign a random seed to the task URL if v1 is in dynamic array.
         Avoids overwriting an existing seed or breaking query structure.
         """
-        if self.assign_seed:
+        if "v1" in self.dynamic:
             if self._seed_value is None:
                 object.__setattr__(self, "_seed_value", random.randint(0, 300))
 
@@ -90,10 +109,10 @@ class Task(BaseModel):
 
     def assign_seed_structure_to_url(self) -> None:
         """
-        Assign a random seed-structure to the task URL if assign_seed is True.
+        Assign a random seed-structure to the task URL if v3 is in dynamic array.
         Avoids overwriting an existing seed-structure or breaking query structure.
         """
-        if self.assign_seed:
+        if "v3" in self.dynamic:
             if self._seed_structure_value is None:
                 object.__setattr__(self, "_seed_structure_value", random.randint(0, 300))
 

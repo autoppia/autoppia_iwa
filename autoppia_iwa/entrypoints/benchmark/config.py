@@ -34,9 +34,9 @@ class BenchmarkConfig:
     save_results_json: bool = True
     plot_results: bool = False
 
-    # Dynamic HTML
-    enable_dynamic_html: bool = False
-    enable_dynamic_structure: bool = False
+    # Dynamic features: array of v1, v2, v3 (or combinations)
+    # v1 = assign seed, v2 = future, v3 = assign seed structure
+    dynamic: list[str] = field(default_factory=lambda: [])
 
     # Visualization
     enable_visualization: bool = True
@@ -60,6 +60,12 @@ class BenchmarkConfig:
 
         if not self.agents:
             logger.warning("No agents configured - benchmark will not run")
+
+        # Validate dynamic array
+        valid_values = {"v1", "v2", "v3"}
+        invalid_values = [val for val in self.dynamic if val not in valid_values]
+        if invalid_values:
+            raise ValueError(f"dynamic array can only contain 'v1', 'v2', or 'v3'. Found invalid values: {invalid_values}")
 
         self.data_dir = self.base_dir / "data"
         self.tasks_cache_dir = self.data_dir / "tasks_cache"

@@ -62,9 +62,9 @@ CFG = BenchmarkConfig(
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic HTML
-    enable_dynamic_html=False,
-    enable_dynamic_structure=True,
+    # Dynamic features: array of v1, v2, v3 (or combinations)
+    # v1 = assign seed, v2 = future, v3 = assign seed structure
+    dynamic=["v3"],  # Example: ["v1"], ["v3"], ["v1", "v3"], etc.
     # Persistence
     save_results_json=True,
     plot_results=False,
