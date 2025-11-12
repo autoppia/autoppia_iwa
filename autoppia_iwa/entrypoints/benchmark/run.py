@@ -64,7 +64,7 @@ CFG = BenchmarkConfig(
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic features: array of v1, v2, v3 (or combinations)
     # v1 = assign seed, v2 = future, v3 = assign seed structure
-    dynamic=["v3"],  # Example: ["v1"], ["v3"], ["v1", "v3"], etc.
+    dynamic=["v1"],  # Example: ["v1"], ["v3"], ["v1", "v3"], etc.
     # Persistence
     save_results_json=True,
     plot_results=False,

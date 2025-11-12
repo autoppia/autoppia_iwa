@@ -42,7 +42,7 @@ class Task(BaseModel):
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     use_case: Any = Field(default=None, description="UseCase instance associated with this task")
     should_record: bool = False
-    dynamic: list[str] = Field(default_factory=lambda: ["v1"], description="Array of dynamic features to apply: v1 (assign seed), v2 (future), v3 (assign seed structure). Can select any combination.")
+    dynamic: list[str] = Field(default_factory=list, description="Array of dynamic features to apply: v1 (assign seed), v2 (future), v3 (assign seed structure). Can select any combination.")
 
     _original_prompt: str = PrivateAttr()
     _seed_value: int = PrivateAttr()
@@ -76,6 +76,8 @@ class Task(BaseModel):
         # Don't add seed automatically - let the benchmark decide when to add it
         object.__setattr__(self, "_seed_value", None)
         object.__setattr__(self, "_seed_structure_value", None)
+        # Automatically apply dynamic features to URL
+        self._apply_dynamic_to_url()
 
     @property
     def prompt_with_relevant_data(self) -> str:
@@ -86,6 +88,17 @@ class Task(BaseModel):
     @property
     def original_prompt(self) -> str:
         return self._original_prompt
+
+    def _apply_dynamic_to_url(self) -> None:
+        """
+        Automatically apply all dynamic features to the URL based on the dynamic array.
+        This is called automatically after Task initialization.
+        """
+        if "v1" in self.dynamic:
+            self.assign_seed_to_url()
+        if "v3" in self.dynamic:
+            self.assign_seed_structure_to_url()
+        # v2 is reserved for future implementations
 
     def assign_seed_to_url(self) -> None:
         """

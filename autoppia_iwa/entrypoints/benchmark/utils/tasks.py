@@ -99,12 +99,8 @@ async def generate_tasks_for_web_project(
             # Configure cached tasks with dynamic features
             for task in cached_tasks:
                 task.dynamic = dynamic
-
-                # Apply dynamic features based on array
-                if "v1" in dynamic:
-                    task.assign_seed_to_url()
-                if "v3" in dynamic:
-                    task.assign_seed_structure_to_url()
+                # Re-apply dynamic features to URL after setting dynamic array
+                task._apply_dynamic_to_url()
             return cached_tasks
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
@@ -116,16 +112,10 @@ async def generate_tasks_for_web_project(
     tasks = await pipeline.generate()
 
     if tasks:
-        # Configure tasks with dynamic features
+        # Set dynamic array and apply to URL for newly generated tasks
         for task in tasks:
             task.dynamic = dynamic
-
-            # Apply dynamic features based on array
-            if "v1" in dynamic:
-                task.assign_seed_to_url()
-            if "v3" in dynamic:
-                task.assign_seed_structure_to_url()
-
+            task._apply_dynamic_to_url()
         await save_tasks_to_json(tasks, project, task_cache_dir)
 
     return tasks
