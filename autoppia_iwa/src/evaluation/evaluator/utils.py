@@ -389,7 +389,7 @@ def make_gif_from_screenshots(all_base64_strings, duration_ms=500, loop_count=0)
             append_images=pil_images[1:],  # Append the rest of the images
             duration=duration_ms,  # Time per frame in milliseconds
             loop=loop_count,  # 0 for infinite loop
-            optimize=False,  # Set to True for smaller file size, but longer processing & potential quality loss
+            optimize=True,  # Optimize for smaller file size (ENABLED to avoid 413 errors)
             # 2: Graphic is to be restored to background color before rendering next frame.
             disposal=1,
             # Use 1 if frames should not be disposed (e.g., drawn on top of each other).
