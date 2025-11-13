@@ -5,6 +5,8 @@ from typing import Any
 
 from dateutil import parser
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -19,6 +21,31 @@ from .data import (
     PLACES,
     RIDES,
 )
+from .main import FRONTEND_PORT_INDEX, drive_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{drive_project.id}"
+
+
+async def _get_places(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=drive_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type="places",
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+    )
+    return items if items else PLACES
+
+
+async def _get_rides(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=drive_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type="rides",
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+    )
+    return items if items else RIDES
 
 
 def _generate_constraint_value(
@@ -232,27 +259,27 @@ def _generate_constraints(
     return all_constraints
 
 
-def generate_enter_location_constraints() -> list[dict[str, Any]]:
+async def generate_enter_location_constraints() -> list[dict[str, Any]]:
     field_map = {"location": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_LOCATION
-    constraints_list = _generate_constraints(PLACES, field_operators, field_map=field_map)
+    constraints_list = _generate_constraints(await _get_places(), field_operators, field_map=field_map)
     return constraints_list
 
 
-def generate_enter_destination_constraints() -> list[dict[str, Any]]:
+async def generate_enter_destination_constraints() -> list[dict[str, Any]]:
     field_map = {"destination": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_DESTINATION
-    constraints_list = _generate_constraints(PLACES, field_operators, field_map=field_map)
+    constraints_list = _generate_constraints(await _get_places(), field_operators, field_map=field_map)
     return constraints_list
 
 
-def generate_see_prices_constraints() -> list[dict[str, Any]]:
+async def generate_see_prices_constraints() -> list[dict[str, Any]]:
     field_mapping = {
-        "location": {"field": "label", "dataset": PLACES},
-        "destination": {"field": "label", "dataset": PLACES},
+        "location": {"field": "label", "dataset": await _get_places()},
+        "destination": {"field": "label", "dataset": await _get_places()},
     }
     field_operators = FIELD_OPERATORS_MAP_SEE_PRICES
-    constraints_list = _generate_constraints(PLACES, field_operators, field_mapping, num_constraints=2)
+    constraints_list = _generate_constraints(await _get_places(), field_operators, field_mapping, num_constraints=2)
     return constraints_list
 
 
@@ -384,14 +411,14 @@ def _create_scheduled_constraint(field, ops):
     return constraint
 
 
-def generate_search_ride_constraints() -> list[dict[str, Any]]:
+async def generate_search_ride_constraints() -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
 
     field_map = {
-        "location": {"field": "label", "dataset": PLACES},
-        "destination": {"field": "label", "dataset": PLACES},
+        "location": {"field": "label", "dataset": await _get_places()},
+        "destination": {"field": "label", "dataset": await _get_places()},
     }
-    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])
+    constraints_list = _generate_constraints(await _get_places(), field_ops, field_map=field_map, selected_fields=["location", "destination"])
 
     if "scheduled" in FIELD_OPERATORS_MAP_SEARCH_RIDE:
         ops = FIELD_OPERATORS_MAP_SEARCH_RIDE["scheduled"]
@@ -401,20 +428,22 @@ def generate_search_ride_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_select_car_constraints() -> list[dict[str, Any]]:
+async def generate_select_car_constraints() -> list[dict[str, Any]]:
     fields_ops = FIELD_OPERATORS_MAP_SELECT_CAR.copy()
     scheduled_ops = fields_ops.pop("scheduled")
     field_map = {
         "location": "label",
         "destination": "label",
-        "ride_name": {"field": "name", "dataset": RIDES},
+        "ride_name": {"field": "name", "dataset": await _get_rides()},
     }
-    constraints_list = _generate_constraints(PLACES, fields_ops, field_map=field_map, selected_fields=["location", "destination", "ride_name"], num_constraints=3)  # selected_fields=["ride_name"]
+    constraints_list = _generate_constraints(
+        await _get_places(), fields_ops, field_map=field_map, selected_fields=["location", "destination", "ride_name"], num_constraints=3
+    )  # selected_fields=["ride_name"]
     constraints_list.append(_create_scheduled_constraint("scheduled", scheduled_ops))
     return constraints_list
 
 
-def generate_reserve_ride_constraints() -> list[dict[str, Any]]:
-    constraints_list = generate_select_car_constraints()
+async def generate_reserve_ride_constraints() -> list[dict[str, Any]]:
+    constraints_list = await generate_select_car_constraints()
 
     return constraints_list

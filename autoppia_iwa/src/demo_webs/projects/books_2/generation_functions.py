@@ -2,8 +2,29 @@ import random
 from random import choice, randint, sample, uniform
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from .data import BOOKS_DATA, FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
+from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
+from .main import FRONTEND_PORT_INDEX, books_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{books_project.id}"
+ENTITY_TYPE = "books"
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=books_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=ENTITY_TYPE,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+    )
+    if items:
+        return items
+    from .data import BOOKS_DATA
+
+    return BOOKS_DATA
 
 
 def generate_registration_constraints():
@@ -45,7 +66,7 @@ def generate_logout_constraints():
     return parse_constraints_str(constraints_str)
 
 
-def generate_book_constraints():
+async def generate_book_constraints():
     """
     Generates constraints specifically for book-related use cases.
     Returns the constraints as structured data.
@@ -53,7 +74,7 @@ def generate_book_constraints():
     from .utils import build_constraints_info, parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = build_constraints_info(BOOKS_DATA)
+    constraints_str = build_constraints_info(await _get_data())
 
     # Convertir el string a la estructura de datos
     if constraints_str:
@@ -77,14 +98,14 @@ def generate_delete_book_constraints():
     return None
 
 
-def generate_search_book_constraints():
+async def generate_search_book_constraints():
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
     from .utils import parse_constraints_str
 
-    books_names = [book["name"] for book in BOOKS_DATA]
+    books_names = [book["name"] for book in await _get_data()]
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(books_names)}"
     return parse_constraints_str(constraints_str)
@@ -169,14 +190,14 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
-def generate_book_filter_constraints():
+async def generate_book_filter_constraints():
     """
     Genera una combinación de constraints para filtrado de películas
     usando los años y géneros reales de las películas.
     """
-    existing_years = list(set(book["year"] for book in BOOKS_DATA))
-
-    existing_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
+    data_items = await _get_data()
+    existing_years = list(set(book["year"] for book in data_items))
+    existing_genres = list(set(genre for book in data_items for genre in book["genres"]))
 
     generation_type = choice(["single_genre", "single_year", "genre_and_year"])
 
@@ -411,13 +432,13 @@ def generate_constraint_from_solution(book: dict, field: str, operator: Comparis
     return None
 
 
-def generate_add_comment_constraints():
+async def generate_add_comment_constraints():
     """
     Genera combinaciones de constraints para añadir comentarios.
     """
 
     # Películas disponibles
-    books = [book["name"] for book in BOOKS_DATA]
+    books = [book["name"] for book in await _get_data()]
 
     # Palabras y frases para generar comentarios
     comment_keywords = [
@@ -487,7 +508,7 @@ def generate_add_comment_constraints():
     return constraints
 
 
-def generate_edit_book_constraints():
+async def generate_edit_book_constraints():
     """
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
@@ -530,7 +551,8 @@ def generate_edit_book_constraints():
         "sage",
     ]
 
-    all_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
+    data_items = await _get_data()
+    all_genres = list(set(genre for book in data_items for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
@@ -577,7 +599,7 @@ def generate_edit_book_constraints():
     return constraints
 
 
-def generate_add_book_constraints():
+async def generate_add_book_constraints():
     """
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
@@ -620,7 +642,8 @@ def generate_add_book_constraints():
         "sage",
     ]
 
-    all_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
+    data_items = await _get_data()
+    all_genres = list(set(genre for book in data_items for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
@@ -668,7 +691,7 @@ def generate_add_book_constraints():
     return constraints
 
 
-def generate_edit_profile_constraints():
+async def generate_edit_profile_constraints():
     """
     Generates constraints specifically for editing user profiles.
     Returns the constraints as structured data.
@@ -717,7 +740,8 @@ def generate_edit_profile_constraints():
         "Literary critic specializing in contemporary novels and poetry.",
         "Story lover and aspiring writer.",
     ]
-    all_genres = list(set(genre for book in BOOKS_DATA for genre in book["genres"]))
+    data_items = await _get_data()
+    all_genres = list(set(genre for book in data_items for genre in book["genres"]))
 
     # Generar constraints
     constraints = []

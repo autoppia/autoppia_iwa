@@ -3,6 +3,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
@@ -24,6 +25,22 @@ from .data import (
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
 )
+from .main import FRONTEND_PORT_INDEX, dining_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{dining_project.id}"
+ENTITY_TYPE = "restaurants"
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=dining_project.backend_url, project_key=PROJECT_KEY, entity_type=ENTITY_TYPE, seed_value=seed_value if seed_value is not None else 0, limit=count, method="shuffle"
+    )
+    if items:
+        return items
+    from .data import RESTAURANT_DATA
+
+    return RESTAURANT_DATA
+
 
 MOCK_DATES = generate_mock_dates()
 MOCK_DATE_STRINGS = generate_mock_date_strings(MOCK_DATES)
@@ -175,16 +192,22 @@ def _generate_value_for_field(field_name: str) -> Any:
 
 
 # --- Constraint Generators ---
-def generate_view_restaurant_constraints():
-    return generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
+async def generate_view_restaurant_constraints():
+    return generate_restaurant_constraints(
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4, dataset=await _get_data()
+    )
 
 
-def generate_view_full_menu_constraints():
-    return generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
+async def generate_view_full_menu_constraints():
+    return generate_restaurant_constraints(
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4, dataset=await _get_data()
+    )
 
 
-def generate_collapse_menu_constraints():
-    return generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4)
+async def generate_collapse_menu_constraints():
+    return generate_restaurant_constraints(
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4, dataset=await _get_data()
+    )
 
 
 def generate_date_dropdown_opened_constraints():
@@ -213,53 +236,65 @@ def generate_constraints_for_single_field(field: str, allowed_operators: dict[st
     return [create_constraint_dict(field, op, value)]
 
 
-def generate_book_restaurant_constraints():
-    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+async def generate_book_restaurant_constraints():
+    restaurant_constraints = generate_restaurant_constraints(
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data()
+    )
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_BOOK_RESTAURANT,
         required_fields=["people_count", "selected_date", "selected_time"],
         validate_dates=True,
+        dataset=await _get_data(),
     )
     all_constraints = restaurant_constraints + booking_contraints
     return all_constraints
 
 
-def generate_country_selected_constraints():
-    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+async def generate_country_selected_constraints():
+    restaurant_constraints = generate_restaurant_constraints(
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data()
+    )
     country_field = random.choice(["country_name", "country_code"])
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
         required_fields=[country_field],
         validate_dates=True,
+        dataset=await _get_data(),
     )
     all_constraints = restaurant_constraints + booking_contraints
 
     return all_constraints
 
 
-def generate_occasion_selected_constraints():
-    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+async def generate_occasion_selected_constraints():
+    restaurant_constraints = generate_restaurant_constraints(
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data()
+    )
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "selected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_COUNTRY_SELECTED,
         required_fields=["occasion_type"],
         validate_dates=True,
+        dataset=await _get_data(),
     )
     all_constraints = restaurant_constraints + booking_contraints
 
     return all_constraints
 
 
-def generate_reservation_complete_constraints():
-    restaurant_constraints = generate_restaurant_constraints(fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3)
+async def generate_reservation_complete_constraints():
+    restaurant_constraints = generate_restaurant_constraints(
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data()
+    )
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "country_code", "phone_number", "occasion_typeselected_date", "selected_time"],
         allowed_ops=OPERATORS_ALLOWED_RESERVATION_COMPLETE,
         required_fields=["occasion_type"],
         validate_dates=True,
         max_optional=3,
+        dataset=await _get_data(),
     )
     all_constraints = restaurant_constraints + booking_contraints
 

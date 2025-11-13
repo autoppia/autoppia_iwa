@@ -2,8 +2,30 @@ import random
 from random import choice, sample
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
-from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER, MOVIES_DATA
+from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
+from .main import FRONTEND_PORT_INDEX, cinema_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{cinema_project.id}"
+ENTITY_TYPE = "movies"
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=cinema_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=ENTITY_TYPE,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+    )
+    if items:
+        return items
+    # Fallback to static data if endpoint unavailable
+    from .data import MOVIES_DATA
+
+    return MOVIES_DATA
 
 
 def generate_registration_constraints():
@@ -44,20 +66,20 @@ def generate_logout_constraints():
     return parse_constraints_str(constraints_str)
 
 
-def generate_search_film_constraints():
+async def generate_search_film_constraints():
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
     from .utils import parse_constraints_str
 
-    movie_names = [movie["name"] for movie in MOVIES_DATA]
+    movie_names = [movie["name"] for movie in await _get_data()]
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(movie_names)}"
     return parse_constraints_str(constraints_str)
 
 
-def generate_film_constraints():
+async def generate_film_constraints():
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
@@ -65,7 +87,7 @@ def generate_film_constraints():
     from .utils import build_constraints_info, parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = build_constraints_info(MOVIES_DATA)
+    constraints_str = build_constraints_info(await _get_data())
 
     # Convertir el string a la estructura de datos
     if constraints_str:
@@ -152,16 +174,16 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
-def generate_film_filter_constraints():
+async def generate_film_filter_constraints():
     """
     Genera una combinación de constraints para filtrado de películas
     usando los años y géneros reales de las películas.
     """
     from random import choice
 
-    existing_years = list(set(movie["year"] for movie in MOVIES_DATA))
-
-    existing_genres = list(set(genre for movie in MOVIES_DATA for genre in movie["genres"]))
+    data_items = await _get_data()
+    existing_years = list(set(movie["year"] for movie in data_items))
+    existing_genres = list(set(genre for movie in data_items for genre in movie["genres"]))
 
     generation_type = choice(["single_genre", "single_year", "genre_and_year"])
 
@@ -393,14 +415,14 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
     return None
 
 
-def generate_add_comment_constraints():
+async def generate_add_comment_constraints():
     """
     Genera combinaciones de constraints para añadir comentarios.
     """
     from random import choice
 
     # Películas disponibles
-    movies = [movie["name"] for movie in MOVIES_DATA]
+    movies = [movie["name"] for movie in await _get_data()]
 
     # Palabras y frases para generar comentarios
     comment_keywords = [
@@ -471,7 +493,7 @@ def generate_add_comment_constraints():
     return constraints
 
 
-def generate_edit_film_constraints():
+async def generate_edit_film_constraints():
     """
     Generates constraints specifically for editing film-related use cases.
     Returns the constraints as structured data.
@@ -479,7 +501,7 @@ def generate_edit_film_constraints():
     from random import choice, randint, uniform
 
     # Obtener películas disponibles
-    movies = MOVIES_DATA
+    movies = await _get_data()
 
     # Campos editables (sin name porque ya tenemos la película)
     editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]

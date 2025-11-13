@@ -2,6 +2,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -16,6 +17,27 @@ from .data import (
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
     RESTAURANTS_DATA,
 )
+from .main import FRONTEND_PORT_INDEX, autodelivery_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{autodelivery_project.id}"
+ENTITY_TYPE = "restaurants"
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=autodelivery_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=ENTITY_TYPE,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="distribute",
+        filter_key="cuisine",
+    )
+    if items:
+        return items
+    from .data import RESTAURANTS_DATA as _STATIC
+
+    return _STATIC
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
@@ -92,11 +114,12 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return value
 
 
-def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
+async def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
+    data_items = await _get_data()
     search_terms = []
-    for item in RESTAURANTS_DATA:
+    for item in data_items:
         if item.get("name"):
             search_terms.append(item["name"])
         if item.get("cuisine"):
@@ -105,9 +128,14 @@ def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
             if menu_item.get("name"):
                 search_terms.append(menu_item["name"])
 
+    if not search_terms:
+        return constraints_list
+
     query = random.choice(search_terms)
     field = "query"
     allowed_ops = FIELD_OPERATORS_SEARCH_RESTAURANT_MAP.get(field, [])
+    if not allowed_ops:
+        return constraints_list
     operator = ComparisonOperator(random.choice(allowed_ops))
 
     value = _generate_constraint_value(operator, query, field, [{"query": t} for t in search_terms])

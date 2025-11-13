@@ -2,6 +2,8 @@ import random
 from random import choice
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
 from ..criterion_helper import ComparisonOperator
 from ..operators import EQUALS, NOT_EQUALS
 from ..shared_utils import create_constraint_dict
@@ -18,6 +20,27 @@ from .data import (
     FIELD_OPERATORS_STARRED_MAP,
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
 )
+from .main import FRONTEND_PORT_INDEX, automail_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{automail_project.id}"
+ENTITY_TYPE = "emails"
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=automail_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=ENTITY_TYPE,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="distribute",
+        filter_key="category",
+    )
+    if items:
+        return items
+    from .data import EMAILS_DATA as _STATIC_EMAILS
+
+    return _STATIC_EMAILS
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
@@ -87,7 +110,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return value
 
 
-def generate_view_email_constraints() -> list[dict[str, Any]]:
+async def generate_view_email_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_VIEW_EMAIL_MAP.keys())
     num_constraints = random.randint(1, len(possible_fields))
@@ -115,7 +138,7 @@ def _boolean_constraints_value(value, operator: ComparisonOperator) -> bool:
         return not bool(value)
 
 
-def generate_is_starred_constraints() -> list[dict[str, Any]]:
+async def generate_is_starred_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     # Filter emails where is_starred == False
     eligible_emails = [e for e in EMAILS_DATA_MODIFIED if not e.get("is_starred", False)]
@@ -148,7 +171,7 @@ def generate_is_starred_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_is_read_constraints() -> list[dict[str, Any]]:
+async def generate_is_read_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     fixed_field = "is_read"
     field_value = False
@@ -176,7 +199,7 @@ def generate_is_read_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_is_important_constraints() -> list[dict[str, Any]]:
+async def generate_is_important_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     fixed_field = "is_important"
     email = random.choice(EMAILS_DATA_MODIFIED)
@@ -202,7 +225,7 @@ def generate_is_important_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_is_spam_constraints() -> list[dict[str, Any]]:
+async def generate_is_spam_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     fixed_field = "is_spam"
     field_value = True
@@ -242,7 +265,7 @@ def _generate_search_constraint_value(operator, value):
         return choice([word for word in ALL_EMAIL_WORDS if value not in word])
 
 
-def generate_search_email_constraints() -> list[dict[str, Any]]:
+async def generate_search_email_constraints() -> list[dict[str, Any]]:
     constraints_list = []
 
     for field, operators in FIELD_OPERATORS_SEARCH_MAP.items():
@@ -285,7 +308,7 @@ LIST_OF_EMAILS = [
 ]
 
 
-def generate_save_as_draft_send_email_constraints() -> list[dict[str, Any]]:
+async def generate_save_as_draft_send_email_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     email = choice(EMAILS_DATA_MODIFIED)
     selected_fields = ["to"]  # Fixed 'to'
@@ -315,7 +338,7 @@ def _get_labels_and_colors(email_data: list[dict[str, Any]]) -> tuple:
     return list(labels), list(colors)
 
 
-def generate_create_label_constraints() -> list[dict[str, Any]]:
+async def generate_create_label_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     labels, colors = _get_labels_and_colors(EMAILS_DATA_MODIFIED)
     labels_and_colors = [{"label_name": label, "label_color": color} for label, color in zip(labels, colors, strict=False)]
@@ -333,7 +356,7 @@ def generate_create_label_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_add_label_constraints() -> list[dict[str, Any]]:
+async def generate_add_label_constraints() -> list[dict[str, Any]]:
     constraints_list = []
 
     full_dataset = []
@@ -388,7 +411,7 @@ def generate_add_label_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_theme_changed_constraints() -> list[dict[str, Any]]:
+async def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     themes = ["light", "dark", "system"]
     field = "theme"

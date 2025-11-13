@@ -101,8 +101,8 @@ class GlobalTaskGenerationPipeline:
         """
         additional_system_prompt = None
 
-        if hasattr(use_case, "generate_constraints"):
-            constraints_info = use_case.generate_constraints()
+        if hasattr(use_case, "generate_constraints_async"):
+            constraints_info = await use_case.generate_constraints_async()
         else:
             constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
             additional_system_prompt = constraints_info

@@ -3,10 +3,11 @@ from datetime import datetime, timedelta
 from random import choice
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
-    COMPANIES,
     FIELD_OPERATORS_APPLY_FOR_JOB_MAP,
     FIELD_OPERATORS_COMMENT_ON_POST_MAP,
     FIELD_OPERATORS_CONNECT_WITH_USER_MAP,
@@ -17,10 +18,24 @@ from .data import (
     FIELD_OPERATORS_SEARCH_USERS_MAP,
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
-    POSTS_DATA_MODIFIED,
-    mockJobs,
-    mockUsers,
 )
+from .main import FRONTEND_PORT_INDEX, connect_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{connect_project.id}"
+
+
+async def _get_data(entity_type: str, seed_value: int | None = None, count: int = 50) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=connect_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=entity_type,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="distribute",
+    )
+    if items:
+        return items
+    return []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
@@ -183,20 +198,21 @@ def _get_nested_value(obj, dotted_key, default=None):
     return obj
 
 
-def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
+async def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for viewing a user profile based on the provided user profile data.
     """
 
-    dataset = mockUsers
+    dataset = await _get_data("users")
     field_operators = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
     all_constraints = _generate_constraints(dataset, field_operators, num_constraints=1)
 
     return all_constraints
 
 
-def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
-    dataset = [u for u in mockUsers if u.get("username") != "alexsmith"]
+async def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
+    users = await _get_data("users")
+    dataset = [u for u in users if u.get("username") != "alexsmith"]
 
     field_operators = FIELD_OPERATORS_CONNECT_WITH_USER_MAP
     field_map = {
@@ -206,11 +222,11 @@ def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_like_post_constraints():
+async def generate_like_post_constraints():
     """
     Generates constraints for liking a post based on the provided post data.
     """
-    dataset = POSTS_DATA_MODIFIED
+    dataset = await _get_data("posts")
     field_operators = FIELD_OPERATORS_LIKE_POST_MAP
     field_map = {"poster_content": "content", "poster_name": "name"}
 
@@ -242,7 +258,7 @@ SAMPLE_COMMENTS = [
 ]
 
 
-def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
+async def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for commenting on a post based on the provided post data.
     """
@@ -254,7 +270,7 @@ def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
     new_field_operators = {fixed_field: operators}
     all_constraints = _generate_constraints(sample_comments, new_field_operators)
 
-    dataset = POSTS_DATA_MODIFIED
+    dataset = await _get_data("posts")
     field_map = {"poster_content": "content", "poster_name": "name"}
     constraints = _generate_constraints(dataset, field_operators, field_map)
     all_constraints.extend(constraints)
@@ -286,7 +302,7 @@ sample_post_contents = [
 ]
 
 
-def generate_post_status_constraints() -> list[dict[str, Any]]:
+async def generate_post_status_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     field = "content"
     field_operators = FIELD_OPERATORS_POST_STATUS_MAP
@@ -301,11 +317,11 @@ def generate_post_status_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_follow_page_constraints() -> list[dict[str, Any]]:
+async def generate_follow_page_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for following a company page based on the provided user profile data.
     """
-    dataset = COMPANIES
+    dataset = await _get_data("companies")
     field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
     field_map = {"company": "name"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -313,8 +329,8 @@ def generate_follow_page_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
-    dataset = mockJobs
+async def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
+    dataset = await _get_data("jobs")
 
     field_map = {
         "job_title": "title",
@@ -326,11 +342,11 @@ def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_search_users_constraints() -> list[dict[str, Any]]:
+async def generate_search_users_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for searching users based on the provided user profile data.
     """
-    dataset = mockUsers
+    dataset = await _get_data("users")
     field_operators = FIELD_OPERATORS_SEARCH_USERS_MAP
     field_map = {"query": ["name", "title"]}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -338,12 +354,12 @@ def generate_search_users_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_search_jobs_constraints() -> list[dict[str, Any]]:
+async def generate_search_jobs_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for searching jobs based on the provided job data.
     Replaces raw salary values with predefined filter options if applicable.
     """
-    dataset = mockJobs
+    dataset = await _get_data("jobs")
     field_operators = FIELD_OPERATORS_SEARCH_JOBS_MAP
     field_map = {"query": ["title", "company"]}
 
@@ -396,11 +412,11 @@ def generate_search_jobs_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_view_job_constraints() -> list[dict[str, Any]]:
+async def generate_view_job_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for viewing a job based on the provided job data.
     """
-    dataset = mockJobs
+    dataset = await _get_data("jobs")
     field_operators = FIELD_OPERATORS_VIEW_JOB_MAP
     field_map = {"job_title": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)

@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
 from .data import (
@@ -20,6 +21,22 @@ from .data import (
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
+from .main import FRONTEND_PORT_INDEX, autolist_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{autolist_project.id}"
+ENTITY_TYPE = "tasks"
+
+
+async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=autolist_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=ENTITY_TYPE,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="distribute",
+    )
+    return items if items else TASKS
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, source_key: str, dataset: list[dict[str, Any]]) -> Any:
@@ -164,13 +181,15 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
     return constraints_list
 
 
-def generate_select_date_for_task_constraints() -> list[dict[str, Any]]:
+async def generate_select_date_for_task_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting a date for a task."""
-    field_map = {"_dataset": TASKS, "date": {"is_date": True}} if random.choice([True, False]) else {"_dataset": TASKS, "quick_option": {"values": DATES_QUICK_OPTIONS}}
+    tasks = await _get_data()
+    dataset = tasks if tasks else TASKS
+    field_map = {"_dataset": dataset, "date": {"is_date": True}} if random.choice([True, False]) else {"_dataset": dataset, "quick_option": {"values": DATES_QUICK_OPTIONS}}
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
 
-def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
+async def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
     """Generate constraints for selecting a task priority."""
     field_map = {
         "priority": {"dataset": PRIORITIES},
@@ -178,19 +197,21 @@ def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_PRIORITY_MAP)
 
 
-def generate_task_constraints() -> list[dict[str, Any]]:
+async def generate_task_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding or updating a task."""
+    tasks = await _get_data()
+    dataset = tasks if tasks else TASKS
     field_map = {
-        "_dataset": TASKS,
-        "name": {"dataset": TASKS},
-        "description": {"dataset": TASKS},
+        "_dataset": dataset,
+        "name": {"dataset": dataset},
+        "description": {"dataset": dataset},
         "date": {"is_date": True},
         "priority": {"dataset": PRIORITIES},
     }
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TASK_MAP)
 
 
-def generate_team_members_added_constraints() -> list[dict[str, Any]]:
+async def generate_team_members_added_constraints() -> list[dict[str, Any]]:
     """Generate constraints for adding team members, including member_count and members."""
     num_members = random.randint(1, 3)
     selected_members = random.sample([m["label"] for m in TEAM_MEMBERS_OPTIONS], k=num_members)
@@ -205,7 +226,7 @@ def generate_team_members_added_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
+async def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
     """Generate constraints for assigning a role to a team member."""
     field_map = {
         "_dataset": TEAMS,
@@ -215,7 +236,7 @@ def generate_team_role_assigned_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP)
 
 
-def generate_team_created_constraints() -> list[dict[str, Any]]:
+async def generate_team_created_constraints() -> list[dict[str, Any]]:
     """Generate constraints for creating a team."""
     field_map = {
         "_dataset": TEAMS,

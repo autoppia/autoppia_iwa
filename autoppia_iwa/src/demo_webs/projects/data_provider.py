@@ -1,0 +1,95 @@
+import asyncio
+from urllib.parse import urljoin
+
+try:
+    import aiohttp
+except Exception:  # pragma: no cover
+    aiohttp = None  # type: ignore
+
+
+from loguru import logger
+
+# ─────────────────────────── Async-compatible API ───────────────────────────
+_ASYNC_SESSION: "aiohttp.ClientSession | None" = None  # type: ignore
+_ASYNC_CACHE: dict[tuple, list[dict]] = {}
+_ASYNC_LOCK = asyncio.Lock()
+
+
+async def _get_async_session() -> "aiohttp.ClientSession":  # type: ignore
+    if aiohttp is None:
+        raise RuntimeError("aiohttp is not installed but load_dataset_data was called")
+    global _ASYNC_SESSION
+    if _ASYNC_SESSION is None or _ASYNC_SESSION.closed:
+        _ASYNC_SESSION = aiohttp.ClientSession()
+    return _ASYNC_SESSION
+
+
+async def load_dataset_data(
+    backend_url: str,
+    project_key: str,
+    entity_type: str,
+    seed_value: int,
+    limit: int,
+    method: str = "select",
+    filter_key: str | None = None,
+    filter_values: str | None = None,
+) -> list[dict]:
+    """
+    Async loader for /datasets/load using aiohttp with a simple in-memory cache.
+    """
+    url = urljoin(backend_url, "datasets/load")
+    params: dict[str, str | int] = {
+        "project_key": project_key,
+        "entity_type": entity_type,
+        "seed_value": seed_value,
+        "limit": limit,
+        "method": method,
+    }
+    if filter_key:
+        params["filter_key"] = filter_key
+    if filter_values:
+        params["filter_values"] = filter_values  # CSV string
+
+    cache_key = (
+        url,
+        params.get("project_key"),
+        params.get("entity_type"),
+        params.get("seed_value"),
+        params.get("limit"),
+        params.get("method"),
+        params.get("filter_key"),
+        params.get("filter_values"),
+    )
+
+    # Fast-path cache check
+    async with _ASYNC_LOCK:
+        if cache_key in _ASYNC_CACHE:
+            return _ASYNC_CACHE[cache_key]
+
+    try:
+        session = await _get_async_session()
+        async with session.get(url, params=params, timeout=10) as resp:
+            resp.raise_for_status()
+            body = await resp.json()
+            data = body.get("data") if isinstance(body, dict) else None
+            if isinstance(data, list):
+                async with _ASYNC_LOCK:
+                    _ASYNC_CACHE[cache_key] = data
+                return data
+            logger.warning("Unexpected response structure from /datasets/load: {}", type(body))
+            return []
+    except Exception as e:
+        logger.warning("Failed to fetch dataset (async) from {} with params {}: {}", url, params, e)
+        return []
+
+
+async def close_async_session() -> None:
+    """Close the shared aiohttp session if open."""
+    global _ASYNC_SESSION
+    if _ASYNC_SESSION is not None and not _ASYNC_SESSION.closed:
+        try:
+            await _ASYNC_SESSION.close()
+        except Exception:
+            pass
+        finally:
+            _ASYNC_SESSION = None

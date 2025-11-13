@@ -5,6 +5,7 @@ from typing import Any
 from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict, parse_datetime
@@ -19,6 +20,25 @@ from .data import (
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
     HOTELS_DATA_MODIFIED,
 )
+from .main import FRONTEND_PORT_INDEX, lodge_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{lodge_project.id}"
+ENTITY_TYPE = "hotels"
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=lodge_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=ENTITY_TYPE,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+    )
+    if items:
+        return items
+    from .data import HOTELS_DATA_MODIFIED as _STATIC
+
+    return _STATIC
 
 
 def _generate_constraint_value(
@@ -139,7 +159,7 @@ def _generate_constraint_value(
     return None
 
 
-def generate_search_hotel_constraints() -> list[dict[str, Any]]:
+async def generate_search_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
     possible_fields = [
@@ -316,7 +336,7 @@ def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str,
     return constraints_list, hotel
 
 
-def generate_view_hotel_constraints() -> list[dict[str, Any]]:
+async def generate_view_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list, _ = __generate_view_hotel_constraints()
 
     return constraints_list
@@ -362,12 +382,12 @@ def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[st
     return constraints_list, sample_hotel
 
 
-def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
+async def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
     return constraints_list
 
 
-def generate_increase_guests_constraints() -> list[dict[str, Any]]:
+async def generate_increase_guests_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
     hotel = random.choice(HOTELS_DATA_MODIFIED)
@@ -402,7 +422,7 @@ def generate_increase_guests_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
+async def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     reserve_constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
 
@@ -465,7 +485,7 @@ def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
+async def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
     reserve_constraints, sample_hotel = _generate_reserve_hotel_constraints()
 
     # Payment specific fields
@@ -520,7 +540,7 @@ def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_message_host_constraints() -> list[dict[str, Any]]:
+async def generate_message_host_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     msgs_list = [
         "Is your place available for the selected dates?",
@@ -557,7 +577,7 @@ def generate_message_host_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_share_hotel_constraints() -> list[dict[str, Any]]:
+async def generate_share_hotel_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     emails_list = [
         "alice.smith@example.com",

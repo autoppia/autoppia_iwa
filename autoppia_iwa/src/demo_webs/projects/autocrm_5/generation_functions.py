@@ -5,6 +5,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -22,6 +23,27 @@ from .data import (
     MATTERS_DATA,
     NEW_LOGS_DATA,
 )
+from .main import FRONTEND_PORT_INDEX, crm_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{crm_project.id}"
+ENTITY_TYPE = "clients"
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=crm_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=ENTITY_TYPE,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="distribute",
+        filter_key="status",
+    )
+    if items:
+        return items
+    from .data import CLIENT_DATA as _STATIC_CLIENTS
+
+    return _STATIC_CLIENTS
 
 
 def _to_float_safe(value: Any) -> float | None:

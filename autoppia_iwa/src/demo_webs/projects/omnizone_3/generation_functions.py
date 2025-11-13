@@ -5,12 +5,35 @@ from typing import Any
 
 from loguru import logger
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict, parse_price
-from .data import FIELD_OPERATORS_MAP_PRODUCTS, PRODUCTS_DATA
+from .data import FIELD_OPERATORS_MAP_PRODUCTS
+from .main import FRONTEND_PORT_INDEX, omnizone_project
+
+PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{omnizone_project.id}"
+ENTITY_TYPE = "products"
 
 
-def generate_constraint_value(field: str, operator: ComparisonOperator, product_data_source: dict[str, Any], all_products_data: list[dict[str, Any]] = PRODUCTS_DATA) -> Any:
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    items = await load_dataset_data(
+        backend_url=omnizone_project.backend_url,
+        project_key=PROJECT_KEY,
+        entity_type=ENTITY_TYPE,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="distribute",
+        filter_key="category",
+    )
+    if items:
+        return items
+    from .data import PRODUCTS_DATA as _STATIC_PRODUCTS
+
+    return _STATIC_PRODUCTS
+
+
+def generate_constraint_value(field: str, operator: ComparisonOperator, product_data_source: dict[str, Any], all_products_data: list[dict[str, Any]] | None = None) -> Any:
     """
     Generates the value part for a single constraint based on field, operator, and data.
     Returns None if a value cannot be generated for the given criteria combination.
@@ -21,6 +44,9 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
     generated_value = None
 
     value_pool = []
+    # Caller should pass all_products_data to avoid await inside
+    if all_products_data is None:
+        return None
     try:
         if field in ["id", "title", "category", "brand", "affiliation", "currency", "coupon"]:
             value_pool = [p.get(field) for p in all_products_data if isinstance(p.get(field), str) and p.get(field) is not None]
@@ -164,19 +190,20 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
     return generated_value
 
 
-def generate_autozone_products_constraints() -> list[dict[str, Any]]:
+async def generate_autozone_products_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     fields = ["title", "category", "brand", "rating", "price"]
-    if not PRODUCTS_DATA:
+    data_items = await _get_data()
+    if not data_items:
         return []
 
     selected_criteria_fields = random.sample(fields, random.randint(1, min(3, len(fields))))
-    product = random.choice(PRODUCTS_DATA)
+    product = random.choice(data_items)
 
     for criteria_field in selected_criteria_fields:
         allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[criteria_field]
         op = ComparisonOperator(random.choice(allowed_operators))
-        constraint_value = generate_constraint_value(criteria_field, op, product, all_products_data=PRODUCTS_DATA)
+        constraint_value = generate_constraint_value(criteria_field, op, product, all_products_data=data_items)
         if constraint_value is not None:
             constraint_dict = create_constraint_dict(criteria_field, op, constraint_value)
             constraints_list.append(constraint_dict)
@@ -186,7 +213,7 @@ def generate_autozone_products_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_search_query_constraints() -> list[dict[str, Any]]:
+async def generate_search_query_constraints() -> list[dict[str, Any]]:
     constraints_list = []
     query_operators = [
         ComparisonOperator.EQUALS,
@@ -195,7 +222,8 @@ def generate_search_query_constraints() -> list[dict[str, Any]]:
 
     op = random.choice(query_operators)
     # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
-    constraint_value = generate_constraint_value("query", op, {}, all_products_data=PRODUCTS_DATA)
+    data_items = await _get_data()
+    constraint_value = generate_constraint_value("query", op, {}, all_products_data=data_items)
     if constraint_value is not None:
         constraints_list.append(create_constraint_dict("query", op, constraint_value))
 
@@ -203,17 +231,18 @@ def generate_search_query_constraints() -> list[dict[str, Any]]:
     return constraints_list if constraints_list else [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
 
 
-def generate_quantity_change_constraints() -> list[dict[str, Any]]:
+async def generate_quantity_change_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    if not PRODUCTS_DATA:
+    data_items = await _get_data()
+    if not data_items:
         return []
 
-    product = random.choice(PRODUCTS_DATA)
+    product = random.choice(data_items)
     product_key = "title"
 
     allowed_operators = FIELD_OPERATORS_MAP_PRODUCTS[product_key]
     op = ComparisonOperator(random.choice(allowed_operators))
-    constraint_value = generate_constraint_value(product_key, op, product, all_products_data=PRODUCTS_DATA)
+    constraint_value = generate_constraint_value(product_key, op, product, all_products_data=data_items)
     if constraint_value is not None:
         constraints_list.append(create_constraint_dict(product_key, op, constraint_value))
 
@@ -256,17 +285,18 @@ def generate_quantity_change_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_checkout_constraints() -> list[dict[str, Any]]:
+async def generate_checkout_constraints() -> list[dict[str, Any]]:
     """Generate randomized checkout constraints based on product data."""
     constraints: list[dict[str, Any]] = []
     field = "total_amount"
     operators = [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]
 
-    if not PRODUCTS_DATA:
+    data_items = await _get_data()
+    if not data_items:
         return constraints
 
     try:
-        product = random.choice(PRODUCTS_DATA)
+        product = random.choice(data_items)
         price_str = product["price"]
         price = parse_price(price_str)
 
@@ -282,17 +312,18 @@ def generate_checkout_constraints() -> list[dict[str, Any]]:
     return constraints
 
 
-def generate_order_completed_constraints() -> list[dict[str, Any]]:
+async def generate_order_completed_constraints() -> list[dict[str, Any]]:
     """
     Generate constraints for the ORDER_COMPLETED event,
     focused on the `items` list with ProductSummary fields like title, id, and quantity.
     """
     constraints_list = []
 
-    if not PRODUCTS_DATA:
+    data_items = await _get_data()
+    if not data_items:
         return []
 
-    product = random.choice(PRODUCTS_DATA)
+    product = random.choice(data_items)
 
     # Choose one or more fields from ProductSummary to apply as criteria
     product_fields = ["title", "quantity"]
@@ -302,7 +333,7 @@ def generate_order_completed_constraints() -> list[dict[str, Any]]:
         allowed_ops = FIELD_OPERATORS_MAP_PRODUCTS.get(field, [ComparisonOperator.EQUALS])
         op = ComparisonOperator(random.choice(allowed_ops))
 
-        val = generate_constraint_value(field, op, product, all_products_data=PRODUCTS_DATA)
+        val = generate_constraint_value(field, op, product, all_products_data=data_items)
         if val is not None:
             constraints_list.append(create_constraint_dict(field, op, val))
 
