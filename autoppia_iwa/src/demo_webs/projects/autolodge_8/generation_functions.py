@@ -276,7 +276,7 @@ def _generate_num_of_guests_field_value(operator: str, actual_value: int, max_va
         return max(1, min(actual_value, max_value))
 
 
-def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     possible_fields = list(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys())
     num_constraints = random.randint(3, len(possible_fields))
@@ -338,14 +338,14 @@ def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str,
 
 
 async def generate_view_hotel_constraints() -> list[dict[str, Any]]:
-    constraints_list, _ = __generate_view_hotel_constraints()
+    constraints_list, _ = await __generate_view_hotel_constraints()
 
     return constraints_list
 
 
-def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    view_hotel_constraints, sample_hotel = __generate_view_hotel_constraints()
+    view_hotel_constraints, sample_hotel = await __generate_view_hotel_constraints()
     view_hotel_constraints = [c for c in view_hotel_constraints if c.get("field") != "guests"]
 
     view_fields = {f.get("field") for f in view_hotel_constraints}
@@ -384,7 +384,7 @@ def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[st
 
 
 async def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
-    constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
+    constraints_list, sample_hotel = await _generate_reserve_hotel_constraints()
     return constraints_list
 
 
@@ -425,7 +425,7 @@ async def generate_increase_guests_constraints() -> list[dict[str, Any]]:
 
 async def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    reserve_constraints_list, sample_hotel = _generate_reserve_hotel_constraints()
+    reserve_constraints_list, sample_hotel = await _generate_reserve_hotel_constraints()
 
     possible_fields = list(FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.keys())
     possible_fields = [field for field in possible_fields if field not in ["checkin", "checkout"]]
@@ -487,7 +487,7 @@ async def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
 
 
 async def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
-    reserve_constraints, sample_hotel = _generate_reserve_hotel_constraints()
+    reserve_constraints, sample_hotel = await _generate_reserve_hotel_constraints()
 
     # Payment specific fields
     payment_fields = ["card_number", "expiration", "cvv", "zipcode", "country"]
@@ -555,7 +555,7 @@ async def generate_message_host_constraints() -> list[dict[str, Any]]:
         "How far is the property from the city center?",
         "Is there a washing machine available for guests?",
     ]
-    constraint_list_for_view, hotel_dict = __generate_view_hotel_constraints()
+    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints()
 
     selected_fields = ["message", "host_name"]
     sample_data = {"host_name": hotel_dict.get("host_name", ""), "message": random.choice(msgs_list)}
@@ -608,7 +608,7 @@ async def generate_share_hotel_constraints() -> list[dict[str, Any]]:
         "charlotte.cox@musicstream.fm",
     ]
 
-    constraint_list_for_view, hotel_dict = __generate_view_hotel_constraints()
+    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints()
 
     field = "email"
     dataset = [{"email": email} for email in emails_list]

@@ -167,8 +167,8 @@ async def __generate_view_restaurant_constraints() -> tuple[list[dict[str, Any]]
     return constraints_list, restaurant
 
 
-def generate_view_restaurant_constraints() -> list[dict]:
-    constraints_list, _ = __generate_view_restaurant_constraints()
+async def generate_view_restaurant_constraints() -> list[dict]:
+    constraints_list, _ = await __generate_view_restaurant_constraints()
 
     return constraints_list
 
@@ -213,7 +213,7 @@ async def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str
     if not menu_items:
         return [], {}
     item = random.choice(menu_items)
-    menu_dataset = _get_menu_items()
+    menu_dataset = await _get_menu_items()
     fields = ["item", "price"]
     num_constraints = random.randint(1, len(fields))
     selected_fields = random.sample(fields, num_constraints)
@@ -240,8 +240,8 @@ async def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str
     return constraints_list, item
 
 
-def generate_add_to_cart_modal_open_constraints() -> list[dict]:
-    constraints_list, _ = __generate_add_to_cart_modal_open_constraints()
+async def generate_add_to_cart_modal_open_constraints() -> list[dict]:
+    constraints_list, _ = await __generate_add_to_cart_modal_open_constraints()
     return constraints_list
 
 
@@ -266,9 +266,9 @@ def _get_new_quantity_value(operator: ComparisonOperator) -> int:
         return random.randint(2, 10)
 
 
-def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
+async def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-    model_constraints, _ = __generate_add_to_cart_modal_open_constraints()
+    model_constraints, _ = await __generate_add_to_cart_modal_open_constraints()
     field = "quantity"
 
     allowed_ops = FIELD_OPERATORS_INCREMENT_QUANTITY_MAP.get(field, [])
@@ -281,8 +281,8 @@ def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_increment_item_restaurant_constraints() -> list[dict]:
-    constraints_list = __generate_add_to_cart_options_constraints()
+async def generate_increment_item_restaurant_constraints() -> list[dict]:
+    constraints_list = await __generate_add_to_cart_options_constraints()
     return constraints_list
 
 
@@ -309,8 +309,8 @@ def __get_delete_review_fields(restaurants):
     return result
 
 
-def generate_delete_review_constraints() -> list[dict]:
-    constraints_list, restaurant = __generate_view_restaurant_constraints()
+async def generate_delete_review_constraints() -> list[dict]:
+    constraints_list, restaurant = await __generate_view_restaurant_constraints()
     delete_review_dict = __get_delete_review_fields([restaurant])
     fields = ["author", "review_rating", "comment"]  # , "date"]
     num_constraints = random.randint(1, len(fields))
@@ -331,7 +331,7 @@ def generate_delete_review_constraints() -> list[dict]:
     return constraints_list
 
 
-def generate_add_to_cart_constraints() -> list[dict]:
+async def generate_add_to_cart_constraints() -> list[dict]:
     constraints_list = []
     sizes_list = ["small", "medium", "large"]
     preferences_list = [
@@ -361,7 +361,7 @@ def generate_add_to_cart_constraints() -> list[dict]:
         "peanut-free",
         "shellfish-free",
     ]
-    common_add_to_cart_constraints = __generate_add_to_cart_options_constraints()
+    common_add_to_cart_constraints = await __generate_add_to_cart_options_constraints()
     fields = ["size", "preferences"]
     num_constraints = random.randint(1, len(fields))
     selected_fields = random.sample(fields, num_constraints)
@@ -386,8 +386,8 @@ def generate_add_to_cart_constraints() -> list[dict]:
     return constraints_list
 
 
-def generate_dropoff_option_constraints() -> list[dict]:
-    constraints_list = __generate_add_to_cart_options_constraints()
+async def generate_dropoff_option_constraints() -> list[dict]:
+    constraints_list = await __generate_add_to_cart_options_constraints()
     dropoffOptions = ["Leave it at my door", "Hand it to me", "Meet outside", "Meet in the lobby", "Call upon arrival", "Text when arriving"]
 
     field = "delivery_preference"
@@ -418,9 +418,9 @@ def _get_address_dataset():
     return [{"address": addr} for addr in ADDRESSES]
 
 
-def generate_address_added_constraints() -> list[dict]:
+async def generate_address_added_constraints() -> list[dict]:
     constraints_list = []
-    add_to_cart_constraint = generate_add_to_cart_constraints()
+    add_to_cart_constraint = await generate_add_to_cart_constraints()
 
     field = "address"
     operator = ComparisonOperator(random.choice(FIELD_OPERATORS_ADDRESS_ADDED_MAP[field]))
@@ -432,7 +432,7 @@ def generate_address_added_constraints() -> list[dict]:
     return constraints_list
 
 
-def generate_place_order_constraints() -> list[dict]:
+async def generate_place_order_constraints() -> list[dict]:
     constraints = []
     names = [
         "Alice Johnson",
@@ -489,6 +489,6 @@ def generate_place_order_constraints() -> list[dict]:
         value = _generate_constraint_value(operator, field_value, field, dataset)
         if value:
             constraints.append(create_constraint_dict(field, operator, value))
-    add_to_cart_constraint = generate_add_to_cart_constraints()
+    add_to_cart_constraint = await generate_add_to_cart_constraints()
     constraints.extend(add_to_cart_constraint)
     return constraints

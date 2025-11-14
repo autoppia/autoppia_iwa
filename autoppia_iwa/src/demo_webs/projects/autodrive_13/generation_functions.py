@@ -275,12 +275,13 @@ async def generate_enter_destination_constraints() -> list[dict[str, Any]]:
 
 
 async def generate_see_prices_constraints() -> list[dict[str, Any]]:
+    places_data = await _get_places()
     field_mapping = {
-        "location": {"field": "label", "dataset": await _get_places()},
-        "destination": {"field": "label", "dataset": await _get_places()},
+        "location": {"field": "label", "dataset": places_data},
+        "destination": {"field": "label", "dataset": places_data},
     }
     field_operators = FIELD_OPERATORS_MAP_SEE_PRICES
-    constraints_list = _generate_constraints(await _get_places(), field_operators, field_mapping, num_constraints=2)
+    constraints_list = _generate_constraints(places_data, field_operators, field_mapping, num_constraints=2)
     return constraints_list
 
 
@@ -414,12 +415,13 @@ def _create_scheduled_constraint(field, ops):
 
 async def generate_search_ride_constraints() -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
+    places_data = await _get_places()
 
     field_map = {
-        "location": {"field": "label", "dataset": await _get_places()},
-        "destination": {"field": "label", "dataset": await _get_places()},
+        "location": {"field": "label", "dataset": places_data},
+        "destination": {"field": "label", "dataset": places_data},
     }
-    constraints_list = _generate_constraints(await _get_places(), field_ops, field_map=field_map, selected_fields=["location", "destination"])
+    constraints_list = _generate_constraints(places_data, field_ops, field_map=field_map, selected_fields=["location", "destination"])
 
     if "scheduled" in FIELD_OPERATORS_MAP_SEARCH_RIDE:
         ops = FIELD_OPERATORS_MAP_SEARCH_RIDE["scheduled"]
@@ -432,14 +434,14 @@ async def generate_search_ride_constraints() -> list[dict[str, Any]]:
 async def generate_select_car_constraints() -> list[dict[str, Any]]:
     fields_ops = FIELD_OPERATORS_MAP_SELECT_CAR.copy()
     scheduled_ops = fields_ops.pop("scheduled")
+    places_data = await _get_places()
+    rides_data = await _get_rides()
     field_map = {
         "location": "label",
         "destination": "label",
-        "ride_name": {"field": "name", "dataset": await _get_rides()},
+        "ride_name": {"field": "name", "dataset": rides_data},
     }
-    constraints_list = _generate_constraints(
-        await _get_places(), fields_ops, field_map=field_map, selected_fields=["location", "destination", "ride_name"], num_constraints=3
-    )  # selected_fields=["ride_name"]
+    constraints_list = _generate_constraints(places_data, fields_ops, field_map=field_map, selected_fields=["location", "destination", "ride_name"], num_constraints=3)  # selected_fields=["ride_name"]
     constraints_list.append(_create_scheduled_constraint("scheduled", scheduled_ops))
     return constraints_list
 

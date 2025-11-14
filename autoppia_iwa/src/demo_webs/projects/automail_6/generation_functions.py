@@ -36,8 +36,11 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         filter_key="category",
     )
     if items:
-        return items
-    from .data import EMAILS_DATA as _STATIC_EMAILS
+        from .data import transform_emails_list
+
+        modified_emails = transform_emails_list(items)
+        return modified_emails
+    from .data import EMAILS_DATA_MODIFIED as _STATIC_EMAILS
 
     return _STATIC_EMAILS
 

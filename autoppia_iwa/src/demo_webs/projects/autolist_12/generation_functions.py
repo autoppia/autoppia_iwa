@@ -26,13 +26,12 @@ from .data import (
 async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, autolist_project
 
-    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{autolist_project.id}"
-    ENTITY_TYPE = "tasks"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autolist_project.id}"
 
     items = await load_dataset_data(
         backend_url=autolist_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type=ENTITY_TYPE,
+        project_key=project_key,
+        entity_type="tasks",
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
         method="distribute",

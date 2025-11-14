@@ -40,7 +40,7 @@ async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dic
             backend_url=autocalendar_project.backend_url,
             project_key=project_key,
             entity_type="calendar_events",
-            seed_value=seed_value if seed_value is not None else 0,
+            seed_value=seed_value if seed_value is not None else 1,
             limit=count,
             method="select",
         )
@@ -336,7 +336,7 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
 
 
 async def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
-    event_data = await _get_data("calendar_events", "select")
+    event_data = await _get_data()
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_WIZARD_OPEN.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(1, len(possible_fields)))

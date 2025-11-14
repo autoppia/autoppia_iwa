@@ -22,10 +22,10 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         backend_url=omnizone_project.backend_url,
         project_key=PROJECT_KEY,
         entity_type=ENTITY_TYPE,
-        seed_value=seed_value if seed_value is not None else 0,
+        seed_value=seed_value if seed_value is not None else 1,
         limit=count,
-        method="distribute",
-        filter_key="category",
+        # method="distribute",
+        # filter_key="category",
     )
     if items:
         return items

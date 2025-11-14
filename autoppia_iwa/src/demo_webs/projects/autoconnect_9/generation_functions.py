@@ -24,10 +24,10 @@ from .data import (
 )
 
 
-async def _get_data(entity_type: str, method: str | None = None, project_key: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
+async def _get_data(entity_type: str, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, connect_project
 
-    f"web_{FRONTEND_PORT_INDEX + 1}_{connect_project.id}"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{connect_project.id}"
 
     items = await load_dataset_data(
         backend_url=connect_project.backend_url,
@@ -35,7 +35,7 @@ async def _get_data(entity_type: str, method: str | None = None, project_key: st
         entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method=method if method else None,
+        method=method if method else "select",
     )
     if items:
         return items
