@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Callable
 from typing import Any
 
@@ -44,7 +45,29 @@ class UseCase(BaseModel):
         Generates constraints using the specific generator for this use case.
         """
         if self.constraints_generator:
-            self.constraints = self.constraints_generator()
+            result = self.constraints_generator()
+            # Support both sync and async generators
+            if asyncio.iscoroutine(result):
+                # If called in sync context, run to completion
+                try:
+                    self.constraints = asyncio.run(result)
+                except RuntimeError:
+                    # Fallback: cannot run new loop in running loop; skip async here
+                    self.constraints = None
+            else:
+                self.constraints = result
+        return self.constraints_to_str() if self.constraints else ""
+
+    async def generate_constraints_async(self):
+        """
+        Async version that awaits async constraints generators when provided.
+        """
+        if self.constraints_generator:
+            result = self.constraints_generator()
+            if asyncio.iscoroutine(result):
+                self.constraints = await result
+            else:
+                self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
 
     def constraints_to_str(self) -> str:

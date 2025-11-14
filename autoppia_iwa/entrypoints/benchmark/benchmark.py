@@ -223,7 +223,7 @@ class Benchmark:
             prompts_per_use_case=self.config.prompts_per_use_case,
             num_use_cases=self.config.num_use_cases,
             use_cases=self.config.use_cases,
-            enable_dynamic_html=self.config.enable_dynamic_html,
+            dynamic=self.config.dynamic,
         )
 
         if tasks:

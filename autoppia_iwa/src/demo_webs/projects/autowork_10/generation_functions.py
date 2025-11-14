@@ -3,6 +3,8 @@ from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -20,6 +22,23 @@ from .data import (
     FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP,
     POPULAR_SKILLS,
 )
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, work_project
+
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{work_project.id}"
+    items = await load_dataset_data(
+        backend_url=work_project.backend_url,
+        project_key=project_key,
+        entity_type="experts",
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="select",
+    )
+    if items:
+        return items
+    return EXPERTS_DATA_MODIFIED
 
 
 def _generate_constraint_value(
@@ -176,8 +195,8 @@ def _generate_constraints(
     return all_constraints
 
 
-def generate_book_consultant_constraint() -> list[dict[str, Any]]:
-    dataset = EXPERTS_DATA_MODIFIED
+async def generate_book_consultant_constraint() -> list[dict[str, Any]]:
+    dataset = await _get_data("experts")
     field_operators = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP
     selected_field = ["slug"]
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
@@ -185,8 +204,8 @@ def generate_book_consultant_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
-    dataset = EXPERTS_DATA_MODIFIED
+async def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
+    dataset = await _get_data("experts")
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
     selected_field = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
@@ -194,11 +213,11 @@ def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
+async def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
     field_mapping = {
         "team": {"field": "team", "dataset": [{"team": t} for t in ["Microsoft", "Apple", "Google"]]},
     }
-    dataset = EXPERTS_DATA_MODIFIED
+    dataset = await _get_data("experts")
     field_operators = FIELD_OPERATORS_MAP_HIRING_TEAM
     selected_fields = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_fields, field_map=field_mapping)
@@ -206,14 +225,14 @@ def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
+async def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
     field_mapping = {
         "increaseHowMuch": {"field": "increaseHowMuch", "dataset": [{"increaseHowMuch": p} for p in ["5%", "10%", "15%"]]},
         "increaseWhen": {"field": "increaseWhen", "dataset": [{"increaseWhen": p} for p in ["Never", "After 3 months", "After 6 months", "After 12 months"]]},
         "paymentType": {"field": "paymentType", "dataset": [{"paymentType": p} for p in ["fixed", "hourly"]]},
     }
 
-    dataset = EXPERTS_DATA_MODIFIED
+    dataset = await _get_data("experts")
     field_operators = FIELD_OPERATORS_MAP_HIRING_CONSULTANT
     selected_fields = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
@@ -221,8 +240,8 @@ def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_cancel_hire_constraint() -> list[dict[str, Any]]:
-    dataset = EXPERTS_DATA_MODIFIED
+async def generate_cancel_hire_constraint() -> list[dict[str, Any]]:
+    dataset = await _get_data("experts")
     field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE
     fixed_fields = ["slug"]
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=fixed_fields)
@@ -230,7 +249,7 @@ def generate_cancel_hire_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_job_posting_constraint() -> list[dict[str, Any]]:
+async def generate_job_posting_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_POSTING_A_JOB.keys())
     num_constraints = random.randint(1, len(possible_field))
@@ -262,7 +281,7 @@ def generate_job_posting_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_write_job_title_constraint() -> list[dict[str, Any]]:
+async def generate_write_job_title_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = ["query"]
     query = [
@@ -305,7 +324,7 @@ def generate_write_job_title_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_search_skill_constraint() -> list[dict[str, Any]]:
+async def generate_search_skill_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = ["skill"]
     popular_skill_data = [{"skill": q} for q in POPULAR_SKILLS]
@@ -325,7 +344,7 @@ def generate_search_skill_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_add_skill_constraint() -> list[dict[str, Any]]:
+async def generate_add_skill_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_ADD_SKILL.keys())
     num_constraints = random.randint(1, len(possible_field))
@@ -348,7 +367,7 @@ def generate_add_skill_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_submit_job_constraint() -> list[dict[str, Any]]:
+async def generate_submit_job_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
     num_constraints = random.randint(2, len(possible_fields))
@@ -443,7 +462,7 @@ def generate_submit_job_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
+async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
     num_constraints = random.randint(2, len(possible_field))

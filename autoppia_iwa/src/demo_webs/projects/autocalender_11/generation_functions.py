@@ -3,6 +3,7 @@ from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
 
 from ..criterion_helper import ComparisonOperator
@@ -27,6 +28,27 @@ from .data import (
     REMINDER_MINUTES,
     VISIBILITY_OPTIONS,
 )
+
+
+async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
+    try:
+        from .main import FRONTEND_PORT_INDEX, autocalendar_project
+
+        project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autocalendar_project.id}"
+
+        items = await load_dataset_data(
+            backend_url=autocalendar_project.backend_url,
+            project_key=project_key,
+            entity_type="calendar_events",
+            seed_value=seed_value if seed_value is not None else 1,
+            limit=count,
+            method="select",
+        )
+        if items:
+            return items
+    except Exception:
+        pass
+    return EVENTS_DATASET
 
 
 def _generate_constraint_value(
@@ -313,27 +335,27 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(reduced_field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
 
 
-def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
+async def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
+    event_data = await _get_data()
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_WIZARD_OPEN.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(1, len(possible_fields)))
-
-    sample_event = random.choice(EVENTS_DATASET)
+    sample_event = random.choice(event_data)
     for field in selected_fields:
         operator = ComparisonOperator(random.choice(FIELD_OPERATORS_WIZARD_OPEN[field]))
         if field == "title":
             field_value = sample_event.get("label", None)
-            dataset = [{"title": v["label"]} for v in EVENTS_DATASET]
+            dataset = [{"title": v["label"]} for v in event_data]
         elif field == "date":
             dt = parse_datetime(sample_event.get("date", None))
             if not dt:
                 continue
             # Convert datetime to string format for validation
             field_value = dt.strftime("%Y-%m-%d")
-            dataset = [{"date": parse_datetime(event["date"]).strftime("%Y-%m-%d")} for event in EVENTS_DATASET if "date" in event]
+            dataset = [{"date": parse_datetime(event["date"]).strftime("%Y-%m-%d")} for event in event_data if "date" in event]
         else:
             field_value = sample_event.get(field, None)
-            dataset = [{field: event.get(field, None)} for event in EVENTS_DATASET if field in event]
+            dataset = [{field: event.get(field, None)} for event in event_data if field in event]
         if not field_value:
             continue
         value = _generate_constraint_value(operator, field_value, field, dataset)

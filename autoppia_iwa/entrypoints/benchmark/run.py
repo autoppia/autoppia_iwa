@@ -27,7 +27,7 @@ AGENTS = [
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
     # "autocinema",
-    "autobooks",
+    # "autobooks",
     # "autozone",
     # "autodining",
     # "autocrm",
@@ -38,7 +38,7 @@ PROJECT_IDS = [
     # "autowork",
     # "autocalendar",
     # "autolist",
-    # "autodrive",
+    "autodrive",
     # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
@@ -62,8 +62,9 @@ CFG = BenchmarkConfig(
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic HTML
-    enable_dynamic_html=True,
+    # Dynamic features: array of v1, v2, v3 (or combinations)
+    # v1 = assign seed, v2 = future, v3 = assign seed structure
+    dynamic=["v1"],  # Example: ["v1"], ["v3"], ["v1", "v3"], etc.
     # Persistence
     save_results_json=True,
     plot_results=False,
