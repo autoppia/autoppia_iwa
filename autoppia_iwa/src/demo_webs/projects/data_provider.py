@@ -1,5 +1,5 @@
 import asyncio
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, urlunparse
 
 try:
     import aiohttp
@@ -37,7 +37,32 @@ async def load_dataset_data(
     """
     Async loader for /datasets/load using aiohttp with a simple in-memory cache.
     """
-    url = urljoin(backend_url, "datasets/load")
+
+    # Ensure backend URL uses port 8090 regardless of the provided port
+    def _ensure_port_8090(base_url: str) -> str:
+        try:
+            parsed = urlparse(base_url)
+            # If URL is malformed or missing components, return as-is
+            if not parsed.scheme or not parsed.netloc:
+                return base_url
+            hostname = parsed.hostname
+            if not hostname:
+                return base_url
+            # Preserve auth if present
+            auth = ""
+            if parsed.username:
+                auth = parsed.username
+                if parsed.password:
+                    auth += f":{parsed.password}"
+                auth += "@"
+            netloc = f"{auth}{hostname}:8090"
+            updated = parsed._replace(netloc=netloc)
+            return urlunparse(updated)
+        except Exception:
+            return base_url
+
+    base = _ensure_port_8090(backend_url)
+    url = urljoin(base, "datasets/load")
     params: dict[str, str | int] = {
         "project_key": project_key,
         "entity_type": entity_type,
@@ -79,6 +104,9 @@ async def load_dataset_data(
             logger.warning("Unexpected response structure from /datasets/load: {}", type(body))
             return []
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         logger.warning("Failed to fetch dataset (async) from {} with params {}: {}", url, params, e)
         return []
 
