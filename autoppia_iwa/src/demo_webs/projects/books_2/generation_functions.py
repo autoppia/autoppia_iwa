@@ -6,13 +6,14 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-from .main import FRONTEND_PORT_INDEX, books_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{books_project.id}"
-ENTITY_TYPE = "books"
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, books_project
+
+    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{books_project.id}"
+    ENTITY_TYPE = "books"
+
     items = await load_dataset_data(
         backend_url=books_project.backend_url,
         project_key=PROJECT_KEY,

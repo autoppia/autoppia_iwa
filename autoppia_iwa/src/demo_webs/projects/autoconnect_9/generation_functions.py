@@ -18,24 +18,35 @@ from .data import (
     FIELD_OPERATORS_SEARCH_USERS_MAP,
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
+    mockJobs,
+    mockPosts,
+    mockUsers,
 )
-from .main import FRONTEND_PORT_INDEX, connect_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{connect_project.id}"
 
 
-async def _get_data(entity_type: str, seed_value: int | None = None, count: int = 50) -> list[dict]:
+async def _get_data(entity_type: str, method: str | None = None, project_key: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, connect_project
+
+    f"web_{FRONTEND_PORT_INDEX + 1}_{connect_project.id}"
+
     items = await load_dataset_data(
         backend_url=connect_project.backend_url,
-        project_key=PROJECT_KEY,
+        project_key=project_key,
         entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method="distribute",
+        method=method if method else None,
     )
     if items:
         return items
-    return []
+    elif entity_type == "posts":
+        return mockPosts
+    elif entity_type == "jobs":
+        return mockJobs
+    elif entity_type == "users":
+        return mockUsers
+    else:
+        return []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

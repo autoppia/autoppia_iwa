@@ -20,13 +20,14 @@ from .data import (
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
     HOTELS_DATA_MODIFIED,
 )
-from .main import FRONTEND_PORT_INDEX, lodge_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{lodge_project.id}"
-ENTITY_TYPE = "hotels"
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, lodge_project
+
+    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{lodge_project.id}"
+    ENTITY_TYPE = "hotels"
+
     items = await load_dataset_data(
         backend_url=lodge_project.backend_url,
         project_key=PROJECT_KEY,

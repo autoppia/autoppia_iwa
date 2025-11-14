@@ -10,7 +10,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 from ..shared_utils import create_constraint_dict
 from .data import (
     ALLOWED_EVENT_COLORS,
-    CLIENT_DATA,
+    CLIENT_DATA as _STATIC_CLIENTS,
     DEMO_LOGS,
     DOCUMENT_DATA,
     FIELD_OPERATORS_MAP_CALENDAR,
@@ -20,30 +20,34 @@ from .data import (
     FIELD_OPERATORS_MAP_LOG,
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
-    MATTERS_DATA,
+    MATTERS_DATA as _STATIC_MATTERS,
     NEW_LOGS_DATA,
 )
-from .main import FRONTEND_PORT_INDEX, crm_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{crm_project.id}"
-ENTITY_TYPE = "clients"
 
 
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def _get_data(entity_type: str, method: str | None = None, filter_key: str | None = None, seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, crm_project
+
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{crm_project.id}"
+    if entity_type == "matters":
+        project_key = f"{project_key}:matters"
     items = await load_dataset_data(
         backend_url=crm_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type=ENTITY_TYPE,
+        project_key=project_key,
+        entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method="distribute",
-        filter_key="status",
+        method=method if method else None,
+        filter_key=filter_key if filter_key else None,
     )
     if items:
         return items
-    from .data import CLIENT_DATA as _STATIC_CLIENTS
-
-    return _STATIC_CLIENTS
+    elif entity_type == "clients":
+        return _STATIC_CLIENTS
+    elif entity_type == "matters":
+        return _STATIC_MATTERS
+    else:
+        return []
 
 
 def _to_float_safe(value: Any) -> float | None:
@@ -115,14 +119,14 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return None
 
 
-def generate_view_matter_constraints() -> list[dict[str, Any]]:
+async def generate_view_matter_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-
+    dataset = await _get_data(entity_type="matters", method="distribute", filter_key="status")
     possible_fields = ["name", "client", "status", "updated"]
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
-    matter_data = random.choice(MATTERS_DATA)
+    matter_data = random.choice(dataset)
 
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
@@ -132,7 +136,7 @@ def generate_view_matter_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(random.choice(allowed_ops))
 
         field_value = matter_data.get(field)
-        value = _generate_constraint_value(operator, field_value, field, dataset=MATTERS_DATA)
+        value = _generate_constraint_value(operator, field_value, field, dataset=dataset)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -193,14 +197,14 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_view_client_constraints() -> list[dict[str, Any]]:
+async def generate_view_client_constraints() -> list[dict[str, Any]]:
     constraints_list = []
-
+    client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status")
     possible_fields = ["name", "email", "status", "matters"]
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
 
-    sample_client = random.choice(CLIENT_DATA)
+    sample_client = random.choice(client_data)
 
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
@@ -210,7 +214,7 @@ def generate_view_client_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(random.choice(allowed_ops))
 
         field_value = sample_client.get(field)
-        value = _generate_constraint_value(operator, field_value, field, dataset=CLIENT_DATA)
+        value = _generate_constraint_value(operator, field_value, field, dataset=client_data)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -219,17 +223,18 @@ def generate_view_client_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_search_client_constraints() -> list[dict[str, Any]]:
+async def generate_search_client_constraints() -> list[dict[str, Any]]:
     constraints_list = []
+    client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status")
     field_map = {"name": "query"}
     field = "name"
     allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
     operator = ComparisonOperator(random.choice(allowed_ops))
 
-    sample_client = random.choice(CLIENT_DATA)
+    sample_client = random.choice(client_data)
     field_value = sample_client.get(field)
 
-    value = _generate_constraint_value(operator, field_value, field, dataset=CLIENT_DATA)
+    value = _generate_constraint_value(operator, field_value, field, dataset=client_data)
     if value is not None:
         constraint = create_constraint_dict(field_map[field], operator, value)
         constraints_list.append(constraint)

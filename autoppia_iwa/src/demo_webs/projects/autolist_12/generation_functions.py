@@ -21,13 +21,14 @@ from .data import (
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
-from .main import FRONTEND_PORT_INDEX, autolist_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{autolist_project.id}"
-ENTITY_TYPE = "tasks"
 
 
 async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, autolist_project
+
+    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{autolist_project.id}"
+    ENTITY_TYPE = "tasks"
+
     items = await load_dataset_data(
         backend_url=autolist_project.backend_url,
         project_key=PROJECT_KEY,

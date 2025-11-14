@@ -22,25 +22,24 @@ from .data import (
     FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP,
     POPULAR_SKILLS,
 )
-from .main import FRONTEND_PORT_INDEX, work_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{work_project.id}"
 
 
-async def _get_data(entity_type: str = "experts", seed_value: int | None = None, count: int = 200) -> list[dict]:
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, work_project
+
+    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{work_project.id}"
+
     items = await load_dataset_data(
         backend_url=work_project.backend_url,
         project_key=PROJECT_KEY,
-        entity_type=entity_type,
+        entity_type="experts",
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method="distribute",
+        method="select",
     )
     if items:
         return items
-    if entity_type == "experts":
-        return EXPERTS_DATA_MODIFIED
-    return []
+    return EXPERTS_DATA_MODIFIED
 
 
 def _generate_constraint_value(

@@ -25,13 +25,14 @@ from .data import (
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
 )
-from .main import FRONTEND_PORT_INDEX, dining_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{dining_project.id}"
-ENTITY_TYPE = "restaurants"
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, dining_project
+
+    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{dining_project.id}"
+    ENTITY_TYPE = "restaurants"
+
     items = await load_dataset_data(
         backend_url=dining_project.backend_url, project_key=PROJECT_KEY, entity_type=ENTITY_TYPE, seed_value=seed_value if seed_value is not None else 0, limit=count, method="shuffle"
     )

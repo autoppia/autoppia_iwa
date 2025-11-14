@@ -27,11 +27,11 @@ AGENTS = [
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
     # "autocinema",
-    "autobooks",
+    # "autobooks",
     # "autozone",
     # "autodining",
     # "autocrm",
-    # "automail",
+    "automail",
     # "autodelivery",
     # "autolodge",
     # "autoconnect",

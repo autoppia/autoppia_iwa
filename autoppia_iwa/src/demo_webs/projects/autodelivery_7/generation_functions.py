@@ -15,23 +15,22 @@ from .data import (
     FIELD_OPERATORS_PLACE_ORDER_MAP,
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
-    RESTAURANTS_DATA,
 )
-from .main import FRONTEND_PORT_INDEX, autodelivery_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{autodelivery_project.id}"
-ENTITY_TYPE = "restaurants"
 
 
-async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def _get_data(entity_type: str, method: str | None = None, filter_key: str | None = None, seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, autodelivery_project
+
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autodelivery_project.id}"
+
     items = await load_dataset_data(
         backend_url=autodelivery_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type=ENTITY_TYPE,
+        project_key=project_key,
+        entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
-        method="distribute",
-        filter_key="cuisine",
+        method=method if method else None,
+        filter_key=filter_key if filter_key else None,
     )
     if items:
         return items
@@ -117,7 +116,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
 async def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
-    data_items = await _get_data()
+    data_items = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine")
     search_terms = []
     for item in data_items:
         if item.get("name"):
@@ -147,12 +146,13 @@ async def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def __generate_view_restaurant_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def __generate_view_restaurant_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list = []
+    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine")
     fields = ["name", "cuisine", "rating", "description"]
     num_constraints = random.randint(2, len(fields))
     selected_fields = random.sample(fields, num_constraints)
-    restaurant = random.choice(RESTAURANTS_DATA)
+    restaurant = random.choice(restaurant_data)
 
     for field in selected_fields:
         field_value = restaurant.get(field)
@@ -161,7 +161,7 @@ def __generate_view_restaurant_constraints() -> tuple[list[dict[str, Any]], dict
             return []
         operator = ComparisonOperator(random.choice(allowed_ops))
 
-        value = _generate_constraint_value(operator, field_value, field, RESTAURANTS_DATA)
+        value = _generate_constraint_value(operator, field_value, field, restaurant_data)
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list, restaurant
@@ -173,9 +173,10 @@ def generate_view_restaurant_constraints() -> list[dict]:
     return constraints_list
 
 
-def _get_menu_items() -> list[dict[str, Any]]:
+async def _get_menu_items() -> list[dict[str, Any]]:
     menu_items = []
-    for restaurant in RESTAURANTS_DATA:
+    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine")
+    for restaurant in restaurant_data:
         for menu_item in restaurant.get("menu", []):
             menu_items.append(
                 {
@@ -202,11 +203,12 @@ def _get_menu_items_for_restaurant(restaurant: dict) -> list[dict[str, Any]]:
     ]
 
 
-def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list = []
-    if not RESTAURANTS_DATA:
+    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine")
+    if not restaurant_data:
         return [], {}
-    restaurant = random.choice(RESTAURANTS_DATA)
+    restaurant = random.choice(restaurant_data)
     menu_items = _get_menu_items_for_restaurant(restaurant)
     if not menu_items:
         return [], {}

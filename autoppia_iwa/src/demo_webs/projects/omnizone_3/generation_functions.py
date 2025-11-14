@@ -10,13 +10,14 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict, parse_price
 from .data import FIELD_OPERATORS_MAP_PRODUCTS
-from .main import FRONTEND_PORT_INDEX, omnizone_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{omnizone_project.id}"
-ENTITY_TYPE = "products"
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, omnizone_project
+
+    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{omnizone_project.id}"
+    ENTITY_TYPE = "products"
+
     items = await load_dataset_data(
         backend_url=omnizone_project.backend_url,
         project_key=PROJECT_KEY,

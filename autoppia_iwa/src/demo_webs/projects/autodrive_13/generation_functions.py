@@ -21,23 +21,24 @@ from .data import (
     PLACES,
     RIDES,
 )
-from .main import FRONTEND_PORT_INDEX, drive_project
-
-PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{drive_project.id}"
 
 
 async def _get_places(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, drive_project
+
+    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{drive_project.id}"
+
     items = await load_dataset_data(
-        backend_url=drive_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type="places",
-        seed_value=seed_value if seed_value is not None else 0,
-        limit=count,
+        backend_url=drive_project.backend_url, project_key=PROJECT_KEY, entity_type="trips", seed_value=seed_value if seed_value is not None else 0, limit=count, method="select"
     )
     return items if items else PLACES
 
 
 async def _get_rides(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    from .main import FRONTEND_PORT_INDEX, drive_project
+
+    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{drive_project.id}"
+
     items = await load_dataset_data(
         backend_url=drive_project.backend_url,
         project_key=PROJECT_KEY,
