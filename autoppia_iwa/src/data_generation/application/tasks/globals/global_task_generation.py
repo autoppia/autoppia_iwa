@@ -52,7 +52,7 @@ class GlobalTaskGenerationPipeline:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 
-    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5, use_cases: list[str] | None = None) -> list[Task]:
+    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5, use_cases: list[str] | None = None, dynamic: list[str] | None = None) -> list[Task]:
         """
         Generate tasks for all use cases in the web project.
         """
@@ -82,7 +82,7 @@ class GlobalTaskGenerationPipeline:
         for use_case in web_use_cases:
             _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
             try:
-                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case)
+                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic)
                 all_tasks.extend(tasks_for_use_case)
                 _log_task_generation(f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}'", context="USE_CASE")
             except Exception as e:
@@ -95,17 +95,40 @@ class GlobalTaskGenerationPipeline:
         _log_task_generation(f"Total generated tasks across all use cases: {len(all_tasks)}", context="SUMMARY")
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5) -> list[Task]:
+    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5, dynamic: list[str] | None = None) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
+
+        Args:
+            use_case: The use case to generate tasks for
+            number_of_prompts: Number of prompts to generate
+            dynamic: List of dynamic features (v1, v2, v3) that will be applied to tasks
         """
         additional_system_prompt = None
         # Get base URL for initial constraint generation (before tasks are created)
         base_url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
 
-        # Generate initial constraints with base URL (for LLM prompt generation)
+        # Pre-compute URL with v2-seed if "v2" is in dynamic array
+        # This ensures constraints are generated with the same seed that will be used in the task URL
+        constraint_url = base_url
+        v2_seed_value = None
+        if dynamic and "v2" in dynamic:
+            import random
+            from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
+            v2_seed_value = random.randint(1, 300)
+            parsed = urlparse(base_url)
+            query_params = parse_qs(parsed.query)
+
+            # Only add if 'v2-seed' not already in URL
+            if "v2-seed" not in query_params:
+                query_params["v2-seed"] = [str(v2_seed_value)]
+                new_query = urlencode(query_params, doseq=True)
+                constraint_url = urlunparse(parsed._replace(query=new_query))
+
+        # Generate initial constraints with URL that includes v2-seed (if applicable)
         if hasattr(use_case, "generate_constraints_async"):
-            constraints_info = await use_case.generate_constraints_async(task_url=base_url)
+            constraints_info = await use_case.generate_constraints_async(task_url=constraint_url)
         else:
             constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
             additional_system_prompt = constraints_info
@@ -130,17 +153,23 @@ class GlobalTaskGenerationPipeline:
         for prompt_text in prompt_list:
             try:
                 replaced_prompt = use_case.apply_replacements(prompt_text)
-                task_obj = self._assemble_task(
-                    web_project_id=self.web_project.id,
-                    url=url,
-                    prompt=replaced_prompt,
-                    html="",
-                    clean_html="",
-                    screenshot=None,
-                    screenshot_desc="",
-                    use_case=use_case,
-                    relevant_data=self.web_project.relevant_data,
-                )
+                # If we pre-generated a v2-seed, set it on the task before creation
+                # This ensures the task uses the same v2-seed that was used for constraint generation
+                task_data = {
+                    "web_project_id": self.web_project.id,
+                    "url": constraint_url if (dynamic and "v2" in dynamic) else url,
+                    "prompt": replaced_prompt,
+                    "html": "",
+                    "clean_html": "",
+                    "screenshot": None,
+                    "screenshot_desc": "",
+                    "use_case": use_case,
+                    "relevant_data": self.web_project.relevant_data,
+                    "dynamic": dynamic or [],
+                }
+                # Create the task
+                # If constraint_url has v2-seed, it will be extracted by assign_v2_seed_to_url() during Task.__init__
+                task_obj = Task(**task_data)
                 tasks.append(task_obj)
             except Exception as ex:
                 logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")

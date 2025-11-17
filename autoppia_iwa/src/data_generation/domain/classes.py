@@ -127,13 +127,23 @@ class Task(BaseModel):
         """
         Assign a random seed to the task URL if v2 is in dynamic array.
         Avoids overwriting an existing v2-seed or breaking query structure.
+        If v2-seed is already in the URL, extracts it and sets _v2_seed_value.
         """
         if "v2" in self.dynamic:
-            if self._v2_seed_value is None:
-                object.__setattr__(self, "_v2_seed_value", random.randint(1, 300))
-
             parsed = urlparse(self.url)
             query_params = parse_qs(parsed.query)
+
+            # If v2-seed is already in URL, extract it and set _v2_seed_value
+            if "v2-seed" in query_params and self._v2_seed_value is None:
+                try:
+                    extracted_seed = int(query_params["v2-seed"][0])
+                    object.__setattr__(self, "_v2_seed_value", extracted_seed)
+                except (ValueError, IndexError):
+                    # If extraction fails, generate a new one
+                    object.__setattr__(self, "_v2_seed_value", random.randint(1, 300))
+            elif self._v2_seed_value is None:
+                # Generate a new v2-seed if not already set
+                object.__setattr__(self, "_v2_seed_value", random.randint(1, 300))
 
             # Only add if 'v2-seed' not already in URL
             if "v2-seed" not in query_params:
@@ -287,3 +297,4 @@ class TaskGenerationConfig(BaseModel):
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline
     # Specific use cases to focus on, will override num_use_cases if set, for current project
     use_cases: list[str] | None = None
+    dynamic: list[str] | None = None  # Dynamic features to apply (v1, v2, v3) - used to pre-compute URLs with seeds

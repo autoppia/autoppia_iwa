@@ -105,17 +105,13 @@ async def generate_tasks_for_web_project(
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
 
-    config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases, use_cases=use_cases)
+    config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases, use_cases=use_cases, dynamic=dynamic)
 
     print(f"Generating tasks for {project.name}...")
     pipeline = TaskGenerationPipeline(web_project=project, config=config)
     tasks = await pipeline.generate()
 
     if tasks:
-        # Set dynamic array and apply to URL for newly generated tasks
-        for task in tasks:
-            task.dynamic = dynamic
-            task._apply_dynamic_to_url()
         await save_tasks_to_json(tasks, project, task_cache_dir)
 
     return tasks
