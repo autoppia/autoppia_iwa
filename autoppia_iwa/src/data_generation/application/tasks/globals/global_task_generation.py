@@ -141,10 +141,6 @@ class GlobalTaskGenerationPipeline:
                     use_case=use_case,
                     relevant_data=self.web_project.relevant_data,
                 )
-                # After task is created, regenerate constraints with the actual task URL
-                # This ensures constraints use the correct v2-seed if it was added to the URL by _apply_dynamic_to_url()
-                if hasattr(use_case, "generate_constraints_async"):
-                    await use_case.generate_constraints_async(task_url=task_obj.url)
                 tasks.append(task_obj)
             except Exception as ex:
                 logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
