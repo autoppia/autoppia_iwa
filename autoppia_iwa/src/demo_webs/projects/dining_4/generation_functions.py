@@ -316,9 +316,10 @@ async def generate_occasion_selected_constraints():
     return all_constraints
 
 
-async def generate_reservation_complete_constraints():
+async def generate_reservation_complete_constraints(task_url: str | None = None):
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
     restaurant_constraints = generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data()
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data(seed_value=v2_seed)
     )
     booking_contraints = _generate_constraints_for_fields(
         all_fields=["people_count", "country_code", "phone_number", "occasion_typeselected_date", "selected_time"],
@@ -326,7 +327,7 @@ async def generate_reservation_complete_constraints():
         required_fields=["occasion_type"],
         validate_dates=True,
         max_optional=3,
-        dataset=await _get_data(),
+        dataset=await _get_data(seed_value=v2_seed),
     )
     all_constraints = restaurant_constraints + booking_contraints
 
@@ -476,5 +477,4 @@ def generate_restaurant_constraints(
             value = value.isoformat()
 
         constraints.append({"field": field, "operator": ComparisonOperator(op), "value": value})
-        print(target, constraints)
     return constraints
