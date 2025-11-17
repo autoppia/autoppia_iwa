@@ -39,8 +39,6 @@ def load_config(path: str | Path | None) -> RewardConfig:
 
     path = Path(path)
     data = yaml.safe_load(path.read_text())
-    if "ckpt_path" in data:
-        data["ckpt_path"] = Path(data["ckpt_path"])
     return RewardConfig(**data)
 
 
@@ -49,7 +47,7 @@ def train(cfg: RewardConfig) -> None:
     model = RewardModel(cfg.in_dim).to(device)
 
     dataset_pairs = PrefPairDataset(limit=cfg.pref_pairs_per_epoch)
-    loader_pairs = DataLoader(dataset_pairs, batch_size=cfg.batch, shuffle=True, num_workers=cfg.num_workers)
+    loader_pairs = DataLoader(dataset_pairs, batch_size=cfg.batch, shuffle=True, num_workers=cfg.num_workers) if len(dataset_pairs) > 0 else None
 
     dataset_reward = RewardDataset(cfg, split="train")
     loader_reward = DataLoader(dataset_reward, batch_size=cfg.batch, shuffle=True, num_workers=cfg.num_workers)
@@ -68,7 +66,7 @@ def train(cfg: RewardConfig) -> None:
         total_score = 0.0
 
         reward_iter = iter(loader_reward)
-        for batch in loader_pairs:
+        for batch in (loader_pairs if loader_pairs else []):
             x_pos = batch["x_pos"].to(device)
             x_neg = batch["x_neg"].to(device)
             out_pos = model(x_pos)
@@ -101,13 +99,14 @@ def train(cfg: RewardConfig) -> None:
             loss.backward()
             optimizer.step()
 
+        num_pairs = len(loader_pairs) if loader_pairs else 1
         logger.info(
             "Epoch {}: pref={:.4f} succ={:.4f} align={:.4f} score={:.4f}",
             epoch,
-            total_pref / max(1, len(loader_pairs)),
-            total_succ / max(1, len(loader_pairs)),
-            total_align / max(1, len(loader_pairs)),
-            total_score / max(1, len(loader_pairs)),
+            total_pref / max(1, num_pairs),
+            total_succ / max(1, num_pairs),
+            total_align / max(1, num_pairs),
+            total_score / max(1, num_pairs),
         )
 
         # Validation: track how often R_pos > R_neg and BCE on val set
@@ -115,7 +114,7 @@ def train(cfg: RewardConfig) -> None:
         with torch.no_grad():
             win = 0
             total = 0
-            for batch in loader_pairs:
+            for batch in (loader_pairs if loader_pairs else []):
                 x_pos = batch["x_pos"].to(device)
                 x_neg = batch["x_neg"].to(device)
                 out_pos = model(x_pos)
