@@ -42,10 +42,11 @@ class Task(BaseModel):
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     use_case: Any = Field(default=None, description="UseCase instance associated with this task")
     should_record: bool = False
-    dynamic: list[str] = Field(default_factory=list, description="Array of dynamic features to apply: v1 (assign seed), v2 (future), v3 (assign seed structure). Can select any combination.")
+    dynamic: list[str] = Field(default_factory=list, description="Array of dynamic features to apply: v1 (assign seed), v2 (assign v2-seed), v3 (assign seed structure). Can select any combination.")
 
     _original_prompt: str = PrivateAttr()
     _seed_value: int = PrivateAttr()
+    _v2_seed_value: int = PrivateAttr()
     _seed_structure_value: int = PrivateAttr()
 
     model_config = {"extra": "allow", "arbitrary_types_allowed": True}
@@ -75,6 +76,7 @@ class Task(BaseModel):
         object.__setattr__(self, "_original_prompt", original_prompt)
         # Don't add seed automatically - let the benchmark decide when to add it
         object.__setattr__(self, "_seed_value", None)
+        object.__setattr__(self, "_v2_seed_value", None)
         object.__setattr__(self, "_seed_structure_value", None)
         # Automatically apply dynamic features to URL
         self._apply_dynamic_to_url()
@@ -96,9 +98,10 @@ class Task(BaseModel):
         """
         if "v1" in self.dynamic:
             self.assign_seed_to_url()
+        if "v2" in self.dynamic:
+            self.assign_v2_seed_to_url()
         if "v3" in self.dynamic:
             self.assign_seed_structure_to_url()
-        # v2 is reserved for future implementations
 
     def assign_seed_to_url(self) -> None:
         """
@@ -115,6 +118,26 @@ class Task(BaseModel):
             # Only add if 'seed' not already in URL
             if "seed" not in query_params:
                 query_params["seed"] = [str(self._seed_value)]
+
+                new_query = urlencode(query_params, doseq=True)
+                new_url = urlunparse(parsed._replace(query=new_query))
+                object.__setattr__(self, "url", new_url)
+
+    def assign_v2_seed_to_url(self) -> None:
+        """
+        Assign a random seed to the task URL if v2 is in dynamic array.
+        Avoids overwriting an existing v2-seed or breaking query structure.
+        """
+        if "v2" in self.dynamic:
+            if self._v2_seed_value is None:
+                object.__setattr__(self, "_v2_seed_value", random.randint(1, 300))
+
+            parsed = urlparse(self.url)
+            query_params = parse_qs(parsed.query)
+
+            # Only add if 'v2-seed' not already in URL
+            if "v2-seed" not in query_params:
+                query_params["v2-seed"] = [str(self._v2_seed_value)]
 
                 new_query = urlencode(query_params, doseq=True)
                 new_url = urlunparse(parsed._replace(query=new_query))

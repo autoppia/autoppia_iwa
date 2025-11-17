@@ -35,7 +35,7 @@ class BenchmarkConfig:
     plot_results: bool = False
 
     # Dynamic features: array of v1, v2, v3 (or combinations)
-    # v1 = assign seed, v2 = future, v3 = assign seed structure
+    # v1 = assign seed, v2 = assign v2-seed, v3 = assign seed structure
     dynamic: list[str] = field(default_factory=lambda: [])
 
     # Visualization
@@ -61,7 +61,24 @@ class BenchmarkConfig:
         if not self.agents:
             logger.warning("No agents configured - benchmark will not run")
 
-        # Validate dynamic array
+        # Handle comma-separated strings (e.g., "v1,v2, v3" -> ["v1", "v2", "v3"])
+        normalized_dynamic = []
+        for val in self.dynamic:
+            if isinstance(val, str):
+                split_vals = [v.strip() for v in val.split(",") if v.strip()]
+                normalized_dynamic.extend(split_vals)
+            else:
+                normalized_dynamic.append(str(val).strip())
+
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_dynamic = []
+        for val in normalized_dynamic:
+            if val not in seen:
+                seen.add(val)
+                unique_dynamic.append(val)
+
+        self.dynamic = unique_dynamic
         valid_values = {"v1", "v2", "v3"}
         invalid_values = [val for val in self.dynamic if val not in valid_values]
         if invalid_values:
