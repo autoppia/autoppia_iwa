@@ -100,9 +100,12 @@ class GlobalTaskGenerationPipeline:
         Generate tasks for a specific use case by calling the LLM with relevant context.
         """
         additional_system_prompt = None
+        # Get base URL for initial constraint generation (before tasks are created)
+        base_url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
 
+        # Generate initial constraints with base URL (for LLM prompt generation)
         if hasattr(use_case, "generate_constraints_async"):
-            constraints_info = await use_case.generate_constraints_async()
+            constraints_info = await use_case.generate_constraints_async(task_url=base_url)
         else:
             constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
             additional_system_prompt = constraints_info
@@ -121,7 +124,7 @@ class GlobalTaskGenerationPipeline:
         # Call the LLM (with retry logic) and parse the list of strings result
         prompt_list = await self._call_llm_with_retry(llm_prompt, additional_system_prompt=additional_system_prompt)
         # For each prompt string, create a Task
-        url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
+        url = base_url
 
         tasks: list[Task] = []
         for prompt_text in prompt_list:
@@ -138,6 +141,10 @@ class GlobalTaskGenerationPipeline:
                     use_case=use_case,
                     relevant_data=self.web_project.relevant_data,
                 )
+                # After task is created, regenerate constraints with the actual task URL
+                # This ensures constraints use the correct v2-seed if it was added to the URL by _apply_dynamic_to_url()
+                if hasattr(use_case, "generate_constraints_async"):
+                    await use_case.generate_constraints_async(task_url=task_obj.url)
                 tasks.append(task_obj)
             except Exception as ex:
                 logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")

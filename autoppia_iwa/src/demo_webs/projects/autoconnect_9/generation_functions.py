@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -209,20 +209,21 @@ def _get_nested_value(obj, dotted_key, default=None):
     return obj
 
 
-async def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
+async def generate_view_user_profile_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for viewing a user profile based on the provided user profile data.
     """
-
-    dataset = await _get_data("users")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data("users", seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
     all_constraints = _generate_constraints(dataset, field_operators, num_constraints=1)
 
     return all_constraints
 
 
-async def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
-    users = await _get_data("users")
+async def generate_connect_with_user_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    users = await _get_data("users", seed_value=v2_seed)
     dataset = [u for u in users if u.get("username") != "alexsmith"]
 
     field_operators = FIELD_OPERATORS_CONNECT_WITH_USER_MAP
@@ -233,11 +234,12 @@ async def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-async def generate_like_post_constraints():
+async def generate_like_post_constraints(task_url: str | None = None):
     """
     Generates constraints for liking a post based on the provided post data.
     """
-    dataset = await _get_data("posts")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data("posts", seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_LIKE_POST_MAP
     field_map = {"poster_content": "content", "poster_name": "name"}
 
@@ -269,7 +271,7 @@ SAMPLE_COMMENTS = [
 ]
 
 
-async def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
+async def generate_comment_on_post_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for commenting on a post based on the provided post data.
     """
@@ -281,7 +283,8 @@ async def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
     new_field_operators = {fixed_field: operators}
     all_constraints = _generate_constraints(sample_comments, new_field_operators)
 
-    dataset = await _get_data("posts")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data("posts", seed_value=v2_seed)
     field_map = {"poster_content": "content", "poster_name": "name"}
     constraints = _generate_constraints(dataset, field_operators, field_map)
     all_constraints.extend(constraints)
@@ -328,11 +331,12 @@ async def generate_post_status_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-async def generate_follow_page_constraints() -> list[dict[str, Any]]:
+async def generate_follow_page_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for following a company page based on the provided user profile data.
     """
-    dataset = await _get_data("companies")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data("companies", seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
     field_map = {"company": "name"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -340,8 +344,9 @@ async def generate_follow_page_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-async def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
-    dataset = await _get_data("jobs")
+async def generate_apply_for_job_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data("jobs", seed_value=v2_seed)
 
     field_map = {
         "job_title": "title",
@@ -353,11 +358,12 @@ async def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-async def generate_search_users_constraints() -> list[dict[str, Any]]:
+async def generate_search_users_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for searching users based on the provided user profile data.
     """
-    dataset = await _get_data("users")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data("users", seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_SEARCH_USERS_MAP
     field_map = {"query": ["name", "title"]}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -365,12 +371,13 @@ async def generate_search_users_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-async def generate_search_jobs_constraints() -> list[dict[str, Any]]:
+async def generate_search_jobs_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for searching jobs based on the provided job data.
     Replaces raw salary values with predefined filter options if applicable.
     """
-    dataset = await _get_data("jobs")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data("jobs", seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_SEARCH_JOBS_MAP
     field_map = {"query": ["title", "company"]}
 
@@ -423,11 +430,12 @@ async def generate_search_jobs_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-async def generate_view_job_constraints() -> list[dict[str, Any]]:
+async def generate_view_job_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for viewing a job based on the provided job data.
     """
-    dataset = await _get_data("jobs")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data("jobs", seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_VIEW_JOB_MAP
     field_map = {"job_title": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)

@@ -5,7 +5,7 @@ from typing import Any
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict, parse_price
@@ -191,10 +191,11 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
     return generated_value
 
 
-async def generate_autozone_products_constraints() -> list[dict[str, Any]]:
+async def generate_autozone_products_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     fields = ["title", "category", "brand", "rating", "price"]
-    data_items = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data_items = await _get_data(seed_value=v2_seed)
     if not data_items:
         return []
 
@@ -214,7 +215,7 @@ async def generate_autozone_products_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_search_query_constraints() -> list[dict[str, Any]]:
+async def generate_search_query_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     query_operators = [
         ComparisonOperator.EQUALS,
@@ -223,7 +224,8 @@ async def generate_search_query_constraints() -> list[dict[str, Any]]:
 
     op = random.choice(query_operators)
     # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
-    data_items = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data_items = await _get_data(seed_value=v2_seed)
     constraint_value = generate_constraint_value("query", op, {}, all_products_data=data_items)
     if constraint_value is not None:
         constraints_list.append(create_constraint_dict("query", op, constraint_value))
@@ -232,9 +234,10 @@ async def generate_search_query_constraints() -> list[dict[str, Any]]:
     return constraints_list if constraints_list else [create_constraint_dict("query", ComparisonOperator.CONTAINS, "products")]
 
 
-async def generate_quantity_change_constraints() -> list[dict[str, Any]]:
+async def generate_quantity_change_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    data_items = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data_items = await _get_data(seed_value=v2_seed)
     if not data_items:
         return []
 

@@ -58,12 +58,19 @@ class UseCase(BaseModel):
                 self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
 
-    async def generate_constraints_async(self):
+    async def generate_constraints_async(self, task_url: str | None = None):
         """
         Async version that awaits async constraints generators when provided.
+
+        Args:
+            task_url: Optional task URL to extract seed values from (for v2-seed support)
         """
         if self.constraints_generator:
-            result = self.constraints_generator()
+            # If constraints_generator accepts a task_url parameter, pass it
+            import inspect
+
+            sig = inspect.signature(self.constraints_generator)
+            result = self.constraints_generator(task_url=task_url) if "task_url" in sig.parameters else self.constraints_generator()
             if asyncio.iscoroutine(result):
                 self.constraints = await result
             else:

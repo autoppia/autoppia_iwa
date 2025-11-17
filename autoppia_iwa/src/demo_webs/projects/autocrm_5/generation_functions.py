@@ -5,7 +5,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -35,7 +35,7 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
         backend_url=crm_project.backend_url,
         project_key=project_key,
         entity_type=entity_type,
-        seed_value=seed_value if seed_value is not None else 0,
+        seed_value=seed_value if seed_value is not None else 1,
         limit=count,
         method=method if method else None,
         filter_key=filter_key if filter_key else None,
@@ -46,6 +46,10 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
         return _STATIC_CLIENTS
     elif entity_type == "matters":
         return _STATIC_MATTERS
+    elif entity_type == "files":
+        return DOCUMENT_DATA
+    elif entity_type == "logs":
+        return DEMO_LOGS
     else:
         return []
 
@@ -119,9 +123,10 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return None
 
 
-async def generate_view_matter_constraints() -> list[dict[str, Any]]:
+async def generate_view_matter_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    dataset = await _get_data(entity_type="matters", method="distribute", filter_key="status")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data(entity_type="matters", method="distribute", filter_key="status", seed_value=v2_seed)
     possible_fields = ["name", "client", "status", "updated"]
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
@@ -197,9 +202,10 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_view_client_constraints() -> list[dict[str, Any]]:
+async def generate_view_client_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status", seed_value=v2_seed)
     possible_fields = ["name", "email", "status", "matters"]
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
@@ -223,9 +229,10 @@ async def generate_view_client_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_search_client_constraints() -> list[dict[str, Any]]:
+async def generate_search_client_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status", seed_value=v2_seed)
     field_map = {"name": "query"}
     field = "name"
     allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
@@ -312,11 +319,14 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
     return random.choice(values)
 
 
-def generate_document_deleted_constraints() -> list[dict[str, Any]]:
+async def generate_document_deleted_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
     possible_fields = ["name", "size", "version", "status"]  # , "updated"]
-    document_data = random.choice(DOCUMENT_DATA)
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data = await _get_data(entity_type="files", method="", filter_key="", seed_value=v2_seed)
+    document_data = random.choice(data)
+    # document_data = random.choice(DOCUMENT_DATA)
 
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
@@ -329,7 +339,7 @@ def generate_document_deleted_constraints() -> list[dict[str, Any]]:
 
         field_value = document_data.get(field)
 
-        value = _generate_value_for_document_field(field, field_value, operator, DOCUMENT_DATA) if field == "size" else _generate_constraint_value(operator, field_value, field, dataset=DOCUMENT_DATA)
+        value = _generate_value_for_document_field(field, field_value, operator, data) if field == "size" else _generate_constraint_value(operator, field_value, field, dataset=data)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -445,12 +455,12 @@ def generate_new_log_added_constraints() -> list[dict[str, Any]]:
     return constraints
 
 
-def generate_delete_log_constraints() -> list[dict[str, Any]]:
+async def generate_delete_log_constraints() -> list[dict[str, Any]]:
     fields = ["matter", "hours", "client", "status"]
     constraints: list[dict[str, Any]] = []
 
-    log_data = random.choice(DEMO_LOGS)
-
+    data = await _get_data(entity_type="logs", method="", filter_key="")
+    log_data = random.choice(data)
     for field in fields:
         allowed_ops = FIELD_OPERATORS_MAP_LOG.get(field, [])
         if not allowed_ops:

@@ -3,7 +3,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
@@ -27,17 +27,44 @@ from .data import (
 )
 
 
+def apply_mapping(record: dict, mapping: dict) -> dict:
+    """
+    Rename fields in a single dictionary according to mapping rules.
+    """
+    new_record = {}
+    for key, value in record.items():
+        # If key exists in mapping, replace it
+        new_key = mapping.get(key, key)
+        new_record[new_key] = value
+    return new_record
+
+
+def transform_all(records: list[dict], mapping: dict) -> list[dict]:
+    """
+    Apply field mapping to a list of dictionaries.
+    """
+    return [apply_mapping(record, mapping) for record in records]
+
+
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, dining_project
 
-    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{dining_project.id}"
-    ENTITY_TYPE = "restaurants"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{dining_project.id}"
 
     items = await load_dataset_data(
-        backend_url=dining_project.backend_url, project_key=PROJECT_KEY, entity_type=ENTITY_TYPE, seed_value=seed_value if seed_value is not None else 0, limit=count, method="shuffle"
+        backend_url=dining_project.backend_url,
+        project_key=project_key,
+        entity_type="restaurants",
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="shuffle",
     )
     if items:
-        return items
+        # Field mapping rules
+        field_mapping = {"namepool": "name", "staticBookings": "bookings", "staticReviews": "reviews", "staticStars": "rating", "staticPrices": "price"}
+
+        mapped_items = transform_all(items, field_mapping)
+        return mapped_items
     from .data import RESTAURANT_DATA
 
     return RESTAURANT_DATA
@@ -193,9 +220,13 @@ def _generate_value_for_field(field_name: str) -> Any:
 
 
 # --- Constraint Generators ---
-async def generate_view_restaurant_constraints():
+async def generate_view_restaurant_constraints(task_url: str | None = None):
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
     return generate_restaurant_constraints(
-        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4, dataset=await _get_data()
+        fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
+        allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
+        max_constraints=4,
+        dataset=await _get_data(seed_value=v2_seed),
     )
 
 

@@ -2,7 +2,7 @@ import random
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator
 from ..operators import EQUALS, NOT_EQUALS
@@ -22,8 +22,29 @@ from .data import (
 )
 
 
+def apply_mapping(record: dict, mapping: dict) -> dict:
+    """
+    Rename fields in a single dictionary according to mapping rules.
+    """
+    new_record = {}
+    for key, value in record.items():
+        # If key exists in mapping, replace it
+        new_key = mapping.get(key, key)
+        new_record[new_key] = value
+    return new_record
+
+
+def transform_all(records: list[dict], mapping: dict) -> list[dict]:
+    """
+    Apply field mapping to a list of dictionaries.
+    """
+    return [apply_mapping(record, mapping) for record in records]
+
+
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, automail_project
+
+    field_mapping = {"isRead": "is_read", "isStarred": "is_starred", "isDraft": "is_draft", "isImportant": "is_important"}
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{automail_project.id}"
     items = await load_dataset_data(
@@ -39,7 +60,8 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         from .data import transform_emails_list
 
         modified_emails = transform_emails_list(items)
-        return modified_emails
+        mapped_emails = transform_all(modified_emails, field_mapping)
+        return mapped_emails
     from .data import EMAILS_DATA_MODIFIED as _STATIC_EMAILS
 
     return _STATIC_EMAILS
@@ -112,12 +134,13 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return value
 
 
-async def generate_view_email_constraints() -> list[dict[str, Any]]:
+async def generate_view_email_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_VIEW_EMAIL_MAP.keys())
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
-    emails = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    emails = await _get_data(seed_value=v2_seed)
     base = emails if emails else EMAILS_DATA_MODIFIED
     email = choice(base)
 
@@ -142,10 +165,11 @@ def _boolean_constraints_value(value, operator: ComparisonOperator) -> bool:
         return not bool(value)
 
 
-async def generate_is_starred_constraints() -> list[dict[str, Any]]:
+async def generate_is_starred_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     # Filter emails where is_starred == False
-    emails = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    emails = await _get_data(seed_value=v2_seed)
     base = emails if emails else EMAILS_DATA_MODIFIED
     eligible_emails = [e for e in base if not e.get("is_starred", False)]
     if not eligible_emails:
@@ -177,12 +201,13 @@ async def generate_is_starred_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_is_read_constraints() -> list[dict[str, Any]]:
+async def generate_is_read_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     fixed_field = "is_read"
     field_value = False
 
-    emails = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    emails = await _get_data(seed_value=v2_seed)
     base = emails if emails else EMAILS_DATA_MODIFIED
     eligible_emails = [e for e in base if e.get(fixed_field) is True]
     email = random.choice(base) if not eligible_emails else random.choice(eligible_emails)
@@ -207,10 +232,11 @@ async def generate_is_read_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_is_important_constraints() -> list[dict[str, Any]]:
+async def generate_is_important_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     fixed_field = "is_important"
-    emails = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    emails = await _get_data(seed_value=v2_seed)
     base = emails if emails else EMAILS_DATA_MODIFIED
     email = random.choice(base)
     op = ComparisonOperator(random.choice(FIELD_OPERATORS_IMPORTANT_MAP[fixed_field]))
@@ -235,12 +261,13 @@ async def generate_is_important_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_is_spam_constraints() -> list[dict[str, Any]]:
+async def generate_is_spam_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     fixed_field = "is_spam"
     field_value = True
 
-    emails = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    emails = await _get_data(seed_value=v2_seed)
     base = emails if emails else EMAILS_DATA_MODIFIED
     email = next((e for e in base if e.get(fixed_field) is True), None)
     if not email:
@@ -320,9 +347,10 @@ LIST_OF_EMAILS = [
 ]
 
 
-async def generate_save_as_draft_send_email_constraints() -> list[dict[str, Any]]:
+async def generate_save_as_draft_send_email_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    emails = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    emails = await _get_data(seed_value=v2_seed)
     base = emails if emails else EMAILS_DATA_MODIFIED
     email = choice(base)
     selected_fields = ["to"]  # Fixed 'to'
@@ -352,9 +380,10 @@ def _get_labels_and_colors(email_data: list[dict[str, Any]]) -> tuple:
     return list(labels), list(colors)
 
 
-async def generate_create_label_constraints() -> list[dict[str, Any]]:
+async def generate_create_label_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    emails = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    emails = await _get_data(seed_value=v2_seed)
     base = emails if emails else EMAILS_DATA_MODIFIED
     labels, colors = _get_labels_and_colors(base)
     labels_and_colors = [{"label_name": label, "label_color": color} for label, color in zip(labels, colors, strict=False)]
@@ -372,10 +401,11 @@ async def generate_create_label_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_add_label_constraints() -> list[dict[str, Any]]:
+async def generate_add_label_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
 
-    emails = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    emails = await _get_data(seed_value=v2_seed)
     base = emails if emails else EMAILS_DATA_MODIFIED
 
     full_dataset = []

@@ -3,7 +3,7 @@ from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
 
 from ..criterion_helper import ComparisonOperator
@@ -30,9 +30,30 @@ from .data import (
 )
 
 
+def apply_mapping(record: dict, mapping: dict) -> dict:
+    """
+    Rename fields in a single dictionary according to mapping rules.
+    """
+    new_record = {}
+    for key, value in record.items():
+        # If key exists in mapping, replace it
+        new_key = mapping.get(key, key)
+        new_record[new_key] = value
+    return new_record
+
+
+def transform_all(records: list[dict], mapping: dict) -> list[dict]:
+    """
+    Apply field mapping to a list of dictionaries.
+    """
+    return [apply_mapping(record, mapping) for record in records]
+
+
 async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
     try:
         from .main import FRONTEND_PORT_INDEX, autocalendar_project
+
+        field_mapping = {"allDay": "all_day", "recurrenceEndDate": "recurrence_end_date"}
 
         project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autocalendar_project.id}"
 
@@ -45,7 +66,8 @@ async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dic
             method="select",
         )
         if items:
-            return items
+            mapped_items = transform_all(items, field_mapping)
+            return mapped_items
     except Exception:
         pass
     return EVENTS_DATASET
@@ -335,8 +357,9 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(reduced_field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
 
 
-async def generate_event_wizard_open_constraints() -> list[dict[str, Any]]:
-    event_data = await _get_data()
+async def generate_event_wizard_open_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    event_data = await _get_data(seed_value=v2_seed)
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_WIZARD_OPEN.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(1, len(possible_fields)))

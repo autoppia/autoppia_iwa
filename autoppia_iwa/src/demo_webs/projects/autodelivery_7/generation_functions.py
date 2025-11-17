@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -113,10 +113,11 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return value
 
 
-async def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
+async def generate_search_restaurant_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
-    data_items = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data_items = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
     search_terms = []
     for item in data_items:
         if item.get("name"):
@@ -146,9 +147,10 @@ async def generate_search_restaurant_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def __generate_view_restaurant_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def __generate_view_restaurant_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list = []
-    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
     fields = ["name", "cuisine", "rating", "description"]
     num_constraints = random.randint(2, len(fields))
     selected_fields = random.sample(fields, num_constraints)
@@ -167,15 +169,16 @@ async def __generate_view_restaurant_constraints() -> tuple[list[dict[str, Any]]
     return constraints_list, restaurant
 
 
-async def generate_view_restaurant_constraints() -> list[dict]:
-    constraints_list, _ = await __generate_view_restaurant_constraints()
+async def generate_view_restaurant_constraints(task_url: str | None = None) -> list[dict]:
+    constraints_list, _ = await __generate_view_restaurant_constraints(task_url=task_url)
 
     return constraints_list
 
 
-async def _get_menu_items() -> list[dict[str, Any]]:
+async def _get_menu_items(task_url: str | None = None) -> list[dict[str, Any]]:
     menu_items = []
-    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
     for restaurant in restaurant_data:
         for menu_item in restaurant.get("menu", []):
             menu_items.append(
@@ -203,9 +206,10 @@ def _get_menu_items_for_restaurant(restaurant: dict) -> list[dict[str, Any]]:
     ]
 
 
-async def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def __generate_add_to_cart_modal_open_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list = []
-    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
     if not restaurant_data:
         return [], {}
     restaurant = random.choice(restaurant_data)
@@ -213,7 +217,7 @@ async def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str
     if not menu_items:
         return [], {}
     item = random.choice(menu_items)
-    menu_dataset = await _get_menu_items()
+    menu_dataset = await _get_menu_items(task_url=task_url)
     fields = ["item", "price"]
     num_constraints = random.randint(1, len(fields))
     selected_fields = random.sample(fields, num_constraints)
@@ -240,8 +244,8 @@ async def __generate_add_to_cart_modal_open_constraints() -> tuple[list[dict[str
     return constraints_list, item
 
 
-async def generate_add_to_cart_modal_open_constraints() -> list[dict]:
-    constraints_list, _ = await __generate_add_to_cart_modal_open_constraints()
+async def generate_add_to_cart_modal_open_constraints(task_url: str | None = None) -> list[dict]:
+    constraints_list, _ = await __generate_add_to_cart_modal_open_constraints(task_url=task_url)
     return constraints_list
 
 

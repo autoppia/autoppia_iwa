@@ -2,7 +2,7 @@ import random
 from random import choice, sample
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
@@ -67,20 +67,21 @@ def generate_logout_constraints():
     return parse_constraints_str(constraints_str)
 
 
-async def generate_search_film_constraints():
+async def generate_search_film_constraints(task_url: str | None = None):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
     from .utils import parse_constraints_str
 
-    movie_names = [movie["name"] for movie in await _get_data()]
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    movie_names = [movie["name"] for movie in await _get_data(seed_value=v2_seed)]
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(movie_names)}"
     return parse_constraints_str(constraints_str)
 
 
-async def generate_film_constraints():
+async def generate_film_constraints(task_url: str | None = None):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
@@ -88,7 +89,8 @@ async def generate_film_constraints():
     from .utils import build_constraints_info, parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    constraints_str = build_constraints_info(await _get_data())
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    constraints_str = build_constraints_info(await _get_data(seed_value=v2_seed))
 
     # Convertir el string a la estructura de datos
     if constraints_str:
@@ -175,14 +177,15 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
-async def generate_film_filter_constraints():
+async def generate_film_filter_constraints(task_url: str | None = None):
     """
     Genera una combinación de constraints para filtrado de películas
     usando los años y géneros reales de las películas.
     """
     from random import choice
 
-    data_items = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data_items = await _get_data(seed_value=v2_seed)
     existing_years = list(set(movie["year"] for movie in data_items))
     existing_genres = list(set(genre for movie in data_items for genre in movie["genres"]))
 
@@ -416,14 +419,15 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
     return None
 
 
-async def generate_add_comment_constraints():
+async def generate_add_comment_constraints(task_url: str | None = None):
     """
     Genera combinaciones de constraints para añadir comentarios.
     """
     from random import choice
 
     # Películas disponibles
-    movies = [movie["name"] for movie in await _get_data()]
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    movies = [movie["name"] for movie in await _get_data(seed_value=v2_seed)]
 
     # Palabras y frases para generar comentarios
     comment_keywords = [
@@ -494,7 +498,7 @@ async def generate_add_comment_constraints():
     return constraints
 
 
-async def generate_edit_film_constraints():
+async def generate_edit_film_constraints(task_url: str | None = None):
     """
     Generates constraints specifically for editing film-related use cases.
     Returns the constraints as structured data.
@@ -502,7 +506,8 @@ async def generate_edit_film_constraints():
     from random import choice, randint, uniform
 
     # Obtener películas disponibles
-    movies = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    movies = await _get_data(seed_value=v2_seed)
 
     # Campos editables (sin name porque ya tenemos la película)
     editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]

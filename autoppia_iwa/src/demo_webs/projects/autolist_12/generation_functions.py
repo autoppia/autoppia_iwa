@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
 from .data import (
@@ -181,9 +181,10 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
     return constraints_list
 
 
-async def generate_select_date_for_task_constraints() -> list[dict[str, Any]]:
+async def generate_select_date_for_task_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """Generate constraints for selecting a date for a task."""
-    tasks = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    tasks = await _get_data(seed_value=v2_seed)
     dataset = tasks if tasks else TASKS
     field_map = {"_dataset": dataset, "date": {"is_date": True}} if random.choice([True, False]) else {"_dataset": dataset, "quick_option": {"values": DATES_QUICK_OPTIONS}}
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
@@ -197,9 +198,10 @@ async def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_PRIORITY_MAP)
 
 
-async def generate_task_constraints() -> list[dict[str, Any]]:
+async def generate_task_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """Generate constraints for adding or updating a task."""
-    tasks = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    tasks = await _get_data(seed_value=v2_seed)
     dataset = tasks if tasks else TASKS
     field_map = {
         "_dataset": dataset,
