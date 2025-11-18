@@ -5,7 +5,7 @@ from typing import Any
 from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict, parse_datetime
@@ -19,6 +19,7 @@ from .data import (
     FIELD_OPERATORS_SHARE_HOTEL_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
     HOTELS_DATA_MODIFIED,
+    get_modify_data,
 )
 
 
@@ -36,7 +37,8 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         limit=count,
     )
     if items:
-        return items
+        modified_hotels = get_modify_data(items)
+        return modified_hotels
     from .data import HOTELS_DATA_MODIFIED as _STATIC
 
     return _STATIC
@@ -160,9 +162,10 @@ def _generate_constraint_value(
     return None
 
 
-async def generate_search_hotel_constraints() -> list[dict[str, Any]]:
+async def generate_search_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-
+    v2_seed = extract_v2_seed_from_url(task_url)
+    data = await _get_data(seed_value=v2_seed)
     possible_fields = [
         "search_term",
         "datesFrom",
@@ -179,7 +182,7 @@ async def generate_search_hotel_constraints() -> list[dict[str, Any]]:
     # Ensure if 'datesTo' is selected, 'datesFrom' is also selected
     if "datesTo" in selected_fields and "datesFrom" not in selected_fields:
         selected_fields.append("datesFrom")
-    sample_hotel = random.choice(HOTELS_DATA_MODIFIED)
+    sample_hotel = random.choice(data)
     max_guests = sample_hotel.get("maxGuests", 2)
 
     # Generate adults and children such that their sum <= max_guests
@@ -210,13 +213,13 @@ async def generate_search_hotel_constraints() -> list[dict[str, Any]]:
                 value = sample_hotel.get("title")
             if not value:
                 continue
-            value = _generate_constraint_value(operator, value, new_field, HOTELS_DATA_MODIFIED)
+            value = _generate_constraint_value(operator, value, new_field, data)
 
         elif field in ["datesFrom", "datesTo"]:
             value = sample_hotel.get(field)
             if not value:
                 logger.warning(f"Field {field} is empty!")
-            value = _generate_constraint_value(operator, value, field, HOTELS_DATA_MODIFIED)
+            value = _generate_constraint_value(operator, value, field, data)
 
         elif field in ["adults", "children"]:
             actual_value = sample_guests.get(field, 0)
@@ -276,7 +279,7 @@ def _generate_num_of_guests_field_value(operator: str, actual_value: int, max_va
         return max(1, min(actual_value, max_value))
 
 
-async def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def __generate_view_hotel_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     possible_fields = list(FIELD_OPERATORS_VIEW_HOTEL_MAP.keys())
     num_constraints = random.randint(3, len(possible_fields))
@@ -287,8 +290,10 @@ async def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dic
         selected_fields.append("datesTo")
     elif "datesTo" in selected_fields and "datesFrom" not in selected_fields:
         selected_fields.append("datesFrom")
-
-    hotel = random.choice(HOTELS_DATA_MODIFIED)
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data = await _get_data(seed_value=v2_seed)
+    hotel = random.choice(data)
+    # hotel = random.choice(HOTELS_DATA_MODIFIED)
 
     for field in selected_fields:
         operator = ComparisonOperator(random.choice(FIELD_OPERATORS_VIEW_HOTEL_MAP[field]))
@@ -328,7 +333,7 @@ async def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dic
             else:
                 field_value = hotel_amenities
         else:
-            field_value = _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
+            field_value = _generate_constraint_value(operator, field_value, field, data)
             if field_value is None:
                 continue
 
@@ -337,15 +342,17 @@ async def __generate_view_hotel_constraints() -> tuple[list[dict[str, Any]], dic
     return constraints_list, hotel
 
 
-async def generate_view_hotel_constraints() -> list[dict[str, Any]]:
-    constraints_list, _ = await __generate_view_hotel_constraints()
+async def generate_view_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    constraints_list, _ = await __generate_view_hotel_constraints(task_url)
 
     return constraints_list
 
 
-async def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def _generate_reserve_hotel_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    view_hotel_constraints, sample_hotel = await __generate_view_hotel_constraints()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data = await _get_data(seed_value=v2_seed)
+    view_hotel_constraints, sample_hotel = await __generate_view_hotel_constraints(task_url)
     view_hotel_constraints = [c for c in view_hotel_constraints if c.get("field") != "guests"]
 
     view_fields = {f.get("field") for f in view_hotel_constraints}
@@ -373,7 +380,7 @@ async def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], d
             field_value = sample_hotel.get(field)
             if field_value is None:
                 continue
-            value = _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
+            value = _generate_constraint_value(operator, field_value, field, data)
             if value is None:
                 continue
             constraint = create_constraint_dict(field, operator, value)
@@ -383,15 +390,17 @@ async def _generate_reserve_hotel_constraints() -> tuple[list[dict[str, Any]], d
     return constraints_list, sample_hotel
 
 
-async def generate_reserve_hotel_constraints() -> list[dict[str, Any]]:
-    constraints_list, sample_hotel = await _generate_reserve_hotel_constraints()
+async def generate_reserve_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    constraints_list, sample_hotel = await _generate_reserve_hotel_constraints(task_url)
     return constraints_list
 
 
-async def generate_increase_guests_constraints() -> list[dict[str, Any]]:
+async def generate_increase_guests_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-
-    hotel = random.choice(HOTELS_DATA_MODIFIED)
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data = await _get_data(seed_value=v2_seed)
+    hotel = random.choice(data)
+    # hotel = random.choice(HOTELS_DATA_MODIFIED)
     max_value = hotel.get("maxGuests") or hotel.get("guests") or 2  # fallback if missing
 
     from_guests = 1
@@ -416,16 +425,16 @@ async def generate_increase_guests_constraints() -> list[dict[str, Any]]:
         actual_value = sample_event_data.get(field)
         if not actual_value:
             continue
-        value = _generate_num_of_guests_field_value(operator, actual_value, max_value) if field == "guests_to" else _generate_constraint_value(operator, actual_value, field, HOTELS_DATA_MODIFIED)
+        value = _generate_num_of_guests_field_value(operator, actual_value, max_value) if field == "guests_to" else _generate_constraint_value(operator, actual_value, field, data)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 
     return constraints_list
 
 
-async def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
+async def generate_edit_checkin_checkout_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    reserve_constraints_list, sample_hotel = await _generate_reserve_hotel_constraints()
+    reserve_constraints_list, sample_hotel = await _generate_reserve_hotel_constraints(task_url)
 
     possible_fields = list(FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP.keys())
     possible_fields = [field for field in possible_fields if field not in ["checkin", "checkout"]]
@@ -486,8 +495,8 @@ async def generate_edit_checkin_checkout_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
-    reserve_constraints, sample_hotel = await _generate_reserve_hotel_constraints()
+async def generate_confirm_and_pay_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    reserve_constraints, sample_hotel = await _generate_reserve_hotel_constraints(task_url)
 
     # Payment specific fields
     payment_fields = ["card_number", "expiration", "cvv", "zipcode", "country"]
@@ -541,8 +550,10 @@ async def generate_confirm_and_pay_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_message_host_constraints() -> list[dict[str, Any]]:
+async def generate_message_host_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
+    v2_seed = extract_v2_seed_from_url(task_url)
+    data = await _get_data(seed_value=v2_seed)
     msgs_list = [
         "Is your place available for the selected dates?",
         "Can you tell me more about the amenities?",
@@ -555,7 +566,7 @@ async def generate_message_host_constraints() -> list[dict[str, Any]]:
         "How far is the property from the city center?",
         "Is there a washing machine available for guests?",
     ]
-    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints()
+    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url)
 
     selected_fields = ["message", "host_name"]
     sample_data = {"host_name": hotel_dict.get("host_name", ""), "message": random.choice(msgs_list)}
@@ -568,9 +579,7 @@ async def generate_message_host_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = sample_data.get(field)
         value = (
-            _generate_constraint_value(operator, field_value, field, [{"message": msg} for msg in msgs_list])
-            if field == "message"
-            else _generate_constraint_value(operator, field_value, field, HOTELS_DATA_MODIFIED)
+            _generate_constraint_value(operator, field_value, field, [{"message": msg} for msg in msgs_list]) if field == "message" else _generate_constraint_value(operator, field_value, field, data)
         )
 
         constraints_list.append(create_constraint_dict(field, operator, value))
@@ -578,7 +587,7 @@ async def generate_message_host_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_share_hotel_constraints() -> list[dict[str, Any]]:
+async def generate_share_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     emails_list = [
         "alice.smith@example.com",
@@ -608,7 +617,7 @@ async def generate_share_hotel_constraints() -> list[dict[str, Any]]:
         "charlotte.cox@musicstream.fm",
     ]
 
-    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints()
+    constraint_list_for_view, hotel_dict = await __generate_view_hotel_constraints(task_url)
 
     field = "email"
     dataset = [{"email": email} for email in emails_list]
