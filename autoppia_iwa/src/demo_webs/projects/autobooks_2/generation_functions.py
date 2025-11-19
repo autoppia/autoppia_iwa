@@ -22,7 +22,11 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         limit=count,
     )
     if items:
+        for item in items:
+            if "author" not in item and "director" in item:
+                item["author"] = item["director"]
         return items
+
     from .data import BOOKS_DATA
 
     return BOOKS_DATA
