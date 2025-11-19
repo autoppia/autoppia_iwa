@@ -20,7 +20,7 @@ async def generate_tasks_for_project(
     prompts_per_use_case: int,
     num_use_cases: int,
     use_cases: list[str] | None = None,
-    dynamic: list[str] | None = None,
+    dynamic: bool = False,
 ):
     """
     Generate tasks for the given project, preferring cache when requested.

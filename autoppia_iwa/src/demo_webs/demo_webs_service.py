@@ -130,45 +130,23 @@ class BackendDemoWebService:
         if self.web_project.is_web_real:
             return []
 
-        if self._should_use_proxy_api():
-            try:
-                endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/get_events/"
-                params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
-
-                session = await self._get_session()
-
-                async with session.get(endpoint, params=params) as response:
-                    response.raise_for_status()
-                    events_data = await response.json(loads=self._json_parser.loads)
-                    if not events_data:
-                        print("No events received.")
-                    # print(events_data, [BackendEvent(**event.get("data", {})) for event in events_data])
-                    return [BackendEvent(**event.get("data", {})) for event in events_data]
-
-            except Exception as e:
-                logger.warning(f"Failed to get events from API: {e}. Falling back to file cache.")
-
         try:
-            endpoint = f"{self.base_url}events/list/"
-            headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID}
+            endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/get_events/"
+            params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
+
             session = await self._get_session()
 
-            async with session.get(endpoint, headers=headers) as response:
-                response.raise_for_status()  # Raise on 4xx/5xx
+            async with session.get(endpoint, params=params) as response:
+                response.raise_for_status()
                 events_data = await response.json(loads=self._json_parser.loads)
-                _log_backend_test(f"FETCH events: {len(events_data)} encontrados", web_agent_id=web_agent_id)
+                if not events_data:
+                    print("No events received.")
+                # print(events_data, [BackendEvent(**event.get("data", {})) for event in events_data])
+                return [BackendEvent(**event.get("data", {})) for event in events_data]
 
-                # print(events_data, [BackendEvent(**event) for event in events_data])
-                return [BackendEvent(**event) for event in events_data]
-        except ClientError as e:
-            logger.error(f"Network error while fetching backend events: {e}")
-        except self._json_decode_error as e:
-            logger.error(f"Error parsing JSON response from network: {e}")
-        except ValueError as e:
-            logger.error(f"Error parsing JSON response (ValueError): {e}")
         except Exception as e:
-            logger.error(f"Unexpected error fetching backend events: {e}")
-        return []
+            logger.warning(f"Failed to get events from API: {e}. Falling back to file cache.")
+            return []
 
     async def reset_web_agent_events(self, web_agent_id: str) -> bool:
         """
@@ -267,46 +245,18 @@ class BackendDemoWebService:
             _log_evaluation_event("Not resetting DB as its real website", context="RESETTING DB")
             return False
 
-        if self._should_use_proxy_api():
-            try:
-                endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
-                params = {"web_url": self.base_url, "web_agent_id": web_agent_id or self.web_agent_id, "validator_id": VALIDATOR_ID}
-                session = await self._get_session()
-
-                async with session.delete(endpoint, params=params) as response:
-                    if response.status in (200, 202):
-                        _log_evaluation_event("Database reset via API successful", context="RESETTING DB")
-                        return True
-            except Exception as e:
-                logger.warning(f"API reset failed: {e}. Falling back to file reset.")
-
-        endpoint = override_url or f"{self.base_url}management_admin/reset_db/"
-        session = await self._get_session()
-        headers = {"X-WebAgent-Id": web_agent_id, "X-Validator-Id": VALIDATOR_ID}
-
         try:
-            async with session.post(endpoint, headers=headers, timeout=30) as response:
-                response.raise_for_status()
+            endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
+            params = {"web_url": self.base_url, "web_agent_id": web_agent_id or self.web_agent_id, "validator_id": VALIDATOR_ID}
+            session = await self._get_session()
 
-                try:
-                    response_data = await response.json(loads=self._json_parser.loads)
-                    if response_data.get("status") == "success":
-                        _log_evaluation_event(f"Database reset: {response_data.get('message')}", context="RESETTING DB")
-                        return True
-                except Exception:
-                    if response.status in (200, 202):
-                        _log_evaluation_event("Database reset initiated successfully.", context="RESETTING DB")
-                        return True
-                    else:
-                        logger.warning(f"Database reset completed with unexpected status: {response.status}")
-                        return False
-
+            async with session.delete(endpoint, params=params) as response:
+                if response.status in (200, 202):
+                    _log_evaluation_event("Database reset via API successful", context="RESETTING DB")
+                    return True
         except Exception as e:
-            logger.error(f"Failed to reset database: {e}")
+            logger.warning(f"API reset failed: {e}. Falling back to file reset.")
             return False
-        finally:
-            if session:
-                await session.close()
 
     async def send_event(self, event_name: str, data: dict[str, Any], web_agent_id: str) -> bool:
         """

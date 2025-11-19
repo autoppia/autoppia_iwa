@@ -41,7 +41,7 @@ class AgentConfig(BaseModel):
     use_cases: list[str] | None = None
     timeout: int = 120
     should_record_gif: bool = False
-    dynamic: list[str] = []  # Array of v1, v2, v3 (or combinations)
+    dynamic: bool = False
 
 
 @app.post("/test-your-agent")

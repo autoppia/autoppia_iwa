@@ -52,7 +52,7 @@ class GlobalTaskGenerationPipeline:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
 
-    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5, use_cases: list[str] | None = None, dynamic: list[str] | None = None) -> list[Task]:
+    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5, use_cases: list[str] | None = None, dynamic: bool | None = None) -> list[Task]:
         """
         Generate tasks for all use cases in the web project.
         """
@@ -95,38 +95,36 @@ class GlobalTaskGenerationPipeline:
         _log_task_generation(f"Total generated tasks across all use cases: {len(all_tasks)}", context="SUMMARY")
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5, dynamic: list[str] | None = None) -> list[Task]:
+    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5, dynamic: bool | None = None) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
 
         Args:
             use_case: The use case to generate tasks for
             number_of_prompts: Number of prompts to generate
-            dynamic: List of dynamic features (v1, v2, v3) that will be applied to tasks
+            dynamic: boolean, seed will be applied to tasks if true
         """
         additional_system_prompt = None
         # Get base URL for initial constraint generation (before tasks are created)
         base_url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
 
-        # Pre-compute URL with v2-seed if "v2" is in dynamic array
+        # Pre-compute URL with seed if dynamic is True
         # This ensures constraints are generated with the same seed that will be used in the task URL
         constraint_url = base_url
-        v2_seed_value = None
-        if dynamic and "v2" in dynamic:
-            import random
+        if dynamic:
             from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
-            v2_seed_value = random.randint(1, 300)
+            seed_value = random.randint(1, 300)
             parsed = urlparse(base_url)
             query_params = parse_qs(parsed.query)
 
-            # Only add if 'v2-seed' not already in URL
-            if "v2-seed" not in query_params:
-                query_params["v2-seed"] = [str(v2_seed_value)]
+            # Only add if 'seed' not already in URL
+            if "seed" not in query_params:
+                query_params["seed"] = [str(seed_value)]
                 new_query = urlencode(query_params, doseq=True)
                 constraint_url = urlunparse(parsed._replace(query=new_query))
 
-        # Generate initial constraints with URL that includes v2-seed (if applicable)
+        # Generate initial constraints with URL that includes seed (if applicable)
         if hasattr(use_case, "generate_constraints_async"):
             constraints_info = await use_case.generate_constraints_async(task_url=constraint_url)
         else:
@@ -157,7 +155,7 @@ class GlobalTaskGenerationPipeline:
                 # This ensures the task uses the same v2-seed that was used for constraint generation
                 task_data = {
                     "web_project_id": self.web_project.id,
-                    "url": constraint_url if (dynamic and "v2" in dynamic) else url,
+                    "url": constraint_url if dynamic else url,
                     "prompt": replaced_prompt,
                     "html": "",
                     "clean_html": "",
@@ -165,7 +163,7 @@ class GlobalTaskGenerationPipeline:
                     "screenshot_desc": "",
                     "use_case": use_case,
                     "relevant_data": self.web_project.relevant_data,
-                    "dynamic": dynamic or [],
+                    "dynamic": dynamic or False,
                 }
                 # Create the task
                 # If constraint_url has v2-seed, it will be extracted by assign_v2_seed_to_url() during Task.__init__

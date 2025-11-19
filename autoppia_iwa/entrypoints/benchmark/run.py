@@ -19,17 +19,17 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
-    # ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
-    ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
+    # ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
     # "autocinema",
-    # "autobooks",
+    "autobooks",
     # "autozone",
-    "autodining",
+    # "autodining",
     # "autocrm",
     # "automail",
     # "autodelivery",
@@ -43,9 +43,41 @@ PROJECT_IDS = [
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
+    "BOOK_DETAIL"
     # "VIEW_USER_PROFILE",
     # "FILM_DETAIL",
     # "EDIT_USER_BOOK"
+    # "RESERVE_HOTEL"
+    # "VIEW_FULL_MENU"
+    # "RESERVATION_COMPLETE"
+    # "ORDER_COMPLETED",
+    # "HIRE_CONSULTANT"
+    # "VIEW_HOTEL"
+    # "SEARCH_HOTEL"
+    # "VIEW_HOTEL"
+    # "INCREASE_NUMBER_OF_GUESTS"
+    # "RESERVE_HOTEL"
+    # "COLLAPSE_MENU"
+    # "CHECKOUT_STARTED"
+    # "ORDER_COMPLETED"
+    # "NEW_LOG_ADDED"
+    # "VIEW_MATTER_DETAILS"
+    # "SEARCH_CLIENT"
+    # "DOCUMENT_DELETED"
+    # "SEARCH_EMAIL"
+    # "PLACE_ORDER"
+    # "DROPOFF_PREFERENCE"
+    # "ADD_TO_CART_MENU_ITEM"
+    # "DELETE_REVIEW"
+    # "ITEM_INCREMENTED"
+    # "VIEW_USER_PROFILE"
+    # "BOOK_A_CONSULTATION"
+    # "HIRE_CONSULTANT"
+    # "SEARCH_LOCATION"
+    # "SEARCH_DESTINATION"
+    # "SEARCH"
+    # "SELECT_CAR"
+    # "RESERVE_RIDE"
 ]
 
 # 3) Benchmark parameters
@@ -63,8 +95,7 @@ CFG = BenchmarkConfig(
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic features: array of v1, v2, v3 (or combinations)
-    # v1 = assign seed, v2 = assign v2-seed, v3 = assign seed structure
-    dynamic=["v1", "v2", "v3"],  # Example: ["v1"], ["v3"], ["v1", "v3"], etc.
+    dynamic=True,
     # Persistence
     save_results_json=True,
     plot_results=False,

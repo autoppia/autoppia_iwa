@@ -36,7 +36,7 @@ class BenchmarkConfig:
 
     # Dynamic features: array of v1, v2, v3 (or combinations)
     # v1 = assign seed, v2 = assign v2-seed, v3 = assign seed structure
-    dynamic: list[str] = field(default_factory=lambda: [])
+    dynamic: bool = False
 
     # Visualization
     enable_visualization: bool = True
@@ -60,29 +60,6 @@ class BenchmarkConfig:
 
         if not self.agents:
             logger.warning("No agents configured - benchmark will not run")
-
-        # Handle comma-separated strings (e.g., "v1,v2, v3" -> ["v1", "v2", "v3"])
-        normalized_dynamic = []
-        for val in self.dynamic:
-            if isinstance(val, str):
-                split_vals = [v.strip() for v in val.split(",") if v.strip()]
-                normalized_dynamic.extend(split_vals)
-            else:
-                normalized_dynamic.append(str(val).strip())
-
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_dynamic = []
-        for val in normalized_dynamic:
-            if val not in seen:
-                seen.add(val)
-                unique_dynamic.append(val)
-
-        self.dynamic = unique_dynamic
-        valid_values = {"v1", "v2", "v3"}
-        invalid_values = [val for val in self.dynamic if val not in valid_values]
-        if invalid_values:
-            raise ValueError(f"dynamic array can only contain 'v1', 'v2', or 'v3'. Found invalid values: {invalid_values}")
 
         self.data_dir = self.base_dir / "data"
         self.tasks_cache_dir = self.data_dir / "tasks_cache"

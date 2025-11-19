@@ -83,7 +83,7 @@ async def generate_tasks_for_web_project(
     prompts_per_use_case: int = 1,
     num_of_use_cases: int = 1,
     use_cases: list[str] | None = None,
-    dynamic: list[str] | None = None,
+    dynamic: bool | None = None,
 ) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
