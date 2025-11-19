@@ -362,6 +362,18 @@ class FilmDetailEvent(Event):
         )
 
 
+class AddToWatchlistEvent(FilmDetailEvent):
+    event_name: str = "ADD_TO_WATCHLIST"
+
+
+class ShareFilmEvent(FilmDetailEvent):
+    event_name: str = "SHARE_MOVIE"
+
+
+class WatchTrailer(FilmDetailEvent):
+    event_name: str = "WATCH_TRAILER"
+
+
 class AddFilmEvent(Event):
     """Event triggered when a user adds a new film"""
 
@@ -863,65 +875,6 @@ class FilterFilmEvent(Event):
         )
 
 
-# TODO: No sensible, Need to come-up with a new approach
-# class CompositeEvent(Event):
-#     """Event triggered when a user performs multiple actions in sequence"""
-#
-#     event_name: str = "COMPOSITE_EVENT"
-#     events: list[Event] = Field(default_factory=list)
-#
-#     class ValidationCriteria(BaseModel):
-#         """Criteria for validating composite events"""
-#
-#         event_criteria: list[dict[str, Any]] = []
-#
-#     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-#         """
-#         Validate if this composite event meets the criteria for all sub-events.
-#
-#         Args:
-#             criteria: Optional validation criteria for each event
-#
-#         Returns:
-#             True if all criteria are met, False otherwise
-#         """
-#         if not criteria or not criteria.event_criteria:
-#             return True
-#
-#         if len(self.events) != len(criteria.event_criteria):
-#             return False  # Ensure criteria match the number of events
-#
-#         return all(event._validate_criteria(event.__class__.ValidationCriteria(**event_criteria)) for event, event_criteria in zip(self.events, criteria.event_criteria, strict=False))
-#
-#     @classmethod
-#     def parse(cls, backend_event: "BackendEvent") -> "CompositeEvent":
-#         """
-#         Parse a composite event from backend data
-#
-#         Args:
-#             backend_event: Event data from the backend API
-#
-#         Returns:
-#             CompositeEvent object populated with data from the backend event
-#         """
-#         base_event = Event.parse(backend_event)
-#         event_data = backend_event.get("events", [])
-#
-#         parsed_events = []
-#         for event_dict in event_data:
-#             event_class = BACKEND_EVENT_TYPES.get(event_dict.get("event_name"))  # Dynamically get event class
-#             if event_class:
-#                 parsed_events.append(event_class.parse(event_dict))
-#
-#         return cls(
-#             event_name=base_event.event_name,
-#             timestamp=base_event.timestamp,
-#             web_agent_id=base_event.web_agent_id,
-#             user_id=base_event.user_id,
-#             events=parsed_events,
-#         )
-
-
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
@@ -942,35 +895,7 @@ BACKEND_EVENT_TYPES = {
     "ADD_COMMENT": AddCommentEvent,
     "CONTACT": ContactEvent,
     "FILTER_FILM": FilterFilmEvent,
+    "ADD_TO_WATCHLIST": AddToWatchlistEvent,
+    "SHARE_MOVIE": ShareFilmEvent,
+    "WATCH_TRAILER": WatchTrailer,
 }
-
-# =============================================================================
-#                          EXAMPLE USAGE
-# =============================================================================
-"""
-# Example 1: Basic validation for a login event
-login_criteria = LoginEvent.ValidationCriteria(
-    username="testuser"
-)
-
-# Example 2: Advanced login validation with operators
-login_criteria_advanced = LoginEvent.ValidationCriteria(
-    username=CriterionValue(
-        value="testuser",
-        operator=ComparisonOperator.EQUALS
-    )
-)
-
-# Example 3: Movie with rating ≥ 8.0 and runtime < 120 minutes
-movie_criteria = FilmDetailEvent.ValidationCriteria(
-    rating=CriterionValue(value=8.0, operator=ComparisonOperator.GREATER_EQUAL),
-    duration=CriterionValue(value=120, operator=ComparisonOperator.LESS_THAN)
-)
-
-# Example 4: Comedy movie directed by Spielberg after 2000
-movie_criteria2 = FilmDetailEvent.ValidationCriteria(
-    genre="comedy",
-    director="Spielberg",
-    year=CriterionValue(value=2000, operator=ComparisonOperator.GREATER_THAN)
-)
-"""

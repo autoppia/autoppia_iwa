@@ -11,15 +11,17 @@ from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, cinema_project
 
-    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{cinema_project.id}"
-    ENTITY_TYPE = "movies"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{cinema_project.id}"
+    entity_type = "movies"
 
     items = await load_dataset_data(
         backend_url=cinema_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type=ENTITY_TYPE,
+        project_key=project_key,
+        entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
+        method="distribute",
+        filter_key="category",
     )
     if items:
         return items

@@ -6,8 +6,8 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 from .data import MOVIES_DATA
 from .events import (
     AddCommentEvent,
-    # CompositeEvent  # si eventualmente necesitas el composite
     AddFilmEvent,
+    AddToWatchlistEvent,
     ContactEvent,
     DeleteFilmEvent,
     EditFilmEvent,
@@ -18,6 +18,8 @@ from .events import (
     LogoutEvent,
     RegistrationEvent,
     SearchFilmEvent,
+    ShareFilmEvent,
+    WatchTrailer,
 )
 from .generation_functions import (
     generate_add_comment_constraints,
@@ -216,6 +218,196 @@ FILM_DETAIL_USE_CASE = UseCase(
         {
             "prompt": "Go directly to the highest-rated James Cameron film page",
             "prompt_for_task_generation": "Go directly to the highest-rated <director> film page",
+        },
+    ],
+)
+
+ADD_TO_WATCHLIST_FILM_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Add to wishlist..." etc.).
+4. Only use the movies name defined below.
+
+MOVIES NAMES:
+{chr(10).join([n["name"] for n in MOVIES_DATA])}
+
+For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
+- CORRECT: "Add to wishlist a movie not directed by Robert Zemeckis that was released after 2010"
+- INCORRECT: "Add to wishlist a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
+- INCORRECT: "Add to wishlist a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+ADD_TO_WATCHLIST_USE_CASE = UseCase(
+    name="ADD_TO_WATCHLIST",
+    description="The user explicitly requests to add a film into wishlist of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    event=AddToWatchlistEvent,
+    event_source_code=AddToWatchlistEvent.get_source_code_of_class(),
+    additional_prompt_info=ADD_TO_WATCHLIST_FILM_INFO,
+    constraints_generator=generate_film_constraints,
+    examples=[
+        {
+            "prompt": "Add to wishlist The Matrix movie",
+            "prompt_for_task_generation": "Add to wishlist <movie> movie",
+        },
+        {
+            "prompt": "Add to wishlist Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Add to wishlist <movie> by <director>",
+        },
+        {
+            "prompt": "Add to wishlist sci-fi movie from 2010",
+            "prompt_for_task_generation": "Add to wishlist <genre> movie from <year>",
+        },
+        {
+            "prompt": "Add to wishlist movie with rating above 4.5",
+            "prompt_for_task_generation": "Add to wishlist a movie with rating above <rating>",
+        },
+        {
+            "prompt": "Add to wishlist Pulp Fiction film",
+            "prompt_for_task_generation": "Add to wishlist <movie> film",
+        },
+        {
+            "prompt": "Add to wishlist a comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Add to wishlist a <genre> film less than <duration> minutes long",
+        },
+        {
+            "prompt": "Add to wishlist a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Add to wishlist a film from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "Add to wishlist a horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "Add to wishlist a <genre> movie not directed by <director>",
+        },
+        {
+            "prompt": "Add to wishlist a highest-rated James Cameron film",
+            "prompt_for_task_generation": "Add to wishlist a highest-rated <director> film",
+        },
+    ],
+)
+SHARE_FILM_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
+4. Only use the movies name defined below.
+
+MOVIES NAMES:
+{chr(10).join([n["name"] for n in MOVIES_DATA])}
+
+For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
+- CORRECT: "Share details about a movie not directed by Robert Zemeckis that was released after 2010"
+- INCORRECT: "Share details about a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
+- INCORRECT: "Share details about a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+SHARE_FILM_USE_CASE = UseCase(
+    name="SHARE_MOVIE",
+    description="The user requests to share a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    event=ShareFilmEvent,
+    event_source_code=ShareFilmEvent.get_source_code_of_class(),
+    additional_prompt_info=SHARE_FILM_INFO,
+    constraints_generator=generate_film_constraints,
+    examples=[
+        {
+            "prompt": "Share The Matrix movie",
+            "prompt_for_task_generation": "Share <movie> movie",
+        },
+        {
+            "prompt": "Share Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Share <movie> by <director>",
+        },
+        {
+            "prompt": "Share sci-fi movie from 2010",
+            "prompt_for_task_generation": "Share <genre> movie from <year>",
+        },
+        {
+            "prompt": "Share movie with rating above 4.5",
+            "prompt_for_task_generation": "Share movie with rating above <rating>",
+        },
+        {
+            "prompt": "Share Pulp Fiction film details",
+            "prompt_for_task_generation": "Share <movie> film details",
+        },
+        {
+            "prompt": "Share comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Share <genre> film less than <duration> minutes long",
+        },
+        {
+            "prompt": "Share film details from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Share film details from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "Share horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "Share <genre> movie not directed by <director>",
+        },
+        {
+            "prompt": "Share highest-rated James Cameron film",
+            "prompt_for_task_generation": "Share highest-rated <director> film",
+        },
+    ],
+)
+WATCH_TRAILER_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **watch the trailer** of a movie (use phrases like "Watch trailer for...", "Play the trailer of...", "View the trailer for...", etc.).
+4. Only use the movies name defined below.
+
+MOVIES NAMES:
+{chr(10).join([n["name"] for n in MOVIES_DATA])}
+
+For example, if the constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
+- CORRECT: "Watch the trailer for a movie not directed by Robert Zemeckis that was released after 2010"
+- INCORRECT: "Watch the trailer for a movie directed by Christopher Nolan" (you added a random director, and missing the year constraint)
+- INCORRECT: "Watch the trailer for a movie not directed by Robert Zemeckis that was released after 2010 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+WATCH_TRAILER_USE_CASE = UseCase(
+    name="WATCH_TRAILER",
+    description="The user requests to watch the trailer of a specific movie that meets certain criteria, where they can view information including director, year, genres, rating, duration, and cast.",
+    event=WatchTrailer,
+    event_source_code=WatchTrailer.get_source_code_of_class(),
+    additional_prompt_info=WATCH_TRAILER_INFO,
+    constraints_generator=generate_film_constraints,
+    examples=[
+        {
+            "prompt": "Watch the trailer for The Matrix movie",
+            "prompt_for_task_generation": "Watch the trailer for <movie> movie",
+        },
+        {
+            "prompt": "Play the trailer of Interstellar by Christopher Nolan",
+            "prompt_for_task_generation": "Play the trailer of <movie> by <director>",
+        },
+        {
+            "prompt": "Watch the trailer for a sci-fi movie from 2010",
+            "prompt_for_task_generation": "Watch the trailer for a <genre> movie from <year>",
+        },
+        {
+            "prompt": "View the trailer for a movie with rating above 4.5",
+            "prompt_for_task_generation": "View the trailer for a movie with rating above <rating>",
+        },
+        {
+            "prompt": "Watch the trailer for Pulp Fiction film",
+            "prompt_for_task_generation": "Watch the trailer for <movie> film",
+        },
+        {
+            "prompt": "Play the trailer of a comedy film less than 100 minutes long",
+            "prompt_for_task_generation": "Play the trailer of a <genre> film less than <duration> minutes long",
+        },
+        {
+            "prompt": "Watch the trailer for a film from the 90s with Al Pacino",
+            "prompt_for_task_generation": "Watch the trailer for a film from the <decade>s with <actor>",
+        },
+        {
+            "prompt": "View the trailer for a horror movie not directed by Wes Craven",
+            "prompt_for_task_generation": "View the trailer for a <genre> movie not directed by <director>",
+        },
+        {
+            "prompt": "Watch the trailer for the highest-rated James Cameron film",
+            "prompt_for_task_generation": "Watch the trailer for the highest-rated <director> film",
         },
     ],
 )
@@ -686,4 +878,7 @@ ALL_USE_CASES = [
     EDIT_FILM_USE_CASE,
     ADD_FILM_USE_CASE,
     EDIT_USER_PROFILE_USE_CASE,
+    ADD_TO_WATCHLIST_USE_CASE,
+    SHARE_FILM_USE_CASE,
+    WATCH_TRAILER_USE_CASE,
 ]
