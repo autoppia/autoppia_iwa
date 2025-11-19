@@ -1,4 +1,4 @@
-from autoppia_iwa.src.demo_webs.projects.books_2.data import BOOKS_DATA
+from autoppia_iwa.src.demo_webs.projects.autobooks_2.data import BOOKS_DATA
 
 from .relevant_data import RELEVANT_DATA
 

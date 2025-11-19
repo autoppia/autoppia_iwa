@@ -29,7 +29,7 @@ PROJECT_IDS = [
     # "autocinema",
     # "autobooks",
     # "autozone",
-    # "autodining",
+    "autodining",
     # "autocrm",
     # "automail",
     # "autodelivery",
@@ -38,7 +38,7 @@ PROJECT_IDS = [
     # "autowork",
     # "autocalendar",
     # "autolist",
-    "autodrive",
+    # "autodrive",
     # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
