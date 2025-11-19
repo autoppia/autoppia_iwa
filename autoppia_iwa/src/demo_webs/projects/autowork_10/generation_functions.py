@@ -8,7 +8,6 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_fr
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
-    EXPERTS_DATA_MODIFIED,
     FIELD_OPERATORS_MAP_ADD_SKILL,
     FIELD_OPERATORS_MAP_CANCEL_HIRE,
     FIELD_OPERATORS_MAP_CLOSE_JOB_POSTING,
@@ -21,6 +20,7 @@ from .data import (
     FIELD_OPERATORS_MAP_WRITING_A_JOB_TITLE,
     FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP,
     POPULAR_SKILLS,
+    expert_data_modified,
 )
 
 
@@ -37,8 +37,11 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         method="select",
     )
     if items:
-        return items
-    return EXPERTS_DATA_MODIFIED
+        modified_experts = expert_data_modified(items)
+        return modified_experts
+    from .data import EXPERTS
+
+    return expert_data_modified(EXPERTS)
 
 
 def _generate_constraint_value(

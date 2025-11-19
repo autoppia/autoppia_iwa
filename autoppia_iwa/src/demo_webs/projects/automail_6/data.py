@@ -1538,9 +1538,9 @@ def transform_emails_list(emails: list[dict]) -> list[dict]:
 EMAILS_DATA_MODIFIED = transform_emails_list(EMAILS_DATA)
 
 
-def get_all_email_words():
+def get_all_email_words(email_data):
     words = set()
-    for email in EMAILS_DATA_MODIFIED:
+    for email in email_data:
         if email.get("subject"):
             words.update(email["subject"].split())
         if email.get("from_email"):
@@ -1550,7 +1550,7 @@ def get_all_email_words():
     return list(words)
 
 
-ALL_EMAIL_WORDS = get_all_email_words()
+ALL_EMAIL_WORDS = get_all_email_words(EMAILS_DATA_MODIFIED)
 
 
 FIELD_OPERATORS_VIEW_EMAIL_MAP = {

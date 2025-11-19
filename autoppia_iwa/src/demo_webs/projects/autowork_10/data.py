@@ -645,13 +645,17 @@ EXPERTS = [
     },
 ]
 
-EXPERTS_DATA_MODIFIED = []
-for data in EXPERTS:
-    new_data = data.copy()
-    if data.get("lastReview") and isinstance(data["lastReview"], dict):
-        for k, v in data["lastReview"].items():
-            new_data["lastReview" + k.title()] = v
-    EXPERTS_DATA_MODIFIED.append(new_data)
+
+def expert_data_modified(experts):
+    expert_data_modified = []
+    for data in experts:
+        new_data = data.copy()
+        if data.get("lastReview") and isinstance(data["lastReview"], dict):
+            for k, v in data["lastReview"].items():
+                new_data["lastReview" + k.title()] = v
+        expert_data_modified.append(new_data)
+    return expert_data_modified
+
 
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_THAN, LESS_THAN, GREATER_EQUAL, LESS_EQUAL]

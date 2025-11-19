@@ -8,7 +8,6 @@ from ..criterion_helper import ComparisonOperator
 from ..operators import EQUALS, NOT_EQUALS
 from ..shared_utils import create_constraint_dict
 from .data import (
-    ALL_EMAIL_WORDS,
     EMAILS_DATA_MODIFIED,
     FIELD_OPERATORS_ADD_LABEL_MAP,
     FIELD_OPERATORS_CREATE_LABEL_MAP,
@@ -19,6 +18,7 @@ from .data import (
     FIELD_OPERATORS_SEND_OR_DRAFT_EMAIL_MAP,
     FIELD_OPERATORS_STARRED_MAP,
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
+    get_all_email_words,
 )
 
 
@@ -293,25 +293,27 @@ async def generate_is_spam_constraints(task_url: str | None = None) -> list[dict
     return constraints_list
 
 
-def _generate_search_constraint_value(operator, value):
+def _generate_search_constraint_value(operator, value, dataset):
     if operator == ComparisonOperator.EQUALS:
         return value
     elif operator == ComparisonOperator.NOT_EQUALS:
-        return choice([word for word in ALL_EMAIL_WORDS if value != word])
+        return choice([word for word in dataset if value != word])
     elif operator == ComparisonOperator.CONTAINS:
-        return choice([word for word in ALL_EMAIL_WORDS if value in word])
+        return choice([word for word in dataset if value in word])
     elif operator == ComparisonOperator.NOT_CONTAINS:
-        return choice([word for word in ALL_EMAIL_WORDS if value not in word])
+        return choice([word for word in dataset if value not in word])
 
 
-async def generate_search_email_constraints() -> list[dict[str, Any]]:
+async def generate_search_email_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data = await _get_data(seed_value=v2_seed)
+    all_email_words = get_all_email_words(data)
     for field, operators in FIELD_OPERATORS_SEARCH_MAP.items():
         operator = ComparisonOperator(random.choice(operators))
-        field_value = choice(ALL_EMAIL_WORDS)
+        field_value = choice(all_email_words)
 
-        value = _generate_search_constraint_value(operator, field_value)
+        value = _generate_search_constraint_value(operator, field_value, all_email_words)
         constraint = create_constraint_dict(field, operator, value)
         constraints_list.append(constraint)
 

@@ -21,7 +21,6 @@ from .data import (
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
     MATTERS_DATA as _STATIC_MATTERS,
-    NEW_LOGS_DATA,
 )
 
 
@@ -29,8 +28,6 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
     from .main import FRONTEND_PORT_INDEX, crm_project
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{crm_project.id}"
-    if entity_type == "matters":
-        project_key = f"{project_key}:matters"
     items = await load_dataset_data(
         backend_url=crm_project.backend_url,
         project_key=project_key,
@@ -432,11 +429,12 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
     return constraints
 
 
-def generate_new_log_added_constraints() -> list[dict[str, Any]]:
+async def generate_new_log_added_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     fields = ["matter", "hours", "description"]
     constraints: list[dict[str, Any]] = []
-
-    log_data = random.choice(NEW_LOGS_DATA)
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data = await _get_data(entity_type="logs", seed_value=v2_seed)
+    log_data = random.choice(data)
 
     for field in fields:
         allowed_ops = FIELD_OPERATORS_MAP_NEW_LOG.get(field, [])
@@ -446,7 +444,7 @@ def generate_new_log_added_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = log_data.get(field)
 
-        value = _generate_constraint_value(operator, field_value, field, dataset=NEW_LOGS_DATA)
+        value = _generate_constraint_value(operator, field_value, field, dataset=data)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)
@@ -455,11 +453,11 @@ def generate_new_log_added_constraints() -> list[dict[str, Any]]:
     return constraints
 
 
-async def generate_delete_log_constraints() -> list[dict[str, Any]]:
+async def generate_delete_log_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     fields = ["matter", "hours", "client", "status"]
     constraints: list[dict[str, Any]] = []
-
-    data = await _get_data(entity_type="logs", method="", filter_key="")
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data = await _get_data(entity_type="logs", method="", filter_key="", seed_value=v2_seed)
     log_data = random.choice(data)
     for field in fields:
         allowed_ops = FIELD_OPERATORS_MAP_LOG.get(field, [])
@@ -469,7 +467,7 @@ async def generate_delete_log_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(random.choice(allowed_ops))
         field_value = log_data.get(field)
 
-        value = _generate_constraint_value(operator, field_value, field, dataset=DEMO_LOGS)
+        value = _generate_constraint_value(operator, field_value, field, dataset=data)
 
         if value is not None:
             constraint = create_constraint_dict(field, operator, value)

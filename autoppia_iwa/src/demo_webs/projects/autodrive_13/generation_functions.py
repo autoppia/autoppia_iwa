@@ -5,7 +5,7 @@ from typing import Any
 
 from dateutil import parser
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -18,35 +18,39 @@ from .data import (
     FIELD_OPERATORS_MAP_SELECT_CAR,
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
-    PLACES,
-    RIDES,
 )
 
 
-async def _get_places(seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def _get_data(entity_type: str, method: str | None = None, filter_key: str | None = None, seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, drive_project
 
-    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{drive_project.id}"
-
-    items = await load_dataset_data(
-        backend_url=drive_project.backend_url, project_key=PROJECT_KEY, entity_type="trips", seed_value=seed_value if seed_value is not None else 0, limit=count, method="select"
-    )
-    return items if items else PLACES
-
-
-async def _get_rides(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    from .main import FRONTEND_PORT_INDEX, drive_project
-
-    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{drive_project.id}"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{drive_project.id}"
 
     items = await load_dataset_data(
         backend_url=drive_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type="rides",
+        project_key=project_key,
+        entity_type=entity_type,
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
+        method=method if method else "select",
+        filter_key=filter_key if filter_key else None,
     )
-    return items if items else RIDES
+    if items:
+        return items
+    elif entity_type == "places":
+        from .data import PLACES
+
+        return PLACES
+    elif entity_type == "riders":
+        from .data import RIDES
+
+        return RIDES
+    elif entity_type == "trips":
+        from .data import PLACES
+
+        return PLACES
+    else:
+        return []
 
 
 def _generate_constraint_value(
@@ -260,28 +264,33 @@ def _generate_constraints(
     return all_constraints
 
 
-async def generate_enter_location_constraints() -> list[dict[str, Any]]:
+async def generate_enter_location_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     field_map = {"location": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_LOCATION
-    constraints_list = _generate_constraints(await _get_places(), field_operators, field_map=field_map)
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data(entity_type="places", seed_value=v2_seed)
+    constraints_list = _generate_constraints(dataset, field_operators, field_map=field_map)
     return constraints_list
 
 
-async def generate_enter_destination_constraints() -> list[dict[str, Any]]:
+async def generate_enter_destination_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     field_map = {"destination": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_DESTINATION
-    constraints_list = _generate_constraints(await _get_places(), field_operators, field_map=field_map)
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data(entity_type="places", seed_value=v2_seed)
+    constraints_list = _generate_constraints(dataset, field_operators, field_map=field_map)
     return constraints_list
 
 
-async def generate_see_prices_constraints() -> list[dict[str, Any]]:
-    places_data = await _get_places()
+async def generate_see_prices_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    dataset = await _get_data(entity_type="places", seed_value=v2_seed)
     field_mapping = {
-        "location": {"field": "label", "dataset": places_data},
-        "destination": {"field": "label", "dataset": places_data},
+        "location": {"field": "label", "dataset": dataset},
+        "destination": {"field": "label", "dataset": dataset},
     }
     field_operators = FIELD_OPERATORS_MAP_SEE_PRICES
-    constraints_list = _generate_constraints(places_data, field_operators, field_mapping, num_constraints=2)
+    constraints_list = _generate_constraints(dataset, field_operators, field_mapping, num_constraints=2)
     return constraints_list
 
 
@@ -413,15 +422,16 @@ def _create_scheduled_constraint(field, ops):
     return constraint
 
 
-async def generate_search_ride_constraints() -> list[dict[str, Any]]:
+async def generate_search_ride_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
-    places_data = await _get_places()
+    v2_seed = extract_v2_seed_from_url(task_url)
+    dataset = await _get_data(entity_type="places", seed_value=v2_seed)
 
     field_map = {
-        "location": {"field": "label", "dataset": places_data},
-        "destination": {"field": "label", "dataset": places_data},
+        "location": {"field": "label", "dataset": dataset},
+        "destination": {"field": "label", "dataset": dataset},
     }
-    constraints_list = _generate_constraints(places_data, field_ops, field_map=field_map, selected_fields=["location", "destination"])
+    constraints_list = _generate_constraints(dataset, field_ops, field_map=field_map, selected_fields=["location", "destination"])
 
     if "scheduled" in FIELD_OPERATORS_MAP_SEARCH_RIDE:
         ops = FIELD_OPERATORS_MAP_SEARCH_RIDE["scheduled"]
@@ -431,11 +441,12 @@ async def generate_search_ride_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_select_car_constraints() -> list[dict[str, Any]]:
+async def generate_select_car_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     fields_ops = FIELD_OPERATORS_MAP_SELECT_CAR.copy()
     scheduled_ops = fields_ops.pop("scheduled")
-    places_data = await _get_places()
-    rides_data = await _get_rides()
+    v2_seed = extract_v2_seed_from_url(task_url)
+    places_data = await _get_data(entity_type="places", seed_value=v2_seed)
+    rides_data = await _get_data(entity_type="rides", seed_value=v2_seed)
     field_map = {
         "location": "label",
         "destination": "label",
@@ -446,7 +457,7 @@ async def generate_select_car_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_reserve_ride_constraints() -> list[dict[str, Any]]:
-    constraints_list = await generate_select_car_constraints()
+async def generate_reserve_ride_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+    constraints_list = await generate_select_car_constraints(task_url)
 
     return constraints_list

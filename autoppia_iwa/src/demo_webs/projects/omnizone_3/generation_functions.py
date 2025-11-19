@@ -289,13 +289,13 @@ async def generate_quantity_change_constraints(task_url: str | None = None) -> l
     return constraints_list
 
 
-async def generate_checkout_constraints() -> list[dict[str, Any]]:
+async def generate_checkout_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """Generate randomized checkout constraints based on product data."""
     constraints: list[dict[str, Any]] = []
     field = "total_amount"
     operators = [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]
-
-    data_items = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data_items = await _get_data(seed_value=v2_seed)
     if not data_items:
         return constraints
 
@@ -305,7 +305,7 @@ async def generate_checkout_constraints() -> list[dict[str, Any]]:
         price = parse_price(price_str)
 
         operator = random.choice(operators)
-        value = generate_constraint_value(field, operator, {field: price})
+        value = generate_constraint_value(field, operator, {field: price}, data_items)
 
         if value is not None:
             constraints.append(create_constraint_dict(field, operator, value))
@@ -316,14 +316,14 @@ async def generate_checkout_constraints() -> list[dict[str, Any]]:
     return constraints
 
 
-async def generate_order_completed_constraints() -> list[dict[str, Any]]:
+async def generate_order_completed_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """
     Generate constraints for the ORDER_COMPLETED event,
     focused on the `items` list with ProductSummary fields like title, id, and quantity.
     """
     constraints_list = []
-
-    data_items = await _get_data()
+    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    data_items = await _get_data(seed_value=v2_seed)
     if not data_items:
         return []
 

@@ -270,9 +270,9 @@ def _get_new_quantity_value(operator: ComparisonOperator) -> int:
         return random.randint(2, 10)
 
 
-async def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
+async def __generate_add_to_cart_options_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    model_constraints, _ = await __generate_add_to_cart_modal_open_constraints()
+    model_constraints, _ = await __generate_add_to_cart_modal_open_constraints(task_url)
     field = "quantity"
 
     allowed_ops = FIELD_OPERATORS_INCREMENT_QUANTITY_MAP.get(field, [])
@@ -285,8 +285,8 @@ async def __generate_add_to_cart_options_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_increment_item_restaurant_constraints() -> list[dict]:
-    constraints_list = await __generate_add_to_cart_options_constraints()
+async def generate_increment_item_restaurant_constraints(task_url: str | None = None) -> list[dict]:
+    constraints_list = await __generate_add_to_cart_options_constraints(task_url)
     return constraints_list
 
 
@@ -313,8 +313,8 @@ def __get_delete_review_fields(restaurants):
     return result
 
 
-async def generate_delete_review_constraints() -> list[dict]:
-    constraints_list, restaurant = await __generate_view_restaurant_constraints()
+async def generate_delete_review_constraints(task_url: str | None = None) -> list[dict]:
+    constraints_list, restaurant = await __generate_view_restaurant_constraints(task_url)
     delete_review_dict = __get_delete_review_fields([restaurant])
     fields = ["author", "review_rating", "comment"]  # , "date"]
     num_constraints = random.randint(1, len(fields))
@@ -335,7 +335,7 @@ async def generate_delete_review_constraints() -> list[dict]:
     return constraints_list
 
 
-async def generate_add_to_cart_constraints() -> list[dict]:
+async def generate_add_to_cart_constraints(task_url: str | None = None) -> list[dict]:
     constraints_list = []
     sizes_list = ["small", "medium", "large"]
     preferences_list = [
@@ -365,7 +365,7 @@ async def generate_add_to_cart_constraints() -> list[dict]:
         "peanut-free",
         "shellfish-free",
     ]
-    common_add_to_cart_constraints = await __generate_add_to_cart_options_constraints()
+    common_add_to_cart_constraints = await __generate_add_to_cart_options_constraints(task_url)
     fields = ["size", "preferences"]
     num_constraints = random.randint(1, len(fields))
     selected_fields = random.sample(fields, num_constraints)
@@ -390,8 +390,8 @@ async def generate_add_to_cart_constraints() -> list[dict]:
     return constraints_list
 
 
-async def generate_dropoff_option_constraints() -> list[dict]:
-    constraints_list = await __generate_add_to_cart_options_constraints()
+async def generate_dropoff_option_constraints(task_url: str | None = None) -> list[dict]:
+    constraints_list = await __generate_add_to_cart_options_constraints(task_url)
     dropoffOptions = ["Leave it at my door", "Hand it to me", "Meet outside", "Meet in the lobby", "Call upon arrival", "Text when arriving"]
 
     field = "delivery_preference"
@@ -422,9 +422,9 @@ def _get_address_dataset():
     return [{"address": addr} for addr in ADDRESSES]
 
 
-async def generate_address_added_constraints() -> list[dict]:
+async def generate_address_added_constraints(task_url: str | None = None) -> list[dict]:
     constraints_list = []
-    add_to_cart_constraint = await generate_add_to_cart_constraints()
+    add_to_cart_constraint = await generate_add_to_cart_constraints(task_url)
 
     field = "address"
     operator = ComparisonOperator(random.choice(FIELD_OPERATORS_ADDRESS_ADDED_MAP[field]))
@@ -436,7 +436,7 @@ async def generate_address_added_constraints() -> list[dict]:
     return constraints_list
 
 
-async def generate_place_order_constraints() -> list[dict]:
+async def generate_place_order_constraints(task_url: str | None = None) -> list[dict]:
     constraints = []
     names = [
         "Alice Johnson",
@@ -493,6 +493,6 @@ async def generate_place_order_constraints() -> list[dict]:
         value = _generate_constraint_value(operator, field_value, field, dataset)
         if value:
             constraints.append(create_constraint_dict(field, operator, value))
-    add_to_cart_constraint = await generate_add_to_cart_constraints()
+    add_to_cart_constraint = await generate_add_to_cart_constraints(task_url)
     constraints.extend(add_to_cart_constraint)
     return constraints
