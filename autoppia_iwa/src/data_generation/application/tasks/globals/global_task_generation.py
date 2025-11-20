@@ -191,8 +191,9 @@ class GlobalTaskGenerationPipeline:
 
         tasks: list[Task] = []
         # Extract seed value from constraint_url for replace functions
-        from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url
         import inspect
+
+        from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url
 
         seed_value_for_replace = extract_v2_seed_from_url(constraint_url)
 

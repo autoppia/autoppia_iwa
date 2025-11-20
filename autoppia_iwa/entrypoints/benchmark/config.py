@@ -72,7 +72,7 @@ class BenchmarkConfig:
         for d in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir, self.recordings_dir):
             try:
                 d.mkdir(parents=True, exist_ok=True)
-                logger.debug(f"Ensured directory exists: {d}")
+                # logger.debug(f"Ensured directory exists: {d}")
             except Exception as e:
                 logger.error(f"Failed to create directory {d}: {e}")
                 raise
