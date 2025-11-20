@@ -10,15 +10,15 @@ except Exception:  # pragma: no cover
 from loguru import logger
 
 
-def extract_v2_seed_from_url(url: str | None) -> int | None:
-    """Extract v2-seed parameter from URL query string. Helper for constraint generators."""
+def extract_seed_from_url(url: str | None) -> int | None:
+    """Extract seed parameter from URL query string. Helper for constraint generators."""
     if not url:
         return None
     try:
         parsed = urlparse(url)
         query = parse_qs(parsed.query)
-        if query.get("v2-seed"):
-            value = int(str(query["v2-seed"][0]).strip())
+        if query.get("seed"):
+            value = int(str(query["seed"][0]).strip())
             return value
     except Exception:
         return None

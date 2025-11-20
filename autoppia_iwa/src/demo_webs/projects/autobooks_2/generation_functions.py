@@ -2,7 +2,7 @@ import random
 from random import choice, randint, sample, uniform
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
@@ -95,7 +95,7 @@ async def generate_book_constraints(task_url: str | None = None):
     from .utils import build_constraints_info, parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     constraints_str = build_constraints_info(await _get_data(seed_value=v2_seed))
 
     # Convertir el string a la estructura de datos
@@ -127,7 +127,7 @@ async def generate_search_book_constraints(task_url: str | None = None):
     """
     from .utils import parse_constraints_str
 
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     books_names = [book["name"] for book in await _get_data(seed_value=v2_seed)]
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(books_names)}"
@@ -461,7 +461,7 @@ async def generate_add_comment_constraints(task_url: str | None = None):
     """
 
     # Películas disponibles
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     books = [book["name"] for book in await _get_data(seed_value=v2_seed)]
 
     # Palabras y frases para generar comentarios
@@ -575,7 +575,7 @@ async def generate_edit_book_constraints(task_url: str | None = None):
         "sage",
     ]
 
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data_items = await _get_data(seed_value=v2_seed)
     all_genres = list(set(genre for book in data_items for genre in book["genres"]))
 
@@ -667,7 +667,7 @@ async def generate_add_book_constraints(task_url: str | None = None):
         "sage",
     ]
 
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data_items = await _get_data(seed_value=v2_seed)
     all_genres = list(set(genre for book in data_items for genre in book["genres"]))
 
@@ -766,7 +766,7 @@ async def generate_edit_profile_constraints(task_url: str | None = None):
         "Literary critic specializing in contemporary novels and poetry.",
         "Story lover and aspiring writer.",
     ]
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data_items = await _get_data(seed_value=v2_seed)
     all_genres = list(set(genre for book in data_items for genre in book["genres"]))
 

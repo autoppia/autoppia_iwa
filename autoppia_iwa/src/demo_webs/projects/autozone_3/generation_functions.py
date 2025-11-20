@@ -5,7 +5,7 @@ from typing import Any
 
 from loguru import logger
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict, parse_price
@@ -189,7 +189,7 @@ def generate_constraint_value(field: str, operator: ComparisonOperator, product_
 async def generate_autozone_products_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
     fields = ["title", "category", "brand", "rating", "price"]
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data_items = await _get_data(seed_value=v2_seed)
     if not data_items:
         return []
@@ -219,7 +219,7 @@ async def generate_search_query_constraints(task_url: str | None = None) -> list
 
     op = random.choice(query_operators)
     # Pass a mock product_data_source even if not directly used, as generate_constraint_value expects it
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data_items = await _get_data(seed_value=v2_seed)
     constraint_value = generate_constraint_value("query", op, {}, all_products_data=data_items)
     if constraint_value is not None:
@@ -231,7 +231,7 @@ async def generate_search_query_constraints(task_url: str | None = None) -> list
 
 async def generate_quantity_change_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data_items = await _get_data(seed_value=v2_seed)
     if not data_items:
         return []
@@ -289,7 +289,7 @@ async def generate_checkout_constraints(task_url: str | None = None) -> list[dic
     constraints: list[dict[str, Any]] = []
     field = "total_amount"
     operators = [ComparisonOperator.EQUALS, ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL]
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data_items = await _get_data(seed_value=v2_seed)
     if not data_items:
         return constraints
@@ -317,7 +317,7 @@ async def generate_order_completed_constraints(task_url: str | None = None) -> l
     focused on the `items` list with ProductSummary fields like title, id, and quantity.
     """
     constraints_list = []
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data_items = await _get_data(seed_value=v2_seed)
     if not data_items:
         return []

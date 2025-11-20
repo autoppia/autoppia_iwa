@@ -5,7 +5,7 @@ from typing import Any
 
 from dateutil import parser
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -254,7 +254,7 @@ def _generate_constraints(
 async def generate_enter_location_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     field_map = {"location": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_LOCATION
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(entity_type="places", seed_value=v2_seed)
     constraints_list = _generate_constraints(dataset, field_operators, field_map=field_map)
     return constraints_list
@@ -263,14 +263,14 @@ async def generate_enter_location_constraints(task_url: str | None = None) -> li
 async def generate_enter_destination_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     field_map = {"destination": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_DESTINATION
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(entity_type="places", seed_value=v2_seed)
     constraints_list = _generate_constraints(dataset, field_operators, field_map=field_map)
     return constraints_list
 
 
 async def generate_see_prices_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(entity_type="places", seed_value=v2_seed)
     field_mapping = {
         "location": {"field": "label", "dataset": dataset},
@@ -411,7 +411,7 @@ def _create_scheduled_constraint(field, ops):
 
 async def generate_search_ride_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
-    v2_seed = extract_v2_seed_from_url(task_url)
+    v2_seed = extract_seed_from_url(task_url)
     dataset = await _get_data(entity_type="places", seed_value=v2_seed)
 
     field_map = {
@@ -431,7 +431,7 @@ async def generate_search_ride_constraints(task_url: str | None = None) -> list[
 async def generate_select_car_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     fields_ops = FIELD_OPERATORS_MAP_SELECT_CAR.copy()
     scheduled_ops = fields_ops.pop("scheduled")
-    v2_seed = extract_v2_seed_from_url(task_url)
+    v2_seed = extract_seed_from_url(task_url)
     places_data = await _get_data(entity_type="places", seed_value=v2_seed)
     rides_data = await _get_data(entity_type="rides", seed_value=v2_seed)
     field_map = {

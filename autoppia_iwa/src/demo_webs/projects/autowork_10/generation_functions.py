@@ -4,7 +4,7 @@ from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -203,7 +203,7 @@ def _generate_constraints(
 
 
 async def generate_book_consultant_constraint(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP
     selected_field = ["slug"]
@@ -213,7 +213,7 @@ async def generate_book_consultant_constraint(task_url: str | None = None) -> li
 
 
 async def generate_hire_button_clicked_constraint(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
     selected_field = []
@@ -226,7 +226,7 @@ async def generate_select_hiring_team_constraint(task_url: str | None = None) ->
     field_mapping = {
         "team": {"field": "team", "dataset": [{"team": t} for t in ["Microsoft", "Apple", "Google"]]},
     }
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_MAP_HIRING_TEAM
     selected_fields = []
@@ -242,7 +242,7 @@ async def generate_hire_consultation_constraint(task_url: str | None = None) -> 
         "paymentType": {"field": "paymentType", "dataset": [{"paymentType": p} for p in ["fixed", "hourly"]]},
     }
 
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_MAP_HIRING_CONSULTANT
     selected_fields = []
@@ -252,7 +252,7 @@ async def generate_hire_consultation_constraint(task_url: str | None = None) -> 
 
 
 async def generate_cancel_hire_constraint(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(seed_value=v2_seed)
     field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE
     fixed_fields = ["slug"]

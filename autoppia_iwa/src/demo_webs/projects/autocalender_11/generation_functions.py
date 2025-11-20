@@ -3,7 +3,7 @@ from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
 
 from ..criterion_helper import ComparisonOperator
@@ -357,7 +357,7 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
 
 
 async def generate_event_wizard_open_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     event_data = await _get_data(seed_value=v2_seed)
     constraints_list = []
     if not event_data:

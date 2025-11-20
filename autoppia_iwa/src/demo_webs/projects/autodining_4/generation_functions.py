@@ -3,7 +3,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
@@ -282,7 +282,7 @@ async def _generate_value_for_field(field_name: str) -> Any:
 
 # --- Constraint Generators ---
 async def generate_view_restaurant_constraints(task_url: str | None = None):
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"],
         allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT,
@@ -292,14 +292,14 @@ async def generate_view_restaurant_constraints(task_url: str | None = None):
 
 
 async def generate_view_full_menu_constraints(task_url: str | None = None):
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4, dataset=await _get_data(seed_value=v2_seed)
     )
 
 
 async def generate_collapse_menu_constraints(task_url: str | None = None):
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     return generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=4, dataset=await _get_data(seed_value=v2_seed)
     )
@@ -332,7 +332,7 @@ async def generate_constraints_for_single_field(field: str, allowed_operators: d
 
 
 async def generate_book_restaurant_constraints(task_url: str | None = None):
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data(seed_value=v2_seed)
     )
@@ -348,7 +348,7 @@ async def generate_book_restaurant_constraints(task_url: str | None = None):
 
 
 async def generate_country_selected_constraints(task_url: str | None = None):
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data(seed_value=v2_seed)
     )
@@ -366,7 +366,7 @@ async def generate_country_selected_constraints(task_url: str | None = None):
 
 
 async def generate_occasion_selected_constraints(task_url: str | None = None):
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data(seed_value=v2_seed)
     )
@@ -383,7 +383,7 @@ async def generate_occasion_selected_constraints(task_url: str | None = None):
 
 
 async def generate_reservation_complete_constraints(task_url: str | None = None):
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     restaurant_constraints = generate_restaurant_constraints(
         fields=["name", "desc", "rating", "reviews", "cuisine", "bookings"], allowed_ops=OPERATORS_ALLOWED_FOR_RESTAURANT, max_constraints=3, dataset=await _get_data(seed_value=v2_seed)
     )

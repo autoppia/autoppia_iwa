@@ -5,7 +5,7 @@ from typing import Any
 from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
 
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict, parse_datetime
@@ -161,7 +161,7 @@ def _generate_constraint_value(
 
 async def generate_search_hotel_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    v2_seed = extract_v2_seed_from_url(task_url)
+    v2_seed = extract_seed_from_url(task_url)
     data = await _get_data(seed_value=v2_seed)
     possible_fields = [
         "search_term",
@@ -287,7 +287,7 @@ async def __generate_view_hotel_constraints(task_url: str | None = None) -> tupl
         selected_fields.append("datesTo")
     elif "datesTo" in selected_fields and "datesFrom" not in selected_fields:
         selected_fields.append("datesFrom")
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data = await _get_data(seed_value=v2_seed)
     hotel = random.choice(data)
     # hotel = random.choice(HOTELS_DATA_MODIFIED)
@@ -347,7 +347,7 @@ async def generate_view_hotel_constraints(task_url: str | None = None) -> list[d
 
 async def _generate_reserve_hotel_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_seed_from_url(task_url) if task_url else None
     data = await _get_data(seed_value=v2_seed)
     view_hotel_constraints, sample_hotel = await __generate_view_hotel_constraints(task_url)
     view_hotel_constraints = [c for c in view_hotel_constraints if c.get("field") != "guests"]
@@ -394,7 +394,7 @@ async def generate_reserve_hotel_constraints(task_url: str | None = None) -> lis
 
 async def generate_increase_guests_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    v2_seed = extract_v2_seed_from_url(task_url)
+    v2_seed = extract_seed_from_url(task_url)
     data = await _get_data(seed_value=v2_seed)
     # Prefer hotels that allow increasing guests (capacity >= 2). If none, bail out early.
     capacity_hotels = [h for h in data if (h.get("maxGuests") or h.get("guests") or 0) >= 2]
@@ -555,7 +555,7 @@ async def generate_confirm_and_pay_constraints(task_url: str | None = None) -> l
 
 async def generate_message_host_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    v2_seed = extract_v2_seed_from_url(task_url)
+    v2_seed = extract_seed_from_url(task_url)
     data = await _get_data(seed_value=v2_seed)
     msgs_list = [
         "Is your place available for the selected dates?",

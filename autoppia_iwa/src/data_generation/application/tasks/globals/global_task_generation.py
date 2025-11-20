@@ -80,7 +80,7 @@ class GlobalTaskGenerationPipeline:
         # Update use cases' prompt info with API data if needed (generic for all projects)
         # This checks if the project's use_cases module has an update_use_cases_prompt_info function
         try:
-            from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url
+            from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url
 
             # Map project IDs to module directory names
             project_id_to_module = {
@@ -110,7 +110,7 @@ class GlobalTaskGenerationPipeline:
 
                     if hasattr(use_cases_module, "update_use_cases_prompt_info"):
                         base_url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
-                        seed_value = extract_v2_seed_from_url(base_url)
+                        seed_value = extract_seed_from_url(base_url)
                         await use_cases_module.update_use_cases_prompt_info(seed_value=seed_value)
                         logger.debug(f"Updated use cases prompt info for {self.web_project.id} with API data")
                 except (ImportError, AttributeError):
@@ -193,9 +193,9 @@ class GlobalTaskGenerationPipeline:
         # Extract seed value from constraint_url for replace functions
         import inspect
 
-        from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url
+        from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url
 
-        seed_value_for_replace = extract_v2_seed_from_url(constraint_url)
+        seed_value_for_replace = extract_seed_from_url(constraint_url)
 
         for prompt_text in prompt_list:
             try:
