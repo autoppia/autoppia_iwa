@@ -1,3 +1,4 @@
+import contextlib
 import random
 from datetime import date, datetime, time, timedelta
 from random import choice
@@ -91,7 +92,8 @@ def _generate_constraint_value(
         if len(field_value) > 2:
             start = random.randint(0, max(0, len(field_value) - 2))
             end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
+            subpart = field_value[start:end]
+            return subpart.strip()
         return field_value
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
@@ -103,7 +105,7 @@ def _generate_constraint_value(
         return "xyz"  # fallback
 
     if operator == ComparisonOperator.IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -113,9 +115,10 @@ def _generate_constraint_value(
         return list(set(subset))
 
     if operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
         if field_value in all_values:
-            all_values.remove(field_value)
+            with contextlib.suppress(ValueError):
+                all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
 
     if operator in {
@@ -126,9 +129,9 @@ def _generate_constraint_value(
     } and isinstance(field_value, int | float):
         delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
         if operator == ComparisonOperator.GREATER_THAN:
-            return field_value - delta
+            return round(field_value - delta, 2)
         if operator == ComparisonOperator.LESS_THAN:
-            return field_value + delta
+            return round(field_value + delta, 2)
         if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
             return field_value
 
@@ -142,6 +145,9 @@ def _generate_constraints(
     Generates constraints based on the dataset and field operator mapping.
     """
     all_constraints = []
+    if not dataset:
+        print("[ERROR] No dataset provided")
+        return all_constraints
     sample_data = choice(dataset)
     possible_fields = list(field_operators.keys())
     if selected_fields:

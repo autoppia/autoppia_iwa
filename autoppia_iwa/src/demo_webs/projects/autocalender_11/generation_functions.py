@@ -59,7 +59,7 @@ async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dic
         items = await load_dataset_data(
             backend_url=autocalendar_project.backend_url,
             project_key=project_key,
-            entity_type="calendar_events",
+            entity_type="events",
             seed_value=seed_value if seed_value is not None else 1,
             limit=count,
             method="select",
@@ -360,6 +360,9 @@ async def generate_event_wizard_open_constraints(task_url: str | None = None) ->
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
     event_data = await _get_data(seed_value=v2_seed)
     constraints_list = []
+    if not event_data:
+        print("[ERROR] No event data provided")
+        return constraints_list
     possible_fields = list(FIELD_OPERATORS_WIZARD_OPEN.keys())
     selected_fields = random.sample(possible_fields, k=random.randint(1, len(possible_fields)))
     sample_event = random.choice(event_data)

@@ -139,6 +139,9 @@ def _generate_constraints(dataset: list[dict], field_operators: dict, field_map:
     Generates constraints based on the dataset and field operator mapping.
     """
     all_constraints = []
+    if not dataset:
+        print("[ERROR] No dataset provided")
+        return all_constraints
     sample_data = choice(dataset)
     possible_fields = list(field_operators.keys())
     if selected_fields:

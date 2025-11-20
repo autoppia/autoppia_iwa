@@ -111,6 +111,9 @@ async def generate_view_matter_constraints(task_url: str | None = None) -> list[
     constraints_list: list[dict[str, Any]] = []
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
     dataset = await _get_data(entity_type="matters", method="distribute", filter_key="status", seed_value=v2_seed)
+    if not dataset:
+        print("[ERROR] No dataset provided")
+        return constraints_list
     possible_fields = ["name", "client", "status", "updated"]
     num_constraints = random.randint(2, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
@@ -190,6 +193,9 @@ async def generate_view_client_constraints(task_url: str | None = None) -> list[
     constraints_list = []
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
     client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status", seed_value=v2_seed)
+    if not client_data:
+        print("[ERROR] No dataset provided")
+        return constraints_list
     possible_fields = ["name", "email", "status", "matters"]
     num_constraints = random.randint(1, len(possible_fields))
     selected_fields = random.sample(possible_fields, num_constraints)
@@ -217,6 +223,9 @@ async def generate_search_client_constraints(task_url: str | None = None) -> lis
     constraints_list = []
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
     client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status", seed_value=v2_seed)
+    if not client_data:
+        print("[ERROR] No dataset provided")
+        return constraints_list
     field_map = {"name": "query"}
     field = "name"
     allowed_ops = FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER.get(field, [])
@@ -309,6 +318,9 @@ async def generate_document_deleted_constraints(task_url: str | None = None) -> 
     possible_fields = ["name", "size", "version", "status"]  # , "updated"]
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
     data = await _get_data(entity_type="files", method="", filter_key="", seed_value=v2_seed)
+    if not data:
+        print("[ERROR] No dataset provided")
+        return constraints_list
     document_data = random.choice(data)
     # document_data = random.choice(DOCUMENT_DATA)
 
@@ -420,7 +432,10 @@ async def generate_new_log_added_constraints(task_url: str | None = None) -> lis
     fields = ["matter", "hours", "description"]
     constraints: list[dict[str, Any]] = []
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
-    data = await _get_data(entity_type="logs", seed_value=v2_seed, method="")
+    data = await _get_data(entity_type="logs", seed_value=v2_seed)
+    if not data:
+        print("[ERROR] No dataset provided")
+        return constraints
     log_data = random.choice(data)
 
     for field in fields:
@@ -445,6 +460,9 @@ async def generate_delete_log_constraints(task_url: str | None = None) -> list[d
     constraints: list[dict[str, Any]] = []
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
     data = await _get_data(entity_type="logs", method="", filter_key="", seed_value=v2_seed)
+    if not data:
+        print("[ERROR] No dataset provided")
+        return constraints
     log_data = random.choice(data)
     for field in fields:
         allowed_ops = FIELD_OPERATORS_MAP_LOG.get(field, [])
