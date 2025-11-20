@@ -84,11 +84,13 @@ async def load_dataset_data(
         "entity_type": entity_type,
         "seed_value": seed_value,
         "limit": limit,
-        "method": method,
     }
-    if filter_key:
+    # Only add method, filter_key, and filter_values if they are not None
+    if method is not None:
+        params["method"] = method
+    if filter_key is not None:
         params["filter_key"] = filter_key
-    if filter_values:
+    if filter_values is not None:
         params["filter_values"] = filter_values  # CSV string
 
     cache_key = (
