@@ -167,8 +167,38 @@ class GlobalTaskGenerationPipeline:
                 constraint_url = urlunparse(parsed._replace(query=new_query))
 
         # Generate initial constraints with URL that includes seed (if applicable)
+        # Pre-load dataset if the use case needs it (optimization to avoid multiple API calls)
+        dataset = None
         if hasattr(use_case, "generate_constraints_async"):
-            constraints_info = await use_case.generate_constraints_async(task_url=constraint_url)
+            # Check if the constraint generator accepts a dataset parameter
+            if use_case.constraints_generator:
+                import inspect
+
+                sig = inspect.signature(use_case.constraints_generator)
+                if "dataset" in sig.parameters:
+                    # Pre-load dataset once for this use case
+                    try:
+                        from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+
+                        # Get the project-specific data loader function
+                        # Convention: each project has a _get_data function
+                        project_module = self.web_project.use_cases[0].__class__.__module__
+                        project_module_parts = project_module.rsplit(".", 1)[0]  # Remove last part (use_cases)
+
+                        # Import the generation_functions module to get _get_data
+                        import importlib
+
+                        gen_functions_module = importlib.import_module(f"{project_module_parts}.generation_functions")
+
+                        if hasattr(gen_functions_module, "_get_data"):
+                            v2_seed = await resolve_v2_seed_from_url(constraint_url)
+                            dataset = await gen_functions_module._get_data(seed_value=v2_seed)
+                            _log_task_generation(f"Pre-loaded dataset with v2_seed={v2_seed} ({len(dataset)} items)", context="OPTIMIZATION")
+                    except Exception as e:
+                        _log_task_generation(f"Could not pre-load dataset: {e}", context="WARNING")
+                        dataset = None
+
+            constraints_info = await use_case.generate_constraints_async(task_url=constraint_url, dataset=dataset)
         else:
             constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
             additional_system_prompt = constraints_info
@@ -193,9 +223,10 @@ class GlobalTaskGenerationPipeline:
         # Extract seed value from constraint_url for replace functions
         import inspect
 
-        from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url
+        from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
-        seed_value_for_replace = extract_seed_from_url(constraint_url)
+        # Get seed for replace functions (use resolve to get v2 seed)
+        seed_value_for_replace = await resolve_v2_seed_from_url(constraint_url)
 
         for prompt_text in prompt_list:
             try:

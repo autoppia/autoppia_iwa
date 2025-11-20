@@ -10,8 +10,77 @@ except Exception:  # pragma: no cover
 from loguru import logger
 
 
+# ─────────────────────────── Seed Resolution ───────────────────────────
+async def resolve_v2_seed_from_url(task_url: str | None, webs_server_url: str = "http://localhost:8090") -> int:
+    """
+    Call /seeds/resolve endpoint to get v2 seed from base seed in URL.
+
+    This is the proper way to derive seeds - it calls the centralized
+    webs_server endpoint instead of duplicating the formula.
+
+    Args:
+        task_url: URL with ?seed=X parameter
+        webs_server_url: Base URL of webs_server (default: http://localhost:8090)
+
+    Returns:
+        Derived v2 seed (1-300), defaults to 1 if any error occurs
+    """
+    if not task_url:
+        return 1
+
+    try:
+        # Extract base seed from URL
+        parsed = urlparse(task_url)
+        query = parse_qs(parsed.query)
+
+        if not query.get("seed"):
+            return 1
+
+        base_seed = int(str(query["seed"][0]).strip())
+
+        # Call /seeds/resolve endpoint
+        resolve_url = urljoin(webs_server_url, "/seeds/resolve")
+
+        if aiohttp is None:
+            logger.error("aiohttp is not installed, cannot resolve seeds from endpoint")
+            return 1
+
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(
+                resolve_url,
+                params={
+                    "seed": str(base_seed),
+                    "v1_enabled": "false",
+                    "v2_enabled": "true",
+                    "v3_enabled": "false",
+                },
+                timeout=aiohttp.ClientTimeout(total=5),
+            ) as resp,
+        ):
+            resp.raise_for_status()
+            data = await resp.json()
+            v2_seed = data.get("v2")
+
+            if v2_seed is not None and isinstance(v2_seed, int):
+                return v2_seed
+
+            logger.warning(f"Invalid v2 seed from endpoint: {v2_seed}")
+            return 1
+
+    except Exception as e:
+        logger.warning(f"Failed to resolve v2 seed from URL {task_url}: {e}")
+        return 1
+
+
 def extract_seed_from_url(url: str | None) -> int | None:
-    """Extract seed parameter from URL query string. Helper for constraint generators."""
+    """
+    DEPRECATED: Use resolve_v2_seed_from_url() instead.
+
+    This function extracted ?seed=X but didn't derive v2. The new system
+    uses resolve_v2_seed_from_url() which calls /seeds/resolve endpoint.
+    """
+    logger.warning("extract_seed_from_url() is DEPRECATED. Use resolve_v2_seed_from_url() instead to call /seeds/resolve endpoint.")
     if not url:
         return None
     try:
