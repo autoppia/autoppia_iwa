@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
@@ -18,7 +18,7 @@ class UseCase(BaseModel):
     event: Any = Field(..., description="Event class (type[Event])")
     event_source_code: str
     examples: list[dict]
-    replace_func: Callable[[str], str] | None = Field(default=None, exclude=True)
+    replace_func: Callable[..., str | Coroutine[Any, Any, str]] | None = Field(default=None, exclude=True)
 
     # Only one field for constraints - the structured data
     constraints: list[dict[str, Any]] | None = Field(default=None)
