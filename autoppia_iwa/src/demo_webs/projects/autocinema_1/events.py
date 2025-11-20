@@ -3,113 +3,246 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
-from autoppia_iwa.src.demo_webs.projects.base_events import Event
+from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
+
+# =============================================================================
+#                            HELPER FUNCTIONS
+# =============================================================================
+
+
+def parse_genres_from_data(data: dict, key: str = "genres") -> list[str]:
+    """
+    Extract genre names from backend event data.
+    Handles both list of strings and list of dicts with 'name' key.
+
+    Args:
+        data: Backend event data dictionary
+        key: Key to look for in data (default: "genres")
+
+    Returns:
+        List of genre names as strings
+    """
+    genres = []
+    if key in data and isinstance(data[key], list):
+        for genre_item in data[key]:
+            if isinstance(genre_item, dict) and "name" in genre_item:
+                genres.append(genre_item["name"])
+            elif isinstance(genre_item, str):
+                genres.append(genre_item)
+    return genres
+
+
+def validate_genre_criteria(
+    movie_genres: list[str],
+    criteria_genre: str | CriterionValue | None,
+) -> bool:
+    """
+    Validate genre criteria against a list of movie genres.
+
+    Args:
+        movie_genres: List of genre names from the movie
+        criteria_genre: Genre criteria (string, CriterionValue, or None)
+
+    Returns:
+        True if criteria is met, False otherwise
+    """
+    if criteria_genre is None:
+        return True
+
+    if isinstance(criteria_genre, str):
+        return any(criteria_genre.lower() in genre.lower() for genre in movie_genres)
+
+    # Handle CriterionValue
+    operator = criteria_genre.operator
+    value = criteria_genre.value
+
+    if operator == ComparisonOperator.EQUALS:
+        return any(value.lower() == genre.lower() for genre in movie_genres)
+    elif operator == ComparisonOperator.CONTAINS:
+        return any(value.lower() in genre.lower() for genre in movie_genres)
+    elif operator == ComparisonOperator.NOT_CONTAINS:
+        return not any(value.lower() in genre.lower() for genre in movie_genres)
+    elif operator == ComparisonOperator.IN_LIST:
+        if not isinstance(value, list):
+            return False
+        return any(genre.lower() in [v.lower() for v in value] for genre in movie_genres)
+    elif operator == ComparisonOperator.NOT_IN_LIST:
+        if not isinstance(value, list):
+            return False
+        return not any(genre.lower() in [v.lower() for v in value] for genre in movie_genres)
+
+    return False
+
+
+# =============================================================================
+#                            BASE EVENT CLASSES
+# =============================================================================
+
+
+class UserEvent(Event, BaseEventValidator):
+    """Base class for events that involve a username"""
+
+    event_name: str = "BASE_USER_EVENT"
+    username: str
+
+    class ValidationCriteria(BaseModel):
+        """Base validation criteria for user events"""
+
+        username: str | CriterionValue | None = None
+
+    def _validate_username(self, criteria: ValidationCriteria | None) -> bool:
+        """Validate username criteria"""
+        if criteria is None:
+            return True
+        return self._validate_field(self.username, criteria.username)
+
+    @classmethod
+    def _extract_username(cls, data: dict) -> str:
+        """Extract username from backend event data"""
+        return data.get("username", "")
+
+
+class FilmEvent(Event, BaseEventValidator):
+    """Base class for film-related events with common fields and validation"""
+
+    event_name: str = "BASE_FILM_EVENT"
+
+    movie_id: int
+    movie_name: str
+    movie_director: str | None = None
+    movie_year: int | None = None
+    movie_genres: list[str] = Field(default_factory=list)
+    movie_rating: float | None = None
+    movie_duration: int | None = None
+    movie_cast: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        """Base validation criteria for film events"""
+
+        name: str | CriterionValue | None = None
+        genre: str | CriterionValue | None = None
+        director: str | CriterionValue | None = None
+        year: int | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        duration: int | CriterionValue | None = None
+
+    def _validate_film_criteria(self, criteria: ValidationCriteria | None) -> bool:
+        """Validate common film-related criteria"""
+        if criteria is None:
+            return True
+
+        # Use BaseEventValidator for simple field validations
+        if criteria.name is not None and not self._validate_field(self.movie_name, criteria.name):
+            return False
+        # Genre validation requires special handling for lists
+        if criteria.genre is not None and not validate_genre_criteria(self.movie_genres, criteria.genre):
+            return False
+        if criteria.director is not None and not self._validate_field(self.movie_director, criteria.director):
+            return False
+        if criteria.year is not None and not self._validate_field(self.movie_year, criteria.year):
+            return False
+        if criteria.rating is not None and not self._validate_field(self.movie_rating, criteria.rating):
+            return False
+        return not (criteria.duration is not None and not self._validate_field(self.movie_duration, criteria.duration))
+
+    @classmethod
+    def _extract_film_data(cls, data: dict) -> dict[str, Any]:
+        """Extract common film data from backend event"""
+        genres = parse_genres_from_data(data, "genres")
+        return {
+            "movie_id": data.get("id", 0),
+            "movie_name": data.get("name", ""),
+            "movie_director": data.get("director", ""),
+            "movie_year": data.get("year"),
+            "movie_genres": genres,
+            "movie_rating": data.get("rating"),
+            "movie_duration": data.get("duration"),
+            "movie_cast": data.get("cast", ""),
+        }
+
 
 # =============================================================================
 #                            USER EVENTS
 # =============================================================================
 
 
-class RegistrationEvent(Event):
+class RegistrationEvent(UserEvent):
     """Event triggered when a user registration is completed"""
 
     event_name: str = "REGISTRATION"
-    username: str
 
-    class ValidationCriteria(BaseModel):
-        """Criteria for validating registration events"""
-
-        username: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this registration event meets the criteria.
-        """
-        if not criteria:
-            return True
-        if criteria.username is not None:
-            return validate_criterion(self.username, criteria.username)
-        return True
+    def _validate_criteria(self, criteria: UserEvent.ValidationCriteria | None = None) -> bool:
+        """Validate if this registration event meets the criteria."""
+        return self._validate_username(criteria)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "RegistrationEvent":
-        """
-        Parse a registration event from backend data.
-        """
+        """Parse a registration event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        username = data.get("username", "")
-        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
+        username = UserEvent._extract_username(data)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=username,
+        )
 
 
-class LoginEvent(Event):
+class LoginEvent(UserEvent):
     """Event triggered when a user logs in"""
 
     event_name: str = "LOGIN"
-    username: str
 
-    class ValidationCriteria(BaseModel):
-        """Criteria for validating login events"""
-
-        username: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this login event meets the criteria.
-        """
-        if not criteria:
-            return True
-        if criteria.username is not None:
-            return validate_criterion(self.username, criteria.username)
-        return True
+    def _validate_criteria(self, criteria: UserEvent.ValidationCriteria | None = None) -> bool:
+        """Validate if this login event meets the criteria."""
+        return self._validate_username(criteria)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "LoginEvent":
-        """
-        Parse a login event from backend data.
-        """
+        """Parse a login event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        username = data.get("username", "")
-        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
+        username = UserEvent._extract_username(data)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=username,
+        )
 
 
-class LogoutEvent(Event):
+class LogoutEvent(UserEvent):
     """Event triggered when a user logs out"""
 
     event_name: str = "LOGOUT"
-    username: str
 
-    class ValidationCriteria(BaseModel):
-        """Criteria for validating logout events"""
-
-        username: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this logout event meets the criteria.
-        """
-        if not criteria:
-            return True
-        return not (criteria.username is not None and not validate_criterion(self.username, criteria.username))
+    def _validate_criteria(self, criteria: UserEvent.ValidationCriteria | None = None) -> bool:
+        """Validate if this logout event meets the criteria."""
+        return self._validate_username(criteria)
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "LogoutEvent":
-        """
-        Parse a logout event from backend data.
-        """
+        """Parse a logout event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        username = data.get("username", "")
-        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, username=username)
+        username = UserEvent._extract_username(data)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=username,
+        )
 
 
-class EditUserEvent(Event):
+class EditUserEvent(UserEvent):
     """Event triggered when a user edits their profile"""
 
     event_name: str = "EDIT_USER"
-    username: str
     first_name: str | None = None
     last_name: str | None = None
     email: str
@@ -121,10 +254,9 @@ class EditUserEvent(Event):
     favorite_genres: list[str] = Field(default_factory=list)
     previous_values: dict[str, Any] = Field(default_factory=dict)
 
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(UserEvent.ValidationCriteria):
         """Criteria for validating edit user events"""
 
-        username: str | CriterionValue | None = None
         first_name: str | CriterionValue | None = None
         last_name: str | CriterionValue | None = None
         bio: str | CriterionValue | None = None
@@ -145,71 +277,24 @@ class EditUserEvent(Event):
         if not criteria:
             return True
 
-        # Validate first_name
-        if criteria.username is not None and not validate_criterion(self.username, criteria.username):
+        # Validate username using base class method
+        if not self._validate_username(criteria):
             return False
 
-        if criteria.first_name is not None and not validate_criterion(self.first_name, criteria.first_name):
-            return False
+        # Validate simple fields using BaseEventValidator
+        field_validations = [
+            (criteria.first_name, self.first_name),
+            (criteria.last_name, self.last_name),
+            (criteria.bio, self.bio),
+            (criteria.location, self.location),
+            (criteria.website, self.website),
+        ]
+        for criterion_value, field_value in field_validations:
+            if criterion_value is not None and not self._validate_field(field_value, criterion_value):
+                return False
 
-        # Validate last_name
-        if criteria.last_name is not None and not validate_criterion(self.last_name, criteria.last_name):
-            return False
-
-        # Validate bio
-        if criteria.bio is not None and not validate_criterion(self.bio, criteria.bio):
-            return False
-
-        # Validate location
-        if criteria.location is not None and not validate_criterion(self.location, criteria.location):
-            return False
-
-        # Validate website
-        if criteria.website is not None and not validate_criterion(self.website, criteria.website):
-            return False
-
-        # Validate favorite_genres
-        if criteria.favorite_genres is not None:
-            if isinstance(criteria.favorite_genres, str):
-                # Check if any genre contains the string
-                if not any(criteria.favorite_genres.lower() in genre.lower() for genre in self.favorite_genres):
-                    return False
-            elif isinstance(criteria.favorite_genres, list):
-                # Check if any genre in the list matches
-                if not any(genre in self.favorite_genres for genre in criteria.favorite_genres):
-                    return False
-            else:
-                # Using operator
-                if criteria.favorite_genres.operator == ComparisonOperator.EQUALS:
-                    # For EQUALS, match the exact genre
-                    if not any(criteria.favorite_genres.value.lower() == genre.lower() for genre in self.favorite_genres):
-                        return False
-                elif criteria.favorite_genres.operator == ComparisonOperator.CONTAINS:
-                    # For CONTAINS, check if any genre contains the substring
-                    if not any(criteria.favorite_genres.value.lower() in genre.lower() for genre in self.favorite_genres):
-                        return False
-                elif criteria.favorite_genres.operator == ComparisonOperator.NOT_CONTAINS:
-                    # For NOT_CONTAINS, check that no genre contains the substring
-                    if any(criteria.favorite_genres.value.lower() in genre.lower() for genre in self.favorite_genres):
-                        return False
-                elif criteria.favorite_genres.operator == ComparisonOperator.IN_LIST:
-                    # For IN_LIST, check if any genre is in the provided list
-                    if isinstance(criteria.favorite_genres.value, str):
-                        return self.favorite_genres and self.favorite_genres[0] == criteria.favorite_genres.value
-                    if isinstance(criteria.favorite_genres.value, list):
-                        return self.favorite_genres and self.favorite_genres[0] == criteria.favorite_genres.value[0]
-                    if not any(genre.lower() in [v.lower() for v in criteria.favorite_genres.value] for genre in self.favorite_genres):
-                        return False
-                elif criteria.favorite_genres.operator == ComparisonOperator.NOT_IN_LIST:
-                    # For IN_LIST, check if any genre is in the provided list
-                    if isinstance(criteria.favorite_genres.value, str):
-                        return self.favorite_genres and self.favorite_genres[0] != criteria.favorite_genres.value
-                    if isinstance(criteria.favorite_genres.value, list):
-                        return self.favorite_genres and self.favorite_genres[0] != criteria.favorite_genres.value[0]
-                    if not any(genre.lower() in [v.lower() for v in criteria.favorite_genres.value] for genre in self.favorite_genres):
-                        return False
-
-        return True
+        # Validate favorite_genres using the shared helper
+        return not (criteria.favorite_genres is not None and not validate_genre_criteria(self.favorite_genres, criteria.favorite_genres))
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "EditUserEvent":
@@ -223,37 +308,25 @@ class EditUserEvent(Event):
             EditUserEvent object populated with data from the backend event
         """
         base_event = Event.parse(backend_event)
-
-        # Get the data directly from the backend event
-        # Based on the provided example format
         data = backend_event.data
 
-        # Extract favorite genres from the complex format
-        favorite_genres = []
-        if "favorite_genres" in data and isinstance(data["favorite_genres"], list):
-            for genre_item in data["favorite_genres"]:
-                if isinstance(genre_item, dict) and "name" in genre_item:
-                    favorite_genres.append(genre_item["name"])
-                elif isinstance(genre_item, str):
-                    favorite_genres.append(genre_item)
+        # Extract favorite genres using helper function
+        favorite_genres = parse_genres_from_data(data, "favorite_genres")
 
         # Handle previous_values properly
         previous_values = data.get("previous_values", {})
 
         # Process previous_values favorite_genres if present
-        if "favorite_genres" in previous_values and isinstance(previous_values["favorite_genres"], list):
-            # If it's already a list of strings, keep it
-            if all(isinstance(item, str) for item in previous_values["favorite_genres"]):
-                pass
+        if "favorite_genres" in previous_values and isinstance(previous_values["favorite_genres"], list) and not all(isinstance(item, str) for item in previous_values["favorite_genres"]):
             # If it's a list of objects, extract the names
-            else:
-                previous_values["favorite_genres"] = [item["name"] if isinstance(item, dict) and "name" in item else str(item) for item in previous_values["favorite_genres"]]
+            previous_values["favorite_genres"] = [item["name"] if isinstance(item, dict) and "name" in item else str(item) for item in previous_values["favorite_genres"]]
 
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
-            username=data.get("username"),
+            user_id=base_event.user_id,
+            username=UserEvent._extract_username(data),
             first_name=data.get("first_name"),
             last_name=data.get("last_name"),
             email=data.get("email", ""),
@@ -270,95 +343,35 @@ class EditUserEvent(Event):
 # =============================================================================
 
 
-class FilmDetailEvent(Event):
+class FilmDetailEvent(FilmEvent):
     """Event triggered when a film detail page is viewed"""
 
     event_name: str = "FILM_DETAIL"
 
-    movie_id: int
-    movie_name: str
-    movie_director: str | None = None
-    movie_year: int | None = None
-    movie_genres: list[str] = Field(default_factory=list)
-    movie_rating: float | None = None
-    movie_duration: int | None = None
-    movie_cast: str | None = None
-
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(FilmEvent.ValidationCriteria):
         """
         Validation criteria for FilmDetailEvent.
         Supports both simple values and advanced criteria with operators.
         """
 
-        name: str | CriterionValue | None = None
-        genre: str | CriterionValue | None = None
-        director: str | CriterionValue | None = None
-        year: int | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
-        duration: int | CriterionValue | None = None
-
-        class Config:
-            title = "Film Detail Validation"
-            description = "Validates that a film detail page was viewed with specific attributes"
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate this FilmDetailEvent against the criteria.
-        """
-        if not criteria:
-            return True
-        if criteria.name is not None and not validate_criterion(self.movie_name, criteria.name):
-            return False
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.movie_genres):
-                    return False
-            else:
-                if criteria.genre.operator == ComparisonOperator.EQUALS:
-                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.genre.value, list):
-                        return False
-                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.movie_genres):
-                        return False
-        if criteria.director is not None and not validate_criterion(self.movie_director, criteria.director):
-            return False
-        if criteria.year is not None and not validate_criterion(self.movie_year, criteria.year):
-            return False
-        if criteria.rating is not None and not validate_criterion(self.movie_rating, criteria.rating):
-            return False
-        return not (criteria.duration is not None and not validate_criterion(self.movie_duration, criteria.duration))
+        """Validate this FilmDetailEvent against the criteria."""
+        return self._validate_film_criteria(criteria)
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "FilmDetailEvent":
-        """
-        Parse a film detail event from backend data.
-        """
+        """Parse a film detail event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = []
-        if "genres" in data and isinstance(data["genres"], list):
-            genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
+        film_data = FilmEvent._extract_film_data(data)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            movie_id=data.get("id", 0),
-            movie_name=data.get("name", ""),
-            movie_director=data.get("director", ""),
-            movie_year=data.get("year"),
-            movie_genres=genres,
-            movie_rating=data.get("rating"),
-            movie_duration=data.get("duration"),
-            movie_cast=data.get("cast", ""),
+            **film_data,
         )
 
 
@@ -374,154 +387,62 @@ class WatchTrailer(FilmDetailEvent):
     event_name: str = "WATCH_TRAILER"
 
 
-class AddFilmEvent(Event):
+class AddFilmEvent(FilmEvent):
     """Event triggered when a user adds a new film"""
 
     event_name: str = "ADD_FILM"
 
-    movie_id: int
-    movie_name: str
-    movie_director: str | None = None
-    movie_year: int | None = None
-    movie_genres: list[str] = Field(default_factory=list)
-    movie_rating: float | None = None
-    movie_duration: int | None = None
-    movie_cast: str | None = None
-
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating add film events"""
 
-        name: str | CriterionValue | None = None
-        genre: str | CriterionValue | None = None
-        director: str | CriterionValue | None = None
-        year: int | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
-        duration: int | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this add film event meets the criteria.
-        """
-        if not criteria:
-            return True
-        if criteria.name is not None and not validate_criterion(self.movie_name, criteria.name):
-            return False
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.movie_genres):
-                    return False
-            else:
-                if criteria.genre.operator == ComparisonOperator.EQUALS:
-                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.genre.value, list):
-                        return False
-                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.movie_genres):
-                        return False
-        if criteria.director is not None and not validate_criterion(self.movie_director, criteria.director):
-            return False
-        if criteria.year is not None and not validate_criterion(self.movie_year, criteria.year):
-            return False
-        if criteria.rating is not None and not validate_criterion(self.movie_rating, criteria.rating):
-            return False
-        return not (criteria.duration is not None and not validate_criterion(self.movie_duration, criteria.duration))
+        """Validate if this add film event meets the criteria."""
+        return self._validate_film_criteria(criteria)
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "AddFilmEvent":
-        """
-        Parse an add film event from backend data.
-        """
+        """Parse an add film event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = []
-        if "genres" in data and isinstance(data["genres"], list):
-            genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
+        film_data = FilmEvent._extract_film_data(data)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            movie_id=data.get("id", 0),
-            movie_name=data.get("name", ""),
-            movie_director=data.get("director", ""),
-            movie_year=data.get("year"),
-            movie_genres=genres,
-            movie_rating=data.get("rating"),
-            movie_duration=data.get("duration"),
-            movie_cast=data.get("cast", ""),
+            **film_data,
         )
 
 
-class EditFilmEvent(Event):
+class EditFilmEvent(FilmEvent):
     """Event triggered when a user edits an existing film"""
 
     event_name: str = "EDIT_FILM"
-
-    movie_id: int
-    movie_name: str
-    movie_director: str | None = None
-    movie_year: int | None = None
-    movie_genres: list[str] = Field(default_factory=list)
-    movie_rating: float | None = None
-    movie_duration: int | None = None
-    movie_cast: str | None = None
     previous_values: dict[str, Any] = Field(default_factory=dict)
     changed_fields: list[str] = Field(default_factory=list)
 
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating edit film events"""
 
         movie_id: int | CriterionValue | None = None
-        name: str | CriterionValue | None = None
-        genre: str | CriterionValue | None = None
-        director: str | CriterionValue | None = None
-        year: int | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
-        # Check if a specific field was changed
         changed_field: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this edit film event meets the criteria.
-        """
+        """Validate if this edit film event meets the criteria."""
         if not criteria:
             return True
-        if criteria.movie_id is not None and not validate_criterion(self.movie_id, criteria.movie_id):
+
+        # Validate movie_id using BaseEventValidator
+        if criteria.movie_id is not None and not self._validate_field(self.movie_id, criteria.movie_id):
             return False
-        if criteria.name is not None and not validate_criterion(self.movie_name, criteria.name):
+
+        # Validate common film criteria
+        if not self._validate_film_criteria(criteria):
             return False
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str):
-                if not any(criteria.genre.lower() in genre.lower() for genre in self.movie_genres):
-                    return False
-            else:
-                if criteria.genre.operator == ComparisonOperator.EQUALS:
-                    if not any(criteria.genre.value.lower() == genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.CONTAINS:
-                    if not any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.NOT_CONTAINS:
-                    if any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres):
-                        return False
-                elif criteria.genre.operator == ComparisonOperator.IN_LIST:
-                    if not isinstance(criteria.genre.value, list):
-                        return False
-                    if not any(genre.lower() in [v.lower() for v in criteria.genre.value] for genre in self.movie_genres):
-                        return False
-        if criteria.director is not None and not validate_criterion(self.movie_director, criteria.director):
-            return False
-        if criteria.year is not None and not validate_criterion(self.movie_year, criteria.year):
-            return False
-        if criteria.rating is not None and not validate_criterion(self.movie_rating, criteria.rating):
-            return False
+
+        # Validate changed_field
         if criteria.changed_field is not None:
             if isinstance(criteria.changed_field, str):
                 if criteria.changed_field not in self.changed_fields:
@@ -535,127 +456,74 @@ class EditFilmEvent(Event):
                 elif criteria.changed_field.operator == ComparisonOperator.EQUALS:
                     if criteria.changed_field.value not in self.changed_fields:
                         return False
+
         return True
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "EditFilmEvent":
-        """
-        Parse an edit film event from backend data.
-        """
+        """Parse an edit film event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = []
-        if "genres" in data and isinstance(data["genres"], list):
-            genres = []
-
-            for genre in data["genres"]:
-                if isinstance(genre, dict):
-                    if "name" in genre:
-                        genre_name = genre.get("name", "")
-                        genres.append(genre_name)
-                elif isinstance(genre, str):
-                    genres.append(genre)
-
-        previous_values = data.get("previous_values", {})
-        changed_fields = data.get("changed_fields", [])
+        film_data = FilmEvent._extract_film_data(data)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            movie_id=data.get("id", 0),
-            movie_name=data.get("name", ""),
-            movie_director=data.get("director", ""),
-            movie_year=data.get("year"),
-            movie_genres=genres,
-            movie_rating=data.get("rating"),
-            movie_duration=data.get("duration"),
-            movie_cast=data.get("cast", ""),
-            previous_values=previous_values,
-            changed_fields=changed_fields,
+            previous_values=data.get("previous_values", {}),
+            changed_fields=data.get("changed_fields", []),
+            **film_data,
         )
 
 
-class DeleteFilmEvent(Event):
+class DeleteFilmEvent(FilmEvent):
     """Event triggered when a user deletes a film"""
 
     event_name: str = "DELETE_FILM"
 
-    movie_id: int
-    movie_name: str
-    movie_director: str | None = None
-    movie_year: int | None = None
-    movie_genres: list[str] = Field(default_factory=list)
-    movie_rating: float | None = None
-    movie_duration: int | None = None
-
-    class ValidationCriteria(BaseModel):
+    class ValidationCriteria(FilmEvent.ValidationCriteria):
         """Criteria for validating delete film events"""
 
         movie_id: int | CriterionValue | None = None
-        name: str | CriterionValue | None = None
-        genre: str | CriterionValue | None = None
-        director: str | CriterionValue | None = None
-        year: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this delete film event meets the criteria.
-        """
+        """Validate if this delete film event meets the criteria."""
         if not criteria:
             return True
-        if criteria.movie_id is not None and not validate_criterion(self.movie_id, criteria.movie_id):
+
+        # Validate movie_id using BaseEventValidator
+        if criteria.movie_id is not None and not self._validate_field(self.movie_id, criteria.movie_id):
             return False
-        if criteria.name is not None and not validate_criterion(self.movie_name, criteria.name):
+
+        # Validate common film criteria (name, genre, director, year)
+        # Note: rating and duration are not validated for delete events
+        if criteria.name is not None and not self._validate_field(self.movie_name, criteria.name):
             return False
-        if criteria.genre is not None:
-            if isinstance(criteria.genre, str) and not any(criteria.genre.lower() in genre.lower() for genre in self.movie_genres):
-                return False
-            else:
-                if (
-                    (criteria.genre.operator == ComparisonOperator.EQUALS and not any(criteria.genre.value.lower() == genre.lower() for genre in self.movie_genres))
-                    or (criteria.genre.operator == ComparisonOperator.CONTAINS and not any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres))
-                    or (criteria.genre.operator == ComparisonOperator.NOT_CONTAINS and any(criteria.genre.value.lower() in genre.lower() for genre in self.movie_genres))
-                    or (
-                        criteria.genre.operator == ComparisonOperator.IN_LIST
-                        and not any(genre.lower() in [v.lower() if isinstance(v, str) else v for v in criteria.genre.value] for genre in self.movie_genres)
-                    )
-                ):
-                    return False
-        if criteria.director is not None and not validate_criterion(self.movie_director, criteria.director):
+        if criteria.genre is not None and not validate_genre_criteria(self.movie_genres, criteria.genre):
             return False
-        return not (criteria.year is not None and not validate_criterion(self.movie_year, criteria.year))
+        if criteria.director is not None and not self._validate_field(self.movie_director, criteria.director):
+            return False
+        return not (criteria.year is not None and not self._validate_field(self.movie_year, criteria.year))
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "DeleteFilmEvent":
-        """
-        Parse a delete film event from backend data.
-        """
+        """Parse a delete film event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        genres = []
-        if "genres" in data and isinstance(data["genres"], list):
-            genres = [genre.get("name", "") for genre in data["genres"] if isinstance(genre, dict) and "name" in genre]
+        film_data = FilmEvent._extract_film_data(data)
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            movie_id=data.get("id", 0),
-            movie_name=data.get("name", ""),
-            movie_director=data.get("director", ""),
-            movie_year=data.get("year"),
-            movie_genres=genres,
-            movie_rating=data.get("rating"),
-            movie_duration=data.get("duration"),
+            **film_data,
         )
 
 
-class SearchFilmEvent(Event):
+class SearchFilmEvent(Event, BaseEventValidator):
     """Event triggered when a user searches for a film"""
 
     event_name: str = "SEARCH_FILM"
-
     query: str
 
     class ValidationCriteria(BaseModel):
@@ -664,35 +532,29 @@ class SearchFilmEvent(Event):
         query: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this search event meets the criteria.
-        """
+        """Validate if this search event meets the criteria."""
         if not criteria:
             return True
-
-        if criteria.query is not None:
-            result = validate_criterion(self.query, criteria.query)
-            return result
-
-        return True
+        return self._validate_field(self.query, criteria.query)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "SearchFilmEvent":
-        """
-        Parse a search film event from backend data.
-        """
-
+        """Parse a search film event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
-        query = data.get("query")
-        return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, query=query)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            query=data.get("query", ""),
+        )
 
 
 class AddCommentEvent(Event):
     """Event triggered when a user adds a comment to a film"""
 
     event_name: str = "ADD_COMMENT"
-
     commenter_name: str
     content: str
     movie_id: int
@@ -707,24 +569,22 @@ class AddCommentEvent(Event):
         movie_name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this add comment event meets the criteria.
-        """
+        """Validate if this add comment event meets the criteria."""
         if not criteria:
             return True
-        if criteria.content is not None and not validate_criterion(self.content, criteria.content):
-            return False
-        if criteria.commenter_name is not None and not validate_criterion(self.commenter_name, criteria.commenter_name):
-            return False
-        if criteria.movie_id is not None and not validate_criterion(self.movie_id, criteria.movie_id):
-            return False
-        return not (criteria.movie_name is not None and not validate_criterion(self.movie_name, criteria.movie_name))
+
+        field_validations = [
+            (criteria.content, self.content),
+            (criteria.commenter_name, self.commenter_name),
+            (criteria.movie_id, self.movie_id),
+            (criteria.movie_name, self.movie_name),
+        ]
+
+        return all(not (criterion_value is not None and not validate_criterion(field_value, criterion_value)) for criterion_value, field_value in field_validations)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "AddCommentEvent":
-        """
-        Parse an add comment event from backend data.
-        """
+        """Parse an add comment event from backend data."""
         base_event = Event.parse(backend_event)
         data = backend_event.data
         movie_data = data.get("movie", {})
@@ -749,7 +609,6 @@ class ContactEvent(Event):
     """Event triggered when a user submits a contact form"""
 
     event_name: str = "CONTACT"
-
     name: str
     email: str
     subject: str
@@ -764,23 +623,18 @@ class ContactEvent(Event):
         message: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        """
-        Validate if this contact event meets the criteria
-        """
+        """Validate if this contact event meets the criteria."""
         if not criteria:
             return True
 
-        # Validate all fields using the centralized validate_criterion function
-        if criteria.name is not None and not validate_criterion(self.name, criteria.name):
-            return False
+        field_validations = [
+            (criteria.name, self.name),
+            (criteria.email, self.email),
+            (criteria.subject, self.subject),
+            (criteria.message, self.message),
+        ]
 
-        if criteria.email is not None and not validate_criterion(self.email, criteria.email):
-            return False
-
-        if criteria.subject is not None and not validate_criterion(self.subject, criteria.subject):
-            return False
-
-        return not (criteria.message is not None and not validate_criterion(self.message, criteria.message))
+        return all(not (criterion_value is not None and not validate_criterion(field_value, criterion_value)) for criterion_value, field_value in field_validations)
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ContactEvent":
@@ -794,10 +648,7 @@ class ContactEvent(Event):
             ContactEvent object populated with data from the backend event
         """
         base_event = Event.parse(backend_event)
-
-        # Extract data
         data = backend_event.data
-
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -810,7 +661,7 @@ class ContactEvent(Event):
         )
 
 
-class FilterFilmEvent(Event):
+class FilterFilmEvent(Event, BaseEventValidator):
     """Event triggered when a user filters films by genre and/or year"""
 
     event_name: str = "FILTER_FILM"
@@ -826,45 +677,37 @@ class FilterFilmEvent(Event):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         """
         Validate if this filter film event meets the criteria
+
         Args:
             criteria: Optional validation criteria to check against
+
         Returns:
             True if criteria is met or not provided, False otherwise
         """
         if not criteria:
             return True
 
-        # Validate genre_name
-        if criteria.genre_name is not None:
-            if self.genre_name is None:
-                return False
-            if not validate_criterion(self.genre_name, criteria.genre_name):
-                return False
+        # Validate genre_name using BaseEventValidator
+        if criteria.genre_name is not None and (self.genre_name is None or not self._validate_field(self.genre_name, criteria.genre_name)):
+            return False
 
-        # Validate year
-        if criteria.year is not None:
-            if self.year is None:
-                return False
-            if not validate_criterion(self.year, criteria.year):
-                return False
-
-        return True
+        # Validate year using BaseEventValidator
+        return not (criteria.year is not None and (self.year is None or not self._validate_field(self.year, criteria.year)))
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "FilterFilmEvent":
         """
         Parse a filter film event from backend data
+
         Args:
             backend_event: Event data from the backend API
+
         Returns:
             FilterFilmEvent object populated with data from the backend event
         """
         base_event = Event.parse(backend_event)
-
-        # Extract data
         data = backend_event.data
         genre_data = data.get("genre", {})
-
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
@@ -880,7 +723,23 @@ class FilterFilmEvent(Event):
 # =============================================================================
 
 
-EVENTS = [RegistrationEvent, LoginEvent, LogoutEvent, FilmDetailEvent, SearchFilmEvent, AddFilmEvent, EditFilmEvent, DeleteFilmEvent, AddCommentEvent, ContactEvent, EditUserEvent, FilterFilmEvent]
+EVENTS = [
+    RegistrationEvent,
+    LoginEvent,
+    LogoutEvent,
+    FilmDetailEvent,
+    SearchFilmEvent,
+    AddFilmEvent,
+    EditFilmEvent,
+    DeleteFilmEvent,
+    AddCommentEvent,
+    ContactEvent,
+    EditUserEvent,
+    FilterFilmEvent,
+    WatchTrailer,
+    ShareFilmEvent,
+    AddToWatchlistEvent,
+]
 
 BACKEND_EVENT_TYPES = {
     "LOGIN": LoginEvent,
