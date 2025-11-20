@@ -39,9 +39,7 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
     if items:
         modified_experts = expert_data_modified(items)
         return modified_experts
-    from .data import EXPERTS
-
-    return expert_data_modified(EXPERTS)
+    return []
 
 
 def _generate_constraint_value(

@@ -1,4 +1,25 @@
-from .data import MOVIES_DATA
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
+
+
+async def _get_movies_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    """Fetch movies data from API."""
+    from .main import FRONTEND_PORT_INDEX, cinema_project
+
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{cinema_project.id}"
+    entity_type = "movies"
+
+    items = await load_dataset_data(
+        backend_url=cinema_project.backend_url,
+        project_key=project_key,
+        entity_type=entity_type,
+        seed_value=seed_value if seed_value is not None else 0,
+        limit=count,
+        method="distribute",
+        filter_key="category",
+    )
+    if items:
+        return items
+    return []
 
 
 def login_replace_func(text: str) -> str:
@@ -25,11 +46,15 @@ def register_replace_func(text: str) -> str:
     return text
 
 
-def replace_film_placeholders(
+async def replace_film_placeholders(
     text: str,
+    seed_value: int | None = None,
 ) -> str:
-    movies_data: list = MOVIES_DATA
-    if not isinstance(text, str) or not movies_data:
+    if not isinstance(text, str):
+        return text
+
+    movies_data = await _get_movies_data(seed_value=seed_value)
+    if not movies_data:
         return text
 
     import random

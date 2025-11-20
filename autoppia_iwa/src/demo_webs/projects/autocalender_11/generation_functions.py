@@ -12,7 +12,6 @@ from .data import (
     CALENDAR_NAMES,
     DESCRIPTIONS,
     EVENT_TITLES,
-    EVENTS_DATASET,
     EXISTING_CALENDAR_NAMES,
     FIELD_OPERATORS_ADD_EVENT_MAP,
     FIELD_OPERATORS_CHOOSE_CALENDAR_MAP,
@@ -70,7 +69,7 @@ async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dic
             return mapped_items
     except Exception:
         pass
-    return EVENTS_DATASET
+    return []
 
 
 def _generate_constraint_value(

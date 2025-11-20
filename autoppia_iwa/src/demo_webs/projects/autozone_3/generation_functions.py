@@ -15,23 +15,18 @@ from .data import FIELD_OPERATORS_MAP_PRODUCTS
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, omnizone_project
 
-    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{omnizone_project.id}"
-    ENTITY_TYPE = "products"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{omnizone_project.id}"
 
     items = await load_dataset_data(
         backend_url=omnizone_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type=ENTITY_TYPE,
+        project_key=project_key,
+        entity_type="products",
         seed_value=seed_value if seed_value is not None else 1,
         limit=count,
-        # method="distribute",
-        # filter_key="category",
     )
     if items:
         return items
-    from .data import PRODUCTS_DATA as _STATIC_PRODUCTS
-
-    return _STATIC_PRODUCTS
+    return []
 
 
 def generate_constraint_value(field: str, operator: ComparisonOperator, product_data_source: dict[str, Any], all_products_data: list[dict[str, Any]] | None = None) -> Any:

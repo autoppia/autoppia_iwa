@@ -17,7 +17,6 @@ from .data import (
     FIELD_OPERATORS_TEAM_ROLE_ASSIGNED_MAP,
     PRIORITIES,
     ROLES,
-    TASKS,
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
@@ -36,7 +35,7 @@ async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dic
         limit=count,
         method="distribute",
     )
-    return items if items else TASKS
+    return items if items else []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, source_key: str, dataset: list[dict[str, Any]]) -> Any:
@@ -184,8 +183,7 @@ def _generate_constraints_for_event(field_map: dict[str, dict[str, Any]], operat
 async def generate_select_date_for_task_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """Generate constraints for selecting a date for a task."""
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
-    tasks = await _get_data(seed_value=v2_seed)
-    dataset = tasks if tasks else TASKS
+    dataset = await _get_data(seed_value=v2_seed)
     field_map = {"_dataset": dataset, "date": {"is_date": True}} if random.choice([True, False]) else {"_dataset": dataset, "quick_option": {"values": DATES_QUICK_OPTIONS}}
     return _generate_constraints_for_event(field_map, FIELD_OPERATORS_SELECT_DATE_MAP)
 
@@ -201,8 +199,7 @@ async def generate_select_task_priority_constraints() -> list[dict[str, Any]]:
 async def generate_task_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     """Generate constraints for adding or updating a task."""
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
-    tasks = await _get_data(seed_value=v2_seed)
-    dataset = tasks if tasks else TASKS
+    dataset = await _get_data(seed_value=v2_seed)
     field_map = {
         "_dataset": dataset,
         "name": {"dataset": dataset},

@@ -56,10 +56,7 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         }
         mapped_items = transform_all(items, field_mapping)
         return mapped_items
-    # Fallback to static data if endpoint unavailable
-    from .data import MOVIES_DATA
-
-    return MOVIES_DATA
+    return []
 
 
 def generate_registration_constraints():

@@ -1,18 +1,40 @@
 import random
 
-from .data import PRODUCTS_DATA
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data
 
 
-def replace_products_placeholders(
+async def _get_products_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    """Fetch products data from API."""
+    from .main import FRONTEND_PORT_INDEX, omnizone_project
+
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{omnizone_project.id}"
+
+    items = await load_dataset_data(
+        backend_url=omnizone_project.backend_url,
+        project_key=project_key,
+        entity_type="products",
+        seed_value=seed_value if seed_value is not None else 1,
+        limit=count,
+    )
+    if items:
+        return items
+    return []
+
+
+async def replace_products_placeholders(
     text: str,
+    seed_value: int | None = None,
 ) -> str:
     """
-    Replaces placeholders in a text string with data from PRODUCTS_DATA.
+    Replaces placeholders in a text string with data from API.
     Recognizes placeholders like <title>, <category>, <brand>, <price>,
     as well as generic ones like <product_name>, <product_variant>.
     """
-    products_data: list = PRODUCTS_DATA
-    if not isinstance(text, str) or not products_data:
+    if not isinstance(text, str):
+        return text
+
+    products_data = await _get_products_data(seed_value=seed_value)
+    if not products_data:
         return text
 
     product = random.choice(products_data)

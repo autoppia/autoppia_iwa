@@ -18,9 +18,6 @@ from .data import (
     FIELD_OPERATORS_SEARCH_USERS_MAP,
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
-    mockJobs,
-    mockPosts,
-    mockUsers,
 )
 
 
@@ -39,14 +36,8 @@ async def _get_data(entity_type: str, method: str | None = None, seed_value: int
     )
     if items:
         return items
-    elif entity_type == "posts":
-        return mockPosts
-    elif entity_type == "jobs":
-        return mockJobs
-    elif entity_type == "users":
-        return mockUsers
-    else:
-        return []
+
+    return []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

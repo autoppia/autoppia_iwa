@@ -3,7 +3,6 @@
 # -----------------------------------------------------------------------------
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .data import MOVIES_DATA
 from .events import (
     AddCommentEvent,
     AddFilmEvent,

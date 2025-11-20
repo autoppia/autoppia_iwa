@@ -10,9 +10,6 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_fr
 from ..shared_utils import create_constraint_dict
 from .data import (
     ALLOWED_EVENT_COLORS,
-    CLIENT_DATA as _STATIC_CLIENTS,
-    DEMO_LOGS,
-    DOCUMENT_DATA,
     FIELD_OPERATORS_MAP_CALENDAR,
     FIELD_OPERATORS_MAP_CHANGE_USER_NAME,
     FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER,
@@ -20,7 +17,6 @@ from .data import (
     FIELD_OPERATORS_MAP_LOG,
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
-    MATTERS_DATA as _STATIC_MATTERS,
 )
 
 
@@ -39,16 +35,7 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
     )
     if items:
         return items
-    elif entity_type == "clients":
-        return _STATIC_CLIENTS
-    elif entity_type == "matters":
-        return _STATIC_MATTERS
-    elif entity_type == "files":
-        return DOCUMENT_DATA
-    elif entity_type == "logs":
-        return DEMO_LOGS
-    else:
-        return []
+    return []
 
 
 def _to_float_safe(value: Any) -> float | None:

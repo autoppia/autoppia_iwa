@@ -148,9 +148,18 @@ class GlobalTaskGenerationPipeline:
         url = base_url
 
         tasks: list[Task] = []
+        # Extract seed value from constraint_url for replace functions
+        from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url
+
+        seed_value_for_replace = extract_v2_seed_from_url(constraint_url)
+
         for prompt_text in prompt_list:
             try:
-                replaced_prompt = use_case.apply_replacements(prompt_text)
+                # Use async version if available, otherwise fall back to sync
+                if hasattr(use_case, "apply_replacements_async"):
+                    replaced_prompt = await use_case.apply_replacements_async(prompt_text, seed_value=seed_value_for_replace)
+                else:
+                    replaced_prompt = use_case.apply_replacements(prompt_text)
                 # If we pre-generated a v2-seed, set it on the task before creation
                 # This ensures the task uses the same v2-seed that was used for constraint generation
                 task_data = {

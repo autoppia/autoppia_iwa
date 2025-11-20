@@ -34,9 +34,7 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
     )
     if items:
         return items
-    from .data import RESTAURANTS_DATA as _STATIC
-
-    return _STATIC
+    return []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

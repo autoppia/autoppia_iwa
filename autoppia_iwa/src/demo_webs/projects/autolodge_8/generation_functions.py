@@ -18,7 +18,6 @@ from .data import (
     FIELD_OPERATORS_SEARCH_HOTEL_MAP,
     FIELD_OPERATORS_SHARE_HOTEL_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
-    HOTELS_DATA_MODIFIED,
     get_modify_data,
 )
 
@@ -26,22 +25,20 @@ from .data import (
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, lodge_project
 
-    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{lodge_project.id}"
-    ENTITY_TYPE = "hotels"
+    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{lodge_project.id}"
 
     items = await load_dataset_data(
         backend_url=lodge_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type=ENTITY_TYPE,
+        project_key=project_key,
+        entity_type="hotels",
         seed_value=seed_value if seed_value is not None else 0,
         limit=count,
     )
     if items:
         modified_hotels = get_modify_data(items)
         return modified_hotels
-    from .data import HOTELS_DATA_MODIFIED as _STATIC
 
-    return _STATIC
+    return []
 
 
 def _generate_constraint_value(
@@ -306,7 +303,7 @@ async def __generate_view_hotel_constraints(task_url: str | None = None) -> tupl
         elif field == "amenities":
             hotel_amenities = hotel.get("amenities", [])
             all_amenities = set()
-            for h in HOTELS_DATA_MODIFIED:
+            for h in data:
                 all_amenities.update(h.get("amenities", []))
             hotel_amenities_set = set(hotel_amenities)
             available_amenities = list(all_amenities - hotel_amenities_set)

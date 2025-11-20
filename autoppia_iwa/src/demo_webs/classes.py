@@ -32,7 +32,30 @@ class UseCase(BaseModel):
 
     def apply_replacements(self, text: str, *args, **kwargs) -> str:
         if self.replace_func and isinstance(text, str):
-            return self.replace_func(text, *args, **kwargs)
+            result = self.replace_func(text, *args, **kwargs)
+            # Support both sync and async replace functions
+            if asyncio.iscoroutine(result):
+                # If called in sync context, run to completion
+                try:
+                    return asyncio.run(result)
+                except RuntimeError:
+                    # Fallback: cannot run new loop in running loop; skip async here
+                    return text
+            return result
+
+        # Also replace constraints_info if needed
+        if isinstance(text, str) and "<constraints_info>" in text and self.constraints:
+            text = text.replace("<constraints_info>", self.constraints_to_str())
+
+        return text
+
+    async def apply_replacements_async(self, text: str, *args, **kwargs) -> str:
+        """Async version that awaits async replace functions when provided."""
+        if self.replace_func and isinstance(text, str):
+            result = self.replace_func(text, *args, **kwargs)
+            if asyncio.iscoroutine(result):
+                return await result
+            return result
 
         # Also replace constraints_info if needed
         if isinstance(text, str) and "<constraints_info>" in text and self.constraints:

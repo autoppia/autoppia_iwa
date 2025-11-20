@@ -1,6 +1,5 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .data import BOOKS_DATA
 from .events import (
     AddBookEvent,
     AddCommentEvent,

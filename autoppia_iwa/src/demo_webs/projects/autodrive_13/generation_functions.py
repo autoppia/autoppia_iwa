@@ -37,20 +37,7 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
     )
     if items:
         return items
-    elif entity_type == "places":
-        from .data import PLACES
-
-        return PLACES
-    elif entity_type == "riders":
-        from .data import RIDES
-
-        return RIDES
-    elif entity_type == "trips":
-        from .data import PLACES
-
-        return PLACES
-    else:
-        return []
+    return []
 
 
 def _generate_constraint_value(
