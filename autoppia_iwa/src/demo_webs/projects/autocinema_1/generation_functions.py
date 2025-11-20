@@ -8,6 +8,31 @@ from ..criterion_helper import ComparisonOperator, CriterionValue, validate_crit
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
 
 
+def apply_mapping(record: dict, mapping: dict) -> dict:
+    """
+    Rename fields in a single dictionary according to mapping rules.
+    """
+    new_record = {}
+    for key, value in record.items():
+        # If key exists in mapping, replace it
+        new_key = mapping.get(key, key)
+        new_record[new_key] = value
+
+        # Convert ONLY `cast` field list → comma-separated string
+        if key == "cast" and isinstance(value, list):
+            value = ", ".join(value)
+
+        new_record[new_key] = value
+    return new_record
+
+
+def transform_all(records: list[dict], mapping: dict) -> list[dict]:
+    """
+    Apply field mapping to a list of dictionaries.
+    """
+    return [apply_mapping(record, mapping) for record in records]
+
+
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, cinema_project
 
@@ -24,7 +49,13 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         filter_key="category",
     )
     if items:
-        return items
+        field_mapping = {
+            "title": "name",
+            "description": "desc",
+            "image_path": "img_file",
+        }
+        mapped_items = transform_all(items, field_mapping)
+        return mapped_items
     # Fallback to static data if endpoint unavailable
     from .data import MOVIES_DATA
 
