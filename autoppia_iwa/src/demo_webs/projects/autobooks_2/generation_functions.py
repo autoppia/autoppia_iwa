@@ -8,6 +8,24 @@ from ..criterion_helper import ComparisonOperator, CriterionValue, validate_crit
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
 
 
+def apply_mapping(record: dict, mapping: dict) -> dict:
+    """
+    Rename fields in a single dictionary according to mapping rules.
+    """
+    new_record = {}
+    for key, value in record.items():
+        # If key exists in mapping, replace it
+        new_key = mapping.get(key, key)
+        new_record[new_key] = value
+    return new_record
+
+
+def transform_all(records: list[dict], mapping: dict) -> list[dict]:
+    """
+    Apply field mapping to a list of dictionaries.
+    """
+    return [apply_mapping(record, mapping) for record in records]
+
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, books_project
 
@@ -22,10 +40,13 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         limit=count,
     )
     if items:
-        for item in items:
-            if "author" not in item and "director" in item:
-                item["author"] = item["director"]
-        return items
+        field_mapping = {
+            "director": "author",
+            "duration": "page_count",
+            "img": "img_file"
+        }
+        mapped_items = transform_all(items, field_mapping)
+        return mapped_items
 
     from .data import BOOKS_DATA
 
