@@ -394,9 +394,15 @@ async def generate_reserve_hotel_constraints(task_url: str | None = None) -> lis
 
 async def generate_increase_guests_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
+    v2_seed = extract_v2_seed_from_url(task_url)
     data = await _get_data(seed_value=v2_seed)
-    hotel = random.choice(data)
+    # Prefer hotels that allow increasing guests (capacity >= 2). If none, bail out early.
+    capacity_hotels = [h for h in data if (h.get("maxGuests") or h.get("guests") or 0) >= 2]
+    if not capacity_hotels:
+        logger.warning("No hotel with capacity >=2 found; cannot generate INCREASE_NUMBER_OF_GUESTS constraints.")
+        return []
+
+    hotel = random.choice(capacity_hotels)
     # hotel = random.choice(HOTELS_DATA_MODIFIED)
     max_value = hotel.get("maxGuests") or hotel.get("guests") or 2  # fallback if missing
 

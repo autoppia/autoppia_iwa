@@ -420,7 +420,7 @@ async def generate_new_log_added_constraints(task_url: str | None = None) -> lis
     fields = ["matter", "hours", "description"]
     constraints: list[dict[str, Any]] = []
     v2_seed = extract_v2_seed_from_url(task_url) if task_url else None
-    data = await _get_data(entity_type="logs", seed_value=v2_seed)
+    data = await _get_data(entity_type="logs", seed_value=v2_seed, method="")
     log_data = random.choice(data)
 
     for field in fields:
