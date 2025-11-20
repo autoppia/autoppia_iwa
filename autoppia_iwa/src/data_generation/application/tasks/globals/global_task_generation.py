@@ -77,6 +77,48 @@ class GlobalTaskGenerationPipeline:
         if num_use_cases and not selective_use_cases:
             web_use_cases = random.sample(web_use_cases, min(num_use_cases, len(web_use_cases)))
 
+        # Update use cases' prompt info with API data if needed (generic for all projects)
+        # This checks if the project's use_cases module has an update_use_cases_prompt_info function
+        try:
+            from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url
+
+            # Map project IDs to module directory names
+            project_id_to_module = {
+                "autocinema": "autocinema_1",
+                "autobooks": "autobooks_2",
+                "autozone": "autozone_3",
+                "autodining": "autodining_4",
+                "autocrm": "autocrm_5",
+                "automail": "automail_6",
+                "autodelivery": "autodelivery_7",
+                "autolodge": "autolodge_8",
+                "autoconnect": "autoconnect_9",
+                "autowork": "autowork_10",
+                "autocalender": "autocalender_11",
+                "autolist": "autolist_12",
+                "autodrive": "autodrive_13",
+            }
+
+            module_name = project_id_to_module.get(self.web_project.id)
+            if module_name:
+                module_path = f"autoppia_iwa.src.demo_webs.projects.{module_name}.use_cases"
+
+                try:
+                    import importlib
+
+                    use_cases_module = importlib.import_module(module_path)
+
+                    if hasattr(use_cases_module, "update_use_cases_prompt_info"):
+                        base_url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
+                        seed_value = extract_v2_seed_from_url(base_url)
+                        await use_cases_module.update_use_cases_prompt_info(seed_value=seed_value)
+                        logger.debug(f"Updated use cases prompt info for {self.web_project.id} with API data")
+                except (ImportError, AttributeError):
+                    # Project doesn't have update_use_cases_prompt_info function, which is fine
+                    pass
+        except Exception as e:
+            logger.debug(f"Could not update use cases prompt info for {self.web_project.id}: {e}")
+
         _log_task_generation(f"Generating tasks for all use cases with {prompts_per_use_case} tasks each. Selected {len(web_use_cases)} use cases.")
 
         for use_case in web_use_cases:

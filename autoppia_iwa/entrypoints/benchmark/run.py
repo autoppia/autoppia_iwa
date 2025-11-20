@@ -26,24 +26,24 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autocinema",
+    "autocinema",
     "autobooks",
-    # "autozone",
-    # "autodining",
-    # "autocrm",
-    # "automail",
-    # "autodelivery",
-    # "autolodge",
-    # "autoconnect",
-    # "autowork",
-    # "autocalendar",
-    # "autolist",
-    # "autodrive",
+    "autozone",
+    "autodining",
+    "autocrm",
+    "automail",
+    "autodelivery",
+    "autolodge",
+    "autoconnect",
+    "autowork",
+    "autocalendar",
+    "autolist",
+    "autodrive",
     # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
-    "BOOK_DETAIL"
+    # "BOOK_DETAIL"
     # "VIEW_USER_PROFILE",
     # "FILM_DETAIL",
     # "EDIT_USER_BOOK"
