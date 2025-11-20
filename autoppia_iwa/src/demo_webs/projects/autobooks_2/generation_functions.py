@@ -26,6 +26,7 @@ def transform_all(records: list[dict], mapping: dict) -> list[dict]:
     """
     return [apply_mapping(record, mapping) for record in records]
 
+
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, books_project
 
@@ -40,11 +41,7 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         limit=count,
     )
     if items:
-        field_mapping = {
-            "director": "author",
-            "duration": "page_count",
-            "img": "img_file"
-        }
+        field_mapping = {"director": "author", "duration": "page_count", "img": "img_file"}
         mapped_items = transform_all(items, field_mapping)
         return mapped_items
 

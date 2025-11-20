@@ -4,6 +4,7 @@ from .data import BOOKS_DATA
 from .events import (
     AddBookEvent,
     AddCommentEvent,
+    AddToReadingListEvent,
     BookDetailEvent,
     ContactEvent,
     DeleteBookEvent,
@@ -12,9 +13,11 @@ from .events import (
     FilterBookEvent,
     LoginEvent,
     LogoutEvent,
+    OpenPreviewEvent,
     PurchaseBookEvent,
     RegistrationEvent,
     SearchBookEvent,
+    ShareBookEvent,
     ShoppingCartEvent,
 )
 from .generation_functions import (
@@ -222,6 +225,205 @@ BOOK_DETAIL_USE_CASE = UseCase(
         {
             "prompt": "Go directly to the highest-rated 'Lidia Matticchio Bastianich' book page",
             "prompt_for_task_generation": "Go directly to the highest-rated <author> book page",
+        },
+    ],
+)
+
+
+SHARE_BOOK_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{chr(10).join([n["name"] for n in BOOKS_DATA])}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+SHARE_BOOK_USE_CASE = UseCase(
+    name="SHARE_BOOK",
+    description="The user explicitly requests to share a specific book that meets certain criteria, "
+    "where they can view information including author, year, genres, rating, page count, and characters.",
+    event=ShareBookEvent,
+    event_source_code=BookDetailEvent.get_source_code_of_class(),
+    additional_prompt_info=SHARE_BOOK_INFO,
+    constraints_generator=generate_book_constraints,
+    examples=[
+        {
+            "prompt": "Share 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Share <book> book",
+        },
+        {
+            "prompt": "Share book details for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Share book details for <book> by <author>",
+        },
+        {
+            "prompt": "Share Science book from 2022",
+            "prompt_for_task_generation": "Share <genre> book from <year>",
+        },
+        {
+            "prompt": "Share book with rating above 4.5",
+            "prompt_for_task_generation": "Share book with rating above <rating>",
+        },
+        {
+            "prompt": "Share 'Fourth Wing' book details",
+            "prompt_for_task_generation": "Share <book> book details",
+        },
+        {
+            "prompt": "Share 'Magazine' book less than 1000 pages long",
+            "prompt_for_task_generation": "Share <genre> book less than <page_count> pages long",
+        },
+        {
+            "prompt": "Share book details from the 2010s directed by 'Ron Larson'",
+            "prompt_for_task_generation": "Share book details from the <decade> directed by '<author>'",
+        },
+        {
+            "prompt": "Share 'Science' book not written by 'Grant Morrison'",
+            "prompt_for_task_generation": "Share <genre> book not written by <author>",
+        },
+        {
+            "prompt": "Share highest-rated 'Lidia Matticchio Bastianich' book",
+            "prompt_for_task_generation": "Share highest-rated <author> book",
+        },
+    ],
+)
+
+OPEN_PREVIEW_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Open preview..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{chr(10).join([n["name"] for n in BOOKS_DATA])}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+OPEN_PREVIEW_USE_CASE = UseCase(
+    name="OPEN_PREVIEW",
+    description="The user explicitly requests to open preview of a specific book that meets certain criteria, "
+    "where they can view information including author, year, genres, rating, page count, and characters.",
+    event=OpenPreviewEvent,
+    event_source_code=OpenPreviewEvent.get_source_code_of_class(),
+    additional_prompt_info=OPEN_PREVIEW_INFO,
+    constraints_generator=generate_book_constraints,
+    examples=[
+        {
+            "prompt": "Open preview of 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Open preview of <book> book",
+        },
+        {
+            "prompt": "Open preview of book for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Open preview of book for <book> by <author>",
+        },
+        {
+            "prompt": "Open preview of Science book from 2022",
+            "prompt_for_task_generation": "Open preview of <genre> book from <year>",
+        },
+        {
+            "prompt": "Open preview of book with rating above 4.5",
+            "prompt_for_task_generation": "Open preview of book with rating above <rating>",
+        },
+        {
+            "prompt": "Open preview of 'Fourth Wing' book",
+            "prompt_for_task_generation": "Open preview of <book> book",
+        },
+        {
+            "prompt": "Open preview of 'Magazine' book less than 1000 pages long",
+            "prompt_for_task_generation": "Open preview of <genre> book less than <page_count> pages long",
+        },
+        {
+            "prompt": "Open preview of book from the 2010s directed by 'Ron Larson'",
+            "prompt_for_task_generation": "Open preview of book from the <decade> directed by '<author>'",
+        },
+        {
+            "prompt": "Open preview of 'Science' book not written by 'Grant Morrison'",
+            "prompt_for_task_generation": "Open preview of <genre> book not written by <author>",
+        },
+        {
+            "prompt": "Open preview of highest-rated 'Lidia Matticchio Bastianich' book",
+            "prompt_for_task_generation": "Open preview of highest-rated <author> book",
+        },
+    ],
+)
+
+ADD_TO_READING_LIST_INFO = f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Add to reading list..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{chr(10).join([n["name"] for n in BOOKS_DATA])}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Add to reading list a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Add to reading list a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Add to reading list a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+ADD_TO_READING_LIST_USE_CASE = UseCase(
+    name="ADD_TO_READING_LIST",
+    description="The user explicitly requests to add a specific book to list book that meets certain criteria, "
+    "where they can view information including author, year, genres, rating, page count, and characters.",
+    event=AddToReadingListEvent,
+    event_source_code=AddToReadingListEvent.get_source_code_of_class(),
+    additional_prompt_info=ADD_TO_READING_LIST_INFO,
+    constraints_generator=generate_book_constraints,
+    examples=[
+        {
+            "prompt": "Add to reading list 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Add to reading list <book> book",
+        },
+        {
+            "prompt": "Add to reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Add to reading list a book <book> by <author>",
+        },
+        {
+            "prompt": "Add to reading list a Science book from 2022",
+            "prompt_for_task_generation": "Add to reading list a <genre> book from <year>",
+        },
+        {
+            "prompt": "Add to reading list a book with rating above 4.5",
+            "prompt_for_task_generation": "Add to reading list a book with rating above <rating>",
+        },
+        {
+            "prompt": "Add to reading list a 'Fourth Wing' book",
+            "prompt_for_task_generation": "Add to reading list a <book> book",
+        },
+        {
+            "prompt": "Add to reading list a 'Magazine' book less than 1000 pages long",
+            "prompt_for_task_generation": "Add to reading list a <genre> book less than <page_count> pages long",
+        },
+        {
+            "prompt": "Add to reading list a book from the 2010s directed by 'Ron Larson'",
+            "prompt_for_task_generation": "Add to reading list a book from the <decade> directed by '<author>'",
+        },
+        {
+            "prompt": "Add to reading list a 'Science' book not written by 'Grant Morrison'",
+            "prompt_for_task_generation": "Add to reading list a <genre> book not written by <author>",
+        },
+        {
+            "prompt": "Add to reading list a highest-rated 'Lidia Matticchio Bastianich' book",
+            "prompt_for_task_generation": "Add to reading list a highest-rated <author> book",
         },
     ],
 )
@@ -788,4 +990,7 @@ ALL_USE_CASES = [
     EDIT_BOOK_USE_CASE,
     SHOPPING_CART_USE_CASE,
     PURCHASE_BOOK_USE_CASE,
+    SHARE_BOOK_USE_CASE,
+    OPEN_PREVIEW_USE_CASE,
+    ADD_TO_READING_LIST_USE_CASE,
 ]
