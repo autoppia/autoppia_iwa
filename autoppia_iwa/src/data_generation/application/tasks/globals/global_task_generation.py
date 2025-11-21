@@ -167,37 +167,9 @@ class GlobalTaskGenerationPipeline:
                 constraint_url = urlunparse(parsed._replace(query=new_query))
 
         # Generate initial constraints with URL that includes seed (if applicable)
-        # Pre-load dataset if the use case needs it (optimization to avoid multiple API calls)
         dataset = None
         if hasattr(use_case, "generate_constraints_async"):
-            # Check if the constraint generator accepts a dataset parameter
-            if use_case.constraints_generator:
-                import inspect
-
-                sig = inspect.signature(use_case.constraints_generator)
-                if "dataset" in sig.parameters:
-                    # Pre-load dataset once for this use case
-                    try:
-                        from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
-
-                        # Get the project-specific data loader function
-                        # Convention: each project has a _get_data function
-                        project_module = self.web_project.use_cases[0].__class__.__module__
-                        project_module_parts = project_module.rsplit(".", 1)[0]  # Remove last part (use_cases)
-
-                        # Import the generation_functions module to get _get_data
-                        import importlib
-
-                        gen_functions_module = importlib.import_module(f"{project_module_parts}.generation_functions")
-
-                        if hasattr(gen_functions_module, "_get_data"):
-                            v2_seed = await resolve_v2_seed_from_url(constraint_url)
-                            dataset = await gen_functions_module._get_data(seed_value=v2_seed)
-                            _log_task_generation(f"Pre-loaded dataset with v2_seed={v2_seed} ({len(dataset)} items)", context="OPTIMIZATION")
-                    except Exception as e:
-                        _log_task_generation(f"Could not pre-load dataset: {e}", context="WARNING")
-                        dataset = None
-
+            dataset = await self._preload_dataset_for_use_case(use_case, constraint_url)
             constraints_info = await use_case.generate_constraints_async(task_url=constraint_url, dataset=dataset)
         else:
             constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
@@ -268,6 +240,60 @@ class GlobalTaskGenerationPipeline:
         # Shuffle them if you wish, for variety
         random.shuffle(tasks)
         return tasks
+
+    async def _preload_dataset_for_use_case(self, use_case: UseCase, constraint_url: str) -> Any:
+        """
+        Attempt to pre-load the dataset for a given use case if its generator supports it and the loader signature is compatible.
+        """
+        generator = use_case.constraints_generator
+        if not generator:
+            return None
+
+        import inspect
+
+        sig = inspect.signature(generator)
+        if "dataset" not in sig.parameters:
+            return None
+
+        module_name = getattr(generator, "__module__", None)
+        if not module_name:
+            return None
+
+        import importlib
+
+        try:
+            gen_module = importlib.import_module(module_name)
+        except Exception as exc:  # pragma: no cover - best effort
+            _log_task_generation(f"Dataset preload skipped (import failed): {exc}", context="OPTIMIZATION")
+            return None
+
+        loader = getattr(gen_module, "_get_data", None)
+        if loader is None:
+            return None
+
+        loader_sig = inspect.signature(loader)
+        required_params = [
+            param for param in loader_sig.parameters.values() if param.default is inspect._empty and param.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+        ]
+        if required_params:
+            _log_task_generation(f"Dataset preload skipped due to required params: {[p.name for p in required_params]}", context="OPTIMIZATION")
+            return None
+
+        from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+
+        try:
+            v2_seed = await resolve_v2_seed_from_url(constraint_url)
+            dataset_result = loader(seed_value=v2_seed)
+            if inspect.isawaitable(dataset_result):
+                dataset = await dataset_result
+            else:
+                dataset = dataset_result
+            if dataset:
+                _log_task_generation(f"Pre-loaded dataset with v2_seed={v2_seed} ({len(dataset)} items)", context="OPTIMIZATION")
+            return dataset
+        except Exception as exc:  # pragma: no cover - best effort
+            _log_task_generation(f"Could not pre-load dataset: {exc}", context="WARNING")
+            return None
 
     async def _call_llm_with_retry(self, llm_prompt: str, additional_system_prompt: str | None = None) -> list[str]:
         """

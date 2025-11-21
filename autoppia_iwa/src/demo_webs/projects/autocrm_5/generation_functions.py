@@ -5,7 +5,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -36,6 +36,21 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
     if items:
         return items
     return []
+
+
+async def _ensure_crm_dataset(
+    task_url: str | None,
+    dataset: list[dict[str, Any]] | None,
+    *,
+    entity_type: str,
+    method: str | None = None,
+    filter_key: str | None = None,
+) -> list[dict[str, Any]]:
+    """Ensure dataset for CRM entity type is available."""
+    if dataset is not None:
+        return dataset
+    v2_seed = await resolve_v2_seed_from_url(task_url)
+    return await _get_data(entity_type=entity_type, method=method, filter_key=filter_key, seed_value=v2_seed)
 
 
 def _to_float_safe(value: Any) -> float | None:
@@ -107,10 +122,9 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return None
 
 
-async def generate_view_matter_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_view_matter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    dataset = await _get_data(entity_type="matters", method="distribute", filter_key="status", seed_value=v2_seed)
+    dataset = await _ensure_crm_dataset(task_url, dataset, entity_type="matters", method="distribute", filter_key="status")
     if not dataset:
         print("[ERROR] No dataset provided")
         return constraints_list
@@ -189,10 +203,9 @@ def generate_add_matter_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_view_client_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_view_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status", seed_value=v2_seed)
+    client_data = await _ensure_crm_dataset(task_url, dataset, entity_type="clients", method="distribute", filter_key="status")
     if not client_data:
         print("[ERROR] No dataset provided")
         return constraints_list
@@ -219,10 +232,9 @@ async def generate_view_client_constraints(task_url: str | None = None) -> list[
     return constraints_list
 
 
-async def generate_search_client_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_search_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    client_data = await _get_data(entity_type="clients", method="distribute", filter_key="status", seed_value=v2_seed)
+    client_data = await _ensure_crm_dataset(task_url, dataset, entity_type="clients", method="distribute", filter_key="status")
     if not client_data:
         print("[ERROR] No dataset provided")
         return constraints_list
@@ -312,12 +324,11 @@ def _generate_value_for_document_field(field: str, field_value: str, operator: C
     return random.choice(values)
 
 
-async def generate_document_deleted_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_document_deleted_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
     possible_fields = ["name", "size", "version", "status"]  # , "updated"]
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    data = await _get_data(entity_type="files", method="", filter_key="", seed_value=v2_seed)
+    data = await _ensure_crm_dataset(task_url, dataset, entity_type="files", method="", filter_key="")
     if not data:
         print("[ERROR] No dataset provided")
         return constraints_list
@@ -428,11 +439,10 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
     return constraints
 
 
-async def generate_new_log_added_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_new_log_added_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     fields = ["matter", "hours", "description"]
     constraints: list[dict[str, Any]] = []
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    data = await _get_data(entity_type="logs", seed_value=v2_seed)
+    data = await _ensure_crm_dataset(task_url, dataset, entity_type="logs")
     if not data:
         print("[ERROR] No dataset provided")
         return constraints
@@ -455,11 +465,10 @@ async def generate_new_log_added_constraints(task_url: str | None = None) -> lis
     return constraints
 
 
-async def generate_delete_log_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_delete_log_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     fields = ["matter", "hours", "client", "status"]
     constraints: list[dict[str, Any]] = []
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    data = await _get_data(entity_type="logs", method="", filter_key="", seed_value=v2_seed)
+    data = await _ensure_crm_dataset(task_url, dataset, entity_type="logs", method="", filter_key="")
     if not data:
         print("[ERROR] No dataset provided")
         return constraints

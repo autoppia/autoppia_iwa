@@ -2,7 +2,7 @@ import random
 from random import choice, randint, sample, uniform
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
@@ -87,16 +87,18 @@ def generate_logout_constraints():
     return parse_constraints_str(constraints_str)
 
 
-async def generate_book_constraints(task_url: str | None = None):
+async def generate_book_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     """
     Generates constraints specifically for book-related use cases.
     Returns the constraints as structured data.
     """
     from .utils import build_constraints_info, parse_constraints_str
 
-    # Generar restricciones frescas basadas en los datos de películas
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    constraints_str = build_constraints_info(await _get_data(seed_value=v2_seed))
+    # Generar restricciones frescas basadas en los datos de libros
+    if dataset is None:
+        v2_seed = await resolve_v2_seed_from_url(task_url)
+        dataset = await _get_data(seed_value=v2_seed)
+    constraints_str = build_constraints_info(dataset)
 
     # Convertir el string a la estructura de datos
     if constraints_str:
@@ -120,15 +122,17 @@ def generate_delete_book_constraints():
     return None
 
 
-async def generate_search_book_constraints(task_url: str | None = None):
+async def generate_search_book_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
     from .utils import parse_constraints_str
 
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    books_names = [book["name"] for book in await _get_data(seed_value=v2_seed)]
+    if dataset is None:
+        v2_seed = await resolve_v2_seed_from_url(task_url)
+        dataset = await _get_data(seed_value=v2_seed)
+    books_names = [book["name"] for book in dataset]
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(books_names)}"
     return parse_constraints_str(constraints_str)
@@ -213,14 +217,16 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
-async def generate_book_filter_constraints(task_url: str | None = None):
+async def generate_book_filter_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     """
     Genera una combinación de constraints para filtrado de películas
     usando los años y géneros reales de las películas.
     """
-    data_items = await _get_data()
-    existing_years = list(set(book["year"] for book in data_items))
-    existing_genres = list(set(genre for book in data_items for genre in book["genres"]))
+    if dataset is None:
+        v2_seed = await resolve_v2_seed_from_url(task_url)
+        dataset = await _get_data(seed_value=v2_seed)
+    existing_years = list(set(book["year"] for book in dataset))
+    existing_genres = list(set(genre for book in dataset for genre in book["genres"]))
 
     generation_type = choice(["single_genre", "single_year", "genre_and_year"])
 
@@ -455,14 +461,16 @@ def generate_constraint_from_solution(book: dict, field: str, operator: Comparis
     return None
 
 
-async def generate_add_comment_constraints(task_url: str | None = None):
+async def generate_add_comment_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     """
     Genera combinaciones de constraints para añadir comentarios.
     """
 
     # Películas disponibles
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    books = [book["name"] for book in await _get_data(seed_value=v2_seed)]
+    if dataset is None:
+        v2_seed = await resolve_v2_seed_from_url(task_url)
+        dataset = await _get_data(seed_value=v2_seed)
+    books = [book["name"] for book in dataset]
 
     # Palabras y frases para generar comentarios
     comment_keywords = [
@@ -532,7 +540,7 @@ async def generate_add_comment_constraints(task_url: str | None = None):
     return constraints
 
 
-async def generate_edit_book_constraints(task_url: str | None = None):
+async def generate_edit_book_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     """
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
@@ -575,9 +583,10 @@ async def generate_edit_book_constraints(task_url: str | None = None):
         "sage",
     ]
 
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    data_items = await _get_data(seed_value=v2_seed)
-    all_genres = list(set(genre for book in data_items for genre in book["genres"]))
+    if dataset is None:
+        v2_seed = await resolve_v2_seed_from_url(task_url)
+        dataset = await _get_data(seed_value=v2_seed)
+    all_genres = list(set(genre for book in dataset for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
@@ -624,7 +633,7 @@ async def generate_edit_book_constraints(task_url: str | None = None):
     return constraints
 
 
-async def generate_add_book_constraints(task_url: str | None = None):
+async def generate_add_book_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     """
     Generates constraints specifically for editing book-related use cases.
     Returns the constraints as structured data.
@@ -667,9 +676,10 @@ async def generate_add_book_constraints(task_url: str | None = None):
         "sage",
     ]
 
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    data_items = await _get_data(seed_value=v2_seed)
-    all_genres = list(set(genre for book in data_items for genre in book["genres"]))
+    if dataset is None:
+        v2_seed = await resolve_v2_seed_from_url(task_url)
+        dataset = await _get_data(seed_value=v2_seed)
+    all_genres = list(set(genre for book in dataset for genre in book["genres"]))
 
     # Generar constraints
     constraints = []
@@ -717,7 +727,7 @@ async def generate_add_book_constraints(task_url: str | None = None):
     return constraints
 
 
-async def generate_edit_profile_constraints(task_url: str | None = None):
+async def generate_edit_profile_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
     """
     Generates constraints specifically for editing user profiles.
     Returns the constraints as structured data.
@@ -766,9 +776,10 @@ async def generate_edit_profile_constraints(task_url: str | None = None):
         "Literary critic specializing in contemporary novels and poetry.",
         "Story lover and aspiring writer.",
     ]
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    data_items = await _get_data(seed_value=v2_seed)
-    all_genres = list(set(genre for book in data_items for genre in book["genres"]))
+    if dataset is None:
+        v2_seed = await resolve_v2_seed_from_url(task_url)
+        dataset = await _get_data(seed_value=v2_seed)
+    all_genres = list(set(genre for book in dataset for genre in book["genres"]))
 
     # Generar constraints
     constraints = []

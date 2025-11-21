@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -35,6 +35,14 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
     if items:
         return items
     return []
+
+
+async def _ensure_restaurant_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """Ensure we have restaurant data, optionally using a pre-loaded dataset."""
+    if dataset is not None:
+        return dataset
+    v2_seed = await resolve_v2_seed_from_url(task_url)
+    return await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
@@ -111,11 +119,10 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
     return value
 
 
-async def generate_search_restaurant_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_search_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
 
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    data_items = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
+    data_items = await _ensure_restaurant_dataset(task_url, dataset)
     search_terms = []
     for item in data_items:
         if item.get("name"):
@@ -145,10 +152,9 @@ async def generate_search_restaurant_constraints(task_url: str | None = None) ->
     return constraints_list
 
 
-async def __generate_view_restaurant_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def __generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list = []
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
+    restaurant_data = await _ensure_restaurant_dataset(task_url, dataset)
     fields = ["name", "cuisine", "rating", "description"]
     num_constraints = random.randint(2, len(fields))
     selected_fields = random.sample(fields, num_constraints)
@@ -167,16 +173,15 @@ async def __generate_view_restaurant_constraints(task_url: str | None = None) ->
     return constraints_list, restaurant
 
 
-async def generate_view_restaurant_constraints(task_url: str | None = None) -> list[dict]:
-    constraints_list, _ = await __generate_view_restaurant_constraints(task_url=task_url)
+async def generate_view_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+    constraints_list, _ = await __generate_view_restaurant_constraints(task_url=task_url, dataset=dataset)
 
     return constraints_list
 
 
-async def _get_menu_items(task_url: str | None = None) -> list[dict[str, Any]]:
+async def _get_menu_items(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     menu_items = []
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
+    restaurant_data = await _ensure_restaurant_dataset(task_url, dataset)
     for restaurant in restaurant_data:
         for menu_item in restaurant.get("menu", []):
             menu_items.append(
@@ -204,10 +209,9 @@ def _get_menu_items_for_restaurant(restaurant: dict) -> list[dict[str, Any]]:
     ]
 
 
-async def __generate_add_to_cart_modal_open_constraints(task_url: str | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def __generate_add_to_cart_modal_open_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     constraints_list = []
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    restaurant_data = await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
+    restaurant_data = await _ensure_restaurant_dataset(task_url, dataset)
     if not restaurant_data:
         return [], {}
     restaurant = random.choice(restaurant_data)
@@ -215,7 +219,7 @@ async def __generate_add_to_cart_modal_open_constraints(task_url: str | None = N
     if not menu_items:
         return [], {}
     item = random.choice(menu_items)
-    menu_dataset = await _get_menu_items(task_url=task_url)
+    menu_dataset = await _get_menu_items(task_url=task_url, dataset=restaurant_data)
     fields = ["item", "price"]
     num_constraints = random.randint(1, len(fields))
     selected_fields = random.sample(fields, num_constraints)
@@ -242,8 +246,8 @@ async def __generate_add_to_cart_modal_open_constraints(task_url: str | None = N
     return constraints_list, item
 
 
-async def generate_add_to_cart_modal_open_constraints(task_url: str | None = None) -> list[dict]:
-    constraints_list, _ = await __generate_add_to_cart_modal_open_constraints(task_url=task_url)
+async def generate_add_to_cart_modal_open_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+    constraints_list, _ = await __generate_add_to_cart_modal_open_constraints(task_url=task_url, dataset=dataset)
     return constraints_list
 
 
@@ -268,9 +272,9 @@ def _get_new_quantity_value(operator: ComparisonOperator) -> int:
         return random.randint(2, 10)
 
 
-async def __generate_add_to_cart_options_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
+async def __generate_add_to_cart_options_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraints_list = []
-    model_constraints, _ = await __generate_add_to_cart_modal_open_constraints(task_url)
+    model_constraints, _ = await __generate_add_to_cart_modal_open_constraints(task_url, dataset=dataset)
     field = "quantity"
 
     allowed_ops = FIELD_OPERATORS_INCREMENT_QUANTITY_MAP.get(field, [])
@@ -283,8 +287,8 @@ async def __generate_add_to_cart_options_constraints(task_url: str | None = None
     return constraints_list
 
 
-async def generate_increment_item_restaurant_constraints(task_url: str | None = None) -> list[dict]:
-    constraints_list = await __generate_add_to_cart_options_constraints(task_url)
+async def generate_increment_item_restaurant_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+    constraints_list = await __generate_add_to_cart_options_constraints(task_url, dataset=dataset)
     return constraints_list
 
 
@@ -311,8 +315,8 @@ def __get_delete_review_fields(restaurants):
     return result
 
 
-async def generate_delete_review_constraints(task_url: str | None = None) -> list[dict]:
-    constraints_list, restaurant = await __generate_view_restaurant_constraints(task_url)
+async def generate_delete_review_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+    constraints_list, restaurant = await __generate_view_restaurant_constraints(task_url, dataset=dataset)
     delete_review_dict = __get_delete_review_fields([restaurant])
     fields = ["author", "review_rating", "comment"]  # , "date"]
     num_constraints = random.randint(1, len(fields))
@@ -333,7 +337,7 @@ async def generate_delete_review_constraints(task_url: str | None = None) -> lis
     return constraints_list
 
 
-async def generate_add_to_cart_constraints(task_url: str | None = None) -> list[dict]:
+async def generate_add_to_cart_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
     constraints_list = []
     sizes_list = ["small", "medium", "large"]
     preferences_list = [
@@ -363,7 +367,7 @@ async def generate_add_to_cart_constraints(task_url: str | None = None) -> list[
         "peanut-free",
         "shellfish-free",
     ]
-    common_add_to_cart_constraints = await __generate_add_to_cart_options_constraints(task_url)
+    common_add_to_cart_constraints = await __generate_add_to_cart_options_constraints(task_url, dataset=dataset)
     fields = ["size", "preferences"]
     num_constraints = random.randint(1, len(fields))
     selected_fields = random.sample(fields, num_constraints)
@@ -388,8 +392,8 @@ async def generate_add_to_cart_constraints(task_url: str | None = None) -> list[
     return constraints_list
 
 
-async def generate_dropoff_option_constraints(task_url: str | None = None) -> list[dict]:
-    constraints_list = await __generate_add_to_cart_options_constraints(task_url)
+async def generate_dropoff_option_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
+    constraints_list = await __generate_add_to_cart_options_constraints(task_url, dataset=dataset)
     dropoffOptions = ["Leave it at my door", "Hand it to me", "Meet outside", "Meet in the lobby", "Call upon arrival", "Text when arriving"]
 
     field = "delivery_preference"
@@ -420,9 +424,9 @@ def _get_address_dataset():
     return [{"address": addr} for addr in ADDRESSES]
 
 
-async def generate_address_added_constraints(task_url: str | None = None) -> list[dict]:
+async def generate_address_added_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict]:
     constraints_list = []
-    add_to_cart_constraint = await generate_add_to_cart_constraints(task_url)
+    add_to_cart_constraint = await generate_add_to_cart_constraints(task_url, dataset=dataset)
 
     field = "address"
     operator = ComparisonOperator(random.choice(FIELD_OPERATORS_ADDRESS_ADDED_MAP[field]))

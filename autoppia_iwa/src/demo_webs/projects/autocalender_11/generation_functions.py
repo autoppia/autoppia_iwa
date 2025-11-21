@@ -3,7 +3,7 @@ from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
 
 from ..criterion_helper import ComparisonOperator
@@ -70,6 +70,14 @@ async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dic
     except Exception:
         pass
     return []
+
+
+async def _ensure_event_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """Ensure event dataset is available for constraint generation."""
+    if dataset is not None:
+        return dataset
+    v2_seed = await resolve_v2_seed_from_url(task_url)
+    return await _get_data(seed_value=v2_seed)
 
 
 def _generate_constraint_value(
@@ -356,9 +364,8 @@ def generate_add_event_constraints() -> list[dict[str, Any]]:
     return _generate_constraints_for_event(reduced_field_map, FIELD_OPERATORS_ADD_EVENT_MAP, {"time": _handle_time_constraints})
 
 
-async def generate_event_wizard_open_constraints(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    event_data = await _get_data(seed_value=v2_seed)
+async def generate_event_wizard_open_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    event_data = await _ensure_event_dataset(task_url, dataset)
     constraints_list = []
     if not event_data:
         print("[ERROR] No event data provided")

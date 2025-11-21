@@ -4,7 +4,7 @@ from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url, load_dataset_data
+from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -41,6 +41,14 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
         modified_experts = expert_data_modified(items)
         return modified_experts
     return []
+
+
+async def _ensure_expert_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """Ensure experts dataset is available."""
+    if dataset is not None:
+        return dataset
+    v2_seed = await resolve_v2_seed_from_url(task_url)
+    return await _get_data(seed_value=v2_seed)
 
 
 def _generate_constraint_value(
@@ -202,9 +210,8 @@ def _generate_constraints(
     return all_constraints
 
 
-async def generate_book_consultant_constraint(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    dataset = await _get_data(seed_value=v2_seed)
+async def generate_book_consultant_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP
     selected_field = ["slug"]
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
@@ -212,9 +219,8 @@ async def generate_book_consultant_constraint(task_url: str | None = None) -> li
     return constraints_list
 
 
-async def generate_hire_button_clicked_constraint(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    dataset = await _get_data(seed_value=v2_seed)
+async def generate_hire_button_clicked_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
     selected_field = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
@@ -222,12 +228,11 @@ async def generate_hire_button_clicked_constraint(task_url: str | None = None) -
     return constraints_list
 
 
-async def generate_select_hiring_team_constraint(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_select_hiring_team_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_mapping = {
         "team": {"field": "team", "dataset": [{"team": t} for t in ["Microsoft", "Apple", "Google"]]},
     }
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    dataset = await _get_data(seed_value=v2_seed)
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_HIRING_TEAM
     selected_fields = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_fields, field_map=field_mapping)
@@ -235,15 +240,14 @@ async def generate_select_hiring_team_constraint(task_url: str | None = None) ->
     return constraints_list
 
 
-async def generate_hire_consultation_constraint(task_url: str | None = None) -> list[dict[str, Any]]:
+async def generate_hire_consultation_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_mapping = {
         "increaseHowMuch": {"field": "increaseHowMuch", "dataset": [{"increaseHowMuch": p} for p in ["5%", "10%", "15%"]]},
         "increaseWhen": {"field": "increaseWhen", "dataset": [{"increaseWhen": p} for p in ["Never", "After 3 months", "After 6 months", "After 12 months"]]},
         "paymentType": {"field": "paymentType", "dataset": [{"paymentType": p} for p in ["fixed", "hourly"]]},
     }
 
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    dataset = await _get_data(seed_value=v2_seed)
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_HIRING_CONSULTANT
     selected_fields = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
@@ -251,9 +255,8 @@ async def generate_hire_consultation_constraint(task_url: str | None = None) -> 
     return constraints_list
 
 
-async def generate_cancel_hire_constraint(task_url: str | None = None) -> list[dict[str, Any]]:
-    v2_seed = extract_seed_from_url(task_url) if task_url else None
-    dataset = await _get_data(seed_value=v2_seed)
+async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE
     fixed_fields = ["slug"]
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=fixed_fields)
