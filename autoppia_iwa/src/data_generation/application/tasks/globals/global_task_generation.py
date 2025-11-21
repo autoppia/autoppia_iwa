@@ -156,7 +156,7 @@ class GlobalTaskGenerationPipeline:
         if dynamic:
             from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
-            seed_value = random.randint(1, 300)
+            seed_value = random.randint(1, 999)
             parsed = urlparse(base_url)
             query_params = parse_qs(parsed.query)
 

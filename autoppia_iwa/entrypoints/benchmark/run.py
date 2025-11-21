@@ -26,19 +26,19 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autocinema",
-    "autobooks",
-    "autozone",
-    "autodining",
-    "autocrm",
-    "automail",
-    "autodelivery",
-    "autolodge",
-    "autoconnect",
-    "autowork",
+    # "autocinema",
+    # "autobooks",
+    # "autozone",
+    # "autodining",
+    # "autocrm",
+    # "automail",
+    # "autodelivery",
+    # "autolodge",
+    # "autoconnect",
+    # "autowork",
     "autocalendar",
-    "autolist",
-    "autodrive",
+    # "autolist",
+    # "autodrive",
     # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
@@ -87,15 +87,14 @@ CFG = BenchmarkConfig(
     # Tasks
     use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
-    num_use_cases=1,  # 0 = all use-cases
+    num_use_cases=0,  # 0 = all use-cases
     use_cases=USE_CASES,
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic features: array of v1, v2, v3 (or combinations)
-    dynamic=True,
+    dynamic=True,  # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
     # Persistence
     save_results_json=True,
     plot_results=False,
