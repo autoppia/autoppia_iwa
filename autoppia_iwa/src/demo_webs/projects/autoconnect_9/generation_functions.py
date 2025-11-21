@@ -338,7 +338,9 @@ async def generate_follow_page_constraints(task_url: str | None = None, dataset:
     """
     Generates constraints for following a company page based on the provided user profile data.
     """
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="companies")
+    from .data import COMPANIES
+
+    dataset = COMPANIES
     field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
     field_map = {"company": "name"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
