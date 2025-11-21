@@ -1,4 +1,4 @@
-from .data import MOVIES_DATA
+from autoppia_iwa.src.demo_webs.projects.autocinema_1.data_utils import fetch_movies_data
 
 
 def login_replace_func(text: str) -> str:
@@ -25,11 +25,16 @@ def register_replace_func(text: str) -> str:
     return text
 
 
-def replace_film_placeholders(
+async def replace_film_placeholders(
     text: str,
+    seed_value: int | None = None,
+    dataset: list[dict] | None = None,
 ) -> str:
-    movies_data: list = MOVIES_DATA
-    if not isinstance(text, str) or not movies_data:
+    if not isinstance(text, str):
+        return text
+
+    movies_data = dataset if dataset is not None else await fetch_movies_data(seed_value=seed_value)
+    if not movies_data:
         return text
 
     import random

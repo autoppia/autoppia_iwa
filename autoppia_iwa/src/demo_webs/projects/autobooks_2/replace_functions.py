@@ -1,5 +1,4 @@
-from autoppia_iwa.src.demo_webs.projects.books_2.data import BOOKS_DATA
-
+from .data_utils import fetch_books_data
 from .relevant_data import RELEVANT_DATA
 
 
@@ -27,11 +26,16 @@ def register_replace_func(text: str) -> str:
     return text
 
 
-def replace_book_placeholders(
+async def replace_book_placeholders(
     text: str,
+    seed_value: int | None = None,
+    dataset: list[dict] | None = None,
 ) -> str:
-    books_data: list = BOOKS_DATA
-    if not isinstance(text, str) or not books_data:
+    if not isinstance(text, str):
+        return text
+
+    books_data = dataset if dataset is not None else await fetch_books_data(seed_value=seed_value)
+    if not books_data:
         return text
 
     import random

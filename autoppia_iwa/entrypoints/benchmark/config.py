@@ -34,8 +34,9 @@ class BenchmarkConfig:
     save_results_json: bool = True
     plot_results: bool = False
 
-    # Dynamic HTML
-    enable_dynamic_html: bool = False
+    # Dynamic features: array of v1, v2, v3 (or combinations)
+    # v1 = assign seed, v2 = assign v2-seed, v3 = assign seed structure
+    dynamic: bool = False
 
     # Visualization
     enable_visualization: bool = True
@@ -71,7 +72,7 @@ class BenchmarkConfig:
         for d in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir, self.recordings_dir):
             try:
                 d.mkdir(parents=True, exist_ok=True)
-                logger.debug(f"Ensured directory exists: {d}")
+                # logger.debug(f"Ensured directory exists: {d}")
             except Exception as e:
                 logger.error(f"Failed to create directory {d}: {e}")
                 raise

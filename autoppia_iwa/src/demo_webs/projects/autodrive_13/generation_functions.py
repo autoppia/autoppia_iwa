@@ -5,6 +5,8 @@ from typing import Any
 
 from dateutil import parser
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -16,9 +18,40 @@ from .data import (
     FIELD_OPERATORS_MAP_SELECT_CAR,
     FIELD_OPERATORS_MAP_SELECT_DATE,
     FIELD_OPERATORS_MAP_SELECT_TIME,
-    PLACES,
-    RIDES,
 )
+from .data_utils import extract_drive_dataset, fetch_drive_data
+
+
+async def _get_data(
+    entity_type: str,
+    method: str | None = None,
+    filter_key: str | None = None,
+    seed_value: int | None = None,
+    count: int = 100,
+) -> list[dict]:
+    return await fetch_drive_data(
+        entity_type=entity_type,
+        method=method,
+        filter_key=filter_key,
+        seed_value=seed_value,
+        count=count,
+    )
+
+
+async def _ensure_drive_dataset(
+    task_url: str | None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None,
+    *,
+    entity_type: str,
+    method: str | None = None,
+    filter_key: str | None = None,
+) -> list[dict[str, Any]]:
+    """Ensure dataset for the given entity type is available."""
+    existing = extract_drive_dataset(dataset, entity_type)
+    if existing is not None:
+        return existing
+    v2_seed = await resolve_v2_seed_from_url(task_url)
+    return await _get_data(entity_type=entity_type, method=method, filter_key=filter_key, seed_value=v2_seed)
 
 
 def _generate_constraint_value(
@@ -232,27 +265,30 @@ def _generate_constraints(
     return all_constraints
 
 
-def generate_enter_location_constraints() -> list[dict[str, Any]]:
+async def generate_enter_location_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_map = {"location": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_LOCATION
-    constraints_list = _generate_constraints(PLACES, field_operators, field_map=field_map)
+    dataset = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    constraints_list = _generate_constraints(dataset, field_operators, field_map=field_map)
     return constraints_list
 
 
-def generate_enter_destination_constraints() -> list[dict[str, Any]]:
+async def generate_enter_destination_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_map = {"destination": "label"}
     field_operators = FIELD_OPERATORS_MAP_ENTER_DESTINATION
-    constraints_list = _generate_constraints(PLACES, field_operators, field_map=field_map)
+    dataset = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
+    constraints_list = _generate_constraints(dataset, field_operators, field_map=field_map)
     return constraints_list
 
 
-def generate_see_prices_constraints() -> list[dict[str, Any]]:
+async def generate_see_prices_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
     field_mapping = {
-        "location": {"field": "label", "dataset": PLACES},
-        "destination": {"field": "label", "dataset": PLACES},
+        "location": {"field": "label", "dataset": dataset},
+        "destination": {"field": "label", "dataset": dataset},
     }
     field_operators = FIELD_OPERATORS_MAP_SEE_PRICES
-    constraints_list = _generate_constraints(PLACES, field_operators, field_mapping, num_constraints=2)
+    constraints_list = _generate_constraints(dataset, field_operators, field_mapping, num_constraints=2)
     return constraints_list
 
 
@@ -384,14 +420,15 @@ def _create_scheduled_constraint(field, ops):
     return constraint
 
 
-def generate_search_ride_constraints() -> list[dict[str, Any]]:
+async def generate_search_ride_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_ops = FIELD_OPERATORS_MAP_SEARCH_RIDE
+    dataset = await _ensure_drive_dataset(task_url, dataset, entity_type="places")
 
     field_map = {
-        "location": {"field": "label", "dataset": PLACES},
-        "destination": {"field": "label", "dataset": PLACES},
+        "location": {"field": "label", "dataset": dataset},
+        "destination": {"field": "label", "dataset": dataset},
     }
-    constraints_list = _generate_constraints(PLACES, field_ops, field_map=field_map, selected_fields=["location", "destination"])
+    constraints_list = _generate_constraints(dataset, field_ops, field_map=field_map, selected_fields=["location", "destination"])
 
     if "scheduled" in FIELD_OPERATORS_MAP_SEARCH_RIDE:
         ops = FIELD_OPERATORS_MAP_SEARCH_RIDE["scheduled"]
@@ -401,20 +438,27 @@ def generate_search_ride_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_select_car_constraints() -> list[dict[str, Any]]:
+async def generate_select_car_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     fields_ops = FIELD_OPERATORS_MAP_SELECT_CAR.copy()
     scheduled_ops = fields_ops.pop("scheduled")
+    places_data = None
+    rides_data = None
+    if isinstance(dataset, dict):
+        places_data = dataset.get("places")
+        rides_data = dataset.get("rides")
+    places_data = await _ensure_drive_dataset(task_url, places_data, entity_type="places")
+    rides_data = await _ensure_drive_dataset(task_url, rides_data, entity_type="rides")
     field_map = {
         "location": "label",
         "destination": "label",
-        "ride_name": {"field": "name", "dataset": RIDES},
+        "ride_name": {"field": "name", "dataset": rides_data},
     }
-    constraints_list = _generate_constraints(PLACES, fields_ops, field_map=field_map, selected_fields=["location", "destination", "ride_name"], num_constraints=3)  # selected_fields=["ride_name"]
+    constraints_list = _generate_constraints(places_data, fields_ops, field_map=field_map, selected_fields=["location", "destination", "ride_name"], num_constraints=3)  # selected_fields=["ride_name"]
     constraints_list.append(_create_scheduled_constraint("scheduled", scheduled_ops))
     return constraints_list
 
 
-def generate_reserve_ride_constraints() -> list[dict[str, Any]]:
-    constraints_list = generate_select_car_constraints()
+async def generate_reserve_ride_constraints(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list = await generate_select_car_constraints(task_url, dataset)
 
     return constraints_list

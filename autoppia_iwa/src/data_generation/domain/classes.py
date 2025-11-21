@@ -2,6 +2,7 @@
 import random
 import uuid
 from typing import Annotated, Any
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydantic import BaseModel, Field, PrivateAttr
 
@@ -41,8 +42,7 @@ class Task(BaseModel):
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     use_case: Any = Field(default=None, description="UseCase instance associated with this task")
     should_record: bool = False
-    assign_seed: bool = True
-
+    dynamic: bool = Field(default=False, description="Indicates if the task should run in dynamic mode")
     _original_prompt: str = PrivateAttr()
     _seed_value: int = PrivateAttr()
 
@@ -54,6 +54,8 @@ class Task(BaseModel):
         object.__setattr__(self, "_original_prompt", original_prompt)
         # Don't add seed automatically - let the benchmark decide when to add it
         object.__setattr__(self, "_seed_value", None)
+        # Automatically apply dynamic features to URL
+        self._apply_dynamic_to_url()
 
     @property
     def prompt_with_relevant_data(self) -> str:
@@ -65,14 +67,33 @@ class Task(BaseModel):
     def original_prompt(self) -> str:
         return self._original_prompt
 
+    def _apply_dynamic_to_url(self) -> None:
+        """
+        Automatically apply all dynamic features to the URL based on the dynamic array.
+        This is called automatically after Task initialization.
+        """
+        if self.dynamic:
+            self.assign_seed_to_url()
+
     def assign_seed_to_url(self) -> None:
         """
-        Assign a random seed to the task URL if assign_seed is True.
-        This method should be called by the benchmark when enable_dynamic_html is True.
+        Assign a random seed to the task URL if v1 is in dynamic array.
+        Avoids overwriting an existing seed or breaking query structure.
         """
-        if self.assign_seed and self._seed_value is None:
-            object.__setattr__(self, "_seed_value", random.randint(0, 300))
-            object.__setattr__(self, "url", self.url.strip() + "?seed=" + str(self._seed_value))
+        if self.dynamic:
+            if self._seed_value is None:
+                object.__setattr__(self, "_seed_value", random.randint(1, 999))
+
+            parsed = urlparse(self.url)
+            query_params = parse_qs(parsed.query)
+
+            # Only add if 'seed' not already in URL
+            if "seed" not in query_params:
+                query_params["seed"] = [str(self._seed_value)]
+
+                new_query = urlencode(query_params, doseq=True)
+                new_url = urlunparse(parsed._replace(query=new_query))
+                object.__setattr__(self, "url", new_url)
 
     def model_dump(self, *args, **kwargs) -> dict:
         # Example override to hide screenshot if needed
@@ -198,3 +219,4 @@ class TaskGenerationConfig(BaseModel):
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline
     # Specific use cases to focus on, will override num_use_cases if set, for current project
     use_cases: list[str] | None = None
+    dynamic: bool = False

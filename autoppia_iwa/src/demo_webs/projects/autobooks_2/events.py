@@ -264,6 +264,24 @@ class BookDetailEvent(Event, BaseEventValidator):
         )
 
 
+class ShareBookEvent(BookDetailEvent):
+    """Event triggered when a book shared"""
+
+    event_name: str = "SHARE_BOOK"
+
+
+class OpenPreviewEvent(BookDetailEvent):
+    """Event triggered when a book opened"""
+
+    event_name: str = "OPEN_PREVIEW"
+
+
+class AddToReadingListEvent(BookDetailEvent):
+    """Event triggered when a book added to reading list"""
+
+    event_name: str = "ADD_TO_READING_LIST"
+
+
 class AddBookEvent(Event, BaseEventValidator):
     """Event triggered when a user adds a new book"""
 
@@ -786,6 +804,9 @@ EVENTS = [
     FilterBookEvent,
     ShoppingCartEvent,
     PurchaseBookEvent,
+    ShareBookEvent,
+    OpenPreviewEvent,
+    AddToReadingListEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -803,4 +824,7 @@ BACKEND_EVENT_TYPES = {
     "FILTER_BOOK": FilterBookEvent,
     "SHOPPING_CART": ShoppingCartEvent,
     "PURCHASE_BOOK": PurchaseBookEvent,
+    "SHARE_BOOK": ShareBookEvent,
+    "OPEN_PREVIEW": OpenPreviewEvent,
+    "ADD_TO_READING_LIST": AddToReadingListEvent,
 }

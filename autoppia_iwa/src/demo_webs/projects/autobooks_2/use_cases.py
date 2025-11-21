@@ -1,9 +1,10 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .data import BOOKS_DATA
+from .data_utils import fetch_books_data
 from .events import (
     AddBookEvent,
     AddCommentEvent,
+    AddToReadingListEvent,
     BookDetailEvent,
     ContactEvent,
     DeleteBookEvent,
@@ -12,9 +13,11 @@ from .events import (
     FilterBookEvent,
     LoginEvent,
     LogoutEvent,
+    OpenPreviewEvent,
     PurchaseBookEvent,
     RegistrationEvent,
     SearchBookEvent,
+    ShareBookEvent,
     ShoppingCartEvent,
 )
 from .generation_functions import (
@@ -32,6 +35,40 @@ from .generation_functions import (
     generate_search_book_constraints,
 )
 from .replace_functions import login_replace_func, register_replace_func, replace_book_placeholders
+
+
+async def _get_books_data_for_prompts(seed_value: int | None = None, count: int = 200) -> list[dict]:
+    """Fetch books data from API for use in prompt generation."""
+    return await fetch_books_data(seed_value=seed_value, count=count)
+
+
+def _generate_book_names_list(books_data: list[dict]) -> str:
+    """Generate a newline-separated list of book names from books data."""
+    if not books_data:
+        return "No books available"
+    return "\n".join([book.get("name", "") for book in books_data if book.get("name")])
+
+
+def _generate_allowed_years_list(books_data: list[dict]) -> list[int]:
+    """Generate a list of unique years from books data."""
+    if not books_data:
+        return []
+    return sorted(list(set(book.get("year") for book in books_data if book.get("year") is not None)))
+
+
+def _generate_allowed_genres_list(books_data: list[dict]) -> list[str]:
+    """Generate a list of unique genres from books data."""
+    if not books_data:
+        return []
+    genres = set()
+    for book in books_data:
+        book_genres = book.get("genres", [])
+        if isinstance(book_genres, list):
+            genres.update(book_genres)
+        elif isinstance(book_genres, str):
+            genres.add(book_genres)
+    return sorted(list(genres))
+
 
 ###############################################################################
 # REGISTRATION_USE_CASE
@@ -160,7 +197,11 @@ LOGOUT_USE_CASE = UseCase(
 # BOOK_DETAIL_USE_CASE
 ###############################################################################
 
-BOOK_DETAIL_INFO = f"""
+
+def _get_book_detail_info(books_data: list[dict]) -> str:
+    """Generate book detail info dynamically from API data."""
+    book_names = _generate_book_names_list(books_data)
+    return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
@@ -168,7 +209,26 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 4. Only use the books name defined below.
 
 BOOKS NAMES:
-{chr(10).join([n["name"] for n in BOOKS_DATA])}
+{book_names}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+BOOK_DETAIL_INFO_TEMPLATE = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Show details for...", "Navigate to the details page for...", etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{BOOKS_NAMES_PLACEHOLDER}
 
 For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
 - CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
@@ -184,7 +244,7 @@ BOOK_DETAIL_USE_CASE = UseCase(
     "where they can view information including author, year, genres, rating, page count, and characters.",
     event=BookDetailEvent,
     event_source_code=BookDetailEvent.get_source_code_of_class(),
-    additional_prompt_info=BOOK_DETAIL_INFO,
+    additional_prompt_info=None,  # Will be populated dynamically from API
     constraints_generator=generate_book_constraints,
     examples=[
         {
@@ -222,6 +282,273 @@ BOOK_DETAIL_USE_CASE = UseCase(
         {
             "prompt": "Go directly to the highest-rated 'Lidia Matticchio Bastianich' book page",
             "prompt_for_task_generation": "Go directly to the highest-rated <author> book page",
+        },
+    ],
+)
+
+
+def _get_share_book_info(books_data: list[dict]) -> str:
+    """Generate share book info dynamically from API data."""
+    book_names = _generate_book_names_list(books_data)
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{book_names}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+SHARE_BOOK_INFO_TEMPLATE = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Share details for..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{BOOKS_NAMES_PLACEHOLDER}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+SHARE_BOOK_USE_CASE = UseCase(
+    name="SHARE_BOOK",
+    description="The user explicitly requests to share a specific book that meets certain criteria, "
+    "where they can view information including author, year, genres, rating, page count, and characters.",
+    event=ShareBookEvent,
+    event_source_code=BookDetailEvent.get_source_code_of_class(),
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    constraints_generator=generate_book_constraints,
+    examples=[
+        {
+            "prompt": "Share 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Share <book> book",
+        },
+        {
+            "prompt": "Share book details for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Share book details for <book> by <author>",
+        },
+        {
+            "prompt": "Share Science book from 2022",
+            "prompt_for_task_generation": "Share <genre> book from <year>",
+        },
+        {
+            "prompt": "Share book with rating above 4.5",
+            "prompt_for_task_generation": "Share book with rating above <rating>",
+        },
+        {
+            "prompt": "Share 'Fourth Wing' book details",
+            "prompt_for_task_generation": "Share <book> book details",
+        },
+        {
+            "prompt": "Share 'Magazine' book less than 1000 pages long",
+            "prompt_for_task_generation": "Share <genre> book less than <page_count> pages long",
+        },
+        {
+            "prompt": "Share book details from the 2010s directed by 'Ron Larson'",
+            "prompt_for_task_generation": "Share book details from the <decade> directed by '<author>'",
+        },
+        {
+            "prompt": "Share 'Science' book not written by 'Grant Morrison'",
+            "prompt_for_task_generation": "Share <genre> book not written by <author>",
+        },
+        {
+            "prompt": "Share highest-rated 'Lidia Matticchio Bastianich' book",
+            "prompt_for_task_generation": "Share highest-rated <author> book",
+        },
+    ],
+)
+
+
+def _get_open_preview_info(books_data: list[dict]) -> str:
+    """Generate open preview info dynamically from API data."""
+    book_names = _generate_book_names_list(books_data)
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Open preview..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{book_names}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+OPEN_PREVIEW_INFO_TEMPLATE = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Open preview..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{BOOKS_NAMES_PLACEHOLDER}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Show me details about a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Show me details about a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+OPEN_PREVIEW_USE_CASE = UseCase(
+    name="OPEN_PREVIEW",
+    description="The user explicitly requests to open preview of a specific book that meets certain criteria, "
+    "where they can view information including author, year, genres, rating, page count, and characters.",
+    event=OpenPreviewEvent,
+    event_source_code=OpenPreviewEvent.get_source_code_of_class(),
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    constraints_generator=generate_book_constraints,
+    examples=[
+        {
+            "prompt": "Open preview of 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Open preview of <book> book",
+        },
+        {
+            "prompt": "Open preview of book for 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Open preview of book for <book> by <author>",
+        },
+        {
+            "prompt": "Open preview of Science book from 2022",
+            "prompt_for_task_generation": "Open preview of <genre> book from <year>",
+        },
+        {
+            "prompt": "Open preview of book with rating above 4.5",
+            "prompt_for_task_generation": "Open preview of book with rating above <rating>",
+        },
+        {
+            "prompt": "Open preview of 'Fourth Wing' book",
+            "prompt_for_task_generation": "Open preview of <book> book",
+        },
+        {
+            "prompt": "Open preview of 'Magazine' book less than 1000 pages long",
+            "prompt_for_task_generation": "Open preview of <genre> book less than <page_count> pages long",
+        },
+        {
+            "prompt": "Open preview of book from the 2010s directed by 'Ron Larson'",
+            "prompt_for_task_generation": "Open preview of book from the <decade> directed by '<author>'",
+        },
+        {
+            "prompt": "Open preview of 'Science' book not written by 'Grant Morrison'",
+            "prompt_for_task_generation": "Open preview of <genre> book not written by <author>",
+        },
+        {
+            "prompt": "Open preview of highest-rated 'Lidia Matticchio Bastianich' book",
+            "prompt_for_task_generation": "Open preview of highest-rated <author> book",
+        },
+    ],
+)
+
+
+def _get_add_to_reading_list_info(books_data: list[dict]) -> str:
+    """Generate add to reading list info dynamically from API data."""
+    book_names = _generate_book_names_list(books_data)
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Add to reading list..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{book_names}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Add to reading list a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Add to reading list a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Add to reading list a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+ADD_TO_READING_LIST_INFO_TEMPLATE = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **view details** of a movie (use phrases like "Add to reading list..." etc.).
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{BOOKS_NAMES_PLACEHOLDER}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Add to reading list a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Add to reading list a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Add to reading list a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+ADD_TO_READING_LIST_USE_CASE = UseCase(
+    name="ADD_TO_READING_LIST",
+    description="The user explicitly requests to add a specific book to list book that meets certain criteria, "
+    "where they can view information including author, year, genres, rating, page count, and characters.",
+    event=AddToReadingListEvent,
+    event_source_code=AddToReadingListEvent.get_source_code_of_class(),
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    constraints_generator=generate_book_constraints,
+    examples=[
+        {
+            "prompt": "Add to reading list 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Add to reading list <book> book",
+        },
+        {
+            "prompt": "Add to reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Add to reading list a book <book> by <author>",
+        },
+        {
+            "prompt": "Add to reading list a Science book from 2022",
+            "prompt_for_task_generation": "Add to reading list a <genre> book from <year>",
+        },
+        {
+            "prompt": "Add to reading list a book with rating above 4.5",
+            "prompt_for_task_generation": "Add to reading list a book with rating above <rating>",
+        },
+        {
+            "prompt": "Add to reading list a 'Fourth Wing' book",
+            "prompt_for_task_generation": "Add to reading list a <book> book",
+        },
+        {
+            "prompt": "Add to reading list a 'Magazine' book less than 1000 pages long",
+            "prompt_for_task_generation": "Add to reading list a <genre> book less than <page_count> pages long",
+        },
+        {
+            "prompt": "Add to reading list a book from the 2010s directed by 'Ron Larson'",
+            "prompt_for_task_generation": "Add to reading list a book from the <decade> directed by '<author>'",
+        },
+        {
+            "prompt": "Add to reading list a 'Science' book not written by 'Grant Morrison'",
+            "prompt_for_task_generation": "Add to reading list a <genre> book not written by <author>",
+        },
+        {
+            "prompt": "Add to reading list a highest-rated 'Lidia Matticchio Bastianich' book",
+            "prompt_for_task_generation": "Add to reading list a highest-rated <author> book",
         },
     ],
 )
@@ -576,10 +903,15 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     ],
 )
 
+
 ###############################################################################
 # FILTER_BOOK_USE_CASE
 ###############################################################################
-FILTER_BOOK_ADDITIONAL_PROMPT_INFO = f"""
+def _get_filter_book_info(books_data: list[dict]) -> str:
+    """Generate filter book info dynamically from API data."""
+    allowed_years = _generate_allowed_years_list(books_data)
+    allowed_genres = _generate_allowed_genres_list(books_data)
+    return f"""
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
@@ -588,10 +920,34 @@ CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 5. Use ONLY the allowed genres and years from the lists below.
 
 ALLOWED YEARS:
-{list(set(book["year"] for book in BOOKS_DATA))}
+{allowed_years}
 
 ALLOWED GENRES:
-{list(set(genre for book in BOOKS_DATA for genre in book["genres"]))}
+{allowed_genres}
+For example, if the constraints are "genre_name equals 'Culture' AND year equals 2020":
+- CORRECT: "Filter for 'Culture' books released in 2020."
+- CORRECT: "Browse books from 2020 in the 'Culture' genre."
+- INCORRECT: "Search for 'Culture' books from the 20s" (uses vague year and incorrect phrasing).
+- INCORRECT: "Show all 'Culture' books" (missing the year constraint if both are provided).
+- INCORRECT: "Filter for Mystery books" (Mystery is not in the allowed genre list).
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+
+FILTER_BOOK_ADDITIONAL_PROMPT_INFO_TEMPLATE = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
+3. Include the word "Filter" (or "filtering", "filtered", "filters") explicitly in the prompt.
+4. Be phrased as a request to filter or browse books (e.g., "Filter...", "Show only...", etc.).
+5. Use ONLY the allowed genres and years from the lists below.
+
+ALLOWED YEARS:
+{ALLOWED_YEARS_PLACEHOLDER}
+
+ALLOWED GENRES:
+{ALLOWED_GENRES_PLACEHOLDER}
 For example, if the constraints are "genre_name equals 'Culture' AND year equals 2020":
 - CORRECT: "Filter for 'Culture' books released in 2020."
 - CORRECT: "Browse books from 2020 in the 'Culture' genre."
@@ -608,7 +964,7 @@ FILTER_BOOK_USE_CASE = UseCase(
     event=FilterBookEvent,
     event_source_code=FilterBookEvent.get_source_code_of_class(),
     constraints_generator=generate_book_filter_constraints,
-    additional_prompt_info=FILTER_BOOK_ADDITIONAL_PROMPT_INFO,
+    additional_prompt_info=None,  # Will be populated dynamically from API
     examples=[
         {
             "prompt": "Filter books released in the year 2005",
@@ -770,6 +1126,33 @@ PURCHASE_BOOK_USE_CASE = UseCase(
     ],
 )
 
+
+###############################################################################
+# DYNAMIC PROMPT INFO UPDATER
+###############################################################################
+async def update_use_cases_prompt_info(
+    seed_value: int | None = None,
+    dataset: list[dict] | None = None,
+    count: int | None = 200,
+):
+    """
+    Update use cases' additional_prompt_info with data from API.
+    This should be called before generating tasks to ensure prompt info uses current API data.
+    """
+    books_data = dataset
+    if books_data is None:
+        books_data = await _get_books_data_for_prompts(seed_value=seed_value, count=count or 200)
+    if books_data is None:
+        return
+
+    # Update use cases that need book data
+    BOOK_DETAIL_USE_CASE.additional_prompt_info = _get_book_detail_info(books_data)
+    SHARE_BOOK_USE_CASE.additional_prompt_info = _get_share_book_info(books_data)
+    OPEN_PREVIEW_USE_CASE.additional_prompt_info = _get_open_preview_info(books_data)
+    ADD_TO_READING_LIST_USE_CASE.additional_prompt_info = _get_add_to_reading_list_info(books_data)
+    FILTER_BOOK_USE_CASE.additional_prompt_info = _get_filter_book_info(books_data)
+
+
 ###############################################################################
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
@@ -788,4 +1171,7 @@ ALL_USE_CASES = [
     EDIT_BOOK_USE_CASE,
     SHOPPING_CART_USE_CASE,
     PURCHASE_BOOK_USE_CASE,
+    SHARE_BOOK_USE_CASE,
+    OPEN_PREVIEW_USE_CASE,
+    ADD_TO_READING_LIST_USE_CASE,
 ]

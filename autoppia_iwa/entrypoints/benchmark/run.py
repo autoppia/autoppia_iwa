@@ -19,15 +19,15 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
-    # ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
-    ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
+    # ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
     # "autocinema",
-    "autobooks",
+    # "autobooks",
     # "autozone",
     # "autodining",
     # "autocrm",
@@ -36,16 +36,48 @@ PROJECT_IDS = [
     # "autolodge",
     # "autoconnect",
     # "autowork",
-    # "autocalendar",
+    "autocalendar",
     # "autolist",
     # "autodrive",
     # add more project ids here
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
+    # "BOOK_DETAIL"
     # "VIEW_USER_PROFILE",
     # "FILM_DETAIL",
     # "EDIT_USER_BOOK"
+    # "RESERVE_HOTEL"
+    # "VIEW_FULL_MENU"
+    # "RESERVATION_COMPLETE"
+    # "ORDER_COMPLETED",
+    # "HIRE_CONSULTANT"
+    # "VIEW_HOTEL"
+    # "SEARCH_HOTEL"
+    # "VIEW_HOTEL"
+    # "INCREASE_NUMBER_OF_GUESTS"
+    # "RESERVE_HOTEL"
+    # "COLLAPSE_MENU"
+    # "CHECKOUT_STARTED"
+    # "ORDER_COMPLETED"
+    # "NEW_LOG_ADDED"
+    # "VIEW_MATTER_DETAILS"
+    # "SEARCH_CLIENT"
+    # "DOCUMENT_DELETED"
+    # "SEARCH_EMAIL"
+    # "PLACE_ORDER"
+    # "DROPOFF_PREFERENCE"
+    # "ADD_TO_CART_MENU_ITEM"
+    # "DELETE_REVIEW"
+    # "ITEM_INCREMENTED"
+    # "VIEW_USER_PROFILE"
+    # "BOOK_A_CONSULTATION"
+    # "HIRE_CONSULTANT"
+    # "SEARCH_LOCATION"
+    # "SEARCH_DESTINATION"
+    # "SEARCH"
+    # "SELECT_CAR"
+    # "RESERVE_RIDE"
 ]
 
 # 3) Benchmark parameters
@@ -55,15 +87,14 @@ CFG = BenchmarkConfig(
     # Tasks
     use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
-    num_use_cases=1,  # 0 = all use-cases
+    num_use_cases=0,  # 0 = all use-cases
     use_cases=USE_CASES,
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic HTML
-    enable_dynamic_html=True,
+    dynamic=True,  # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
     # Persistence
     save_results_json=True,
     plot_results=False,

@@ -1,18 +1,23 @@
 import random
 
-from .data import PRODUCTS_DATA
+from .data_utils import fetch_products_data
 
 
-def replace_products_placeholders(
+async def replace_products_placeholders(
     text: str,
+    seed_value: int | None = None,
+    dataset: list[dict] | None = None,
 ) -> str:
     """
-    Replaces placeholders in a text string with data from PRODUCTS_DATA.
+    Replaces placeholders in a text string with data from API.
     Recognizes placeholders like <title>, <category>, <brand>, <price>,
     as well as generic ones like <product_name>, <product_variant>.
     """
-    products_data: list = PRODUCTS_DATA
-    if not isinstance(text, str) or not products_data:
+    if not isinstance(text, str):
+        return text
+
+    products_data = dataset if dataset is not None else await fetch_products_data(seed_value=seed_value)
+    if not products_data:
         return text
 
     product = random.choice(products_data)

@@ -1,12 +1,14 @@
+import contextlib
 import random
 from datetime import date, datetime, time, timedelta
 from random import choice
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
-    EXPERTS_DATA_MODIFIED,
     FIELD_OPERATORS_MAP_ADD_SKILL,
     FIELD_OPERATORS_MAP_CANCEL_HIRE,
     FIELD_OPERATORS_MAP_CLOSE_JOB_POSTING,
@@ -20,6 +22,19 @@ from .data import (
     FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP,
     POPULAR_SKILLS,
 )
+from .data_utils import fetch_experts_data
+
+
+async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
+    return await fetch_experts_data(seed_value=seed_value, count=count)
+
+
+async def _ensure_expert_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """Ensure experts dataset is available."""
+    if dataset is not None:
+        return dataset
+    v2_seed = await resolve_v2_seed_from_url(task_url)
+    return await _get_data(seed_value=v2_seed)
 
 
 def _generate_constraint_value(
@@ -71,7 +86,8 @@ def _generate_constraint_value(
         if len(field_value) > 2:
             start = random.randint(0, max(0, len(field_value) - 2))
             end = random.randint(start + 1, len(field_value))
-            return field_value[start:end]
+            subpart = field_value[start:end]
+            return subpart.strip()
         return field_value
 
     if operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
@@ -83,7 +99,7 @@ def _generate_constraint_value(
         return "xyz"  # fallback
 
     if operator == ComparisonOperator.IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -93,9 +109,10 @@ def _generate_constraint_value(
         return list(set(subset))
 
     if operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        all_values = list({v.get(field) for v in dataset if field in v and v.get(field) is not None})
         if field_value in all_values:
-            all_values.remove(field_value)
+            with contextlib.suppress(ValueError):
+                all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
 
     if operator in {
@@ -106,9 +123,9 @@ def _generate_constraint_value(
     } and isinstance(field_value, int | float):
         delta = random.uniform(0.5, 2.0) if isinstance(field_value, float) else random.randint(1, 5)
         if operator == ComparisonOperator.GREATER_THAN:
-            return field_value - delta
+            return round(field_value - delta, 2)
         if operator == ComparisonOperator.LESS_THAN:
-            return field_value + delta
+            return round(field_value + delta, 2)
         if operator in {ComparisonOperator.GREATER_EQUAL, ComparisonOperator.LESS_EQUAL}:
             return field_value
 
@@ -122,6 +139,9 @@ def _generate_constraints(
     Generates constraints based on the dataset and field operator mapping.
     """
     all_constraints = []
+    if not dataset:
+        print("[ERROR] No dataset provided")
+        return all_constraints
     sample_data = choice(dataset)
     possible_fields = list(field_operators.keys())
     if selected_fields:
@@ -176,8 +196,8 @@ def _generate_constraints(
     return all_constraints
 
 
-def generate_book_consultant_constraint() -> list[dict[str, Any]]:
-    dataset = EXPERTS_DATA_MODIFIED
+async def generate_book_consultant_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP
     selected_field = ["slug"]
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
@@ -185,8 +205,8 @@ def generate_book_consultant_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
-    dataset = EXPERTS_DATA_MODIFIED
+async def generate_hire_button_clicked_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_HIRE_BUTTON
     selected_field = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_field)
@@ -194,11 +214,11 @@ def generate_hire_button_clicked_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
+async def generate_select_hiring_team_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_mapping = {
         "team": {"field": "team", "dataset": [{"team": t} for t in ["Microsoft", "Apple", "Google"]]},
     }
-    dataset = EXPERTS_DATA_MODIFIED
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_HIRING_TEAM
     selected_fields = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=selected_fields, field_map=field_mapping)
@@ -206,14 +226,14 @@ def generate_select_hiring_team_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
+async def generate_hire_consultation_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_mapping = {
         "increaseHowMuch": {"field": "increaseHowMuch", "dataset": [{"increaseHowMuch": p} for p in ["5%", "10%", "15%"]]},
         "increaseWhen": {"field": "increaseWhen", "dataset": [{"increaseWhen": p} for p in ["Never", "After 3 months", "After 6 months", "After 12 months"]]},
         "paymentType": {"field": "paymentType", "dataset": [{"paymentType": p} for p in ["fixed", "hourly"]]},
     }
 
-    dataset = EXPERTS_DATA_MODIFIED
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_HIRING_CONSULTANT
     selected_fields = []
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
@@ -221,8 +241,8 @@ def generate_hire_consultation_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_cancel_hire_constraint() -> list[dict[str, Any]]:
-    dataset = EXPERTS_DATA_MODIFIED
+async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
     field_operators = FIELD_OPERATORS_MAP_CANCEL_HIRE
     fixed_fields = ["slug"]
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, selected_fields=fixed_fields)
@@ -230,7 +250,7 @@ def generate_cancel_hire_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_job_posting_constraint() -> list[dict[str, Any]]:
+async def generate_job_posting_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_POSTING_A_JOB.keys())
     num_constraints = random.randint(1, len(possible_field))
@@ -262,7 +282,7 @@ def generate_job_posting_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_write_job_title_constraint() -> list[dict[str, Any]]:
+async def generate_write_job_title_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = ["query"]
     query = [
@@ -305,7 +325,7 @@ def generate_write_job_title_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_search_skill_constraint() -> list[dict[str, Any]]:
+async def generate_search_skill_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = ["skill"]
     popular_skill_data = [{"skill": q} for q in POPULAR_SKILLS]
@@ -325,7 +345,7 @@ def generate_search_skill_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_add_skill_constraint() -> list[dict[str, Any]]:
+async def generate_add_skill_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_ADD_SKILL.keys())
     num_constraints = random.randint(1, len(possible_field))
@@ -348,7 +368,7 @@ def generate_add_skill_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_submit_job_constraint() -> list[dict[str, Any]]:
+async def generate_submit_job_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_fields = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
     num_constraints = random.randint(2, len(possible_fields))
@@ -443,7 +463,7 @@ def generate_submit_job_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
-def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
+async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
     num_constraints = random.randint(2, len(possible_field))
