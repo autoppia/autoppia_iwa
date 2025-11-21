@@ -162,17 +162,6 @@ async def load_dataset_data(
     if filter_values is not None:
         params["filter_values"] = filter_values  # CSV string
 
-    logger.info(
-        "Loading dataset: project_key=%s entity_type=%s seed=%s limit=%s method=%s filter_key=%s filter_values=%s",
-        project_key,
-        entity_type,
-        seed_value,
-        limit,
-        method,
-        filter_key,
-        filter_values,
-    )
-
     cache_key = (
         url,
         params.get("project_key"),
@@ -188,7 +177,7 @@ async def load_dataset_data(
     async with _ASYNC_LOCK:
         if cache_key in _ASYNC_CACHE:
             logger.debug(
-                "Returning cached dataset: project_key=%s entity_type=%s seed=%s limit=%s method=%s filter_key=%s filter_values=%s",
+                "Returning cached dataset: project_key={} entity_type={} seed={} limit={} method={} filter_key={} filter_values={}",
                 project_key,
                 entity_type,
                 seed_value,
@@ -198,6 +187,18 @@ async def load_dataset_data(
                 filter_values,
             )
             return _ASYNC_CACHE[cache_key]
+
+    logger.info(
+        "Loading dataset from {}: project_key={} entity_type={} seed={} limit={} method={} filter_key={} filter_values={}",
+        url,
+        project_key,
+        entity_type,
+        seed_value,
+        limit,
+        method,
+        filter_key,
+        filter_values,
+    )
 
     try:
         session = await _get_async_session()

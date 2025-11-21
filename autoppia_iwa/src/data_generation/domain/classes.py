@@ -82,7 +82,7 @@ class Task(BaseModel):
         """
         if self.dynamic:
             if self._seed_value is None:
-                object.__setattr__(self, "_seed_value", random.randint(0, 300))
+                object.__setattr__(self, "_seed_value", random.randint(1, 999))
 
             parsed = urlparse(self.url)
             query_params = parse_qs(parsed.query)
