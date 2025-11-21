@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
 from .data import (
@@ -20,22 +20,11 @@ from .data import (
     TEAM_MEMBERS_OPTIONS,
     TEAMS,
 )
+from .data_utils import fetch_tasks_data
 
 
 async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
-    from .main import FRONTEND_PORT_INDEX, autolist_project
-
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autolist_project.id}"
-
-    items = await load_dataset_data(
-        backend_url=autolist_project.backend_url,
-        project_key=project_key,
-        entity_type="tasks",
-        seed_value=seed_value if seed_value is not None else 0,
-        limit=count,
-        method="distribute",
-    )
-    return items if items else []
+    return await fetch_tasks_data(seed_value=seed_value, count=count)
 
 
 async def _ensure_task_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

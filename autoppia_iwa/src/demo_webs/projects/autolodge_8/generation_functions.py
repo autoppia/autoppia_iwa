@@ -5,7 +5,7 @@ from typing import Any
 from loguru import logger
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict, parse_datetime
@@ -18,27 +18,12 @@ from .data import (
     FIELD_OPERATORS_SEARCH_HOTEL_MAP,
     FIELD_OPERATORS_SHARE_HOTEL_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
-    get_modify_data,
 )
+from .data_utils import fetch_hotels_data
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    from .main import FRONTEND_PORT_INDEX, lodge_project
-
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{lodge_project.id}"
-
-    items = await load_dataset_data(
-        backend_url=lodge_project.backend_url,
-        project_key=project_key,
-        entity_type="hotels",
-        seed_value=seed_value if seed_value is not None else 0,
-        limit=count,
-    )
-    if items:
-        modified_hotels = get_modify_data(items)
-        return modified_hotels
-
-    return []
+    return await fetch_hotels_data(seed_value=seed_value, count=count)
 
 
 async def _ensure_hotel_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

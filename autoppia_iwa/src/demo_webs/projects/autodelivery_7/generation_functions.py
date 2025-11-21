@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -16,6 +16,7 @@ from .data import (
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
 )
+from .data_utils import fetch_autodelivery_data
 
 
 async def _get_data(
@@ -25,22 +26,13 @@ async def _get_data(
     seed_value: int | None = None,
     count: int = 100,
 ) -> list[dict]:
-    from .main import FRONTEND_PORT_INDEX, autodelivery_project
-
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autodelivery_project.id}"
-
-    items = await load_dataset_data(
-        backend_url=autodelivery_project.backend_url,
-        project_key=project_key,
+    return await fetch_autodelivery_data(
         entity_type=entity_type,
-        seed_value=seed_value if seed_value is not None else 0,
-        limit=count,
-        method=method if method else None,
-        filter_key=filter_key if filter_key else None,
+        method=method,
+        filter_key=filter_key,
+        seed_value=seed_value,
+        count=count,
     )
-    if items:
-        return items
-    return []
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:

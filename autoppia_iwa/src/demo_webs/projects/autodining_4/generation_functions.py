@@ -3,7 +3,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
@@ -24,95 +24,11 @@ from .data import (
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
 )
-
-
-def apply_mapping(record: dict, mapping: dict) -> dict:
-    """
-    Rename fields in a single dictionary according to mapping rules.
-    """
-    new_record = {}
-    for key, value in record.items():
-        # If key exists in mapping, replace it
-        new_key = mapping.get(key, key)
-        new_record[new_key] = value
-    return new_record
-
-
-def transform_all(records: list[dict], mapping: dict) -> list[dict]:
-    """
-    Apply field mapping to a list of dictionaries.
-    """
-    return [apply_mapping(record, mapping) for record in records]
-
-
-# Cache for restaurant data to avoid repeated API calls
-_RESTAURANT_DATA_CACHE: dict[tuple[int | None, int], list[dict]] = {}
+from .data_utils import fetch_restaurant_data
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    """
-    Fetch restaurant data from the API with caching for efficiency.
-
-    This function calls the backend API endpoint `/datasets/load` to fetch restaurant data.
-    The data is cached to avoid repeated API calls with the same parameters.
-
-    API Details:
-    - Endpoint: {backend_url}/datasets/load
-    - Entity Type: "restaurants"
-    - Project Key: "web_4_autodining" (FRONTEND_PORT_INDEX=3, so 3+1=4)
-    - Method: "shuffle" for randomized ordering
-
-    Args:
-        seed_value: Optional seed for deterministic data ordering (default: 0)
-        count: Number of restaurants to fetch (default: 100)
-
-    Returns:
-        List of restaurant dictionaries with mapped field names:
-        - namepool -> name
-        - staticBookings -> bookings
-        - staticReviews -> reviews
-        - staticStars -> rating
-        - staticPrices -> price
-    """
-    from loguru import logger
-
-    from .main import FRONTEND_PORT_INDEX, dining_project
-
-    # Check cache first to avoid redundant API calls
-    cache_key = (seed_value, count)
-    if cache_key in _RESTAURANT_DATA_CACHE:
-        return _RESTAURANT_DATA_CACHE[cache_key]
-
-    # Project key format: web_{port_index+1}_{project_id}
-    # For autodining: FRONTEND_PORT_INDEX=3, so project_key="web_4_autodining"
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{dining_project.id}"
-
-    try:
-        items = await load_dataset_data(
-            backend_url=dining_project.backend_url,
-            project_key=project_key,
-            entity_type="restaurants",
-            seed_value=seed_value if seed_value is not None else 0,
-            limit=count,
-            method="shuffle",
-        )
-
-        if items:
-            # Field mapping rules: map backend field names to frontend field names
-            field_mapping = {"namepool": "name", "staticBookings": "bookings", "staticReviews": "reviews", "staticStars": "rating", "staticPrices": "price"}
-
-            mapped_items = transform_all(items, field_mapping)
-            # Cache the result
-            _RESTAURANT_DATA_CACHE[cache_key] = mapped_items
-            logger.debug(f"Fetched and cached {len(mapped_items)} restaurants (seed={seed_value}, count={count})")
-            return mapped_items
-        else:
-            logger.warning(f"No restaurant data returned from API (seed={seed_value}, count={count})")
-            return []
-    except Exception as e:
-        logger.error(f"Failed to fetch restaurant data from API: {e}")
-        # Return empty list on error, but don't cache the error
-        return []
+    return await fetch_restaurant_data(seed_value=seed_value, count=count)
 
 
 MOCK_DATES = generate_mock_dates()

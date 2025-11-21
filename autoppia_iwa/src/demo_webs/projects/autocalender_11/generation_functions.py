@@ -3,7 +3,7 @@ from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict, parse_datetime
 
 from ..criterion_helper import ComparisonOperator
@@ -27,49 +27,11 @@ from .data import (
     REMINDER_MINUTES,
     VISIBILITY_OPTIONS,
 )
-
-
-def apply_mapping(record: dict, mapping: dict) -> dict:
-    """
-    Rename fields in a single dictionary according to mapping rules.
-    """
-    new_record = {}
-    for key, value in record.items():
-        # If key exists in mapping, replace it
-        new_key = mapping.get(key, key)
-        new_record[new_key] = value
-    return new_record
-
-
-def transform_all(records: list[dict], mapping: dict) -> list[dict]:
-    """
-    Apply field mapping to a list of dictionaries.
-    """
-    return [apply_mapping(record, mapping) for record in records]
+from .data_utils import fetch_events_data
 
 
 async def _get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
-    try:
-        from .main import FRONTEND_PORT_INDEX, autocalendar_project
-
-        field_mapping = {"allDay": "all_day", "recurrenceEndDate": "recurrence_end_date"}
-
-        project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autocalendar_project.id}"
-
-        items = await load_dataset_data(
-            backend_url=autocalendar_project.backend_url,
-            project_key=project_key,
-            entity_type="events",
-            seed_value=seed_value if seed_value is not None else 1,
-            limit=count,
-            method="select",
-        )
-        if items:
-            mapped_items = transform_all(items, field_mapping)
-            return mapped_items
-    except Exception:
-        pass
-    return []
+    return await fetch_events_data(seed_value=seed_value, count=count)
 
 
 async def _ensure_event_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

@@ -3,6 +3,7 @@
 # -----------------------------------------------------------------------------
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
+from .data_utils import fetch_movies_data
 from .events import (
     AddCommentEvent,
     AddFilmEvent,
@@ -21,7 +22,6 @@ from .events import (
     WatchTrailer,
 )
 from .generation_functions import (
-    _get_data,
     generate_add_comment_constraints,
     generate_add_film_constraints,
     generate_contact_constraints,
@@ -39,7 +39,7 @@ from .replace_functions import login_replace_func, register_replace_func, replac
 
 async def _get_movies_data_for_prompts(seed_value: int | None = None, count: int = 200) -> list[dict]:
     """Fetch movies data from API for use in prompt generation."""
-    return await _get_data(seed_value=seed_value, count=count)
+    return await fetch_movies_data(seed_value=seed_value, count=count)
 
 
 def _generate_movie_names_list(movies_data: list[dict]) -> str:

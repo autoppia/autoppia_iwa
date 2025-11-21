@@ -5,7 +5,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -18,30 +18,7 @@ from .data import (
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
 )
-
-
-async def _get_data(
-    entity_type: str,
-    method: str | None = None,
-    filter_key: str | None = None,
-    seed_value: int | None = None,
-    count: int = 100,
-) -> list[dict]:
-    from .main import FRONTEND_PORT_INDEX, crm_project
-
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{crm_project.id}"
-    items = await load_dataset_data(
-        backend_url=crm_project.backend_url,
-        project_key=project_key,
-        entity_type=entity_type,
-        seed_value=seed_value if seed_value is not None else 1,
-        limit=count,
-        method=method if method else None,
-        filter_key=filter_key if filter_key else None,
-    )
-    if items:
-        return items
-    return []
+from .data_utils import fetch_crm_data
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
@@ -54,6 +31,16 @@ def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, An
         if isinstance(value, list):
             return value
     return None
+
+
+async def _get_data(
+    entity_type: str,
+    method: str | None = None,
+    filter_key: str | None = None,
+    seed_value: int | None = None,
+    count: int = 100,
+) -> list[dict]:
+    return await fetch_crm_data(entity_type, method=method, filter_key=filter_key, seed_value=seed_value, count=count)
 
 
 async def _ensure_crm_dataset(

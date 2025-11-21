@@ -2,7 +2,7 @@ import random
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
 from ..operators import EQUALS, NOT_EQUALS
@@ -19,50 +19,11 @@ from .data import (
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
     get_all_email_words,
 )
-
-
-def apply_mapping(record: dict, mapping: dict) -> dict:
-    """
-    Rename fields in a single dictionary according to mapping rules.
-    """
-    new_record = {}
-    for key, value in record.items():
-        # If key exists in mapping, replace it
-        new_key = mapping.get(key, key)
-        new_record[new_key] = value
-    return new_record
-
-
-def transform_all(records: list[dict], mapping: dict) -> list[dict]:
-    """
-    Apply field mapping to a list of dictionaries.
-    """
-    return [apply_mapping(record, mapping) for record in records]
+from .data_utils import fetch_emails_data
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    from .main import FRONTEND_PORT_INDEX, automail_project
-
-    field_mapping = {"isRead": "is_read", "isStarred": "is_starred", "isDraft": "is_draft", "isImportant": "is_important"}
-
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{automail_project.id}"
-    items = await load_dataset_data(
-        backend_url=automail_project.backend_url,
-        project_key=project_key,
-        entity_type="emails",
-        seed_value=seed_value if seed_value is not None else 1,
-        limit=count,
-        method="distribute",
-        filter_key="category",
-    )
-    if items:
-        from .data import transform_emails_list
-
-        modified_emails = transform_emails_list(items)
-        mapped_emails = transform_all(modified_emails, field_mapping)
-        return mapped_emails
-
-    return []
+    return await fetch_emails_data(seed_value=seed_value, count=count)
 
 
 async def _ensure_email_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

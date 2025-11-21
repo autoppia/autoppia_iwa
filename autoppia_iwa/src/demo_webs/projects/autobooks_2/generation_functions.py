@@ -2,50 +2,15 @@ import random
 from random import choice, randint, sample, uniform
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
-
-
-def apply_mapping(record: dict, mapping: dict) -> dict:
-    """
-    Rename fields in a single dictionary according to mapping rules.
-    """
-    new_record = {}
-    for key, value in record.items():
-        # If key exists in mapping, replace it
-        new_key = mapping.get(key, key)
-        new_record[new_key] = value
-    return new_record
-
-
-def transform_all(records: list[dict], mapping: dict) -> list[dict]:
-    """
-    Apply field mapping to a list of dictionaries.
-    """
-    return [apply_mapping(record, mapping) for record in records]
+from .data_utils import fetch_books_data
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
-    from .main import FRONTEND_PORT_INDEX, books_project
-
-    PROJECT_KEY = f"web_{FRONTEND_PORT_INDEX + 1}_{books_project.id}"
-    ENTITY_TYPE = "books"
-
-    items = await load_dataset_data(
-        backend_url=books_project.backend_url,
-        project_key=PROJECT_KEY,
-        entity_type=ENTITY_TYPE,
-        seed_value=seed_value if seed_value is not None else 0,
-        limit=count,
-    )
-    if items:
-        field_mapping = {"director": "author", "duration": "page_count", "img": "img_file"}
-        mapped_items = transform_all(items, field_mapping)
-        return mapped_items
-
-    return []
+    return await fetch_books_data(seed_value=seed_value, count=count)
 
 
 def generate_registration_constraints():

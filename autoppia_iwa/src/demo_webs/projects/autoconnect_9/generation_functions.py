@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import load_dataset_data, resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -19,25 +19,11 @@ from .data import (
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
 )
+from .data_utils import fetch_connect_data
 
 
 async def _get_data(entity_type: str, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
-    from .main import FRONTEND_PORT_INDEX, connect_project
-
-    project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{connect_project.id}"
-
-    items = await load_dataset_data(
-        backend_url=connect_project.backend_url,
-        project_key=project_key,
-        entity_type=entity_type,
-        seed_value=seed_value if seed_value is not None else 0,
-        limit=count,
-        method=method if method else "select",
-    )
-    if items:
-        return items
-
-    return []
+    return await fetch_connect_data(entity_type=entity_type, method=method, seed_value=seed_value, count=count)
 
 
 def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
