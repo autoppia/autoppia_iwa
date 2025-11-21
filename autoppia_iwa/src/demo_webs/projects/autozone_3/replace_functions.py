@@ -24,6 +24,7 @@ async def _get_products_data(seed_value: int | None = None, count: int = 100) ->
 async def replace_products_placeholders(
     text: str,
     seed_value: int | None = None,
+    dataset: list[dict] | None = None,
 ) -> str:
     """
     Replaces placeholders in a text string with data from API.
@@ -33,7 +34,7 @@ async def replace_products_placeholders(
     if not isinstance(text, str):
         return text
 
-    products_data = await _get_products_data(seed_value=seed_value)
+    products_data = dataset if dataset is not None else await _get_products_data(seed_value=seed_value)
     if not products_data:
         return text
 

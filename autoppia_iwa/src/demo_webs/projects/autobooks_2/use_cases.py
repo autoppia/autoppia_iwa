@@ -1130,20 +1130,27 @@ PURCHASE_BOOK_USE_CASE = UseCase(
 ###############################################################################
 # DYNAMIC PROMPT INFO UPDATER
 ###############################################################################
-async def update_use_cases_prompt_info(seed_value: int | None = None):
+async def update_use_cases_prompt_info(
+    seed_value: int | None = None,
+    dataset: list[dict] | None = None,
+    count: int | None = 200,
+):
     """
     Update use cases' additional_prompt_info with data from API.
     This should be called before generating tasks to ensure prompt info uses current API data.
     """
-    books_data = await _get_books_data_for_prompts(seed_value=seed_value, count=200)
+    books_data = dataset
+    if books_data is None:
+        books_data = await _get_books_data_for_prompts(seed_value=seed_value, count=count or 200)
+    if books_data is None:
+        return
 
-    if books_data:
-        # Update use cases that need book data
-        BOOK_DETAIL_USE_CASE.additional_prompt_info = _get_book_detail_info(books_data)
-        SHARE_BOOK_USE_CASE.additional_prompt_info = _get_share_book_info(books_data)
-        OPEN_PREVIEW_USE_CASE.additional_prompt_info = _get_open_preview_info(books_data)
-        ADD_TO_READING_LIST_USE_CASE.additional_prompt_info = _get_add_to_reading_list_info(books_data)
-        FILTER_BOOK_USE_CASE.additional_prompt_info = _get_filter_book_info(books_data)
+    # Update use cases that need book data
+    BOOK_DETAIL_USE_CASE.additional_prompt_info = _get_book_detail_info(books_data)
+    SHARE_BOOK_USE_CASE.additional_prompt_info = _get_share_book_info(books_data)
+    OPEN_PREVIEW_USE_CASE.additional_prompt_info = _get_open_preview_info(books_data)
+    ADD_TO_READING_LIST_USE_CASE.additional_prompt_info = _get_add_to_reading_list_info(books_data)
+    FILTER_BOOK_USE_CASE.additional_prompt_info = _get_filter_book_info(books_data)
 
 
 ###############################################################################

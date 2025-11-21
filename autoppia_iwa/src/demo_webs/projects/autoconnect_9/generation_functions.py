@@ -40,16 +40,29 @@ async def _get_data(entity_type: str, method: str | None = None, seed_value: int
     return []
 
 
+def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
+    if dataset is None:
+        return None
+    if isinstance(dataset, list):
+        return dataset
+    if isinstance(dataset, dict):
+        value = dataset.get(entity_type)
+        if isinstance(value, list):
+            return value
+    return None
+
+
 async def _ensure_entity_dataset(
     task_url: str | None,
-    dataset: list[dict[str, Any]] | None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None,
     *,
     entity_type: str,
     method: str | None = None,
 ) -> list[dict[str, Any]]:
     """Ensure dataset is available for a specific entity type."""
-    if dataset is not None:
-        return dataset
+    existing = _extract_entity_dataset(dataset, entity_type)
+    if existing is not None:
+        return existing
     v2_seed = await resolve_v2_seed_from_url(task_url)
     return await _get_data(entity_type, method=method, seed_value=v2_seed)
 

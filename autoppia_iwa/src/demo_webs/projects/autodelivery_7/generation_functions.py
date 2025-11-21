@@ -18,7 +18,13 @@ from .data import (
 )
 
 
-async def _get_data(entity_type: str, method: str | None = None, filter_key: str | None = None, seed_value: int | None = None, count: int = 100) -> list[dict]:
+async def _get_data(
+    entity_type: str,
+    method: str | None = None,
+    filter_key: str | None = None,
+    seed_value: int | None = None,
+    count: int = 100,
+) -> list[dict]:
     from .main import FRONTEND_PORT_INDEX, autodelivery_project
 
     project_key = f"web_{FRONTEND_PORT_INDEX + 1}_{autodelivery_project.id}"
@@ -37,10 +43,26 @@ async def _get_data(entity_type: str, method: str | None = None, filter_key: str
     return []
 
 
-async def _ensure_restaurant_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    """Ensure we have restaurant data, optionally using a pre-loaded dataset."""
-    if dataset is not None:
+def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
+    if dataset is None:
+        return None
+    if isinstance(dataset, list):
         return dataset
+    if isinstance(dataset, dict):
+        value = dataset.get(entity_type)
+        if isinstance(value, list):
+            return value
+    return None
+
+
+async def _ensure_restaurant_dataset(
+    task_url: str | None = None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+) -> list[dict[str, Any]]:
+    """Ensure we have restaurant data, optionally using a pre-loaded dataset."""
+    existing = _extract_entity_dataset(dataset, "restaurants")
+    if existing is not None:
+        return existing
     v2_seed = await resolve_v2_seed_from_url(task_url)
     return await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
 

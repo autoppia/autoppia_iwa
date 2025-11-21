@@ -51,6 +51,8 @@ class GlobalTaskGenerationPipeline:
         self.llm_service = llm_service
         self.max_retries = max_retries
         self.retry_delay = retry_delay
+        self._dataset_cache: dict[tuple[str, int], Any] = {}
+        self._dataset_cache: dict[tuple[str, int], Any] = {}
 
     async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5, use_cases: list[str] | None = None, dynamic: bool | None = None) -> list[Task]:
         """
@@ -80,7 +82,7 @@ class GlobalTaskGenerationPipeline:
         # Update use cases' prompt info with API data if needed (generic for all projects)
         # This checks if the project's use_cases module has an update_use_cases_prompt_info function
         try:
-            from autoppia_iwa.src.demo_webs.projects.data_provider import extract_seed_from_url
+            from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
 
             # Map project IDs to module directory names
             project_id_to_module = {
@@ -110,8 +112,18 @@ class GlobalTaskGenerationPipeline:
 
                     if hasattr(use_cases_module, "update_use_cases_prompt_info"):
                         base_url = self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
-                        seed_value = extract_seed_from_url(base_url)
-                        await use_cases_module.update_use_cases_prompt_info(seed_value=seed_value)
+                        v2_seed = await resolve_v2_seed_from_url(base_url)
+
+                        dataset_for_info = None
+                        gen_module_path = f"autoppia_iwa.src.demo_webs.projects.{module_name}.generation_functions"
+                        dataset_for_info = await self._load_dataset_for_module(gen_module_path, v2_seed)
+                        dataset_count = len(dataset_for_info) if dataset_for_info is not None and hasattr(dataset_for_info, "__len__") else None
+
+                        await use_cases_module.update_use_cases_prompt_info(
+                            seed_value=v2_seed,
+                            dataset=dataset_for_info,
+                            count=dataset_count,
+                        )
                         logger.debug(f"Updated use cases prompt info for {self.web_project.id} with API data")
                 except (ImportError, AttributeError):
                     # Project doesn't have update_use_cases_prompt_info function, which is fine
@@ -204,18 +216,25 @@ class GlobalTaskGenerationPipeline:
             try:
                 # Use async version if available, otherwise fall back to sync
                 if hasattr(use_case, "apply_replacements_async"):
-                    # Check if replace_func accepts seed_value parameter
+                    replace_kwargs: dict[str, Any] = {}
                     replace_func = use_case.replace_func
                     if replace_func:
                         sig = inspect.signature(replace_func)
                         if "seed_value" in sig.parameters:
-                            replaced_prompt = await use_case.apply_replacements_async(prompt_text, seed_value=seed_value_for_replace)
-                        else:
-                            replaced_prompt = await use_case.apply_replacements_async(prompt_text)
-                    else:
-                        replaced_prompt = await use_case.apply_replacements_async(prompt_text)
+                            replace_kwargs["seed_value"] = seed_value_for_replace
+                        if "dataset" in sig.parameters:
+                            replace_kwargs["dataset"] = dataset
+                    replaced_prompt = await use_case.apply_replacements_async(prompt_text, **replace_kwargs)
                 else:
-                    replaced_prompt = use_case.apply_replacements(prompt_text)
+                    replace_kwargs = {}
+                    replace_func = use_case.replace_func
+                    if replace_func:
+                        sig = inspect.signature(replace_func)
+                        if "seed_value" in sig.parameters:
+                            replace_kwargs["seed_value"] = seed_value_for_replace
+                        if "dataset" in sig.parameters:
+                            replace_kwargs["dataset"] = dataset
+                    replaced_prompt = use_case.apply_replacements(prompt_text, **replace_kwargs)
                 # If we pre-generated a v2-seed, set it on the task before creation
                 # This ensures the task uses the same v2-seed that was used for constraint generation
                 task_data = {
@@ -259,7 +278,21 @@ class GlobalTaskGenerationPipeline:
         if not module_name:
             return None
 
+        from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+
+        v2_seed = await resolve_v2_seed_from_url(constraint_url)
+        return await self._load_dataset_for_module(module_name, v2_seed)
+
+    async def _load_dataset_for_module(self, module_name: str, v2_seed: int) -> Any:
+        """
+        Load and cache dataset results for a generation_functions module keyed by module + seed.
+        """
+        cache_key = (module_name, v2_seed)
+        if cache_key in self._dataset_cache:
+            return self._dataset_cache[cache_key]
+
         import importlib
+        import inspect
 
         try:
             gen_module = importlib.import_module(module_name)
@@ -279,17 +312,12 @@ class GlobalTaskGenerationPipeline:
             _log_task_generation(f"Dataset preload skipped due to required params: {[p.name for p in required_params]}", context="OPTIMIZATION")
             return None
 
-        from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
-
         try:
-            v2_seed = await resolve_v2_seed_from_url(constraint_url)
             dataset_result = loader(seed_value=v2_seed)
-            if inspect.isawaitable(dataset_result):
-                dataset = await dataset_result
-            else:
-                dataset = dataset_result
+            dataset = await dataset_result if inspect.isawaitable(dataset_result) else dataset_result
             if dataset:
                 _log_task_generation(f"Pre-loaded dataset with v2_seed={v2_seed} ({len(dataset)} items)", context="OPTIMIZATION")
+                self._dataset_cache[cache_key] = dataset
             return dataset
         except Exception as exc:  # pragma: no cover - best effort
             _log_task_generation(f"Could not pre-load dataset: {exc}", context="WARNING")

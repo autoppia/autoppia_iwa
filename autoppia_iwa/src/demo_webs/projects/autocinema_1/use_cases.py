@@ -932,20 +932,27 @@ ADD_COMMENT_USE_CASE = UseCase(
 ###############################################################################
 # DYNAMIC PROMPT INFO UPDATER
 ###############################################################################
-async def update_use_cases_prompt_info(seed_value: int | None = None):
+async def update_use_cases_prompt_info(
+    seed_value: int | None = None,
+    dataset: list[dict] | None = None,
+    count: int | None = 200,
+):
     """
     Update use cases' additional_prompt_info with data from API.
     This should be called before generating tasks to ensure prompt info uses current API data.
     """
-    movies_data = await _get_movies_data_for_prompts(seed_value=seed_value, count=200)
+    movies_data = dataset
+    if movies_data is None:
+        movies_data = await _get_movies_data_for_prompts(seed_value=seed_value, count=count or 200)
+    if movies_data is None:
+        return
 
-    if movies_data:
-        # Update use cases that need movie data
-        FILM_DETAIL_USE_CASE.additional_prompt_info = _get_film_detail_info(movies_data)
-        ADD_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
-        SHARE_FILM_USE_CASE.additional_prompt_info = _get_share_film_info(movies_data)
-        WATCH_TRAILER_USE_CASE.additional_prompt_info = _get_watch_trailer_info(movies_data)
-        FILTER_FILM_USE_CASE.additional_prompt_info = _get_filter_film_info(movies_data)
+    # Update use cases that need movie data
+    FILM_DETAIL_USE_CASE.additional_prompt_info = _get_film_detail_info(movies_data)
+    ADD_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
+    SHARE_FILM_USE_CASE.additional_prompt_info = _get_share_film_info(movies_data)
+    WATCH_TRAILER_USE_CASE.additional_prompt_info = _get_watch_trailer_info(movies_data)
+    FILTER_FILM_USE_CASE.additional_prompt_info = _get_filter_film_info(movies_data)
 
 
 ###############################################################################

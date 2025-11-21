@@ -59,11 +59,12 @@ def register_replace_func(text: str) -> str:
 async def replace_book_placeholders(
     text: str,
     seed_value: int | None = None,
+    dataset: list[dict] | None = None,
 ) -> str:
     if not isinstance(text, str):
         return text
 
-    books_data = await _get_books_data(seed_value=seed_value)
+    books_data = dataset if dataset is not None else await _get_books_data(seed_value=seed_value)
     if not books_data:
         return text
 
