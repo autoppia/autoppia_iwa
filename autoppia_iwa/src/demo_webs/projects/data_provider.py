@@ -162,6 +162,17 @@ async def load_dataset_data(
     if filter_values is not None:
         params["filter_values"] = filter_values  # CSV string
 
+    logger.info(
+        "Loading dataset: project_key=%s entity_type=%s seed=%s limit=%s method=%s filter_key=%s filter_values=%s",
+        project_key,
+        entity_type,
+        seed_value,
+        limit,
+        method,
+        filter_key,
+        filter_values,
+    )
+
     cache_key = (
         url,
         params.get("project_key"),
@@ -176,6 +187,16 @@ async def load_dataset_data(
     # Fast-path cache check
     async with _ASYNC_LOCK:
         if cache_key in _ASYNC_CACHE:
+            logger.debug(
+                "Returning cached dataset: project_key=%s entity_type=%s seed=%s limit=%s method=%s filter_key=%s filter_values=%s",
+                project_key,
+                entity_type,
+                seed_value,
+                limit,
+                method,
+                filter_key,
+                filter_values,
+            )
             return _ASYNC_CACHE[cache_key]
 
     try:
