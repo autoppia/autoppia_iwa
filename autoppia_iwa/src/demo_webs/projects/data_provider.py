@@ -73,27 +73,6 @@ async def resolve_v2_seed_from_url(task_url: str | None, webs_server_url: str = 
         return 1
 
 
-def extract_seed_from_url(url: str | None) -> int | None:
-    """
-    DEPRECATED: Use resolve_v2_seed_from_url() instead.
-
-    This function extracted ?seed=X but didn't derive v2. The new system
-    uses resolve_v2_seed_from_url() which calls /seeds/resolve endpoint.
-    """
-    logger.warning("extract_seed_from_url() is DEPRECATED. Use resolve_v2_seed_from_url() instead to call /seeds/resolve endpoint.")
-    if not url:
-        return None
-    try:
-        parsed = urlparse(url)
-        query = parse_qs(parsed.query)
-        if query.get("seed"):
-            value = int(str(query["seed"][0]).strip())
-            return value
-    except Exception:
-        return None
-    return None
-
-
 # ─────────────────────────── Async-compatible API ───────────────────────────
 _ASYNC_SESSION: "aiohttp.ClientSession | None" = None  # type: ignore
 _ASYNC_CACHE: dict[tuple, list[dict]] = {}
@@ -176,29 +155,7 @@ async def load_dataset_data(
     # Fast-path cache check
     async with _ASYNC_LOCK:
         if cache_key in _ASYNC_CACHE:
-            logger.debug(
-                "Returning cached dataset: project_key={} entity_type={} seed={} limit={} method={} filter_key={} filter_values={}",
-                project_key,
-                entity_type,
-                seed_value,
-                limit,
-                method,
-                filter_key,
-                filter_values,
-            )
             return _ASYNC_CACHE[cache_key]
-
-    logger.info(
-        "Loading dataset from {}: project_key={} entity_type={} seed={} limit={} method={} filter_key={} filter_values={}",
-        url,
-        project_key,
-        entity_type,
-        seed_value,
-        limit,
-        method,
-        filter_key,
-        filter_values,
-    )
 
     try:
         session = await _get_async_session()
