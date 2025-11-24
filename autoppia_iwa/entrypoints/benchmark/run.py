@@ -19,14 +19,14 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # 1) Agents (ports where your agents are listening)
 AGENTS = [
-    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=5000, timeout=120),
+    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=7000, timeout=120),
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
     # ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autocinema",
+    "autocinema",
     # "autobooks",
     # "autozone",
     # "autodining",
@@ -36,7 +36,7 @@ PROJECT_IDS = [
     # "autolodge",
     # "autoconnect",
     # "autowork",
-    "autocalendar",
+    # "autocalendar",
     # "autolist",
     # "autodrive",
     # add more project ids here
@@ -94,7 +94,8 @@ CFG = BenchmarkConfig(
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
-    dynamic=True,  # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
+    # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
+    dynamic=True,
     # Persistence
     save_results_json=True,
     plot_results=False,

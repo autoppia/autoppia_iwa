@@ -10,6 +10,7 @@ from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGeneration
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.domain.interfaces import ILLM
+from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
 
 TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
 TASK_GENERATION_LEVEL_NO = 23
@@ -77,14 +78,10 @@ class TaskGenerationPipeline:
                 global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
                 all_tasks.extend(global_tasks_with_tests)
 
+                # Visualize tasks with their tests
+                visualizer = SubnetVisualizer()
                 for task in global_tasks_with_tests:
-                    print("Prompt: ", task.prompt)
-                    for _i, _test in enumerate(task.tests):
-                        print(f"Test: {_i}")
-                        from pprint import pprint
-
-                        pprint(_test.model_dump())
-                #         pass
+                    visualizer.show_task_with_tests(task)
 
             # Apply final task limit if configured
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:
