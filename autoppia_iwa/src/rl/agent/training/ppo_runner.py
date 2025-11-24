@@ -5,14 +5,17 @@ from pathlib import Path
 from typing import Any, Dict
 
 import yaml
+import gymnasium as gym
 try:  # pragma: no cover - optional dependency for RL training
     from sb3_contrib import MaskablePPO
     from sb3_contrib.common.maskable.policies import MaskableActorCriticPolicy
-    from sb3_contrib.common.maskable.environments import MaskableEnv
 except ModuleNotFoundError as exc:  # pragma: no cover
     raise ModuleNotFoundError(
         "sb3-contrib is required for PPO training. Install requirements-rl.txt (pip install sb3-contrib)."
     ) from exc
+
+# In sb3-contrib 2.x, MaskableEnv is just a type hint for gymnasium.Env
+MaskableEnv = gym.Env
 
 from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
 
