@@ -6,7 +6,6 @@ from .relevant_data import RELEVANT_DATA
 from .use_cases import ALL_USE_CASES
 
 FRONTEND_PORT_INDEX = 0
-BACKEND_PORT_INDEX = 0
 cinema_project = WebProject(
     id="autocinema",
     name="Autoppia Cinema",
