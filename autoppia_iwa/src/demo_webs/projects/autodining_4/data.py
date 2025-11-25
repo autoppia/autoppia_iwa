@@ -41,7 +41,95 @@ RESTAURANT_OCCASIONS = ["birthday", "anniversary", "business", "other"]
 SCROLL_DIRECTIONS = ["left", "right"]
 SCROLL_SECTIONS_TITLES = ["Available for lunch now", "Introducing OpenDinning Icons", "Award Winners"]
 
-CUSINE = ["Japanese", "Mexican", "American"]
+CUISINE = ["Japanese", "Mexican", "American"]
+NAMES = [
+    "James",
+    "William",
+    "Benjamin",
+    "Alexander",
+    "Daniel",
+    "Samuel",
+    "Matthew",
+    "Jonathan",
+    "Christopher",
+    "Andrew",
+    "Olivia",
+    "Emma",
+    "Charlotte",
+    "Amelia",
+    "Sophia",
+    "Grace",
+    "Emily",
+    "Hannah",
+    "Abigail",
+    "Madison",
+]
+SAMPLE_EMAILS = [
+    "james.wilson@example.com",
+    "emma.johnson@example.com",
+    "liam.smith@example.com",
+    "olivia.brown@example.com",
+    "noah.jones@example.com",
+    "ava.miller@example.com",
+    "william.davis@example.com",
+    "sophia.garcia@example.com",
+    "benjamin.rodriguez@example.com",
+    "mia.martinez@example.com",
+    "lucas.harris@example.com",
+    "charlotte.clark@example.com",
+    "henry.lewis@example.com",
+    "amelia.walker@example.com",
+    "alexander.hall@example.com",
+    "harper.allen@example.com",
+    "michael.young@example.com",
+    "ella.king@example.com",
+    "daniel.wright@example.com",
+    "grace.scott@example.com",
+]
+CONTACT_SUBJECTS = [
+    "Inquiry About Your Services",
+    "Request for More Information",
+    "Feedback on Recent Experience",
+    "Issue With My Account",
+    "Need Assistance With Booking",
+    "Suggestion for Improvement",
+    "Request for Collaboration",
+    "Question About Pricing",
+    "Follow-up on Previous Conversation",
+    "Concern About a Recent Order",
+    "Request for Appointment",
+    "New Business Inquiry",
+    "Support Request",
+    "Website Issue Report",
+    "Subscription Inquiry",
+    "Product Information Needed",
+    "Billing and Payment Question",
+    "Technical Issue Assistance",
+    "Request for Demo",
+    "General Inquiry",
+]
+CONTACT_MESSAGES = [
+    "Hi, I would like to learn more about your services. Please share the details.",
+    "Hello, I'm facing an issue with my account login. Can you help me resolve it?",
+    "I am interested in booking an appointment. Please guide me through the process.",
+    "I would like to collaborate with your team on an upcoming project.",
+    "Can you provide more information about your pricing plans?",
+    "I recently made an order and have a few concerns. Please assist.",
+    "Your website seems to have a problem on the checkout page. Kindly check.",
+    "I want to know if you offer any discounts or special packages.",
+    "I have some feedback regarding your customer support experience.",
+    "Could you please send me a demo of how your system works?",
+    "I need help understanding the billing details for my last payment.",
+    "I am unable to access certain features on my account. Please look into this.",
+    "Can you share details about your recent updates or new features?",
+    "Please assist me in updating my profile information.",
+    "I want to subscribe to your newsletter. How can I do it?",
+    "I am confused about a recent notification I received. Kindly clarify.",
+    "Can you help me track the status of my order?",
+    "I would like to cancel my previous request. Please confirm.",
+    "I am reaching out to report a technical bug I encountered.",
+    "Thank you for your services. I just wanted to share my appreciation.",
+]
 OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED = {
     "selected_date": [EQUALS, GREATER_EQUAL, LESS_EQUAL],
 }
@@ -95,4 +183,10 @@ OPERATORS_ALLOWED_RESERVATION_COMPLETE = {
 OPERATORS_ALLOWED_SCROLL_VIEW = {
     "section_title": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "direction": [EQUALS, NOT_EQUALS],
+}
+OPERATORS_ALLOWED_CONTACT = {
+    "username": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "email": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "message": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
+    "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
 }

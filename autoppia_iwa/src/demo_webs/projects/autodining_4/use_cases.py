@@ -1,9 +1,12 @@
 from ...classes import UseCase
 from .events import (
+    AboutPageViewEvent,
     BookRestaurantEvent,
     CollapseMenuEvent,
+    ContactEvent,
     CountrySelectedEvent,
     DateDropdownOpenedEvent,
+    HelpPageViewEvent,
     OccasionSelectedEvent,
     PeopleDropdownOpenedEvent,
     ReservationCompleteEvent,
@@ -16,6 +19,7 @@ from .events import (
 from .generation_functions import (
     generate_book_restaurant_constraints,
     generate_collapse_menu_constraints,
+    generate_contact_constraints,
     generate_country_selected_constraints,
     generate_date_dropdown_opened_constraints,
     generate_occasion_selected_constraints,
@@ -435,6 +439,77 @@ SCROLL_VIEW_USE_CASE = UseCase(
     ],
 )
 
+CONTACT_INFO_USE_CASE = UseCase(
+    name="CONTACT_FORM_SUBMIT",
+    description="User contacts to user support.",
+    event=ContactEvent,
+    event_source_code=ContactEvent.get_source_code_of_class(),
+    constraints_generator=generate_contact_constraints,
+    examples=[
+        {
+            "prompt": "Contact where name equals 'James'.",
+            "prompt_for_task_generation": "Contact where name equals 'James'.",
+        },
+        {
+            "prompt": "Contact where name not equals 'William' and message equals 'Can you provide more information about your pricing plans?'.",
+            "prompt_for_task_generation": "Contact where name not equals 'William' and message equals 'Can you provide more information about your pricing plans?'.",
+        },
+        {
+            "prompt": "Contact where name contains 'liam' and message contains 'report a technical bug' and subject equals 'Inquiry About Your Services' and email equals 'emma.johnson@example.com'",
+            "prompt_for_task_generation": "Contact where name contains 'liam' and message contains 'report a technical bug' and subject equals 'Inquiry About Your Services' and email equals 'emma.johnson@example.com'",
+        },
+    ],
+)
+ABOUT_PAGE_USE_CASE = UseCase(
+    name="ABOUT_PAGE_VIEW",
+    description="User navigates to or interacts with the About page to view company or application information.",
+    event=AboutPageViewEvent,
+    event_source_code=AboutPageViewEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "Navigate to the About page to read about the company's mission and values.",
+            "prompt_for_task_generation": "Navigate to the About page to read about the company's mission and values.",
+        },
+        {
+            "prompt": "Navigate to the About page to view team member profiles and company history.",
+            "prompt_for_task_generation": "Navigate to the About page to view team member profiles and company history.",
+        },
+        {
+            "prompt": "Open the About page and explore the sections detailing company achievements and milestones.",
+            "prompt_for_tas_generation": "Open the About page and explore the sections detailing company achievements and milestones.",
+        },
+        {
+            "prompt": "Navigate the About page to find information about the company's vision and services.",
+            "prompt_for_task_generation": "Navigate the About page to find information about the company's vision and services.",
+        },
+    ],
+)
+HELP_PAGE_USE_CASE = UseCase(
+    name="HELP_PAGE_VIEW",
+    description="User navigates to or interacts with the Help page to find guidance, FAQs, or troubleshooting information.",
+    event=HelpPageViewEvent,
+    event_source_code=HelpPageViewEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "Navigate to the Help page to view frequently asked questions and support guides.",
+            "prompt_for_task_generation": "Navigate to the Help page to view frequently asked questions and support guides.",
+        },
+        {
+            "prompt": "Navigate to the Help page to find tutorials and troubleshooting tips.",
+            "prompt_for_task_generation": "Navigate to the Help page to find tutorials and troubleshooting tips.",
+        },
+        {
+            "prompt": "Open the Help page and explore sections for technical support and user guidance.",
+            "prompt_for_task_generation": "Open the Help page and explore sections for technical support and user guidance.",
+        },
+        {
+            "prompt": "Navigate the Help page to locate detailed instructions and help resources.",
+            "prompt_for_task_generation": "Navigate the Help page to locate detailed instructions and help resources.",
+        },
+    ],
+)
 
 ###############################################################################
 # UPDATED FINAL LIST: ALL_USE_CASES
@@ -453,4 +528,7 @@ ALL_USE_CASES = [
     COUNTRY_SELECTED_USE_CASE,
     OCCASION_SELECTED_USE_CASE,
     RESERVATION_COMPLETE_USE_CASE,
+    CONTACT_INFO_USE_CASE,
+    ABOUT_PAGE_USE_CASE,
+    HELP_PAGE_USE_CASE,
 ]

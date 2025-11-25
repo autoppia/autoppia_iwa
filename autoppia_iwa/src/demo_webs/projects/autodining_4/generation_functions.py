@@ -1,5 +1,6 @@
 import datetime
 import random
+from random import choice
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
@@ -7,8 +8,12 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_fr
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
-    CUSINE,
+    CONTACT_MESSAGES,
+    CONTACT_SUBJECTS,
+    CUISINE,
+    NAMES,
     OPERATORS_ALLOWED_BOOK_RESTAURANT,
+    OPERATORS_ALLOWED_CONTACT,
     OPERATORS_ALLOWED_COUNTRY_SELECTED,
     OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED,
     OPERATORS_ALLOWED_FOR_RESTAURANT,
@@ -21,6 +26,7 @@ from .data import (
     RESTAURANT_OCCASIONS,
     RESTAURANT_PEOPLE_COUNTS,
     RESTAURANT_TIMES,
+    SAMPLE_EMAILS,
     SCROLL_DIRECTIONS,
     SCROLL_SECTIONS_TITLES,
 )
@@ -81,6 +87,18 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         elif field == "country_code":
             valid = [v["code"] for v in RESTAURANT_COUNTRIES if v != field_value]
             return random.choice(valid) if valid else None
+        elif field == "username":
+            valid = [v for v in NAMES if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "message":
+            valid = [v for v in CONTACT_MESSAGES if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "subject":
+            valid = [v for v in CONTACT_SUBJECTS if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "email":
+            valid = [v for v in SAMPLE_EMAILS if v != field_value]
+            return random.choice(valid) if valid else None
 
         valid = [v[field] for v in dataset if v.get(field) != field_value]
         return random.choice(valid) if valid else None
@@ -104,6 +122,18 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
             return random.choice(valid) if valid else None
         elif field == "section_title":
             valid = [v for v in SCROLL_SECTIONS_TITLES if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "username":
+            valid = [v for v in NAMES if v != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "message":
+            valid = [m for m in CONTACT_MESSAGES if m != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "subject":
+            valid = [c for c in CONTACT_SUBJECTS if c != field_value]
+            return random.choice(valid) if valid else None
+        elif field == "email":
+            valid = [e for e in SAMPLE_EMAILS if e != field_value]
             return random.choice(valid) if valid else None
         valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
         return random.choice(valid) if valid else None
@@ -188,9 +218,17 @@ async def _generate_value_for_field(field_name: str) -> Any:
     elif field_name == "desc":
         return "Enjoy a delightful experience at"
     elif field_name == "cuisine":
-        return random.choice(CUSINE)
+        return random.choice(CUISINE)
     elif field_name == "rating":
         return random.choice([2, 3, 4])
+    elif field_name == "username":
+        return random.choice(NAMES)
+    elif field_name == "email":
+        return random.choice(SAMPLE_EMAILS)
+    elif field_name == "message":
+        return random.choice(CONTACT_MESSAGES)
+    elif field_name == "subject":
+        return random.choice(CONTACT_SUBJECTS)
 
     print(f"Warning: No specific mock value generator for field '{field_name}'. Using default string.")
     return "mock_value"
@@ -350,6 +388,40 @@ async def generate_reservation_complete_constraints(task_url: str | None = None,
 
 async def generate_scroll_view_constraints():
     return await _generate_constraints_for_fields(all_fields=["section_title", "direction"], allowed_ops=OPERATORS_ALLOWED_SCROLL_VIEW, required_fields=["section_title", "direction"])
+
+
+async def generate_contact_constraints():
+    constraint_list = []
+    possible_fields = list(OPERATORS_ALLOWED_CONTACT.keys())
+    num_constraints = random.randint(1, len(possible_fields))
+    selected_fields = random.sample(possible_fields, num_constraints)
+    for field in selected_fields:
+        allowed_ops = OPERATORS_ALLOWED_CONTACT.get(field, "")
+        if not allowed_ops:
+            continue
+
+        op = ComparisonOperator(choice(allowed_ops))
+        value = None
+        if field == "username":
+            default_value = await _generate_value_for_field(field)
+            value = _generate_constraint_value(op, default_value, field, NAMES)
+        if field == "message":
+            default_value = await _generate_value_for_field(field)
+            value = _generate_constraint_value(op, default_value, field, CONTACT_MESSAGES)
+        if field == "email":
+            default_value = await _generate_value_for_field(field)
+            value = _generate_constraint_value(op, default_value, field, SAMPLE_EMAILS)
+        if field == "subject":
+            default_value = await _generate_value_for_field(field)
+            value = _generate_constraint_value(op, default_value, field, CONTACT_SUBJECTS)
+
+        if value is not None:
+            constraint = create_constraint_dict(field, op, value)
+            constraint_list.append(constraint)
+        else:
+            return []
+
+    return constraint_list
 
 
 # --- Internal Helper ---
