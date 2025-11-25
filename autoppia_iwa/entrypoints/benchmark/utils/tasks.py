@@ -96,11 +96,6 @@ async def generate_tasks_for_web_project(
         cached_tasks = await load_tasks_from_json(project, task_cache_dir)
         if cached_tasks and len(cached_tasks) > 0:
             print(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
-            # Configure cached tasks with dynamic features
-            for task in cached_tasks:
-                task.dynamic = dynamic
-                # Re-apply dynamic features to URL after setting dynamic array
-                task._apply_dynamic_to_url()
             return cached_tasks
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")

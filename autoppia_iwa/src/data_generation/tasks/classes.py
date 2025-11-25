@@ -1,8 +1,6 @@
 # file: data_generation/domain/classes.py
-import random
 import uuid
 from typing import Annotated, Any
-from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
@@ -42,9 +40,7 @@ class Task(BaseModel):
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Additional contextual data required for task execution")
     use_case: Any = Field(default=None, description="UseCase instance associated with this task")
     should_record: bool = False
-    dynamic: bool = Field(default=False, description="Indicates if the task should run in dynamic mode")
     _original_prompt: str = PrivateAttr()
-    _seed_value: int = PrivateAttr()
 
     model_config = {"extra": "allow", "arbitrary_types_allowed": True}
 
@@ -52,10 +48,6 @@ class Task(BaseModel):
         original_prompt = data.get("original_prompt", data.get("prompt", ""))
         super().__init__(**data)
         object.__setattr__(self, "_original_prompt", original_prompt)
-        # Don't add seed automatically - let the benchmark decide when to add it
-        object.__setattr__(self, "_seed_value", None)
-        # Automatically apply dynamic features to URL
-        self._apply_dynamic_to_url()
 
     @property
     def prompt_with_relevant_data(self) -> str:
@@ -66,34 +58,6 @@ class Task(BaseModel):
     @property
     def original_prompt(self) -> str:
         return self._original_prompt
-
-    def _apply_dynamic_to_url(self) -> None:
-        """
-        Automatically apply all dynamic features to the URL based on the dynamic array.
-        This is called automatically after Task initialization.
-        """
-        if self.dynamic:
-            self.assign_seed_to_url()
-
-    def assign_seed_to_url(self) -> None:
-        """
-        Assign a random seed to the task URL if v1 is in dynamic array.
-        Avoids overwriting an existing seed or breaking query structure.
-        """
-        if self.dynamic:
-            if self._seed_value is None:
-                object.__setattr__(self, "_seed_value", random.randint(1, 999))
-
-            parsed = urlparse(self.url)
-            query_params = parse_qs(parsed.query)
-
-            # Only add if 'seed' not already in URL
-            if "seed" not in query_params:
-                query_params["seed"] = [str(self._seed_value)]
-
-                new_query = urlencode(query_params, doseq=True)
-                new_url = urlunparse(parsed._replace(query=new_query))
-                object.__setattr__(self, "url", new_url)
 
     def model_dump(self, *args, **kwargs) -> dict:
         # Example override to hide screenshot if needed

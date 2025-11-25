@@ -200,13 +200,8 @@ class SimpleTaskGenerator:
                     "web_project_id": self.web_project.id,
                     "url": task_url,
                     "prompt": replaced_prompt,
-                    "html": "",
-                    "clean_html": "",
-                    "screenshot": None,
-                    "screenshot_desc": "",
                     "use_case": use_case,
                     "relevant_data": self.web_project.relevant_data,
-                    "dynamic": dynamic or False,
                 }
                 # Create the task
                 # If constraint_url has v2-seed, it will be extracted by assign_v2_seed_to_url() during Task.__init__
