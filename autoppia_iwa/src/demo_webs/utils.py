@@ -1,5 +1,5 @@
 import sys
-from datetime import UTC, datetime
+from datetime import UTC
 from pathlib import Path
 
 from autoppia_iwa.config.config import DEMO_WEB_SERVICE_PORT, DEMO_WEBS_ENDPOINT, DEMO_WEBS_STARTING_PORT
@@ -19,8 +19,6 @@ def get_backend_service_url():
     """
     return f"{DEMO_WEBS_ENDPOINT}:{DEMO_WEB_SERVICE_PORT}/"
 
-
-def datetime_from_utc_to_local(utc_datetime: datetime) -> datetime:
     """Convert a UTC datetime to local time using system timezone."""
     if utc_datetime.tzinfo is None:
         utc_datetime = utc_datetime.replace(tzinfo=UTC)
