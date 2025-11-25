@@ -8,11 +8,11 @@ from typing import Any
 from dependency_injector.wiring import Provide
 from loguru import logger
 
-# Import your existing GlobalTaskGenerationPipeline
-from autoppia_iwa.src.data_generation.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
-
 # Adjust imports to match your actual project structure
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
+
+# Import your existing SimpleTaskGenerator
+from autoppia_iwa.src.data_generation.tasks.simple.global_task_generation import SimpleTaskGenerator
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
@@ -21,10 +21,10 @@ from autoppia_iwa.src.llms.interfaces import ILLM
 from .prompts import COMPOSITED_TASK_GENERATION_PROMPT
 
 
-class CompositedTasksGenerationPipeline:
+class MultiStepTaskGenerator:
     """
     Pipeline that:
-    1) Invokes GlobalTaskGenerationPipeline to get individual tasks for each use case.
+    1) Invokes SimpleTaskGenerator to get individual tasks for each use case.
     2) Dynamically creates new multi-step tasks by combining them.
     3) Uses LLM to produce a cohesive, final prompt for the multi-step scenario.
     """
@@ -40,8 +40,8 @@ class CompositedTasksGenerationPipeline:
         self.llm_service = llm_service
         self.max_retries = max_retries
         self.retry_delay = retry_delay
-        # Reuse the existing GlobalTaskGenerationPipeline for the base tasks:
-        self.global_task_pipeline = GlobalTaskGenerationPipeline(
+        # Reuse the existing SimpleTaskGenerator for the base tasks:
+        self.global_task_pipeline = SimpleTaskGenerator(
             web_project=web_project,
             llm_service=llm_service,
             max_retries=max_retries,
@@ -55,7 +55,7 @@ class CompositedTasksGenerationPipeline:
         tasks_per_composite: int = 2,
     ) -> list[Task]:
         """
-        1) Generate individual tasks from all use cases (via GlobalTaskGenerationPipeline).
+        1) Generate individual tasks from all use cases (via SimpleTaskGenerator).
         2) Combine them into multi-step tasks using the LLM.
         3) Return the newly created composited tasks.
 
@@ -64,7 +64,7 @@ class CompositedTasksGenerationPipeline:
         :param tasks_per_composite: how many base tasks to merge into each composite
         :return: list of assembled composited tasks
         """
-        logger.info("Starting CompositedTasksGenerationPipeline...")
+        logger.info("Starting MultiStepTaskGenerator...")
 
         # 1) Generate base tasks using the global pipeline
         logger.info(f"Fetching individual tasks with {prompts_per_use_case} prompts per use case...")

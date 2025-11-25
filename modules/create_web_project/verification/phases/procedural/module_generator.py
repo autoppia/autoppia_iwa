@@ -122,9 +122,7 @@ class ModuleGenerator:
         else:
             self.target_dir.mkdir(parents=True, exist_ok=True)
 
-        (self.target_dir / "__init__.py").write_text(
-            f'"""Auto-generated module for {self.slug}."""\n', encoding="utf-8"
-        )
+        (self.target_dir / "__init__.py").write_text(f'"""Auto-generated module for {self.slug}."""\n', encoding="utf-8")
         (self.target_dir / "main.py").write_text(self._render_main(), encoding="utf-8")
         (self.target_dir / "events.py").write_text(self._render_events(), encoding="utf-8")
         (self.target_dir / "generation_functions.py").write_text(self._render_generation_functions(), encoding="utf-8")
@@ -227,9 +225,7 @@ class ModuleGenerator:
             "from __future__ import annotations\n\n"
             "from pydantic import BaseModel\n\n"
             "from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event\n"
-            "from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue\n\n"
-            + "\n\n".join(class_defs)
-            + f"\n\nEVENTS = [\n    {events_block}\n]\n"
+            "from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue\n\n" + "\n\n".join(class_defs) + f"\n\nEVENTS = [\n    {events_block}\n]\n"
         )
 
     def _render_event_class(
@@ -243,9 +239,7 @@ class ModuleGenerator:
         field_lines = [f"    {field.name}: {field.type_hint} = None" for field in fields]
         criteria_lines = [f"            self._validate_field(self.{field}, criteria.{field})," for field in validation_fields]
         parse_lines = [f"            {field.name}=data.get('{field.source}')," for field in fields]
-        criteria_fields = "\n".join(
-            f"        {field.name}: {field.base_type} | CriterionValue | None = None" for field in fields
-        ) or "        pass"
+        criteria_fields = "\n".join(f"        {field.name}: {field.base_type} | CriterionValue | None = None" for field in fields) or "        pass"
         validator_block = "        return all([\n" + "\n".join(criteria_lines) + "\n        ])" if criteria_lines else "        return True"
         parse_block = "\n".join(parse_lines) if parse_lines else ""
 

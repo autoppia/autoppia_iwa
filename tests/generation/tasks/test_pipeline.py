@@ -4,10 +4,10 @@ import asyncio
 import json
 
 from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
-from autoppia_iwa.src.data_generation.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
 from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
+from autoppia_iwa.src.data_generation.tasks.simple.global_task_generation import SimpleTaskGenerator
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
-from autoppia_iwa.src.data_generation.tests.globals.test_generation_pipeline import GlobalTestGenerationPipeline
+from autoppia_iwa.src.data_generation.tests.simple.test_generation_pipeline import GlobalTestGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
@@ -83,7 +83,7 @@ def test_global_test_generation_attaches_event_criteria():
     project = WebProject(id="dummy", name="Dummy", backend_url="", frontend_url="", use_cases=[use_case])
     mock_llm = MockLLMService([json.dumps([mock_task])])
 
-    pipeline = GlobalTaskGenerationPipeline(web_project=project, llm_service=mock_llm)
+    pipeline = SimpleTaskGenerator(web_project=project, llm_service=mock_llm)
 
     async def run():
         tasks = await pipeline.generate(num_use_cases=1, prompts_per_use_case=1)
@@ -106,7 +106,7 @@ def test_global_test_generation_attaches_event_criteria():
 def test_prompts_per_use_case_auto(monkeypatch):
     use_case = _build_use_case()
     project = WebProject(id="dummy", name="Dummy", backend_url="", frontend_url="", use_cases=[use_case])
-    pipeline = GlobalTaskGenerationPipeline(web_project=project, llm_service=None)
+    pipeline = SimpleTaskGenerator(web_project=project, llm_service=None)
 
     recorded_counts: list[int] = []
 

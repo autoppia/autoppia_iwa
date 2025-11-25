@@ -5,8 +5,8 @@ from dependency_injector.wiring import Provide
 from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task, TaskGenerationConfig
-from autoppia_iwa.src.data_generation.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
-from autoppia_iwa.src.data_generation.tests.globals.test_generation_pipeline import GlobalTestGenerationPipeline
+from autoppia_iwa.src.data_generation.tasks.simple.global_task_generation import SimpleTaskGenerator
+from autoppia_iwa.src.data_generation.tests.simple.test_generation_pipeline import GlobalTestGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM
@@ -48,7 +48,7 @@ class TaskGenerationPipeline:
         self.llm_service = llm_service
 
         # Initialize pipelines
-        self.global_pipeline = GlobalTaskGenerationPipeline(web_project=web_project, llm_service=llm_service)
+        self.global_pipeline = SimpleTaskGenerator(web_project=web_project, llm_service=llm_service)
 
         self.global_test_pipeline = GlobalTestGenerationPipeline()
 

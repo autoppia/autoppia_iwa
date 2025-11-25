@@ -20,7 +20,7 @@ import aiohttp
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.tests.composited.test_generation_pipeline import GlobalTestGenerationPipeline
+from autoppia_iwa.src.data_generation.tests.multi_step.test_generation_pipeline import GlobalTestGenerationPipeline
 from autoppia_iwa.src.data_generation.tasks.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer

@@ -64,7 +64,7 @@ def _log_task_generation(message: str, context: str = "TASK_GENERATION") -> None
         logger.log(TASK_GENERATION_LEVEL_NAME, f"{prefix}{message}")
 
 
-class GlobalTaskGenerationPipeline:
+class SimpleTaskGenerator:
     def __init__(
         self,
         web_project: WebProject,

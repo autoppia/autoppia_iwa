@@ -2,6 +2,6 @@
 Global task generation utilities.
 """
 
-from .global_task_generation import GlobalTaskGenerationPipeline
+from .global_task_generation import SimpleTaskGenerator
 
-__all__ = ["GlobalTaskGenerationPipeline"]
+__all__ = ["SimpleTaskGenerator"]
