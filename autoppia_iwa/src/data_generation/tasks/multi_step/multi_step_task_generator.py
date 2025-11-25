@@ -12,7 +12,7 @@ from loguru import logger
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
 
 # Import your existing SimpleTaskGenerator
-from autoppia_iwa.src.data_generation.tasks.simple.global_task_generation import SimpleTaskGenerator
+from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.llms.interfaces import ILLM

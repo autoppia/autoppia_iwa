@@ -5,7 +5,7 @@ from dependency_injector.wiring import Provide
 from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task, TaskGenerationConfig
-from autoppia_iwa.src.data_generation.tasks.simple.global_task_generation import SimpleTaskGenerator
+from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
 from autoppia_iwa.src.data_generation.tests.simple.test_generation_pipeline import GlobalTestGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.di_container import DIContainer

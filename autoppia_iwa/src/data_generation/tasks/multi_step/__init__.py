@@ -2,6 +2,6 @@
 Composited task generation utilities.
 """
 
-from .composited_tasks_generation import MultiStepTaskGenerator
+from .multi_step_task_generator import MultiStepTaskGenerator
 
 __all__ = ["MultiStepTaskGenerator"]

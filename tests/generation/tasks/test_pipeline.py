@@ -5,7 +5,7 @@ import json
 
 from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
 from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.tasks.simple.global_task_generation import SimpleTaskGenerator
+from autoppia_iwa.src.data_generation.tasks.simple.simple_task_generator import SimpleTaskGenerator
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.data_generation.tests.simple.test_generation_pipeline import GlobalTestGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
