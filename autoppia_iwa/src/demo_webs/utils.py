@@ -8,27 +8,16 @@ sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 
 def get_frontend_url(index):
+    """Get frontend URL for a web project by its index."""
     return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}"
 
 
-def get_backend_url(index: int, symmetric=True):
-    """Return backend base URL.
-
-    For newer projects (index > 1) we route through the shared demo-web service
-    port so the proxy backend (Playwright instrumentation) can capture events.
-    """
-
-    if index > 1:
-        return get_backend_service_url()
-
-    if symmetric:
-        return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index) + '/'}"
-    else:
-        return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEBS_STARTING_PORT + index + 1) + '/'}"
-
-
 def get_backend_service_url():
-    return f"{DEMO_WEBS_ENDPOINT}:{str(DEMO_WEB_SERVICE_PORT) + '/'}"
+    """Get the shared backend service URL (webs_server on port 8090).
+
+    All web projects share the same backend service.
+    """
+    return f"{DEMO_WEBS_ENDPOINT}:{DEMO_WEB_SERVICE_PORT}/"
 
 
 def datetime_from_utc_to_local(utc_datetime: datetime) -> datetime:
