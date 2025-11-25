@@ -3,12 +3,11 @@ from __future__ import annotations
 import json
 import os
 from contextlib import suppress
-from urllib.parse import urlparse
 
 import aiohttp
 from loguru import logger
 
-from autoppia_iwa.config.config import DEMO_WEB_SERVICE_PORT, VALIDATOR_ID
+from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
@@ -57,7 +56,6 @@ class BackendDemoWebService:
         self._session: aiohttp.ClientSession | None = None
         self.web_project = web_project
         self.base_url = web_project.backend_url
-        self._backend_port = self._extract_backend_port()
         self.web_agent_id = web_agent_id
         # Allow environment overrides for validator id to ease local testing
         self.validator_id = os.getenv("VALIDATOR_ID", VALIDATOR_ID or "validator_001")
@@ -87,15 +85,6 @@ class BackendDemoWebService:
             self._session = aiohttp.ClientSession(json_serialize=self._json_parser.dumps)
             logger.debug("Created new aiohttp session")
         return self._session
-
-    def _extract_backend_port(self) -> int | None:
-        parsed = urlparse(self.base_url)
-        return parsed.port
-
-    def _should_use_proxy_api(self) -> bool:
-        """Determine whether we should proxy backend calls via the shared webs_server."""
-
-        return bool(self._backend_port and self._backend_port == DEMO_WEB_SERVICE_PORT)
 
     async def close(self) -> None:
         """Close the underlying aiohttp session if it exists."""
