@@ -1,5 +1,15 @@
 #!/bin/bash
-# Script para esperar a que los servicios estén listos y ejecutar tests
+# Wait for Services and Run Tests
+#
+# This script waits for required services to be ready (webs_server, demo webs)
+# and then runs the integration test suite to verify the system works correctly.
+#
+# Usage: ./scripts/wait_for_services_and_run_tests.sh
+#
+# Required services:
+# - webs_server (port 8090)
+# - autocinema (port 8001)
+# - autobooks (port 8002)
 
 echo "🔍 Verificando servicios..."
 
@@ -40,17 +50,17 @@ echo ""
 
 # Test 1: Verificar todos los proyectos
 echo "1️⃣ Test: Verificar todos los proyectos están actualizados"
-python3 test_all_projects.py
+python3 tests/integration/test_all_projects.py
 echo ""
 
 # Test 2: Seed Guard
 echo "2️⃣ Test: Seed Guard (validación de NavigateActions)"
-python3 test_seed_guard.py
+python3 tests/integration/test_seed_guard.py
 echo ""
 
 # Test 3: Constraint Generation (requiere servicios levantados)
 echo "3️⃣ Test: Generación de Constraints"
-python3 test_constraint_generation.py
+python3 tests/integration/test_constraint_generation.py
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
