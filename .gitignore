@@ -24,10 +24,12 @@ benchmark.log
 prompt_test.log
 real_web_evaluation.log
 
-# Generated benchmark artifacts
-data/benchmark/**
+# Generated outputs (benchmark, training, verification)
+outputs/**
 
-# Generated caches
+# Keep data/ for inputs only
+# Generated benchmark artifacts (legacy paths - remove after migration)
+data/benchmark/**
 data/cache/**
 
 # RL checkpoints / traces
