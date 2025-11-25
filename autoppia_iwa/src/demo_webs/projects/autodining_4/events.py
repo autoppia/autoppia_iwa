@@ -766,6 +766,62 @@ class ScrollViewEvent(Event, BaseEventValidator):
         )
 
 
+class AboutPageViewEvent(Event, BaseEventValidator):
+    """Event triggered when a help page is viewed."""
+
+    event_name: str = "ABOUT_PAGE_VIEW"
+
+
+class HelpPageViewEvent(Event, BaseEventValidator):
+    """Event triggered when a help page is viewed."""
+
+    event_name: str = "HELP_PAGE_VIEW"
+
+
+class ContactEvent(Event, BaseEventValidator):
+    """Event triggered when a user submit a contact form."""
+
+    event_name: str = "CONTACT_FORM_SUBMIT"
+
+    email: str
+    message: str
+    name: str
+    subject: str
+
+    class ValidationCriteria(BaseModel):
+        email: str | CriterionValue | None = None
+        message: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.email, criteria.email),
+                self._validate_field(self.message, criteria.message),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.subject, criteria.subject),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ContactEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            name=data.get("name", ""),
+            message=data.get("message", ""),
+            email=data.get("email", ""),
+            subject=data.get("subject", ""),
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES (UPDATED)
 # =============================================================================
@@ -783,6 +839,9 @@ EVENTS = [
     OccasionSelectedEvent,
     ReservationCompleteEvent,  # Restaurant reservation
     ScrollViewEvent,  # Generic scroll
+    AboutPageViewEvent,
+    HelpPageViewEvent,
+    ContactEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -798,4 +857,7 @@ BACKEND_EVENT_TYPES = {
     "OCCASION_SELECTED": OccasionSelectedEvent,
     "RESERVATION_COMPLETE": ReservationCompleteEvent,
     "SCROLL_VIEW": ScrollViewEvent,
+    "ABOUT_PAGE_VIEW": AboutPageViewEvent,
+    "HELP_PAGE_VIEW": HelpPageViewEvent,
+    "CONTACT_FORM_SUBMIT": ContactEvent,
 }
