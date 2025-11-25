@@ -3,7 +3,7 @@ import json
 import re
 import time
 from abc import ABC, abstractmethod
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
@@ -500,7 +500,7 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
     log_entry = {
         "test_type": test_type,
         "final_test_result": final_result,
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "task": prompt,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,

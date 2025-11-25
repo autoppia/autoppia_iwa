@@ -9,7 +9,7 @@ import os
 import sys
 import time
 from collections.abc import Iterable, Iterator, Sequence
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -180,7 +180,7 @@ def build_records(
         yield {
             "task": task,
             "solutions": solutions,
-            "fetched_at": datetime.now(UTC).isoformat(),
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
         }
 
 
