@@ -3,11 +3,11 @@ from __future__ import annotations
 import asyncio
 import json
 
-from autoppia_iwa.src.data_generation.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
-from autoppia_iwa.src.data_generation.tests.globals.test_generation_pipeline import GlobalTestGenerationPipeline
-from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
+from autoppia_iwa.src.data_generation.tasks.globals.global_task_generation import GlobalTaskGenerationPipeline
+from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
+from autoppia_iwa.src.data_generation.tests.globals.test_generation_pipeline import GlobalTestGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.demo_webs.projects.base_events import Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
@@ -41,12 +41,11 @@ def _build_use_case() -> UseCase:
             {
                 "prompt": "Do dummy action",
                 "prompt_for_task_generation": "Do dummy action",
-            }
-        ,
+            },
             {
                 "prompt": "Do another dummy action",
                 "prompt_for_task_generation": "Do another dummy action",
-            }
+            },
         ],
     )
     use_case.constraints = [{"field": "value", "operator": ComparisonOperator.EQUALS, "value": "ok"}]
@@ -85,6 +84,7 @@ def test_global_test_generation_attaches_event_criteria():
     mock_llm = MockLLMService([json.dumps([mock_task])])
 
     pipeline = GlobalTaskGenerationPipeline(web_project=project, llm_service=mock_llm)
+
     async def run():
         tasks = await pipeline.generate(num_use_cases=1, prompts_per_use_case=1)
 

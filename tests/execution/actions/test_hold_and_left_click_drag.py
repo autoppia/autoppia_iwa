@@ -1,5 +1,6 @@
 # python
 import asyncio
+
 from playwright.async_api import async_playwright
 
 from autoppia_iwa.src.execution.actions.actions import HoldKeyAction, LeftClickDragAction

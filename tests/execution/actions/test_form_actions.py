@@ -99,13 +99,9 @@ def test_form_and_misc_actions(tmp_path):
             select_selector = Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="pet-select")
             await SelectAction(selector=select_selector, value="dog").execute(page, backend_service=None, web_agent_id="t")
 
-            await HoverAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="hover-me")).execute(
-                page, backend_service=None, web_agent_id="t"
-            )
+            await HoverAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="hover-me")).execute(page, backend_service=None, web_agent_id="t")
 
-            await WaitAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="ready")).execute(
-                page, backend_service=None, web_agent_id="t"
-            )
+            await WaitAction(selector=Selector(type=SelectorType.ATTRIBUTE_VALUE_SELECTOR, attribute="id", value="ready")).execute(page, backend_service=None, web_agent_id="t")
             await WaitAction(time_seconds=0.05).execute(page, backend_service=None, web_agent_id="t")
 
             await page.focus("#text-input")
@@ -117,13 +113,9 @@ def test_form_and_misc_actions(tmp_path):
             with pytest.raises(AssertionError):
                 await AssertAction(text_to_assert="does-not-exist").execute(page, backend_service=None, web_agent_id="t")
 
-            await DragAndDropAction(sourceSelector="#drag-source", targetSelector="#drag-target").execute(
-                page, backend_service=None, web_agent_id="t"
-            )
+            await DragAndDropAction(sourceSelector="#drag-source", targetSelector="#drag-target").execute(page, backend_service=None, web_agent_id="t")
 
-            await GetDropDownOptionsAction(
-                selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//select[@id='pet-select']")
-            ).execute(page, backend_service=None, web_agent_id="t")
+            await GetDropDownOptionsAction(selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//select[@id='pet-select']")).execute(page, backend_service=None, web_agent_id="t")
 
             selected = await SelectDropDownOptionAction(
                 selector=Selector(type=SelectorType.XPATH_SELECTOR, value="//select[@id='pet-select']"),
