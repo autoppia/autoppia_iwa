@@ -6,7 +6,7 @@ This directory contains integrations for the **Affine protocol**, which enables 
 
 ```
 modules/affine/
-├── env/                    # 🚀 PRODUCTION - Full AgentGym environment
+├── agentgym_environment/   # 🚀 PRODUCTION - Full AgentGym environment
 │   ├── env.py             # Main FastAPI app
 │   ├── agent_client.py    # Calls miner /solve_task endpoints
 │   ├── config.py          # Configuration management
@@ -22,7 +22,7 @@ modules/affine/
 
 ## 🚀 Which One to Use?
 
-### **Use `env/` (Recommended)** ✅
+### **Use `agentgym_environment/` (Recommended)** ✅
 
 For production Affine integration:
 - Evaluates **multiple tasks** per request
@@ -33,7 +33,7 @@ For production Affine integration:
 
 **Run it:**
 ```bash
-uvicorn modules.affine.env.env:app --host 0.0.0.0 --port 8000
+uvicorn modules.affine.agentgym_environment.env:app --host 0.0.0.0 --port 8000
 ```
 
 ### **Use `service_deprecated/` (Legacy)** ⚠️
@@ -58,7 +58,7 @@ from autoppia_iwa.affine_service.server import app
 
 **New:**
 ```python
-from modules.affine.env.env import app
+from modules.affine.agentgym_environment.env import app
 ```
 
 **API changes:**
@@ -74,7 +74,7 @@ from modules.affine.env.env import app
 - **Validators** evaluate agent performance
 - **AgentGym** provides the standard API contract
 
-The `env/` module is the **validator-side** implementation that:
+The `agentgym_environment/` module is the **validator-side** implementation that:
 1. Exposes tasks to miners
 2. Receives agent solutions
 3. Evaluates with IWA system
