@@ -25,9 +25,7 @@ def test_deck_fails_when_used_with_wrong_project():
     assert deck_section is not None, report.render()
     assert not deck_section.ok
 
-    mismatch_checks = [
-        check for check in deck_section.checks if check.description == "Deck project_id matches WebProject.id"
-    ]
+    mismatch_checks = [check for check in deck_section.checks if check.description == "Deck project_id matches WebProject.id"]
     assert mismatch_checks, "Expected project id mismatch to be recorded"
     assert mismatch_checks[0].passed is False
     assert "autodining" in (mismatch_checks[0].details or "")
