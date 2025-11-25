@@ -29,7 +29,7 @@ from autoppia_iwa.src.llms.service import LLMFactory
 
 from .label_schema import SCHEMA_JSON, SYSTEM_PROMPT, USER_TEMPLATE
 
-CACHE_DIR = Path("inputs/reward_model/llm_labels")
+CACHE_DIR = Path("data/inputs/reward_model/llm_labels")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 _LLM_CLIENT = None

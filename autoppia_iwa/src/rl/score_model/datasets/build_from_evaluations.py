@@ -21,9 +21,9 @@ except Exception:  # pragma: no cover - optional dependency
     yaml = None
 
 
-RAW_DIR = Path("inputs/reward_model/raw_evaluations")
-FEATURE_DIR = Path("inputs/reward_model/features")
-PAIRS_DIR = Path("inputs/reward_model/pairs")
+RAW_DIR = Path("data/inputs/reward_model/raw_evaluations")
+FEATURE_DIR = Path("data/inputs/reward_model/features")
+PAIRS_DIR = Path("data/inputs/reward_model/pairs")
 
 FEATURE_DIR.mkdir(parents=True, exist_ok=True)
 PAIRS_DIR.mkdir(parents=True, exist_ok=True)

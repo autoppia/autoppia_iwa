@@ -24,7 +24,7 @@ class InstrumentationConfig(BaseModel):
     """Controls whether JS/DOM traces are persisted during evaluation."""
 
     enabled: bool = Field(default=True, description="If False, evaluator behaves like the stock version without logging")
-    output_dir: Path = Field(default=Path("inputs/reward_model/raw_traces"), description="Directory to store JSONL traces")
+    output_dir: Path = Field(default=Path("data/inputs/reward_model/raw_traces"), description="Directory to store JSONL traces")
     capture_screenshots: bool = Field(default=False, description="Capture base64 screenshots per action")
     force_proxy_backend: bool = Field(default=True, description="Route backend interactions through the webs_server proxy")
 

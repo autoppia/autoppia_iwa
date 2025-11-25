@@ -27,7 +27,7 @@ real_web_evaluation.log
 projects_status.json
 
 # Generated outputs (benchmark, training, verification)
-outputs/**
+data/outputs/**
 
 # Legacy paths (kept for backwards compatibility during transition)
 data/benchmark/**

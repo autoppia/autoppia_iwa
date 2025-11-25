@@ -14,7 +14,7 @@ def main(argv: list[str] | None = None) -> None:
         "--inputs",
         "-i",
         nargs="+",
-        help=("Optional list of evaluation files or glob patterns to ingest. Defaults to all JSONL files under inputs/reward_model/raw_evaluations/."),
+        help=("Optional list of evaluation files or glob patterns to ingest. Defaults to all JSONL files under data/inputs/reward_model/raw_evaluations/."),
     )
     parser.add_argument(
         "--recent-steps",

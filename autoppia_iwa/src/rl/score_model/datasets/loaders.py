@@ -13,10 +13,10 @@ from torch.utils.data import Dataset
 
 from ..utils.text import encode_text
 
-FEATURE_DIR = Path(os.getenv("SCORE_MODEL_FEATURE_DIR", "inputs/reward_model/features"))
+FEATURE_DIR = Path(os.getenv("SCORE_MODEL_FEATURE_DIR", "data/inputs/reward_model/features"))
 VECTOR_DIR = Path(os.getenv("SCORE_MODEL_VECTOR_DIR", FEATURE_DIR / "vectors"))
-PAIRS_PATH = Path(os.getenv("SCORE_MODEL_PAIRS_PATH", "inputs/reward_model/pairs/pairs.jsonl"))
-SPLITS_DIR = Path(os.getenv("SCORE_MODEL_SPLITS_DIR", "inputs/reward_model/splits"))
+PAIRS_PATH = Path(os.getenv("SCORE_MODEL_PAIRS_PATH", "data/inputs/reward_model/pairs/pairs.jsonl"))
+SPLITS_DIR = Path(os.getenv("SCORE_MODEL_SPLITS_DIR", "data/inputs/reward_model/splits"))
 
 
 @lru_cache(maxsize=65_536)

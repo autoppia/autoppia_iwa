@@ -151,7 +151,7 @@ python scripts/fetch_service_runs.py \
   --base_url http://service.example.com \
   --token YOUR_TOKEN \
   --limit 100 \
-  --out inputs/reward_model/raw_runs
+  --out data/inputs/reward_model/raw_runs
 ```
 
 **Output:** JSON files with evaluation data for RM training.

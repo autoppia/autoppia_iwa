@@ -24,7 +24,7 @@ class SemanticConfig:
     epochs: int = 5
     num_workers: int = 4
     val_every: int = 1
-    ckpt_path: Path = Path("inputs/reward_model/ckpts/semantic_encoder.pt")
+    ckpt_path: Path = Path("data/inputs/reward_model/ckpts/semantic_encoder.pt")
 
 
 def load_config(path: str | Path | None) -> SemanticConfig:

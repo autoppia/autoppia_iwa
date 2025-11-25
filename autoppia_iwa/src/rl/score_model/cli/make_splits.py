@@ -8,9 +8,9 @@ import random
 from collections.abc import Iterable
 from pathlib import Path
 
-RAW_DIR = Path("inputs/reward_model/raw_evaluations")
-SPLIT_DIR = Path("inputs/reward_model/splits")
-FEATURE_DIR = Path("inputs/reward_model/features")
+RAW_DIR = Path("data/inputs/reward_model/raw_evaluations")
+SPLIT_DIR = Path("data/inputs/reward_model/splits")
+FEATURE_DIR = Path("data/inputs/reward_model/features")
 
 SPLIT_DIR.mkdir(parents=True, exist_ok=True)
 FEATURE_DIR.mkdir(parents=True, exist_ok=True)
@@ -46,7 +46,7 @@ def make_splits(seed: int = 1337, train_p: float = 0.8, val_p: float = 0.1) -> N
     episodes = _collect_by_id()
     ids = list(episodes.keys())
     if not ids:
-        raise RuntimeError("No evaluation episodes found in inputs/reward_model/raw_evaluations/")
+        raise RuntimeError("No evaluation episodes found in data/inputs/reward_model/raw_evaluations/")
 
     random.seed(seed)
     random.shuffle(ids)

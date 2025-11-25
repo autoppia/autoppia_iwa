@@ -74,8 +74,8 @@ class BenchmarkConfig:
         if not self.agents:
             logger.warning("No agents configured - benchmark will not run")
 
-        # Use outputs/ directory for all generated artifacts
-        outputs_dir = self.base_dir / "outputs"
+        # Use data/outputs/ directory for all generated artifacts
+        outputs_dir = self.base_dir / "data" / "outputs"
         self.benchmark_dir = outputs_dir / "benchmark"
         self.cache_dir = self.benchmark_dir / "cache"
 

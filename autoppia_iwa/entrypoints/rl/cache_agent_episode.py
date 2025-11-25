@@ -25,7 +25,7 @@ from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 DEFAULT_CACHE_DIR = "data/cache/tasks"
-DEFAULT_OUTPUT_DIR = Path("inputs/reward_model/raw_evaluations")
+DEFAULT_OUTPUT_DIR = Path("data/inputs/reward_model/raw_evaluations")
 
 
 async def _generate_tasks(project_id: str, count: int, use_cached: bool, cache_dir: str) -> list[Task]:

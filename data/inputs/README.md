@@ -70,7 +70,7 @@ inputs/                          outputs/
     (Input para training)              (Output de training)
 ```
 
-The reward model uses `inputs/reward_model/` as training data,
+The reward model uses `data/inputs/reward_model/` as training data,
 and produces training logs/metrics in `outputs/training/reward_model/`.
 
 ---

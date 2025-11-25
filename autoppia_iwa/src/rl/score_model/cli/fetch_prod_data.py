@@ -204,7 +204,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-solution-pages", type=int, default=None, help="Optional limit on pages per task when listing solutions.")
     parser.add_argument("--sleep-ms", type=int, default=0, help="Optional delay between paginated requests.")
     parser.add_argument("--include-empty", action="store_true", help="Keep tasks that have zero solutions.")
-    parser.add_argument("--output", type=Path, default=Path("inputs/reward_model/raw_evaluations/prod_tasks.jsonl"), help="Destination JSONL path.")
+    parser.add_argument("--output", type=Path, default=Path("data/inputs/reward_model/raw_evaluations/prod_tasks.jsonl"), help="Destination JSONL path.")
     parser.add_argument("--timeout", type=float, default=30.0, help="HTTP timeout per request.")
     return parser
 

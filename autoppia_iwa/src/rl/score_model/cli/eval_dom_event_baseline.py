@@ -26,9 +26,9 @@ FEATURE_COLUMNS = [
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate the DOM-event baseline model on val/test splits.")
-    parser.add_argument("--model", type=Path, default=Path("inputs/reward_model/ckpts/dom_event_baseline.pkl"))
+    parser.add_argument("--model", type=Path, default=Path("data/inputs/reward_model/ckpts/dom_event_baseline.pkl"))
     parser.add_argument("--split", choices=["val", "test"], default="val")
-    parser.add_argument("--features-dir", type=Path, default=Path("inputs/reward_model/features"))
+    parser.add_argument("--features-dir", type=Path, default=Path("data/inputs/reward_model/features"))
     return parser.parse_args()
 
 

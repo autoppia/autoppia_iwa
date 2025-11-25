@@ -5,7 +5,7 @@ This directory contains **verification outputs** from dynamic mutation testing (
 ## 📁 Structure
 
 ```
-outputs/dynamic_mutations_verification/
+data/outputs/dynamic_mutations_verification/
 ├── <project_id>/           # Per-project verification outputs
 │   └── verification/
 │       ├── seed_X_sample_Y_before.html  # HTML before mutations (D1/D3/D4)
@@ -28,7 +28,7 @@ They capture:
 ```python
 # Tests write here:
 from pathlib import Path
-output_path = Path("outputs/dynamic_mutations_verification/autocinema/verification/")
+output_path = Path("data/outputs/dynamic_mutations_verification/autocinema/verification/")
 output_path.mkdir(parents=True, exist_ok=True)
 
 # Save before/after for comparison
@@ -54,7 +54,7 @@ These are **test artifacts**, not source code:
 
 To regenerate fresh verification outputs:
 ```bash
-rm -rf outputs/dynamic_mutations_verification/*/verification/*.html
+rm -rf data/outputs/dynamic_mutations_verification/*/verification/*.html
 pytest tests/demo_webs/test_mutations*.py
 ```
 

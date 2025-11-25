@@ -29,7 +29,7 @@ class RewardConfig:
     num_workers: int = 4
     pref_pairs_per_epoch: int = 10_000
     reward_samples_per_epoch: int = 2_000
-    ckpt_path: Path = Path("inputs/reward_model/ckpts/reward_model.pt")
+    ckpt_path: Path = Path("data/inputs/reward_model/ckpts/reward_model.pt")
 
 
 def load_config(path: str | Path | None) -> RewardConfig:

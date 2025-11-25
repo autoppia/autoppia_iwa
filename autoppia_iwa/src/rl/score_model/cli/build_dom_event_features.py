@@ -10,9 +10,9 @@ from ..features.dom_event_features import episode_feature_row, step_feature_row
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Extract DOM+JS event features from raw trace JSONL files.")
-    parser.add_argument("--traces-dir", type=Path, default=Path("inputs/reward_model/raw_traces"), help="Directory containing trace JSONL files")
-    parser.add_argument("--output-dir", type=Path, default=Path("inputs/reward_model/features"), help="Where to store feature JSONL files")
-    parser.add_argument("--split-dir", type=Path, default=Path("inputs/reward_model/splits"), help="Directory with train/val/test episode lists")
+    parser.add_argument("--traces-dir", type=Path, default=Path("data/inputs/reward_model/raw_traces"), help="Directory containing trace JSONL files")
+    parser.add_argument("--output-dir", type=Path, default=Path("data/inputs/reward_model/features"), help="Where to store feature JSONL files")
+    parser.add_argument("--split-dir", type=Path, default=Path("data/inputs/reward_model/splits"), help="Directory with train/val/test episode lists")
     parser.add_argument("--steps-file", type=str, default="dom_event_steps.jsonl", help="Filename for per-step features")
     parser.add_argument("--episodes-file", type=str, default="dom_event_episodes.jsonl", help="Filename for per-episode features")
     return parser.parse_args()
