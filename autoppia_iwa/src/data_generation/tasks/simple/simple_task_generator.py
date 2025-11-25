@@ -21,22 +21,6 @@ from .prompts import GLOBAL_TASK_GENERATION_PROMPT
 TASK_GENERATION_LEVEL_NAME = "TASK_GENERATION"
 TASK_GENERATION_LEVEL_NO = 23
 
-PROJECT_ID_TO_MODULE = {
-    "autocinema": "autocinema_1",
-    "autobooks": "autobooks_2",
-    "autozone": "autozone_3",
-    "autodining": "autodining_4",
-    "autocrm": "autocrm_5",
-    "automail": "automail_6",
-    "autodelivery": "autodelivery_7",
-    "autolodge": "autolodge_8",
-    "autoconnect": "autoconnect_9",
-    "autowork": "autowork_10",
-    "autocalender": "autocalender_11",
-    "autolist": "autolist_12",
-    "autodrive": "autodrive_13",
-}
-
 
 @dataclass(slots=True)
 class ConstraintContext:
@@ -275,7 +259,31 @@ class SimpleTaskGenerator:
             return None
 
     def _get_project_module_name(self) -> str | None:
-        return PROJECT_ID_TO_MODULE.get(self.web_project.id)
+        """Auto-detect project module name from filesystem.
+
+        Finds the directory in src/demo_webs/projects/ that starts with project.id.
+        Example: "autocinema" → finds "autocinema_1"
+        """
+        from pathlib import Path
+
+        project_id = self.web_project.id
+        projects_dir = Path(__file__).resolve().parents[3] / "demo_webs" / "projects"
+
+        try:
+            # Find directories starting with project_id
+            matches = [d.name for d in projects_dir.iterdir() if d.is_dir() and d.name.startswith(f"{project_id}_")]
+            if matches:
+                return matches[0]
+
+            # Fallback: try exact match
+            exact_match = projects_dir / project_id
+            if exact_match.is_dir():
+                return project_id
+
+        except Exception:
+            pass
+
+        return None
 
     def _get_base_url(self) -> str:
         return self.web_project.urls[0] if self.web_project.urls else self.web_project.frontend_url
