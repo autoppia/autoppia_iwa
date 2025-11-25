@@ -8,9 +8,10 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from collections.abc import Iterable, Iterator, Sequence
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Sequence
+from typing import Any
 
 import requests
 from requests import Response, Session
@@ -51,7 +52,7 @@ def _next_page_hint(payload: Any) -> bool:
             return value
         if isinstance(value, str):
             return bool(value)
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return value > 0
     return False
 
@@ -129,8 +130,7 @@ def iter_solutions_for_task(
         items = _extract_list(payload)
         if not items:
             break
-        for sol in items:
-            yield sol
+        yield from items
         page += 1
         if max_pages is not None and page > max_pages:
             break
@@ -180,7 +180,7 @@ def build_records(
         yield {
             "task": task,
             "solutions": solutions,
-            "fetched_at": datetime.now(timezone.utc).isoformat(),
+            "fetched_at": datetime.now(UTC).isoformat(),
         }
 
 
@@ -204,7 +204,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-solution-pages", type=int, default=None, help="Optional limit on pages per task when listing solutions.")
     parser.add_argument("--sleep-ms", type=int, default=0, help="Optional delay between paginated requests.")
     parser.add_argument("--include-empty", action="store_true", help="Keep tasks that have zero solutions.")
-    parser.add_argument("--output", type=Path, default=Path("data/rm/raw_evaluations/prod_tasks.jsonl"), help="Destination JSONL path.")
+    parser.add_argument("--output", type=Path, default=Path("inputs/reward_model/raw_evaluations/prod_tasks.jsonl"), help="Destination JSONL path.")
     parser.add_argument("--timeout", type=float, default=30.0, help="HTTP timeout per request.")
     return parser
 

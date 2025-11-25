@@ -13,8 +13,8 @@ from torch.utils.data import DataLoader
 
 from ..datasets.loaders import PrefPairDataset, RewardDataset
 from ..models.reward_model import RewardModel
-from .losses import alignment_loss, preference_loss
 from ..utils import config_path as get_config_path
+from .losses import alignment_loss, preference_loss
 
 
 @dataclasses.dataclass(slots=True)
@@ -29,7 +29,7 @@ class RewardConfig:
     num_workers: int = 4
     pref_pairs_per_epoch: int = 10_000
     reward_samples_per_epoch: int = 2_000
-    ckpt_path: Path = Path("data/rm/ckpts/reward_model.pt")
+    ckpt_path: Path = Path("inputs/reward_model/ckpts/reward_model.pt")
 
 
 def load_config(path: str | Path | None) -> RewardConfig:
@@ -66,7 +66,7 @@ def train(cfg: RewardConfig) -> None:
         total_score = 0.0
 
         reward_iter = iter(loader_reward)
-        for batch in (loader_pairs if loader_pairs else []):
+        for batch in loader_pairs if loader_pairs else []:
             x_pos = batch["x_pos"].to(device)
             x_neg = batch["x_neg"].to(device)
             out_pos = model(x_pos)
@@ -114,7 +114,7 @@ def train(cfg: RewardConfig) -> None:
         with torch.no_grad():
             win = 0
             total = 0
-            for batch in (loader_pairs if loader_pairs else []):
+            for batch in loader_pairs if loader_pairs else []:
                 x_pos = batch["x_pos"].to(device)
                 x_neg = batch["x_neg"].to(device)
                 out_pos = model(x_pos)

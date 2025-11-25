@@ -21,7 +21,7 @@ autoppia_iwa/src/rl/score_model/
   training/            # Training loops + losses
   rl/                  # Runtime reward blender + VecNormalize helpers
   utils/               # Hash-based text encoders and IO utilities
-data/rm/               # Reward model data (raw dumps, cached artefacts)
+inputs/reward_model/   # Reward model training data and checkpoints
 ```
 
 ## Quick data collection
@@ -30,7 +30,7 @@ If you have access to the leaderboard API you can mirror fresh evaluations
 before running the reward-model builders. See `docs/prod_data_ingestion.md` for
 details on pulling datasets with `build_score_model_training_dataset.py`.
 
-Otherwise, run a tiny benchmark batch with JS instrumentation enabled to populate `data/rm/raw_traces`, or replay real leaderboard solutions via `replay_leaderboard_solutions.py` (recommended for production-like data):
+Otherwise, run a tiny benchmark batch with JS instrumentation enabled to populate `inputs/reward_model/raw_traces`, or replay real leaderboard solutions via `replay_leaderboard_solutions.py` (recommended for production-like data):
 
 ```bash
 python -m autoppia_iwa.src.rl.agent.entrypoints.collect_js_traces --projects autobooks autocalendar --runs 1 --prompts-per-use-case 1
@@ -40,10 +40,10 @@ Override `--output-dir` or `--capture-screenshots` to tweak what goes into each 
 
 ## Required inputs
 
-1. Export evaluation episodes (`EvaluationEpisode` jsonl) into `data/rm/raw_evaluations/`.
+1. Export evaluation episodes (`EvaluationEpisode` jsonl) into `inputs/reward_model/raw_evaluations/`.
    Each line must include the action results, browser snapshots, and final test
    score for the episode.
-2. Provide split definitions in `data/rm/splits/`:
+2. Provide split definitions in `inputs/reward_model/splits/`:
    - `semantic_train.json` / `semantic_val.json`: lists of `"episodeId_step"` ids.
    - `reward_train.json` / `reward_val.json`: lists of `{ "id": str, "success": bool }`.
 
@@ -54,28 +54,28 @@ Override `--output-dir` or `--capture-screenshots` to tweak what goes into each 
    python -m autoppia_iwa.src.rl.score_model.cli.extract_llm_features
    ```
    - Cleans DOM text, tokenises URLs, and stores observation JSON + cached LLM
-     semantic labels in `data/rm/features/`.
+     semantic labels in `inputs/reward_model/features/`.
 
 2. **Build preference pairs**
    ```bash
    python -m autoppia_iwa.src.rl.score_model.cli.build_pairs
    ```
    - Uses final scores to select positive/negative steps and stores pairs in
-     `data/rm/pairs/pairs.jsonl`.
+     `inputs/reward_model/pairs/pairs.jsonl`.
 
 3. **Train semantic encoder (optional but recommended)**
    ```bash
    python -m autoppia_iwa.src.rl.score_model.cli.train_semantic_encoder --config autoppia_iwa/src/rl/score_model/configs/semantic_encoder.yaml
    ```
    - Distils LLM semantic labels into a lightweight encoder. The checkpoint is
-     saved under `data/rm/ckpts/semantic_encoder.pt`.
+     saved under `inputs/reward_model/ckpts/semantic_encoder.pt`.
 
 4. **Build DOM + JS event features (new)**
    ```bash
    python -m autoppia_iwa.src.rl.score_model.cli.build_dom_event_features \
-       --traces-dir data/rm/raw_traces \
-       --output-dir data/rm/features \
-       --split-dir data/rm/splits
+       --traces-dir inputs/reward_model/raw_traces \
+       --output-dir inputs/reward_model/features \
+       --split-dir inputs/reward_model/splits
    ```
    - Converts the instrumented traces into per-step/episode JSONL datasets that
      power reward-model baselines.
@@ -85,14 +85,14 @@ Override `--output-dir` or `--capture-screenshots` to tweak what goes into each 
    python -m autoppia_iwa.src.rl.score_model.cli.train_reward_model --config autoppia_iwa/src/rl/score_model/configs/rm_train.yaml
    ```
    - Optimises the preference win-rate and success BCE. Produces the reward model
-     checkpoint at `data/rm/ckpts/reward_model.pt`.
+     checkpoint at `inputs/reward_model/ckpts/reward_model.pt`.
 
 5. **(Optional) Train DOM-event baseline**
    ```bash
    python -m autoppia_iwa.src.rl.score_model.cli.train_dom_event_baseline \
-       --steps-file data/rm/features/train_dom_event_steps.jsonl
+       --steps-file inputs/reward_model/features/train_dom_event_steps.jsonl
    ```
-   - Fits a quick Gradient Boosting classifier on the per-step dataset to sanity-check feature quality; checkpoint saved to `data/rm/ckpts/dom_event_baseline.pkl`.
+   - Fits a quick Gradient Boosting classifier on the per-step dataset to sanity-check feature quality; checkpoint saved to `inputs/reward_model/ckpts/dom_event_baseline.pkl`.
 
 6. **(Optional) Evaluate baseline**
    ```bash
@@ -104,7 +104,7 @@ Override `--output-dir` or `--capture-screenshots` to tweak what goes into each 
    - Load the checkpoint via `autoppia_iwa.src.rl.score_model.rl.reward_wrapper.RewardBlender`.
    - Blend shaped reward with binary test reward in the training loop:
      ```python
-     blender = RewardBlender("data/rm/ckpts/reward_model.pt", alpha=0.5, beta=0.5)
+     blender = RewardBlender("inputs/reward_model/ckpts/reward_model.pt", alpha=0.5, beta=0.5)
      shaped_reward = blender.compute(url=info["current_url"],
                                      html_text=html_snapshot,
                                      binary_reward=reward,
@@ -119,7 +119,7 @@ Override `--output-dir` or `--capture-screenshots` to tweak what goes into each 
   sees purely local encodings.
 - Hash-based text encoders provide deterministic fixed-size vectors without
   additional dependencies. Swap them with stronger embeddings when ready.
-- Cached artefacts (`data/rm/features`, `data/rm/llm_labels`, `data/rm/pairs`) should be
+- Cached artefacts (`inputs/reward_model/features`, `inputs/reward_model/llm_labels`, `inputs/reward_model/pairs`) should be
   versioned alongside the checkpoint for reproducibility.
 - Preference sampling parameters can be tuned in `autoppia_iwa/src/rl/score_model/configs/rm_train.yaml`.
 - The reward wrapper expects HTML and URL at each step; plug into

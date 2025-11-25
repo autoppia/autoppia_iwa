@@ -5,14 +5,14 @@ from __future__ import annotations
 import glob
 import json
 import random
+from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Iterable, Iterator
 
 from loguru import logger
 
 from ..features.snapshot_encoder import clean_dom, snap_to_obs_public
 from ..llm.labeler import label_snapshot
-from ..models.schemas import BrowserSnapshot, EvaluationEpisode, EvaluationStep, ObsPublic
+from ..models.schemas import EvaluationEpisode, EvaluationStep, ObsPublic
 from ..utils import config_path as get_config_path
 
 try:
@@ -21,9 +21,9 @@ except Exception:  # pragma: no cover - optional dependency
     yaml = None
 
 
-RAW_DIR = Path("data/rm/raw_evaluations")
-FEATURE_DIR = Path("data/rm/features")
-PAIRS_DIR = Path("data/rm/pairs")
+RAW_DIR = Path("inputs/reward_model/raw_evaluations")
+FEATURE_DIR = Path("inputs/reward_model/features")
+PAIRS_DIR = Path("inputs/reward_model/pairs")
 
 FEATURE_DIR.mkdir(parents=True, exist_ok=True)
 PAIRS_DIR.mkdir(parents=True, exist_ok=True)

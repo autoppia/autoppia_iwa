@@ -6,16 +6,16 @@ import hashlib
 import json
 import os
 import time
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Dict, Iterable
 
 from loguru import logger
 
 from autoppia_iwa.config.config import (
     CHUTES_API_KEY,
     CHUTES_BASE_URL,
-    CHUTES_MODEL,
     CHUTES_MAX_TOKENS,
+    CHUTES_MODEL,
     CHUTES_TEMPERATURE,
     CHUTES_USE_BEARER,
     LLM_PROVIDER,
@@ -29,7 +29,7 @@ from autoppia_iwa.src.llms.service import LLMFactory
 
 from .label_schema import SCHEMA_JSON, SYSTEM_PROMPT, USER_TEMPLATE
 
-CACHE_DIR = Path("data/rm/llm_labels")
+CACHE_DIR = Path("inputs/reward_model/llm_labels")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 _LLM_CLIENT = None
@@ -77,7 +77,7 @@ def _build_llm_client(provider_override: str | None = None):
     return _LLM_CLIENT
 
 
-def _ensure_defaults(payload: Dict[str, object]) -> Dict[str, object]:
+def _ensure_defaults(payload: dict[str, object]) -> dict[str, object]:
     affordances = payload.setdefault("affordances", {})
     for key in ("can_go_back", "can_search", "can_filter", "can_add_to_cart", "can_submit_form"):
         affordances.setdefault(key, False)
@@ -99,13 +99,10 @@ def _ensure_defaults(payload: Dict[str, object]) -> Dict[str, object]:
     return payload
 
 
-def _call_llm(url: str, dom_clean: str, provider_override: str | None = None) -> Dict[str, object]:
+def _call_llm(url: str, dom_clean: str, provider_override: str | None = None) -> dict[str, object]:
     client = _build_llm_client(provider_override)
     schema_text = json.dumps(SCHEMA_JSON, ensure_ascii=False)
-    system_prompt = (
-        f"{SYSTEM_PROMPT}\nRespond with JSON that exactly matches this schema: {schema_text}. "
-        "Return only the JSON string."
-    )
+    system_prompt = f"{SYSTEM_PROMPT}\nRespond with JSON that exactly matches this schema: {schema_text}. Return only the JSON string."
     user_prompt = USER_TEMPLATE.format(url=url, dom=dom_clean)
 
     messages = [
@@ -131,7 +128,7 @@ def _call_llm(url: str, dom_clean: str, provider_override: str | None = None) ->
     return _ensure_defaults(data)
 
 
-def label_snapshot(url: str, dom_clean: str, *, model: str = "unused", sleep_ms: int = 100, provider: str | None = None) -> Dict[str, object]:
+def label_snapshot(url: str, dom_clean: str, *, model: str = "unused", sleep_ms: int = 100, provider: str | None = None) -> dict[str, object]:
     """Request structured semantic labels for a snapshot, using cache when available."""
 
     cache_key = _hash_payload(url, dom_clean)

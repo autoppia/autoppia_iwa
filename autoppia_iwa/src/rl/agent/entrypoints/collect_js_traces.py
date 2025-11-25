@@ -8,10 +8,10 @@ from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from ..web_agents.faulty_agent import FaultyWebAgent
 
 from ..benchmark.instrumented import InstrumentedBenchmark
 from ..evaluators.instrumented import InstrumentationConfig
+from ..web_agents.faulty_agent import FaultyWebAgent
 
 
 def parse_args() -> argparse.Namespace:
@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--runs", type=int, default=1, help="Evaluation runs per task")
     parser.add_argument("--prompts-per-use-case", type=int, default=1, dest="prompts_per_use_case")
     parser.add_argument("--num-use-cases", type=int, default=1)
-    parser.add_argument("--output-dir", type=Path, default=Path("data/rm/raw_traces"))
+    parser.add_argument("--output-dir", type=Path, default=Path("inputs/reward_model/raw_traces"))
     parser.add_argument("--capture-screenshots", action="store_true", help="Store screenshots inside traces")
     parser.add_argument("--use-cached-tasks", action="store_true", help="Reuse cached tasks if available")
     parser.add_argument("--disable-logging", action="store_true", help="Run without persisting traces (useful for dry-runs)")
@@ -34,10 +34,7 @@ def main() -> None:
     if not projects:
         raise SystemExit("No valid projects supplied.")
 
-    if args.agent_mode == "faulty":
-        agents = [FaultyWebAgent(id="faulty-tracer", name="faulty-tracer")]
-    else:
-        agents = [RandomClickerWebAgent(id="js-tracer", name="js-tracer", is_random=True)]
+    agents = [FaultyWebAgent(id="faulty-tracer", name="faulty-tracer")] if args.agent_mode == "faulty" else [RandomClickerWebAgent(id="js-tracer", name="js-tracer", is_random=True)]
 
     cfg = BenchmarkConfig(
         projects=projects,

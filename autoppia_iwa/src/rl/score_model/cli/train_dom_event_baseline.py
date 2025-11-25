@@ -27,8 +27,8 @@ FEATURE_COLUMNS = [
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train a baseline classifier on DOM+JS step features.")
-    parser.add_argument("--steps-file", type=Path, default=Path("data/rm/features/dom_event_steps.jsonl"))
-    parser.add_argument("--output", type=Path, default=Path("data/rm/ckpts/dom_event_baseline.pkl"))
+    parser.add_argument("--steps-file", type=Path, default=Path("inputs/reward_model/features/dom_event_steps.jsonl"))
+    parser.add_argument("--output", type=Path, default=Path("inputs/reward_model/ckpts/dom_event_baseline.pkl"))
     return parser.parse_args()
 
 

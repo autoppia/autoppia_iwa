@@ -7,10 +7,10 @@ import os
 import subprocess
 import sys
 import time
+from collections.abc import Iterable
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Iterable
 
 import requests
 from loguru import logger
@@ -20,12 +20,12 @@ from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.actions import actions as _actions  # noqa: F401 -- ensure registry populated
+from autoppia_iwa.src.execution.actions.base import BaseAction
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 DEFAULT_CACHE_DIR = "data/cache/tasks"
-DEFAULT_OUTPUT_DIR = Path("data/rm/raw_evaluations")
+DEFAULT_OUTPUT_DIR = Path("inputs/reward_model/raw_evaluations")
 
 
 async def _generate_tasks(project_id: str, count: int, use_cached: bool, cache_dir: str) -> list[Task]:

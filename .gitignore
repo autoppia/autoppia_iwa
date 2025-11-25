@@ -27,27 +27,13 @@ real_web_evaluation.log
 # Generated outputs (benchmark, training, verification)
 outputs/**
 
-# Keep data/ for inputs only
-# Generated benchmark artifacts (legacy paths - remove after migration)
+# Legacy paths (kept for backwards compatibility during transition)
 data/benchmark/**
 data/cache/**
-
-# RL checkpoints / traces
 data/rl/**
-
-# Score model pipeline data
-data/score_model_pipeline/datasets/**
-data/score_model_pipeline/raw_traces/**
-data/score_model_pipeline/features/**
-data/score_model_pipeline/raw/**
-data/score_model_pipeline/artifacts/**
-data/score_model_pipeline/metrics/**
-data/score_model_pipeline/processed/**
-
-# Visual inspection outputs
-data/web_verification/screenshots/**
-data/web_verification/visual_inspector/**
-data/web_verification/reports/**
+data/rm/**
+data/score_model_pipeline/**
+data/web_verification/**
 
 stress_test.log
 

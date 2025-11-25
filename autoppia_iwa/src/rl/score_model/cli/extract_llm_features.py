@@ -24,10 +24,7 @@ def main(argv: list[str] | None = None) -> None:
         "--inputs",
         "-i",
         nargs="+",
-        help=(
-            "Optional list of evaluation files or glob patterns to ingest. "
-            "Defaults to all JSONL files under data/rm/raw_evaluations/."
-        ),
+        help=("Optional list of evaluation files or glob patterns to ingest. Defaults to all JSONL files under inputs/reward_model/raw_evaluations/."),
     )
     args = parser.parse_args(argv)
     _ = build_obs_and_labels(args.config, args.inputs)

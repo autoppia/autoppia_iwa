@@ -6,7 +6,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-from sklearn.metrics import accuracy_score, f1_score, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 FEATURE_COLUMNS = [
     "html_length",
@@ -26,9 +26,9 @@ FEATURE_COLUMNS = [
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate the DOM-event baseline model on val/test splits.")
-    parser.add_argument("--model", type=Path, default=Path("data/rm/ckpts/dom_event_baseline.pkl"))
+    parser.add_argument("--model", type=Path, default=Path("inputs/reward_model/ckpts/dom_event_baseline.pkl"))
     parser.add_argument("--split", choices=["val", "test"], default="val")
-    parser.add_argument("--features-dir", type=Path, default=Path("data/rm/features"))
+    parser.add_argument("--features-dir", type=Path, default=Path("inputs/reward_model/features"))
     return parser.parse_args()
 
 

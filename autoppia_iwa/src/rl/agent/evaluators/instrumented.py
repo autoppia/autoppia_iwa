@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+
 from loguru import logger
 from playwright.async_api import async_playwright
 from pydantic import BaseModel, Field
@@ -23,7 +24,7 @@ class InstrumentationConfig(BaseModel):
     """Controls whether JS/DOM traces are persisted during evaluation."""
 
     enabled: bool = Field(default=True, description="If False, evaluator behaves like the stock version without logging")
-    output_dir: Path = Field(default=Path("data/rm/raw_traces"), description="Directory to store JSONL traces")
+    output_dir: Path = Field(default=Path("inputs/reward_model/raw_traces"), description="Directory to store JSONL traces")
     capture_screenshots: bool = Field(default=False, description="Capture base64 screenshots per action")
     force_proxy_backend: bool = Field(default=True, description="Route backend interactions through the webs_server proxy")
 
@@ -40,11 +41,7 @@ class JsInstrumentedEvaluator(ConcurrentEvaluator):
 
     async def _evaluate_single_task_solution(self, task: Task, task_solution: TaskSolution):  # type: ignore[override]
         result = await super()._evaluate_single_task_solution(task, task_solution)
-        if (
-            self._instrumentation.enabled
-            and result
-            and result.execution_history
-        ):
+        if self._instrumentation.enabled and result and result.execution_history:
             try:
                 self._trace_writer.write_episode(
                     self.web_project,

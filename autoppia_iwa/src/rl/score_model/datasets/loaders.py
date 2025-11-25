@@ -6,7 +6,6 @@ import json
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import numpy as np
 import torch
@@ -14,11 +13,10 @@ from torch.utils.data import Dataset
 
 from ..utils.text import encode_text
 
-
-FEATURE_DIR = Path(os.getenv("SCORE_MODEL_FEATURE_DIR", "data/rm/features"))
+FEATURE_DIR = Path(os.getenv("SCORE_MODEL_FEATURE_DIR", "inputs/reward_model/features"))
 VECTOR_DIR = Path(os.getenv("SCORE_MODEL_VECTOR_DIR", FEATURE_DIR / "vectors"))
-PAIRS_PATH = Path(os.getenv("SCORE_MODEL_PAIRS_PATH", "data/rm/pairs/pairs.jsonl"))
-SPLITS_DIR = Path(os.getenv("SCORE_MODEL_SPLITS_DIR", "data/rm/splits"))
+PAIRS_PATH = Path(os.getenv("SCORE_MODEL_PAIRS_PATH", "inputs/reward_model/pairs/pairs.jsonl"))
+SPLITS_DIR = Path(os.getenv("SCORE_MODEL_SPLITS_DIR", "inputs/reward_model/splits"))
 
 
 @lru_cache(maxsize=65_536)
@@ -59,7 +57,7 @@ class PrefPairDataset(Dataset):
     def __len__(self) -> int:
         return len(self.rows)
 
-    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
         row = self.rows[index]
         x_pos = _load_vector(row["pos_id"])
         x_neg = _load_vector(row["neg_id"])
@@ -69,22 +67,20 @@ class PrefPairDataset(Dataset):
 class RewardDataset(Dataset):
     """Dataset supervising success probability head with final episode outcomes."""
 
-    def __init__(self, cfg: Optional[object] = None, split: str = "train"):
+    def __init__(self, cfg: object | None = None, split: str = "train"):
         meta_path = FEATURE_DIR / f"{split}_finals.json"
         if not meta_path.exists():
-            raise FileNotFoundError(
-                f"Missing metadata {meta_path}. Expected list of {{'rid': str, 'y_success': int}}."
-            )
-        self.rows: List[Dict[str, object]] = json.loads(meta_path.read_text())
+            raise FileNotFoundError(f"Missing metadata {meta_path}. Expected list of {{'rid': str, 'y_success': int}}.")
+        self.rows: list[dict[str, object]] = json.loads(meta_path.read_text())
 
     def __len__(self) -> int:
         return len(self.rows)
 
-    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
         row = self.rows[index]
         vec = _load_vector(row["rid"])  # type: ignore[arg-type]
         success = torch.tensor(float(row.get("y_success", 0)), dtype=torch.float32)
-        payload: Dict[str, torch.Tensor] = {"x": vec, "y_success": success}
+        payload: dict[str, torch.Tensor] = {"x": vec, "y_success": success}
 
         if "final_score" in row:
             payload["y_score"] = torch.tensor(float(row.get("final_score", 0.0)), dtype=torch.float32)
@@ -108,29 +104,32 @@ class SemanticDataset(Dataset):
     def __init__(self, split: str = "train"):
         split_path = SPLITS_DIR / f"semantic_{split}.json"
         if not split_path.exists():
-            raise FileNotFoundError(
-                f"Missing split file {split_path}. Provide a JSON list of row ids for the split."
-            )
-        self.ids: List[str] = json.loads(split_path.read_text())
+            raise FileNotFoundError(f"Missing split file {split_path}. Provide a JSON list of row ids for the split.")
+        self.ids: list[str] = json.loads(split_path.read_text())
 
     def __len__(self) -> int:
         return len(self.ids)
 
-    def __getitem__(self, index: int) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
         row_id = self.ids[index]
         vec = _load_vector(row_id)
         sem_path = FEATURE_DIR / f"{row_id}.sem.json"
         sem = json.loads(sem_path.read_text())
 
         page_type = sem.get("page_type", "unknown")
-        page_idx = ["listing", "product", "cart", "home", "search", "unknown"].index(page_type) if page_type in {
-            "listing",
-            "product",
-            "cart",
-            "home",
-            "search",
-            "unknown",
-        } else 5
+        page_idx = (
+            ["listing", "product", "cart", "home", "search", "unknown"].index(page_type)
+            if page_type
+            in {
+                "listing",
+                "product",
+                "cart",
+                "home",
+                "search",
+                "unknown",
+            }
+            else 5
+        )
         progress = float(sem.get("goal_progress", 0.0))
         affordances = sem.get("affordances", {})
         # Map affordances to fixed ordering (sorted for determinism)

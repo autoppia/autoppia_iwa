@@ -1,4 +1,4 @@
-checkpoint_path: data/rm/ckpts/reward_model.pt
+checkpoint_path: inputs/reward_model/ckpts/reward_model.pt
 alpha: 0.5
 beta: 0.5
 gamma: 0.995

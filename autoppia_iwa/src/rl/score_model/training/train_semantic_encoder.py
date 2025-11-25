@@ -24,7 +24,7 @@ class SemanticConfig:
     epochs: int = 5
     num_workers: int = 4
     val_every: int = 1
-    ckpt_path: Path = Path("data/rm/ckpts/semantic_encoder.pt")
+    ckpt_path: Path = Path("inputs/reward_model/ckpts/semantic_encoder.pt")
 
 
 def load_config(path: str | Path | None) -> SemanticConfig:
@@ -62,11 +62,7 @@ def train(cfg: SemanticConfig) -> None:
             y_aff = batch["y_aff"].to(device)
 
             out = model(x)
-            loss = (
-                loss_page(out["page_logits"], y_page)
-                + loss_prog(out["goal_progress"].squeeze(-1), y_prog)
-                + loss_aff(out["affordances"], y_aff)
-            )
+            loss = loss_page(out["page_logits"], y_page) + loss_prog(out["goal_progress"].squeeze(-1), y_prog) + loss_aff(out["affordances"], y_aff)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -84,11 +80,7 @@ def train(cfg: SemanticConfig) -> None:
                     y_prog = batch["y_prog"].to(device)
                     y_aff = batch["y_aff"].to(device)
                     out = model(x)
-                    loss = (
-                        loss_page(out["page_logits"], y_page)
-                        + loss_prog(out["goal_progress"].squeeze(-1), y_prog)
-                        + loss_aff(out["affordances"], y_aff)
-                    )
+                    loss = loss_page(out["page_logits"], y_page) + loss_prog(out["goal_progress"].squeeze(-1), y_prog) + loss_aff(out["affordances"], y_aff)
                     val_loss += loss.item() * x.size(0)
                 val_loss /= len(ds_val)
             logger.info(f"Epoch {epoch}: val_loss={val_loss:.4f}")
