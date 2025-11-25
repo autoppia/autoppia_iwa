@@ -106,11 +106,16 @@ async def test_all_projects_have_optimization():
                 if r.get("dataset_functions", 0) == 0:
                     print("     - Ninguna función acepta dataset parameter")
 
-    # Guardar resultados
-    with open("projects_status.json", "w") as f:
+    # Guardar resultados en outputs/
+    from pathlib import Path
+
+    output_file = Path(__file__).parents[2] / "outputs" / "projects_status.json"
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_file, "w") as f:
         json.dump(results, f, indent=2)
 
-    print("\n✅ Resultados guardados en: projects_status.json")
+    print(f"\n✅ Resultados guardados en: {output_file}")
 
     return ok_count == 13
 

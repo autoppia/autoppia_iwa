@@ -29,38 +29,38 @@ from autoppia_iwa.src.rl.agent.entrypoints.train_ppo_with_score_model import mai
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    
+
     parser.add_argument(
         "--config",
         type=Path,
         help="Path to training config YAML (default: ppo_with_score_model.yaml or ppo_with_bc.yaml if --with-bc)",
     )
-    
+
     parser.add_argument(
         "--with-bc",
         action="store_true",
         help="Use BC warm-start (uses ppo_with_bc.yaml config by default)",
     )
-    
+
     parser.add_argument(
         "--skip-bc",
         action="store_true",
         help="Skip BC warm-start even if enabled in config",
     )
-    
+
     parser.add_argument(
         "--tensorboard-log",
         type=str,
         default="data/rl/tensorboard",
         help="TensorBoard log directory",
     )
-    
+
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    
+
     # Determine config file
     if args.config:
         config_path = args.config
@@ -68,7 +68,7 @@ def main():
         config_path = Path("autoppia_iwa/src/rl/agent/configs/ppo_with_bc.yaml")
     else:
         config_path = Path("autoppia_iwa/src/rl/agent/configs/ppo_with_score_model.yaml")
-    
+
     if not config_path.exists():
         print(f"Error: Config file not found: {config_path}")
         print("\nAvailable configs:")
@@ -77,7 +77,7 @@ def main():
             for cfg in configs_dir.glob("*.yaml"):
                 print(f"  - {cfg}")
         sys.exit(1)
-    
+
     print("=" * 70)
     print("PPO TRAINING WITH SCORE MODEL")
     print("=" * 70)
@@ -88,17 +88,19 @@ def main():
     print(f"TensorBoard: {args.tensorboard_log}")
     print("=" * 70)
     print()
-    
+
     # Prepare sys.argv for train_main
     sys.argv = [
         "train_ppo_with_score_model.py",
-        "--config", str(config_path),
-        "--tensorboard-log", args.tensorboard_log,
+        "--config",
+        str(config_path),
+        "--tensorboard-log",
+        args.tensorboard_log,
     ]
-    
+
     if args.skip_bc:
         sys.argv.append("--skip-bc")
-    
+
     # Run training
     try:
         train_main()
@@ -108,11 +110,10 @@ def main():
     except Exception as e:
         print(f"\n\nTraining failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 
 
 if __name__ == "__main__":
     main()
-
-
