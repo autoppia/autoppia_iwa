@@ -1,11 +1,11 @@
-# Web Projects - Creation & Verification Tools
+# Create Web Project - Tools for Building New Web Projects
 
-This directory contains all tools for creating and validating new web projects for IWA.
+This directory contains all tools for **creating and validating** new web projects for IWA.
 
 ## 📁 Structure
 
 ```
-modules/web_projects/
+modules/create_web_project/
 ├── template/          # 📝 Template for community contributions
 │   └── projects/
 │       └── autodining/    # Complete reference implementation
@@ -101,11 +101,11 @@ src/
 
 ```bash
 # Copy template
-cp -r modules/web_projects/template/projects/autodining \
-      modules/web_projects/template/projects/my_project
+cp -r modules/create_web_project/template/projects/autodining \
+      modules/create_web_project/template/projects/my_project
 
 # Customize
-cd modules/web_projects/template/projects/my_project
+cd modules/create_web_project/template/projects/my_project
 # Edit config.yaml with events/use cases
 # Implement frontend/src/
 # Update docker-compose.yml
@@ -115,11 +115,11 @@ cd modules/web_projects/template/projects/my_project
 
 ```bash
 # Generate Python module
-python -m modules.web_projects.verification generate-module \
-  modules/web_projects/template/projects/my_project/config.yaml
+python -m modules.create_web_project.verification generate-module \
+  modules/create_web_project/template/projects/my_project/config.yaml
 
 # Run verification (8 phases)
-python -m modules.web_projects.verification verify my_project \
+python -m modules.create_web_project.verification verify my_project \
   --deck path/to/deck.json
 
 # Result:
