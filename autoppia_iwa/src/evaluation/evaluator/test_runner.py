@@ -1,6 +1,6 @@
 from loguru import logger
 
-from autoppia_iwa.src.data_generation.domain.tests_classes import BaseTaskTest
+from autoppia_iwa.src.data_generation.tests.classes import BaseTaskTest
 
 
 def _log_backend_test(message: str, web_agent_id: str | None = None):

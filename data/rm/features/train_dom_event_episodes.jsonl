@@ -1,0 +1,15 @@
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477085.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.008949, "backend_event_total": 0, "split": "train"}
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477774.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.009533, "backend_event_total": 0, "split": "train"}
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477775.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.009877, "backend_event_total": 0, "split": "train"}
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477776.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.010105, "backend_event_total": 0, "split": "train"}
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477777.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.008952, "backend_event_total": 0, "split": "train"}
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477825.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.011663, "backend_event_total": 0, "split": "train"}
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477826.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.011802, "backend_event_total": 0, "split": "train"}
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477827.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.011756, "backend_event_total": 0, "split": "train"}
+{"episode_id": "0fefe567-9fe7-43d0-b18c-ed8eaee6155f:js-tracer_1762477828.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.013524, "backend_event_total": 0, "split": "train"}
+{"episode_id": "20fda382-4290-4292-a39e-7df8dd1c5fde:faulty-tracer_1762478070.jsonl", "steps": 1, "success_rate": 0.0, "avg_execution_time": 0.0, "backend_event_total": 0, "split": "train"}
+{"episode_id": "20fda382-4290-4292-a39e-7df8dd1c5fde:js-tracer_1762477883.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.00972, "backend_event_total": 0, "split": "train"}
+{"episode_id": "20fda382-4290-4292-a39e-7df8dd1c5fde:js-tracer_1762477968.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.010511, "backend_event_total": 0, "split": "train"}
+{"episode_id": "20fda382-4290-4292-a39e-7df8dd1c5fde:js-tracer_1762477969.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.008675, "backend_event_total": 0, "split": "train"}
+{"episode_id": "20fda382-4290-4292-a39e-7df8dd1c5fde:js-tracer_1762481365.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.00906, "backend_event_total": 0, "split": "train"}
+{"episode_id": "33f262ce-6e40-473a-bbe4-73d36a71bdba:agent_1762476041.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.1, "backend_event_total": 0, "split": "train"}

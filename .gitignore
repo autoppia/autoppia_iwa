@@ -24,19 +24,33 @@ benchmark.log
 prompt_test.log
 real_web_evaluation.log
 
-# For Task Comparison images
-results/*.png
-# Stress Tests result
-results/*.json
+# Generated benchmark artifacts
+data/benchmark/**
 
-# logs directory
-logs/*
+# Generated caches
+data/cache/**
 
-# Stress test logs
+# RL checkpoints / traces
+data/rl/**
+
+# Score model pipeline data
+data/score_model_pipeline/datasets/**
+data/score_model_pipeline/raw_traces/**
+data/score_model_pipeline/features/**
+data/score_model_pipeline/raw/**
+data/score_model_pipeline/artifacts/**
+data/score_model_pipeline/metrics/**
+data/score_model_pipeline/processed/**
+
+# Visual inspection outputs
+data/web_verification/screenshots/**
+data/web_verification/visual_inspector/**
+data/web_verification/reports/**
+
 stress_test.log
 
 prompt_test_output/*
 
-data/solutions_cache/*
-data/tasks_cache/*
 *.webm
+.pytest_cache
+*.jsonl

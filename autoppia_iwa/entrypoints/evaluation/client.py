@@ -22,8 +22,8 @@ import httpx
 from loguru import logger
 from pydantic import BaseModel
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.data_generation.domain.tests_classes import CheckEventTest
+from autoppia_iwa.src.data_generation.tasks.classes import Task
+from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest
 from autoppia_iwa.src.execution.actions.actions import NavigateAction, WaitAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 

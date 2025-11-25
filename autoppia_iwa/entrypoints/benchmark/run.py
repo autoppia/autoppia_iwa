@@ -1,6 +1,8 @@
 """
 Code-first entrypoint: configure projects, agents, runs, and options here.
-Then run with:  python -m entrypoints.benchmark.run
+
+Run with:
+  python -m autoppia_iwa.entrypoints.benchmark.run
 """
 
 import asyncio
@@ -11,13 +13,49 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
 # =========================
 # 💡 Code configuration
 # =========================
 
-# 1) Agents (ports where your agents are listening)
+# Define external HTTP SOTA agents (examples). Uncomment to enable.
+# Ensure unique `id` per agent.
+
+# BROWSER_USE_AGENT = ApifiedWebAgent(
+#     id="browser_use",
+#     name="BrowserUse",
+#     host="browser-use-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# OPENAI_CUA_AGENT = ApifiedWebAgent(
+#     id="openai_cua",
+#     name="OpenAI CUA",
+#     host="openai-cua-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# CLAUDE_CUA_AGENT = ApifiedWebAgent(
+#     id="claude_cua",
+#     name="Claude CUA",
+#     host="anthropic-cua-agent-sota.autoppia.com",
+#     port=80,
+#     timeout=120,
+# )
+
+# Group SOTA agent examples (commented). Uncomment to use, or set
+# `AGENTS = SOTA_AGENTS` below after uncommenting individual agents.
+SOTA_AGENTS = [
+    # BROWSER_USE_AGENT,
+    # OPENAI_CUA_AGENT,
+    # CLAUDE_CUA_AGENT,
+]
+
+# Active agents to run. Configure your local simple_api agent here.
 AGENTS = [
     ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=7000, timeout=120),
     # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
@@ -80,7 +118,6 @@ USE_CASES = [
     # "RESERVE_RIDE"
 ]
 
-# 3) Benchmark parameters
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
@@ -96,6 +133,12 @@ CFG = BenchmarkConfig(
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
     dynamic=True,
+    # TODO REVISAR PORQUE SOLO DEBEIRA HABER UNO
+    dynamic_phase_config=DynamicPhaseConfig(
+        enable_d1_structure=True,
+        enable_d3_attributes=True,
+        enable_d4_overlays=True,
+    ),
     # Persistence
     save_results_json=True,
     plot_results=False,

@@ -8,7 +8,7 @@ from PIL import Image
 from playwright.async_api import async_playwright
 from xmldiff import main
 
-from autoppia_iwa.src.llms.infrastructure.ui_parser_service import UIParserService
+from autoppia_iwa.src.llms.ui_parser_service import UIParserService
 
 
 async def get_html_and_screenshot(page_url: str) -> tuple[str, str, Image.Image, str]:

@@ -1,12 +1,14 @@
 import asyncio
+from urllib.parse import urlparse, urlunparse
 
 import aiohttp
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 
 
 class ApifiedWebAgent(IWebAgent):
@@ -35,24 +37,65 @@ class ApifiedWebAgent(IWebAgent):
         timeout = aiohttp.ClientTimeout(total=self.timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
-                async with session.post(f"{self.base_url}/solve_task", json=task.clean_task()) as response:
+                payload = task.clean_task()
+                payload["url"] = self._force_localhost(payload.get("url"))
+
+                async with session.post(f"{self.base_url}/solve_task", json=payload) as response:
+                    response.raise_for_status()
                     response_json = await response.json()
+            except Exception as e:  # noqa: BLE001
+                raise RuntimeError(f"Error during HTTP request to {self.base_url}/solve_task: {e}") from e
 
-                    # Extract data
-                    actions_data = response_json.get("actions", [])
-                    web_agent_id = response_json.get("web_agent_id", "unknown")
-                    recording_str = response_json.get("recording", "")
+            actions_data = response_json.get("actions", [])
+            for action in actions_data:
+                if isinstance(action, dict) and action.get("type") in {"NavigateAction", "navigate"}:
+                    action_url = action.get("url")
+                    action["url"] = self._rewrite_to_remote(action_url)
 
-                # Rebuild
-                rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
-                # print(f"Rebuilt Actions: {rebuilt_actions}")
-                task_solution = TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
+            web_agent_id = response_json.get("web_agent_id", "unknown")
+            recording_str = response_json.get("recording", "")
 
-                return task_solution
-            except Exception as e:
-                print(f"Error during HTTP request: {e}")
-                # print(traceback.format_exc())
-                return TaskSolution(task_id=task.id, actions=[], web_agent_id="unknown")
+        rebuilt_actions = [BaseAction.create_action(action) for action in actions_data]
+        task_solution = TaskSolution(task_id=task.id, actions=rebuilt_actions, web_agent_id=web_agent_id, recording=recording_str)
+        return task_solution
 
     def solve_task_sync(self, task: Task) -> TaskSolution:
         return asyncio.run(self.solve_task(task))
+
+    @staticmethod
+    def _force_localhost(original_url: str | None) -> str | None:
+        """Rewrite any task URL so the host becomes localhost while preserving port/path."""
+        if not original_url:
+            return original_url
+
+        parsed = urlparse(original_url)
+        netloc = "localhost"
+        if parsed.port:
+            netloc = f"{netloc}:{parsed.port}"
+
+        rewritten = parsed._replace(netloc=netloc)
+        return urlunparse(rewritten)
+
+    @staticmethod
+    def _rewrite_to_remote(original_url: str | None) -> str | None:
+        """Rewrite agent-produced URLs to point at the configured remote demo webs endpoint."""
+
+        if not original_url:
+            return original_url
+
+        remote = DEMO_WEBS_ENDPOINT if DEMO_WEBS_ENDPOINT.startswith("http") else f"http://{DEMO_WEBS_ENDPOINT}"
+        remote_parsed = urlparse(remote)
+
+        # Relative paths from the agent should be anchored to the remote host
+        if original_url.startswith("/"):
+            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{original_url}"
+
+        parsed = urlparse(original_url)
+
+        # If agent sent something like "localhost:8001" without scheme, treat it as path
+        if not parsed.scheme and not parsed.netloc:
+            cleaned_path = original_url if original_url.startswith("/") else f"/{original_url}"
+            return f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
+
+        new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=remote_parsed.netloc)
+        return urlunparse(new_url)

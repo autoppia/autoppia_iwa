@@ -3,7 +3,7 @@ from datetime import datetime
 
 from playwright.async_api import Page
 
-from autoppia_iwa.src.data_generation.domain.classes import BrowserSpecification
+from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.classes import ActionExecutionResult, BrowserSnapshot
@@ -39,6 +39,8 @@ class PlaywrightBrowserExecutor:
             raise RuntimeError("Playwright page is not initialized.")
 
         try:
+            await self._before_action(action, iteration)
+
             # Capture state before action execution
             if should_record:
                 snapshot_before = await self._capture_snapshot()
@@ -52,12 +54,23 @@ class PlaywrightBrowserExecutor:
 
             # Capture backend events and updated browser state
             await self.page.wait_for_load_state("domcontentloaded")
+            await self._after_action(action, iteration)
 
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
+            # Always capture URL/HTML for tests; only include screenshot if recording is enabled
             if should_record:
                 snapshot_after = await self._capture_snapshot()
             else:
-                snapshot_after = {"html": "", "screenshot": "", "url": "", "error": ""}
+                html = await self.page.content()
+                snapshot_after = {"html": html, "screenshot": "", "url": self.page.url, "error": ""}
+
+            # Fetch backend events (for demo webs) if available
+            backend_events = []
+            try:
+                if self.backend_demo_webs_service and not is_web_real:
+                    backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
+            except Exception:
+                backend_events = []
 
             # Create a detailed browser snapshot
             browser_snapshot = BrowserSnapshot(
@@ -65,7 +78,7 @@ class PlaywrightBrowserExecutor:
                 action=action,
                 prev_html=snapshot_before["html"],
                 current_html=snapshot_after["html"],
-                backend_events=[],
+                backend_events=backend_events,
                 timestamp=datetime.now(),
                 current_url=snapshot_after["url"],
                 screenshot_before=snapshot_before["screenshot"],
@@ -82,11 +95,30 @@ class PlaywrightBrowserExecutor:
             )
 
         except Exception as e:
+            await self._on_action_error(action, iteration, e)
             # backend_events = await self._get_backend_events(web_agent_id, is_web_real)
             if should_record:
                 snapshot_error = await self._capture_snapshot()
             else:
-                snapshot_error = {"html": "", "screenshot": "", "url": "", "error": ""}
+                # Capture minimal state for debugging/tests
+                try:
+                    html = await self.page.content()
+                except Exception:
+                    html = ""
+                url = ""
+                try:
+                    url = self.page.url
+                except Exception:
+                    url = ""
+                snapshot_error = {"html": html, "screenshot": "", "url": url, "error": str(e)}
+
+            # Fetch backend events (best-effort) on error as well
+            backend_events = []
+            try:
+                if self.backend_demo_webs_service and not is_web_real:
+                    backend_events = await self.backend_demo_webs_service.get_backend_events(web_agent_id)
+            except Exception:
+                backend_events = []
 
             # Create error snapshot
             browser_snapshot = BrowserSnapshot(
@@ -94,7 +126,7 @@ class PlaywrightBrowserExecutor:
                 action=action,
                 prev_html=snapshot_error.get("html", ""),
                 current_html=snapshot_error.get("html", ""),
-                backend_events=[],
+                backend_events=backend_events,
                 timestamp=datetime.now(),
                 current_url=snapshot_error.get("url", ""),
                 screenshot_before=snapshot_error.get("screenshot", ""),
@@ -121,3 +153,21 @@ class PlaywrightBrowserExecutor:
         except Exception as e:
             # Gracefully handle any errors during snapshot
             return {"html": "", "screenshot": "", "url": "", "error": str(e)}
+
+    async def _before_action(self, action: BaseAction, iteration: int) -> None:
+        """
+        Hook executed right before each action. Subclasses can override to inject dynamic behavior.
+        """
+        return None
+
+    async def _after_action(self, action: BaseAction, iteration: int) -> None:
+        """
+        Hook executed after action execution (and after DOMContentLoaded) but before snapshots.
+        """
+        return None
+
+    async def _on_action_error(self, action: BaseAction, iteration: int, error: Exception) -> None:
+        """
+        Hook executed when an action fails. Subclasses may perform cleanup or reporting.
+        """
+        return None
