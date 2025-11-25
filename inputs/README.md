@@ -6,9 +6,8 @@ This directory contains **input data** that the system uses (not generated artif
 
 ```
 inputs/
-├── datasets/              # Reference datasets
-│   └── web_voyager/      # WebVoyager benchmark tasks (643 curated)
-│       └── web_voyager_data.jsonl
+├── web_voyager/           # WebVoyager benchmark tasks (643 curated)
+│   └── web_voyager_data.jsonl
 │
 └── reward_model/          # Reward Model training data
     ├── ckpts/            # Model checkpoints
@@ -42,9 +41,10 @@ inputs/
 
 ## 📝 Contents
 
-### **datasets/**
-Reference datasets for benchmarking and testing:
-- `web_voyager/` - 643 manually curated tasks for real websites (Allrecipes, etc.)
+### **web_voyager/**
+Reference dataset for benchmarking on real websites:
+- 643 manually curated tasks for websites like Allrecipes, etc.
+- Used by judge_benchmark for testing agents on production sites
 
 ### **reward_model/**
 Data for training the reward prediction model:
