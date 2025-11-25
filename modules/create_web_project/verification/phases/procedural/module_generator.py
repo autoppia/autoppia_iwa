@@ -154,8 +154,8 @@ class ModuleGenerator:
         utils_imports = []
         if frontend_expr.startswith("get_frontend_url("):
             utils_imports.append("get_frontend_url")
-        if backend_expr.startswith("get_backend_url("):
-            utils_imports.append("get_backend_url")
+        if backend_expr.startswith("get_backend_service_url("):
+            utils_imports.append("get_backend_service_url")
         if utils_imports:
             imports.append(f"from ...utils import {', '.join(sorted(set(utils_imports)))}")
         imports.extend(
@@ -182,10 +182,11 @@ class ModuleGenerator:
         if explicit:
             return f'"{explicit.rstrip("/")}/"'
         if index is not None:
-            helper = "get_frontend_url" if kind == "frontend" else "get_backend_url"
-            symmetric = self.deployment.get("backend_symmetric", True)
-            if kind == "backend":
-                return f'{helper}(index={index}, symmetric={"True" if symmetric else "False"})'
+            if kind == "frontend":
+                return f"get_frontend_url(index={index})"
+            else:
+                # All backends use shared service (no index needed)
+                return "get_backend_service_url()"
             return f"{helper}(index={index})"
         raise ConfigError(f"deployment.{kind}_url or {kind}_port_index must be provided")
 
