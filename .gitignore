@@ -33,6 +33,15 @@ data/cache/**
 # RL checkpoints / traces
 data/rl/**
 
+# Score model pipeline data
+data/score_model_pipeline/datasets/**
+data/score_model_pipeline/raw_traces/**
+data/score_model_pipeline/features/**
+data/score_model_pipeline/raw/**
+data/score_model_pipeline/artifacts/**
+data/score_model_pipeline/metrics/**
+data/score_model_pipeline/processed/**
+
 # Visual inspection outputs
 data/web_verification/screenshots/**
 data/web_verification/visual_inspector/**
@@ -44,3 +53,4 @@ prompt_test_output/*
 
 *.webm
 .pytest_cache
+*.jsonl
