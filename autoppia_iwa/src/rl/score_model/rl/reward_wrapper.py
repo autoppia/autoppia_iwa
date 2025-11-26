@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import torch
 
@@ -31,7 +30,7 @@ class RewardBlender:
         self.prev_phi = 0.0
 
     @torch.no_grad()
-    def _encode(self, url: str, html_text: str, semantic_json: Optional[dict] = None) -> torch.Tensor:
+    def _encode(self, url: str, html_text: str, semantic_json: dict | None = None) -> torch.Tensor:
         dom = clean_dom(html_text)
         obs_vec = encode_text(dom, tokenize_url(url))
         sem_payload = semantic_json or {}
@@ -40,7 +39,7 @@ class RewardBlender:
         return torch.tensor(obs_vec + sem_vec, dtype=torch.float32, device=self.device)
 
     @torch.no_grad()
-    def step_reward(self, url: str, html_text: str, binary_reward: float, semantic_hint: Optional[dict] = None) -> float:
+    def step_reward(self, url: str, html_text: str, binary_reward: float, semantic_hint: dict | None = None) -> float:
         """Return shaped reward using learned model and potential function."""
 
         vec = self._encode(url, html_text, semantic_hint)
@@ -54,7 +53,7 @@ class RewardBlender:
         self.prev_phi = phi
         return float(shaped)
 
-    def compute(self, *, url: str, html_text: str, binary_reward: float, semantic_hint: Optional[dict] = None) -> float:
+    def compute(self, *, url: str, html_text: str, binary_reward: float, semantic_hint: dict | None = None) -> float:
         """Backward-compatible alias for :meth:`step_reward`."""
 
         return self.step_reward(url, html_text, binary_reward, semantic_hint)

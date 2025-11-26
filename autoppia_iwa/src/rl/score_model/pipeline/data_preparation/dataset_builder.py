@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass, asdict
-from typing import Any, Iterable, List
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass
+from typing import Any, ClassVar
 
 from loguru import logger
 
@@ -39,7 +40,7 @@ class LeaderboardSample:
 class LeaderboardDatasetBuilder:
     """Turn leaderboard API rows into deduplicated samples."""
 
-    VALID_STRATEGIES = {"task_solution", "task_agent", "task"}
+    VALID_STRATEGIES: ClassVar = {"task_solution", "task_agent", "task"}
 
     def __init__(self, dedupe_strategy: str = "task_solution") -> None:
         if dedupe_strategy not in self.VALID_STRATEGIES:
@@ -108,7 +109,7 @@ class LeaderboardDatasetBuilder:
         return samples
 
     @staticmethod
-    def summarize(samples: List[LeaderboardSample]) -> dict[str, Any]:
+    def summarize(samples: list[LeaderboardSample]) -> dict[str, Any]:
         total = len(samples)
         website_counter = Counter(sample.website for sample in samples if sample.website)
         use_case_counter = Counter(sample.use_case for sample in samples if sample.use_case)

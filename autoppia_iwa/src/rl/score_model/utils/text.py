@@ -2,19 +2,17 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
-
 import numpy as np
 
 try:
     from sentence_transformers import SentenceTransformer
 
-    _txt_model: Optional[SentenceTransformer] = SentenceTransformer("all-MiniLM-L6-v2")
+    _txt_model: SentenceTransformer | None = SentenceTransformer("all-MiniLM-L6-v2")
 except Exception:  # pragma: no cover - optional dependency
     _txt_model = None
 
 
-def encode_text(text: str, extra_tokens: Optional[List[str]] = None) -> list[float]:
+def encode_text(text: str, extra_tokens: list[str] | None = None) -> list[float]:
     """Encode text plus optional tokens into a fixed-length vector."""
 
     sentence = text or ""

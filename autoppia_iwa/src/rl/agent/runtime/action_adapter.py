@@ -6,7 +6,6 @@ del sistema (ClickAction, TypeAction, ScrollAction, NavigateAction, etc.).
 """
 
 from dataclasses import dataclass
-from typing import List, Optional
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import (
@@ -16,6 +15,7 @@ from autoppia_iwa.src.execution.actions.actions import (
     ScrollAction,
     TypeAction,
 )
+
 from .browser_manager import Candidate
 
 
@@ -39,7 +39,7 @@ class ActionAdapter:
     def __init__(self, layout: ActionLayout):
         self.layout = layout
 
-    def adapt(self, action_index: int, candidates: List[Candidate], task: Task):
+    def adapt(self, action_index: int, candidates: list[Candidate], task: Task):
         # NOOP
         if action_index == 0:
             return None
@@ -75,4 +75,3 @@ class ActionAdapter:
         if name == "back":
             return NavigateAction(go_back=True)
         return None
-

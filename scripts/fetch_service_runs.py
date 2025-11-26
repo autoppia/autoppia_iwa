@@ -5,6 +5,7 @@ This is a best-effort utility: it expects a REST endpoint exposing runs.
 If the endpoint is unavailable or schema differs, the script will log and exit
 without failing your environment.
 """
+
 from __future__ import annotations
 
 import argparse

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Dict, Iterable, List, Optional, Tuple, TypeVar
+from collections.abc import Iterable
+from typing import Any, TypeVar
 
 import numpy as np
 import torch
@@ -10,7 +11,7 @@ from torch.utils.data import DataLoader, Dataset, random_split
 
 from .interfaces import ObservationSpec, StepRecord, Trajectory, TrajectoryProvider
 
-Batch = Dict[str, Any]
+Batch = dict[str, Any]
 T_co = TypeVar("T_co", covariant=True)
 
 
@@ -32,14 +33,14 @@ def _infer_spec(step: StepRecord) -> ObservationSpec:
 class TrajectoryDataset(Dataset[T_co]):
     """Flattened dataset of StepRecords suitable for behavior cloning."""
 
-    def __init__(self, trajectories: Iterable[Trajectory], *, max_steps: Optional[int] = None):
-        self._steps: List[StepRecord] = []
+    def __init__(self, trajectories: Iterable[Trajectory], *, max_steps: int | None = None):
+        self._steps: list[StepRecord] = []
         self._gather_steps(trajectories, max_steps=max_steps)
         if not self._steps:
             raise ValueError("TrajectoryDataset received no steps to train on.")
         self.spec = _infer_spec(self._steps[0])
 
-    def _gather_steps(self, trajectories: Iterable[Trajectory], *, max_steps: Optional[int]) -> None:
+    def _gather_steps(self, trajectories: Iterable[Trajectory], *, max_steps: int | None) -> None:
         count = 0
         for traj in trajectories:
             for step in traj.steps:
@@ -79,13 +80,13 @@ class BehaviorCloningConfig:
     learning_rate: float = 3e-4
     grad_clip: float = 0.5
     validation_split: float = 0.1
-    max_trajectories: Optional[int] = None
-    max_steps: Optional[int] = None
+    max_trajectories: int | None = None
+    max_steps: int | None = None
     shuffle: bool = True
     seed: int = 1337
     num_workers: int = 0
     log_interval: int = 20
-    device: Optional[str] = None
+    device: str | None = None
 
 
 class BehaviorCloningTrainer:
@@ -95,10 +96,7 @@ class BehaviorCloningTrainer:
         self.policy = policy
         self.cfg = cfg
         default_device = getattr(policy, "device", None)
-        if isinstance(default_device, torch.device):
-            device_str = str(default_device)
-        else:
-            device_str = default_device
+        device_str = str(default_device) if isinstance(default_device, torch.device) else default_device
         self.device = torch.device(cfg.device or device_str or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.policy.to(self.device)
         torch.manual_seed(cfg.seed)
@@ -120,7 +118,7 @@ class BehaviorCloningTrainer:
         )
         return dataset
 
-    def _make_dataloaders(self, dataset: TrajectoryDataset) -> tuple[DataLoader, Optional[DataLoader]]:
+    def _make_dataloaders(self, dataset: TrajectoryDataset) -> tuple[DataLoader, DataLoader | None]:
         val_size = int(len(dataset) * max(0.0, min(1.0, self.cfg.validation_split)))
         if val_size > 0 and len(dataset) - val_size < 1:
             val_size = 0

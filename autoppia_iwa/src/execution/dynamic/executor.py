@@ -4,10 +4,11 @@ import contextlib
 import random
 import time
 from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import Any, Literal
 
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
@@ -412,13 +413,13 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
             {
                 "operation": "wrap_with",
                 "target": "body > div:first-of-type",
-                "html": f"<section class='iwa-wrapper w-{rng.randint(1,100)}' data-seed='{self.seed}'></section>",
+                "html": f"<section class='iwa-wrapper w-{rng.randint(1, 100)}' data-seed='{self.seed}'></section>",
             },
             {
                 "operation": "insert_after",
                 "target": "header",
                 "html": "<div class='iwa-banner'>Limited-time discount</div>",
-            }
+            },
         ]
         d3 = [
             {
@@ -427,7 +428,7 @@ class DynamicPlaywrightExecutor(PlaywrightBrowserExecutor):
                 "attribute": f"data-iwa-{rng.randint(1, 5)}",
                 "value": f"mut-{self.seed}",
             },
-            {"operation": "append_class", "target": "nav a", "value": f"iwa-link-{rng.randint(1,50)}"},
+            {"operation": "append_class", "target": "nav a", "value": f"iwa-link-{rng.randint(1, 50)}"},
             {"operation": "replace_text", "target": "button", "text": "Process request"},
         ]
         d4 = self._fallback_overlay_plan()

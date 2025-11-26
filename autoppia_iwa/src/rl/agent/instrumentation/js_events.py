@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Callable, Dict, List
+from collections.abc import Callable
+from typing import Any
 
 from loguru import logger
 from playwright.async_api import Page, Request, Response
@@ -13,7 +14,7 @@ class JsEvent(BaseModel):
 
     event_type: str = Field(..., description="Type of event, e.g., console/request/response")
     timestamp: float = Field(default_factory=lambda: time.time(), description="Unix timestamp when captured")
-    data: Dict[str, Any] = Field(default_factory=dict, description="Lightweight payload for the event")
+    data: dict[str, Any] = Field(default_factory=dict, description="Lightweight payload for the event")
 
 
 class JsEventCollector:
@@ -22,7 +23,7 @@ class JsEventCollector:
     def __init__(self, page: Page, max_buffer: int = 200):
         self._page = page
         self._max_buffer = max_buffer
-        self._buffer: List[JsEvent] = []
+        self._buffer: list[JsEvent] = []
         self._listeners: list[tuple[str, Callable]] = []
         self._setup_handlers()
 
@@ -60,7 +61,7 @@ class JsEventCollector:
         self._page.on(event_name, handler)
         self._listeners.append((event_name, handler))
 
-    def _record(self, event_type: str, data: Dict[str, Any]) -> None:
+    def _record(self, event_type: str, data: dict[str, Any]) -> None:
         if len(self._buffer) >= self._max_buffer:
             self._buffer.pop(0)
         self._buffer.append(JsEvent(event_type=event_type, data=data))

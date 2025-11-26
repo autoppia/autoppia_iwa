@@ -6,7 +6,7 @@ used to build the reward model dataset, providing a single point of
 coordination for paths and shared helpers.
 """
 
-from . import paths, phases  # noqa: F401
-from .data_preparation import *  # noqa: F401,F403
+from . import paths, phases
+from .data_preparation import *  # noqa: F403
 
 __all__ = ["paths", "phases"]

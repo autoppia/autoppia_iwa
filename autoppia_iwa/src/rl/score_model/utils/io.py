@@ -16,4 +16,3 @@ def write_json(path: Path, data: Any, *, ensure_ascii: bool = False) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w") as handle:
         json.dump(data, handle, ensure_ascii=ensure_ascii)
-

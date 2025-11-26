@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import base64
-from datetime import datetime
 import difflib
+from datetime import datetime
 from typing import Any
 
 from playwright.async_api import Page

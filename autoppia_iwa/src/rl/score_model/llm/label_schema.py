@@ -59,8 +59,4 @@ SYSTEM_PROMPT = (
 )
 
 
-USER_TEMPLATE = (
-    "URL: {url}\n\n"
-    "DOM (cleaned, <=3KB):\n{dom}\n\n"
-    "Respond strictly with JSON matching the schema and fill every field."
-)
+USER_TEMPLATE = "URL: {url}\n\nDOM (cleaned, <=3KB):\n{dom}\n\nRespond strictly with JSON matching the schema and fill every field."

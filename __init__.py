@@ -8,9 +8,7 @@ inner_pkg = root_dir / "autoppia_iwa"
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-try:
-    __path__  # type: ignore[name-defined]
-except NameError:
+if "__path__" not in globals():
     __path__ = []  # type: ignore[misc]
 
 __path__ = extend_path(__path__, __name__)

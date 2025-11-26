@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
-from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
-from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.data_generation.tasks.classes import Task
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 from ..evaluators.instrumented import InstrumentationConfig, JsInstrumentedEvaluator

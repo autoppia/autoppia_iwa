@@ -6,9 +6,9 @@ import argparse
 import json
 import random
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List
 
 import numpy as np
 from loguru import logger
@@ -119,7 +119,7 @@ def _encode_vector(obs: dict, sem: dict) -> list[float]:
     return obs_vec + sem_vec
 
 
-def _split_samples(samples: List[Sample], train_ratio: float, val_ratio: float) -> dict[str, List[Sample]]:
+def _split_samples(samples: list[Sample], train_ratio: float, val_ratio: float) -> dict[str, list[Sample]]:
     random.shuffle(samples)
     total = len(samples)
     train_end = max(1, int(total * train_ratio))
@@ -131,7 +131,7 @@ def _split_samples(samples: List[Sample], train_ratio: float, val_ratio: float) 
     }
 
 
-def _write_metadata(split_samples: dict[str, List[Sample]], features_dir: Path) -> None:
+def _write_metadata(split_samples: dict[str, list[Sample]], features_dir: Path) -> None:
     features_dir.mkdir(parents=True, exist_ok=True)
     for split, items in split_samples.items():
         rows = [
@@ -145,7 +145,7 @@ def _write_metadata(split_samples: dict[str, List[Sample]], features_dir: Path) 
         (features_dir / f"{split}_finals.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2))
 
 
-def _write_pairs(samples: List[Sample], output_path: Path, max_pairs: int) -> None:
+def _write_pairs(samples: list[Sample], output_path: Path, max_pairs: int) -> None:
     positives = [s for s in samples if s.passed]
     negatives = [s for s in samples if s.passed is False]
     if not positives or not negatives:
@@ -166,7 +166,7 @@ def _write_pairs(samples: List[Sample], output_path: Path, max_pairs: int) -> No
     logger.info("Wrote {} preference pairs to {}", pairs_written, output_path)
 
 
-def _write_obs_sem(samples: List[Sample], features_dir: Path) -> None:
+def _write_obs_sem(samples: list[Sample], features_dir: Path) -> None:
     vector_dir = features_dir / "vectors"
     vector_dir.mkdir(parents=True, exist_ok=True)
     iterator = tqdm(samples, desc="Writing features", unit="sample") if tqdm else samples

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """
 BrowserManager: obtiene estado del DOM desde Playwright Page y construye
-Top‑K de candidatos + máscaras y features para la observación.
+Top-K de candidatos + máscaras y features para la observación.
 
 Para simplicidad y velocidad inicial:
 - Candidatos = elementos con tag/button/a/input/textarea o role relevante o editable.
@@ -10,7 +10,6 @@ Para simplicidad y velocidad inicial:
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import numpy as np
 
@@ -26,9 +25,9 @@ class Candidate:
     editable: bool
     visible: bool
     enabled: bool
-    bbox: Tuple[float, float, float, float] | None
+    bbox: tuple[float, float, float, float] | None
 
-    def center(self) -> Tuple[float | None, float | None]:
+    def center(self) -> tuple[float | None, float | None]:
         if not self.bbox:
             return None, None
         x, y, w, h = self.bbox
@@ -49,12 +48,12 @@ class BrowserManager:
     def __init__(self, page):
         self.page = page
 
-    async def snapshot_text(self) -> Tuple[str, str]:
+    async def snapshot_text(self) -> tuple[str, str]:
         html = await self.page.content()
         url = self.page.url
         return html, url
 
-    async def candidates(self) -> List[Candidate]:
+    async def candidates(self) -> list[Candidate]:
         js = """
         () => {
           const nodes = [];
@@ -82,7 +81,7 @@ class BrowserManager:
         }
         """
         raw = await self.page.evaluate(js)
-        out: List[Candidate] = []
+        out: list[Candidate] = []
         for d in raw or []:
             out.append(
                 Candidate(
@@ -100,7 +99,7 @@ class BrowserManager:
             )
         return out
 
-    async def topk(self, task_prompt: str, K: int) -> Tuple[List[Candidate], np.ndarray, dict]:
+    async def topk(self, task_prompt: str, K: int) -> tuple[list[Candidate], np.ndarray, dict]:
         cands = await self.candidates()
         toks_goal = set(_tokenize(task_prompt))
 
@@ -143,8 +142,7 @@ class BrowserManager:
         macros = {
             "type_confirm": any(c.focusable and c.visible and c.enabled for c in cands),
             "submit": any(
-                (c.clickable and c.visible and c.enabled and ((c.role or "").lower() in {"button", "submit"} or any(k in (c.text or "").lower() for k in ("submit", "search", "go"))))
-                for c in cands
+                (c.clickable and c.visible and c.enabled and ((c.role or "").lower() in {"button", "submit"} or any(k in (c.text or "").lower() for k in ("submit", "search", "go")))) for c in cands
             ),
             "scroll_down": True,
             "scroll_up": True,
@@ -152,4 +150,3 @@ class BrowserManager:
         }
 
         return top, click_mask, macros
-

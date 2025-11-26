@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from typing import List
-
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
-def history_to_task_solution(task: Task, history: List[ActionExecutionResult], web_agent_id: str = "rl-policy") -> TaskSolution:
+def history_to_task_solution(task: Task, history: list[ActionExecutionResult], web_agent_id: str = "rl-policy") -> TaskSolution:
     """Adapt a rollout history to a TaskSolution compatible with the evaluator/benchmark.
 
     - Copies the BaseAction sequence from the execution history
@@ -18,4 +16,3 @@ def history_to_task_solution(task: Task, history: List[ActionExecutionResult], w
     sol = TaskSolution(task_id=task.id, actions=actions, web_agent_id=web_agent_id)
     sol.replace_web_agent_id()
     return sol
-

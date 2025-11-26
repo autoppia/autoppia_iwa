@@ -33,4 +33,3 @@ class SemanticEncoder(nn.Module):
             "goal_progress": self.head_progress(h),
             "affordances": self.head_affordances(h),
         }
-

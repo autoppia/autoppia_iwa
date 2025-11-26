@@ -8,16 +8,16 @@ This package provides:
       architecture used by MaskablePPO.
 """
 
-from .interfaces import ObservationSpec, StepRecord, Trajectory, TrajectoryProvider  # noqa: F401
-from .http_provider import HttpTrajectoryProvider  # noqa: F401
-from .bc_trainer import BehaviorCloningConfig, BehaviorCloningTrainer  # noqa: F401
+from .bc_trainer import BehaviorCloningConfig, BehaviorCloningTrainer
+from .http_provider import HttpTrajectoryProvider
+from .interfaces import ObservationSpec, StepRecord, Trajectory, TrajectoryProvider
 
 __all__ = [
+    "BehaviorCloningConfig",
+    "BehaviorCloningTrainer",
+    "HttpTrajectoryProvider",
     "ObservationSpec",
     "StepRecord",
     "Trajectory",
     "TrajectoryProvider",
-    "HttpTrajectoryProvider",
-    "BehaviorCloningConfig",
-    "BehaviorCloningTrainer",
 ]

@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
-import yaml
 import gymnasium as gym
+import yaml
+
 try:  # pragma: no cover - optional dependency for RL training
     from sb3_contrib import MaskablePPO
     from sb3_contrib.common.maskable.policies import MaskableActorCriticPolicy
 except ModuleNotFoundError as exc:  # pragma: no cover
-    raise ModuleNotFoundError(
-        "sb3-contrib is required for PPO training. Install requirements-rl.txt (pip install sb3-contrib)."
-    ) from exc
+    raise ModuleNotFoundError("sb3-contrib is required for PPO training. Install requirements-rl.txt (pip install sb3-contrib).") from exc
 
 # In sb3-contrib 2.x, MaskableEnv is just a type hint for gymnasium.Env
 MaskableEnv = gym.Env
@@ -20,14 +19,14 @@ MaskableEnv = gym.Env
 from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
 
 
-def build_env(env_cfg: Dict[str, Any] | None = None) -> MaskableEnv:
+def build_env(env_cfg: dict[str, Any] | None = None) -> MaskableEnv:
     """Instantiate the wrapped IWA environment ready for MaskablePPO."""
 
     base_env = IWAWebEnv(env_cfg or {})
     return MaskableEnv(base_env)
 
 
-def train_agent(cfg: Dict[str, Any]) -> MaskablePPO:
+def train_agent(cfg: dict[str, Any]) -> MaskablePPO:
     """Train MaskablePPO according to the provided config dictionary."""
 
     env_cfg = cfg.get("env", {})
@@ -65,7 +64,7 @@ def train_agent(cfg: Dict[str, Any]) -> MaskablePPO:
     return model
 
 
-def run_episode(model_path: str | Path, env_cfg: Dict[str, Any] | None = None, deterministic: bool = True) -> dict[str, Any]:
+def run_episode(model_path: str | Path, env_cfg: dict[str, Any] | None = None, deterministic: bool = True) -> dict[str, Any]:
     """Roll out a single episode with a trained model and return trajectory stats."""
 
     env = build_env(env_cfg or {})
@@ -95,6 +94,6 @@ def run_episode(model_path: str | Path, env_cfg: Dict[str, Any] | None = None, d
     }
 
 
-def load_yaml(path: str | Path) -> Dict[str, Any]:
+def load_yaml(path: str | Path) -> dict[str, Any]:
     with Path(path).open("r", encoding="utf-8") as handle:
         return yaml.safe_load(handle) or {}

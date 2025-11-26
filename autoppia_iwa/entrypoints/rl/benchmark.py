@@ -21,7 +21,6 @@ from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_i
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.web_agents.rl import RLModelAgent, RLModelAgentConfig
 
-
 # =========================
 # RL Agent configuration
 # =========================
@@ -32,8 +31,7 @@ RL_MODEL_PATH = "/data/rl/models/ppo_real.zip"
 RL_AGENT = RLModelAgent(
     id="rl-model",
     name="RLModelAgent",
-    config=RLModelAgentConfig(model_path=RL_MODEL_PATH,
-                              topk=12, max_steps=30, deterministic=True),
+    config=RLModelAgentConfig(model_path=RL_MODEL_PATH, topk=12, max_steps=30, deterministic=True),
 )
 
 
@@ -82,9 +80,7 @@ def main():
             logger.error("No agents configured.")
             return
 
-        logger.info(
-            f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs"
-        )
+        logger.info(f"Configuration: {len(CFG.projects)} projects, {len(CFG.agents)} agents, {CFG.runs} runs")
 
         benchmark = Benchmark(CFG)
         asyncio.run(benchmark.run())

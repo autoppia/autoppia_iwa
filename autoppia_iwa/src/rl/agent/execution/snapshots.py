@@ -4,8 +4,8 @@ from typing import Any
 
 from pydantic import Field
 
-from autoppia_iwa.src.execution.classes import BrowserSnapshot
 from autoppia_iwa.src.demo_webs.classes import BackendEvent
+from autoppia_iwa.src.execution.classes import BrowserSnapshot
 
 from ..instrumentation.js_events import JsEvent
 

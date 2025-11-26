@@ -39,7 +39,7 @@ class PhasePaths:
     def artifacts_path(self) -> Path:
         return self.root / "artifacts"
 
-    def ensure(self) -> "PhasePaths":
+    def ensure(self) -> PhasePaths:
         for path in (self.root, self.raw_path, self.processed_path, self.artifacts_path):
             path.mkdir(parents=True, exist_ok=True)
         return self

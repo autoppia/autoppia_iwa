@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
-from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.data_generation.tasks.classes import Task
+from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.execution.classes import ActionExecutionResult
 
 

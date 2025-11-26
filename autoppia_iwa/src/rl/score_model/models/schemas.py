@@ -7,8 +7,8 @@ importing the full evaluation stack.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -17,15 +17,15 @@ class BackendEvent(BaseModel):
     """Minimal representation of a backend event captured during evaluation."""
 
     event_name: str = Field(..., description="Identifier of the backend event")
-    payload: Dict[str, Any] = Field(default_factory=dict)
-    timestamp: Optional[float | str] = Field(default=None, description="Event timestamp (seconds or ISO string)")
+    payload: dict[str, Any] = Field(default_factory=dict)
+    timestamp: float | str | None = Field(default=None, description="Event timestamp (seconds or ISO string)")
 
 
 class BaseAction(BaseModel):
     """Simplified action description."""
 
     kind: str
-    args: Dict[str, Any] = Field(default_factory=dict)
+    args: dict[str, Any] = Field(default_factory=dict)
 
 
 class BrowserSnapshot(BaseModel):
@@ -35,13 +35,13 @@ class BrowserSnapshot(BaseModel):
     action: BaseAction
     prev_html: str
     current_html: str
-    screenshot_before: Optional[str] = None
-    screenshot_after: Optional[str] = None
-    backend_events: List[BackendEvent] = Field(default_factory=list)
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    screenshot_before: str | None = None
+    screenshot_after: str | None = None
+    backend_events: list[BackendEvent] = Field(default_factory=list)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     current_url: str
 
-    def public_dump(self) -> Dict[str, Any]:
+    def public_dump(self) -> dict[str, Any]:
         """Return observation-friendly content (no privileged assets)."""
 
         return {
@@ -57,44 +57,44 @@ class ActionExecutionResult(BaseModel):
     action: BaseAction
     action_event: str
     successfully_executed: bool
-    error: Optional[str] = None
-    execution_time: Optional[float] = None
+    error: str | None = None
+    execution_time: float | None = None
     browser_snapshot: BrowserSnapshot
 
 
 class TestResult(BaseModel):
     name: str
     passed: bool
-    details: Dict[str, Any] = Field(default_factory=dict)
+    details: dict[str, Any] = Field(default_factory=dict)
 
 
 class EvaluationStep(BaseModel):
     index: int
     action_result: ActionExecutionResult
-    tests: List[TestResult] = Field(default_factory=list)
+    tests: list[TestResult] = Field(default_factory=list)
 
 
 class EvaluationEpisode(BaseModel):
     episode_id: str
-    project_id: Optional[str] = None
-    task_id: Optional[str] = None
-    steps: List[EvaluationStep]
+    project_id: str | None = None
+    task_id: str | None = None
+    steps: list[EvaluationStep]
     final_score: float
 
 
 class SemanticLabel(BaseModel):
     page_type: str
     goal_progress: float = Field(ge=0.0, le=1.0)
-    affordances: Dict[str, bool] = Field(default_factory=dict)
-    salient_entities: List[str] = Field(default_factory=list)
-    is_on_wrong_product: Optional[bool] = None
+    affordances: dict[str, bool] = Field(default_factory=dict)
+    salient_entities: list[str] = Field(default_factory=list)
+    is_on_wrong_product: bool | None = None
 
 
 class ObsPublic(BaseModel):
-    url_tokens: List[str]
+    url_tokens: list[str]
     dom_excerpt: str
-    dyn: Dict[str, float]
-    action_prev: Optional[str] = None
+    dyn: dict[str, float]
+    action_prev: str | None = None
 
 
 class ObsAugmented(BaseModel):

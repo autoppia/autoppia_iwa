@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import torch
-import torch.nn.functional as F
 
 
 def preference_loss(r_pos: torch.Tensor, r_neg: torch.Tensor) -> torch.Tensor:
@@ -19,4 +18,3 @@ def alignment_loss(r: torch.Tensor, p_success: torch.Tensor) -> torch.Tensor:
     logits = torch.logit(torch.clamp(p_success, 1e-4, 1 - 1e-4))
     logits_norm = (logits - logits.mean()) / (logits.std() + 1e-6)
     return torch.mean((r_norm - logits_norm) ** 2)
-

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import asyncio
+import contextlib
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from loguru import logger
 
@@ -30,7 +30,7 @@ class RLModelAgent(IWebAgent):
     and adapts the execution history into a TaskSolution for the evaluator.
     """
 
-    def __init__(self, id: Optional[str] = None, name: Optional[str] = None, config: Optional[RLModelAgentConfig] = None):
+    def __init__(self, id: str | None = None, name: str | None = None, config: RLModelAgentConfig | None = None):
         self.id = id or "rl-model"
         self.name = name or "RLModelAgent"
         self.config = config or RLModelAgentConfig()
@@ -109,10 +109,8 @@ class RLModelAgent(IWebAgent):
             solution = history_to_task_solution(task, history, web_agent_id=self.id)
             return solution
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 env.close()
-            except Exception:
-                pass
 
 
 __all__ = ["RLModelAgent", "RLModelAgentConfig"]

@@ -16,4 +16,3 @@ def feature_index(token: str, dim: int) -> int:
     """Map token to a bucket in ``[0, dim)``."""
 
     return stable_hash(token) % dim
-

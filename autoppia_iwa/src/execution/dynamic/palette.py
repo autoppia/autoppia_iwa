@@ -93,7 +93,7 @@ class MutationPalette(BaseModel):
         path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
     @staticmethod
-    def load(path: Path) -> "MutationPalette":
+    def load(path: Path) -> MutationPalette:
         return MutationPalette.model_validate_json(path.read_text(encoding="utf-8"))
 
 

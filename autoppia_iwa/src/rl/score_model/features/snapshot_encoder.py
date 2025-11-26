@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import html
 import re
-from typing import Optional
 
 from ..models.schemas import BrowserSnapshot, ObsPublic
 
@@ -31,7 +30,7 @@ def tokenize_url(url: str, limit: int = 50) -> list[str]:
     return tokens[:limit]
 
 
-def snap_to_obs_public(snap: BrowserSnapshot, prev_url: Optional[str], stagnation_steps: int) -> ObsPublic:
+def snap_to_obs_public(snap: BrowserSnapshot, prev_url: str | None, stagnation_steps: int) -> ObsPublic:
     """Convert a snapshot into the observation visible to the policy."""
 
     url_changed = 0.0 if prev_url == snap.current_url else 1.0

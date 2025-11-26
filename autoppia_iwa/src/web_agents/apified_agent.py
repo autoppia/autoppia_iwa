@@ -3,12 +3,12 @@ from urllib.parse import urlparse, urlunparse
 
 import aiohttp
 
+from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
 from autoppia_iwa.src.web_agents.base import IWebAgent
 from autoppia_iwa.src.web_agents.classes import TaskSolution
-from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 
 
 class ApifiedWebAgent(IWebAgent):
@@ -43,7 +43,7 @@ class ApifiedWebAgent(IWebAgent):
                 async with session.post(f"{self.base_url}/solve_task", json=payload) as response:
                     response.raise_for_status()
                     response_json = await response.json()
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 raise RuntimeError(f"Error during HTTP request to {self.base_url}/solve_task: {e}") from e
 
             actions_data = response_json.get("actions", [])

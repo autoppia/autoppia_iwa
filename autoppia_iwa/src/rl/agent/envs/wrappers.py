@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 import gymnasium as gym
 import numpy as np
 
 
-def _flatten_obs(obs: Dict[str, np.ndarray], space: gym.spaces.Dict) -> np.ndarray:
+def _flatten_obs(obs: dict[str, np.ndarray], space: gym.spaces.Dict) -> np.ndarray:
     """Normalize/flatten Dict obs into a single float32 vector.
 
     - Box spaces are normalized by their high when sensible.
@@ -49,8 +49,10 @@ class RNDIntrinsicRewardWrapper(gym.Wrapper):
         # --- Lazy import of PyTorch (runtime only) ---
         try:
             import torch  # noqa: F401
-            from torch import nn  # noqa: F401
-            from torch import optim  # noqa: F401
+            from torch import (
+                nn,  # noqa: F401
+                optim,  # noqa: F401
+            )
         except Exception as e:
             raise RuntimeError(
                 "PyTorch is required for RNDIntrinsicRewardWrapper but could not be imported. "
@@ -92,7 +94,7 @@ class RNDIntrinsicRewardWrapper(gym.Wrapper):
         self.target.to(self._device)
         self.predictor.to(self._device)
 
-    def reset(self, **kwargs: Dict[str, Any]):
+    def reset(self, **kwargs: dict[str, Any]):
         return self.env.reset(**kwargs)
 
     def step(self, action: int):  # type: ignore[override]
