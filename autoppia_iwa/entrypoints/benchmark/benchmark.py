@@ -19,8 +19,7 @@ from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
-from autoppia_iwa.src.web_agents.base import IWebAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 from .task_generation import generate_tasks_for_project
 

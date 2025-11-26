@@ -8,7 +8,6 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from dependency_injector.wiring import Provide
 from loguru import logger
-from PIL import Image
 
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
@@ -465,9 +464,7 @@ class SimpleTaskGenerator:
         return "[]"
 
     @staticmethod
-    def _assemble_task(
-        web_project_id: str, url: str, prompt: str, html: str, clean_html: str, screenshot: Image.Image | None, screenshot_desc: str, use_case: UseCase, relevant_data: dict[str, Any]
-    ) -> Task:
+    def _assemble_task(web_project_id: str, url: str, prompt: str, use_case: UseCase, relevant_data: dict[str, Any]) -> Task:
         """
         Assembles a final Task object from the prompt string and loaded page info.
         """

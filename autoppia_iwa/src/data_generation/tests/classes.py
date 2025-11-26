@@ -54,7 +54,8 @@ from autoppia_iwa.src.llms.interfaces import ILLM
 # Avoid importing heavy optional deps (e.g., Pillow) at module import time.
 # Import helpers locally inside methods that need them.
 from .prompts import OPINION_BASED_HTML_TEST_SYS_MSG, SCREENSHOT_TEST_SYSTEM_PROMPT
-from .schemas import HTMLBasedTestResponse, ScreenshotTestResponse
+
+# Moved from schemas.py - consolidated into classes.py
 
 
 class ITest(ABC):
@@ -519,3 +520,17 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
     except OSError as e:
         print(f"[ERROR] Failed to write to log file: {e}")
+
+
+class ScreenshotTestResponse(BaseModel):
+    """Represents the evaluation result for a screenshot-based test."""
+
+    evaluation_result: bool = Field(..., description="Indicates whether the task execution was successful.")
+    justification: str | None = Field(None, description="Optional explanation supporting the evaluation decision.")
+
+
+class HTMLBasedTestResponse(BaseModel):
+    """Represents the evaluation result for an HTML-based test."""
+
+    evaluation_result: bool = Field(..., description="Indicates whether the task execution was successful.")
+    justification: str | None = Field(None, description="Optional explanation supporting the evaluation decision.")

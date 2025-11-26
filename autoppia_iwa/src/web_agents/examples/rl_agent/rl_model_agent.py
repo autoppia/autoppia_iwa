@@ -10,8 +10,7 @@ from loguru import logger
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
 from autoppia_iwa.src.rl.agent.utils.solutions import history_to_task_solution
-from autoppia_iwa.src.web_agents.base import IWebAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
 @dataclass(slots=True)

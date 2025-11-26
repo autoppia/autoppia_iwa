@@ -6,7 +6,7 @@ from loguru import logger
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
-from autoppia_iwa.src.web_agents.base import IWebAgent
+from autoppia_iwa.src.web_agents.classes import IWebAgent
 
 
 @dataclass(slots=True)
