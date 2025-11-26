@@ -2,18 +2,24 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AddToCartEvent,
+    AddToWishlistEvent,
     CarouselScrollEvent,
+    CategoryFilterEvent,
     CheckoutStartedEvent,
+    DetailsToggleEvent,
     ItemDetailEvent,
     OrderCompletedEvent,
     ProceedToCheckoutEvent,
     QuantityChangedEvent,
     SearchProductEvent,
+    ShareProductEvent,
     ViewCartEvent,
+    ViewWishlistEvent,
 )
 from .generation_functions import (
     generate_autozone_products_constraints,
     generate_carousel_scroll_constraints,
+    generate_category_filter_constraints,
     generate_checkout_constraints,
     generate_order_completed_constraints,
     generate_quantity_change_constraints,
@@ -68,6 +74,39 @@ PRODUCT_DETAIL_USE_CASE = UseCase(
     ],
 )
 
+
+DETAILS_TOGGLE_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Explicitly mention expanding or collapsing a specific detail section (use verbs like "Expand", "Collapse", "Open", "Close").
+2. Reference the section name/identifier provided by the constraints (e.g., "Explore further").
+3. Include the product attributes defined in the constraints.
+4. Match the requested end state (expanded=True means open/expand, expanded=False means collapse/close) and avoid mentioning cart, wishlist, or checkout actions.
+"""
+
+DETAILS_TOGGLE_USE_CASE = UseCase(
+    name="DETAILS_TOGGLE",
+    description="The user toggles a collapsible section inside a product detail page.",
+    event=DetailsToggleEvent,
+    event_source_code=DetailsToggleEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_products_constraints,
+    replace_func=replace_products_placeholders,
+    additional_prompt_info=DETAILS_TOGGLE_INFO,
+    examples=[
+        {
+            "prompt": "Expand the Explore further section for the Espresso Machine page.",
+            "prompt_for_task_generation": "Expand the Explore further section for the <product_name> page.",
+        },
+        {
+            "prompt": "Collapse the Explore further accordion on the KitchenAid Stand Mixer details.",
+            "prompt_for_task_generation": "Collapse the Explore further accordion on the <brand> <product_name> details.",
+        },
+        {
+            "prompt": "Keep the Explore further module open for the technology bundle I'm viewing.",
+            "prompt_for_task_generation": "Keep the Explore further module open for the <product_category> bundle I'm viewing.",
+        },
+    ],
+)
+
 ###############################################################################
 # SEARCH_PRODUCT_USE_CASE
 ###############################################################################
@@ -115,6 +154,39 @@ SEARCH_PRODUCT_USE_CASE = UseCase(
     ],
 )
 
+
+CATEGORY_FILTER_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Explicitly instruct to filter or limit results to the specified category (use phrases like "Filter to", "Show only", "Switch category to").
+2. Mention the exact category provided in the constraints.
+3. If a search query constraint exists, include the same query text verbatim (wrap it in quotes if appropriate) and do not add any extra filters.
+4. Reference the entry point when provided (e.g., "using the header dropdown") and avoid mentioning checkout, cart, or wishlist actions.
+"""
+
+CATEGORY_FILTER_USE_CASE = UseCase(
+    name="CATEGORY_FILTER",
+    description="The user changes or applies category filters while browsing/searching products.",
+    event=CategoryFilterEvent,
+    event_source_code=CategoryFilterEvent.get_source_code_of_class(),
+    constraints_generator=generate_category_filter_constraints,
+    replace_func=replace_products_placeholders,
+    additional_prompt_info=CATEGORY_FILTER_INFO,
+    examples=[
+        {
+            "prompt": "On the search page, filter results for 'install kits' down to Kitchen items only.",
+            "prompt_for_task_generation": "On the search page, filter results for '<query>' down to <category> items only.",
+        },
+        {
+            "prompt": "Use the header category dropdown to switch everything to Technology products.",
+            "prompt_for_task_generation": "Use the header category dropdown to switch everything to <category> products.",
+        },
+        {
+            "prompt": "While viewing search results, limit the catalog to Fitness gear by applying the Fitness filter.",
+            "prompt_for_task_generation": "While viewing search results, limit the catalog to <category> gear by applying the <category> filter.",
+        },
+    ],
+)
+
 ###############################################################################
 # ADD_TO_CART_USE_CASE
 ###############################################################################
@@ -158,6 +230,71 @@ ADD_TO_CART_USE_CASE = UseCase(
     ],
 )
 
+
+ADD_TO_WISHLIST_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Explicitly reference the wishlist (e.g., "Add to wishlist", "Save for later", "Remove from wishlist", "Clear my wishlist").
+2. Mirror the requested action from the constraints (added, removed, or clear_all). For clear_all, do NOT mention specific products.
+3. When adding or removing an item, include all product attributes provided in the constraints.
+4. Do not mention cart, checkout, or purchase flows in the same prompt.
+"""
+
+ADD_TO_WISHLIST_USE_CASE = UseCase(
+    name="ADD_TO_WISHLIST",
+    description="The user adds, removes, or clears items from their wishlist.",
+    event=AddToWishlistEvent,
+    event_source_code=AddToWishlistEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_products_constraints,
+    replace_func=replace_products_placeholders,
+    additional_prompt_info=ADD_TO_WISHLIST_INFO,
+    examples=[
+        {
+            "prompt": "Add the Espresso Machine kit to my wishlist for later.",
+            "prompt_for_task_generation": "Add the <product_name> kit to my wishlist for later.",
+        },
+        {
+            "prompt": "Remove the KitchenAid Stand Mixer from my wishlist now that I'm done comparing.",
+            "prompt_for_task_generation": "Remove the <brand> <product_name> from my wishlist now that I'm done comparing.",
+        },
+        {
+            "prompt": "Clear my entire wishlist so I can start over.",
+            "prompt_for_task_generation": "Clear my entire wishlist so I can start over.",
+        },
+    ],
+)
+
+
+SHARE_PRODUCT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Clearly state that the product link/details should be shared, sent, or copied (use verbs like "Share", "Send", "Copy the link").
+2. Include the product attributes specified in the constraints (name, category, brand, etc.).
+3. Avoid combining share requests with wishlist, cart, or checkout actions.
+"""
+
+SHARE_PRODUCT_USE_CASE = UseCase(
+    name="SHARE_PRODUCT",
+    description="The user shares or copies the link to a specific product.",
+    event=ShareProductEvent,
+    event_source_code=ShareProductEvent.get_source_code_of_class(),
+    constraints_generator=generate_autozone_products_constraints,
+    replace_func=replace_products_placeholders,
+    additional_prompt_info=SHARE_PRODUCT_INFO,
+    examples=[
+        {
+            "prompt": "Share the Espresso Machine product page with my install team.",
+            "prompt_for_task_generation": "Share the <product_name> product page with my install team.",
+        },
+        {
+            "prompt": "Copy the link for the KitchenAid Stand Mixer so I can send it to procurement.",
+            "prompt_for_task_generation": "Copy the link for the <brand> <product_name> so I can send it to procurement.",
+        },
+        {
+            "prompt": "Send me the shareable link for that Technology kit I'm viewing.",
+            "prompt_for_task_generation": "Send me the shareable link for that <product_category> kit I'm viewing.",
+        },
+    ],
+)
+
 ###############################################################################
 # VIEW_CART_USE_CASE
 ###############################################################################
@@ -196,6 +333,37 @@ VIEW_CART_USE_CASE = UseCase(
         {
             "prompt": "What items do I have in my cart?",
             "prompt_for_task_generation": "What items do I have in my cart?",
+        },
+    ],
+)
+
+
+VIEW_WISHLIST_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Explicitly request to open or view the wishlist/saved items (use phrases like "Open my wishlist", "Show saved items").
+2. Reference the entry point specified in the constraints when provided (e.g., "from the home wishlist preview").
+3. Do NOT mention adding/removing products, checkout, or cart actions.
+"""
+
+VIEW_WISHLIST_USE_CASE = UseCase(
+    name="VIEW_WISHLIST",
+    description="The user views their saved wishlist items or expands the wishlist preview.",
+    event=ViewWishlistEvent,
+    event_source_code=ViewWishlistEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    additional_prompt_info=VIEW_WISHLIST_INFO,
+    examples=[
+        {
+            "prompt": "Open my wishlist page so I can review everything I've saved.",
+            "prompt_for_task_generation": "Open my wishlist page so I can review everything I've saved.",
+        },
+        {
+            "prompt": "From the home wishlist preview, click through to view all saved kits.",
+            "prompt_for_task_generation": "From the home wishlist preview, click through to view all saved kits.",
+        },
+        {
+            "prompt": "Show me the dedicated wishlist view instead of the cart.",
+            "prompt_for_task_generation": "Show me the dedicated wishlist view instead of the cart.",
         },
     ],
 )
@@ -284,6 +452,7 @@ ORDER_COMPLETION_USE_CASE = UseCase(
         },
     ],
 )
+
 
 ###############################################################################
 # PROCEED_TO_CHECKOUT_USE_CASE
@@ -427,9 +596,14 @@ CAROUSEL_SCROLL_USE_CASE = UseCase(
 
 ALL_USE_CASES = [
     PRODUCT_DETAIL_USE_CASE,
+    DETAILS_TOGGLE_USE_CASE,
+    SHARE_PRODUCT_USE_CASE,
     SEARCH_PRODUCT_USE_CASE,
+    CATEGORY_FILTER_USE_CASE,
     ADD_TO_CART_USE_CASE,
+    ADD_TO_WISHLIST_USE_CASE,
     VIEW_CART_USE_CASE,
+    VIEW_WISHLIST_USE_CASE,
     CAROUSEL_SCROLL_USE_CASE,
     QUANTITY_CHANGE_USE_CASE,
     PROCEED_TO_CHECKOUT_USE_CASE,
