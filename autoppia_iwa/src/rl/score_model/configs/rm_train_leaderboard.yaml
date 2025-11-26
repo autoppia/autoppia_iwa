@@ -1,0 +1,11 @@
+in_dim: 768
+batch: 32
+lr: 1.0e-4
+epochs: 1
+lambda_succ: 0.5
+lambda_align: 0.1
+lambda_score: 1.0
+num_workers: 2
+pref_pairs_per_epoch: 2000
+reward_samples_per_epoch: 500
+ckpt_path: data/score_model_pipeline/artifacts/conda_iwa_run/ckpts/reward_model.pt

@@ -366,8 +366,7 @@ class EditCheckInOutDatesEvent(Event, BaseEventValidator, HotelInfo):
         d_range = data.get("dateRange", {})
         checkin = parse_datetime(d_range.get("from"))
         checkout = parse_datetime(d_range.get("to"))
-        # checkin = datetime_from_utc_to_local(checkin)
-        # checkout = datetime_from_utc_to_local(checkout)
+
         hotel_info = HotelInfo.parse(data)
 
         return cls(

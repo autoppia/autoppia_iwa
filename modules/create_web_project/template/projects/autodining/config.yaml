@@ -1,0 +1,275 @@
+project:
+  slug: autodining
+  name: "Autoppia Dining"
+  deck_id: autodining
+  owner: autoppia-core
+  summary: "Restaurant reservation marketplace with dynamic menus and booking flow."
+  contact: "deck@autoppia.com"
+  seed_notes: "Use ?seed=<id> to vary restaurant data, menus, and booking availability."
+
+deployment:
+  frontend_port_index: 3
+  backend_url: "${AUTOPPIA_BACKEND_URL:-http://localhost:8090}/"
+
+events:
+  - name: DATE_DROPDOWN_OPENED
+    description: "User focuses the reservation date selector."
+    fields:
+      - { name: selected_date, type: str, source: date }
+  - name: TIME_DROPDOWN_OPENED
+    description: "User opens the reservation time dropdown."
+    fields:
+      - { name: selected_time, type: str, source: time }
+  - name: PEOPLE_DROPDOWN_OPENED
+    description: "User opens the guest-count dropdown."
+    fields:
+      - { name: people_count, type: int, source: people }
+  - name: SEARCH_RESTAURANT
+    description: "Free-text restaurant search."
+    fields:
+      - { name: query, type: str, source: query }
+  - name: VIEW_RESTAURANT
+    description: "User opens a restaurant detail card."
+    fields:
+      - { name: restaurant_id, type: str, source: restaurantId }
+      - { name: restaurant_name, type: str, source: restaurantName }
+      - { name: desc, type: str, source: desc }
+      - { name: rating, type: float, source: rating }
+      - { name: reviews, type: int, source: reviews }
+      - { name: bookings, type: int, source: bookings }
+      - { name: cuisine, type: str, source: cuisine }
+  - name: VIEW_FULL_MENU
+    description: "User expands the restaurant's full menu with booking context."
+    fields:
+      - { name: restaurant_id, type: str, source: restaurantId }
+      - { name: restaurant_name, type: str, source: restaurantName }
+      - { name: action, type: str, source: action }
+      - { name: time, type: str, source: time }
+      - { name: selected_date, type: str, source: date }
+      - { name: people, type: int, source: people }
+      - { name: desc, type: str, source: desc }
+      - { name: rating, type: float, source: rating }
+      - { name: reviews, type: int, source: reviews }
+      - { name: bookings, type: int, source: bookings }
+      - { name: cuisine, type: str, source: cuisine }
+      - { name: menu, type: "list[str]", source: menu }
+  - name: COLLAPSE_MENU
+    description: "User collapses the expanded menu view."
+    fields:
+      - { name: restaurant_id, type: str, source: restaurantId }
+      - { name: restaurant_name, type: str, source: restaurantName }
+      - { name: action, type: str, source: action }
+      - { name: time, type: str, source: time }
+      - { name: selected_date, type: str, source: date }
+      - { name: people, type: int, source: people }
+      - { name: desc, type: str, source: desc }
+      - { name: rating, type: float, source: rating }
+      - { name: reviews, type: int, source: reviews }
+      - { name: bookings, type: int, source: bookings }
+      - { name: cuisine, type: str, source: cuisine }
+      - { name: menu, type: "list[str]", source: menu }
+  - name: BOOK_RESTAURANT
+    description: "CTA click to book a restaurant."
+    fields:
+      - { name: restaurant_name, type: str, source: restaurantName }
+      - { name: time, type: str, source: time }
+      - { name: selected_date, type: str, source: date }
+      - { name: people, type: int, source: people }
+      - { name: desc, type: str, source: desc }
+      - { name: rating, type: float, source: rating }
+      - { name: reviews, type: int, source: reviews }
+      - { name: bookings, type: int, source: bookings }
+      - { name: cuisine, type: str, source: cuisine }
+  - name: COUNTRY_SELECTED
+    description: "User chooses a country in the reservation form."
+    fields:
+      - { name: country_code, type: str, source: countryCode }
+      - { name: country_name, type: str, source: countryName }
+      - { name: restaurant_name, type: str, source: restaurantName }
+      - { name: desc, type: str, source: desc }
+      - { name: rating, type: float, source: rating }
+      - { name: reviews, type: int, source: reviews }
+      - { name: bookings, type: int, source: bookings }
+      - { name: cuisine, type: str, source: cuisine }
+  - name: OCCASION_SELECTED
+    description: "User sets an occasion for the reservation."
+    fields:
+      - { name: occasion, type: str, source: occasion }
+      - { name: restaurant_name, type: str, source: restaurantName }
+      - { name: desc, type: str, source: desc }
+      - { name: rating, type: float, source: rating }
+      - { name: reviews, type: int, source: reviews }
+      - { name: bookings, type: int, source: bookings }
+      - { name: cuisine, type: str, source: cuisine }
+  - name: RESERVATION_COMPLETE
+    description: "Full reservation payload after submission."
+    fields:
+      - { name: reservation_date_str, type: str, source: date }
+      - { name: reservation_time, type: str, source: time }
+      - { name: people_count, type: int, source: people }
+      - { name: country_code, type: str, source: countryCode }
+      - { name: country_name, type: str, source: countryName }
+      - { name: phone_number, type: str, source: phoneNumber }
+      - { name: occasion, type: str, source: occasion }
+      - { name: special_request, type: str, source: specialRequest }
+  - name: SCROLL_VIEW
+    description: "Horizontal scroll interaction for restaurant carousels."
+    fields:
+      - { name: direction, type: str, source: direction }
+      - { name: section_title, type: str, source: sectionTitle }
+
+use_cases:
+  - name: DATE_DROPDOWN_OPENED
+    event: DATE_DROPDOWN_OPENED
+    description: "Interact with the date picker."
+    additional_prompt_info: |
+      CRITICAL REQUIREMENT: Prompts must mention the date selector explicitly and indicate a desired date.
+    prompts:
+      - prompt: "Open the date selector for my booking."
+        template: "Open the date selector for my booking."
+      - prompt: "Click the calendar icon to select a date after June 15th."
+        template: "Click the calendar icon to select a date after <date>."
+    constraints:
+      operator: equals
+      examples:
+        - { field: selected_date, value: "2024-06-20" }
+  - name: TIME_DROPDOWN_OPENED
+    event: TIME_DROPDOWN_OPENED
+    description: "Interact with the time picker."
+    prompts:
+      - prompt: "Click on the time field to choose a reservation time."
+        template: "Click on the time field to choose a reservation time."
+    constraints:
+      operator: equals
+      examples:
+        - { field: selected_time, value: "7:30 PM" }
+  - name: PEOPLE_DROPDOWN_OPENED
+    event: PEOPLE_DROPDOWN_OPENED
+    description: "Open the guest selector."
+    prompts:
+      - prompt: "Open the guest number selection for my table."
+        template: "Open the guest number selection for my table."
+      - prompt: "Select the party size dropdown for a group larger than 6 people."
+        template: "Select the party size dropdown for a group larger than <people_count> people."
+    constraints:
+      operator: equals
+      examples:
+        - { field: people_count, value: 6 }
+  - name: SEARCH_RESTAURANT
+    event: SEARCH_RESTAURANT
+    description: "Perform a restaurant search by name or cuisine."
+    additional_prompt_info: |
+      Prompts must clearly mention searching for restaurants, not booking or filtering.
+    prompts:
+      - prompt: "Search for 'italian restaurants in downtown'"
+        template: "Search for '<query>'"
+      - prompt: "Find restaurants named 'The Royal Dine'"
+        template: "Find restaurants named '<query>'"
+    constraints:
+      operator: equals
+      examples:
+        - { field: query, value: "vegan" }
+  - name: VIEW_RESTAURANT
+    event: VIEW_RESTAURANT
+    description: "Open a restaurant detail page."
+    prompts:
+      - prompt: "Show me details for 'The Royal Dine'"
+        template: "Show me details for '<restaurant_name>'"
+      - prompt: "View restaurant page for ID 'royal-dine'"
+        template: "View restaurant page for ID '<restaurant_id>'"
+    constraints:
+      operator: equals
+      examples:
+        - { field: rating, value: 45 }
+  - name: VIEW_FULL_MENU
+    event: VIEW_FULL_MENU
+    description: "Expand the full menu for an active restaurant card."
+    prompts:
+      - prompt: "Show the full menu for the restaurant I'm viewing."
+        template: "Show the full menu for '<restaurant_name>'."
+      - prompt: "Expand the menu for our 8:00 PM reservation."
+        template: "Expand the menu for our <time> reservation."
+    constraints:
+      operator: equals
+      examples:
+        - { field: people, value: 4 }
+        - { field: action, value: "expand" }
+  - name: COLLAPSE_MENU
+    event: COLLAPSE_MENU
+    description: "Collapse the expanded menu view."
+    prompts:
+      - prompt: "Hide the full menu after reviewing it."
+        template: "Hide the full menu after reviewing it."
+    constraints:
+      operator: equals
+      examples:
+        - { field: action, value: "collapse" }
+  - name: BOOK_RESTAURANT
+    event: BOOK_RESTAURANT
+    description: "Trigger the book CTA before confirmation."
+    prompts:
+      - prompt: "Click the book button for this restaurant."
+        template: "Click the book button for '<restaurant_name>'."
+      - prompt: "Book a table for 4 at 8:30 PM."
+        template: "Book a table for <people> people at <time>."
+    constraints:
+      operator: equals
+      examples:
+        - { field: people, value: 4 }
+        - { field: time, value: "8:30 PM" }
+  - name: COUNTRY_SELECTED
+    event: COUNTRY_SELECTED
+    description: "Select a country in the reservation form."
+    prompts:
+      - prompt: "Set the country to India in the phone field."
+        template: "Set the country to <country_name> in the phone field."
+      - prompt: "Choose country code +1 for the booking."
+        template: "Choose country code <country_code> for the booking."
+    constraints:
+      operator: equals
+      examples:
+        - { field: country_code, value: "+34" }
+  - name: OCCASION_SELECTED
+    event: OCCASION_SELECTED
+    description: "Specify an occasion such as birthday or anniversary."
+    prompts:
+      - prompt: "Select 'Birthday' as the occasion."
+        template: "Select '<occasion>' as the occasion."
+    constraints:
+      operator: equals
+      examples:
+        - { field: occasion, value: "Birthday" }
+  - name: RESERVATION_COMPLETE
+    event: RESERVATION_COMPLETE
+    description: "Submit the reservation form."
+    prompts:
+      - prompt: "Complete the booking for 2 people at 7 PM."
+        template: "Complete the booking for <people_count> people at <reservation_time>."
+    constraints:
+      operator: equals
+      examples:
+        - { field: people_count, value: 2 }
+  - name: SCROLL_VIEW
+    event: SCROLL_VIEW
+    description: "Scroll through a featured carousel."
+    prompts:
+      - prompt: "Scroll right through the featured restaurants section."
+        template: "Scroll <direction> through the '<section_title>' section."
+    constraints:
+      operator: equals
+      examples:
+        - { field: direction, value: "right" }
+
+pages:
+  - id: home
+    title: "Autodining Home"
+    url_patterns: ["/", "/home"]
+    required_elements:
+      - { selector: "header nav", description: "Main navigation" }
+      - { text_contains: "Find a table", description: "Hero booking CTA" }
+  - id: details
+    title: "Restaurant Details"
+    url_patterns: ["/restaurants/<slug>"]
+    required_elements:
+      - { selector: "[data-testid='restaurant-header']", description: "Restaurant header" }
+      - { text_contains: "View Full Menu", description: "Menu CTA" }

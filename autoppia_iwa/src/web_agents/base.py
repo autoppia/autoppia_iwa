@@ -2,7 +2,7 @@ import random
 import string
 from abc import ABC, abstractmethod
 
-from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 

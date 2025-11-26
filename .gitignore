@@ -19,24 +19,28 @@ build/
 # You can comment to connit the evaluation image as wwll
 output.png
 
-# benchmark entry point logs
+# Generated outputs (now in outputs/ directory)
+# Legacy entries kept for backwards compatibility
 benchmark.log
 prompt_test.log
 real_web_evaluation.log
+projects_status.json
 
-# For Task Comparison images
-results/*.png
-# Stress Tests result
-results/*.json
+# Generated outputs (benchmark, training, verification)
+data/outputs/**
 
-# logs directory
-logs/*
+# Legacy paths (kept for backwards compatibility during transition)
+data/benchmark/**
+data/cache/**
+data/rl/**
+data/rm/**
+data/score_model_pipeline/**
+data/web_verification/**
 
-# Stress test logs
 stress_test.log
 
 prompt_test_output/*
 
-data/solutions_cache/*
-data/tasks_cache/*
 *.webm
+.pytest_cache
+*.jsonl

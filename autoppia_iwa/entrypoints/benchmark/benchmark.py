@@ -3,6 +3,7 @@ import base64
 import json
 import time
 from collections import defaultdict
+from pathlib import Path
 
 from loguru import logger
 
@@ -12,7 +13,7 @@ from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.entrypoints.benchmark.utils.results import plot_results, save_results_to_json
 from autoppia_iwa.entrypoints.benchmark.utils.solutions import ConsolidatedSolutionCache
-from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
@@ -35,7 +36,7 @@ class Benchmark:
       4) Persist results, timings, and optional artifacts (GIFs/plots).
     """
 
-    def __init__(self, config: BenchmarkConfig, log_file: str = "benchmark.log") -> None:
+    def __init__(self, config: BenchmarkConfig, log_file: Path | str | None = None) -> None:
         self.config = config
         self._agent_call_semaphore = asyncio.Semaphore(config.max_parallel_agent_calls)
         self._solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
@@ -47,7 +48,9 @@ class Benchmark:
         # Validate configuration before starting
         self._validate_config()
 
-        setup_logging(log_file)
+        resolved_log_path = Path(log_file) if log_file else config.benchmark_log_file
+        resolved_log_path.parent.mkdir(parents=True, exist_ok=True)
+        setup_logging(str(resolved_log_path))
         self.per_project_results = {}
 
     def _validate_config(self) -> None:
@@ -79,7 +82,7 @@ class Benchmark:
     @staticmethod
     def _persist_gif_recording(b64_gif: str, agent_name: str, task_id: str, run_index: int, recordings_dir) -> None:
         """
-        Decode a base64-encoded GIF and store it under recordings/<agent>/<task>_run_<n>.gif.
+        Decode a base64-encoded GIF and store it under data/benchmark/recordings/<agent>/<task>_run_<n>.gif.
         """
         agent_dir = recordings_dir / agent_name
         agent_dir.mkdir(exist_ok=True)
@@ -169,8 +172,22 @@ class Benchmark:
         Evaluate all agent solutions produced for a single Task.
         Stores GIF recordings if evaluation returns them and recording is enabled.
         """
-        evaluator = ConcurrentEvaluator(project, EvaluatorConfig(enable_grouping_tasks=False, chunk_size=20, should_record_gif=self.config.record_gif))
-        results = await evaluator.evaluate_task_solutions(task, solutions)
+        # Filter out None solutions defensively
+        valid_solutions = [s for s in solutions if s is not None]
+        if not valid_solutions:
+            logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
+            return []
+
+        evaluator = ConcurrentEvaluator(
+            project,
+            EvaluatorConfig(
+                enable_grouping_tasks=False,
+                chunk_size=20,
+                should_record_gif=self.config.record_gif,
+                dynamic_phase_config=self.config.dynamic_phase_config,
+            ),
+        )
+        results = await evaluator.evaluate_task_solutions(task, valid_solutions)
 
         if self.config.record_gif:
             for res in results:
@@ -195,7 +212,7 @@ class Benchmark:
             # Filter out None solutions for visualization
             valid_solutions = [sol for sol in solutions if sol is not None]
 
-            # Call the actual evaluation method
+            # Call the actual evaluation method (will filter None internally)
             results = await self._evaluate_solutions_for_task(project, task, solutions, run_index)
 
             # Apply visualization if we have valid results and visualization is enabled

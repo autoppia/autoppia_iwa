@@ -1,0 +1,10 @@
+in_dim: 768
+batch: 64
+lr: 1.0e-4
+epochs: 5
+lambda_succ: 0.5
+lambda_align: 0.1
+lambda_score: 1.0
+num_workers: 4
+pref_pairs_per_epoch: 10000
+reward_samples_per_epoch: 2000

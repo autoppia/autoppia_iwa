@@ -17,7 +17,7 @@ import asyncio
 import os
 import sys
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Annotated, Any, ClassVar
 
 import uvicorn
@@ -29,7 +29,7 @@ from pydantic import AnyUrl, BaseModel, Field, NonNegativeFloat, constr
 
 from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.domain.classes import Task
+from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
@@ -228,7 +228,7 @@ async def lifespan(app: FastAPI):  # type: ignore[override]
 
     # Attach service + uptime
     app.state.service = EvaluationEndpointService()
-    app.state.started_at = datetime.now(UTC)
+    app.state.started_at = datetime.now(timezone.utc)
 
     logger.success("Evaluation Endpoint Service ready!")
     try:
@@ -278,8 +278,8 @@ def get_service(request: Request) -> EvaluationEndpointService:
 @app.get("/health")
 async def health_check(request: Request):
     """Health check with uptime and version."""
-    started_at: datetime = getattr(request.app.state, "started_at", datetime.now(UTC))
-    uptime_seconds = (datetime.now(UTC) - started_at).total_seconds()
+    started_at: datetime = getattr(request.app.state, "started_at", datetime.now(timezone.utc))
+    uptime_seconds = (datetime.now(timezone.utc) - started_at).total_seconds()
     return {
         "status": "healthy",
         "service": "evaluation-endpoint",

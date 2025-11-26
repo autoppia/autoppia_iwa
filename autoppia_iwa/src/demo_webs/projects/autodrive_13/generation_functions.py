@@ -1,5 +1,5 @@
 import random
-from datetime import UTC, date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from random import choice, randint, randrange
 from typing import Any
 
@@ -221,13 +221,13 @@ def _generate_constraints(
             if new_field.get("is_datetime"):
                 days = new_field.get("days", 1)
                 new_field_name = new_field.get("field", "")
-                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
+                current_datetime = datetime.now(timezone.utc) if new_field.get("utc") else datetime.now()
                 constraint_value = random_datetime(days=days, start=current_datetime)
                 field_value = constraint_value
                 new_field = new_field_name
 
             elif new_field.get("is_date"):
-                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
+                current_datetime = datetime.now(timezone.utc) if new_field.get("utc") else datetime.now()
                 offset = random.randint(1, 7)
                 new_date = current_datetime.date() + timedelta(days=offset)
                 new_date = parser.parse(str(new_date))
@@ -235,7 +235,7 @@ def _generate_constraints(
                 field_value = new_field
 
             elif new_field.get("is_time"):
-                current_datetime = datetime.now(UTC) if new_field.get("utc") else datetime.now()
+                current_datetime = datetime.now(timezone.utc) if new_field.get("utc") else datetime.now()
                 offset_hours = random.randint(0, 23)
                 offset_minutes = random.randint(0, 59)
                 new_time = current_datetime + timedelta(hours=offset_hours, minutes=offset_minutes)

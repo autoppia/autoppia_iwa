@@ -3,8 +3,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
+from autoppia_iwa.src.data_generation.tasks.classes import Task, TaskGenerationConfig
+from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import WebProject
 
 
@@ -96,11 +96,6 @@ async def generate_tasks_for_web_project(
         cached_tasks = await load_tasks_from_json(project, task_cache_dir)
         if cached_tasks and len(cached_tasks) > 0:
             print(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
-            # Configure cached tasks with dynamic features
-            for task in cached_tasks:
-                task.dynamic = dynamic
-                # Re-apply dynamic features to URL after setting dynamic array
-                task._apply_dynamic_to_url()
             return cached_tasks
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")

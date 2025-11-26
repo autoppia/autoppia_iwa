@@ -1,10 +1,8 @@
 import asyncio
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable
 from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
-
-from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class UseCase(BaseModel):
@@ -18,7 +16,7 @@ class UseCase(BaseModel):
     event: Any = Field(..., description="Event class (type[Event])")
     event_source_code: str
     examples: list[dict]
-    replace_func: Callable[..., str | Coroutine[Any, Any, str]] | None = Field(default=None, exclude=True)
+    replace_func: Callable[[str], str] | None = Field(default=None, exclude=True)
 
     # Only one field for constraints - the structured data
     constraints: list[dict[str, Any]] | None = Field(default=None)
@@ -132,41 +130,6 @@ class UseCase(BaseModel):
 
         return " AND ".join(parts)
 
-    def add_constraints(self, constraints: list[dict[str, Any]]) -> None:
-        """
-        Adds constraints to the use case and an example that uses these constraints
-        """
-        self.constraints = constraints
-
-        # Create an example that uses the constraints
-        if constraints:
-            # Get the string representation of constraints
-            constraints_str = self.constraints_to_str()
-
-            # Create a generic constraint example
-            prompt = f"Show me items with these criteria: {constraints_str}"
-            prompt_template = "Show me items with these criteria: <constraints_info>"
-
-            constraint_example = {
-                "prompt": prompt,
-                "prompt_for_task_generation": prompt_template,
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": self.event.__name__,
-                    "event_criteria": {c["field"]: {"value": c["value"], "operator": c["operator"]} for c in constraints},
-                    "reasoning": "Validates that constraints are correctly processed and used for filtering.",
-                },
-            }
-
-            self.examples.append(constraint_example)
-
-    def check_success(self, events: list[Any]) -> bool:
-        """
-        Check if the use case was successful based on the events that occurred
-        """
-        # Basic implementation - check if any event of the expected type exists
-        return any(isinstance(event, self.event) for event in events)
-
     def get_example_prompts_from_use_case(self) -> list[str]:
         """
         Extract all prompt strings from the examples
@@ -223,12 +186,11 @@ class WebProject(BaseModel):
     backend_url: str = Field(..., description="URL of the backend server")
     frontend_url: str = Field(..., description="URL of the frontend application")
     is_web_real: bool = False
+    sandbox_mode: bool = Field(default=False, description="True if the project must run in sandbox mode")
     urls: list[str] = []
-    domain_analysis: DomainAnalysis | None = None
     events: list[type] = Field(default_factory=list, description="Structured events information")
+    use_cases: list[UseCase] | None = Field(default=None, description="Optional list of canonical use cases for this project")
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
-    models: list[Any] = Field(default_factory=list)
-    use_cases: list[Any] = Field(default_factory=list, description="List of UseCase instances")
 
 
 class BackendEvent(BaseModel):

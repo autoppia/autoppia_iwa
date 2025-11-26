@@ -393,7 +393,7 @@ class EventRemoveAttendeeEvent(EventAddAttendeeEvent):
     event_name: str = "EVENT_REMOVE_ATTENDEE"
 
 
-CALENDAR_EVENTS = [
+EVENTS = [
     SelectMonthEvent,
     SelectWeekEvent,
     SelectFiveDaysEvent,
