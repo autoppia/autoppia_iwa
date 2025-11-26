@@ -23,8 +23,7 @@ from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer, visualize_task
 from autoppia_iwa.src.shared.web_voyager_utils import TaskData, generate_hash, load_real_tasks
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.base import IWebAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
 @dataclass

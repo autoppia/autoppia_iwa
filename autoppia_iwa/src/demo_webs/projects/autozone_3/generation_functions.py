@@ -352,3 +352,23 @@ def generate_carousel_scroll_constraints() -> list[dict[str, Any]]:
         constraints_list.append(create_constraint_dict(field, op, constraint_value))
 
     return constraints_list
+
+
+async def generate_category_filter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints: list[dict[str, Any]] = []
+    data_items = await _ensure_products_dataset(task_url, dataset)
+    if not data_items:
+        return constraints
+
+    allowed_categories = {"all", "kitchen", "technology", "home", "electronics", "fitness"}
+    categories = sorted({str(item.get("category", "")).lower() for item in data_items if item.get("category") and str(item.get("category", "")).lower() in allowed_categories})
+    if not categories:
+        # Fallback to "all" if dataset categories don't match allowed values
+        categories = ["all"]
+    if not categories:
+        return constraints
+
+    selected_category = random.choice(categories)
+    constraints.append(create_constraint_dict("category", ComparisonOperator.EQUALS, selected_category))
+
+    return constraints

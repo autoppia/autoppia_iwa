@@ -3,8 +3,7 @@ from __future__ import annotations
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import ClickAction
 from autoppia_iwa.src.execution.actions.base import Selector, SelectorType
-from autoppia_iwa.src.web_agents.base import BaseAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.classes import BaseAgent, TaskSolution
 
 
 class FaultyWebAgent(BaseAgent):

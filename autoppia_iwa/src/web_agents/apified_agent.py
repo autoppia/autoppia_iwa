@@ -7,8 +7,7 @@ from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
-from autoppia_iwa.src.web_agents.base import IWebAgent
-from autoppia_iwa.src.web_agents.classes import TaskSolution
+from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
 class ApifiedWebAgent(IWebAgent):

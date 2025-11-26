@@ -120,6 +120,24 @@ class ItemDetailEvent(Event, BaseEventValidator):
             )
 
 
+class DetailsToggleEvent(ItemDetailEvent):
+    """Event triggered when a detail section is toggled."""
+
+    event_name: str = "DETAILS_TOGGLE"
+
+
+class AddToWishlistEvent(ItemDetailEvent):
+    """Event triggered when a user manages wishlist items."""
+
+    event_name: str = "ADD_TO_WISHLIST"
+
+
+class ShareProductEvent(ItemDetailEvent):
+    """Event triggered when a user shares a product."""
+
+    event_name: str = "SHARE_PRODUCT"
+
+
 class SearchProductEvent(Event, BaseEventValidator):
     """Event triggered when a user searches for a product."""
 
@@ -152,6 +170,39 @@ class SearchProductEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             query=data.get("query", ""),
+        )
+
+
+class CategoryFilterEvent(Event, BaseEventValidator):
+    """Event triggered when a user applies a category filter."""
+
+    event_name: str = "CATEGORY_FILTER"
+
+    category: str
+
+    class ValidationCriteria(BaseModel):
+        """Criteria for validating category filter events."""
+
+        category: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+        return all([self._validate_field(self.category, criteria.category)])
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "CategoryFilterEvent":
+        """Parse a category filter event."""
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            category=str(data.get("category", "")),
         )
 
 
@@ -305,6 +356,12 @@ class ViewCartEvent(Event, BaseEventValidator):
     """Event triggered when a user views the shopping cart."""
 
     event_name: str = "VIEW_CART"
+
+
+class ViewWishlistEvent(Event, BaseEventValidator):
+    """Event triggered when a user views wishlist content."""
+
+    event_name: str = "VIEW_WISHLIST"
 
 
 class QuantityChangedEvent(Event, BaseEventValidator):
@@ -559,23 +616,33 @@ class CheckoutStartedEvent(Event, BaseEventValidator):
 
 EVENTS = [
     ItemDetailEvent,
+    DetailsToggleEvent,
     SearchProductEvent,
-    QuantityChangedEvent,
+    CategoryFilterEvent,
     AddToCartEvent,
+    AddToWishlistEvent,
+    ShareProductEvent,
     ViewCartEvent,
+    ViewWishlistEvent,
+    QuantityChangedEvent,
     ProceedToCheckoutEvent,
+    CheckoutStartedEvent,
     OrderCompletedEvent,
     CarouselScrollEvent,
-    CheckoutStartedEvent,
 ]
 BACKEND_EVENT_TYPES = {
     "CAROUSEL_SCROLL": CarouselScrollEvent,
     "SEARCH_PRODUCT": SearchProductEvent,
+    "CATEGORY_FILTER": CategoryFilterEvent,
     "VIEW_DETAIL": ItemDetailEvent,
+    "DETAILS_TOGGLE": DetailsToggleEvent,
     "ADD_TO_CART": AddToCartEvent,
-    "CHECKOUT_STARTED": CheckoutStartedEvent,
+    "ADD_TO_WISHLIST": AddToWishlistEvent,
+    "SHARE_PRODUCT": ShareProductEvent,
     "VIEW_CART": ViewCartEvent,
+    "VIEW_WISHLIST": ViewWishlistEvent,
     "QUANTITY_CHANGED": QuantityChangedEvent,
     "PROCEED_TO_CHECKOUT": ProceedToCheckoutEvent,
+    "CHECKOUT_STARTED": CheckoutStartedEvent,
     "ORDER_COMPLETED": OrderCompletedEvent,
 }
