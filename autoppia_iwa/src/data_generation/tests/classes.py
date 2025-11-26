@@ -7,8 +7,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
-from bs4 import BeautifulSoup
-
 try:  # Optional: allow running without dependency_injector (e.g., Py3.13 wheels)
     from dependency_injector.wiring import Provide  # type: ignore
 except Exception:  # pragma: no cover - lightweight fallback for environments without the package
@@ -35,7 +33,7 @@ except Exception:  # pragma: no cover - fallback type stub
         pass
 
 
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, Field, ValidationError
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
@@ -148,8 +146,6 @@ class BaseTaskTest(BaseModel, ITest):
         """
         test_type = data.get("type", "")
         test_classes: dict[str, type[BaseTaskTest]] = {
-            "CheckUrlTest": CheckUrlTest,
-            "FindInHtmlTest": FindInHtmlTest,
             "CheckEventTest": CheckEventTest,
             "JudgeBaseOnHTML": JudgeBaseOnHTML,
             "JudgeBaseOnScreenshot": JudgeBaseOnScreenshot,
@@ -159,97 +155,6 @@ class BaseTaskTest(BaseModel, ITest):
             return target_class.model_validate(data)
         except ValidationError as e:
             raise ValueError(f"Failed to deserialize data: {e}") from e
-
-
-class CheckUrlTest(BaseTaskTest):
-    """
-    Test that checks if the browser navigated to a specific URL with different matching options.
-    """
-
-    type: Literal["CheckUrlTest"] = "CheckUrlTest"
-    url: str
-    match_type: Literal["exact", "contains", "regex"] = "contains"
-    description: str = Field(default="Check if browser navigated to URL")
-
-    async def _execute_partial_test(
-        self,
-        web_project: WebProject,
-        current_iteration: int,
-        prompt: str,
-        snapshot: BrowserSnapshot,
-        browser_snapshots: list[BrowserSnapshot],
-        total_iterations: int,
-    ) -> bool:
-        """
-        Execute the test on the given snapshots with the specified matching strategy.
-        """
-        current_url = snapshot.current_url
-
-        if self.match_type == "exact":
-            return current_url == self.url
-        elif self.match_type == "contains":
-            return self.url in current_url
-        elif self.match_type == "regex":
-            return bool(re.search(self.url, current_url))
-
-        return False
-
-
-class FindInHtmlTest(BaseTaskTest):
-    """
-    Test class to find content in the current HTML with different matching strategies.
-    """
-
-    type: Literal["FindInHtmlTest"] = "FindInHtmlTest"
-    content: str = Field(..., description="Content to look for in the HTML")
-    match_type: Literal["exact", "contains", "regex"] = "contains"
-    description: str = Field(
-        default="Find content in HTML using specified matching strategy",
-        description="Description of the test",
-    )
-
-    @field_validator("content")
-    @classmethod
-    def validate_content(cls, content: str) -> str:
-        if not content.strip():
-            raise ValueError("Content cannot be empty or consist of only whitespace")
-        return content.strip()
-
-    def extract_text_from_html(self, html: str) -> str:
-        """Extract readable text content from HTML."""
-        soup = BeautifulSoup(html, "html.parser")
-        # Remove script and style elements
-        for script in soup(["script", "style"]):
-            script.extract()
-        # Get text
-        text = soup.get_text(separator=" ", strip=True)
-        return re.sub(r"\s+", " ", text).strip()
-
-    async def _execute_partial_test(
-        self,
-        web_project: WebProject,
-        current_iteration: int,
-        prompt: str,
-        snapshot: BrowserSnapshot,
-        browser_snapshots: list[BrowserSnapshot],
-        total_iterations: int,
-    ) -> bool:
-        """
-        Checks if the specified content is present in the current snapshot's HTML
-        using the specified matching strategy.
-        """
-        html = snapshot.current_html
-
-        if self.match_type == "exact":
-            return self.content == html
-        elif self.match_type == "contains":
-            # Extract text for contains match to avoid HTML tag issues
-            extracted_text = self.extract_text_from_html(html)
-            return self.content in extracted_text
-        elif self.match_type == "regex":
-            return bool(re.search(self.content, html))
-
-        return False
 
 
 class CheckEventTest(BaseTaskTest):
@@ -479,24 +384,15 @@ class JudgeBaseOnScreenshot(BaseTaskTest):
 
 
 def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type, final_result: bool, total_iteration, log_file: Path = PROJECT_BASE_DIR / "judge_tests_usage_logs.jsonl"):
-    """Saves token usage and execution time to log file."""
-    from autoppia_iwa.src.shared.pricings import pricing_dict
-
-    input_tokens = response.usage.prompt_tokens
-    output_tokens = response.usage.completion_tokens
-    total_tokens = response.usage.total_tokens
-    model_name = response.model
-
-    if model_name not in pricing_dict:
-        print(f"[WARNING] Model '{model_name}' not found in pricing dictionary")
-
-    input_cost_per_token = pricing_dict[model_name]["input"]
-    output_cost_per_token = pricing_dict[model_name]["output"]
-
-    # Calculate costs
-    input_cost = input_tokens * input_cost_per_token
-    output_cost = output_tokens * output_cost_per_token
-    total_cost = input_cost + output_cost
+    """Saves basic test execution info to log file."""
+    try:
+        input_tokens = response.usage.prompt_tokens
+        output_tokens = response.usage.completion_tokens
+        total_tokens = response.usage.total_tokens
+        model_name = response.model
+    except Exception:
+        input_tokens = output_tokens = total_tokens = 0
+        model_name = "unknown"
 
     log_entry = {
         "test_type": test_type,
@@ -506,9 +402,6 @@ def save_usage_record(prompt, response: "ChatCompletion", time_taken, test_type,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
         "total_tokens": total_tokens,
-        "input_cost": input_cost,
-        "output_cost": output_cost,
-        "total_cost": total_cost,
         "duration_seconds": time_taken,
         "model": model_name,
         "total_iteration": total_iteration,
