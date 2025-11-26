@@ -5,8 +5,8 @@ import asyncio
 from autoppia_iwa.entrypoints.benchmark.utils.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.entrypoints.benchmark.utils.tasks import load_tasks_from_json, save_tasks_to_json
 from autoppia_iwa.src.data_generation.tasks.classes import Task
-from autoppia_iwa.src.web_agents.classes import TaskSolution
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 
 def _make_project(project_id: str = "proj-1") -> WebProject:

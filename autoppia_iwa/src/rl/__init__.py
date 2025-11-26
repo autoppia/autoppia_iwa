@@ -49,10 +49,10 @@ def __getattr__(name: str) -> Any:  # pragma: no cover - simple delegation
 
 
 __all__ = [
+    "EpisodeDiagnostics",
     "IWAWebEnv",
-    "MacroAction",
-    "JsInstrumentedEvaluator",
     "InstrumentationConfig",
     "InstrumentedBenchmark",
-    "EpisodeDiagnostics",
+    "JsInstrumentedEvaluator",
+    "MacroAction",
 ]

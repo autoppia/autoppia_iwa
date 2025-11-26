@@ -1,5 +1,5 @@
 """Training utilities for RL agents (PPO, etc.)."""
 
-from .ppo_runner import build_env, train_agent, run_episode  # noqa: F401
+from .ppo_runner import build_env, run_episode, train_agent
 
-__all__ = ["build_env", "train_agent", "run_episode"]
+__all__ = ["build_env", "run_episode", "train_agent"]

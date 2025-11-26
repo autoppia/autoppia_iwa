@@ -3,7 +3,6 @@ import os
 
 os.environ.setdefault("AUTOPPIA_BOOTSTRAP_DISABLE", "1")
 
-import pytest
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig

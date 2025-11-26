@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Iterator
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, Iterable, Iterator, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 import requests
 from loguru import logger
@@ -69,7 +70,7 @@ class LeaderboardRecord:
     entry: dict[str, Any]
     filter_params: dict[str, Any]
     page: int
-    fetched_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    fetched_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 class LeaderboardClient:
@@ -106,7 +107,7 @@ class LeaderboardClient:
                 )
                 if attempt >= self.config.max_retries:
                     break
-                sleep_seconds = self.config.retry_backoff** (attempt - 1)
+                sleep_seconds = self.config.retry_backoff ** (attempt - 1)
                 time.sleep(sleep_seconds)
         assert last_exc is not None
         raise last_exc

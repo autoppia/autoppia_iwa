@@ -5,18 +5,18 @@ import json
 import random
 import re
 import time
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable, Sequence
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from loguru import logger
 from playwright.async_api import Browser, Page, async_playwright
 
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.execution.dynamic.executor import DynamicPhaseConfig, DynamicPlaywrightExecutor, MutationAuditRecord
 from autoppia_iwa.src.llms.interfaces import ILLM, LLMConfig
 from autoppia_iwa.src.llms.service import LLMFactory
@@ -274,7 +274,7 @@ async def _run_seed_capture(
             nav_ms = (time.perf_counter() - nav_start) * 1000
             try:
                 record: MutationAuditRecord = await asyncio.wait_for(future, timeout=options.record_timeout_s)
-            except asyncio.TimeoutError:  # pragma: no cover - diagnostics only
+            except TimeoutError:  # pragma: no cover - diagnostics only
                 logger.warning(f"[{project.id}] timed out waiting for audit record on {target_url}")
                 continue
             summary = writer.write(record, nav_ms, run_idx)
@@ -312,7 +312,7 @@ def _aggregate_metrics(entries: Iterable[SummaryEntry]) -> dict:
 
 
 async def run_dynamic_audit(options: DynamicAuditOptions) -> dict:
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     output_root = options.output_dir / timestamp
     output_root.mkdir(parents=True, exist_ok=True)
     logger.info(f"Dynamic audit output: {output_root}")
@@ -388,7 +388,17 @@ async def _run_llm_spot_check(options: DynamicAuditOptions, output_root: Path, e
     return report_path
 
 
-def build_llm_from_args(llm_type: str | None, *, api_key: str | None = None, endpoint: str | None = None, base_url: str | None = None, use_bearer: bool = False, model: str = "gpt-3.5-turbo", temperature: float = 0.2, max_tokens: int = 1024) -> ILLM | None:
+def build_llm_from_args(
+    llm_type: str | None,
+    *,
+    api_key: str | None = None,
+    endpoint: str | None = None,
+    base_url: str | None = None,
+    use_bearer: bool = False,
+    model: str = "gpt-3.5-turbo",
+    temperature: float = 0.2,
+    max_tokens: int = 1024,
+) -> ILLM | None:
     if not llm_type:
         return None
     config = LLMConfig(model=model, temperature=temperature, max_tokens=max_tokens)
@@ -405,8 +415,8 @@ def build_llm_from_args(llm_type: str | None, *, api_key: str | None = None, end
 
 
 __all__ = [
-    "DynamicAuditOptions",
     "DatasetWriter",
+    "DynamicAuditOptions",
     "MutationCapture",
     "SummaryEntry",
     "build_llm_from_args",

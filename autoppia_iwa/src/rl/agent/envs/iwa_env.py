@@ -1,20 +1,23 @@
 from __future__ import annotations
 
+import contextlib
 import enum
 import hashlib
 from collections import deque
-from typing import Deque, Mapping, Optional
+from collections.abc import Mapping
+from typing import ClassVar
 
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 from loguru import logger
 
+from autoppia_iwa.src.data_generation.tasks.classes import Task
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
+
 from ..runtime.action_adapter import ActionAdapter, ActionLayout
 from ..runtime.browser_manager import BrowserManager
 from ..runtime.stateful_evaluator import PartialScore, StatefulEvaluator
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.data_generation.tasks.classes import Task
 
 
 class MacroAction(enum.IntEnum):
@@ -38,9 +41,9 @@ def _tokenize(text: str) -> list[str]:
 
 
 class IWAWebEnv(gym.Env):
-    metadata = {"render_modes": ["human"]}
+    metadata: ClassVar[dict[str, list[str]]] = {"render_modes": ["human"]}
 
-    def __init__(self, cfg: Optional[Mapping[str, object]] = None) -> None:
+    def __init__(self, cfg: Mapping[str, object] | None = None) -> None:
         super().__init__()
         self.cfg = dict(cfg or {})
         self.K = int(self.cfg.get("topk", 12))
@@ -76,13 +79,13 @@ class IWAWebEnv(gym.Env):
         )
 
         # Runtime
-        self._task: Optional[Task] = None
-        self._evaluator: Optional[StatefulEvaluator] = None
-        self._browser: Optional[BrowserManager] = None
+        self._task: Task | None = None
+        self._evaluator: StatefulEvaluator | None = None
+        self._browser: BrowserManager | None = None
         self._cands = []
         self._click_mask = np.zeros((self.K,), dtype=np.bool_)
         self._macros = {k: False for k in ("type_confirm", "submit", "scroll_down", "scroll_up", "back")}
-        self._history: Deque[int] = deque(maxlen=self.history_len)
+        self._history: deque[int] = deque(maxlen=self.history_len)
         self._step = 0
         self._last_partial = PartialScore()
         self._reward_blender = None
@@ -171,19 +174,17 @@ class IWAWebEnv(gym.Env):
     # -------------------------
     # Gym API
     # -------------------------
-    def reset(self, *, seed: Optional[int] = None, options: Optional[Mapping[str, object]] = None):
+    def reset(self, *, seed: int | None = None, options: Mapping[str, object] | None = None):
         super().reset(seed=seed)
         options = dict(options or {})
 
         # Ensure any previous evaluator/browser session is fully closed to avoid leaks
         # across episodes (which would otherwise spawn many headless Chromium processes).
-        try:
+        with contextlib.suppress(Exception):
             self.close()
-        except Exception:
-            pass
 
         # Obtener task real: se puede pasar via options['task'] o generarla
-        task: Optional[Task] = options.get("task") if isinstance(options.get("task"), Task) else None
+        task: Task | None = options.get("task") if isinstance(options.get("task"), Task) else None
         if not task:
             # Select project honoring project_start_index and repository bounds
             try:
@@ -212,7 +213,7 @@ class IWAWebEnv(gym.Env):
             except Exception as e:
                 logger.warning(f"RewardBlender reset failed: {e}")
 
-        # Estado inicial de DOM y Top‑K
+        # Estado inicial de DOM y Top-K
         logger.info("ENV.reset: snapshot start")
         try:
             html, url = self._evaluator.run_with_timeout(self._browser.snapshot_text(), 3.0)
@@ -223,18 +224,14 @@ class IWAWebEnv(gym.Env):
 
         logger.info("ENV.reset: topk start")
         try:
-            self._cands, self._click_mask, self._macros = self._evaluator.run_with_timeout(
-                self._browser.topk(self._task.prompt, self.K), 5.0
-            )
+            self._cands, self._click_mask, self._macros = self._evaluator.run_with_timeout(self._browser.topk(self._task.prompt, self.K), 5.0)
         except Exception as e:
             logger.warning(f"ENV.reset: topk failed: {e}")
             self._cands, self._click_mask, self._macros = [], np.zeros((self.K,), dtype=np.bool_), {k: False for k in ("type_confirm", "submit", "scroll_down", "scroll_up", "back")}
         logger.info("ENV.reset: topk done")
 
-        logger.info(
-            f"ENV.reset: partial start")
-        logger.info(
-            f"ENV.reset: partial done tests={self._last_partial.tests_passed}/{self._last_partial.total_tests}")
+        logger.info("ENV.reset: partial start")
+        logger.info(f"ENV.reset: partial done tests={self._last_partial.tests_passed}/{self._last_partial.total_tests}")
         obs = self._obs(html, url, self._last_partial.raw_score)
         info = {"action_mask": self._mask(), "raw_score": self._last_partial.raw_score}
         return obs, info
@@ -305,9 +302,7 @@ class IWAWebEnv(gym.Env):
 
         logger.info("ENV.step: topk start")
         try:
-            self._cands, self._click_mask, self._macros = self._evaluator.run_with_timeout(
-                self._browser.topk(self._task.prompt, self.K), 5.0
-            )
+            self._cands, self._click_mask, self._macros = self._evaluator.run_with_timeout(self._browser.topk(self._task.prompt, self.K), 5.0)
         except Exception as e:
             logger.warning(f"ENV.step: topk failed: {e}")
             self._cands, self._click_mask, self._macros = [], np.zeros((self.K,), dtype=np.bool_), {k: False for k in ("type_confirm", "submit", "scroll_down", "scroll_up", "back")}
@@ -411,6 +406,7 @@ class IWAWebEnv(gym.Env):
         async def _go():
             # Local import to avoid DI/bootstrap initialization when not needed
             from autoppia_iwa.entrypoints.benchmark.task_generation import generate_tasks_for_project
+
             tasks = await generate_tasks_for_project(
                 project,
                 use_cached=self.use_cached_tasks,

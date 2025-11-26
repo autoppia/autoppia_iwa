@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from collections import Counter
-from dataclasses import dataclass
 import html
-import json
-from typing import Iterable
+from collections import Counter
+from collections.abc import Iterable
+from dataclasses import dataclass
 from urllib.parse import urlsplit
 
 from bs4 import BeautifulSoup
@@ -103,10 +102,7 @@ def _structural_spacer_html(idx: int) -> str:
         "height:0;margin:0;border-bottom:1px solid rgba(148,163,184,0.18);",
     ]
     style = palette[idx % len(palette)]
-    return (
-        "<div class='iwa-structural-spacer' aria-hidden='true' data-iwa-structural='{{seed}}' "
-        f"style='display:block;pointer-events:none;{style}'></div>"
-    )
+    return f"<div class='iwa-structural-spacer' aria-hidden='true' data-iwa-structural='{{{{seed}}}}' style='display:block;pointer-events:none;{style}'></div>"
 
 
 def _structural_anchor_html(idx: int) -> str:
@@ -116,10 +112,7 @@ def _structural_anchor_html(idx: int) -> str:
         "min-height:2px;display:block;",
     ]
     style = palette[idx % len(palette)]
-    return (
-        "<div class='iwa-structural-anchor' aria-hidden='true' data-iwa-structural='{{seed}}' "
-        f"style='pointer-events:none;{style}'></div>"
-    )
+    return f"<div class='iwa-structural-anchor' aria-hidden='true' data-iwa-structural='{{{{seed}}}}' style='pointer-events:none;{style}'></div>"
 
 
 def _make_d1_templates(selector: str, path: str, idx: int) -> list[MutationTemplate]:

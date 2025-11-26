@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Iterable, Sequence
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable, Sequence
 
 from loguru import logger
 
@@ -102,7 +102,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
     )
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     prefix = args.output_prefix or f"leaderboard_{timestamp}"
     raw_path = paths.RAW_DIR / f"{prefix}.jsonl"
     dataset_path = paths.DATASETS_DIR / f"{prefix}.jsonl"

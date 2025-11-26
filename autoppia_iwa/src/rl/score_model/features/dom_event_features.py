@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import json
 import math
 import re
 from collections import Counter
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from ..features.snapshot_encoder import clean_dom
 

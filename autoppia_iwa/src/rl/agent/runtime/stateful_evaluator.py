@@ -16,18 +16,17 @@ Nota: Internamente usa asyncio.run(...) para operar con la API async.
 """
 
 import asyncio
+import contextlib
 import os
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
 
-from playwright.async_api import async_playwright
-from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from loguru import logger
+from playwright.async_api import async_playwright
 
+from autoppia_iwa.config.config import EVALUATOR_HEADLESS
 from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification, Task
-from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.evaluator.utils import run_partial_tests
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
@@ -54,10 +53,10 @@ class StatefulEvaluator:
     _browser: any = field(default=None, init=False, repr=False)
     _context: any = field(default=None, init=False, repr=False)
     _page: any = field(default=None, init=False, repr=False)
-    _backend: Optional[BackendDemoWebService] = field(default=None, init=False, repr=False)
+    _backend: BackendDemoWebService | None = field(default=None, init=False, repr=False)
     _project: any = field(default=None, init=False, repr=False)
-    _executor: Optional[PlaywrightBrowserExecutor] = field(default=None, init=False, repr=False)
-    _history: List[ActionExecutionResult] = field(default_factory=list, init=False, repr=False)
+    _executor: PlaywrightBrowserExecutor | None = field(default=None, init=False, repr=False)
+    _history: list[ActionExecutionResult] = field(default_factory=list, init=False, repr=False)
     _loop: asyncio.AbstractEventLoop | None = field(default=None, init=False, repr=False)
 
     # -----------------------------
@@ -99,10 +98,8 @@ class StatefulEvaluator:
         try:
             self._run(self._close_async())
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 self._loop.close()
-            except Exception:
-                pass
             self._loop = None
 
     # -----------------------------
@@ -147,10 +144,8 @@ class StatefulEvaluator:
                 "X-Validator-Id": validator_id,
             },
         )
-        try:
+        with contextlib.suppress(Exception):
             self._context.set_default_timeout(10_000)
-        except Exception:
-            pass
         self._page = await self._context.new_page()
 
         # Executor homogéneo con tus snapshots
@@ -178,19 +173,18 @@ class StatefulEvaluator:
                 ),
                 timeout=15,
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("SE.exec: timeout waiting execute_single_action")
             # In a timeout, try to capture a minimal snapshot state to keep rolling
             try:
-                snap = None
                 if self._page:
-                    html = await self._page.content()
+                    await self._page.content()
                     # url read without await; playwright property
-                    url = getattr(self._page, "url", "")
+                    getattr(self._page, "url", "")
                 else:
-                    html, url = "", ""
+                    _html, _url = "", ""
             except Exception:
-                html, url = "", ""
+                _html, _url = "", ""
             # Return a minimal failed result
             res = ActionExecutionResult(
                 successfully_executed=False,
@@ -246,5 +240,5 @@ class StatefulEvaluator:
         return self._page
 
     @property
-    def history(self) -> List[ActionExecutionResult]:
+    def history(self) -> list[ActionExecutionResult]:
         return list(self._history)

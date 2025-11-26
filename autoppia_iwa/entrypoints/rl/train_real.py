@@ -10,22 +10,23 @@ Requires:
 This script is code-configured: edit TrainCfg below and run directly.
 """
 
-from dataclasses import dataclass, field
+import contextlib
 import os
 import pprint
+from dataclasses import dataclass, field
 
 from loguru import logger
 from sb3_contrib import MaskablePPO
 from sb3_contrib.common.wrappers import ActionMasker
-from stable_baselines3.common.callbacks import CheckpointCallback, BaseCallback
+from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 
-from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
 from autoppia_iwa.entrypoints.benchmark.task_generation import (
-    get_projects_by_ids,
     generate_tasks_for_project,
+    get_projects_by_ids,
 )
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
+from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
 from autoppia_iwa.src.rl.agent.offline import BehaviorCloningConfig, BehaviorCloningTrainer, HttpTrajectoryProvider
 
 
@@ -115,8 +116,7 @@ def ensure_dir(path: str) -> str:
         os.makedirs(path, exist_ok=True)
         return path
     except Exception as e:
-        logger.warning(
-            f"Failed to create {path}: {e}. Falling back to local ./data/rl/models")
+        logger.warning(f"Failed to create {path}: {e}. Falling back to local ./data/rl/models")
         fallback = os.path.join("data", "rl", "models")
         os.makedirs(fallback, exist_ok=True)
         return fallback
@@ -125,8 +125,7 @@ def ensure_dir(path: str) -> str:
 def train(cfg: TrainCfg) -> str:
     # Resolve selected project like the benchmark and warm up cached tasks
     try:
-        idx = max(0, min(len(demo_web_projects)
-                  - 1, int(cfg.project_start_index)))
+        idx = max(0, min(len(demo_web_projects) - 1, int(cfg.project_start_index)))
         selected_id = demo_web_projects[idx].id
         projects = get_projects_by_ids(demo_web_projects, [selected_id])
         project = projects[0]
@@ -144,8 +143,7 @@ def train(cfg: TrainCfg) -> str:
                 use_cases=None,
                 enable_dynamic_html=False,
             )
-            logger.info(
-                f"Task cache ready: {len(tasks)} task(s) in {cfg.tasks_cache_dir}")
+            logger.info(f"Task cache ready: {len(tasks)} task(s) in {cfg.tasks_cache_dir}")
 
         _asyncio.run(_warmup())
     except Exception as e:
@@ -156,9 +154,11 @@ def train(cfg: TrainCfg) -> str:
     def _has_tensorboard() -> bool:
         try:
             import tensorboard as _tb  # noqa: F401
+
             return True
         except Exception:
             return False
+
     model = MaskablePPO(
         "MultiInputPolicy",
         env,
@@ -213,8 +213,7 @@ def train(cfg: TrainCfg) -> str:
 
     # Periodic checkpoints
     ckpt_dir = ensure_dir(os.path.join(cfg.save_dir, "checkpoints"))
-    checkpoint_cb = CheckpointCallback(
-        save_freq=cfg.checkpoint_every, save_path=ckpt_dir, name_prefix="ppo_real")
+    checkpoint_cb = CheckpointCallback(save_freq=cfg.checkpoint_every, save_path=ckpt_dir, name_prefix="ppo_real")
 
     # Episode/step logger for quick visibility
     class TrainingLoggerCallback(BaseCallback):
@@ -226,20 +225,17 @@ def train(cfg: TrainCfg) -> str:
             self.ep_invalids = 0
             # Hardcoded debugging: always pause on each step and episode and print summaries
             self.debug_pause = "both"  # values previously: none|step|episode|both
-            self.debug_verbose = True   # pretty-print full info dict each step
-            self.debug_summary = True   # print compact step/episode summaries
+            self.debug_verbose = True  # pretty-print full info dict each step
+            self.debug_summary = True  # print compact step/episode summaries
 
         def _print_step_summary(self, info: dict, reward: float, step_idx: int) -> None:
             try:
                 mask = info.get("action_mask") or []
-                mask_true = int(sum(bool(x)
-                                for x in mask)) if mask is not None else 0
+                mask_true = int(sum(bool(x) for x in mask)) if mask is not None else 0
                 # Last 5 entries correspond to macros in this env (TYPE_CONFIRM, SUBMIT, SCROLL_DOWN, SCROLL_UP, BACK)
-                macros = list(
-                    mask[-5:]) if mask is not None and len(mask) >= 5 else []
+                macros = list(mask[-5:]) if mask is not None and len(mask) >= 5 else []
                 enabled_macros = []
-                names = ["type_confirm", "submit", "scroll_down",
-                         "scroll_up", "back"][: len(macros)]
+                names = ["type_confirm", "submit", "scroll_down", "scroll_up", "back"][: len(macros)]
                 for i, m in enumerate(macros):
                     if m:
                         enabled_macros.append(names[i])
@@ -265,7 +261,7 @@ def train(cfg: TrainCfg) -> str:
                 print(
                     "[DBG] episode summary: "
                     f"ep={self.ep_idx} len={self.ep_len} ep_r={self.ep_reward:.3f} tests={tp}/{tt} raw={rs:.3f} "
-                    f"success={succ} invalids={self.ep_invalids} url={info.get('current_url','')}"
+                    f"success={succ} invalids={self.ep_invalids} url={info.get('current_url', '')}"
                 )
             except Exception:
                 pass
@@ -293,8 +289,7 @@ def train(cfg: TrainCfg) -> str:
                 url = info.get("current_url", "")
                 evs = info.get("backend_event_names", []) or []
                 evs_str = ",".join(evs[:3])
-                logger.info(
-                    f"[STEP {self.ep_len}] a={desc} raw={raw:.3f} tests={tp}/{tt} url={url} events=[{evs_str}] reward={r:.3f}")
+                logger.info(f"[STEP {self.ep_len}] a={desc} raw={raw:.3f} tests={tp}/{tt} url={url} events=[{evs_str}] reward={r:.3f}")
                 if self.debug_summary:
                     self._print_step_summary(info, r, self.ep_len)
                 if self.debug_verbose:
@@ -303,10 +298,8 @@ def train(cfg: TrainCfg) -> str:
 
             # Always allow pausing every step, even if infos is empty
             if self.debug_pause in ("step", "both"):
-                try:
+                with contextlib.suppress(EOFError):
                     input("[DBG] Press Enter to continue (step)… ")
-                except EOFError:
-                    pass
 
             if dones and bool(dones[0]):
                 tp = int(info.get("tests_passed", 0)) if infos else 0
@@ -314,19 +307,15 @@ def train(cfg: TrainCfg) -> str:
                 rs = float(info.get("raw_score", 0.0)) if infos else 0.0
                 succ = bool(tp > 0 and tp == tt) if tt else False
                 self.ep_idx += 1
-                logger.info(
-                    f"[EP {self.ep_idx}] len={self.ep_len} reward={self.ep_reward:.3f} tests={tp}/{tt} raw={rs:.3f} success={succ} invalids={self.ep_invalids}"
-                )
+                logger.info(f"[EP {self.ep_idx}] len={self.ep_len} reward={self.ep_reward:.3f} tests={tp}/{tt} raw={rs:.3f} success={succ} invalids={self.ep_invalids}")
                 if self.debug_summary and infos:
                     self._print_episode_summary(infos[0] or {})
                 if self.debug_verbose and infos:
                     print("[DBG] episode final info:")
                     pprint.pprint(infos[0] or {}, width=100)
                 if self.debug_pause in ("episode", "both"):
-                    try:
+                    with contextlib.suppress(EOFError):
                         input("[DBG] Press Enter to continue (episode)… ")
-                    except EOFError:
-                        pass
                 # reset counters
                 self.ep_reward = 0.0
                 self.ep_len = 0
@@ -335,8 +324,7 @@ def train(cfg: TrainCfg) -> str:
 
     out_path: str | None = None
     try:
-        model.learn(total_timesteps=int(cfg.total_steps), callback=[
-                    checkpoint_cb, TrainingLoggerCallback()])
+        model.learn(total_timesteps=int(cfg.total_steps), callback=[checkpoint_cb, TrainingLoggerCallback()])
 
         # Final save
         save_dir = ensure_dir(cfg.save_dir)
@@ -373,10 +361,8 @@ def train(cfg: TrainCfg) -> str:
 
 def main():
     # Align logging with benchmark so EVALUATION/TEST logs look the same
-    try:
+    with contextlib.suppress(Exception):
         setup_logging("benchmark.log")
-    except Exception:
-        pass
     cfg = TrainCfg()
     logger.info(f"Starting training with config: {cfg}")
     try:

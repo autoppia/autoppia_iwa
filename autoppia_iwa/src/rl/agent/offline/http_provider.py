@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 import numpy as np
 import requests
@@ -51,10 +51,7 @@ class HttpTrajectoryProvider(TrajectoryProvider):
         )
         response.raise_for_status()
         payload = response.json()
-        if isinstance(payload, dict):
-            trajectories = payload.get("trajectories", [])
-        else:
-            trajectories = payload
+        trajectories = payload.get("trajectories", []) if isinstance(payload, dict) else payload
 
         for traj_raw in trajectories:
             steps_raw = traj_raw.get("steps", [])

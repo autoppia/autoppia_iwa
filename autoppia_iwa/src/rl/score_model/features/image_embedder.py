@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import base64
 import io
-from typing import Optional
 
 from PIL import Image
 
@@ -33,7 +32,7 @@ def embed_image_b64(b64: str) -> list[float]:
     return emb.astype("float32").tolist()
 
 
-def maybe_embed_image(b64: Optional[str]) -> list[float]:
+def maybe_embed_image(b64: str | None) -> list[float]:
     """Embed screenshot when available; otherwise return zero vector."""
 
     return embed_image_b64(b64) if b64 else [0.0] * 512

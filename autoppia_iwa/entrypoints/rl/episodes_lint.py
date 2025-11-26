@@ -4,8 +4,8 @@ import argparse
 import glob
 import json
 from collections import Counter
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 
 def summarize_episodes(pattern: str) -> dict:
@@ -74,11 +74,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     print(f"Files: {stats['files']}")
     print(f"Total steps: {stats['steps']}")
     print(f"Null-action steps: {stats['null_actions']} ({null_pct:.1f}%)")
-    print(
-        f"Any-success steps: {stats['success_steps']}, "
-        f"invalid action flags: {stats['invalid_actions']}, "
-        f"loop penalties: {stats['loop_penalties']}"
-    )
+    print(f"Any-success steps: {stats['success_steps']}, invalid action flags: {stats['invalid_actions']}, loop penalties: {stats['loop_penalties']}")
     print(f"Mask length: {stats['mask_length']}")
     print(f"Top actions (by count): {stats['action_histogram'].most_common(10)}")
     return 0

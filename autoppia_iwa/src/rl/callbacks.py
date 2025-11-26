@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+
 from stable_baselines3.common.callbacks import BaseCallback
 
 
@@ -15,15 +17,11 @@ class EpisodeDiagnostics(BaseCallback):
             if "success" in info:
                 self.logger.record("env/success_flag", int(bool(info["success"])))
             if "milestones" in info:
-                try:
-                    self.logger.record("env/milestone_count", int(len(info["milestones"])))
-                except Exception:  # pragma: no cover - best effort logging
-                    pass
+                with contextlib.suppress(Exception):  # pragma: no cover - best effort logging
+                    self.logger.record("env/milestone_count", len(info["milestones"]))
             if "rnd_intrinsic" in info:
-                try:
+                with contextlib.suppress(Exception):  # pragma: no cover - best effort logging
                     self.logger.record("env/rnd_intrinsic", float(info["rnd_intrinsic"]))
-                except Exception:  # pragma: no cover - best effort logging
-                    pass
         return True
 
 

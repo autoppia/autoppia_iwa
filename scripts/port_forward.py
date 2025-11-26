@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
 async def handle_client(local_reader: asyncio.StreamReader, local_writer: asyncio.StreamWriter, target_host: str, target_port: int) -> None:
     try:
         remote_reader, remote_writer = await asyncio.open_connection(target_host, target_port)
-    except Exception as exc:  # pragma: no cover
+    except Exception:  # pragma: no cover
         local_writer.close()
         await local_writer.wait_closed()
         return

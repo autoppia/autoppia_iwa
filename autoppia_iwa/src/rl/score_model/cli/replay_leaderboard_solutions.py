@@ -7,9 +7,10 @@ import argparse
 import asyncio
 import json
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from loguru import logger
 
@@ -23,9 +24,8 @@ from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.execution.actions.base import BaseAction
-from autoppia_iwa.src.web_agents.classes import TaskSolution
-
 from autoppia_iwa.src.rl.agent.evaluators.instrumented import InstrumentationConfig, JsInstrumentedEvaluator
+from autoppia_iwa.src.web_agents.classes import TaskSolution
 
 PROJECT_MAP: dict[str, WebProject] = {project.id: project for project in demo_web_projects}
 

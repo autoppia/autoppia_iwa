@@ -25,11 +25,9 @@ from torch.utils.data import DataLoader
 try:  # pragma: no cover
     from tqdm import tqdm
 except Exception as exc:  # pragma: no cover
-    raise RuntimeError(
-        "tqdm is required for evaluate_reward_model. Install it in your environment (pip install tqdm)."
-    ) from exc
+    raise RuntimeError("tqdm is required for evaluate_reward_model. Install it in your environment (pip install tqdm).") from exc
 
-from ..datasets.loaders import FEATURE_DIR, PAIRS_PATH, RewardDataset, _load_vector
+from ..datasets.loaders import PAIRS_PATH, RewardDataset, _load_vector
 from ..training.train_reward_model import RewardConfig, RewardModel, load_config
 from ..utils import config_path as get_config_path
 
@@ -136,7 +134,7 @@ def evaluate(config_path: Path, checkpoint: Path | None, pairs_path: Path | None
         try:
             dataset = RewardDataset(cfg, split=split)
         except FileNotFoundError:
-            print(f"[warn] Missing reward dataset for split '{split}' – skipping.")
+            print(f"[warn] Missing reward dataset for split '{split}' - skipping.")
             continue
 
         metrics = _evaluate_success_head(model, dataset, batch_size=cfg.batch)
