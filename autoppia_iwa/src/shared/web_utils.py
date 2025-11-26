@@ -84,3 +84,35 @@ def clean_html(html_content: str) -> str:
         return clean_soup.prettify()
     except Exception:
         return ""
+
+
+def generate_html_differences(html_list: list[str]) -> list[str]:
+    """
+    Generate a list of initial HTML followed by diffs between consecutive HTMLs.
+
+    Used by JudgeBaseOnHTML test to analyze HTML changes between actions.
+
+    Args:
+        html_list: List of HTML strings from different browser states
+
+    Returns:
+        List with first HTML + diffs between consecutive states
+    """
+    import difflib
+
+    if not html_list:
+        return []
+
+    diffs = [html_list[0]]
+    prev_html = html_list[0]
+
+    for current_html in html_list[1:]:
+        prev_lines = prev_html.splitlines(keepends=True)
+        current_lines = current_html.splitlines(keepends=True)
+        diff_generator = difflib.unified_diff(prev_lines, current_lines, lineterm="")
+        diff_str = "".join(diff_generator)
+        if diff_str:
+            diffs.append(diff_str)
+        prev_html = current_html
+
+    return diffs
