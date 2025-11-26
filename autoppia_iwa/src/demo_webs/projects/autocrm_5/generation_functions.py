@@ -38,7 +38,7 @@ async def _get_data(
     method: str | None = None,
     filter_key: str | None = None,
     seed_value: int | None = None,
-    count: int = 100,
+    count: int = 50,
 ) -> list[dict]:
     return await fetch_crm_data(entity_type, method=method, filter_key=filter_key, seed_value=seed_value, count=count)
 
@@ -609,19 +609,8 @@ async def generate_view_pending_events_constraints(task_url: str | None = None, 
         print("[ERROR] No dataset provided")
         return constraints
 
-    total_events = len(events_data)
     sorted_events = sorted(events_data, key=lambda e: e.get("date", ""))
     earliest_date = sorted_events[0].get("date", "") if sorted_events else ""
-
-    total_operator = random.choice(
-        [
-            ComparisonOperator.EQUALS,
-            ComparisonOperator.NOT_EQUALS,
-            ComparisonOperator.GREATER_EQUAL,
-            ComparisonOperator.LESS_EQUAL,
-        ]
-    )
-    constraints.append(create_constraint_dict("total", total_operator, total_events))
 
     if earliest_date:
         earliest_operator = random.choice([ComparisonOperator.EQUALS, ComparisonOperator.NOT_EQUALS])

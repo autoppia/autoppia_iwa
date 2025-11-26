@@ -30,6 +30,7 @@ from .generation_functions import (
     generate_document_deleted_constraints,
     generate_document_uploaded_constraints,
     generate_filter_matter_status_constraints,
+    generate_log_edited_constraints,
     generate_new_calendar_event_constraints,
     generate_new_log_added_constraints,
     generate_search_client_constraints,
@@ -217,16 +218,16 @@ FILTER_MATTER_STATUS_USE_CASE = UseCase(
     constraints_generator=generate_filter_matter_status_constraints,
     examples=[
         {
-            "prompt": "Filter matters to only show those with status 'Active'.",
-            "prompt_for_task_generation": "Filter matters to only show those with status 'Active'.",
+            "prompt": "Filter matters to only show those with status 'Active' or as similar.",
+            "prompt_for_task_generation": "Filter matters to only show those with status 'Active' or as similar.",
         },
         {
-            "prompt": "Filter matters to exclude status 'Archived'.",
-            "prompt_for_task_generation": "Filter matters to exclude status 'Archived'.",
+            "prompt": "Filter matters to exclude status 'Archived' or as similar.",
+            "prompt_for_task_generation": "Filter matters to exclude status 'Archived' or as similar.",
         },
         {
-            "prompt": "Show matters that are either 'Active' or 'On Hold'.",
-            "prompt_for_task_generation": "Show matters that are either 'Active' or 'On Hold'.",
+            "prompt": "Show matters that are either 'Active' or 'On Hold' or as similar.",
+            "prompt_for_task_generation": "Show matters that are either 'Active' or 'On Hold' or as similar.",
         },
     ],
 )

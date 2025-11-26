@@ -557,7 +557,6 @@ class LogEdited(Event, BaseEventValidator):
     """Event triggered when a time log is edited"""
 
     event_name: str = "LOG_EDITED"
-    before: TimeLog
     after: TimeLog
 
     class ValidationCriteria(BaseModel):
@@ -583,14 +582,12 @@ class LogEdited(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "LogEdited":
         base_event = Event.parse(backend_event)
-        before_log = TimeLog(**backend_event.data.get("before", {}))
         after_log = TimeLog(**backend_event.data.get("after", {}))
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            before=before_log,
             after=after_log,
         )
 
@@ -670,11 +667,9 @@ class SearchMatter(Event, BaseEventValidator):
 
     event_name: str = "SEARCH_MATTER"
     query: str
-    results: int | None = None
 
     class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
-        results: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -682,7 +677,6 @@ class SearchMatter(Event, BaseEventValidator):
         return all(
             [
                 self._validate_field(self.query, criteria.query),
-                self._validate_field(self.results, criteria.results),
             ],
         )
 
@@ -695,7 +689,6 @@ class SearchMatter(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             query=backend_event.data.get("query", ""),
-            results=backend_event.data.get("results"),
         )
 
 
@@ -755,7 +748,6 @@ class UpdateMatter(Event, BaseEventValidator):
     """Event triggered when a matter is updated"""
 
     event_name: str = "UPDATE_MATTER"
-    before: Matter
     after: Matter
 
     class ValidationCriteria(BaseModel):
@@ -779,14 +771,12 @@ class UpdateMatter(Event, BaseEventValidator):
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "UpdateMatter":
         base_event = Event.parse(backend_event)
-        before_matter = Matter(**backend_event.data.get("before", {}))
         after_matter = Matter(**backend_event.data.get("after", {}))
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            before=before_matter,
             after=after_matter,
         )
 
@@ -795,11 +785,9 @@ class ViewPendingEvents(Event, BaseEventValidator):
     """Event triggered when viewing pending calendar events"""
 
     event_name: str = "VIEW_PENDING_EVENTS"
-    total: int | None = None
     earliest: str | None = None
 
     class ValidationCriteria(BaseModel):
-        total: int | CriterionValue | None = None
         earliest: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -807,7 +795,6 @@ class ViewPendingEvents(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.total, criteria.total),
                 self._validate_field(self.earliest, criteria.earliest),
             ],
         )
@@ -820,7 +807,6 @@ class ViewPendingEvents(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            total=backend_event.data.get("total"),
             earliest=backend_event.data.get("earliest"),
         )
 
