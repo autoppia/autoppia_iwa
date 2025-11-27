@@ -25,7 +25,6 @@ from .generation_functions import (
     generate_dropoff_option_constraints,
     generate_increment_item_restaurant_constraints,
     generate_place_order_constraints,
-    generate_quick_order_constraints,
     generate_quick_reorder_constraints,
     generate_restaurant_filter_constraints,
     generate_search_restaurant_constraints,
@@ -211,10 +210,13 @@ QUICK_ORDER_USE_CASE = UseCase(
     description="The user starts a quick order from the quick order modal.",
     event=QuickOrderStartedEvent,
     event_source_code=QuickOrderStartedEvent.get_source_code_of_class(),
-    constraints_generator=generate_quick_order_constraints,
+    constraints_generator=None,
     examples=[
-        {"prompt": "Start a quick order for 'Pizza Palace'.", "prompt_for_task_generation": "Start a quick order for 'Pizza Palace'."},
+        {"prompt": "Start a quick order for pizza.", "prompt_for_task_generation": "Start a quick order for pizza."},
         {"prompt": "Quick order any Japanese restaurant.", "prompt_for_task_generation": "Quick order any Japanese restaurant."},
+        {"prompt": "Start a quick order for burgers.", "prompt_for_task_generation": "Start a quick order for burgers."},
+        {"prompt": "Quick order from any Chinese restaurant.", "prompt_for_task_generation": "Quick order from any Chinese restaurant."},
+        {"prompt": "Start a quick order for desserts.", "prompt_for_task_generation": "Start a quick order for desserts."},
     ],
 )
 

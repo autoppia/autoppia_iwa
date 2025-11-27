@@ -13,6 +13,8 @@ from .data import (
     FIELD_OPERATORS_DROPOFF_OPTION_MAP,
     FIELD_OPERATORS_INCREMENT_QUANTITY_MAP,
     FIELD_OPERATORS_PLACE_ORDER_MAP,
+    FIELD_OPERATORS_QUICK_REORDER_MAP,
+    FIELD_OPERATORS_RESTAURANT_FILTER_MAP,
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
 )
@@ -520,37 +522,16 @@ async def generate_restaurant_filter_constraints(task_url: str | None = None, da
     if not restaurants:
         return constraints_list
     restaurant = random.choice(restaurants)
-    candidate_fields = ["search", "cuisine", "rating"]
+    # candidate_fields = ["cuisine", "rating"]
+    candidate_fields = list(FIELD_OPERATORS_RESTAURANT_FILTER_MAP.keys())
     num_constraints = random.randint(1, len(candidate_fields))
     for field in random.sample(candidate_fields, num_constraints):
         allowed_ops = FIELD_OPERATORS_RESTAURANT_FILTER_MAP.get(field, [])
         if not allowed_ops:
             continue
         operator = ComparisonOperator(random.choice(allowed_ops))
-        field_value = restaurant.get("name") if field == "search" else restaurant.get(field)
+        field_value = restaurant.get(field)
         value = _generate_constraint_value(operator, field_value, field, restaurants)
-        if value is not None:
-            constraints_list.append(create_constraint_dict(field, operator, value))
-    return constraints_list
-
-
-async def generate_quick_order_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints_list: list[dict[str, Any]] = []
-    restaurants = await _ensure_restaurant_dataset(task_url, dataset)
-    if not restaurants:
-        return constraints_list
-    restaurant = random.choice(restaurants)
-    field_map = {
-        "restaurant_id": restaurant.get("id"),
-        "restaurant_name": restaurant.get("name"),
-        "cuisine": restaurant.get("cuisine"),
-    }
-    for field, val in field_map.items():
-        allowed_ops = FIELD_OPERATORS_QUICK_ORDER_MAP.get(field, [])
-        if not allowed_ops:
-            continue
-        operator = ComparisonOperator(random.choice(allowed_ops))
-        value = _generate_constraint_value(operator, val, field, restaurants)
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list

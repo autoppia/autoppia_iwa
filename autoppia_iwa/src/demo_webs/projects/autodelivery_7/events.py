@@ -68,26 +68,20 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
 
 class RestaurantFilterEvent(Event, BaseEventValidator):
     event_name: str = "RESTAURANT_FILTER"
-    search: str | None = None
     cuisine: str | None = None
     rating: float | None = None
-    total: int | None = None
 
     class ValidationCriteria(BaseModel):
-        search: str | CriterionValue | None = None
         cuisine: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
-        total: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.search, criteria.search),
                 self._validate_field(self.cuisine, criteria.cuisine),
                 self._validate_field(self.rating, criteria.rating),
-                self._validate_field(self.total, criteria.total),
             ]
         )
 
@@ -100,10 +94,8 @@ class RestaurantFilterEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            search=data.get("search"),
             cuisine=data.get("cuisine"),
             rating=float(data.get("rating", 0)) if data.get("rating") is not None else None,
-            total=data.get("total"),
         )
 
 
@@ -275,39 +267,6 @@ class OpenCheckoutPageEvent(Event, BaseEventValidator):
 
 class QuickOrderStartedEvent(Event, BaseEventValidator):
     event_name: str = "QUICK_ORDER_STARTED"
-    restaurant_id: str
-    restaurant_name: str
-    cuisine: str | None = None
-
-    class ValidationCriteria(BaseModel):
-        restaurant_id: str | CriterionValue | None = None
-        restaurant_name: str | CriterionValue | None = None
-        cuisine: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.restaurant_id, criteria.restaurant_id),
-                self._validate_field(self.restaurant_name, criteria.restaurant_name),
-                self._validate_field(self.cuisine, criteria.cuisine),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "QuickOrderStartedEvent":
-        base = Event.parse(backend_event)
-        data = backend_event.data
-        return cls(
-            event_name=base.event_name,
-            timestamp=base.timestamp,
-            web_agent_id=base.web_agent_id,
-            user_id=base.user_id,
-            restaurant_id=data.get("restaurantId", ""),
-            restaurant_name=data.get("restaurantName", ""),
-            cuisine=data.get("cuisine", ""),
-        )
 
 
 class QuickReorderEvent(Event, BaseEventValidator):
