@@ -1,4 +1,0 @@
-{"episode_id": "c2c6b579-e0b2-4f94-852e-8d7627dd1e48:js-tracer_1762477085.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.008528, "backend_event_total": 0, "split": "val"}
-{"episode_id": "c2c6b579-e0b2-4f94-852e-8d7627dd1e48:js-tracer_1762477775.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.007882, "backend_event_total": 0, "split": "val"}
-{"episode_id": "c2c6b579-e0b2-4f94-852e-8d7627dd1e48:js-tracer_1762477776.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.010276, "backend_event_total": 0, "split": "val"}
-{"episode_id": "7229be1e-f345-4da8-aa72-ef46e4a1193c:agent2_1762476805.jsonl", "steps": 1, "success_rate": 1.0, "avg_execution_time": 0.1, "backend_event_total": 0, "split": "val"}

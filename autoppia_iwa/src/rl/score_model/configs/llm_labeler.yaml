@@ -1,5 +1,0 @@
-provider: openai
-model: gpt-4o-mini
-sleep_ms: 100
-max_dom_chars: 3000
-enable_images: false
