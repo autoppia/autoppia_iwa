@@ -371,6 +371,88 @@ class EmailSaveAsDraftEvent(Event, BaseEventValidator):
         )
 
 
+class EditDraftEmailEvent(EmailSaveAsDraftEvent):
+    event_name: str = "EDIT_DRAFT_EMAIL"
+
+
+class ArchiveEmailEvent(ViewEmailEvent):
+    event_name: str = "ARCHIVE_EMAIL"
+
+
+class ReplyEmailEvent(Event, BaseEventValidator):
+    event_name: str = "REPLY_EMAIL"
+    subject: str
+    from_email: str
+    to: list[str]
+
+    class ValidationCriteria(BaseModel):
+        subject: str | CriterionValue | None = None
+        from_email: str | CriterionValue | None = None
+        to: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.from_email, criteria.from_email),
+                any(self._validate_field(addr, criteria.to) for addr in self.to) if criteria.to else True,
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ReplyEmailEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            subject=data.get("subject", ""),
+            from_email=data.get("from", ""),
+            to=data.get("to", []),
+        )
+
+
+class ForwardEmailEvent(Event, BaseEventValidator):
+    event_name: str = "FORWARD_EMAIL"
+    subject: str
+    from_email: str
+    to: list[str]
+
+    class ValidationCriteria(BaseModel):
+        subject: str | CriterionValue | None = None
+        from_email: str | CriterionValue | None = None
+        to: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.from_email, criteria.from_email),
+                any(self._validate_field(addr, criteria.to) for addr in self.to) if criteria.to else True,
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ForwardEmailEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            subject=data.get("subject", ""),
+            from_email=data.get("from", ""),
+            to=data.get("to", []),
+        )
+
+
 # ---------------------------------------------------------------------------
 # UI / UX settings
 # ---------------------------------------------------------------------------
@@ -429,6 +511,10 @@ class SearchEmailEvent(Event, BaseEventValidator):
         )
 
 
+class ClearSelectionEvent(Event, BaseEventValidator):
+    event_name: str = "CLEAR_SELECTION"
+
+
 EVENTS = [
     ViewEmailEvent,
     StarEmailEvent,
@@ -440,8 +526,13 @@ EVENTS = [
     CreateLabelEvent,
     SendEmailEvent,
     EmailSaveAsDraftEvent,
+    EditDraftEmailEvent,
+    ArchiveEmailEvent,
+    ReplyEmailEvent,
+    ForwardEmailEvent,
     ThemeChangedEvent,
     SearchEmailEvent,
+    ClearSelectionEvent,
 ]
 BACKEND_EVENT_TYPES = {
     "VIEW_EMAIL": ViewEmailEvent,
@@ -454,6 +545,11 @@ BACKEND_EVENT_TYPES = {
     "CREATE_LABEL": CreateLabelEvent,
     "SEND_EMAIL": SendEmailEvent,
     "EMAIL_SAVE_AS_DRAFT": EmailSaveAsDraftEvent,
+    "EDIT_DRAFT_EMAIL": EditDraftEmailEvent,
+    "ARCHIVE_EMAIL": ArchiveEmailEvent,
+    "REPLY_EMAIL": ReplyEmailEvent,
+    "FORWARD_EMAIL": ForwardEmailEvent,
     "THEME_CHANGED": ThemeChangedEvent,
     "SEARCH_EMAIL": SearchEmailEvent,
+    "CLEAR_SELECTION": ClearSelectionEvent,
 }

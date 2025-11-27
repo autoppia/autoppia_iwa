@@ -326,6 +326,26 @@ async def generate_save_as_draft_send_email_constraints(task_url: str | None = N
     return constraints_list
 
 
+async def generate_archive_email_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list = []
+    possible_fields = list(FIELD_OPERATORS_VIEW_EMAIL_MAP.keys())
+    data = await _ensure_email_dataset(task_url, dataset)
+    if not data:
+        return constraints_list
+    email = choice(data)
+    num_constraints = random.randint(1, len(possible_fields))
+    selected_fields = random.sample(possible_fields, num_constraints)
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_VIEW_EMAIL_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        field_value = email.get(field)
+        value = _generate_constraint_value(operator, field_value, field, data)
+        constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
 def _get_labels_and_colors(email_data: list[dict[str, Any]]) -> tuple:
     labels = set()
     colors = set()

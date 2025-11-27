@@ -2,12 +2,17 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
     AddLabelEvent,
+    ArchiveEmailEvent,
+    ClearSelectionEvent,
     CreateLabelEvent,
     DeleteEmailEvent,
+    EditDraftEmailEvent,
     EmailSaveAsDraftEvent,
+    ForwardEmailEvent,
     MarkAsSpamEvent,
     MarkAsUnreadEvent,
     MarkEmailAsImportantEvent,
+    ReplyEmailEvent,
     SearchEmailEvent,
     SendEmailEvent,
     StarEmailEvent,
@@ -16,6 +21,7 @@ from .events import (
 )
 from .generation_functions import (
     generate_add_label_constraints,
+    generate_archive_email_constraints,
     generate_create_label_constraints,
     generate_is_important_constraints,
     generate_is_read_constraints,
@@ -470,6 +476,78 @@ EMAIL_SAVE_AS_DRAFT_USE_CASE = UseCase(
     ],
 )
 
+EDIT_DRAFT_EMAIL_USE_CASE = UseCase(
+    name="EDIT_DRAFT_EMAIL",
+    description="The user opens and edits an existing draft email.",
+    event=EditDraftEmailEvent,
+    event_source_code=EditDraftEmailEvent.get_source_code_of_class(),
+    constraints_generator=generate_save_as_draft_send_email_constraints,
+    examples=[
+        {
+            "prompt": "Edit the draft email to update the subject to 'Client Proposal Updates'.",
+            "prompt_for_task_generation": "Edit the draft email to update the subject to 'Client Proposal Updates'.",
+        },
+        {
+            "prompt": "Open the draft addressed to 'jane.doe@example.com' and revise it.",
+            "prompt_for_task_generation": "Open the draft addressed to 'jane.doe@example.com' and revise it.",
+        },
+    ],
+)
+
+ARCHIVE_EMAIL_USE_CASE = UseCase(
+    name="ARCHIVE_EMAIL",
+    description="The user archives an email to remove it from the inbox.",
+    event=ArchiveEmailEvent,
+    event_source_code=ArchiveEmailEvent.get_source_code_of_class(),
+    constraints_generator=generate_archive_email_constraints,
+    examples=[
+        {
+            "prompt": "Archive the email from 'alice.smith@company.com' about 'Project Kickoff Meeting'.",
+            "prompt_for_task_generation": "Archive the email from 'alice.smith@company.com' about 'Project Kickoff Meeting'.",
+        },
+        {
+            "prompt": "Move to archive the message with subject 'Q2 Report Feedback'.",
+            "prompt_for_task_generation": "Move to archive the message with subject 'Q2 Report Feedback'.",
+        },
+    ],
+)
+
+REPLY_EMAIL_USE_CASE = UseCase(
+    name="REPLY_EMAIL",
+    description="The user replies to an email.",
+    event=ReplyEmailEvent,
+    event_source_code=ReplyEmailEvent.get_source_code_of_class(),
+    constraints_generator=generate_save_as_draft_send_email_constraints,
+    examples=[
+        {
+            "prompt": "Reply to the email from 'bob.johnson@tech.org' about 'Lunch Plans'.",
+            "prompt_for_task_generation": "Reply to the email from 'bob.johnson@tech.org' about 'Lunch Plans'.",
+        },
+        {
+            "prompt": "Reply all to the message titled 'Project Kickoff Meeting'.",
+            "prompt_for_task_generation": "Reply all to the message titled 'Project Kickoff Meeting'.",
+        },
+    ],
+)
+
+FORWARD_EMAIL_USE_CASE = UseCase(
+    name="FORWARD_EMAIL",
+    description="The user forwards an email to new recipients.",
+    event=ForwardEmailEvent,
+    event_source_code=ForwardEmailEvent.get_source_code_of_class(),
+    constraints_generator=generate_save_as_draft_send_email_constraints,
+    examples=[
+        {
+            "prompt": "Forward the email 'Q2 Report Feedback' to john.doe@gmail.com.",
+            "prompt_for_task_generation": "Forward the email 'Q2 Report Feedback' to john.doe@gmail.com.",
+        },
+        {
+            "prompt": "Forward the message from 'alice.smith@company.com' to the finance team.",
+            "prompt_for_task_generation": "Forward the message from 'alice.smith@company.com' to the finance team.",
+        },
+    ],
+)
+
 THEME_CHANGED_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Clearly indicate a change in theme (e.g., switch to dark/light/system).
@@ -550,12 +628,29 @@ SEARCH_EMAIL_USE_CASE = UseCase(
     ],
 )
 
+# CLEAR_SELECTION (no constraints)
+CLEAR_SELECTION_USE_CASE = UseCase(
+    name="CLEAR_SELECTION",
+    description="The user clears all selected emails.",
+    event=ClearSelectionEvent,
+    event_source_code=ClearSelectionEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "Clear the current selection.",
+            "prompt_for_task_generation": "Clear the current selection.",
+        }
+    ],
+)
+
 ###############################################################################
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
     SEARCH_EMAIL_USE_CASE,
+    CLEAR_SELECTION_USE_CASE,
     VIEW_EMAIL_USE_CASE,
+    ARCHIVE_EMAIL_USE_CASE,
     STAR_EMAIL_USE_CASE,
     MARK_EMAIL_AS_IMPORTANT_USE_CASE,
     MARK_AS_UNREAD_USE_CASE,
@@ -565,5 +660,8 @@ ALL_USE_CASES = [
     CREATE_LABEL_USE_CASE,
     SEND_EMAIL_USE_CASE,
     EMAIL_SAVE_AS_DRAFT_USE_CASE,
+    EDIT_DRAFT_EMAIL_USE_CASE,
+    REPLY_EMAIL_USE_CASE,
+    FORWARD_EMAIL_USE_CASE,
     THEME_CHANGED_USE_CASE,
 ]
