@@ -512,3 +512,67 @@ async def generate_place_order_constraints(task_url: str | None = None) -> list[
     add_to_cart_constraint = await generate_add_to_cart_constraints(task_url)
     constraints.extend(add_to_cart_constraint)
     return constraints
+
+
+async def generate_restaurant_filter_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+    if not restaurants:
+        return constraints_list
+    restaurant = random.choice(restaurants)
+    candidate_fields = ["search", "cuisine", "rating"]
+    num_constraints = random.randint(1, len(candidate_fields))
+    for field in random.sample(candidate_fields, num_constraints):
+        allowed_ops = FIELD_OPERATORS_RESTAURANT_FILTER_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        field_value = restaurant.get("name") if field == "search" else restaurant.get(field)
+        value = _generate_constraint_value(operator, field_value, field, restaurants)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
+async def generate_quick_order_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+    if not restaurants:
+        return constraints_list
+    restaurant = random.choice(restaurants)
+    field_map = {
+        "restaurant_id": restaurant.get("id"),
+        "restaurant_name": restaurant.get("name"),
+        "cuisine": restaurant.get("cuisine"),
+    }
+    for field, val in field_map.items():
+        allowed_ops = FIELD_OPERATORS_QUICK_ORDER_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        value = _generate_constraint_value(operator, val, field, restaurants)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list
+
+
+async def generate_quick_reorder_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+    if not restaurants:
+        return constraints_list
+    restaurant = random.choice(restaurants)
+    menu = restaurant.get("menu", [])
+    if not menu:
+        return constraints_list
+    menu_item = random.choice(menu)
+    for field in ["item", "restaurant"]:
+        allowed_ops = FIELD_OPERATORS_QUICK_REORDER_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        value_source = menu_item.get("name") if field == "item" else restaurant.get("name")
+        value = _generate_constraint_value(operator, value_source, field, restaurants)
+        if value is not None:
+            constraints_list.append(create_constraint_dict(field, operator, value))
+    return constraints_list

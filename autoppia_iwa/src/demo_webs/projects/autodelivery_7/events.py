@@ -66,6 +66,47 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
         )
 
 
+class RestaurantFilterEvent(Event, BaseEventValidator):
+    event_name: str = "RESTAURANT_FILTER"
+    search: str | None = None
+    cuisine: str | None = None
+    rating: float | None = None
+    total: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        search: str | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        total: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.search, criteria.search),
+                self._validate_field(self.cuisine, criteria.cuisine),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.total, criteria.total),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "RestaurantFilterEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            search=data.get("search"),
+            cuisine=data.get("cuisine"),
+            rating=float(data.get("rating", 0)) if data.get("rating") is not None else None,
+            total=data.get("total"),
+        )
+
+
 class AddToCartModalOpenEvent(Event, BaseEventValidator):
     event_name: str = "ADD_TO_CART_MODAL_OPEN"
     restaurant: str
@@ -229,6 +270,76 @@ class OpenCheckoutPageEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             items=items,
+        )
+
+
+class QuickOrderStartedEvent(Event, BaseEventValidator):
+    event_name: str = "QUICK_ORDER_STARTED"
+    restaurant_id: str
+    restaurant_name: str
+    cuisine: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        restaurant_id: str | CriterionValue | None = None
+        restaurant_name: str | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.restaurant_id, criteria.restaurant_id),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.cuisine, criteria.cuisine),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "QuickOrderStartedEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            restaurant_id=data.get("restaurantId", ""),
+            restaurant_name=data.get("restaurantName", ""),
+            cuisine=data.get("cuisine", ""),
+        )
+
+
+class QuickReorderEvent(Event, BaseEventValidator):
+    event_name: str = "QUICK_REORDER"
+    item: str
+    restaurant: str
+
+    class ValidationCriteria(BaseModel):
+        item: str | CriterionValue | None = None
+        restaurant: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.item, criteria.item),
+                self._validate_field(self.restaurant, criteria.restaurant),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "QuickReorderEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            item=data.get("itemName", ""),
+            restaurant=data.get("restaurantName", ""),
         )
 
 
@@ -545,6 +656,7 @@ class AddressAddedEvent(Event, BaseEventValidator):
 EVENTS = [
     SearchRestaurantEvent,
     ViewRestaurantEvent,
+    RestaurantFilterEvent,
     AddToCartModalOpenEvent,
     ItemIncrementedEvent,
     AddToCartEvent,
@@ -555,10 +667,13 @@ EVENTS = [
     DeleteReviewEvent,
     BackToAllRestaurantsEvent,
     PlaceOrderEvent,
+    QuickOrderStartedEvent,
+    QuickReorderEvent,
 ]
 BACKEND_EVENT_TYPES = {
     "SEARCH_DELIVERY_RESTAURANT": SearchRestaurantEvent,
     "VIEW_DELIVERY_RESTAURANT": ViewRestaurantEvent,
+    "RESTAURANT_FILTER": RestaurantFilterEvent,
     "ADD_TO_CART_MODAL_OPEN": AddToCartModalOpenEvent,
     "ITEM_INCREMENTED": ItemIncrementedEvent,
     "ADD_TO_CART_MENU_ITEM": AddToCartEvent,
@@ -569,4 +684,6 @@ BACKEND_EVENT_TYPES = {
     "DELETE_REVIEW": DeleteReviewEvent,
     "BACK_TO_ALL_RESTAURANTS": BackToAllRestaurantsEvent,
     "ADDRESS_ADDED": AddressAddedEvent,
+    "QUICK_ORDER_STARTED": QuickOrderStartedEvent,
+    "QUICK_REORDER": QuickReorderEvent,
 }

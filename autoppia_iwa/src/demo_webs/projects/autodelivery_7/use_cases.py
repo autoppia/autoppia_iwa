@@ -10,6 +10,9 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
     ItemIncrementedEvent,
     OpenCheckoutPageEvent,
     PlaceOrderEvent,
+    QuickOrderStartedEvent,
+    QuickReorderEvent,
+    RestaurantFilterEvent,
     SearchRestaurantEvent,
     ViewRestaurantEvent,
 )
@@ -22,6 +25,9 @@ from .generation_functions import (
     generate_dropoff_option_constraints,
     generate_increment_item_restaurant_constraints,
     generate_place_order_constraints,
+    generate_quick_order_constraints,
+    generate_quick_reorder_constraints,
+    generate_restaurant_filter_constraints,
     generate_search_restaurant_constraints,
     generate_view_restaurant_constraints,
 )
@@ -70,6 +76,18 @@ VIEW_RESTAURANT_USE_CASE = UseCase(
             "prompt_for_task_generation": "View the restaurant that has 'Best wood-fired pizzas' in its description.",
         },
         {"prompt": "Show details for the featured restaurant.", "prompt_for_task_generation": "Show details for the featured restaurant."},
+    ],
+)
+
+RESTAURANT_FILTER_USE_CASE = UseCase(
+    name="RESTAURANT_FILTER",
+    description="The user filters restaurants by search, cuisine, or rating.",
+    event=RestaurantFilterEvent,
+    event_source_code=RestaurantFilterEvent.get_source_code_of_class(),
+    constraints_generator=generate_restaurant_filter_constraints,
+    examples=[
+        {"prompt": "Filter restaurants to show only Italian cuisine with rating above 4.", "prompt_for_task_generation": "Filter restaurants to show only Italian cuisine with rating above 4."},
+        {"prompt": "Show restaurants matching search 'pizza' and rating at least 4.5.", "prompt_for_task_generation": "Show restaurants matching search 'pizza' and rating at least 4.5."},
     ],
 )
 ADD_TO_CART_MODAL_OPEN_ADDITIONAL_PROMPT_INFO = """
@@ -185,6 +203,30 @@ ADD_TO_CART_USE_CASE = UseCase(
             "prompt": "Add when item equals 'Margherita Pizza' and size equals 'small' and preferences in-list ['No Cheese','No Basil'].",
             "prompt_for_task_generation": "Add when item equals 'Margherita Pizza' and size equals 'small' and preferences in-list ['No Cheese','No Basil'].",
         },
+    ],
+)
+
+QUICK_ORDER_USE_CASE = UseCase(
+    name="QUICK_ORDER_STARTED",
+    description="The user starts a quick order from the quick order modal.",
+    event=QuickOrderStartedEvent,
+    event_source_code=QuickOrderStartedEvent.get_source_code_of_class(),
+    constraints_generator=generate_quick_order_constraints,
+    examples=[
+        {"prompt": "Start a quick order for 'Pizza Palace'.", "prompt_for_task_generation": "Start a quick order for 'Pizza Palace'."},
+        {"prompt": "Quick order any Japanese restaurant.", "prompt_for_task_generation": "Quick order any Japanese restaurant."},
+    ],
+)
+
+QUICK_REORDER_USE_CASE = UseCase(
+    name="QUICK_REORDER",
+    description="The user reorders a recently ordered item.",
+    event=QuickReorderEvent,
+    event_source_code=QuickReorderEvent.get_source_code_of_class(),
+    constraints_generator=generate_quick_reorder_constraints,
+    examples=[
+        {"prompt": "Reorder the recent item 'California Roll' from Sushi Zen.", "prompt_for_task_generation": "Reorder the recent item 'California Roll' from Sushi Zen."},
+        {"prompt": "Quick reorder my last pizza order.", "prompt_for_task_generation": "Quick reorder my last pizza order."},
     ],
 )
 
@@ -440,11 +482,14 @@ ADDRESS_ADDED_USE_CASE = UseCase(
 ALL_USE_CASES = [
     SEARCH_RESTAURANT_USE_CASE,
     VIEW_RESTAURANT_USE_CASE,
+    RESTAURANT_FILTER_USE_CASE,
     DELETE_REVIEW_USE_CASE,
     BACK_TO_ALL_RESTAURANTS_USE_CASE,
     ADD_TO_CART_MODAL_OPEN_USE_CASE,
     ITEM_INCREMENTED_USE_CASE,
     ADD_TO_CART_USE_CASE,
+    QUICK_ORDER_USE_CASE,
+    QUICK_REORDER_USE_CASE,
     OPEN_CHECKOUT_PAGE_USE_CASE,
     DROPOFF_PREFERENCE_USE_CASE,
     ADDRESS_ADDED_USE_CASE,
