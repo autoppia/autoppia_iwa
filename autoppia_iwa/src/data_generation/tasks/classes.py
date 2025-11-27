@@ -5,7 +5,7 @@ from typing import Annotated, Any
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 # Import your test classes:
-from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest, CheckUrlTest, FindInHtmlTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
+from autoppia_iwa.src.data_generation.tests.classes import CheckEventTest, JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 
@@ -22,7 +22,7 @@ class BrowserSpecification(BaseModel):
 
 
 # The union of test classes for polymorphic deserialization
-TestUnion = Annotated[CheckUrlTest | FindInHtmlTest | CheckEventTest | JudgeBaseOnHTML | JudgeBaseOnScreenshot, Field(discriminator="type")]
+TestUnion = Annotated[CheckEventTest | JudgeBaseOnHTML | JudgeBaseOnScreenshot, Field(discriminator="type")]
 
 
 class Task(BaseModel):
