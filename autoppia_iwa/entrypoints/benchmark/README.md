@@ -163,25 +163,25 @@ CFG = BenchmarkConfig(
 
 ### **BenchmarkConfig Options**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| **Task Generation** | | | |
-| `use_cached_tasks` | bool | `False` | Load tasks from cache instead of generating |
-| `prompts_per_use_case` | int | `1` | Number of tasks per use case |
-| `num_use_cases` | int | `0` | Use cases to test (0 = all) |
-| `use_cases` | list[str] | `None` | Specific use cases to test |
-| **Execution** | | | |
-| `runs` | int | `1` | Number of test runs per task |
-| `max_parallel_agent_calls` | int | `1` | Concurrent agent requests |
-| `use_cached_solutions` | bool | `False` | Use cached solutions |
-| `record_gif` | bool | `False` | Save execution GIFs |
-| **Output** | | | |
-| `save_results_json` | bool | `True` | Save results to JSON |
-| `plot_results` | bool | `False` | Generate performance plots |
-| **Features** | | | |
-| `dynamic` | bool | `False` | Enable seed-based web variations |
-| `dynamic_phase_config` | object | `None` | Dynamic HTML mutation config |
-| `enable_visualization` | bool | `True` | Show task visualization |
+| Parameter                  | Type      | Default | Description                                 |
+| -------------------------- | --------- | ------- | ------------------------------------------- |
+| **Task Generation**        |           |         |                                             |
+| `use_cached_tasks`         | bool      | `False` | Load tasks from cache instead of generating |
+| `prompts_per_use_case`     | int       | `1`     | Number of tasks per use case                |
+| `num_use_cases`            | int       | `0`     | Use cases to test (0 = all)                 |
+| `use_cases`                | list[str] | `None`  | Specific use cases to test                  |
+| **Execution**              |           |         |                                             |
+| `runs`                     | int       | `1`     | Number of test runs per task                |
+| `max_parallel_agent_calls` | int       | `1`     | Concurrent agent requests                   |
+| `use_cached_solutions`     | bool      | `False` | Use cached solutions                        |
+| `record_gif`               | bool      | `False` | Save execution GIFs                         |
+| **Output**                 |           |         |                                             |
+| `save_results_json`        | bool      | `True`  | Save results to JSON                        |
+| `plot_results`             | bool      | `False` | Generate performance plots                  |
+| **Features**               |           |         |                                             |
+| `dynamic`                  | bool      | `False` | Enable seed-based web variations            |
+| `dynamic_phase_config`     | object    | `None`  | Dynamic HTML mutation config                |
+| `enable_visualization`     | bool      | `True`  | Show task visualization                     |
 
 ### **Paths (Auto-configured)**
 
@@ -203,48 +203,107 @@ base_dir/               # autoppia_iwa/
 
 ## 🌐 Demo Webs Setup
 
-### **Option A: Local Development**
+IWA requires demo websites to evaluate agents. Choose your deployment mode:
+
+### **Option A: Local Development** 🏠
+
+**Use case:** Developing/testing on your local machine
+
+**What happens:** You clone the webs repository and run them locally on your machine.
+
+**Steps:**
 
 ```bash
-# 1. Clone demo webs (separate repository)
+# 1. Clone demo webs repository (separate from IWA)
+cd ..
 git clone https://github.com/autoppia/autoppia_webs_demo
 cd autoppia_webs_demo
 
-# 2. Start all webs
+# 2. Run setup script
 ./scripts/setup.sh
 
-# This starts:
-# - webs_server (port 8090) - Shared backend
-# - web_1 to web_13 (ports 8100-8112) - Demo websites
+# This script will:
+# ✅ Install Docker & Docker Compose (if needed)
+# ✅ Build and start 13 demo websites
+# ✅ Start webs_server (shared backend)
+# ⏱️  Takes ~5-10 minutes first time
+
+# 3. Configure IWA to connect to local webs
+cd ../autoppia_iwa
+echo "DEMO_WEBS_ENDPOINT=http://localhost" >> .env
 ```
 
-### **Option B: Remote Deployment**
+**Result:**
+- ✅ webs_server running on `localhost:8090`
+- ✅ web_1 to web_13 running on `localhost:8100-8112`
+- ✅ IWA benchmark ready to run
+
+---
+
+### **Option B: Remote (Production)** 🌍
+
+**Use case:** Webs already deployed on your production server
+
+**What happens:** IWA connects to your existing deployed webs via HTTP.
+
+**Steps:**
 
 ```bash
-# Point to deployed webs
+# Just configure the remote endpoint
+cd autoppia_iwa
 echo "DEMO_WEBS_ENDPOINT=http://your-production-server.com" >> .env
+
+# Or if using custom domain:
+echo "DEMO_WEBS_ENDPOINT=https://webs.autoppia.com" >> .env
 ```
+
+**That's it!** IWA connects to remote webs. No need to clone or run anything locally.
+
+**Requirements:**
+- ✅ webs_server accessible on `<endpoint>:8090`
+- ✅ Demo webs accessible on `<endpoint>:8100-8112`
+
+---
+
+### **Verify Connection**
+
+Test that webs are accessible:
+
+```bash
+# For local:
+curl http://localhost:8090/health       # Backend → 200 OK
+curl http://localhost:8100/             # Web 1 → 200 OK
+
+# For remote:
+curl http://your-server.com:8090/health
+curl http://your-server.com:8100/
+```
+
+**Troubleshooting:**
+- Connection refused? Check `docker ps` (local) or server status (remote)
+- Wrong endpoint? Verify `DEMO_WEBS_ENDPOINT` in `.env`
 
 ### **Port Mapping**
 
-| Service | Port | URL |
-|---------|------|-----|
+| Service               | Port | URL                   |
+| --------------------- | ---- | --------------------- |
 | webs_server (backend) | 8090 | http://localhost:8090 |
-| autocinema | 8100 | http://localhost:8100 |
-| autobooks | 8101 | http://localhost:8101 |
-| autozone | 8102 | http://localhost:8102 |
-| autodining | 8103 | http://localhost:8103 |
-| autocrm | 8104 | http://localhost:8104 |
-| automail | 8105 | http://localhost:8105 |
-| autodelivery | 8106 | http://localhost:8106 |
-| autolodge | 8107 | http://localhost:8107 |
-| autoconnect | 8108 | http://localhost:8108 |
-| autowork | 8109 | http://localhost:8109 |
-| autocalendar | 8110 | http://localhost:8110 |
-| autolist | 8111 | http://localhost:8111 |
-| autodrive | 8112 | http://localhost:8112 |
+| autocinema            | 8100 | http://localhost:8100 |
+| autobooks             | 8101 | http://localhost:8101 |
+| autozone              | 8102 | http://localhost:8102 |
+| autodining            | 8103 | http://localhost:8103 |
+| autocrm               | 8104 | http://localhost:8104 |
+| automail              | 8105 | http://localhost:8105 |
+| autodelivery          | 8106 | http://localhost:8106 |
+| autolodge             | 8107 | http://localhost:8107 |
+| autoconnect           | 8108 | http://localhost:8108 |
+| autowork              | 8109 | http://localhost:8109 |
+| autocalendar          | 8110 | http://localhost:8110 |
+| autolist              | 8111 | http://localhost:8111 |
+| autodrive             | 8112 | http://localhost:8112 |
 
 **Verify connection:**
+
 ```bash
 curl http://localhost:8090/health  # Backend
 curl http://localhost:8100/        # Web 1
@@ -257,6 +316,7 @@ curl http://localhost:8100/        # Web 1
 ### **What is a Web Agent?**
 
 A web agent is an application that:
+
 1. Receives tasks from IWA
 2. Analyzes the requirements
 3. Returns a list of actions to execute
@@ -304,14 +364,14 @@ A web agent is an application that:
 
 ### **Available Actions**
 
-| Action | Fields | Description |
-|--------|--------|-------------|
-| `NavigateAction` | `url, go_back, go_forward` | Navigate to URL or history |
-| `ClickAction` | `x, y` | Click at coordinates |
-| `TypeAction` | `text` | Type text (current focused element) |
-| `ScrollAction` | `down, up` | Scroll page |
-| `WaitAction` | `seconds` | Wait time |
-| `HoldKeyAction` | `key` | Press key (Enter, Tab, etc.) |
+| Action           | Fields                     | Description                         |
+| ---------------- | -------------------------- | ----------------------------------- |
+| `NavigateAction` | `url, go_back, go_forward` | Navigate to URL or history          |
+| `ClickAction`    | `x, y`                     | Click at coordinates                |
+| `TypeAction`     | `text`                     | Type text (current focused element) |
+| `ScrollAction`   | `down, up`                 | Scroll page                         |
+| `WaitAction`     | `seconds`                  | Wait time                           |
+| `HoldKeyAction`  | `key`                      | Press key (Enter, Tab, etc.)        |
 
 See `src/execution/actions/actions.py` for complete specs.
 
@@ -358,6 +418,7 @@ if __name__ == '__main__':
 ```
 
 **Start agent:**
+
 ```bash
 pip install flask
 python my_agent.py
@@ -401,6 +462,7 @@ python my_agent.py
 `data/outputs/benchmark/per_project/autoppia_<project>_stats.json`
 
 Contains detailed statistics for each project:
+
 - Use case breakdown
 - Action sequences
 - Success/failure analysis
@@ -486,6 +548,7 @@ CFG = BenchmarkConfig(
 ### **Task Components**
 
 Each generated task includes:
+
 - **prompt:** Natural language description
 - **url:** Target URL (with seed if dynamic)
 - **tests:** Automated validation tests
@@ -533,6 +596,7 @@ agent = ApifiedWebAgent(
 ```
 
 **Agent must implement:**
+
 - `POST /solve_task` - Receives Task, returns TaskSolution
 - `GET /health` - Health check (optional but recommended)
 
@@ -555,6 +619,7 @@ from autoppia_iwa.src.web_agents.examples.browser_use.agent import BrowserUseAge
 ### **Test Types**
 
 **1. CheckEventTest** - Validates backend events
+
 ```python
 {
   "type": "CheckEventTest",
@@ -566,6 +631,7 @@ from autoppia_iwa.src.web_agents.examples.browser_use.agent import BrowserUseAge
 ```
 
 **2. CheckUrlTest** - Validates URL navigation
+
 ```python
 {
   "type": "CheckUrlTest",
@@ -574,6 +640,7 @@ from autoppia_iwa.src.web_agents.examples.browser_use.agent import BrowserUseAge
 ```
 
 **3. FindInHtmlTest** - Validates HTML content
+
 ```python
 {
   "type": "FindInHtmlTest",
@@ -582,6 +649,7 @@ from autoppia_iwa.src.web_agents.examples.browser_use.agent import BrowserUseAge
 ```
 
 **4. LLM-based Tests** - Semantic validation
+
 - `JudgeBaseOnScreenshot` - Analyzes screenshots
 - `JudgeBaseOnHTML` - Analyzes HTML changes
 
@@ -718,6 +786,7 @@ Tasks:
 ### **JSON Results**
 
 Detailed results in `data/outputs/benchmark/results/`:
+
 - Complete task-by-task breakdown
 - Action sequences
 - Timestamps
@@ -747,6 +816,7 @@ Detailed results in `data/outputs/benchmark/results/`:
 ## ✅ Summary
 
 **IWA Benchmark provides:**
+
 - ✅ Automated task generation (LLM-based)
 - ✅ Multi-agent evaluation (parallel execution)
 - ✅ Comprehensive testing (multiple test types)
