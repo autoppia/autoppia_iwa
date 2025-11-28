@@ -13,8 +13,9 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+
+# from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
 # =========================
 # 💡 Code configuration
@@ -64,12 +65,12 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    "autocinema",
+    # "autocinema",
     # "autobooks",
     # "autozone",
     # "autodining",
     # "autocrm",
-    # "automail",
+    "automail",
     # "autodelivery",
     # "autolodge",
     # "autoconnect",
@@ -134,11 +135,11 @@ CFG = BenchmarkConfig(
     # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
     dynamic=True,
     # TODO REVISAR PORQUE SOLO DEBEIRA HABER UNO
-    dynamic_phase_config=DynamicPhaseConfig(
-        enable_d1_structure=True,
-        enable_d3_attributes=True,
-        enable_d4_overlays=True,
-    ),
+    # dynamic_phase_config=DynamicPhaseConfig(
+    #     enable_d1_structure=True,
+    #     enable_d3_attributes=True,
+    #     enable_d4_overlays=True,
+    # ),
     # Persistence
     save_results_json=True,
     plot_results=False,
