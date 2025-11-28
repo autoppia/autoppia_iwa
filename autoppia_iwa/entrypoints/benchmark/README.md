@@ -1,417 +1,239 @@
-# 🔬 Benchmark Framework for Autoppia IWA
+# Benchmark - IWA Agent Evaluation
 
-> **Purpose**: Test your web agents locally before deploying to mainnet. Simulates validator behavior without network requirements.
+**Evaluate web agents against demo websites with automated scoring.**
 
-## 📋 Quick Overview
+## 🚀 Quick Start (3 Steps)
 
-**What it does:**
-
-- 🎯 **Generates tasks** for demo web projects
-- 🚀 **Sends tasks** to your local agents
-- 📊 **Evaluates solutions** using validator logic
-- 📈 **Compares agents** side by side
-
-**What you need:**
-
-1. **Demo web projects** running (e.g., `autoconnect`, `autocinema`)
-2. **Your agent(s)** deployed on local ports
-3. **Configuration** in `run.py`
-
----
-
-## 📂 Directory Structure
-
-```
-entrypoints/benchmark/
-├─ __init__.py
-├─ config.py              # BenchmarkConfig dataclass
-├─ tasks_generation.py     # Task generation/loading
-├─ benchmark.py           # Main benchmark orchestrator
-└─ run.py                 # Configuration & entry point
-```
-
-## 🕷️ What is a Web Agent?
-
-A **Web Agent** is an application that:
-
-- 📥 **Receive tasks** from validators
-- 🧠 **Process requirements** using your logic
-- 🎯 **Interacts** with web interfaces
-
-- ✅ **Return a list of actions** (see actions allowed)
-- 💰 **Earn rewards** based on performance
-  programmatically
-
-### **Task Structure**
-
-Your agent receives a **Task** which consists of:
-
-- **url**: The target URL to interact with
-- **prompt**: The task you need to perform
-- **id**: Unique task identifier
-- **specifications**: Additional task details (screen dimensions, etc.)
-
-### **Available Actions**
-
-Your web agents can use these actions:
-
-| Action        | Description                | Example Use Case      |
-| ------------- | -------------------------- | --------------------- |
-| `click`       | Mouse click at coordinates | Button interactions   |
-| `type`        | Text input                 | Form filling          |
-| `navigate`    | URL navigation             | Page changes          |
-| `screenshot`  | Screen capture             | State verification    |
-| `wait`        | Pause execution            | Loading waits         |
-| `assert`      | Condition verification     | Task validation       |
-| `hover`       | Mouse hover                | Tooltip triggers      |
-| `dragAndDrop` | Drag and drop              | File uploads, sorting |
-| `submit`      | Form submission            | Data sending          |
-| `doubleClick` | Double click               | File opening          |
-| `scroll`      | Page scrolling             | Content viewing       |
-| `select`      | Dropdown selection         | Option choosing       |
-
----
-
-## 🚀 Setup & Configuration
-
-### **Step 1: Environment Setup**
+### **1. Start Demo Webs**
 
 ```bash
-# Clone repository
-git clone https://github.com/autoppia/autoppia_web_agents_subnet
-cd autoppia_web_agents_subnet
-git submodule update --init --recursive --remote
+# Clone and run demo webs (separate repository)
+cd ..
+git clone https://github.com/autoppia/autoppia_webs_demo
+cd autoppia_webs_demo
+./scripts/setup.sh
 ```
 
-### **Step 2: Environment Configuration**
+This starts 13 demo websites on ports 8100-8112 and backend on 8090.
+
+### **2. Configure IWA**
 
 ```bash
-# Create environment file
-cp .env.example .env
+cd ../autoppia_iwa
+
+# Add to .env:
+echo "DEMO_WEBS_ENDPOINT=http://localhost" >> .env
+echo "OPENAI_API_KEY=your-api-key" >> .env
 ```
 
-**Configure LLM for task generation:**
-
-**Option 1: OpenAI (Recommended)**
+### **3. Run Benchmark**
 
 ```bash
-OPENAI_API_KEY="your_openai_api_key_here"
-```
-
-**Option 2: Chutes LLM**
-
-```bash
-LLM_PROVIDER=chutes
-CHUTES_BASE_URL=https://your-username-your-chute.chutes.ai/v1
-CHUTES_API_KEY=cpk_your_api_key_here
-CHUTES_MODEL=meta-llama/Llama-3.1-8B-Instruct
-CHUTES_MAX_TOKENS=2048
-CHUTES_TEMPERATURE=0.7
-CHUTES_USE_BEARER=False
-```
-
-⚠️ **Required**: LLM API key for task generation
-
-### **Step 3: Install Dependencies**
-
-```bash
-# Install validator dependencies for benchmark
-cd autoppia_iwa_module
-pip install -e .
-```
-
-### **Step 4: Deploy Demo Projects**
-
-✅ **Important**: Deploy the demo web applications before running benchmarks. These are required to evaluate agent actions and verify task completion.
-
-```bash
-# Deploy demo web applications for testing
-chmod +x autoppia_iwa_module/modules/webs_demo/scripts/setup.sh
-./autoppia_iwa_module/modules/webs_demo/scripts/setup.sh
-```
-
-**What this does:**
-
-- 🐳 Installs Docker/Docker Compose
-- 🚀 Deploys demo web containers
-- 🔗 Sets up networking
-
----
-
-## 🧪 Testing Your Agent
-
-### **Step 1: Test Task Generation**
-
-```bash
-# Verify tasks are generated correctly
-cd autoppia_iwa_module
 python -m autoppia_iwa.entrypoints.benchmark.run
 ```
 
-**Expected Output:**
+**Done!** Results saved to `data/outputs/benchmark/results/`
+
+---
+
+## 📋 What It Does
 
 ```
-2025-01-XX XX:XX:XX | INFO | === Project: work ===
-2025-01-XX XX:XX:XX | INFO | Generated 6 tasks for project 'work'
-2025-01-XX XX:XX:XX | SUCCESS | Task generation completed ✔
+1. Generate tasks → "Login to autocinema"
+2. Send to agent → POST /solve_task
+3. Execute actions → Click, type, navigate
+4. Validate tests → Did it work?
+5. Calculate score → 0.0 to 1.0
 ```
-
-**Troubleshooting:**
-
-- ❌ LLM API key set correctly?
-- ❌ Demo projects running? (`docker ps`)
-- ❌ Python environment activated?
-
-### **Step 2: Create Your Agent**
-
-**Create agent:**
-
-```bash
-mkdir -p my_agent
-cd my_agent
-nano simple_agent.py
-```
-
-**Basic Template:**
-
-Your agent must implement a `solve_task` method that returns a list of actions in the format described earlier. The evaluator will execute these actions to verify task completion.
-
-**Allowed actions:** See the action types list mentioned previously in this document.
-
-```python
-from flask import Flask, request, jsonify
-import json
-
-app = Flask(__name__)
-
-@app.route('/solve_task', methods=['POST'])
-def solve_task():
-    """Main endpoint - receives tasks from benchmark/validators"""
-    try:
-        task_data = request.get_json()
-
-        print(f"Received task: {task_data.get('id', 'unknown')}")
-        print(f"Task prompt: {task_data.get('prompt', 'No prompt')}")
-
-        # TODO: Implement your agent logic here
-
-        response = {
-            "task_id": task_data.get('id'),
-            "actions": [
-                {
-                    "action_type": "click",
-                    "x": 100,
-                    "y": 100
-                }
-            ],
-            "success": True,
-            "message": "Task processed successfully"
-        }
-
-        return jsonify(response)
-
-    except Exception as e:
-        return jsonify({
-            "task_id": task_data.get('id') if 'task_data' in locals() else "unknown",
-            "success": False,
-            "error": str(e)
-        }), 500
-
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({"status": "healthy", "agent": "simple_agent"})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-```
-
-**Start agent:**
-
-```bash
-pip install flask
-python simple_agent.py
-```
-
-**Expected output:**
-
-```
-* Running on all addresses (0.0.0.0)
-* Running on http://127.0.0.1:5000
-```
-
-### **Step 3: Configure Benchmark**
-
-```bash
-# Edit benchmark configuration
-nano autoppia_iwa_module/autoppia_iwa/entrypoints/benchmark/run.py
-```
-
-**Update configuration:**
-
-```python
-# Agents
-AGENTS = [
-    ApifiedWebAgent(id="1", name="MySimpleAgent", host="127.0.0.1", port=5000, timeout=120),
-]
-
-# Projects to test
-PROJECT_IDS = [
-    "work",        # Start with one project
-    # "cinema",    # Add more as needed
-    # "connect",   # Available: autozone, cinema, books, connect, work, etc.
-]
-```
-
-### **Step 4: Run Benchmark**
-
-```bash
-# Test your agent
-cd autoppia_iwa_module
-python -m autoppia_iwa.entrypoints.benchmark.run
-```
-
-**Watch logs:**
-
-**Agent logs:**
-
-```
-Received task: task_123
-Task prompt: Click on the login button
-```
-
-**Benchmark logs:**
-
-```
-2025-01-XX XX:XX:XX | INFO | MySimpleAgent | 100.00% (1/1) | avg 0.50s
-```
-
-✅ **Success**: Agent receiving tasks and responding!
 
 ---
 
 ## ⚙️ Configuration
 
-**Everything configured in code** - edit `run.py`:
-
-### **Basic Setup**
+Edit `run.py`:
 
 ```python
-# 1) Your agents
+# Your agents
 AGENTS = [
-    ApifiedWebAgent(id="1", name="MyAgent", host="127.0.0.1", port=5000, timeout=120),
-    # ApifiedWebAgent(id="2", name="MyAgent2", host="127.0.0.1", port=7000, timeout=120),
+    ApifiedWebAgent(
+        id="1",
+        name="MyAgent",
+        host="127.0.0.1",
+        port=7000,
+        timeout=120
+    ),
 ]
 
-# 2) Projects to test
-PROJECT_IDS = ["connect"]  # Available: connect, cinema, work, books, etc.
+# Projects to test
+PROJECT_IDS = [
+    "autocinema",    # Movie booking
+    "autobooks",     # Library management
+    # ...add more
+]
 
-# 3) Benchmark settings
+# Benchmark config
 CFG = BenchmarkConfig(
     projects=get_projects_by_ids(demo_web_projects, PROJECT_IDS),
     agents=AGENTS,
-    runs=3,                      # Number of test runs
-    max_parallel_agent_calls=1,  # Concurrency control
-    save_results_json=True,      # Save results to JSON
+    runs=3,                      # Test runs per task
+    max_parallel_agent_calls=1,  # Concurrency
+    save_results_json=True,
 )
 ```
 
-### **Configuration Options**
+---
 
-| Parameter                  | Default | Description                                    |
-| -------------------------- | ------- | ---------------------------------------------- |
-| `use_cached_tasks`         | `False` | Load tasks from cache instead of generating    |
-| `prompts_per_use_case`     | `1`     | Tasks per use case                             |
-| `num_use_cases`            | `0`     | Use cases to test (0 = all)                    |
-| `runs`                     | `1`     | Number of test runs                            |
-| `max_parallel_agent_calls` | `1`     | Concurrent agent calls                         |
-| `use_cached_solutions`     | `False` | Use cached solutions instead of calling agents |
-| `record_gif`               | `False` | Save evaluation GIFs                           |
-| `save_results_json`        | `True`  | Save results to JSON                           |
-| `plot_results`             | `False` | Generate performance plots                     |
+## 🌐 Demo Webs Deployment
+
+### **Option A: Local (Development)**
+
+```bash
+# 1. Clone webs repo
+git clone https://github.com/autoppia/autoppia_webs_demo
+
+# 2. Run setup
+cd autoppia_webs_demo && ./scripts/setup.sh
+
+# 3. Configure IWA
+echo "DEMO_WEBS_ENDPOINT=http://localhost" >> .env
+```
+
+### **Option B: Remote (Production)**
+
+```bash
+# Point to deployed webs
+echo "DEMO_WEBS_ENDPOINT=http://your-server.com" >> .env
+```
+
+**Verify connection:**
+```bash
+curl http://localhost:8090/health  # Backend
+curl http://localhost:8100/        # Web 1
+```
 
 ---
 
-## 📊 How It Works
+## 📊 Output Files
 
-### **Step-by-Step Process**
-
-**For each project:**
-
-1. **Generate/Load Tasks**
-
-   - **Cache**: `data/cache/tasks/<project>_tasks.json`
-   - **Generate**: Via LLM pipeline → save to cache
-
-2. **Solve Tasks**
-
-   - **Send** tasks to configured agents
-   - **Cache**: `data/cache/solutions/solutions.json` (optional)
-
-3. **Evaluate Solutions**
-
-   - **Score** each solution using validator logic
-   - **Record**: GIFs saved to `data/benchmark/recordings/<agent>/` (optional)
-
-4. **Save Results**
-
-   - **JSON**: `data/benchmark/results/benchmark_results_<timestamp>.json`
-   - **Plots**: `data/benchmark/results/stress_test_chart_<timestamp>.png` (optional)
-
-5. **Print Statistics**
-   - **Per agent**: Success rate, average time
-   - **Global**: Overall performance metrics
+| File | Location | Description |
+|------|----------|-------------|
+| Results | `data/outputs/benchmark/results/` | JSON with scores |
+| Logs | `data/outputs/benchmark/logs/` | Execution logs |
+| Cache | `data/outputs/benchmark/cache/` | Tasks/solutions |
+| Per-project | `data/outputs/benchmark/per_project/` | Project stats |
 
 ---
 
-## 📁 Output Files
+## 🎯 Configuration Options
 
-| File Type           | Location                                     | Description               |
-| ------------------- | -------------------------------------------- | ------------------------- |
-| **Tasks Cache**     | `data/cache/tasks/<project>_tasks.json`      | Generated tasks for reuse |
-| **Solutions Cache** | `data/cache/solutions/solutions.json`        | Agent responses for reuse |
-| **Results**         | `data/benchmark/results/benchmark_results_<timestamp>.json` | Performance metrics       |
-| **GIF Recordings**  | `data/benchmark/recordings/<agent>/<task_id>_run_<n>.gif`   | Task execution videos     |
-| **Plots**           | `data/benchmark/results/stress_test_chart_<timestamp>.png`  | Performance charts        |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `use_cached_tasks` | `False` | Reuse generated tasks |
+| `prompts_per_use_case` | `1` | Tasks per use case |
+| `runs` | `1` | Test runs per task |
+| `max_parallel_agent_calls` | `1` | Concurrent requests |
+| `record_gif` | `False` | Save execution videos |
+| `save_results_json` | `True` | Save results |
 
 ---
 
-## 🛠️ Customization
+## 🧪 Testing Your Agent
 
-### **Change Projects**
-
-```python
-PROJECT_IDS = ["cinema", "work"]  # Test different projects
-```
-
-### **Add More Agents**
+### **Minimal Agent Example**
 
 ```python
-AGENTS = [
-    ApifiedWebAgent(id="1", name="Agent1", host="127.0.0.1", port=5000, timeout=120),
-    ApifiedWebAgent(id="2", name="Agent2", host="127.0.0.1", port=7000, timeout=120),
-    ApifiedWebAgent(id="3", name="Agent3", host="127.0.0.1", port=8000, timeout=120),
-]
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/solve_task', methods=['POST'])
+def solve_task():
+    task = request.get_json()
+
+    # Your logic here
+    actions = [
+        {"type": "NavigateAction", "url": task["url"]},
+        {"type": "ClickAction", "x": 100, "y": 200},
+    ]
+
+    return jsonify({
+        "task_id": task["id"],
+        "actions": actions
+    })
+
+app.run(port=7000)
 ```
 
-### **Adjust Test Parameters**
-
-```python
-CFG = BenchmarkConfig(
-    runs=5,                      # More test runs
-    max_parallel_agent_calls=3,  # Higher concurrency
-    record_gif=True,             # Enable GIF recording
-    plot_results=True,           # Generate charts
-)
+**Start and test:**
+```bash
+python my_agent.py &
+python -m autoppia_iwa.entrypoints.benchmark.run
 ```
 
-## ✅ Summary
+---
 
-**Key Features:**
+## 📝 Available Actions
 
-- ✅ **Code-based configuration** - no CLI needed
-- ✅ **Cache-aware** - reuse tasks and solutions
-- ✅ **Multi-agent support** - compare agents side by side
-- ✅ **Rich outputs** - JSON reports, GIFs, plots
-- ✅ **Flexible testing** - adjust runs, concurrency, projects
+Your agent returns a list of action objects:
 
-**Main configuration file:** `run.py` - edit this to customize your benchmark runs.
+| Action | Fields | Example |
+|--------|--------|---------|
+| `NavigateAction` | `url` | Navigate to page |
+| `ClickAction` | `x, y` | Click coordinates |
+| `TypeAction` | `text` | Type text |
+| `ScrollAction` | `down/up` | Scroll page |
+| `WaitAction` | `seconds` | Wait time |
+
+See `src/execution/actions/` for full action specs.
+
+---
+
+## 🐛 Troubleshooting
+
+### **"Connection refused"**
+```bash
+# Check webs are running:
+docker ps | grep web_
+
+# Restart if needed:
+cd autoppia_webs_demo
+docker-compose restart
+```
+
+### **"No tasks generated"**
+```bash
+# Check OpenAI API key:
+echo $OPENAI_API_KEY
+
+# Test LLM:
+python -c "import openai; print(openai.api_key)"
+```
+
+### **"Agent timeout"**
+```bash
+# Check agent is running:
+curl http://localhost:7000/health
+
+# Increase timeout in run.py:
+timeout=180  # seconds
+```
+
+---
+
+## 📖 Further Reading
+
+- [Main README](../../readme.md) - IWA overview
+- [Demo Webs Setup](../../docs/demo_webs_setup.md) - Deployment guide
+- [Agent Examples](../../src/web_agents/examples/) - Sample implementations
+
+---
+
+## 💡 Key Points
+
+- **IWA evaluates, doesn't train** - Pure benchmark system
+- **Agent-agnostic** - Works with any agent (LLM, RL, rules)
+- **Demo webs separate** - Clone and run independently
+- **Simple setup** - 3 commands to start testing
+- **Rich evaluation** - Automated tests, scores, logs
+
+**Main file to edit:** `run.py` (configure agents, projects, settings)
