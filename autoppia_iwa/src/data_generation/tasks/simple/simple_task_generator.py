@@ -98,7 +98,7 @@ class SimpleTaskGenerator:
                 tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic, base_url=base_url)
                 all_tasks.extend(tasks_for_use_case)
                 _log_task_generation(
-                    f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}' (requested {prompts_for_case})",
+                    f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}' (requested {prompts_per_use_case})",
                     context="USE_CASE",
                 )
             except Exception as e:
