@@ -8,7 +8,7 @@ FRONTEND_PORT_INDEX = 9
 work_project = WebProject(
     id="autowork",
     name="Autoppia Work",
-    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),
+    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX, project_id="autowork"),
     backend_url=get_backend_service_url(),
     events=EVENTS,
     use_cases=ALL_USE_CASES,

@@ -155,13 +155,14 @@ EVALUATOR_HEADLESS="False"
 | Variable | Description | Default | Example |
 |----------|-------------|---------|---------|
 | `DEMO_WEBS_ENDPOINT` | Base URL for demo webs | `http://localhost` | `http://192.168.1.100` |
+| `DEMO_WEBS_DEPLOYMENT` | Use `local` to run webs locally, `remote` to use an existing deployment | `local` | `remote` |
 | `DEMO_WEBS_STARTING_PORT` | Starting port for demo webs | `8100` | `9000` |
 | `DEMO_WEB_SERVICE_PORT` | Port for shared demo backend service | `8090` | `7090` |
 | `AGENT_HOST` | Hostname where agent runs | `localhost` | `84.247.180.39` |
 | `AGENT_PORT` | **Port where web agent is deployed** | `9000` | `8080` |
 | `EVALUATOR_HEADLESS` | Run browser in headless mode | `False` | `True` |
 
-> **Note:** Demo webs are already deployed for internal runs. Simply point `DEMO_WEBS_ENDPOINT` at the existing host (defaults to `http://localhost`) and skip the Docker deployment scripts unless you need your own copy.
+> **Note:** Demo webs are already deployed for internal runs. Set `DEMO_WEBS_DEPLOYMENT=remote` and point `DEMO_WEBS_ENDPOINT` at the remote host (for example `https://sandbox.autoppia.com`) to consume the shared deployment. Use `DEMO_WEBS_DEPLOYMENT=local` to run the webs locally on the configured ports.
 
 💡 **Important**: `AGENT_PORT` specifies where your web agent will be deployed and accessible.
 

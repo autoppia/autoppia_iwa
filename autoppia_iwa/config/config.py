@@ -48,8 +48,9 @@ PROJECT_BASE_DIR = Path(__file__).resolve().parents[1]
 # DEMO WEBS
 # ============================
 DEMO_WEBS_ENDPOINT = os.getenv("DEMO_WEBS_ENDPOINT", "http://localhost").strip("/")
-DEMO_WEBS_STARTING_PORT = int(os.getenv("DEMO_WEBS_STARTING_PORT", "8100"))
+DEMO_WEBS_STARTING_PORT = int(os.getenv("DEMO_WEBS_STARTING_PORT", "8000"))
 DEMO_WEB_SERVICE_PORT = int(os.getenv("DEMO_WEB_SERVICE_PORT", "8090"))
+DEMO_WEBS_DEPLOYMENT = os.getenv("DEMO_WEBS_DEPLOYMENT", "local").strip().lower()
 
 # ============================
 # Agent Configurations

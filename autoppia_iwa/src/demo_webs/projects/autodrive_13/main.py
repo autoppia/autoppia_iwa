@@ -8,7 +8,7 @@ FRONTEND_PORT_INDEX = 12
 drive_project = WebProject(
     id="autodrive",
     name="Autoppia Drive",
-    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),
+    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX, project_id="autodrive"),
     backend_url=get_backend_service_url(),
     events=EVENTS,
     use_cases=ALL_USE_CASES,

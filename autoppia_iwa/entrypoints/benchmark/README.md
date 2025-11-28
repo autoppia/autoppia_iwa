@@ -22,6 +22,7 @@ cd ../autoppia_webs_demo
 # 2. Configure IWA
 cd ../autoppia_iwa
 echo "DEMO_WEBS_ENDPOINT=http://localhost" >> .env
+echo "DEMO_WEBS_DEPLOYMENT=local" >> .env
 echo "OPENAI_API_KEY=your-key" >> .env
 
 # 3. Run benchmark
@@ -252,9 +253,11 @@ echo "DEMO_WEBS_ENDPOINT=http://localhost" >> .env
 # Just configure the remote endpoint
 cd autoppia_iwa
 echo "DEMO_WEBS_ENDPOINT=http://your-production-server.com" >> .env
+echo "DEMO_WEBS_DEPLOYMENT=remote" >> .env
 
 # Or if using custom domain:
 echo "DEMO_WEBS_ENDPOINT=https://webs.autoppia.com" >> .env
+echo "DEMO_WEBS_DEPLOYMENT=remote" >> .env
 ```
 
 **That's it!** IWA connects to remote webs. No need to clone or run anything locally.

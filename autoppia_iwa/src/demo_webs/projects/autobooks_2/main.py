@@ -9,7 +9,7 @@ FRONTEND_PORT_INDEX = 1
 books_project = WebProject(
     id="autobooks",
     name="Autoppia Books",
-    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX),
+    frontend_url=get_frontend_url(index=FRONTEND_PORT_INDEX, project_id="autobooks"),
     backend_url=get_backend_service_url(),
     events=EVENTS,
     relevant_data=RELEVANT_DATA,
