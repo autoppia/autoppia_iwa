@@ -235,7 +235,7 @@ echo "DEMO_WEBS_ENDPOINT=http://localhost" >> .env
 
 **Result:**
 - ✅ webs_server running on `localhost:8090`
-- ✅ web_1 to web_13 running on `localhost:8100-8112`
+- ✅ web_1 to web_13 running on `localhost:8000-8012`
 - ✅ IWA benchmark ready to run
 
 ---
@@ -261,7 +261,7 @@ echo "DEMO_WEBS_ENDPOINT=https://webs.autoppia.com" >> .env
 
 **Requirements:**
 - ✅ webs_server accessible on `<endpoint>:8090`
-- ✅ Demo webs accessible on `<endpoint>:8100-8112`
+- ✅ Demo webs accessible on `<endpoint>:8000-8012`
 
 ---
 
@@ -272,11 +272,11 @@ Test that webs are accessible:
 ```bash
 # For local:
 curl http://localhost:8090/health       # Backend → 200 OK
-curl http://localhost:8100/             # Web 1 → 200 OK
+curl http://localhost:8000/             # Web 1 → 200 OK
 
 # For remote:
 curl http://your-server.com:8090/health
-curl http://your-server.com:8100/
+curl http://your-server.com:8000/
 ```
 
 **Troubleshooting:**
@@ -286,27 +286,27 @@ curl http://your-server.com:8100/
 ### **Port Mapping**
 
 | Service               | Port | URL                   |
-| --------------------- | ---- | --------------------- |
+| --------------------- |------| --------------------- |
 | webs_server (backend) | 8090 | http://localhost:8090 |
-| autocinema            | 8100 | http://localhost:8100 |
-| autobooks             | 8101 | http://localhost:8101 |
-| autozone              | 8102 | http://localhost:8102 |
-| autodining            | 8103 | http://localhost:8103 |
-| autocrm               | 8104 | http://localhost:8104 |
-| automail              | 8105 | http://localhost:8105 |
-| autodelivery          | 8106 | http://localhost:8106 |
-| autolodge             | 8107 | http://localhost:8107 |
-| autoconnect           | 8108 | http://localhost:8108 |
-| autowork              | 8109 | http://localhost:8109 |
-| autocalendar          | 8110 | http://localhost:8110 |
-| autolist              | 8111 | http://localhost:8111 |
-| autodrive             | 8112 | http://localhost:8112 |
+| autocinema            | 8000 | http://localhost:8000 |
+| autobooks             | 8001 | http://localhost:8001 |
+| autozone              | 8002 | http://localhost:8002 |
+| autodining            | 8003 | http://localhost:8003 |
+| autocrm               | 8004 | http://localhost:8004 |
+| automail              | 8005 | http://localhost:8005 |
+| autodelivery          | 8006 | http://localhost:8006 |
+| autolodge             | 8007 | http://localhost:8007 |
+| autoconnect           | 8008 | http://localhost:8008 |
+| autowork              | 8009 | http://localhost:8009 |
+| autocalendar          | 8010 | http://localhost:8010 |
+| autolist              | 8011 | http://localhost:8011 |
+| autodrive             | 8012 | http://localhost:8012 |
 
 **Verify connection:**
 
 ```bash
 curl http://localhost:8090/health  # Backend
-curl http://localhost:8100/        # Web 1
+curl http://localhost:8000/        # Web 1
 ```
 
 ---
@@ -326,7 +326,7 @@ A web agent is an application that:
 ```python
 {
   "id": "uuid",
-  "url": "http://localhost:8100/?seed=42",
+  "url": "http://localhost:8000/?seed=42",
   "prompt": "Login to autocinema with username agent_123",
   "tests": [
     {
@@ -347,7 +347,7 @@ A web agent is an application that:
   "actions": [
     {
       "type": "NavigateAction",
-      "url": "http://localhost:8100/login"
+      "url": "http://localhost:8000/login"
     },
     {
       "type": "ClickAction",
@@ -553,8 +553,6 @@ Each generated task includes:
 - **url:** Target URL (with seed if dynamic)
 - **tests:** Automated validation tests
   - `CheckEventTest` - Verify backend event fired
-  - `CheckUrlTest` - Verify URL navigation
-  - `FindInHtmlTest` - Verify HTML content
   - `JudgeBaseOnScreenshot` - LLM judges screenshot
   - `JudgeBaseOnHTML` - LLM judges HTML changes
 
@@ -630,23 +628,6 @@ from autoppia_iwa.src.web_agents.examples.browser_use.agent import BrowserUseAge
 }
 ```
 
-**2. CheckUrlTest** - Validates URL navigation
-
-```python
-{
-  "type": "CheckUrlTest",
-  "expected_url": "http://localhost:8100/dashboard"
-}
-```
-
-**3. FindInHtmlTest** - Validates HTML content
-
-```python
-{
-  "type": "FindInHtmlTest",
-  "expected_in_html": "Welcome, agent_123"
-}
-```
 
 **4. LLM-based Tests** - Semantic validation
 
