@@ -55,7 +55,7 @@ async def _llm_summary_async(llm_service, metadata: dict[str, Any]) -> str:
                 f"File size (KB): {metadata['size_kb']:.1f}\n"
                 f"Average brightness (0-255): {metadata['brightness']:.1f}\n"
                 f"Contrast (std dev): {metadata['contrast']:.1f}\n"
-                f"Coverage (non-white %): {metadata['coverage']*100:.1f}%\n"
+                f"Coverage (non-white %): {metadata['coverage'] * 100:.1f}%\n"
                 "Summarize quality."
             ),
         },
@@ -101,10 +101,7 @@ def summarize_screenshots(
                 summary = f"⚠️ LLM summary unavailable ({exc})"
         if not summary:
             verdict = "✅" if metrics.width >= 1280 and metrics.height >= 720 and metrics.coverage > 0.15 else "⚠️"
-            summary = (
-                f"{verdict} {metrics.resolution_str} screenshot (~{metrics.size_kb:.0f}KB) with coverage "
-                f"{metrics.coverage*100:.0f}%; heuristic quality assessment."
-            )
+            summary = f"{verdict} {metrics.resolution_str} screenshot (~{metrics.size_kb:.0f}KB) with coverage {metrics.coverage * 100:.0f}%; heuristic quality assessment."
         reviews.append(
             {
                 "filename": path.name,

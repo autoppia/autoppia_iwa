@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from typing import Iterable
+from collections.abc import Iterable
 
 from ...phases.visual.site_capture import DEFAULT_MAX_PAGES, capture_site
 

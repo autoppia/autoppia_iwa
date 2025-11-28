@@ -9,7 +9,6 @@ from types import ModuleType
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.execution.dynamic.palette import MutationPalette
 
-
 CONFIG_PATH = Path(__file__).resolve().parents[3] / "autoppia_iwa" / "src" / "demo_webs" / "config.py"
 PROJECTS_PACKAGE = "autoppia_iwa.src.demo_webs.projects"
 
@@ -64,4 +63,4 @@ def load_palette_from_module(project_id: str) -> MutationPalette | None:
     return None
 
 
-__all__ = ["project_slug_map", "load_palette_from_module"]
+__all__ = ["load_palette_from_module", "project_slug_map"]

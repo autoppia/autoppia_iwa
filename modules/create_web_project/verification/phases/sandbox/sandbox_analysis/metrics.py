@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from statistics import mean, pstdev
-from typing import Iterable
 from urllib.parse import urlsplit
 
-from .dataset import DatasetEntry, SolutionRecord
+from .dataset import DatasetEntry
 
 
 def compute_project_metrics(entries: Iterable[DatasetEntry], success_threshold: float = 0.99) -> dict:
@@ -58,8 +58,8 @@ def find_trivial_tasks(
 
 
 def detect_agent_memorization(entries: Iterable[DatasetEntry]) -> dict[str, dict]:
-    from hashlib import sha256
     import json
+    from hashlib import sha256
 
     agent_hashes: dict[str, set[str]] = defaultdict(set)
     agent_counts: dict[str, int] = defaultdict(int)

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from autoppia_iwa.src.demo_webs.projects.base_events import BaseEventValidator, Event
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
+
 class DateDropdownOpenedEvent(Event, BaseEventValidator):
     """User focuses the reservation date selector."""
 
@@ -17,12 +18,14 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.selected_date, criteria.selected_date),
-        ])
+        return all(
+            [
+                self._validate_field(self.selected_date, criteria.selected_date),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "DateDropdownOpenedEvent":
+    def parse(cls, backend_event: BackendEvent) -> DateDropdownOpenedEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -30,7 +33,7 @@ class DateDropdownOpenedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            selected_date=data.get('date'),
+            selected_date=data.get("date"),
         )
 
 
@@ -46,12 +49,14 @@ class TimeDropdownOpenedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.selected_time, criteria.selected_time),
-        ])
+        return all(
+            [
+                self._validate_field(self.selected_time, criteria.selected_time),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "TimeDropdownOpenedEvent":
+    def parse(cls, backend_event: BackendEvent) -> TimeDropdownOpenedEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -59,7 +64,7 @@ class TimeDropdownOpenedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            selected_time=data.get('time'),
+            selected_time=data.get("time"),
         )
 
 
@@ -75,12 +80,14 @@ class PeopleDropdownOpenedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.people_count, criteria.people_count),
-        ])
+        return all(
+            [
+                self._validate_field(self.people_count, criteria.people_count),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "PeopleDropdownOpenedEvent":
+    def parse(cls, backend_event: BackendEvent) -> PeopleDropdownOpenedEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -88,7 +95,7 @@ class PeopleDropdownOpenedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            people_count=data.get('people'),
+            people_count=data.get("people"),
         )
 
 
@@ -104,12 +111,14 @@ class SearchRestaurantEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.query, criteria.query),
-        ])
+        return all(
+            [
+                self._validate_field(self.query, criteria.query),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "SearchRestaurantEvent":
+    def parse(cls, backend_event: BackendEvent) -> SearchRestaurantEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -117,7 +126,7 @@ class SearchRestaurantEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            query=data.get('query'),
+            query=data.get("query"),
         )
 
 
@@ -145,18 +154,20 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.restaurant_id, criteria.restaurant_id),
-            self._validate_field(self.restaurant_name, criteria.restaurant_name),
-            self._validate_field(self.desc, criteria.desc),
-            self._validate_field(self.rating, criteria.rating),
-            self._validate_field(self.reviews, criteria.reviews),
-            self._validate_field(self.bookings, criteria.bookings),
-            self._validate_field(self.cuisine, criteria.cuisine),
-        ])
+        return all(
+            [
+                self._validate_field(self.restaurant_id, criteria.restaurant_id),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "ViewRestaurantEvent":
+    def parse(cls, backend_event: BackendEvent) -> ViewRestaurantEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -164,13 +175,13 @@ class ViewRestaurantEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            restaurant_id=data.get('restaurantId'),
-            restaurant_name=data.get('restaurantName'),
-            desc=data.get('desc'),
-            rating=data.get('rating'),
-            reviews=data.get('reviews'),
-            bookings=data.get('bookings'),
-            cuisine=data.get('cuisine'),
+            restaurant_id=data.get("restaurantId"),
+            restaurant_name=data.get("restaurantName"),
+            desc=data.get("desc"),
+            rating=data.get("rating"),
+            reviews=data.get("reviews"),
+            bookings=data.get("bookings"),
+            cuisine=data.get("cuisine"),
         )
 
 
@@ -208,23 +219,25 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.restaurant_id, criteria.restaurant_id),
-            self._validate_field(self.restaurant_name, criteria.restaurant_name),
-            self._validate_field(self.action, criteria.action),
-            self._validate_field(self.time, criteria.time),
-            self._validate_field(self.selected_date, criteria.selected_date),
-            self._validate_field(self.people, criteria.people),
-            self._validate_field(self.desc, criteria.desc),
-            self._validate_field(self.rating, criteria.rating),
-            self._validate_field(self.reviews, criteria.reviews),
-            self._validate_field(self.bookings, criteria.bookings),
-            self._validate_field(self.cuisine, criteria.cuisine),
-            self._validate_field(self.menu, criteria.menu),
-        ])
+        return all(
+            [
+                self._validate_field(self.restaurant_id, criteria.restaurant_id),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.action, criteria.action),
+                self._validate_field(self.time, criteria.time),
+                self._validate_field(self.selected_date, criteria.selected_date),
+                self._validate_field(self.people, criteria.people),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
+                self._validate_field(self.menu, criteria.menu),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "ViewFullMenuEvent":
+    def parse(cls, backend_event: BackendEvent) -> ViewFullMenuEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -232,18 +245,18 @@ class ViewFullMenuEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            restaurant_id=data.get('restaurantId'),
-            restaurant_name=data.get('restaurantName'),
-            action=data.get('action'),
-            time=data.get('time'),
-            selected_date=data.get('date'),
-            people=data.get('people'),
-            desc=data.get('desc'),
-            rating=data.get('rating'),
-            reviews=data.get('reviews'),
-            bookings=data.get('bookings'),
-            cuisine=data.get('cuisine'),
-            menu=data.get('menu'),
+            restaurant_id=data.get("restaurantId"),
+            restaurant_name=data.get("restaurantName"),
+            action=data.get("action"),
+            time=data.get("time"),
+            selected_date=data.get("date"),
+            people=data.get("people"),
+            desc=data.get("desc"),
+            rating=data.get("rating"),
+            reviews=data.get("reviews"),
+            bookings=data.get("bookings"),
+            cuisine=data.get("cuisine"),
+            menu=data.get("menu"),
         )
 
 
@@ -281,23 +294,25 @@ class CollapseMenuEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.restaurant_id, criteria.restaurant_id),
-            self._validate_field(self.restaurant_name, criteria.restaurant_name),
-            self._validate_field(self.action, criteria.action),
-            self._validate_field(self.time, criteria.time),
-            self._validate_field(self.selected_date, criteria.selected_date),
-            self._validate_field(self.people, criteria.people),
-            self._validate_field(self.desc, criteria.desc),
-            self._validate_field(self.rating, criteria.rating),
-            self._validate_field(self.reviews, criteria.reviews),
-            self._validate_field(self.bookings, criteria.bookings),
-            self._validate_field(self.cuisine, criteria.cuisine),
-            self._validate_field(self.menu, criteria.menu),
-        ])
+        return all(
+            [
+                self._validate_field(self.restaurant_id, criteria.restaurant_id),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.action, criteria.action),
+                self._validate_field(self.time, criteria.time),
+                self._validate_field(self.selected_date, criteria.selected_date),
+                self._validate_field(self.people, criteria.people),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
+                self._validate_field(self.menu, criteria.menu),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "CollapseMenuEvent":
+    def parse(cls, backend_event: BackendEvent) -> CollapseMenuEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -305,18 +320,18 @@ class CollapseMenuEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            restaurant_id=data.get('restaurantId'),
-            restaurant_name=data.get('restaurantName'),
-            action=data.get('action'),
-            time=data.get('time'),
-            selected_date=data.get('date'),
-            people=data.get('people'),
-            desc=data.get('desc'),
-            rating=data.get('rating'),
-            reviews=data.get('reviews'),
-            bookings=data.get('bookings'),
-            cuisine=data.get('cuisine'),
-            menu=data.get('menu'),
+            restaurant_id=data.get("restaurantId"),
+            restaurant_name=data.get("restaurantName"),
+            action=data.get("action"),
+            time=data.get("time"),
+            selected_date=data.get("date"),
+            people=data.get("people"),
+            desc=data.get("desc"),
+            rating=data.get("rating"),
+            reviews=data.get("reviews"),
+            bookings=data.get("bookings"),
+            cuisine=data.get("cuisine"),
+            menu=data.get("menu"),
         )
 
 
@@ -348,20 +363,22 @@ class BookRestaurantEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.restaurant_name, criteria.restaurant_name),
-            self._validate_field(self.time, criteria.time),
-            self._validate_field(self.selected_date, criteria.selected_date),
-            self._validate_field(self.people, criteria.people),
-            self._validate_field(self.desc, criteria.desc),
-            self._validate_field(self.rating, criteria.rating),
-            self._validate_field(self.reviews, criteria.reviews),
-            self._validate_field(self.bookings, criteria.bookings),
-            self._validate_field(self.cuisine, criteria.cuisine),
-        ])
+        return all(
+            [
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.time, criteria.time),
+                self._validate_field(self.selected_date, criteria.selected_date),
+                self._validate_field(self.people, criteria.people),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "BookRestaurantEvent":
+    def parse(cls, backend_event: BackendEvent) -> BookRestaurantEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -369,15 +386,15 @@ class BookRestaurantEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            restaurant_name=data.get('restaurantName'),
-            time=data.get('time'),
-            selected_date=data.get('date'),
-            people=data.get('people'),
-            desc=data.get('desc'),
-            rating=data.get('rating'),
-            reviews=data.get('reviews'),
-            bookings=data.get('bookings'),
-            cuisine=data.get('cuisine'),
+            restaurant_name=data.get("restaurantName"),
+            time=data.get("time"),
+            selected_date=data.get("date"),
+            people=data.get("people"),
+            desc=data.get("desc"),
+            rating=data.get("rating"),
+            reviews=data.get("reviews"),
+            bookings=data.get("bookings"),
+            cuisine=data.get("cuisine"),
         )
 
 
@@ -407,19 +424,21 @@ class CountrySelectedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.country_code, criteria.country_code),
-            self._validate_field(self.country_name, criteria.country_name),
-            self._validate_field(self.restaurant_name, criteria.restaurant_name),
-            self._validate_field(self.desc, criteria.desc),
-            self._validate_field(self.rating, criteria.rating),
-            self._validate_field(self.reviews, criteria.reviews),
-            self._validate_field(self.bookings, criteria.bookings),
-            self._validate_field(self.cuisine, criteria.cuisine),
-        ])
+        return all(
+            [
+                self._validate_field(self.country_code, criteria.country_code),
+                self._validate_field(self.country_name, criteria.country_name),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "CountrySelectedEvent":
+    def parse(cls, backend_event: BackendEvent) -> CountrySelectedEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -427,14 +446,14 @@ class CountrySelectedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            country_code=data.get('countryCode'),
-            country_name=data.get('countryName'),
-            restaurant_name=data.get('restaurantName'),
-            desc=data.get('desc'),
-            rating=data.get('rating'),
-            reviews=data.get('reviews'),
-            bookings=data.get('bookings'),
-            cuisine=data.get('cuisine'),
+            country_code=data.get("countryCode"),
+            country_name=data.get("countryName"),
+            restaurant_name=data.get("restaurantName"),
+            desc=data.get("desc"),
+            rating=data.get("rating"),
+            reviews=data.get("reviews"),
+            bookings=data.get("bookings"),
+            cuisine=data.get("cuisine"),
         )
 
 
@@ -462,18 +481,20 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.occasion, criteria.occasion),
-            self._validate_field(self.restaurant_name, criteria.restaurant_name),
-            self._validate_field(self.desc, criteria.desc),
-            self._validate_field(self.rating, criteria.rating),
-            self._validate_field(self.reviews, criteria.reviews),
-            self._validate_field(self.bookings, criteria.bookings),
-            self._validate_field(self.cuisine, criteria.cuisine),
-        ])
+        return all(
+            [
+                self._validate_field(self.occasion, criteria.occasion),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.desc, criteria.desc),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.reviews, criteria.reviews),
+                self._validate_field(self.bookings, criteria.bookings),
+                self._validate_field(self.cuisine, criteria.cuisine),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "OccasionSelectedEvent":
+    def parse(cls, backend_event: BackendEvent) -> OccasionSelectedEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -481,13 +502,13 @@ class OccasionSelectedEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            occasion=data.get('occasion'),
-            restaurant_name=data.get('restaurantName'),
-            desc=data.get('desc'),
-            rating=data.get('rating'),
-            reviews=data.get('reviews'),
-            bookings=data.get('bookings'),
-            cuisine=data.get('cuisine'),
+            occasion=data.get("occasion"),
+            restaurant_name=data.get("restaurantName"),
+            desc=data.get("desc"),
+            rating=data.get("rating"),
+            reviews=data.get("reviews"),
+            bookings=data.get("bookings"),
+            cuisine=data.get("cuisine"),
         )
 
 
@@ -517,19 +538,21 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.reservation_date_str, criteria.reservation_date_str),
-            self._validate_field(self.reservation_time, criteria.reservation_time),
-            self._validate_field(self.people_count, criteria.people_count),
-            self._validate_field(self.country_code, criteria.country_code),
-            self._validate_field(self.country_name, criteria.country_name),
-            self._validate_field(self.phone_number, criteria.phone_number),
-            self._validate_field(self.occasion, criteria.occasion),
-            self._validate_field(self.special_request, criteria.special_request),
-        ])
+        return all(
+            [
+                self._validate_field(self.reservation_date_str, criteria.reservation_date_str),
+                self._validate_field(self.reservation_time, criteria.reservation_time),
+                self._validate_field(self.people_count, criteria.people_count),
+                self._validate_field(self.country_code, criteria.country_code),
+                self._validate_field(self.country_name, criteria.country_name),
+                self._validate_field(self.phone_number, criteria.phone_number),
+                self._validate_field(self.occasion, criteria.occasion),
+                self._validate_field(self.special_request, criteria.special_request),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "ReservationCompleteEvent":
+    def parse(cls, backend_event: BackendEvent) -> ReservationCompleteEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -537,14 +560,14 @@ class ReservationCompleteEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            reservation_date_str=data.get('date'),
-            reservation_time=data.get('time'),
-            people_count=data.get('people'),
-            country_code=data.get('countryCode'),
-            country_name=data.get('countryName'),
-            phone_number=data.get('phoneNumber'),
-            occasion=data.get('occasion'),
-            special_request=data.get('specialRequest'),
+            reservation_date_str=data.get("date"),
+            reservation_time=data.get("time"),
+            people_count=data.get("people"),
+            country_code=data.get("countryCode"),
+            country_name=data.get("countryName"),
+            phone_number=data.get("phoneNumber"),
+            occasion=data.get("occasion"),
+            special_request=data.get("specialRequest"),
         )
 
 
@@ -562,13 +585,15 @@ class ScrollViewEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all([
-            self._validate_field(self.direction, criteria.direction),
-            self._validate_field(self.section_title, criteria.section_title),
-        ])
+        return all(
+            [
+                self._validate_field(self.direction, criteria.direction),
+                self._validate_field(self.section_title, criteria.section_title),
+            ]
+        )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "ScrollViewEvent":
+    def parse(cls, backend_event: BackendEvent) -> ScrollViewEvent:
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
         return cls(
@@ -576,8 +601,8 @@ class ScrollViewEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            direction=data.get('direction'),
-            section_title=data.get('sectionTitle'),
+            direction=data.get("direction"),
+            section_title=data.get("sectionTitle"),
         )
 
 
@@ -593,5 +618,5 @@ EVENTS = [
     CountrySelectedEvent,
     OccasionSelectedEvent,
     ReservationCompleteEvent,
-    ScrollViewEvent
+    ScrollViewEvent,
 ]

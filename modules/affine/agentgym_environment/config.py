@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import List
 
 from pydantic import BaseModel, Field, validator
 
@@ -11,14 +10,14 @@ except ModuleNotFoundError:  # pragma: no cover - source-tree fallback
     from autoppia_iwa.autoppia_iwa.src.demo_webs.config import demo_web_projects
 
 
-def _default_project_ids() -> List[str]:
+def _default_project_ids() -> list[str]:
     return [project.id for project in demo_web_projects[:3]]
 
 
 class AffineEnvConfig(BaseModel):
     """Configuration for the Affine-ready AgentGym environment."""
 
-    project_ids: List[str] = Field(default_factory=_default_project_ids, description="Demo web project ids to expose via AgentGym.")
+    project_ids: list[str] = Field(default_factory=_default_project_ids, description="Demo web project ids to expose via AgentGym.")
     tasks_cache_dir: str = Field(default="data/cache/tasks/affine_env", description="Directory where per-project task caches are stored.")
     prompts_per_use_case: int = Field(default=2, gt=0, description="Number of task prompts to sample per use case when regenerating cache.")
     num_use_cases: int = Field(default=3, gt=0, description="How many use cases to include per project when generating tasks.")
@@ -36,12 +35,12 @@ class AffineEnvConfig(BaseModel):
     model_config = {"validate_assignment": True}
 
     @validator("project_ids", pre=True)
-    def _strip_project_ids(cls, value: List[str]) -> List[str]:
+    def _strip_project_ids(cls, value: list[str]) -> list[str]:
         cleaned = [pid.strip() for pid in value or [] if pid]
         return cleaned or _default_project_ids()
 
     @classmethod
-    def load_from_env(cls) -> "AffineEnvConfig":
+    def load_from_env(cls) -> AffineEnvConfig:
         """Build config from environment variables."""
 
         raw_ids = os.getenv("IWA_AFFINE_PROJECT_IDS")

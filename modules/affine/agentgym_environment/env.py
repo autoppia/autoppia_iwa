@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-from typing import List, Optional
-
 from fastapi import FastAPI, HTTPException
 from loguru import logger
 from pydantic import BaseModel, Field, HttpUrl
@@ -23,10 +20,10 @@ class EvaluateRequest(BaseModel):
     model: str = Field(..., description="Miner model identifier (HF repo, metadata, etc.)")
     base_url: HttpUrl = Field(..., description="Base URL of the miner's /solve_task API (Chutes endpoint).")
     temperature: float = Field(0.0, description="Unused; present for AgentGym compatibility.")
-    timeout: Optional[float] = Field(None, description="Override the default request timeout (seconds).")
-    ids: Optional[List[int]] = Field(None, description="Specific task ids to evaluate. Defaults to random sampling.")
-    max_tasks: Optional[int] = Field(None, description="Limit number of tasks when ids are omitted.")
-    max_round: Optional[int] = Field(None, description="Unused placeholder to mimic AgentGym API.")
+    timeout: float | None = Field(None, description="Override the default request timeout (seconds).")
+    ids: list[int] | None = Field(None, description="Specific task ids to evaluate. Defaults to random sampling.")
+    max_tasks: int | None = Field(None, description="Limit number of tasks when ids are omitted.")
+    max_round: int | None = Field(None, description="Unused placeholder to mimic AgentGym API.")
 
 
 class EvaluateResponse(BaseModel):
@@ -35,8 +32,8 @@ class EvaluateResponse(BaseModel):
     success_rate: float
     evaluated: int
     dataset_size: int
-    project_ids: List[str]
-    details: List[TaskEvaluationDetail]
+    project_ids: list[str]
+    details: list[TaskEvaluationDetail]
 
 
 @app.on_event("startup")
@@ -69,11 +66,7 @@ async def evaluate(request: EvaluateRequest) -> EvaluateResponse:
     details = await RUNNER.evaluate_tasks(entries, client)
 
     total_score = sum(detail.score for detail in details)
-    success_rate = (
-        sum(1 for detail in details if detail.success) / len(details)
-        if details
-        else 0.0
-    )
+    success_rate = sum(1 for detail in details if detail.success) / len(details) if details else 0.0
 
     return EvaluateResponse(
         total_score=total_score,

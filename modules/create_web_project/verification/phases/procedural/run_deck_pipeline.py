@@ -8,8 +8,9 @@ from pathlib import Path
 from loguru import logger
 
 from autoppia_iwa.src.di_container import DIContainer
+
 from ..deck.models import WebProjectDeck
-from ..visual.visual_inspector import run_inspector as run_visual_inspector, SCREENSHOT_DIR
+from ..visual.visual_inspector import SCREENSHOT_DIR, run_inspector as run_visual_inspector
 from .verify_project import (
     SECTION_DECK,
     SECTION_PROCEDURAL,
@@ -41,7 +42,7 @@ class PhaseResult:
                     lines.append(f"    Missing: {missing}")
                 if entry.get("llm_feedback"):
                     llm_status = "PASS" if entry.get("llm_pass") else "FAIL"
-                    lines.append(f"    LLM: {llm_status} – {entry['llm_feedback']}")
+                    lines.append(f"    LLM: {llm_status} - {entry['llm_feedback']}")
         return "\n".join(lines)
 
 
@@ -55,7 +56,7 @@ def _obtain_llm_service():
     try:
         container = DIContainer()
         return container.llm_service()
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
 
 

@@ -14,15 +14,14 @@ import asyncio
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, HttpUrl
 
 from autoppia_iwa.entrypoints.benchmark.task_generation import generate_tasks_for_project
-from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.data_generation.tasks.classes import Task
+from autoppia_iwa.src.demo_webs.classes import WebProject
+from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
@@ -31,17 +30,17 @@ from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 class EvaluateRequest(BaseModel):
     model: str = Field(..., description="Model identifier (HF repo or friendly name)")
     base_url: HttpUrl = Field(..., description="Base URL for the model service (e.g. https://foo.chutes.ai/v1)")
-    task_id: Optional[int] = Field(None, description="Optional task index for deterministic selection")
-    temperature: Optional[float] = Field(0.7, ge=0, le=2, description="Sampling temperature forwarded to the model")
-    timeout: Optional[int] = Field(600, gt=0, description="Overall timeout in seconds for solving")
-    seed: Optional[int] = Field(None, description="Optional seed propagated to the agent")
+    task_id: int | None = Field(None, description="Optional task index for deterministic selection")
+    temperature: float | None = Field(0.7, ge=0, le=2, description="Sampling temperature forwarded to the model")
+    timeout: int | None = Field(600, gt=0, description="Overall timeout in seconds for solving")
+    seed: int | None = Field(None, description="Optional seed propagated to the agent")
 
 
 class EvaluateResponse(BaseModel):
     score: float
     success: bool
-    error: Optional[str] = None
-    extra: Dict[str, object] = Field(default_factory=dict)
+    error: str | None = None
+    extra: dict[str, object] = Field(default_factory=dict)
 
 
 class _TaskStore:
@@ -50,21 +49,21 @@ class _TaskStore:
     """
 
     def __init__(self) -> None:
-        self._tasks: List[Tuple[Task, WebProject]] = []
+        self._tasks: list[tuple[Task, WebProject]] = []
         self._lock = asyncio.Lock()
 
     @staticmethod
-    def _wanted_project_ids() -> List[str]:
+    def _wanted_project_ids() -> list[str]:
         raw = os.getenv("AFFINE_PROJECT_IDS", "")
         ids = [s.strip().lower() for s in raw.split(",") if s.strip()]
         return ids
 
     @staticmethod
     @lru_cache(maxsize=1)
-    def _projects_by_id() -> Dict[str, WebProject]:
+    def _projects_by_id() -> dict[str, WebProject]:
         return {str(p.id).lower(): p for p in demo_web_projects}
 
-    async def _generate_for_project(self, project: WebProject) -> List[Task]:
+    async def _generate_for_project(self, project: WebProject) -> list[Task]:
         default_cache = Path(__file__).resolve().parents[1] / "data" / "affine" / "tasks"
         cache_dir = os.getenv("AFFINE_TASK_CACHE_DIR", str(default_cache))
         use_cached = bool(int(os.getenv("AFFINE_USE_CACHED_TASKS", "1")))
@@ -93,12 +92,8 @@ class _TaskStore:
                 return
 
             wanted_ids = self._wanted_project_ids()
-            projects = (
-                [self._projects_by_id()[pid] for pid in wanted_ids if pid in self._projects_by_id()]
-                if wanted_ids
-                else list(demo_web_projects)
-            )
-            tasks: List[Tuple[Task, WebProject]] = []
+            projects = [self._projects_by_id()[pid] for pid in wanted_ids if pid in self._projects_by_id()] if wanted_ids else list(demo_web_projects)
+            tasks: list[tuple[Task, WebProject]] = []
             for project in projects:
                 project_tasks = await self._generate_for_project(project)
                 for t in project_tasks:
@@ -109,7 +104,7 @@ class _TaskStore:
 
             self._tasks = tasks
 
-    def get(self, idx: Optional[int]) -> Tuple[Task, WebProject, int]:
+    def get(self, idx: int | None) -> tuple[Task, WebProject, int]:
         if not self._tasks:
             raise RuntimeError("Task store not initialized")
         if idx is None:
@@ -134,7 +129,7 @@ async def health() -> dict:
         await task_store.ensure_tasks()
         return {"status": "ok", "tasks": len(task_store._tasks)}
     except Exception as exc:  # pragma: no cover - best effort
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/evaluate", response_model=EvaluateResponse)
@@ -143,7 +138,7 @@ async def evaluate(req: EvaluateRequest) -> EvaluateResponse:
         await task_store.ensure_tasks()
         task, project, resolved_idx = task_store.get(req.task_id)
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"Task loading failed: {exc}")
+        raise HTTPException(status_code=503, detail=f"Task loading failed: {exc}") from exc
 
     agent = ApifiedWebAgent(base_url=str(req.base_url), timeout=req.timeout or 600)
 

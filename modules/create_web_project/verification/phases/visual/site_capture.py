@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import asyncio
 import importlib
 import inspect
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from playwright.async_api import Browser, Page, async_playwright
