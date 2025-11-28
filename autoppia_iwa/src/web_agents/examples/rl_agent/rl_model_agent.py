@@ -1,115 +1,121 @@
+"""
+RL Agent Example - Interface Template
+
+This is a REFERENCE IMPLEMENTATION showing how to build an RL-based web agent.
+The actual RL training code has been moved to a separate repository.
+
+For full implementation, see: autoppia-rl-agent repository
+"""
+
 from __future__ import annotations
 
-import asyncio
-import contextlib
 from dataclasses import dataclass
-from pathlib import Path
-
-from loguru import logger
 
 from autoppia_iwa.src.data_generation.tasks.classes import Task
-from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
-from autoppia_iwa.src.rl.agent.utils.solutions import history_to_task_solution
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
 
 @dataclass(slots=True)
 class RLModelAgentConfig:
+    """Configuration for RL agent (example)."""
+
     model_path: str = "/data/rl/models/ppo_real.zip"
     topk: int = 12
     max_steps: int = 30
     deterministic: bool = True
-    random_fallback: bool = True  # if model not found or libs missing, use random/NOOP
+    random_fallback: bool = True
 
 
 class RLModelAgent(IWebAgent):
-    """IWebAgent wrapper around a trained SB3 MaskablePPO policy over IWAWebEnv.
+    """
+    Example RL agent interface.
 
-    solve_task() runs an on-policy rollout inside the env to produce actions
-    and adapts the execution history into a TaskSolution for the evaluator.
+    This is a STUB implementation. The actual RL agent with training code
+    is in a separate repository.
+
+    To implement your own RL agent:
+    1. Create Gymnasium environment (IWAWebEnv)
+    2. Train with PPO/BC algorithms
+    3. Load trained model
+    4. Implement solve_task() to run policy
+
+    Full implementation: See autoppia-rl-agent repository
     """
 
-    def __init__(self, id: str | None = None, name: str | None = None, config: RLModelAgentConfig | None = None):
-        self.id = id or "rl-model"
-        self.name = name or "RLModelAgent"
-        self.config = config or RLModelAgentConfig()
+    def __init__(self, id: str, name: str, config: RLModelAgentConfig):
+        self.id = id
+        self.name = name
+        self.config = config
 
     async def solve_task(self, task: Task) -> TaskSolution:
-        """Run the rollout in a background thread to avoid nested asyncio issues.
-
-        The IWAWebEnv uses async browser calls under the hood and bridges them
-        via a sync helper. Executing in a separate thread ensures it can create
-        and control its own event loop without clashing with the benchmark's
-        running loop.
         """
-        try:
-            return await asyncio.to_thread(self._rollout_sync, task)
-        except Exception as e:
-            logger.error(f"[{self.name}] Rollout failed: {e}", exc_info=True)
-            # Guarantee a well-formed empty solution on failure
-            return TaskSolution(task_id=task.id, actions=[], web_agent_id=self.id)
+        Solve task using trained RL policy.
 
-    def _rollout_sync(self, task: Task) -> TaskSolution:
-        cfg = {
-            "topk": int(self.config.topk),
-            "max_steps": int(self.config.max_steps),
-            "goal_vocab_size": 4096,
-            "dom_vocab_size": 8192,
-            "url_vocab_size": 1024,
-            "max_goal_tokens": 48,
-            "max_dom_tokens": 200,
-            "max_element_tokens": 12,
-            "action_history": 10,
-        }
-        env = IWAWebEnv(cfg)
-
-        # Try to import sb3-contrib and load the trained model
-        model = None
-        env_wrapped = env
-        try:
-            from sb3_contrib import MaskablePPO  # type: ignore
-            from sb3_contrib.common.wrappers import ActionMasker  # type: ignore
-
-            def mask_fn(e):
-                return e.get_action_mask()
-
-            env_wrapped = ActionMasker(env, mask_fn)
-            model_path = Path(self.config.model_path)
-            if model_path.exists():
-                model = MaskablePPO.load(str(model_path), env=env_wrapped, print_system_info=False)
-                logger.info(f"[{self.name}] Loaded RL model from {model_path}")
-            else:
-                logger.warning(f"[{self.name}] Model path not found: {model_path}. Using fallback policy.")
-        except Exception as e:
-            logger.warning(f"[{self.name}] SB3 not available or failed to load model: {e}. Using fallback policy.")
-            model = None
-
-        # Rollout
-        import numpy as _np
-
-        try:
-            obs, _ = env_wrapped.reset(options={"task": task})  # type: ignore[arg-type]
-            done = False
-            trunc = False
-            rng = _np.random.default_rng(0)
-
-            while not (done or trunc):
-                if model is not None:
-                    action, _state = model.predict(obs, deterministic=self.config.deterministic)
-                else:
-                    # Fallback: random valid action if available
-                    mask = env.get_action_mask()
-                    valid = _np.where(mask)[0]
-                    action = int(rng.choice(valid)) if valid.size else 0
-
-                obs, _rew, done, trunc, _info = env_wrapped.step(int(action))
-
-            history = env.get_execution_history()
-            solution = history_to_task_solution(task, history, web_agent_id=self.id)
-            return solution
-        finally:
-            with contextlib.suppress(Exception):
-                env.close()
+        NOTE: This is a stub. Full implementation in separate repo.
+        """
+        raise NotImplementedError(
+            "RL agent implementation moved to separate repository.\n"
+            "This is just an interface example.\n\n"
+            "To use RL agents:\n"
+            "1. See: autoppia-rl-agent repository\n"
+            "2. Or implement your own using this interface\n"
+            "3. Or use ApifiedWebAgent to call your trained model via HTTP"
+        )
 
 
-__all__ = ["RLModelAgent", "RLModelAgentConfig"]
+# ============================================================================
+# REFERENCE IMPLEMENTATION (Commented)
+# ============================================================================
+#
+# Below is the original implementation showing how it worked.
+# This is kept as REFERENCE for developers building RL agents.
+#
+# """
+# from autoppia_iwa.src.rl.agent.envs.iwa_env import IWAWebEnv
+# from autoppia_iwa.src.rl.agent.utils.solutions import history_to_task_solution
+#
+# class RLModelAgent(IWebAgent):
+#     def __init__(self, id: str, name: str, config: RLModelAgentConfig):
+#         self.id = id
+#         self.name = name
+#         self.config = config
+#         self._model = None
+#         self._env = None
+#
+#     async def solve_task(self, task: Task) -> TaskSolution:
+#         # 1. Create Gymnasium environment
+#         self._env = IWAWebEnv(cfg={
+#             "topk": self.config.topk,
+#             "max_steps": self.config.max_steps,
+#             "project_start_index": 0,
+#         })
+#
+#         # 2. Load trained PPO model
+#         from sb3_contrib import MaskablePPO
+#         self._model = MaskablePPO.load(self.config.model_path)
+#
+#         # 3. Run episode with trained policy
+#         obs, info = await self._env.reset()
+#         history = []
+#
+#         for step in range(self.config.max_steps):
+#             # Get action from policy
+#             mask = info.get("action_mask")
+#             action, _states = self._model.predict(
+#                 obs,
+#                 action_masks=mask,
+#                 deterministic=self.config.deterministic
+#             )
+#
+#             # Execute action in environment
+#             obs, reward, done, truncated, info = await self._env.step(action)
+#             history.append({"action": action, "obs": obs, "reward": reward})
+#
+#             if done or truncated:
+#                 break
+#
+#         # 4. Convert environment history to TaskSolution
+#         solution = history_to_task_solution(history, task_id=task.id, web_agent_id=self.id)
+#
+#         return solution
+# """
