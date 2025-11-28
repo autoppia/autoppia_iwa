@@ -9,23 +9,37 @@ from .events import (
     ChangeUserName,
     DeleteMatter,
     DocumentDeleted,
+    DocumentUploaded,
+    FilterMatterStatus,
     LogDelete,
+    LogEdited,
     NewCalendarEventAdded,
     NewLogAdded,
     SearchClient,
+    SearchMatter,
+    SortMatterByCreatedAt,
+    UpdateMatter,
     ViewClientDetails,
     ViewMatterDetails,
+    ViewPendingEvents,
 )
 from .generation_functions import (
     generate_add_matter_constraints,
     generate_change_user_name_constraints,
     generate_delete_log_constraints,
     generate_document_deleted_constraints,
+    generate_document_uploaded_constraints,
+    generate_filter_matter_status_constraints,
+    generate_log_edited_constraints,
     generate_new_calendar_event_constraints,
     generate_new_log_added_constraints,
     generate_search_client_constraints,
+    generate_search_matter_constraints,
+    generate_sort_matter_constraints,
+    generate_update_matter_constraints,
     generate_view_client_constraints,
     generate_view_matter_constraints,
+    generate_view_pending_events_constraints,
 )
 
 ###############################################################################
@@ -63,6 +77,31 @@ VIEW_MATTER_USE_CASE = UseCase(
         {
             "prompt": "View matter details excluding matters with status 'Archived' or 'On Hold'",
             "prompt_for_task_generation": "View matter details excluding matters with status 'Archived' or 'On Hold'",
+        },
+    ],
+)
+
+###############################################################################
+# SEARCH_MATTER_USE_CASE
+###############################################################################
+SEARCH_MATTER_USE_CASE = UseCase(
+    name="SEARCH_MATTER",
+    description="The user searches for matters using a query string.",
+    event=SearchMatter,
+    event_source_code=SearchMatter.get_source_code_of_class(),
+    constraints_generator=generate_search_matter_constraints,
+    examples=[
+        {
+            "prompt": "Search for matters that include 'Estate' in the title.",
+            "prompt_for_task_generation": "Search for matters that include 'Estate' in the title.",
+        },
+        {
+            "prompt": "Find matters whose name does NOT contain 'Archived'.",
+            "prompt_for_task_generation": "Find matters whose name does NOT contain 'Archived'.",
+        },
+        {
+            "prompt": "Search for matters where the name contains 'Review'.",
+            "prompt_for_task_generation": "Search for matters where the name contains 'Review'.",
         },
     ],
 )
@@ -167,6 +206,77 @@ DELETE_MATTER_USE_CASE = UseCase(
         },
     ],
 )
+
+###############################################################################
+# FILTER_MATTER_STATUS_USE_CASE
+###############################################################################
+FILTER_MATTER_STATUS_USE_CASE = UseCase(
+    name="FILTER_MATTER_STATUS",
+    description="The user filters matters by status.",
+    event=FilterMatterStatus,
+    event_source_code=FilterMatterStatus.get_source_code_of_class(),
+    constraints_generator=generate_filter_matter_status_constraints,
+    examples=[
+        {
+            "prompt": "Filter matters to only show those with status 'Active' or as similar.",
+            "prompt_for_task_generation": "Filter matters to only show those with status 'Active' or as similar.",
+        },
+        {
+            "prompt": "Filter matters to exclude status 'Archived' or as similar.",
+            "prompt_for_task_generation": "Filter matters to exclude status 'Archived' or as similar.",
+        },
+        {
+            "prompt": "Show matters that are either 'Active' or 'On Hold' or as similar.",
+            "prompt_for_task_generation": "Show matters that are either 'Active' or 'On Hold' or as similar.",
+        },
+    ],
+)
+
+###############################################################################
+# SORT_MATTER_BY_CREATED_AT_USE_CASE
+###############################################################################
+SORT_MATTER_BY_CREATED_AT_USE_CASE = UseCase(
+    name="SORT_MATTER_BY_CREATED_AT",
+    description="The user sorts matters by created date.",
+    event=SortMatterByCreatedAt,
+    event_source_code=SortMatterByCreatedAt.get_source_code_of_class(),
+    constraints_generator=generate_sort_matter_constraints,
+    examples=[
+        {
+            "prompt": "Sort matters by newest first.",
+            "prompt_for_task_generation": "Sort matters by newest first.",
+        },
+        {
+            "prompt": "Sort matters so the oldest ones appear on top.",
+            "prompt_for_task_generation": "Sort matters so the oldest ones appear on top.",
+        },
+    ],
+)
+
+###############################################################################
+# UPDATE_MATTER_USE_CASE
+###############################################################################
+UPDATE_MATTER_USE_CASE = UseCase(
+    name="UPDATE_MATTER",
+    description="The user updates an existing matter.",
+    event=UpdateMatter,
+    event_source_code=UpdateMatter.get_source_code_of_class(),
+    constraints_generator=generate_update_matter_constraints,
+    examples=[
+        {
+            "prompt": "Edit the matter 'Estate Planning' to change status to 'On Hold'.",
+            "prompt_for_task_generation": "Edit the matter 'Estate Planning' to change status to 'On Hold'.",
+        },
+        {
+            "prompt": "Update the matter named 'Contract Review' so the client is 'Jones Legal'.",
+            "prompt_for_task_generation": "Update the matter named 'Contract Review' so the client is 'Jones Legal'.",
+        },
+        {
+            "prompt": "Update any matter whose updated date is not 'Today'.",
+            "prompt_for_task_generation": "Update any matter whose updated date is not 'Today'.",
+        },
+    ],
+)
 ###############################################################################
 # VIEW_CLIENT_DETAILS_USE_CASE
 ###############################################################################
@@ -254,6 +364,31 @@ DOCUMENT_DELETED_USE_CASE = UseCase(
     ],
 )
 
+###############################################################################
+# DOCUMENT_UPLOADED_USE_CASE
+###############################################################################
+DOCUMENT_UPLOADED_USE_CASE = UseCase(
+    name="DOCUMENT_UPLOADED",
+    description="The user uploads a new document.",
+    event=DocumentUploaded,
+    event_source_code=DocumentUploaded.get_source_code_of_class(),
+    constraints_generator=generate_document_uploaded_constraints,
+    examples=[
+        {
+            "prompt": "Upload a document named 'Retainer-Agreement.pdf'.",
+            "prompt_for_task_generation": "Upload a document named 'Retainer-Agreement.pdf'.",
+        },
+        {
+            "prompt": "Upload a file 'Patent-Application.pdf' with version 'v1'.",
+            "prompt_for_task_generation": "Upload a file 'Patent-Application.pdf' with version 'v1'.",
+        },
+        {
+            "prompt": "Upload a document whose size is around '100 KB' and status 'Draft'.",
+            "prompt_for_task_generation": "Upload a document whose size is around '100 KB' and status 'Draft'.",
+        },
+    ],
+)
+
 NEW_CALENDER_EVENT_EXTRA_INFO = """
 Critical Requirements:
 1. Do not specify more than one constraint for the same field — label, time, date, or event_type — in a single request.
@@ -287,6 +422,31 @@ NEW_CALENDAR_EVENT_ADDED_USE_CASE = UseCase(
         {
             "prompt": "Create a calendar event on 2025-05-22 named 'Staff Meeting' with a Matter/Event color.",
             "prompt_for_task_generation": "Create a calendar event on 2025-05-22 named 'Staff Meeting' with a Matter/Event color.",
+        },
+    ],
+)
+
+###############################################################################
+# VIEW_PENDING_EVENTS_USE_CASE
+###############################################################################
+VIEW_PENDING_EVENTS_USE_CASE = UseCase(
+    name="VIEW_PENDING_EVENTS",
+    description="The user views pending calendar events.",
+    event=ViewPendingEvents,
+    event_source_code=ViewPendingEvents.get_source_code_of_class(),
+    constraints_generator=generate_view_pending_events_constraints,
+    examples=[
+        {
+            "prompt": "Open the pending events list on the calendar page.",
+            "prompt_for_task_generation": "Open the pending events list on the calendar page.",
+        },
+        {
+            "prompt": "Show pending events and note the earliest upcoming date.",
+            "prompt_for_task_generation": "Show pending events and note the earliest upcoming date.",
+        },
+        {
+            "prompt": "View pending events and report how many upcoming events there are.",
+            "prompt_for_task_generation": "View pending events and report how many upcoming events there are.",
         },
     ],
 )
@@ -327,6 +487,37 @@ NEW_LOG_ADDED_USE_CASE = UseCase(
         {
             "prompt": "Create a time log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
             "prompt_for_task_generation": "Create a time log with matter 'Trademark Renewal', description 'Online filing', and hours less than '1'.",
+        },
+    ],
+)
+
+LOG_EDITED_EXTRA_INFO = """
+Critical Requirements:
+1. Use at most one constraint per field: matter, description, hours, client, or status.
+""".strip()
+
+###############################################################################
+# LOG_EDITED_USE_CASE
+###############################################################################
+LOG_EDITED_USE_CASE = UseCase(
+    name="LOG_EDITED",
+    description="The user edits an existing time log entry.",
+    event=LogEdited,
+    event_source_code=LogEdited.get_source_code_of_class(),
+    constraints_generator=generate_log_edited_constraints,
+    additional_prompt_info=LOG_EDITED_EXTRA_INFO,
+    examples=[
+        {
+            "prompt": "Edit the time log for 'Estate Planning' to change hours to 2.5.",
+            "prompt_for_task_generation": "Edit the time log for 'Estate Planning' to change hours to 2.5.",
+        },
+        {
+            "prompt": "Update the description of the log for 'Trademark Filing' to 'Prepare documents'.",
+            "prompt_for_task_generation": "Update the description of the log for 'Trademark Filing' to 'Prepare documents'.",
+        },
+        {
+            "prompt": "Edit any time log so its status becomes 'Billed'.",
+            "prompt_for_task_generation": "Edit any time log so its status becomes 'Billed'.",
         },
     ],
 )
@@ -436,13 +627,20 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
 ALL_USE_CASES = [
     ADD_NEW_MATTER_USE_CASE,
     VIEW_MATTER_USE_CASE,
+    SEARCH_MATTER_USE_CASE,
+    FILTER_MATTER_STATUS_USE_CASE,
+    SORT_MATTER_BY_CREATED_AT_USE_CASE,
+    UPDATE_MATTER_USE_CASE,
     DELETE_MATTER_USE_CASE,
     ARCHIVE_MATTER_USE_CASE,
     VIEW_CLIENT_DETAILS_USE_CASE,
     SEARCH_CLIENT_USE_CASE,
     DOCUMENT_DELETED_USE_CASE,
+    DOCUMENT_UPLOADED_USE_CASE,
     NEW_CALENDAR_EVENT_ADDED_USE_CASE,
+    VIEW_PENDING_EVENTS_USE_CASE,
     NEW_LOG_ADDED_USE_CASE,
+    LOG_EDITED_USE_CASE,
     LOG_DELETE_USE_CASE,
     CHANGE_USER_NAME_USE_CASE,
 ]

@@ -26,7 +26,6 @@ skip-string-normalization = true
 [tool.ruff]
 line-length = 200
 target-version = "py311"
-exclude = ["modules/*"]
 
 fix = true  # Enables auto-fixing
 unsafe-fixes = true  # Allows unsafe fixes
@@ -55,6 +54,9 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "--import-mode=importlib"
 testpaths = ["tests"]
+markers = [
+    "dynamic_audit: expensive Playwright crawl over demo webs (requires RUN_DYNAMIC_AUDIT=1)",
+]
 
 # Optional: A section for development dependencies
 [project.optional-dependencies]

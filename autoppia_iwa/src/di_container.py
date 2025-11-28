@@ -1,3 +1,5 @@
+import os
+
 from dependency_injector import containers, providers
 
 from autoppia_iwa.config.config import (
@@ -7,16 +9,13 @@ from autoppia_iwa.config.config import (
     CHUTES_MODEL,
     CHUTES_TEMPERATURE,
     CHUTES_USE_BEARER,
-    GENERATE_MILESTONES,
     LLM_PROVIDER,
-    LOCAL_MODEL_ENDPOINT,
-    LOCAL_PARALLEL_MODEL_ENDPOINT,
     OPENAI_API_KEY,
     OPENAI_MAX_TOKENS,
     OPENAI_MODEL,
     OPENAI_TEMPERATURE,
 )
-from autoppia_iwa.src.llms.infrastructure.llm_service import LLMConfig, LLMFactory
+from autoppia_iwa.src.llms.service import LLMConfig, LLMFactory
 
 
 class DIContainer(containers.DeclarativeContainer):
@@ -28,9 +27,6 @@ class DIContainer(containers.DeclarativeContainer):
 
     # LLM Service provider using Factory pattern
     llm_service = providers.Singleton(lambda: DIContainer._get_llm_service())
-
-    # Milestone Configuration
-    generate_milestones = GENERATE_MILESTONES
 
     @classmethod
     def register_service(cls, service_name: str, service_instance):
@@ -58,11 +54,15 @@ class DIContainer(containers.DeclarativeContainer):
                 temperature=OPENAI_TEMPERATURE,
                 max_tokens=OPENAI_MAX_TOKENS,
             )
+            endpoint_url = os.getenv("LOCAL_MODEL_ENDPOINT")
+            parallel_endpoint_url = os.getenv("LOCAL_PARALLEL_MODEL_ENDPOINT")
+            if not endpoint_url:
+                raise ValueError("LOCAL_MODEL_ENDPOINT must be set when LLM_PROVIDER='local'")
             return LLMFactory.create_llm(
                 llm_type="local",
                 config=config,
-                endpoint_url=LOCAL_MODEL_ENDPOINT,
-                parallel_endpoint_url=LOCAL_PARALLEL_MODEL_ENDPOINT,
+                endpoint_url=endpoint_url,
+                parallel_endpoint_url=parallel_endpoint_url,
             )
         elif LLM_PROVIDER == "chutes":
             config = LLMConfig(

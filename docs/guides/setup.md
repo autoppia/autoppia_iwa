@@ -140,7 +140,8 @@ OPENAI_TEMPERATURE="0.7"
 
 # Demo Webs Endpoint Configuration
 DEMO_WEBS_ENDPOINT="http://localhost"
-DEMO_WEBS_STARTING_PORT=8000
+DEMO_WEBS_STARTING_PORT=8100
+DEMO_WEB_SERVICE_PORT=8090
 
 # Agent Configuration
 AGENT_NAME="autoppia_agent"
@@ -154,10 +155,13 @@ EVALUATOR_HEADLESS="False"
 | Variable | Description | Default | Example |
 |----------|-------------|---------|---------|
 | `DEMO_WEBS_ENDPOINT` | Base URL for demo webs | `http://localhost` | `http://192.168.1.100` |
-| `DEMO_WEBS_STARTING_PORT` | Starting port for demo webs | `8000` | `9000` |
+| `DEMO_WEBS_STARTING_PORT` | Starting port for demo webs | `8100` | `9000` |
+| `DEMO_WEB_SERVICE_PORT` | Port for shared demo backend service | `8090` | `7090` |
 | `AGENT_HOST` | Hostname where agent runs | `localhost` | `84.247.180.39` |
 | `AGENT_PORT` | **Port where web agent is deployed** | `9000` | `8080` |
 | `EVALUATOR_HEADLESS` | Run browser in headless mode | `False` | `True` |
+
+> **Note:** Demo webs are already deployed for internal runs. Simply point `DEMO_WEBS_ENDPOINT` at the existing host (defaults to `http://localhost`) and skip the Docker deployment scripts unless you need your own copy.
 
 💡 **Important**: `AGENT_PORT` specifies where your web agent will be deployed and accessible.
 
@@ -193,7 +197,8 @@ cd "$CURRENT_DIR"
 Edit `.env` to customize endpoints:
 ```bash
 DEMO_WEBS_ENDPOINT=http://localhost
-DEMO_WEBS_STARTING_PORT=8000
+DEMO_WEBS_STARTING_PORT=8100
+DEMO_WEB_SERVICE_PORT=8090
 ```
 
 🔧 **Remote Setup**: Change endpoint to your demo webs server IP for distributed deployment.

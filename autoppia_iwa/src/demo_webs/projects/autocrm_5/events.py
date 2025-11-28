@@ -361,6 +361,12 @@ class DocumentDeleted(Event, BaseEventValidator):
         )
 
 
+class DocumentUploaded(DocumentDeleted):
+    """Event triggered when a document is uploaded"""
+
+    event_name: str = "DOCUMENT_UPLOADED"
+
+
 class NewCalendarEventAdded(Event, BaseEventValidator):
     """Event triggered when a new calendar event is added"""
 
@@ -547,6 +553,45 @@ class NewLogAdded(Event, BaseEventValidator):
         )
 
 
+class LogEdited(Event, BaseEventValidator):
+    """Event triggered when a time log is edited"""
+
+    event_name: str = "LOG_EDITED"
+    after: TimeLog
+
+    class ValidationCriteria(BaseModel):
+        matter: str | CriterionValue | None = None
+        client: str | CriterionValue | None = None
+        description: str | CriterionValue | None = None
+        hours: float | CriterionValue | None = None
+        status: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.after.matter, criteria.matter),
+                self._validate_field(self.after.client, criteria.client),
+                self._validate_field(self.after.description, criteria.description),
+                self._validate_field(self.after.hours, criteria.hours),
+                self._validate_field(self.after.status, criteria.status),
+            ],
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "LogEdited":
+        base_event = Event.parse(backend_event)
+        after_log = TimeLog(**backend_event.data.get("after", {}))
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            after=after_log,
+        )
+
+
 class LogDelete(Event, BaseEventValidator):
     """Event triggered when a time log is deleted"""
 
@@ -617,20 +662,176 @@ class ChangeUserName(Event, BaseEventValidator):
         )
 
 
+class SearchMatter(Event, BaseEventValidator):
+    """Event triggered when searching for matters"""
+
+    event_name: str = "SEARCH_MATTER"
+    query: str
+
+    class ValidationCriteria(BaseModel):
+        query: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.query, criteria.query),
+            ],
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "SearchMatter":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            query=backend_event.data.get("query", ""),
+        )
+
+
+class FilterMatterStatus(Event, BaseEventValidator):
+    """Event triggered when filtering matters by status"""
+
+    event_name: str = "FILTER_MATTER_STATUS"
+    status: str
+
+    class ValidationCriteria(BaseModel):
+        status: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.status, criteria.status)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "FilterMatterStatus":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            status=backend_event.data.get("status", ""),
+        )
+
+
+class SortMatterByCreatedAt(Event, BaseEventValidator):
+    """Event triggered when sorting matters by created date"""
+
+    event_name: str = "SORT_MATTER_BY_CREATED_AT"
+    direction: str
+
+    class ValidationCriteria(BaseModel):
+        direction: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.direction, criteria.direction)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "SortMatterByCreatedAt":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            direction=backend_event.data.get("direction", ""),
+        )
+
+
+class UpdateMatter(Event, BaseEventValidator):
+    """Event triggered when a matter is updated"""
+
+    event_name: str = "UPDATE_MATTER"
+    after: Matter
+
+    class ValidationCriteria(BaseModel):
+        name: str | CriterionValue | None = None
+        client: str | CriterionValue | None = None
+        status: str | CriterionValue | None = None
+        updated: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.after.name, criteria.name),
+                self._validate_field(self.after.client, criteria.client),
+                self._validate_field(self.after.status, criteria.status),
+                self._validate_field(self.after.updated, criteria.updated),
+            ],
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "UpdateMatter":
+        base_event = Event.parse(backend_event)
+        after_matter = Matter(**backend_event.data.get("after", {}))
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            after=after_matter,
+        )
+
+
+class ViewPendingEvents(Event, BaseEventValidator):
+    """Event triggered when viewing pending calendar events"""
+
+    event_name: str = "VIEW_PENDING_EVENTS"
+    earliest: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        earliest: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.earliest, criteria.earliest),
+            ],
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ViewPendingEvents":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            earliest=backend_event.data.get("earliest"),
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
 
 EVENTS = [
-    ArchiveMatter,
     AddNewMatter,
     ViewMatterDetails,
+    SearchMatter,
+    FilterMatterStatus,
+    SortMatterByCreatedAt,
+    UpdateMatter,
     DeleteMatter,
+    ArchiveMatter,
     ViewClientDetails,
     SearchClient,
+    DocumentUploaded,
     DocumentDeleted,
     NewCalendarEventAdded,
+    ViewPendingEvents,
     NewLogAdded,
+    LogEdited,
     LogDelete,
     ChangeUserName,
 ]
@@ -643,8 +844,15 @@ BACKEND_EVENT_TYPES = {
     "VIEW_CLIENT_DETAILS": ViewClientDetails,
     "SEARCH_CLIENT": SearchClient,
     "DOCUMENT_DELETED": DocumentDeleted,
+    "DOCUMENT_UPLOADED": DocumentUploaded,
     "NEW_CALENDAR_EVENT_ADDED": NewCalendarEventAdded,
     "NEW_LOG_ADDED": NewLogAdded,
+    "LOG_EDITED": LogEdited,
     "LOG_DELETE": LogDelete,
     "CHANGE_USER_NAME": ChangeUserName,
+    "SEARCH_MATTER": SearchMatter,
+    "FILTER_MATTER_STATUS": FilterMatterStatus,
+    "SORT_MATTER_BY_CREATED_AT": SortMatterByCreatedAt,
+    "UPDATE_MATTER": UpdateMatter,
+    "VIEW_PENDING_EVENTS": ViewPendingEvents,
 }

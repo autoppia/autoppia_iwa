@@ -1,9 +1,8 @@
-from collections.abc import Callable
+import asyncio
+from collections.abc import Callable, Coroutine
 from typing import Any
 
 from pydantic import BaseModel, Field, ValidationError
-
-from autoppia_iwa.src.web_analysis.domain.analysis_classes import DomainAnalysis
 
 
 class UseCase(BaseModel):
@@ -17,7 +16,7 @@ class UseCase(BaseModel):
     event: Any = Field(..., description="Event class (type[Event])")
     event_source_code: str
     examples: list[dict]
-    replace_func: Callable[[str], str] | None = Field(default=None, exclude=True)
+    replace_func: Callable | Coroutine | None = Field(default=None, exclude=True)
 
     # Only one field for constraints - the structured data
     constraints: list[dict[str, Any]] | None = Field(default=None)
@@ -31,7 +30,30 @@ class UseCase(BaseModel):
 
     def apply_replacements(self, text: str, *args, **kwargs) -> str:
         if self.replace_func and isinstance(text, str):
-            return self.replace_func(text, *args, **kwargs)
+            result = self.replace_func(text, *args, **kwargs)
+            # Support both sync and async replace functions
+            if asyncio.iscoroutine(result):
+                # If called in sync context, run to completion
+                try:
+                    return asyncio.run(result)
+                except RuntimeError:
+                    # Fallback: cannot run new loop in running loop; skip async here
+                    return text
+            return result
+
+        # Also replace constraints_info if needed
+        if isinstance(text, str) and "<constraints_info>" in text and self.constraints:
+            text = text.replace("<constraints_info>", self.constraints_to_str())
+
+        return text
+
+    async def apply_replacements_async(self, text: str, *args, **kwargs) -> str:
+        """Async version that awaits async replace functions when provided."""
+        if self.replace_func and isinstance(text, str):
+            result = self.replace_func(text, *args, **kwargs)
+            if asyncio.iscoroutine(result):
+                return await result
+            return result
 
         # Also replace constraints_info if needed
         if isinstance(text, str) and "<constraints_info>" in text and self.constraints:
@@ -44,7 +66,47 @@ class UseCase(BaseModel):
         Generates constraints using the specific generator for this use case.
         """
         if self.constraints_generator:
-            self.constraints = self.constraints_generator()
+            result = self.constraints_generator()
+            # Support both sync and async generators
+            if asyncio.iscoroutine(result):
+                # If called in sync context, run to completion
+                try:
+                    self.constraints = asyncio.run(result)
+                except RuntimeError:
+                    # Fallback: cannot run new loop in running loop; skip async here
+                    self.constraints = None
+            else:
+                self.constraints = result
+        return self.constraints_to_str() if self.constraints else ""
+
+    async def generate_constraints_async(self, task_url: str | None = None, dataset: list[dict] | None = None):
+        """
+        Async version that awaits async constraints generators when provided.
+
+        Args:
+            task_url: Optional task URL to extract seed values from
+            dataset: Optional pre-loaded dataset to pass to generators (avoids redundant API calls)
+        """
+        if self.constraints_generator:
+            # If constraints_generator accepts parameters, pass them
+            import inspect
+
+            sig = inspect.signature(self.constraints_generator)
+
+            # Build kwargs dynamically based on what the generator accepts
+            kwargs = {}
+            if "task_url" in sig.parameters:
+                kwargs["task_url"] = task_url
+            if "dataset" in sig.parameters:
+                kwargs["dataset"] = dataset
+
+            # Call generator with appropriate parameters
+            result = self.constraints_generator(**kwargs) if kwargs else self.constraints_generator()
+
+            if asyncio.iscoroutine(result):
+                self.constraints = await result
+            else:
+                self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
 
     def constraints_to_str(self) -> str:
@@ -67,41 +129,6 @@ class UseCase(BaseModel):
             parts.append(f"{idx}) {field} {op.value} {value_str}")
 
         return " AND ".join(parts)
-
-    def add_constraints(self, constraints: list[dict[str, Any]]) -> None:
-        """
-        Adds constraints to the use case and an example that uses these constraints
-        """
-        self.constraints = constraints
-
-        # Create an example that uses the constraints
-        if constraints:
-            # Get the string representation of constraints
-            constraints_str = self.constraints_to_str()
-
-            # Create a generic constraint example
-            prompt = f"Show me items with these criteria: {constraints_str}"
-            prompt_template = "Show me items with these criteria: <constraints_info>"
-
-            constraint_example = {
-                "prompt": prompt,
-                "prompt_for_task_generation": prompt_template,
-                "test": {
-                    "type": "CheckEventTest",
-                    "event_name": self.event.__name__,
-                    "event_criteria": {c["field"]: {"value": c["value"], "operator": c["operator"]} for c in constraints},
-                    "reasoning": "Validates that constraints are correctly processed and used for filtering.",
-                },
-            }
-
-            self.examples.append(constraint_example)
-
-    def check_success(self, events: list[Any]) -> bool:
-        """
-        Check if the use case was successful based on the events that occurred
-        """
-        # Basic implementation - check if any event of the expected type exists
-        return any(isinstance(event, self.event) for event in events)
 
     def get_example_prompts_from_use_case(self) -> list[str]:
         """
@@ -159,12 +186,11 @@ class WebProject(BaseModel):
     backend_url: str = Field(..., description="URL of the backend server")
     frontend_url: str = Field(..., description="URL of the frontend application")
     is_web_real: bool = False
+    sandbox_mode: bool = Field(default=False, description="True if the project must run in sandbox mode")
     urls: list[str] = []
-    domain_analysis: DomainAnalysis | None = None
     events: list[type] = Field(default_factory=list, description="Structured events information")
+    use_cases: list[UseCase] | None = Field(default=None, description="Optional list of canonical use cases for this project")
     relevant_data: dict[str, Any] = Field(default_factory=dict, description="Structured additional information about the web project")
-    models: list[Any] = Field(default_factory=list)
-    use_cases: list[Any] = Field(default_factory=list, description="List of UseCase instances")
 
 
 class BackendEvent(BaseModel):

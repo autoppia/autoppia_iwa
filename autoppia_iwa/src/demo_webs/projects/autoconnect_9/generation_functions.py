@@ -3,10 +3,11 @@ from datetime import datetime, timedelta
 from random import choice
 from typing import Any
 
+from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
-    COMPANIES,
     FIELD_OPERATORS_APPLY_FOR_JOB_MAP,
     FIELD_OPERATORS_COMMENT_ON_POST_MAP,
     FIELD_OPERATORS_CONNECT_WITH_USER_MAP,
@@ -17,10 +18,39 @@ from .data import (
     FIELD_OPERATORS_SEARCH_USERS_MAP,
     FIELD_OPERATORS_VIEW_JOB_MAP,
     FIELD_OPERATORS_VIEW_USER_PROFILE_MAP,
-    POSTS_DATA_MODIFIED,
-    mockJobs,
-    mockUsers,
 )
+from .data_utils import fetch_connect_data
+
+
+async def _get_data(entity_type: str, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
+    return await fetch_connect_data(entity_type=entity_type, method=method, seed_value=seed_value, count=count)
+
+
+def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, Any]] | None:
+    if dataset is None:
+        return None
+    if isinstance(dataset, list):
+        return dataset
+    if isinstance(dataset, dict):
+        value = dataset.get(entity_type)
+        if isinstance(value, list):
+            return value
+    return None
+
+
+async def _ensure_entity_dataset(
+    task_url: str | None,
+    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None,
+    *,
+    entity_type: str,
+    method: str | None = None,
+) -> list[dict[str, Any]]:
+    """Ensure dataset is available for a specific entity type."""
+    existing = _extract_entity_dataset(dataset, entity_type)
+    if existing is not None:
+        return existing
+    v2_seed = await resolve_v2_seed_from_url(task_url)
+    return await _get_data(entity_type, method=method, seed_value=v2_seed)
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:
@@ -122,6 +152,9 @@ def _generate_constraints(dataset: list[dict], field_operators: dict, field_map:
     Generates constraints based on the dataset and field operator mapping.
     """
     all_constraints = []
+    if not dataset:
+        print("[ERROR] No dataset provided")
+        return all_constraints
     sample_data = choice(dataset)
     possible_fields = list(field_operators.keys())
     if selected_fields:
@@ -183,20 +216,20 @@ def _get_nested_value(obj, dotted_key, default=None):
     return obj
 
 
-def generate_view_user_profile_constraints() -> list[dict[str, Any]]:
+async def generate_view_user_profile_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for viewing a user profile based on the provided user profile data.
     """
-
-    dataset = mockUsers
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
     field_operators = FIELD_OPERATORS_VIEW_USER_PROFILE_MAP
     all_constraints = _generate_constraints(dataset, field_operators, num_constraints=1)
 
     return all_constraints
 
 
-def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
-    dataset = [u for u in mockUsers if u.get("username") != "alexsmith"]
+async def generate_connect_with_user_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    users = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
+    dataset = [u for u in users if u.get("username") != "alexsmith"]
 
     field_operators = FIELD_OPERATORS_CONNECT_WITH_USER_MAP
     field_map = {
@@ -206,11 +239,11 @@ def generate_connect_with_user_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_like_post_constraints():
+async def generate_like_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None):
     """
     Generates constraints for liking a post based on the provided post data.
     """
-    dataset = POSTS_DATA_MODIFIED
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="posts")
     field_operators = FIELD_OPERATORS_LIKE_POST_MAP
     field_map = {"poster_content": "content", "poster_name": "name"}
 
@@ -242,7 +275,7 @@ SAMPLE_COMMENTS = [
 ]
 
 
-def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
+async def generate_comment_on_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for commenting on a post based on the provided post data.
     """
@@ -254,7 +287,7 @@ def generate_comment_on_post_constraints() -> list[dict[str, Any]]:
     new_field_operators = {fixed_field: operators}
     all_constraints = _generate_constraints(sample_comments, new_field_operators)
 
-    dataset = POSTS_DATA_MODIFIED
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="posts")
     field_map = {"poster_content": "content", "poster_name": "name"}
     constraints = _generate_constraints(dataset, field_operators, field_map)
     all_constraints.extend(constraints)
@@ -286,7 +319,7 @@ sample_post_contents = [
 ]
 
 
-def generate_post_status_constraints() -> list[dict[str, Any]]:
+async def generate_post_status_constraints() -> list[dict[str, Any]]:
     all_constraints = []
     field = "content"
     field_operators = FIELD_OPERATORS_POST_STATUS_MAP
@@ -301,10 +334,12 @@ def generate_post_status_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_follow_page_constraints() -> list[dict[str, Any]]:
+async def generate_follow_page_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for following a company page based on the provided user profile data.
     """
+    from .data import COMPANIES
+
     dataset = COMPANIES
     field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
     field_map = {"company": "name"}
@@ -313,8 +348,8 @@ def generate_follow_page_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
-    dataset = mockJobs
+async def generate_apply_for_job_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
 
     field_map = {
         "job_title": "title",
@@ -326,11 +361,11 @@ def generate_apply_for_job_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_search_users_constraints() -> list[dict[str, Any]]:
+async def generate_search_users_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for searching users based on the provided user profile data.
     """
-    dataset = mockUsers
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="users")
     field_operators = FIELD_OPERATORS_SEARCH_USERS_MAP
     field_map = {"query": ["name", "title"]}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
@@ -338,12 +373,12 @@ def generate_search_users_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_search_jobs_constraints() -> list[dict[str, Any]]:
+async def generate_search_jobs_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for searching jobs based on the provided job data.
     Replaces raw salary values with predefined filter options if applicable.
     """
-    dataset = mockJobs
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
     field_operators = FIELD_OPERATORS_SEARCH_JOBS_MAP
     field_map = {"query": ["title", "company"]}
 
@@ -396,11 +431,11 @@ def generate_search_jobs_constraints() -> list[dict[str, Any]]:
     return all_constraints
 
 
-def generate_view_job_constraints() -> list[dict[str, Any]]:
+async def generate_view_job_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for viewing a job based on the provided job data.
     """
-    dataset = mockJobs
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
     field_operators = FIELD_OPERATORS_VIEW_JOB_MAP
     field_map = {"job_title": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)

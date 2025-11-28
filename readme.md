@@ -170,6 +170,7 @@ The benchmark provides powerful capabilities for comprehensive agent development
 - 📈 **Comparison charts**: Side-by-side agent performance visualization
 - 📝 **Debug logs**: Complete traces of actions, events, and errors
 - 💾 **Smart caching**: Reuse tasks and solutions for faster iteration
+- 📚 **Sandbox analytics**: Ingest miner datasets and flag unresolved/trivial tasks with `python -m modules.web_verification analyze-sandbox …` (see `docs/guides/sandbox_analysis.md`)
 
 ### ⚙️ Customization Options
 
@@ -204,7 +205,26 @@ Run real browser actions during benchmarks using the lightweight `browser-use` i
 
   agent = BrowserUseWebAgent(BrowserUseConfig(headless=True))
   solution = await agent.solve_task(task)  # TaskSolution with recording
-  ```
+```
+
+## 🌐 Server-side Mutation Proxy
+
+Make every demo web dynamic directly at the HTTP layer: launch the FastAPI reverse proxy packaged under `modules/dynamic_proxy`.
+
+```bash
+python scripts/run_demo_web_proxy.py --config modules/dynamic_proxy/config.example.json
+# or run via Docker
+docker build -f modules/dynamic_proxy/Dockerfile -t autoppia-dynamic-proxy .
+docker run --network=host \
+  -e DYNAMIC_PROXY_CONFIG=/config/proxy_config.json \
+  -v $(pwd)/modules/dynamic_proxy/config.example.json:/config/proxy_config.json \
+  autoppia-dynamic-proxy
+```
+
+- Each config entry maps a public `listen_port` to the original demo web origin (`origin`).
+- Responses flow through the same D1/D3/D4 engine used by the Dynamic executor, so seeds/palettes stay deterministic.
+- Overlays are injected with a lightweight bootstrap script, forcing agents or humans to dismiss them just like in the evaluator.
+- Audit artifacts land in `data/dynamic_proxy_audit/`, keeping before/after HTML and plan metadata for spot checks.
 
 ### 🔧 Evaluation Notes
 - Evaluators can replay/analyze actions; if needed, adapt `AgentHistoryList` into IWA `BaseAction` items before returning the `TaskSolution` (see the Browser-use readme for a sketch).

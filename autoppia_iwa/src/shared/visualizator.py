@@ -41,21 +41,30 @@ class SubnetVisualizer:
         task_panel = Panel(task_content, title=f"[bold cyan]TASK: {task_id}[/bold cyan]", border_style="cyan", padding=(1, 2))
         self.console.print(task_panel)
 
-        # Table of configured tests
+        # Display configured tests with full JSON
         if hasattr(task, "tests") and task.tests:
-            tests_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE, expand=True)
-            tests_table.add_column("Test #", style="dim", width=6)
-            tests_table.add_column("Type", style="cyan", width=22)
-            tests_table.add_column("Description", style="yellow")
-            tests_table.add_column("Attributes", style="red")
+            self.console.print("\n[bold magenta]CONFIGURED TESTS:[/bold magenta]")
 
             for idx, test in enumerate(task.tests):
                 test_type = type(test).__name__
-                description, attributes = self._get_detailed_test_description_and_attributes(test)
-                tests_table.add_row(str(idx + 1), test_type, description, attributes)
 
-            self.console.print("\n[bold magenta]CONFIGURED TESTS:[/bold magenta]")
-            self.console.print(tests_table)
+                # Get JSON representation of the test
+                import json
+
+                if hasattr(test, "model_dump"):
+                    test_json = test.model_dump()
+                elif hasattr(test, "dict"):
+                    test_json = test.dict()
+                else:
+                    test_json = vars(test)
+
+                # Format JSON with indentation
+                json_str = json.dumps(test_json, indent=2, ensure_ascii=False)
+
+                # Create a panel for each test
+                test_panel = Panel(f"[yellow]{json_str}[/yellow]", title=f"[bold cyan]Test #{idx + 1}: {test_type}[/bold cyan]", border_style="magenta", padding=(1, 2))
+                self.console.print(test_panel)
+
             self.console.print("-" * 80)
 
     def show_full_evaluation(

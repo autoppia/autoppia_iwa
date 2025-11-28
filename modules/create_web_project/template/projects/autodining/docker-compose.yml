@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${AUTOPPIA_BACKEND_URL:-http://localhost:8090}
+    ports:
+      - "${WEB_PORT:-8003}:3000"

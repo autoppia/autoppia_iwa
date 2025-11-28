@@ -3,8 +3,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from autoppia_iwa.src.data_generation.application.tasks_generation_pipeline import TaskGenerationPipeline
-from autoppia_iwa.src.data_generation.domain.classes import Task, TaskGenerationConfig
+from autoppia_iwa.src.data_generation.tasks.classes import Task, TaskGenerationConfig
+from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.demo_webs.classes import WebProject
 
 
@@ -77,37 +77,36 @@ async def load_tasks_from_json(project: WebProject, task_cache_dir: str) -> list
 
 
 async def generate_tasks_for_web_project(
-    project: WebProject, use_cached_tasks: bool, task_cache_dir: str, prompts_per_use_case: int = 1, num_of_use_cases: int = 1, use_cases: list[str] | None = None, enable_dynamic_html: bool = False
+    project: WebProject,
+    use_cached_tasks: bool,
+    task_cache_dir: str,
+    prompts_per_use_case: int = 1,
+    num_of_use_cases: int = 1,
+    use_cases: list[str] | None = None,
+    dynamic: bool | None = None,
 ) -> list[Task]:
     """
     Generate tasks for the given demo project, possibly using cached tasks.
     """
+    # Default to empty list if dynamic is None
+    if dynamic is None:
+        dynamic = []
+
     if use_cached_tasks:
         cached_tasks = await load_tasks_from_json(project, task_cache_dir)
         if cached_tasks and len(cached_tasks) > 0:
             print(f"Using {len(cached_tasks)} cached tasks for '{project.name}'")
-            # Configure cached tasks with seed if dynamic HTML is enabled
-            for task in cached_tasks:
-                task.assign_seed = enable_dynamic_html
-                if enable_dynamic_html and "?seed=" not in task.url:
-                    task.assign_seed_to_url()
             return cached_tasks
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
 
-    config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases, use_cases=use_cases)
+    config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases, use_cases=use_cases, dynamic=dynamic)
 
     print(f"Generating tasks for {project.name}...")
     pipeline = TaskGenerationPipeline(web_project=project, config=config)
     tasks = await pipeline.generate()
 
     if tasks:
-        # Configure tasks with seed if dynamic HTML is enabled
-        for task in tasks:
-            task.assign_seed = enable_dynamic_html
-            if enable_dynamic_html:
-                task.assign_seed_to_url()
-
         await save_tasks_to_json(tasks, project, task_cache_dir)
 
     return tasks

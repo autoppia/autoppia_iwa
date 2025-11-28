@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Usage: setup.sh [-l] [-w]
-#   -l    Deploy LLM model (runs modules/setup.sh)
+# Usage: setup.sh [-w]
 #   -w    Deploy demo webs using Docker Compose (runs modules/webs_demo/setup.sh)
 
 set -Eeuo pipefail
@@ -19,14 +18,12 @@ else
     fi
 fi
 
-DEPLOY_LLM=false
 DEPLOY_WEBS=false
 
-while getopts "lw" opt; do
+while getopts "w" opt; do
     case "$opt" in
-        l) DEPLOY_LLM=true ;;
         w) DEPLOY_WEBS=true ;;
-        *) echo -e "\e[31m[ERROR]\e[0m Invalid option. Usage: $0 [-l] [-w]"; exit 1 ;;
+        *) echo -e "\e[31m[ERROR]\e[0m Invalid option. Usage: $0 [-w]"; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -163,18 +160,7 @@ if ! playwright install --with-deps; then
 fi
 success_msg "Playwright installed successfully."
 
-# Step 9: Deploy LLM Model (if selected)
-if [ "$DEPLOY_LLM" = true ]; then
-    echo -e "\e[34m[INFO]\e[0m Deploying LLM model..."
-    cd modules || handle_error "Failed to change directory to modules"
-    $SUDO chmod +x setup.sh && bash setup.sh || handle_error "LLM setup script failed"
-    cd .. || handle_error "Failed to return to autoppia_iwa root"
-    success_msg "LLM model deployed successfully."
-else
-    echo -e "\e[32m[INFO]\e[0m Skipping LLM model deployment."
-fi
-
-# Step 10: Deploy Demo Webs using Docker Compose (if selected)
+# Step 9: Deploy Demo Webs using Docker Compose (if selected)
 if [ "$DEPLOY_WEBS" = true ]; then
     echo -e "\e[34m[INFO]\e[0m Deploying demo webs using Docker Compose..."
     cd modules/webs_demo || handle_error "Failed to change directory to modules/webs_demo"
