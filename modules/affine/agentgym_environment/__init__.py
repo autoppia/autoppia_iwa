@@ -1,7 +1,7 @@
 """Autoppia ↔ Affine integration helpers."""
 
-from importlib import import_module
 import sys
+from importlib import import_module
 from pathlib import Path
 
 _affine_root = Path(__file__).resolve().parents[1]

@@ -15,8 +15,8 @@ from autoppia_iwa.entrypoints.benchmark.utils.results import (
 )
 from autoppia_iwa.entrypoints.benchmark.utils.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.bootstrap import AppBootstrap
-from autoppia_iwa.src.data_generation.domain.classes import Task
-from autoppia_iwa.src.data_generation.domain.tests_classes import JudgeBaseOnHTML, JudgeBaseOnScreenshot
+from autoppia_iwa.src.data_generation.tasks import Task
+from autoppia_iwa.src.data_generation.tests import JudgeBaseOnHTML, JudgeBaseOnScreenshot
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator

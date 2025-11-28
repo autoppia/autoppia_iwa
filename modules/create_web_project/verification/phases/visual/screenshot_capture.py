@@ -5,9 +5,8 @@ Utilities for capturing reference screenshots of demo webs via Playwright.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Awaitable, Callable
 
 from playwright.async_api import Browser, Page, async_playwright
 

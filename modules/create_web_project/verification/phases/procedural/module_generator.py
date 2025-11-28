@@ -80,10 +80,7 @@ def dump_python(data: Any) -> str:
 
 def load_config(path: Path) -> dict[str, Any]:
     text = path.read_text(encoding="utf-8")
-    if path.suffix.lower() == ".json":
-        data = json.loads(text)
-    else:
-        data = yaml.safe_load(text)
+    data = json.loads(text) if path.suffix.lower() == ".json" else yaml.safe_load(text)
     if not isinstance(data, dict):
         raise ConfigError("Config root must be an object.")
     return data
@@ -329,7 +326,7 @@ class ModuleGenerator:
             }
             uc_defs.append(
                 "UseCase(\n"
-                f"    name=\"{template['name']}\",\n"
+                f'    name="{template["name"]}",\n'
                 f"    description={dump_python(template['description'])},\n"
                 f"    event={template['event']},\n"
                 f"    event_source_code={dump_python(template['event_source_code'])},\n"

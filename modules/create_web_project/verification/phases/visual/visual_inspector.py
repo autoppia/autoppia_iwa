@@ -3,17 +3,18 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-import os
 import random
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 from urllib.parse import urljoin
 
 from loguru import logger
 from playwright.async_api import Browser, Page, TimeoutError as PlaywrightTimeoutError, async_playwright
 
 from autoppia_iwa.src.di_container import DIContainer
+
 from ..deck.models import DeckPage, DeckRequiredElement, WebProjectDeck
 
 DECKS_BASE = Path(__file__).resolve().parents[1] / "deck"
@@ -21,7 +22,7 @@ SCREENSHOT_DIR = Path("data") / "web_verification" / "visual_inspector"
 
 try:  # pragma: no cover - DI optional in CLI
     DI = DIContainer()
-except Exception:  # noqa: S110
+except Exception:
     DI = None
 
 
@@ -143,14 +144,14 @@ async def _inspect_page(
                     if len(html_snapshot) > 4000:
                         html_snapshot = html_snapshot[:4000] + "..."
                     result["html_snapshot"] = html_snapshot
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     result["html_snapshot"] = f"<!-- Failed to capture HTML: {exc} -->"
                 try:
                     text_snapshot = await page.inner_text("body")
                     if len(text_snapshot) > 2000:
                         text_snapshot = text_snapshot[:2000] + "..."
                     result["page_text"] = text_snapshot
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     result["page_text"] = f"(Unable to capture body text: {exc})"
             result["ok"] = True
             break
@@ -180,7 +181,7 @@ async def _llm_judge_page(
 
         with Image.open(file_path) as img:
             width, height = img.size
-    except Exception:  # noqa: BLE001
+    except Exception:
         pass
 
     deck_summary = deck.metadata.summary or ""
@@ -195,7 +196,7 @@ async def _llm_judge_page(
                 " Ignore <title> tags and focus on the visible body content."
                 " Use the HTML snippet (truncated), body text excerpt, and screenshot metadata to reason."
                 " Fail only if the UI appears broken, empty, or clearly contradicts the deck description."
-                " Respond strictly in JSON: {\"pass\": bool, \"reasons\": [\"...\"]}."
+                ' Respond strictly in JSON: {"pass": bool, "reasons": ["..."]}.'
             ),
         },
         {
@@ -222,7 +223,7 @@ async def _llm_judge_page(
 
     try:
         raw = await llm_service.async_predict(messages=messages, json_format=True, return_raw=False)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return {"llm_pass": False, "llm_feedback": f"LLM judge failed: {exc}"}
 
     verdict = {"pass": False, "reasons": ["LLM returned empty response."]}
@@ -232,12 +233,12 @@ async def _llm_judge_page(
         cleaned = re.sub(r"^```(?:json)?|```$", "", cleaned, flags=re.IGNORECASE | re.MULTILINE).strip()
         try:
             return json.loads(cleaned)
-        except Exception:  # noqa: BLE001
+        except Exception:
             match = re.search(r"\{.*\}", cleaned, re.DOTALL)
             if match:
                 try:
                     return json.loads(match.group(0))
-                except Exception:  # noqa: BLE001
+                except Exception:
                     return None
         return None
 
@@ -312,7 +313,7 @@ async def run_inspector(
                         entry["llm_pass"] = None
                         entry["llm_feedback"] = "LLM judge skipped (service unavailable)."
                 else:
-                    for entry, page_spec in zip(results, deck.pages):
+                    for entry, page_spec in zip(results, deck.pages, strict=False):
                         if not entry.get("ok"):
                             entry["llm_pass"] = False
                             entry["llm_feedback"] = "Skipped (structural checks failed)."
@@ -335,7 +336,7 @@ def _obtain_llm_service():
         return None
     try:
         return DI.llm_service()
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
 
 

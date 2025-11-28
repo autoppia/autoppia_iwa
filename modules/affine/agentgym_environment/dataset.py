@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import random
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Iterable, List, Sequence
 
 from loguru import logger
 

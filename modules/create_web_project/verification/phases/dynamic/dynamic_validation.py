@@ -3,13 +3,14 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from difflib import SequenceMatcher, unified_diff
-from typing import Any, Iterable, Sequence
+from difflib import SequenceMatcher
+from typing import Any
 from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
+from aiohttp import ClientError, ClientSession
 from loguru import logger
-from aiohttp import ClientSession, ClientError
 from playwright.async_api import (
     Browser,
     Page,
@@ -23,14 +24,14 @@ from ..deck.models import DeckPage, WebProjectDeck
 def _env_float(name: str, default: float) -> float:
     try:
         return float(os.getenv(name, default))
-    except Exception:  # noqa: BLE001
+    except Exception:
         return default
 
 
 def _env_int(name: str, default: int) -> int:
     try:
         return int(os.getenv(name, default))
-    except Exception:  # noqa: BLE001
+    except Exception:
         return default
 
 
@@ -215,7 +216,7 @@ async def run_dynamic_validation(
                         expect_mutations=expect_mutations,
                         llm_service=llm_service,
                     )
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     logger.exception("Dynamic gate failed for page %s: %s", page_spec.id, exc)
                     page_result = DynamicPageResult(
                         page_id=page_spec.id or "unknown",
@@ -302,10 +303,7 @@ async def _evaluate_single_page(
             },
         )
 
-    runtime_maps = {
-        seed: next((entry for entry in maps if entry), None)
-        for seed, maps in map_runs.items()
-    }
+    runtime_maps = {seed: next((entry for entry in maps if entry), None) for seed, maps in map_runs.items()}
 
     return DynamicPageResult(
         page_id=page_spec.id or "unknown",
@@ -366,7 +364,7 @@ async def _capture_html(
         runtime_map = None
         try:
             runtime_map = await page.evaluate("() => window.__DYNAMIC_MAP__ || null")
-        except Exception:  # noqa: BLE001
+        except Exception:
             runtime_map = None
         if not (html or "").strip():
             fallback = await _http_fetch(url, config.timeout_ms)
@@ -375,7 +373,7 @@ async def _capture_html(
         return html, url, None, runtime_map
     except PlaywrightTimeoutError as exc:
         return None, url, f"Timeout after {config.timeout_ms}ms ({exc})", None
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return None, url, str(exc), None
 
 
@@ -407,12 +405,11 @@ async def _http_fetch(url: str, timeout_ms: int) -> str | None:
     timeout = max(1, timeout_ms / 1000)
     headers = {"accept-encoding": "identity"}
     try:
-        async with ClientSession() as session:
-            async with session.get(url, timeout=timeout, headers=headers) as resp:
-                if resp.status >= 400:
-                    logger.warning(f"HTTP fallback returned {resp.status} for {url}")
-                    return None
-                return await resp.text()
+        async with ClientSession() as session, session.get(url, timeout=timeout, headers=headers) as resp:
+            if resp.status >= 400:
+                logger.warning(f"HTTP fallback returned {resp.status} for {url}")
+                return None
+            return await resp.text()
     except ClientError as exc:
         logger.warning(f"HTTP fallback error for {url}: {exc}")
         return None
@@ -455,7 +452,7 @@ def _compute_base_deltas(html_runs: dict[int | None, list[str]]) -> list[tuple[i
 
 
 def _compute_cross_seed_deltas(html_runs: dict[int | None, list[str]]) -> list[tuple[tuple[int, int], float]]:
-    seeds = [seed for seed in html_runs.keys() if seed is not None and html_runs.get(seed)]
+    seeds = [seed for seed in html_runs if seed is not None and html_runs.get(seed)]
     deltas: list[tuple[tuple[int, int], float]] = []
     for i, seed_a in enumerate(seeds):
         html_a = html_runs[seed_a][0]
@@ -471,20 +468,14 @@ async def _llm_assess_variation(llm_service, page_id: str, base_html: str, seed_
     chunks = []
     for seed, html in seed_htmls:
         chunks.append(f"Seed {seed}:\n{_trim_html(html)}")
-    user_content = (
-        f"Page: {page_id}\n"
-        f"Heuristics: {json.dumps(heuristics)}\n"
-        f"Baseline HTML:\n{base_excerpt}\n"
-        f"{'-'*40}\n"
-        f"{chr(10).join(chunks)}"
-    )
+    user_content = f"Page: {page_id}\nHeuristics: {json.dumps(heuristics)}\nBaseline HTML:\n{base_excerpt}\n{'-' * 40}\n{chr(10).join(chunks)}"
     messages = [
         {
             "role": "system",
             "content": (
                 "You are a consistency checker. Decide whether seeded HTML renders are both deterministic AND meaningfully different.\n"
                 "Heuristics are trustworthy signals; only contradict them if the HTML excerpts clearly show identical content.\n"
-                "Respond ONLY with JSON matching the schema {\"pass\": bool, \"reasons\": [\"...\"]}. No prose, no markdown."
+                'Respond ONLY with JSON matching the schema {"pass": bool, "reasons": ["..."]}. No prose, no markdown.'
             ),
         },
         {"role": "user", "content": user_content},
@@ -502,7 +493,7 @@ async def _llm_assess_variation(llm_service, page_id: str, base_html: str, seed_
         )
         data = json.loads(raw_response) if isinstance(raw_response, str) else raw_response
         return bool(data.get("pass", False)), "; ".join(data.get("reasons") or [])
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         preview = ""
         if isinstance(raw_response, str):
             cleaned = raw_response.strip()
@@ -549,10 +540,7 @@ def _expect_mutations(deck: WebProjectDeck | None) -> bool:
     if not deck or not deck.dynamic_profile:
         return False
     profile = deck.dynamic_profile
-    return any(
-        getattr(profile, attr, False)
-        for attr in ("html_mutates", "data_mutates", "ui_identifiers_mutate")
-    )
+    return any(getattr(profile, attr, False) for attr in ("html_mutates", "data_mutates", "ui_identifiers_mutate"))
 
 
 def _select_pages(deck: WebProjectDeck | None, limit: int) -> list[DeckPage]:

@@ -344,14 +344,8 @@ class MutationEngine:
 
     def _fallback_plan(self, seed: int, url: str) -> dict[str, Any]:
         rng = random.Random(f"{self.project_id}:{seed}:{url}:fallback")
-        shell_html = (
-            "<div class='iwa-structural-wrapper' aria-hidden='true' style='display:block;"
-            "pointer-events:none;border:1px dashed rgba(148,163,184,0.25);margin:2px 0;'></div>"
-        )
-        spacer_html = (
-            "<div class='iwa-structural-spacer' aria-hidden='true' style='display:block;height:2px;"
-            "margin:6px 0;border-bottom:1px solid rgba(148,163,184,0.2);pointer-events:none;'></div>"
-        )
+        shell_html = "<div class='iwa-structural-wrapper' aria-hidden='true' style='display:block;pointer-events:none;border:1px dashed rgba(148,163,184,0.25);margin:2px 0;'></div>"
+        spacer_html = "<div class='iwa-structural-spacer' aria-hidden='true' style='display:block;height:2px;margin:6px 0;border-bottom:1px solid rgba(148,163,184,0.2);pointer-events:none;'></div>"
         d1 = [
             {"operation": "wrap_with", "target": "main", "html": shell_html},
             {"operation": "insert_before", "target": "section", "html": spacer_html},
@@ -369,7 +363,7 @@ class MutationEngine:
                 "attribute": "data-iwa-variant",
                 "value": f"nav-{seed % 5}",
             },
-            {"operation": "append_class", "target": "header", "value": f"iwa-variant--{rng.randint(1,4)}"},
+            {"operation": "append_class", "target": "header", "value": f"iwa-variant--{rng.randint(1, 4)}"},
         ]
         d4 = self._fallback_overlay_plan(seed, url)
         return {"d1": d1, "d3": d3, "d4": d4}
@@ -437,8 +431,8 @@ class MutationEngine:
 
 
 __all__ = [
+    "DynamicPhaseConfig",
+    "MutationAuditRecord",
     "MutationEngine",
     "MutationResult",
-    "MutationAuditRecord",
-    "DynamicPhaseConfig",
 ]

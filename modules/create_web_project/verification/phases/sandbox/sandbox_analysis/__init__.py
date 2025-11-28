@@ -10,10 +10,10 @@ from .metrics import (
 __all__ = [
     "DatasetEntry",
     "SolutionRecord",
-    "load_dataset",
     "compute_project_metrics",
-    "find_unresolved_tasks",
-    "find_trivial_tasks",
-    "detect_agent_memorization",
     "compute_seed_variability",
+    "detect_agent_memorization",
+    "find_trivial_tasks",
+    "find_unresolved_tasks",
+    "load_dataset",
 ]

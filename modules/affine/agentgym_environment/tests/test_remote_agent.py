@@ -9,6 +9,7 @@ for path in (PACKAGE_ROOT, REPO_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
+
 def _alias_inner(submodule: str) -> None:
     alias = f"autoppia_iwa.{submodule}"
     if alias in sys.modules:
@@ -39,7 +40,7 @@ def _require_remote_agent() -> dict:
         response = httpx.get(f"{REMOTE_AGENT_BASE_URL}/info", timeout=5.0)
         response.raise_for_status()
         return response.json()
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         pytest.skip(f"Remote miner not reachable at {REMOTE_AGENT_BASE_URL}/info: {exc}")
 
 

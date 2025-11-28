@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from loguru import logger
 
@@ -83,18 +83,10 @@ def main(argv: Iterable[str] | None = None) -> int:
     _preview("Unresolved tasks (0% success)", report_payload["unresolved_tasks"])
     _preview("Trivial tasks (near 100% success / <3 actions)", report_payload["trivial_tasks"])
 
-    flagged_agents = [
-        f"{agent} (diversity={details['diversity_ratio']})"
-        for agent, details in agent_diversity.items()
-        if details["flagged"]
-    ]
+    flagged_agents = [f"{agent} (diversity={details['diversity_ratio']})" for agent, details in agent_diversity.items() if details["flagged"]]
     _preview("Agents with low action diversity (possible memorization)", flagged_agents)
 
-    flagged_seed = [
-        f"{item['project_id']} | {item['basis']} | variance={item['variance']} seeds={item['seed_success']}"
-        for item in report_payload["seed_variability"]
-        if item["flagged"]
-    ]
+    flagged_seed = [f"{item['project_id']} | {item['basis']} | variance={item['variance']} seeds={item['seed_success']}" for item in report_payload["seed_variability"] if item["flagged"]]
     _preview("Low seed variability (dynamic suspicious)", flagged_seed)
     return 0
 

@@ -5,8 +5,8 @@ import multiprocessing
 import os
 import signal
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import uvicorn
 
@@ -75,4 +75,4 @@ def resolve_config_path(arg_path: Path | None) -> Path:
     return default.expanduser().resolve()
 
 
-__all__ = ["run_from_config", "resolve_config_path"]
+__all__ = ["resolve_config_path", "run_from_config"]

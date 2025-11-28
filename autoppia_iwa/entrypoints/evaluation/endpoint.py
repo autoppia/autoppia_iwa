@@ -17,7 +17,7 @@ import asyncio
 import os
 import sys
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated, Any, ClassVar
 
 import uvicorn
@@ -228,7 +228,7 @@ async def lifespan(app: FastAPI):  # type: ignore[override]
 
     # Attach service + uptime
     app.state.service = EvaluationEndpointService()
-    app.state.started_at = datetime.now(timezone.utc)
+    app.state.started_at = datetime.now(UTC)
 
     logger.success("Evaluation Endpoint Service ready!")
     try:
@@ -278,8 +278,8 @@ def get_service(request: Request) -> EvaluationEndpointService:
 @app.get("/health")
 async def health_check(request: Request):
     """Health check with uptime and version."""
-    started_at: datetime = getattr(request.app.state, "started_at", datetime.now(timezone.utc))
-    uptime_seconds = (datetime.now(timezone.utc) - started_at).total_seconds()
+    started_at: datetime = getattr(request.app.state, "started_at", datetime.now(UTC))
+    uptime_seconds = (datetime.now(UTC) - started_at).total_seconds()
     return {
         "status": "healthy",
         "service": "evaluation-endpoint",

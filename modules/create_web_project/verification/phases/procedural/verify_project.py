@@ -10,33 +10,32 @@ import random
 import re
 import sys
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from statistics import median
-from typing import Any, Iterable, List
+from typing import Any
 
 import aiohttp
+from tqdm import tqdm
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
+from autoppia_iwa.src.data_generation.tasks.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
 from autoppia_iwa.src.data_generation.tests.multi_step.test_generation_pipeline import GlobalTestGenerationPipeline
-from autoppia_iwa.src.data_generation.tasks.classes import Task, TaskGenerationConfig
 from autoppia_iwa.src.demo_webs.classes import UseCase, WebProject
 from autoppia_iwa.src.di_container import DIContainer
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
-from autoppia_iwa.src.di_container import DIContainer
-from tqdm import tqdm
-from ..deck.models import WebProjectDeck
-from .frontend_analysis import WebProjectAnalysis, analyze_frontend, ScreenshotReview
-from ..visual.screenshot_analysis import summarize_screenshots
-from .module_generator import ConfigError as ModuleConfigError, generate_module_from_config
-from ..dynamic.dynamic_validation import DynamicGateConfig, DynamicValidationOutcome, run_dynamic_validation
 from autoppia_iwa.src.llms.interfaces import LLMConfig
 from autoppia_iwa.src.llms.service import LLMFactory
+from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+
+from ..deck.models import WebProjectDeck
+from ..dynamic.dynamic_validation import DynamicGateConfig, DynamicValidationOutcome, run_dynamic_validation
+from ..visual.screenshot_analysis import summarize_screenshots
+from .frontend_analysis import ScreenshotReview, WebProjectAnalysis, analyze_frontend
+from .module_generator import ConfigError as ModuleConfigError, generate_module_from_config
 
 PROJECTS_BASE = PROJECT_BASE_DIR / "src" / "demo_webs" / "projects"
 DECKS_BASE = Path(__file__).resolve().parents[1] / "deck"
@@ -291,7 +290,7 @@ def _bootstrap_llm_from_env():
             temperature=_read_float_env("CHUTES_TEMPERATURE", 0.7),
             max_tokens=_read_int_env("CHUTES_MAX_TOKENS", 2048),
         )
-        use_bearer = (os.getenv("CHUTES_USE_BEARER", "false").strip().lower() in {"1", "true", "yes"})
+        use_bearer = os.getenv("CHUTES_USE_BEARER", "false").strip().lower() in {"1", "true", "yes"}
         return LLMFactory.create_llm("chutes", config, base_url=base_url, api_key=api_key, use_bearer=use_bearer), None
 
     if provider == "local":
@@ -453,7 +452,7 @@ def verify_project(project_slug: str, deck_path: Path | None = None) -> tuple[Pr
         report.add(False, "Import use_cases module", f"{exc}", section=SECTION_USE_CASES)
         return report, web_project
 
-    use_cases: List[UseCase] | None = getattr(use_cases_module, "ALL_USE_CASES", None)
+    use_cases: list[UseCase] | None = getattr(use_cases_module, "ALL_USE_CASES", None)
     if not use_cases:
         report.add(False, "ALL_USE_CASES defined", "ALL_USE_CASES missing or empty", section=SECTION_USE_CASES)
         return report, web_project
@@ -524,11 +523,7 @@ def verify_project(project_slug: str, deck_path: Path | None = None) -> tuple[Pr
             section=SECTION_USE_CASES,
         )
 
-        mismatch = [
-            uc.name
-            for uc in use_cases
-            if getattr(uc, "event", None) and getattr(uc.event, "__name__", None) not in event_classes
-        ]
+        mismatch = [uc.name for uc in use_cases if getattr(uc, "event", None) and getattr(uc.event, "__name__", None) not in event_classes]
         report.add(
             not mismatch,
             "Use case events exist in EVENTS",
@@ -654,11 +649,10 @@ async def _check_frontend_health(url: str) -> tuple[bool, str]:
     if not url:
         return False, "frontend_url not configured"
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=5) as resp:
-                if resp.status == 200:
-                    return True, "HTTP 200"
-                return False, f"Status {resp.status}"
+        async with aiohttp.ClientSession() as session, session.get(url, timeout=5) as resp:
+            if resp.status == 200:
+                return True, "HTTP 200"
+            return False, f"Status {resp.status}"
     except Exception as exc:
         return False, str(exc)
 
@@ -709,9 +703,7 @@ def _check_task_prompts(
     report.add(
         not constraint_failures,
         "Task prompts mention constraint values",
-        f"Issues: {', '.join(constraint_failures[:20])}" + (" ..." if len(constraint_failures) > 20 else "")
-        if constraint_failures
-        else None,
+        f"Issues: {', '.join(constraint_failures[:20])}" + (" ..." if len(constraint_failures) > 20 else "") if constraint_failures else None,
         section=section,
     )
     for task_id, state in prompt_states.items():
@@ -838,7 +830,7 @@ def _execute_dynamic_gate(report: ProjectReport, web_project: WebProject) -> Non
                 config=DynamicGateConfig(),
             )
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         report.add(False, "Dynamic validation execution", str(exc), section=SECTION_DYNAMIC)
         return
     _apply_dynamic_outcome(report, outcome)
@@ -1022,7 +1014,7 @@ async def _llm_validate_tasks(
 
     system_prompt = (
         "You are verifying that a benchmark task prompt correctly restates every business constraint. "
-        "Respond strictly in JSON with the shape {\"compliant\": bool, \"issues\": [\"...\"]}. "
+        'Respond strictly in JSON with the shape {"compliant": bool, "issues": ["..."]}. '
         "If the prompt is missing any constraint or adds unrelated instructions, set compliant to false and explain."
     )
 
@@ -1030,12 +1022,7 @@ async def _llm_validate_tasks(
         use_case = getattr(task, "use_case", None)
         constraints_str = _format_constraints(use_case)
         description = getattr(use_case, "description", "")
-        user_prompt = (
-            f"Use case name: {getattr(use_case, 'name', 'unknown')}\n"
-            f"Use case description: {description}\n"
-            f"Constraints: {constraints_str}\n"
-            f"Task prompt:\n{task.prompt}"
-        )
+        user_prompt = f"Use case name: {getattr(use_case, 'name', 'unknown')}\nUse case description: {description}\nConstraints: {constraints_str}\nTask prompt:\n{task.prompt}"
 
         messages = [
             {"role": "system", "content": system_prompt},
@@ -1074,16 +1061,14 @@ async def _llm_validate_tasks(
     report.add(
         not failures,
         "LLM validation of prompts",
-        f"Issues: {', '.join(f'{task_id}: {reason}' for task_id, reason in failures[:10])}"
-        + (" ..." if len(failures) > 10 else "")
-        if failures
-        else None,
+        f"Issues: {', '.join(f'{task_id}: {reason}' for task_id, reason in failures[:10])}" + (" ..." if len(failures) > 10 else "") if failures else None,
         section=section,
     )
     for task_id, _ in failures:
         entry = task_summaries.get(task_id)
         if entry and entry.get("prompt_status") == "PROMPT_OK":
             entry["prompt_status"] = "PROMPT_WARN"
+
 
 async def _evaluate_tasks_with_agent(web_project: WebProject, tasks: list[Task], agent) -> tuple[list[tuple[Task, Any]], list[str]]:
     if not tasks:
@@ -1104,9 +1089,7 @@ async def _evaluate_tasks_with_agent(web_project: WebProject, tasks: list[Task],
             solution = await agent.solve_task(task)
             if not getattr(solution, "web_agent_id", None):
                 solution.web_agent_id = getattr(agent, "id", getattr(agent, "name", "unknown_agent"))
-            print(
-                f"    -> Agent '{getattr(agent, 'name', 'agent')}' produced {len(solution.actions)} actions for task {task.id}"
-            )
+            print(f"    -> Agent '{getattr(agent, 'name', 'agent')}' produced {len(solution.actions)} actions for task {task.id}")
             result = await evaluator.evaluate_single_task_solution(task, solution)
             evaluations.append((task, result))
         except Exception as exc:
@@ -1143,17 +1126,11 @@ async def _semantic_check_solutions(success_results: list[tuple[Task, Any]], tas
                 entry["semantic_details"] = f"LLM unavailable ({llm_error})"
         return
 
-    system_prompt = (
-        "You are validating whether a sequence of browser actions makes sense for a given task prompt.\n"
-        "Reply in JSON: {\"coherent\": bool, \"warnings\": [\"...\"]}."
-    )
+    system_prompt = 'You are validating whether a sequence of browser actions makes sense for a given task prompt.\nReply in JSON: {"coherent": bool, "warnings": ["..."]}.'
 
     for task, result in success_results:
         history_summary = _summarize_execution(getattr(result, "execution_history", []))
-        user_prompt = (
-            f"Task prompt:\n{task.prompt}\n\nUse case: {getattr(task.use_case, 'name', 'unknown')}\n"
-            f"Action trace:\n{history_summary}"
-        )
+        user_prompt = f"Task prompt:\n{task.prompt}\n\nUse case: {getattr(task.use_case, 'name', 'unknown')}\nAction trace:\n{history_summary}"
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
@@ -1260,9 +1237,7 @@ def run_full_verification(project_slug: str, deck_path: Path | None = None) -> t
 
         print(f"  [5/{total_steps}] RandomClicker evaluation…")
         if tasks_for_checks:
-            random_results, random_errors = asyncio.run(
-                _evaluate_tasks_with_agent(web_project, tasks_for_checks, RandomClickerWebAgent(id="random_clicker", name="RandomClicker"))
-            )
+            random_results, random_errors = asyncio.run(_evaluate_tasks_with_agent(web_project, tasks_for_checks, RandomClickerWebAgent(id="random_clicker", name="RandomClicker")))
             anomalies = [task.id for task, result in random_results if getattr(result, "final_score", 0) >= 1]
             for task, result in random_results:
                 entry = _ensure_task_entry(task_summaries, task)
@@ -1338,10 +1313,7 @@ def _locate_frontend_dir(web_project: WebProject | None) -> Path | None:
     root = Path("modules") / "webs_demo"
     if not root.exists():
         return None
-    candidates = [
-        path for path in root.iterdir()
-        if path.is_dir() and project_id and project_id in path.name.lower()
-    ]
+    candidates = [path for path in root.iterdir() if path.is_dir() and project_id and project_id in path.name.lower()]
     return candidates[0] if candidates else None
 
 
@@ -1386,10 +1358,10 @@ def _write_codex_report(
     task_issue_lines: list[str] = []
     for task_id, info in task_summaries.items():
         notes: list[str] = []
-        for field, ok_values in ok_states.items():
-            value = info.get(field)
+        for _field, ok_values in ok_states.items():
+            value = info.get(_field)
             if value and value not in ok_values:
-                notes.append(f"{field.replace('_status', '')}={value}")
+                notes.append(f"{_field.replace('_status', '')}={value}")
         if info.get("semantic_details"):
             notes.append(f"notes={info['semantic_details']}")
         if notes:
@@ -1471,7 +1443,7 @@ def _write_codex_report(
         lines.append("- ⚪ Not run (no events defined)")
 
     lines.append("")
-    lines.append("### Dynamic Layers (D1–D3)")
+    lines.append("### Dynamic Layers (D1-D3)")
     if frontend_analysis.dynamic_layers:
         for layer in frontend_analysis.dynamic_layers:
             flag = "✅" if layer.passed else "❌"
@@ -1533,11 +1505,7 @@ def _print_final_summary(entries: list[tuple[str, ProjectReport]], overall_statu
     print("\n==== Final Summary ====")
     for slug, report in entries:
         status = "PASS" if report.ok else "FAIL"
-        failing_sections = [
-            SECTION_TITLES.get(key, key.replace("_", " ").title())
-            for key in SECTION_ORDER
-            if key in report.sections and not report.sections[key].ok
-        ]
+        failing_sections = [SECTION_TITLES.get(key, key.replace("_", " ").title()) for key in SECTION_ORDER if key in report.sections and not report.sections[key].ok]
         if failing_sections:
             notes = "; ".join(failing_sections)
             print(f"- {slug}: {status} — Issues detected in {notes}")

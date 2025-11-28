@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import importlib
 import inspect
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, List
 
 MODULE_PREFIX = "autoppia_iwa.src.demo_webs.projects"
 SOURCE_SUFFIXES = {".ts", ".tsx", ".js", ".jsx"}
@@ -143,12 +143,12 @@ def _find_line_number(text: str, needle: str) -> int:
 
 DYNAMIC_RULES = {
     "D1": {
-        "title": "D1 – Structural variability via seed/layout",
+        "title": "D1 - Structural variability via seed/layout",
         "patterns": ["SeedContext.tsx", "useSeedLayout.ts", "LayoutProvider.tsx"],
         "keywords": ["seed", "layout"],
     },
     "D3": {
-        "title": "D3 – Dynamic UI tokens (ids/text/labels)",
+        "title": "D3 - Dynamic UI tokens (ids/text/labels)",
         "patterns": ["dynamicTokens.ts", "dynamicCopy.ts", "tokenFactory.ts", "DynamicText.ts"],
         "keywords": ["variant", "seed", "text"],
     },
@@ -178,8 +178,8 @@ def _analyze_dynamic_layers(
 
 
 def _find_dynamic_evidence(
-    patterns: List[str],
-    keywords: List[str],
+    patterns: list[str],
+    keywords: list[str],
     lower_cache: dict[Path, str],
     frontend_dir: Path,
 ) -> str | None:

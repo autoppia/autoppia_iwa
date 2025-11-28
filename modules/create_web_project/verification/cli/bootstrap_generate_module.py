@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from ...phases.procedural.module_generator import ConfigError, generate_module_from_config, load_config
 

@@ -3,8 +3,8 @@ from __future__ import annotations
 import asyncio
 import inspect
 import json
+from collections.abc import Awaitable, Callable, Iterable
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Iterable
 
 import httpx
 from fastapi import FastAPI, Request, Response
@@ -14,7 +14,6 @@ from starlette.datastructures import QueryParams
 
 from modules.dynamic_proxy.core.config import DynamicPhaseConfig
 from modules.dynamic_proxy.core.engine import MutationEngine, MutationResult
-
 
 RUNTIME_DIR = Path(__file__).resolve().parents[1] / "runtime"
 
@@ -173,10 +172,7 @@ def create_project_proxy_app(
             },
             "siteKey": site_key or config.project_id,
         }
-        snippet = (
-            f"<script>window.__DYN_CONFIG__ = {json.dumps(payload, ensure_ascii=False)};</script>\n"
-            '<script src="/dynamic/runtime.js"></script>'
-        )
+        snippet = f'<script>window.__DYN_CONFIG__ = {json.dumps(payload, ensure_ascii=False)};</script>\n<script src="/dynamic/runtime.js"></script>'
         try:
             html = content.decode("utf-8", errors="ignore")
         except Exception:
@@ -226,12 +222,7 @@ def create_project_proxy_app(
         runtime_seed: int | None = None
         if config.inject_client_runtime and not _should_skip_mutation(request.query_params):
             runtime_seed = _normalize_seed_value(_extract_seed(request.query_params))
-        mutate = (
-            not _should_skip_mutation(request.query_params)
-            and "text/html" in content_type
-            and phase_config.any_enabled()
-            and upstream_response.status_code not in (204, 304)
-        )
+        mutate = not _should_skip_mutation(request.query_params) and "text/html" in content_type and phase_config.any_enabled() and upstream_response.status_code not in (204, 304)
         if mutate:
             seed = _extract_seed(request.query_params)
             full_url = str(upstream_response.request.url)

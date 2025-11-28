@@ -74,7 +74,7 @@ class WebProjectDeck(BaseModel):
     tasks_policy: DeckTasksPolicy | None = None
 
     @staticmethod
-    def load(path: Path) -> "WebProjectDeck":
+    def load(path: Path) -> WebProjectDeck:
         data = path.read_text()
         try:
             import json

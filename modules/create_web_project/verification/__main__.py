@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import sys
-from typing import Callable, Sequence
+from collections.abc import Callable, Sequence
 
 CommandRunner = Callable[[Sequence[str]], int | None]
 

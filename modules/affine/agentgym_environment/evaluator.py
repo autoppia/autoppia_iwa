@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Iterable, List
+from collections.abc import Iterable
 
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -9,11 +9,9 @@ from pydantic import BaseModel, Field
 try:
     from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
     from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-    from autoppia_iwa.src.web_agents.classes import TaskSolution
 except ModuleNotFoundError:  # pragma: no cover - source-tree fallback
     from autoppia_iwa.autoppia_iwa.src.evaluation.classes import EvaluatorConfig
     from autoppia_iwa.autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
-    from autoppia_iwa.autoppia_iwa.src.web_agents.classes import TaskSolution
 
 from .agent_client import RemoteAgentClient
 from .config import AffineEnvConfig
@@ -59,7 +57,7 @@ class EvaluationRunner:
         self,
         entries: Iterable[TaskEntry],
         client: RemoteAgentClient,
-    ) -> List[TaskEvaluationDetail]:
+    ) -> list[TaskEvaluationDetail]:
         details: list[TaskEvaluationDetail] = []
         for entry in entries:
             details.append(await self._evaluate_entry(entry, client))
@@ -69,7 +67,7 @@ class EvaluationRunner:
         start_time = time.perf_counter()
         try:
             solution = await client.solve_task(entry.task)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("Failed to fetch solution from miner for task %s", entry.task.id)
             return TaskEvaluationDetail(
                 affine_id=entry.affine_id,
@@ -91,7 +89,7 @@ class EvaluationRunner:
         evaluator = ConcurrentEvaluator(entry.project, self._build_evaluator_config())
         try:
             result = await evaluator.evaluate_single_task_solution(entry.task, solution)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("Evaluation failed for task %s", entry.task.id)
             return TaskEvaluationDetail(
                 affine_id=entry.affine_id,
