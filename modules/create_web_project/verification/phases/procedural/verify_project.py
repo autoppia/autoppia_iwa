@@ -17,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import aiohttp
+import requests
 from tqdm import tqdm
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
@@ -650,10 +650,10 @@ async def _check_frontend_health(url: str) -> tuple[bool, str]:
     if not url:
         return False, "frontend_url not configured"
     try:
-        async with aiohttp.ClientSession() as session, session.get(url, timeout=5) as resp:
-            if resp.status == 200:
-                return True, "HTTP 200"
-            return False, f"Status {resp.status}"
+        resp = requests.get(url, timeout=5)
+        if resp.status_code == 200:
+            return True, "HTTP 200"
+        return False, f"Status {resp.status_code}"
     except Exception as exc:
         return False, str(exc)
 
