@@ -48,16 +48,16 @@ PROJECT_BASE_DIR = Path(__file__).resolve().parents[1]
 # DEMO WEBS
 # ============================
 DEMO_WEBS_ENDPOINT = os.getenv("DEMO_WEBS_ENDPOINT", "http://localhost").strip("/")
-DEMO_WEBS_STARTING_PORT = int(os.getenv("DEMO_WEBS_STARTING_PORT", "8100"))
+DEMO_WEBS_STARTING_PORT = int(os.getenv("DEMO_WEBS_STARTING_PORT", "8000"))
 DEMO_WEB_SERVICE_PORT = int(os.getenv("DEMO_WEB_SERVICE_PORT", "8090"))
 
 # ============================
 # Agent Configurations
 # ============================
-AGENT_NAME = os.getenv("AGENT_NAME")
-USE_APIFIED_AGENT = bool(strtobool(os.getenv("USE_APIFIED_AGENT", "false")))
+AGENT_NAME = os.getenv("AGENT_NAME", "Newbie Agent")
+USE_APIFIED_AGENT = bool(strtobool(os.getenv("USE_APIFIED_AGENT", "true")))
 AGENT_HOST = os.getenv("AGENT_HOST", "localhost")
-AGENT_PORT = int(os.getenv("AGENT_PORT", "8080"))
+AGENT_PORT = int(os.getenv("AGENT_PORT", "5000"))
 
 # ============================
 # Validator Configuration
