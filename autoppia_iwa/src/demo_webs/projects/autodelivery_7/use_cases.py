@@ -6,6 +6,7 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
     BackToAllRestaurantsEvent,
     DeleteReviewEvent,
     DropoffPreferenceEvent,
+    EditCartItemEvent,
     EmptyCartEvent,
     ItemIncrementedEvent,
     OpenCheckoutPageEvent,
@@ -14,6 +15,7 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
     QuickReorderEvent,
     RestaurantFilterEvent,
     SearchRestaurantEvent,
+    ViewAllRestaurantsEvent,
     ViewRestaurantEvent,
 )
 
@@ -23,6 +25,7 @@ from .generation_functions import (
     generate_address_added_constraints,
     generate_delete_review_constraints,
     generate_dropoff_option_constraints,
+    generate_edit_cart_item_constraints,
     generate_increment_item_restaurant_constraints,
     generate_place_order_constraints,
     generate_quick_reorder_constraints,
@@ -87,6 +90,19 @@ RESTAURANT_FILTER_USE_CASE = UseCase(
     examples=[
         {"prompt": "Filter restaurants to show only Italian cuisine with rating above 4.", "prompt_for_task_generation": "Filter restaurants to show only Italian cuisine with rating above 4."},
         {"prompt": "Show restaurants matching search 'pizza' and rating at least 4.5.", "prompt_for_task_generation": "Show restaurants matching search 'pizza' and rating at least 4.5."},
+    ],
+)
+
+VIEW_ALL_RESTAURANTS_USE_CASE = UseCase(
+    name="VIEW_ALL_RESTAURANTS",
+    description="The user opens the full list of restaurants from any detail view.",
+    event=ViewAllRestaurantsEvent,
+    event_source_code=ViewAllRestaurantsEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {"prompt": "Show all restaurants.", "prompt_for_task_generation": "Show all restaurants."},
+        {"prompt": "Return to the full restaurant list.", "prompt_for_task_generation": "Return to the full restaurant list."},
+        {"prompt": "Open the main restaurants page.", "prompt_for_task_generation": "Open the main restaurants page."},
     ],
 )
 ADD_TO_CART_MODAL_OPEN_ADDITIONAL_PROMPT_INFO = """
@@ -202,6 +218,19 @@ ADD_TO_CART_USE_CASE = UseCase(
             "prompt": "Add when item equals 'Margherita Pizza' and size equals 'small' and preferences in-list ['No Cheese','No Basil'].",
             "prompt_for_task_generation": "Add when item equals 'Margherita Pizza' and size equals 'small' and preferences in-list ['No Cheese','No Basil'].",
         },
+    ],
+)
+
+EDIT_CART_ITEM_USE_CASE = UseCase(
+    name="EDIT_CART_ITEM",
+    description="The user edits an existing cart item (size, preferences, or quantity).",
+    event=EditCartItemEvent,
+    event_source_code=EditCartItemEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_cart_item_constraints,
+    examples=[
+        {"prompt": "Edit the cart item 'Margherita Pizza' from Sushi Zen.", "prompt_for_task_generation": "Edit the cart item 'Margherita Pizza' from Sushi Zen."},
+        {"prompt": "Open edit for the burger I added from Burger Barn.", "prompt_for_task_generation": "Open edit for the burger I added from Burger Barn."},
+        {"prompt": "Modify the cart entry for California Roll.", "prompt_for_task_generation": "Modify the cart entry for California Roll."},
     ],
 )
 
@@ -485,11 +514,13 @@ ALL_USE_CASES = [
     SEARCH_RESTAURANT_USE_CASE,
     VIEW_RESTAURANT_USE_CASE,
     RESTAURANT_FILTER_USE_CASE,
+    VIEW_ALL_RESTAURANTS_USE_CASE,
     DELETE_REVIEW_USE_CASE,
     BACK_TO_ALL_RESTAURANTS_USE_CASE,
     ADD_TO_CART_MODAL_OPEN_USE_CASE,
     ITEM_INCREMENTED_USE_CASE,
     ADD_TO_CART_USE_CASE,
+    EDIT_CART_ITEM_USE_CASE,
     QUICK_ORDER_USE_CASE,
     QUICK_REORDER_USE_CASE,
     OPEN_CHECKOUT_PAGE_USE_CASE,

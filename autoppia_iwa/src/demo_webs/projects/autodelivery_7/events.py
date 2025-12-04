@@ -302,6 +302,68 @@ class QuickReorderEvent(Event, BaseEventValidator):
         )
 
 
+class ViewAllRestaurantsEvent(Event, BaseEventValidator):
+    """Event triggered when user goes back to all restaurants list."""
+
+    event_name: str = "VIEW_ALL_RESTAURANTS"
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.source, criteria.source)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ViewAllRestaurantsEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            source=data.get("source"),
+        )
+
+
+class EditCartItemEvent(Event, BaseEventValidator):
+    """Event triggered when editing an item from the cart."""
+
+    event_name: str = "EDIT_CART_ITEM"
+    item: str
+    restaurant: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        item: str | CriterionValue | None = None
+        restaurant: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.item, criteria.item),
+                self._validate_field(self.restaurant, criteria.restaurant),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EditCartItemEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            item=data.get("itemName", ""),
+            restaurant=data.get("restaurantName"),
+        )
+
+
 class DropoffPreferenceEvent(Event, BaseEventValidator):
     event_name: str = "DROPOFF_PREFERENCE"
     delivery_preference: str
@@ -628,6 +690,8 @@ EVENTS = [
     PlaceOrderEvent,
     QuickOrderStartedEvent,
     QuickReorderEvent,
+    ViewAllRestaurantsEvent,
+    EditCartItemEvent,
 ]
 BACKEND_EVENT_TYPES = {
     "SEARCH_DELIVERY_RESTAURANT": SearchRestaurantEvent,
@@ -645,4 +709,6 @@ BACKEND_EVENT_TYPES = {
     "ADDRESS_ADDED": AddressAddedEvent,
     "QUICK_ORDER_STARTED": QuickOrderStartedEvent,
     "QUICK_REORDER": QuickReorderEvent,
+    "VIEW_ALL_RESTAURANTS": ViewAllRestaurantsEvent,
+    "EDIT_CART_ITEM": EditCartItemEvent,
 }

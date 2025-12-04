@@ -557,3 +557,18 @@ async def generate_quick_reorder_constraints(task_url: str | None = None, datase
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
     return constraints_list
+
+
+async def generate_edit_cart_item_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+    if not restaurants:
+        return constraints_list
+    restaurant = random.choice(restaurants)
+    menu = restaurant.get("menu", [])
+    if not menu:
+        return constraints_list
+    menu_item = random.choice(menu)
+    constraints_list.append(create_constraint_dict("item", ComparisonOperator.EQUALS, menu_item.get("name", "")))
+    constraints_list.append(create_constraint_dict("restaurant", ComparisonOperator.EQUALS, restaurant.get("name", "")))
+    return constraints_list
