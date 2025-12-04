@@ -2,8 +2,8 @@
 Alias package that forwards imports to modules.create_web_project.verification.
 """
 
-from importlib import import_module
 import sys
+from importlib import import_module
 
 _real_pkg = import_module("modules.create_web_project.verification")
 

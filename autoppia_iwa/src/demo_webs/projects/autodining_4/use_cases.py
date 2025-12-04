@@ -27,7 +27,6 @@ from .generation_functions import (
     generate_collapse_menu_constraints,
     generate_contact_card_click_constraints,
     generate_contact_constraints,
-    generate_contact_page_view_constraints,
     generate_country_selected_constraints,
     generate_date_dropdown_opened_constraints,
     generate_help_category_selected_constraints,
@@ -527,7 +526,12 @@ ABOUT_FEATURE_CLICK_USE_CASE = UseCase(
     event=AboutFeatureClickEvent,
     event_source_code=AboutFeatureClickEvent.get_source_code_of_class(),
     constraints_generator=generate_about_feature_click_constraints,
-    examples=[{"prompt": "Click the live availability feature on the About page.", "prompt_for_task_generation": "Click the live availability feature on the About page."}],
+    examples=[
+        {
+            "prompt": "Click the live availability feature on the About page.",
+            "prompt_for_task_generation": "Click the live availability feature on the About page."
+         },
+    ],
 )
 
 CONTACT_PAGE_VIEW_USE_CASE = UseCase(
@@ -535,8 +539,11 @@ CONTACT_PAGE_VIEW_USE_CASE = UseCase(
     description="Triggered when the Contact page is viewed.",
     event=ContactPageViewEvent,
     event_source_code=ContactPageViewEvent.get_source_code_of_class(),
-    constraints_generator=generate_contact_page_view_constraints,
-    examples=[{"prompt": "Open the contact page.", "prompt_for_task_generation": "Open the contact page."}],
+    constraints_generator=None,
+    examples=[
+        {"prompt": "Open the contact page.", "prompt_for_task_generation": "Open the contact page."},
+        {"prompt": "Go to the content page.", "prompt_for_task_generation": "Go to the content page."},
+              ],
 )
 
 CONTACT_CARD_CLICK_USE_CASE = UseCase(

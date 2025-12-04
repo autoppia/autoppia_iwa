@@ -476,10 +476,6 @@ async def generate_help_faq_toggled_constraints() -> list[dict[str, Any]]:
     return constraints_list
 
 
-async def generate_contact_page_view_constraints() -> list[dict[str, Any]]:
-    return []
-
-
 async def generate_contact_card_click_constraints() -> list[dict[str, Any]]:
     constraints_list: list[dict[str, Any]] = []
     field = "card_type"
