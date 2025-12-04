@@ -527,10 +527,7 @@ ABOUT_FEATURE_CLICK_USE_CASE = UseCase(
     event_source_code=AboutFeatureClickEvent.get_source_code_of_class(),
     constraints_generator=generate_about_feature_click_constraints,
     examples=[
-        {
-            "prompt": "Click the live availability feature on the About page.",
-            "prompt_for_task_generation": "Click the live availability feature on the About page."
-         },
+        {"prompt": "Click the live availability feature on the About page.", "prompt_for_task_generation": "Click the live availability feature on the About page."},
     ],
 )
 
@@ -543,7 +540,7 @@ CONTACT_PAGE_VIEW_USE_CASE = UseCase(
     examples=[
         {"prompt": "Open the contact page.", "prompt_for_task_generation": "Open the contact page."},
         {"prompt": "Go to the content page.", "prompt_for_task_generation": "Go to the content page."},
-              ],
+    ],
 )
 
 CONTACT_CARD_CLICK_USE_CASE = UseCase(

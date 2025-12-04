@@ -141,8 +141,7 @@ def _find_line_number(text: str, needle: str) -> int:
     return 0
 
 
-DYNAMIC_RULES = {
-}
+DYNAMIC_RULES = {}
 
 
 def _analyze_dynamic_layers(

@@ -9,13 +9,13 @@ import os
 import random
 import re
 import sys
-from urllib.parse import urlsplit, urlunsplit
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 import requests
 from tqdm import tqdm
