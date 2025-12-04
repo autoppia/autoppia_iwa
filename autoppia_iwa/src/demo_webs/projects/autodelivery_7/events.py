@@ -306,26 +306,21 @@ class ViewAllRestaurantsEvent(Event, BaseEventValidator):
     """Event triggered when user goes back to all restaurants list."""
 
     event_name: str = "VIEW_ALL_RESTAURANTS"
-    source: str | None = None
 
     class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return self._validate_field(self.source, criteria.source)
+        return True
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "ViewAllRestaurantsEvent":
-        base = Event.parse(backend_event)
-        data = backend_event.data or {}
+    def parse(cls, backend_event: "BackendEvent") -> "ViewAllRestaurantsEvent":
+        base_event = Event.parse(backend_event)
         return cls(
-            event_name=base.event_name,
-            timestamp=base.timestamp,
-            web_agent_id=base.web_agent_id,
-            user_id=base.user_id,
-            source=data.get("source"),
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
         )
 
 

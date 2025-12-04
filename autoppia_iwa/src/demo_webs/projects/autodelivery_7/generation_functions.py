@@ -11,6 +11,7 @@ from .data import (
     FIELD_OPERATORS_ADDRESS_ADDED_MAP,
     FIELD_OPERATORS_DELETE_REVIEW_MAP,
     FIELD_OPERATORS_DROPOFF_OPTION_MAP,
+    FIELD_OPERATORS_EDIT_CART_ITEM,
     FIELD_OPERATORS_INCREMENT_QUANTITY_MAP,
     FIELD_OPERATORS_PLACE_ORDER_MAP,
     FIELD_OPERATORS_QUICK_REORDER_MAP,
@@ -569,6 +570,11 @@ async def generate_edit_cart_item_constraints(task_url: str | None = None, datas
     if not menu:
         return constraints_list
     menu_item = random.choice(menu)
-    constraints_list.append(create_constraint_dict("item", ComparisonOperator.EQUALS, menu_item.get("name", "")))
-    constraints_list.append(create_constraint_dict("restaurant", ComparisonOperator.EQUALS, restaurant.get("name", "")))
+    for field in ["item", "restaurant"]:
+        allowed_ops = FIELD_OPERATORS_EDIT_CART_ITEM.get(field, [])
+        op = ComparisonOperator(random.choice(allowed_ops))
+        if field == "item":
+            constraints_list.append(create_constraint_dict(field, op, menu_item.get("name", "")))
+        else:
+            constraints_list.append(create_constraint_dict(field, op, restaurant.get("name", "")))
     return constraints_list
