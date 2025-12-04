@@ -1,4 +1,6 @@
 import os
+import json
+from datetime import datetime, date, time as datetime_time
 from functools import wraps
 
 from rich import box
@@ -25,6 +27,19 @@ class SubnetVisualizer:
             os.makedirs(log_directory, exist_ok=True)
         self.log_directory = log_directory
 
+    @staticmethod
+    def _make_json_serializable(obj):
+        """Convert non-JSON-serializable objects (datetime, date) to JSON-compatible types."""
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        if isinstance(obj, datetime_time):
+            return obj.isoformat()
+        if isinstance(obj, dict):
+            return {k: SubnetVisualizer._make_json_serializable(v) for k, v in obj.items()}
+        if isinstance(obj, (list, tuple)):
+            return [SubnetVisualizer._make_json_serializable(item) for item in obj]
+        return obj
+
     def show_task_with_tests(self, task):
         """
         Displays a task and its configured tests.
@@ -49,14 +64,20 @@ class SubnetVisualizer:
                 test_type = type(test).__name__
 
                 # Get JSON representation of the test
-                import json
-
                 if hasattr(test, "model_dump"):
-                    test_json = test.model_dump()
+                    # Try to use mode="json" first, which handles datetime serialization automatically
+                    try:
+                        test_json = test.model_dump(mode="json")
+                    except (TypeError, ValueError):
+                        # Fallback to regular model_dump if mode="json" is not supported
+                        test_json = test.model_dump()
                 elif hasattr(test, "dict"):
                     test_json = test.dict()
                 else:
                     test_json = vars(test)
+
+                # Convert any remaining datetime/date objects to strings
+                test_json = self._make_json_serializable(test_json)
 
                 # Format JSON with indentation
                 json_str = json.dumps(test_json, indent=2, ensure_ascii=False)
