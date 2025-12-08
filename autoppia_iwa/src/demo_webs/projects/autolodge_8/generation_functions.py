@@ -10,14 +10,22 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_fr
 from ..operators import EQUALS, GREATER_EQUAL, LESS_EQUAL
 from ..shared_utils import create_constraint_dict, parse_datetime
 from .data import (
+    FIELD_OPERATORS_APPLY_FILTERS_MAP,
     FIELD_OPERATORS_CONFIRM_AND_PAY_MAP,
     FIELD_OPERATORS_EDIT_CHECKIN_OUT_MAP,
     FIELD_OPERATORS_INCREASE_GUESTS_MAP,
+    FIELD_OPERATORS_PAYMENT_METHOD_SELECTED_MAP,
     FIELD_OPERATORS_MESSAGE_HOST_MAP,
+    FIELD_OPERATORS_POPULAR_HOTELS_VIEWED_MAP,
     FIELD_OPERATORS_RESERVE_HOTEL_MAP,
     FIELD_OPERATORS_SEARCH_HOTEL_MAP,
     FIELD_OPERATORS_SHARE_HOTEL_MAP,
+    FIELD_OPERATORS_SUBMIT_REVIEW_ALIAS_MAP,
     FIELD_OPERATORS_VIEW_HOTEL_MAP,
+    FIELD_OPERATORS_WISHLIST_OPENED_MAP,
+    FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP,
+    FIELD_OPERATORS_HELP_VIEWED_MAP,
+    FIELD_OPERATORS_FAQ_OPENED_MAP,
 )
 from .data_utils import fetch_hotels_data
 
@@ -621,3 +629,108 @@ async def generate_share_hotel_constraints(task_url: str | None = None, dataset:
     constraints_list.append(create_constraint_dict(field, operator, value))
     constraints_list.extend(constraint_list_for_view)
     return constraints_list
+
+
+async def generate_filter_hotels_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    data = await _ensure_hotel_dataset(task_url, dataset)
+    sample = random.choice(data)
+    constraints = [
+        create_constraint_dict("rating", ComparisonOperator.GREATER_EQUAL, sample.get("rating", 0)),
+        create_constraint_dict("price", ComparisonOperator.LESS_EQUAL, sample.get("price", 0)),
+        create_constraint_dict("region", ComparisonOperator.CONTAINS, (sample.get("location") or "").split(",")[-1].strip()),
+        create_constraint_dict("results", ComparisonOperator.GREATER_EQUAL, 0),
+    ]
+    return constraints
+
+
+async def generate_apply_filters_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    # Reuse filter hotels generator; map minRating/maxPrice semantics are handled in event parser.
+    return await generate_filter_hotels_constraints(task_url=task_url, dataset=dataset)
+
+
+async def generate_submit_hotel_review_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    data = await _ensure_hotel_dataset(task_url, dataset)
+    sample_hotel = random.choice(data)
+    rating = sample_hotel.get("rating", 5)
+    comment = sample_hotel.get("title", "Great stay!")
+    constraints = [
+        create_constraint_dict("rating", ComparisonOperator.EQUALS, rating),
+        create_constraint_dict("comment", ComparisonOperator.CONTAINS, comment[: min(len(comment), 10)]),
+    ]
+    return constraints
+
+
+async def generate_submit_review_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return await generate_submit_hotel_review_constraints(task_url=task_url, dataset=dataset)
+
+
+async def generate_payment_method_selected_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    data = await _ensure_hotel_dataset(task_url, dataset)
+    sample = random.choice(data)
+    constraints = []
+    for field in ["method", "hotel_id", "title"]:
+        allowed_ops = {
+            "method": FIELD_OPERATORS_PAYMENT_METHOD_SELECTED_MAP.get("method", []),
+            "hotel_id": FIELD_OPERATORS_PAYMENT_METHOD_SELECTED_MAP.get("hotel_id", []),
+            "title": FIELD_OPERATORS_PAYMENT_METHOD_SELECTED_MAP.get("title", []),
+        }.get(field, [])
+        if not allowed_ops:
+            continue
+        op = ComparisonOperator(random.choice(allowed_ops))
+        value = (
+            random.choice(["card", "cash_on_arrival"])
+            if field == "method"
+            else sample.get("id", 0)
+            if field == "hotel_id"
+            else (sample.get("title") or "")[:5]
+        )
+        constraints.append(create_constraint_dict(field, op, value))
+    return constraints
+
+
+async def generate_wishlist_opened_constraints() -> list[dict[str, Any]]:
+    count = random.randint(0, 12)
+    allowed_ops = FIELD_OPERATORS_WISHLIST_OPENED_MAP.get("count", [ComparisonOperator.GREATER_EQUAL.value])
+    op = ComparisonOperator(random.choice(allowed_ops))
+    return [create_constraint_dict("count", op, count)]
+
+
+async def generate_book_from_wishlist_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    data = await _ensure_hotel_dataset(task_url, dataset)
+    sample = random.choice(data)
+    constraints: list[dict[str, Any]] = []
+    for field in ["hotel_id", "title"]:
+        allowed_ops = FIELD_OPERATORS_BOOK_FROM_WISHLIST_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+        op = ComparisonOperator(random.choice(allowed_ops))
+        value = sample.get("id", 0) if field == "hotel_id" else (sample.get("title") or "")[:5]
+        constraints.append(create_constraint_dict(field, op, value))
+    return constraints
+
+
+async def generate_popular_hotels_viewed_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    data = await _ensure_hotel_dataset(task_url, dataset)
+    count = len([h for h in data if h.get("rating", 0) >= 4.5])
+    allowed_ops = FIELD_OPERATORS_POPULAR_HOTELS_VIEWED_MAP.get("count", [ComparisonOperator.GREATER_EQUAL.value])
+    op = ComparisonOperator(random.choice(allowed_ops))
+    return [create_constraint_dict("count", op, max(count, 1))]
+
+
+async def generate_help_viewed_constraints() -> list[dict[str, Any]]:
+    allowed_ops = FIELD_OPERATORS_HELP_VIEWED_MAP.get("page", [ComparisonOperator.EQUALS.value])
+    op = ComparisonOperator(random.choice(allowed_ops))
+    return [create_constraint_dict("page", op, "help")]
+
+
+async def generate_faq_opened_constraints() -> list[dict[str, Any]]:
+    sample_questions = [
+        "How do I change my reservation?",
+        "What payment methods are supported?",
+        "Can I message the host?",
+        "How is pricing calculated?",
+    ]
+    question = random.choice(sample_questions)
+    allowed_ops = FIELD_OPERATORS_FAQ_OPENED_MAP.get("question", [ComparisonOperator.CONTAINS.value])
+    op = ComparisonOperator(random.choice(allowed_ops))
+    return [create_constraint_dict("question", op, question[:6])]
