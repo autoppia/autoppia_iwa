@@ -1,6 +1,6 @@
-import os
 import json
-from datetime import datetime, date, time as datetime_time
+import os
+from datetime import date, datetime, time as datetime_time
 from functools import wraps
 
 from rich import box
@@ -30,13 +30,13 @@ class SubnetVisualizer:
     @staticmethod
     def _make_json_serializable(obj):
         """Convert non-JSON-serializable objects (datetime, date) to JSON-compatible types."""
-        if isinstance(obj, (datetime, date)):
+        if isinstance(obj, datetime | date):
             return obj.isoformat()
         if isinstance(obj, datetime_time):
             return obj.isoformat()
         if isinstance(obj, dict):
             return {k: SubnetVisualizer._make_json_serializable(v) for k, v in obj.items()}
-        if isinstance(obj, (list, tuple)):
+        if isinstance(obj, list | tuple):
             return [SubnetVisualizer._make_json_serializable(item) for item in obj]
         return obj
 

@@ -548,7 +548,7 @@ async def generate_quick_reorder_constraints(task_url: str | None = None, datase
     if not menu:
         return constraints_list
     menu_item = random.choice(menu)
-    
+
     # Build dataset of menu items from all restaurants for "item" field
     all_menu_items = []
     for r in restaurants:
@@ -556,7 +556,7 @@ async def generate_quick_reorder_constraints(task_url: str | None = None, datase
         for item in r_menu:
             if item.get("name"):
                 all_menu_items.append({"item": item.get("name")})
-    
+
     for field in ["item", "restaurant"]:
         allowed_ops = FIELD_OPERATORS_QUICK_REORDER_MAP.get(field, [])
         if not allowed_ops:
