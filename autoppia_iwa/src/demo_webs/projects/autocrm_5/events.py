@@ -386,11 +386,11 @@ class DocumentRenamedEvent(Event, BaseEventValidator):
     """Event triggered when a document is renamed."""
 
     event_name: str = "DOCUMENT_RENAMED"
-    document: Document
+    previous_name: str
     new_name: str
 
     class ValidationCriteria(BaseModel):
-        name: str | CriterionValue | None = None
+        previous_name: str | CriterionValue | None = None
         new_name: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -398,7 +398,7 @@ class DocumentRenamedEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.document.name, criteria.name),
+                self._validate_field(self.document.previous_name, criteria.previous_name),
                 self._validate_field(self.new_name, criteria.new_name),
             ]
         )
@@ -407,14 +407,13 @@ class DocumentRenamedEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "DocumentRenamedEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-        doc = data.get("document") or data
         new_name = data.get("newName") or data.get("new_name")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            document=Document(**doc),
+            previous_name=data.get("previousName"),
             new_name=new_name,
         )
 

@@ -422,7 +422,7 @@ async def generate_document_renamed_constraints(task_url: str | None = None, dat
 
     if docs:
         doc = random.choice(docs)
-        for field in ["new_name", "name"]:
+        for field in ["new_name", "previous_name"]:
             allowed_ops = FIELD_OPERATORS_MAP_DOCUMENT_RENAME.get(field, [])
             if not allowed_ops:
                 continue
@@ -432,7 +432,7 @@ async def generate_document_renamed_constraints(task_url: str | None = None, dat
                 value = _generate_constraint_value(operator, field_value, field, dataset=NEW_DOCUMENT_NAMES_MODIFIED)
                 constraint = create_constraint_dict(field, operator, value)
                 constraints.append(constraint)
-            if field == "name":
+            if field == "previous_name":
                 value = _generate_constraint_value(operator, doc.get("name", "Document"), field, docs)
                 constraint = create_constraint_dict(field, operator, value)
                 constraints.append(constraint)
