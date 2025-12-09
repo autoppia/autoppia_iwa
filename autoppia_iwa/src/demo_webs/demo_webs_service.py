@@ -56,6 +56,8 @@ class BackendDemoWebService:
         self._session: aiohttp.ClientSession | None = None
         self.web_project = web_project
         self.base_url = web_project.backend_url
+        # Use frontend URL for event grouping to avoid port mismatches
+        self.web_url = web_project.frontend_url or web_project.backend_url
         self.web_agent_id = web_agent_id
         # Allow environment overrides for validator id to ease local testing
         self.validator_id = os.getenv("VALIDATOR_ID", VALIDATOR_ID or "validator_001")
@@ -108,7 +110,11 @@ class BackendDemoWebService:
 
         try:
             endpoint = f"{self.base_url.rstrip('/')}/get_events/"
-            params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
+            params = {
+                "web_url": (self.web_url or self.base_url).rstrip("/"),
+                "web_agent_id": web_agent_id,
+                "validator_id": VALIDATOR_ID,
+            }
 
             session = await self._get_session()
 
@@ -140,7 +146,11 @@ class BackendDemoWebService:
 
         try:
             endpoint = f"{self.base_url.rstrip('/')}/reset_events/"
-            params = {"web_url": self.base_url, "web_agent_id": web_agent_id or self.web_agent_id, "validator_id": VALIDATOR_ID}
+            params = {
+                "web_url": (self.web_url or self.base_url).rstrip("/"),
+                "web_agent_id": web_agent_id or self.web_agent_id,
+                "validator_id": VALIDATOR_ID,
+            }
             session = await self._get_session()
 
             async with session.delete(endpoint, params=params) as response:
