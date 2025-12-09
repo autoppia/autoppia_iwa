@@ -187,6 +187,7 @@ class WebProject(BaseModel):
     frontend_url: str = Field(..., description="URL of the frontend application")
     is_web_real: bool = False
     sandbox_mode: bool = Field(default=False, description="True if the project must run in sandbox mode")
+    version: str | None = Field(default=None, description="Version of the web project (e.g., from package.json)")
     urls: list[str] = []
     events: list[type] = Field(default_factory=list, description="Structured events information")
     use_cases: list[UseCase] | None = Field(default=None, description="Optional list of canonical use cases for this project")

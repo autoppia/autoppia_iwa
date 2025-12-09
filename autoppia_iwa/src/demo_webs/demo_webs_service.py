@@ -107,7 +107,7 @@ class BackendDemoWebService:
             return []
 
         try:
-            endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/get_events/"
+            endpoint = f"{self.base_url.rstrip('/')}/get_events/"
             params = {"web_url": self.base_url, "web_agent_id": web_agent_id, "validator_id": VALIDATOR_ID}
 
             session = await self._get_session()
@@ -139,7 +139,7 @@ class BackendDemoWebService:
             return False
 
         try:
-            endpoint = f"{DEMO_WEBS_ENDPOINT}:8090/reset_events/"
+            endpoint = f"{self.base_url.rstrip('/')}/reset_events/"
             params = {"web_url": self.base_url, "web_agent_id": web_agent_id or self.web_agent_id, "validator_id": VALIDATOR_ID}
             session = await self._get_session()
 
