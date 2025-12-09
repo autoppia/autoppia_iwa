@@ -1,4 +1,5 @@
 import asyncio
+import ipaddress
 from urllib.parse import urlparse, urlunparse
 
 import aiohttp
@@ -96,5 +97,17 @@ class ApifiedWebAgent(IWebAgent):
             cleaned_path = original_url if original_url.startswith("/") else f"/{original_url}"
             return f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
 
-        new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=remote_parsed.netloc)
+        # Keep the remote host; only carry over the agent-provided port when the remote host is an IP.
+        netloc = remote_parsed.netloc
+        if parsed.port and not remote_parsed.port:
+            host = remote_parsed.hostname or remote_parsed.netloc
+            try:
+                is_ip = bool(host and ipaddress.ip_address(host))
+            except ValueError:
+                is_ip = False
+
+            if host and is_ip:
+                netloc = f"{host}:{parsed.port}"
+
+        new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=netloc)
         return urlunparse(new_url)

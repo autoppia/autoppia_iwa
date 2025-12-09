@@ -7,7 +7,7 @@ from contextlib import suppress
 import aiohttp
 from loguru import logger
 
-from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT, VALIDATOR_ID
+from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.src.demo_webs.classes import BackendEvent, WebProject
 
 EVALUATION_LEVEL_NAME = "EVALUATION"
