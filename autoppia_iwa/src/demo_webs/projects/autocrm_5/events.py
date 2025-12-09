@@ -36,6 +36,12 @@ class Document(BaseModel):
     status: str
 
 
+class BillingSearchPayload(BaseModel):
+    query: str
+    date_filter: str | None = None
+    custom_date: str | None = None
+
+
 class CalendarEvent(BaseModel):
     date: str
     label: str
@@ -50,6 +56,15 @@ class TimeLog(BaseModel):
     hours: float
     description: str
     status: str
+
+
+class ClientPayload(BaseModel):
+    id: str | None = None
+    name: str
+    email: str
+    matters: int
+    status: str
+    last: str
 
 
 # =============================================================================
@@ -367,6 +382,173 @@ class DocumentUploaded(DocumentDeleted):
     event_name: str = "DOCUMENT_UPLOADED"
 
 
+class DocumentRenamedEvent(Event, BaseEventValidator):
+    """Event triggered when a document is renamed."""
+
+    event_name: str = "DOCUMENT_RENAMED"
+    document: Document
+    new_name: str
+
+    class ValidationCriteria(BaseModel):
+        name: str | CriterionValue | None = None
+        new_name: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.document.name, criteria.name),
+                self._validate_field(self.new_name, criteria.new_name),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DocumentRenamedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        doc = data.get("document") or data
+        new_name = data.get("newName") or data.get("new_name")
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            document=Document(**doc),
+            new_name=new_name,
+        )
+
+
+class AddClientEvent(Event, BaseEventValidator):
+    """Event triggered when a client is added."""
+
+    event_name: str = "ADD_CLIENT"
+    client: ClientPayload
+
+    class ValidationCriteria(BaseModel):
+        name: str | CriterionValue | None = None
+        email: str | CriterionValue | None = None
+        status: str | CriterionValue | None = None
+        matters: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.client.name, criteria.name),
+                self._validate_field(self.client.email, criteria.email),
+                self._validate_field(self.client.status, criteria.status),
+                self._validate_field(self.client.matters, criteria.matters),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "AddClientEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            client=ClientPayload(**backend_event.data),
+        )
+
+
+class DeleteClientEvent(Event, BaseEventValidator):
+    """Event triggered when a client is deleted."""
+
+    event_name: str = "DELETE_CLIENT"
+    client: ClientPayload
+
+    class ValidationCriteria(BaseModel):
+        name: str | CriterionValue | None = None
+        email: str | CriterionValue | None = None
+        status: str | CriterionValue | None = None
+        matters: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.client.name, criteria.name),
+                self._validate_field(self.client.email, criteria.email),
+                self._validate_field(self.client.status, criteria.status),
+                self._validate_field(self.client.matters, criteria.matters),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DeleteClientEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            client=ClientPayload(**backend_event.data),
+        )
+
+
+class FilterClientsEvent(Event, BaseEventValidator):
+    """Event for client filtering."""
+
+    event_name: str = "FILTER_CLIENTS"
+    status: str | None = None
+    matters: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        status: str | CriterionValue | None = None
+        matters: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.status, criteria.status),
+                self._validate_field(self.matters, criteria.matters),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "FilterClientsEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            status=data.get("status"),
+            matters=data.get("matters"),
+        )
+
+
+class HelpViewedEvent(Event, BaseEventValidator):
+    """Event when help page is viewed."""
+
+    event_name: str = "HELP_VIEWED"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "HelpViewedEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
 class NewCalendarEventAdded(Event, BaseEventValidator):
     """Event triggered when a new calendar event is added"""
 
@@ -589,6 +771,46 @@ class LogEdited(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             after=after_log,
+        )
+
+
+class BillingSearchEvent(Event, BaseEventValidator):
+    """Event triggered when billing entries are searched or filtered."""
+
+    event_name: str = "BILLING_SEARCH"
+    payload: BillingSearchPayload
+
+    class ValidationCriteria(BaseModel):
+        query: str | CriterionValue | None = None
+        date_filter: str | CriterionValue | None = None
+        custom_date: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.payload.query, criteria.query),
+                self._validate_field(self.payload.date_filter, criteria.date_filter),
+                self._validate_field(self.payload.custom_date, criteria.custom_date),
+            ],
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "BillingSearchEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        payload = data.get("payload") or data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            payload=BillingSearchPayload(
+                query=payload.get("query", ""),
+                date_filter=payload.get("date_filter"),
+                custom_date=payload.get("custom_date"),
+            ),
         )
 
 
@@ -828,10 +1050,12 @@ EVENTS = [
     SearchClient,
     DocumentUploaded,
     DocumentDeleted,
+    DocumentRenamedEvent,
     NewCalendarEventAdded,
     ViewPendingEvents,
     NewLogAdded,
     LogEdited,
+    BillingSearchEvent,
     LogDelete,
     ChangeUserName,
 ]
@@ -845,9 +1069,11 @@ BACKEND_EVENT_TYPES = {
     "SEARCH_CLIENT": SearchClient,
     "DOCUMENT_DELETED": DocumentDeleted,
     "DOCUMENT_UPLOADED": DocumentUploaded,
+    "DOCUMENT_RENAMED": DocumentRenamedEvent,
     "NEW_CALENDAR_EVENT_ADDED": NewCalendarEventAdded,
     "NEW_LOG_ADDED": NewLogAdded,
     "LOG_EDITED": LogEdited,
+    "BILLING_SEARCH": BillingSearchEvent,
     "LOG_DELETE": LogDelete,
     "CHANGE_USER_NAME": ChangeUserName,
     "SEARCH_MATTER": SearchMatter,

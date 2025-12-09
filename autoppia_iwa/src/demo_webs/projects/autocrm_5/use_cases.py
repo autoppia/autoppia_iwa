@@ -4,13 +4,19 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
+    AddClientEvent,
     AddNewMatter,
     ArchiveMatter,
+    BillingSearchEvent,
     ChangeUserName,
+    DeleteClientEvent,
     DeleteMatter,
     DocumentDeleted,
+    DocumentRenamedEvent,
     DocumentUploaded,
+    FilterClientsEvent,
     FilterMatterStatus,
+    HelpViewedEvent,
     LogDelete,
     LogEdited,
     NewCalendarEventAdded,
@@ -24,11 +30,16 @@ from .events import (
     ViewPendingEvents,
 )
 from .generation_functions import (
+    generate_add_client_constraints,
     generate_add_matter_constraints,
+    generate_billing_search_constraints,
     generate_change_user_name_constraints,
+    generate_delete_client_constraints,
     generate_delete_log_constraints,
     generate_document_deleted_constraints,
+    generate_document_renamed_constraints,
     generate_document_uploaded_constraints,
+    generate_filter_clients_constraints,
     generate_filter_matter_status_constraints,
     generate_log_edited_constraints,
     generate_new_calendar_event_constraints,
@@ -389,6 +400,24 @@ DOCUMENT_UPLOADED_USE_CASE = UseCase(
     ],
 )
 
+DOCUMENT_RENAMED_USE_CASE = UseCase(
+    name="DOCUMENT_RENAMED",
+    description="The user renames an existing document.",
+    event=DocumentRenamedEvent,
+    event_source_code=DocumentRenamedEvent.get_source_code_of_class(),
+    constraints_generator=generate_document_renamed_constraints,
+    examples=[
+        {
+            "prompt": "Rename the document 'Retainer-Agreement.pdf' to 'Retainer-Agreement-final.pdf'.",
+            "prompt_for_task_generation": "Rename the document 'Retainer-Agreement.pdf' to 'Retainer-Agreement-final.pdf'.",
+        },
+        {
+            "prompt": "Update the file name of NDA-Sample.docx to NDA-Sample-v2.docx.",
+            "prompt_for_task_generation": "Update the file name of NDA-Sample.docx to NDA-Sample-v2.docx.",
+        },
+    ],
+)
+
 NEW_CALENDER_EVENT_EXTRA_INFO = """
 Critical Requirements:
 1. Do not specify more than one constraint for the same field — label, time, date, or event_type — in a single request.
@@ -584,6 +613,24 @@ LOG_DELETE_USE_CASE = UseCase(
     ],
 )
 
+BILLING_SEARCH_USE_CASE = UseCase(
+    name="BILLING_SEARCH",
+    description="Search or filter billing entries by text or date range.",
+    event=BillingSearchEvent,
+    event_source_code=BillingSearchEvent.get_source_code_of_class(),
+    constraints_generator=generate_billing_search_constraints,
+    examples=[
+        {
+            "prompt": "Search billing entries for 'contract' from this week.",
+            "prompt_for_task_generation": "Search billing entries for 'contract' from this week.",
+        },
+        {
+            "prompt": "Filter time logs to only today for matter review.",
+            "prompt_for_task_generation": "Filter time logs to only today.",
+        },
+    ],
+)
+
 CHANGE_USER_NAME_EXTRA_INFO = """
 Critical Requirements:
 1. Do not specify more than one constraint for the same field — 'name' — in a single request.
@@ -621,6 +668,73 @@ CHANGE_USER_NAME_USE_CASE = UseCase(
         },
     ],
 )
+
+ADD_CLIENT_USE_CASE = UseCase(
+    name="ADD_CLIENT",
+    description="The user adds a new client record.",
+    event=AddClientEvent,
+    event_source_code=AddClientEvent.get_source_code_of_class(),
+    constraints_generator=generate_add_client_constraints,
+    examples=[
+        {
+            "prompt": "Add a new client named 'Nova Labs' with status Active.",
+            "prompt_for_task_generation": "Add a new client named 'Nova Labs' with status Active.",
+        },
+        {"prompt": "Add a new client named 'Orion Tech Solutions' with status Archived.", "prompt_for_task_generation": "Add a new client named 'Orion Tech Solutions' with status Archived."},
+        {
+            "prompt": "Add a new client named not equals 'Quantum Edge Industries' with status Pending.",
+            "prompt_for_task_generation": "Add a new client named not equals 'Quantum Edge Industries' with status Pending.",
+        },
+        {"prompt": "Add a new client named contains 'Vertex' with status Inactive.", "prompt_for_task_generation": "Add a new client named contains 'Vertex' with status Inactive."},
+    ],
+)
+
+DELETE_CLIENT_USE_CASE = UseCase(
+    name="DELETE_CLIENT",
+    description="The user deletes a client record.",
+    event=DeleteClientEvent,
+    event_source_code=DeleteClientEvent.get_source_code_of_class(),
+    constraints_generator=generate_delete_client_constraints,
+    examples=[
+        {
+            "prompt": "Delete the client 'Nova Labs'.",
+            "prompt_for_task_generation": "Delete the client 'Nova Labs'.",
+        },
+        {"prompt": "Delete the client named not equals 'Orion Tech Solutions'.", "prompt_for_task_generation": "Delete the client named not equals 'Orion Tech Solutions'."},
+        {"prompt": "Delete the client named contains 'Quantum'.", "prompt_for_task_generation": "Delete the client named contains 'Quantum'."},
+        {"prompt": "Delete the client not contains 'Partners'.", "prompt_for_task_generation": "Delete the client named not contains 'Partners'."},
+    ],
+)
+
+FILTER_CLIENTS_USE_CASE = UseCase(
+    name="FILTER_CLIENTS",
+    description="Filter clients by status, matter count, or search text.",
+    event=FilterClientsEvent,
+    event_source_code=FilterClientsEvent.get_source_code_of_class(),
+    constraints_generator=generate_filter_clients_constraints,
+    examples=[
+        {
+            "prompt": "Filter clients to status Active with 3-4 matters.",
+            "prompt_for_task_generation": "Filter clients to status Active with 3-4 matters.",
+        },
+        {"prompt": "Filter clients to status Pending with 1-2 matters.", "prompt_for_task_generation": "Filter clients to status Pending with 1-2 matters."},
+        {"prompt": "Filter clients to status Inactive with 5+ matters.", "prompt_for_task_generation": "Filter clients to status Inactive with 5+ matters."},
+    ],
+)
+
+HELP_VIEWED_USE_CASE = UseCase(
+    name="HELP_VIEWED",
+    description="The user opens the help/FAQ page.",
+    event=HelpViewedEvent,
+    event_source_code=HelpViewedEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[
+        {
+            "prompt": "Open the help center.",
+            "prompt_for_task_generation": "Open the help center.",
+        },
+    ],
+)
 ###############################################################################
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
@@ -637,10 +751,16 @@ ALL_USE_CASES = [
     SEARCH_CLIENT_USE_CASE,
     DOCUMENT_DELETED_USE_CASE,
     DOCUMENT_UPLOADED_USE_CASE,
+    DOCUMENT_RENAMED_USE_CASE,
     NEW_CALENDAR_EVENT_ADDED_USE_CASE,
     VIEW_PENDING_EVENTS_USE_CASE,
     NEW_LOG_ADDED_USE_CASE,
     LOG_EDITED_USE_CASE,
     LOG_DELETE_USE_CASE,
+    BILLING_SEARCH_USE_CASE,
     CHANGE_USER_NAME_USE_CASE,
+    ADD_CLIENT_USE_CASE,
+    DELETE_CLIENT_USE_CASE,
+    FILTER_CLIENTS_USE_CASE,
+    HELP_VIEWED_USE_CASE,
 ]
