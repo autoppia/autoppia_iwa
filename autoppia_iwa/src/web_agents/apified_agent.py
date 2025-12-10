@@ -97,17 +97,19 @@ class ApifiedWebAgent(IWebAgent):
             cleaned_path = original_url if original_url.startswith("/") else f"/{original_url}"
             return f"{remote_parsed.scheme}://{remote_parsed.netloc}{cleaned_path}"
 
-        # Keep the remote host; only carry over the agent-provided port when the remote host is an IP.
+        # Keep the remote host; preserve original port when the agent points to localhost/loopback,
+        # otherwise only carry over the port if the remote host is an IP and has no explicit port.
         netloc = remote_parsed.netloc
-        if parsed.port and not remote_parsed.port:
-            host = remote_parsed.hostname or remote_parsed.netloc
-            try:
-                is_ip = bool(host and ipaddress.ip_address(host))
-            except ValueError:
-                is_ip = False
+        host = remote_parsed.hostname or remote_parsed.netloc
+        parsed_host = parsed.hostname or ""
+        try:
+            remote_is_ip = bool(host and ipaddress.ip_address(host))
+        except ValueError:
+            remote_is_ip = False
+        parsed_is_loopback = parsed_host in {"localhost", "127.0.0.1"}
 
-            if host and is_ip:
-                netloc = f"{host}:{parsed.port}"
+        if parsed.port and (parsed_is_loopback or (not remote_parsed.port and remote_is_ip)):
+            netloc = f"{host}:{parsed.port}"
 
         new_url = parsed._replace(scheme=remote_parsed.scheme or parsed.scheme, netloc=netloc)
         return urlunparse(new_url)
