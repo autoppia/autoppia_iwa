@@ -451,7 +451,7 @@ async def generate_billing_search_constraints(task_url: str | None = None, datas
         operator = ComparisonOperator(random.choice(allowed_ops))
         value = sample.get("matter") if field == "query" else random.choice(["Today", "This week", "Previous 2 weeks", "This month", "All", "Specific date"])
         if value == "Specific date":
-            operator = ComparisonOperator(random.choice(FIELD_OPERATORS_MAP_BILLING_SEARCH.keys("Specific date")))
+            operator = ComparisonOperator(random.choice(FIELD_OPERATORS_MAP_BILLING_SEARCH.get("custom_date")))
             today = datetime.today()
 
             random_days = random.randint(0, 30)

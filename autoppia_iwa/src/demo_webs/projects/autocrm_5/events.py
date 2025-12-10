@@ -39,7 +39,7 @@ class Document(BaseModel):
 class BillingSearchPayload(BaseModel):
     query: str
     date_filter: str | None = None
-    custom_date: str | None = None
+    custom_date: date | None = None
 
 
 class CalendarEvent(BaseModel):
@@ -782,7 +782,7 @@ class BillingSearchEvent(Event, BaseEventValidator):
     class ValidationCriteria(BaseModel):
         query: str | CriterionValue | None = None
         date_filter: str | CriterionValue | None = None
-        custom_date: str | CriterionValue | None = None
+        custom_date: date | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
