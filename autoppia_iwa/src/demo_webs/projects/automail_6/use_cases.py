@@ -8,6 +8,8 @@ from .events import (
     DeleteEmailEvent,
     EditDraftEmailEvent,
     EmailSaveAsDraftEvent,
+    EmailsNextPageEvent,
+    EmailsPrevPageEvent,
     ForwardEmailEvent,
     MarkAsSpamEvent,
     MarkAsUnreadEvent,
@@ -16,6 +18,12 @@ from .events import (
     SearchEmailEvent,
     SendEmailEvent,
     StarEmailEvent,
+    TemplateBodyEditedEvent,
+    TemplateCanceledEvent,
+    TemplateSavedDraftEvent,
+    TemplateSelectedEvent,
+    TemplateSentEvent,
+    TemplatesViewedEvent,
     ThemeChangedEvent,
     ViewEmailEvent,
 )
@@ -27,8 +35,12 @@ from .generation_functions import (
     generate_is_read_constraints,
     generate_is_spam_constraints,
     generate_is_starred_constraints,
+    generate_next_page_constraints,
+    generate_prev_page_constraints,
     generate_save_as_draft_send_email_constraints,
     generate_search_email_constraints,
+    generate_template_body_constraints,
+    generate_template_selection_constraints,
     generate_theme_changed_constraints,
     generate_view_email_constraints,
 )
@@ -643,12 +655,132 @@ CLEAR_SELECTION_USE_CASE = UseCase(
     ],
 )
 
+EMAILS_NEXT_PAGE_USE_CASE = UseCase(
+    name="EMAILS_NEXT_PAGE",
+    description="The user paginates to the next set of emails.",
+    event=EmailsNextPageEvent,
+    event_source_code=EmailsNextPageEvent.get_source_code_of_class(),
+    constraints_generator=generate_next_page_constraints,
+    examples=[
+        {
+            "prompt": "Go to the next page of emails.",
+            "prompt_for_task_generation": "Move forward to the next page of messages.",
+        }
+    ],
+)
+
+EMAILS_PREV_PAGE_USE_CASE = UseCase(
+    name="EMAILS_PREV_PAGE",
+    description="The user paginates back to the previous set of emails.",
+    event=EmailsPrevPageEvent,
+    event_source_code=EmailsPrevPageEvent.get_source_code_of_class(),
+    constraints_generator=generate_prev_page_constraints,
+    examples=[
+        {
+            "prompt": "Go back to the previous page of emails.",
+            "prompt_for_task_generation": "Navigate back to the earlier emails page.",
+        }
+    ],
+)
+
+VIEW_TEMPLATES_USE_CASE = UseCase(
+    name="VIEW_TEMPLATES",
+    description="The user opens the email templates section.",
+    event=TemplatesViewedEvent,
+    event_source_code=TemplatesViewedEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "Open the templates page.",
+            "prompt_for_task_generation": "Navigate to the email templates section.",
+        }
+    ],
+)
+
+TEMPLATE_SELECTED_USE_CASE = UseCase(
+    name="TEMPLATE_SELECTED",
+    description="The user chooses a specific email template to work with.",
+    event=TemplateSelectedEvent,
+    event_source_code=TemplateSelectedEvent.get_source_code_of_class(),
+    constraints_generator=generate_template_selection_constraints,
+    examples=[
+        {
+            "prompt": "Select the Meeting Recap template.",
+            "prompt_for_task_generation": "Choose the Meeting Recap email template.",
+        }
+    ],
+)
+
+TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
+    name="TEMPLATE_BODY_EDITED",
+    description="The user edits the body of a selected template.",
+    event=TemplateBodyEditedEvent,
+    event_source_code=TemplateBodyEditedEvent.get_source_code_of_class(),
+    constraints_generator=generate_template_body_constraints,
+    examples=[
+        {
+            "prompt": "Update the body text of the Warm Introduction template.",
+            "prompt_for_task_generation": "Edit the content of the Warm Introduction template.",
+        }
+    ],
+)
+
+TEMPLATE_SENT_USE_CASE = UseCase(
+    name="TEMPLATE_SENT",
+    description="The user sends an email from a template.",
+    event=TemplateSentEvent,
+    event_source_code=TemplateSentEvent.get_source_code_of_class(),
+    constraints_generator=generate_template_body_constraints,
+    examples=[
+        {
+            "prompt": "Send the Friendly Follow Up template.",
+            "prompt_for_task_generation": "Send an email using the Friendly Follow Up template.",
+        }
+    ],
+)
+
+TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
+    name="TEMPLATE_SAVED_DRAFT",
+    description="The user saves an email template as a draft.",
+    event=TemplateSavedDraftEvent,
+    event_source_code=TemplateSavedDraftEvent.get_source_code_of_class(),
+    constraints_generator=generate_template_body_constraints,
+    examples=[
+        {
+            "prompt": "Save the Warm Introduction template as draft.",
+            "prompt_for_task_generation": "Save a draft from the Warm Introduction template.",
+        }
+    ],
+)
+
+TEMPLATE_CANCELED_USE_CASE = UseCase(
+    name="TEMPLATE_CANCELED",
+    description="The user cancels working on a template and resets changes.",
+    event=TemplateCanceledEvent,
+    event_source_code=TemplateCanceledEvent.get_source_code_of_class(),
+    constraints_generator=generate_template_selection_constraints,
+    examples=[
+        {
+            "prompt": "Cancel edits on the Thank You template.",
+            "prompt_for_task_generation": "Discard changes to the Thank You template.",
+        }
+    ],
+)
+
 ###############################################################################
 # FINAL LIST: ALL_USE_CASES
 ###############################################################################
 ALL_USE_CASES = [
     SEARCH_EMAIL_USE_CASE,
     CLEAR_SELECTION_USE_CASE,
+    EMAILS_NEXT_PAGE_USE_CASE,
+    EMAILS_PREV_PAGE_USE_CASE,
+    VIEW_TEMPLATES_USE_CASE,
+    TEMPLATE_SELECTED_USE_CASE,
+    TEMPLATE_BODY_EDITED_USE_CASE,
+    TEMPLATE_SENT_USE_CASE,
+    TEMPLATE_SAVED_DRAFT_USE_CASE,
+    TEMPLATE_CANCELED_USE_CASE,
     VIEW_EMAIL_USE_CASE,
     ARCHIVE_EMAIL_USE_CASE,
     STAR_EMAIL_USE_CASE,

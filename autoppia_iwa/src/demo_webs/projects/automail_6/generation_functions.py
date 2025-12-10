@@ -21,6 +21,14 @@ from .data import (
 )
 from .data_utils import fetch_emails_data
 
+TEMPLATES = [
+    {"id": "intro", "name": "Warm Introduction", "subject": "Introduction & Next Steps"},
+    {"id": "follow-up", "name": "Friendly Follow Up", "subject": "Quick follow-up on our last conversation"},
+    {"id": "meeting-recap", "name": "Meeting Recap", "subject": "Recap: key notes from our meeting"},
+    {"id": "thank-you", "name": "Thank You", "subject": "Thank you for your time"},
+    {"id": "reminder", "name": "Gentle Reminder", "subject": "Friendly reminder"},
+]
+
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     return await fetch_emails_data(seed_value=seed_value, count=count)
@@ -449,3 +457,34 @@ async def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     constraints_list.append(create_constraint_dict(field, operator, value))
 
     return constraints_list
+
+
+async def generate_next_page_constraints() -> list[dict[str, Any]]:
+    base_page = random.randint(1, 3)
+    constraints_list = [
+        create_constraint_dict("from_page", ComparisonOperator.EQUALS, base_page),
+        create_constraint_dict("to_page", ComparisonOperator.EQUALS, base_page + 1),
+    ]
+    return constraints_list
+
+
+async def generate_prev_page_constraints() -> list[dict[str, Any]]:
+    base_page = random.randint(2, 4)
+    constraints_list = [
+        create_constraint_dict("from_page", ComparisonOperator.EQUALS, base_page),
+        create_constraint_dict("to_page", ComparisonOperator.EQUALS, base_page - 1),
+    ]
+    return constraints_list
+
+
+async def generate_template_selection_constraints() -> list[dict[str, Any]]:
+    template = choice(TEMPLATES)
+    return [create_constraint_dict("template_name", ComparisonOperator.EQUALS, template["name"])]
+
+
+async def generate_template_body_constraints() -> list[dict[str, Any]]:
+    template = choice(TEMPLATES)
+    return [
+        create_constraint_dict("template_name", ComparisonOperator.EQUALS, template["name"]),
+        create_constraint_dict("subject", ComparisonOperator.EQUALS, template["subject"]),
+    ]
