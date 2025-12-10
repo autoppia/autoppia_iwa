@@ -35,10 +35,9 @@ from .generation_functions import (
     generate_is_read_constraints,
     generate_is_spam_constraints,
     generate_is_starred_constraints,
-    generate_next_page_constraints,
-    generate_prev_page_constraints,
     generate_save_as_draft_send_email_constraints,
     generate_search_email_constraints,
+    generate_sent_template_constraints,
     generate_template_body_constraints,
     generate_template_selection_constraints,
     generate_theme_changed_constraints,
@@ -660,12 +659,20 @@ EMAILS_NEXT_PAGE_USE_CASE = UseCase(
     description="The user paginates to the next set of emails.",
     event=EmailsNextPageEvent,
     event_source_code=EmailsNextPageEvent.get_source_code_of_class(),
-    constraints_generator=generate_next_page_constraints,
+    constraints_generator=False,
     examples=[
         {
             "prompt": "Go to the next page of emails.",
-            "prompt_for_task_generation": "Move forward to the next page of messages.",
-        }
+            "prompt_for_task_generation": "Go to the next page of emails.",
+        },
+        {
+            "prompt": "See emails that are on next page.",
+            "prompt_for_task_generation": "See emails that are on next page.",
+        },
+        {
+            "prompt": "Move forward to the next page of emails.",
+            "prompt_for_task_generation": "Move forward to the next page of emails.",
+        },
     ],
 )
 
@@ -674,12 +681,20 @@ EMAILS_PREV_PAGE_USE_CASE = UseCase(
     description="The user paginates back to the previous set of emails.",
     event=EmailsPrevPageEvent,
     event_source_code=EmailsPrevPageEvent.get_source_code_of_class(),
-    constraints_generator=generate_prev_page_constraints,
+    constraints_generator=False,
     examples=[
         {
             "prompt": "Go back to the previous page of emails.",
-            "prompt_for_task_generation": "Navigate back to the earlier emails page.",
-        }
+            "prompt_for_task_generation": "Go back to the previous page of emails.",
+        },
+        {
+            "prompt": "Move backward to view emails that are on earlier page.",
+            "prompt_for_task_generation": "Move backward to view emails that are on earlier page.",
+        },
+        {
+            "prompt": "See emails that are on previous page.",
+            "prompt_for_task_generation": "See emails that are on previous page.",
+        },
     ],
 )
 
@@ -691,9 +706,17 @@ VIEW_TEMPLATES_USE_CASE = UseCase(
     constraints_generator=False,
     examples=[
         {
-            "prompt": "Open the templates page.",
-            "prompt_for_task_generation": "Navigate to the email templates section.",
-        }
+            "prompt": "Open the email templates page.",
+            "prompt_for_task_generation": "Open the email templates section.",
+        },
+        {
+            "prompt": "Go to the email templates page.",
+            "prompt_for_task_generation": "Go to the email templates page.",
+        },
+        {
+            "prompt": "View the email templates.",
+            "prompt_for_task_generation": "View the email templates.",
+        },
     ],
 )
 
@@ -705,9 +728,17 @@ TEMPLATE_SELECTED_USE_CASE = UseCase(
     constraints_generator=generate_template_selection_constraints,
     examples=[
         {
-            "prompt": "Select the Meeting Recap template.",
-            "prompt_for_task_generation": "Choose the Meeting Recap email template.",
-        }
+            "prompt": "Select the Meeting Recap email template.",
+            "prompt_for_task_generation": "Select the Meeting Recap email template.",
+        },
+        {
+            "prompt": "Select the template where subject equals 'Introduction & Next Steps'.",
+            "prompt_for_task_generation": "Select the template where subject equals 'Introduction & Next Steps'.",
+        },
+        {
+            "prompt": "Select the template where name equals 'Friendly Follow Up'.",
+            "prompt_for_task_generation": "Select the template where name equals 'Friendly Follow Up'.",
+        },
     ],
 )
 
@@ -721,7 +752,15 @@ TEMPLATE_BODY_EDITED_USE_CASE = UseCase(
         {
             "prompt": "Update the body text of the Warm Introduction template.",
             "prompt_for_task_generation": "Edit the content of the Warm Introduction template.",
-        }
+        },
+        {
+            "prompt": "Update the body text of template that name equals 'Warm Introduction'.",
+            "prompt_for_task_generation": "Update the body text of template that name equals 'Warm Introduction'.",
+        },
+        {
+            "prompt": "Update the body text of template that subject equals 'Thank you for your time'.",
+            "prompt_for_task_generation": "Update the body text of template that subject equals 'Thank you for your time'.",
+        },
     ],
 )
 
@@ -730,12 +769,20 @@ TEMPLATE_SENT_USE_CASE = UseCase(
     description="The user sends an email from a template.",
     event=TemplateSentEvent,
     event_source_code=TemplateSentEvent.get_source_code_of_class(),
-    constraints_generator=generate_template_body_constraints,
+    constraints_generator=generate_sent_template_constraints,
     examples=[
         {
-            "prompt": "Send the Friendly Follow Up template.",
+            "prompt": "Send an email using the Friendly Follow Up template.",
             "prompt_for_task_generation": "Send an email using the Friendly Follow Up template.",
-        }
+        },
+        {
+            "prompt": "Send an email using Warm Introduction template.",
+            "prompt_for_task_generation": "Send an email using the Warm Introduction template.",
+        },
+        {
+            "prompt": "Send an email using Meeting Recap template.",
+            "prompt_for_task_generation": "Send an email using Meeting Recap template.",
+        },
     ],
 )
 
@@ -744,12 +791,20 @@ TEMPLATE_SAVED_DRAFT_USE_CASE = UseCase(
     description="The user saves an email template as a draft.",
     event=TemplateSavedDraftEvent,
     event_source_code=TemplateSavedDraftEvent.get_source_code_of_class(),
-    constraints_generator=generate_template_body_constraints,
+    constraints_generator=generate_sent_template_constraints,
     examples=[
         {
             "prompt": "Save the Warm Introduction template as draft.",
-            "prompt_for_task_generation": "Save a draft from the Warm Introduction template.",
-        }
+            "prompt_for_task_generation": "Save the Warm Introduction template as draft.",
+        },
+        {
+            "prompt": "Save the Meeting Recap template as draft.",
+            "prompt_for_task_generation": "Save the Meeting Recap template as draft.",
+        },
+        {
+            "prompt": "Save the Friendly Follow Up template as draft.",
+            "prompt_for_task_generation": "Save the Friendly Follow Up template as draft.",
+        },
     ],
 )
 
@@ -758,12 +813,20 @@ TEMPLATE_CANCELED_USE_CASE = UseCase(
     description="The user cancels working on a template and resets changes.",
     event=TemplateCanceledEvent,
     event_source_code=TemplateCanceledEvent.get_source_code_of_class(),
-    constraints_generator=generate_template_selection_constraints,
+    constraints_generator=generate_sent_template_constraints,
     examples=[
         {
-            "prompt": "Cancel edits on the Thank You template.",
-            "prompt_for_task_generation": "Discard changes to the Thank You template.",
-        }
+            "prompt": "Cancel changes on the Thank You template.",
+            "prompt_for_task_generation": "Cancel changes to the Thank You template.",
+        },
+        {
+            "prompt": "Cancel changes on the Meeting Recap template.",
+            "prompt_for_task_generation": "Cancel changes on the Meeting Recap template.",
+        },
+        {
+            "prompt": "Cancel changes on the Friendly Follow Up template.",
+            "prompt_for_task_generation": "Discard changes to the Friendly Follow Up template.",
+        },
     ],
 )
 

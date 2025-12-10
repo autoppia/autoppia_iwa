@@ -522,42 +522,22 @@ class ClearSelectionEvent(Event, BaseEventValidator):
 
 class EmailsNextPageEvent(Event, BaseEventValidator):
     event_name: str = "EMAILS_NEXT_PAGE"
-    from_page: int | None = None
-    to_page: int | None = None
-    page_size: int | None = None
-    total_items: int | None = None
 
     class ValidationCriteria(BaseModel):
-        from_page: int | CriterionValue | None = None
-        to_page: int | CriterionValue | None = None
-        page_size: int | CriterionValue | None = None
-        total_items: int | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.from_page, criteria.from_page),
-                self._validate_field(self.to_page, criteria.to_page),
-                self._validate_field(self.page_size, criteria.page_size),
-                self._validate_field(self.total_items, criteria.total_items),
-            ]
-        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EmailsNextPageEvent":
         base = Event.parse(backend_event)
-        data = backend_event.data or {}
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            from_page=data.get("from_page"),
-            to_page=data.get("to_page"),
-            page_size=data.get("page_size"),
-            total_items=data.get("total_items"),
         )
 
 
@@ -572,45 +552,31 @@ class EmailsPrevPageEvent(EmailsNextPageEvent):
 
 class TemplatesViewedEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_TEMPLATES"
-    template_count: int | None = None
-    source: str | None = None
 
     class ValidationCriteria(BaseModel):
-        template_count: int | CriterionValue | None = None
-        source: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.template_count, criteria.template_count),
-                self._validate_field(self.source, criteria.source),
-            ]
-        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "TemplatesViewedEvent":
         base = Event.parse(backend_event)
-        data = backend_event.data or {}
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            template_count=data.get("template_count"),
-            source=data.get("source"),
         )
 
 
 class TemplateSelectedEvent(Event, BaseEventValidator):
     event_name: str = "TEMPLATE_SELECTED"
-    template_id: str | None = None
     template_name: str | None = None
     subject: str | None = None
 
     class ValidationCriteria(BaseModel):
-        template_id: str | CriterionValue | None = None
         template_name: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
 
@@ -619,7 +585,6 @@ class TemplateSelectedEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.template_id, criteria.template_id),
                 self._validate_field(self.template_name, criteria.template_name),
                 self._validate_field(self.subject, criteria.subject),
             ]
@@ -634,7 +599,6 @@ class TemplateSelectedEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            template_id=data.get("template_id"),
             template_name=data.get("template_name"),
             subject=data.get("subject"),
         )
@@ -642,26 +606,23 @@ class TemplateSelectedEvent(Event, BaseEventValidator):
 
 class TemplateBodyEditedEvent(Event, BaseEventValidator):
     event_name: str = "TEMPLATE_BODY_EDITED"
-    template_id: str | None = None
     template_name: str | None = None
     subject: str | None = None
-    body_length: int | None = None
+    body: str | None = None
 
     class ValidationCriteria(BaseModel):
-        template_id: str | CriterionValue | None = None
         template_name: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
-        body_length: int | CriterionValue | None = None
+        body: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.template_id, criteria.template_id),
                 self._validate_field(self.template_name, criteria.template_name),
                 self._validate_field(self.subject, criteria.subject),
-                self._validate_field(self.body_length, criteria.body_length),
+                self._validate_field(self.body, criteria.body),
             ]
         )
 
@@ -674,38 +635,34 @@ class TemplateBodyEditedEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            template_id=data.get("template_id"),
             template_name=data.get("template_name"),
             subject=data.get("subject"),
-            body_length=data.get("body_length"),
+            body=data.get("body"),
         )
 
 
 class TemplateSentEvent(Event, BaseEventValidator):
     event_name: str = "TEMPLATE_SENT"
-    template_id: str | None = None
     template_name: str | None = None
     subject: str | None = None
     to: str | None = None
-    from_email: str | None = None
+    body: str | None = None
 
     class ValidationCriteria(BaseModel):
-        template_id: str | CriterionValue | None = None
         template_name: str | CriterionValue | None = None
         subject: str | CriterionValue | None = None
         to: str | CriterionValue | None = None
-        from_email: str | CriterionValue | None = None
+        body: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.template_id, criteria.template_id),
                 self._validate_field(self.template_name, criteria.template_name),
                 self._validate_field(self.subject, criteria.subject),
                 self._validate_field(self.to, criteria.to),
-                self._validate_field(self.from_email, criteria.from_email),
+                self._validate_field(self.body, criteria.body),
             ]
         )
 
@@ -718,11 +675,10 @@ class TemplateSentEvent(Event, BaseEventValidator):
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            template_id=data.get("template_id"),
             template_name=data.get("template_name"),
             subject=data.get("subject"),
             to=data.get("to"),
-            from_email=data.get("from") or data.get("from_email"),
+            body=data.get("body"),
         )
 
 
@@ -730,41 +686,8 @@ class TemplateSavedDraftEvent(TemplateSentEvent):
     event_name: str = "TEMPLATE_SAVED_DRAFT"
 
 
-class TemplateCanceledEvent(Event, BaseEventValidator):
+class TemplateCanceledEvent(TemplateSentEvent):
     event_name: str = "TEMPLATE_CANCELED"
-    template_id: str | None = None
-    template_name: str | None = None
-    subject: str | None = None
-
-    class ValidationCriteria(BaseModel):
-        template_id: str | CriterionValue | None = None
-        template_name: str | CriterionValue | None = None
-        subject: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.template_id, criteria.template_id),
-                self._validate_field(self.template_name, criteria.template_name),
-                self._validate_field(self.subject, criteria.subject),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "TemplateCanceledEvent":
-        base = Event.parse(backend_event)
-        data = backend_event.data or {}
-        return cls(
-            event_name=base.event_name,
-            timestamp=base.timestamp,
-            web_agent_id=base.web_agent_id,
-            user_id=base.user_id,
-            template_id=data.get("template_id"),
-            template_name=data.get("template_name"),
-            subject=data.get("subject"),
-        )
 
 
 EVENTS = [
