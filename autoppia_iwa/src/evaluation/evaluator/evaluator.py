@@ -154,7 +154,7 @@ class ConcurrentEvaluator(IEvaluator):
         """
 
         actions = task_solution.actions
-        web_agent_id = task_solution.web_agent_id
+        web_agent_id = task_solution.web_agent_id or "unknown_agent"
         is_web_real = task.is_web_real
 
         stats = EvaluationStats(
@@ -442,10 +442,10 @@ class ConcurrentEvaluator(IEvaluator):
                 for idx in group_indices:
                     sol = task_solutions[idx]
                     cloned = rep_result.model_copy(deep=True)
-                    cloned.web_agent_id = sol.web_agent_id
+                    cloned.web_agent_id = sol.web_agent_id or "unknown_agent"
                     if cloned.stats:
                         stats_copy = cloned.stats.model_copy(deep=True)
-                        stats_copy.web_agent_id = sol.web_agent_id
+                        stats_copy.web_agent_id = sol.web_agent_id or "unknown_agent"
                         cloned.stats = stats_copy
 
                     final_results[idx] = cloned
@@ -458,7 +458,7 @@ class ConcurrentEvaluator(IEvaluator):
                 for idx in group_indices:
                     sol = task_solutions[idx]
                     error_stats = EvaluationStats(
-                        web_agent_id=sol.web_agent_id,
+                        web_agent_id=sol.web_agent_id or "unknown_agent",
                         task_id=task.id,
                         action_count=len(sol.actions),
                         start_time=time.time(),
@@ -466,7 +466,7 @@ class ConcurrentEvaluator(IEvaluator):
                         error_message=str(e),
                     )
                     error_result = EvaluationResult(
-                        web_agent_id=sol.web_agent_id,
+                        web_agent_id=sol.web_agent_id or "unknown_agent",
                         final_score=0,
                         raw_score=0,
                         test_results=initialize_test_results(task),
