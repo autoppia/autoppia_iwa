@@ -671,42 +671,22 @@ class AddressAddedEvent(Event, BaseEventValidator):
 
 class RestaurantNextPageEvent(Event, BaseEventValidator):
     event_name: str = "RESTAURANT_NEXT_PAGE"
-    from_page: int | None = None
-    to_page: int | None = None
-    page_size: int | None = None
-    total_items: int | None = None
 
     class ValidationCriteria(BaseModel):
-        from_page: int | CriterionValue | None = None
-        to_page: int | CriterionValue | None = None
-        page_size: int | CriterionValue | None = None
-        total_items: int | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.from_page, criteria.from_page),
-                self._validate_field(self.to_page, criteria.to_page),
-                self._validate_field(self.page_size, criteria.page_size),
-                self._validate_field(self.total_items, criteria.total_items),
-            ]
-        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "RestaurantNextPageEvent":
         base = Event.parse(backend_event)
-        data = backend_event.data or {}
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
-            from_page=data.get("from_page"),
-            to_page=data.get("to_page"),
-            page_size=data.get("page_size"),
-            total_items=data.get("total_items"),
         )
 
 
@@ -717,15 +697,19 @@ class RestaurantPrevPageEvent(RestaurantNextPageEvent):
 class ReviewSubmittedEvent(Event, BaseEventValidator):
     event_name: str = "REVIEW_SUBMITTED"
     author: str
-    rating: float
+    rating: int
     comment: str
-    restaurant_id: str | None = None
-    restaurant_name: str | None = None
+    cuisine: str
+    restaurant_name: str
+    restaurant_rating: float
 
     class ValidationCriteria(BaseModel):
         author: str | CriterionValue | None = None
-        rating: float | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
         restaurant_name: str | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
+        comment: str | CriterionValue | None = None
+        restaurant_rating: float | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -735,6 +719,9 @@ class ReviewSubmittedEvent(Event, BaseEventValidator):
                 self._validate_field(self.author, criteria.author),
                 self._validate_field(self.rating, criteria.rating),
                 self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.cuisine, criteria.cuisine),
+                self._validate_field(self.comment, criteria.comment),
+                self._validate_field(self.restaurant_rating, criteria.restaurant_rating),
             ]
         )
 
@@ -748,51 +735,56 @@ class ReviewSubmittedEvent(Event, BaseEventValidator):
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
             author=data.get("author", ""),
-            rating=float(data.get("rating", 0)),
+            rating=data.get("rating", 0),
             comment=data.get("comment", ""),
-            restaurant_id=data.get("restaurantId"),
             restaurant_name=data.get("restaurantName"),
+            restaurant_rating=data.get("restaurantRating"),
+            cuisine=data.get("cuisine"),
         )
 
 
 class DeliveryPrioritySelectedEvent(Event, BaseEventValidator):
     event_name: str = "DELIVERY_PRIORITY_SELECTED"
+    items: list[CheckoutItem]
     priority: str
-    mode: str | None = None
-    address: str | None = None
-    name: str | None = None
-    phone: str | None = None
-    total_price: float | None = None
 
     class ValidationCriteria(BaseModel):
+        item: str | CriterionValue | None = None
+        quantity: int | CriterionValue | None = None
+        price: float | CriterionValue | None = None
         priority: str | CriterionValue | None = None
-        mode: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.priority, criteria.priority),
-                self._validate_field(self.mode, criteria.mode),
-            ]
-        )
+
+        # Validate event-level fields (priority, name)
+        if criteria.priority is not None and not self._validate_field(self.priority, criteria.priority):
+            return False
+
+        if criteria.name is not None and not self._validate_field(self.name, criteria.name):
+            return False
+
+        if len(self.items) == 0:
+            return False
+
+        for item in self.items:
+            if self._validate_field(item.name, criteria.item) and self._validate_field(item.quantity, criteria.quantity) and self._validate_field(item.price, criteria.price):
+                return True
+        return False
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "DeliveryPrioritySelectedEvent":
         base = Event.parse(backend_event)
-        data = backend_event.data or {}
+        data = backend_event.data
+        items = [CheckoutItem(**item) for item in data.get("items", [])]
         return cls(
             event_name=base.event_name,
             timestamp=base.timestamp,
             web_agent_id=base.web_agent_id,
             user_id=base.user_id,
+            items=items,
             priority=data.get("priority", ""),
-            mode=data.get("mode"),
-            address=data.get("address"),
-            name=data.get("name"),
-            phone=data.get("phone"),
-            total_price=data.get("cartTotal"),
         )
 
 

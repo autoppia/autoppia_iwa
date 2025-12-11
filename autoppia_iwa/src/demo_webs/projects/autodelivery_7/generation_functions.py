@@ -16,6 +16,7 @@ from .data import (
     FIELD_OPERATORS_PLACE_ORDER_MAP,
     FIELD_OPERATORS_QUICK_REORDER_MAP,
     FIELD_OPERATORS_RESTAURANT_FILTER_MAP,
+    FIELD_OPERATORS_REVIEW_SUBMIT_MAP,
     FIELD_OPERATORS_SEARCH_RESTAURANT_MAP,
     FIELD_OPERATORS_VIEW_RESTAURANT_MAP,
 )
@@ -591,27 +592,77 @@ async def generate_edit_cart_item_constraints(task_url: str | None = None, datas
     return constraints_list
 
 
-async def generate_restaurant_pagination_constraints(next_page: bool = True) -> list[dict[str, Any]]:
-    base_page = random.randint(1, 3)
-    to_page = base_page + 1 if next_page else max(1, base_page - 1)
-    return [
-        create_constraint_dict("from_page", ComparisonOperator.EQUALS, base_page),
-        create_constraint_dict("to_page", ComparisonOperator.EQUALS, to_page),
-    ]
-
-
 async def generate_review_submitted_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraint_list = []
     restaurants = await _ensure_restaurant_dataset(task_url, dataset)
     if not restaurants:
         return []
-    restaurant = random.choice(restaurants)
-    sample_author = restaurant.get("reviews", [{}])[0].get("author", "Guest")
-    return [
-        create_constraint_dict("author", ComparisonOperator.EQUALS, sample_author),
-        create_constraint_dict("rating", ComparisonOperator.GREATER_EQUAL, 3),
+    NAMES = ["Alex", "John", "Michael", "Sarah", "Emily", "David", "Sophia", "Daniel", "Olivia", "James", "Emma", "Liam", "Ava", "Noah", "Mia"]
+    COMMENTS = [
+        "Had a wonderful stay! The staff was polite and the rooms were spotless.",
+        "Comfortable stay overall, but the breakfast could be improved.",
+        "Amazing experience! Loved the view from my balcony and the service was top-notch.",
+        "Good hotel for the price. Check-in was smooth and quick.",
+        "Room was spacious and clean, but the wifi was a bit slow.",
+        "Excellent hospitality! Will definitely visit again.",
+        "The location was perfect—close to all major attractions.",
+        "Nice stay, but the AC was slightly noisy at night.",
+        "Super friendly staff and delicious food at the hotel restaurant.",
+        "Enjoyed my stay! The bed was very comfortable and everything was well maintained.",
+        "Hotel was clean and cozy, though parking was limited.",
+        "Loved the rooftop pool! One of the best experiences.",
+        "Great value for money. Staff helped us with local travel tips.",
+        "Room service was quick and efficient. Highly satisfied.",
+        "Beautiful interiors and relaxing environment—highly recommended!",
     ]
+    RATINGS = [1, 2, 3, 4, 5]
+    NAME_DATA = [{"name": n} for n in NAMES]
+    COMMENT_DATA = [{"comment": c} for c in COMMENTS]
+    restaurant = random.choice(restaurants)
+    possible_fields = list(FIELD_OPERATORS_REVIEW_SUBMIT_MAP.keys())
+    selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
+    field_mapping = {
+        "restaurant_name": "name",
+        "restaurant_rating": "rating",
+        "cuisine": "cuisine",
+    }
+
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_REVIEW_SUBMIT_MAP.get(field, [])
+        op = ComparisonOperator(random.choice(allowed_ops))
+        if field == "author":
+            field_value = random.choice(NAMES)
+            value = _generate_constraint_value(op, field_value, field, NAME_DATA)
+            constraint = create_constraint_dict(field, op, value)
+            constraint_list.append(constraint)
+        elif field == "comment":
+            field_value = random.choice(COMMENTS)
+            value = _generate_constraint_value(op, field_value, field, COMMENT_DATA)
+            constraint = create_constraint_dict(field, op, value)
+            constraint_list.append(constraint)
+        elif field == "rating":
+            field_value = random.choice(RATINGS)
+            value = _generate_constraint_value(op, field_value, field, [{"rating": r} for r in RATINGS])
+            constraint = create_constraint_dict(field, op, value)
+            constraint_list.append(constraint)
+
+        else:
+            field_value = restaurant.get(field_mapping[field])
+            value = _generate_constraint_value(op, field_value, field, restaurants)
+            constraint = create_constraint_dict(field_mapping[field], op, value)
+            constraint_list.append(constraint)
+
+    return constraint_list
 
 
-async def generate_delivery_priority_constraints() -> list[dict[str, Any]]:
-    priority = random.choice(["priority", "normal"])
-    return [create_constraint_dict("priority", ComparisonOperator.EQUALS, priority)]
+async def generate_delivery_priority_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraint_list = []
+    constraints = generate_add_to_cart_constraints(task_url, dataset)
+    field = "priority"
+    priority_value = ["normal", "priority"]
+    operator = ComparisonOperator(random.choice(["equals", "not_equals"]))
+    constraint = create_constraint_dict(field, operator, priority_value)
+    all_constraints = constraints + constraint
+    constraint_list.append(all_constraints)
+
+    return constraint_list

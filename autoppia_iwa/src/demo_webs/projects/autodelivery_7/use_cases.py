@@ -35,7 +35,6 @@ from .generation_functions import (
     generate_place_order_constraints,
     generate_quick_reorder_constraints,
     generate_restaurant_filter_constraints,
-    generate_restaurant_pagination_constraints,
     generate_review_submitted_constraints,
     generate_search_restaurant_constraints,
     generate_view_restaurant_constraints,
@@ -521,8 +520,12 @@ RESTAURANT_NEXT_PAGE_USE_CASE = UseCase(
     description="The user paginates to the next set of restaurants.",
     event=RestaurantNextPageEvent,
     event_source_code=RestaurantNextPageEvent.get_source_code_of_class(),
-    constraints_generator=lambda: generate_restaurant_pagination_constraints(next_page=True),
-    examples=[{"prompt": "Go to the next page of restaurants.", "prompt_for_task_generation": "Go to the next page of restaurants."}],
+    constraints_generator=False,
+    examples=[
+        {"prompt": "Go to the next page of restaurants.", "prompt_for_task_generation": "Go to the next page of restaurants."},
+        {"prompt": "View restaurants that are on next page.", "prompt_for_task_generation": "View restaurants that are on next page."},
+        {"prompt": "Move forward to view upcoming restaurants.", "prompt_for_task_generation": "Move forward to view upcoming restaurants."},
+    ],
 )
 
 RESTAURANT_PREV_PAGE_USE_CASE = UseCase(
@@ -530,8 +533,12 @@ RESTAURANT_PREV_PAGE_USE_CASE = UseCase(
     description="The user navigates back to the previous set of restaurants.",
     event=RestaurantPrevPageEvent,
     event_source_code=RestaurantPrevPageEvent.get_source_code_of_class(),
-    constraints_generator=lambda: generate_restaurant_pagination_constraints(next_page=False),
-    examples=[{"prompt": "Go back to the previous page of restaurants.", "prompt_for_task_generation": "Go back to the previous page of restaurants."}],
+    constraints_generator=False,
+    examples=[
+        {"prompt": "Go back to the previous page of restaurants.", "prompt_for_task_generation": "Go back to the previous page of restaurants."},
+        {"prompt": "View restaurants that are on previous page.", "prompt_for_task_generation": "View restaurants that are on previous page."},
+        {"prompt": "Move backward to view earlier restaurants.", "prompt_for_task_generation": "Move backward to view earlier restaurants."},
+    ],
 )
 
 REVIEW_SUBMITTED_USE_CASE = UseCase(
@@ -541,8 +548,9 @@ REVIEW_SUBMITTED_USE_CASE = UseCase(
     event_source_code=ReviewSubmittedEvent.get_source_code_of_class(),
     constraints_generator=generate_review_submitted_constraints,
     examples=[
-        {"prompt": "Submit a 5-star review for Sushi World.", "prompt_for_task_generation": "Submit a 5-star review for Sushi World."},
+        {"prompt": "Submit a review where rating equals '5' for 'Sushi World'.", "prompt_for_task_generation": "Submit a review where rating equals '5' for Sushi World."},
         {"prompt": "Leave a review saying the food was amazing.", "prompt_for_task_generation": "Leave a review saying the food was amazing."},
+        {"prompt": "Leave a review saying the food was amazing and giving rating '4'.", "prompt_for_task_generation": "Leave a review saying the food was amazing and giving rating '4'."},
     ],
 )
 

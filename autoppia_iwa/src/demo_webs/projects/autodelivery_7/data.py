@@ -77,3 +77,12 @@ FIELD_OPERATORS_EDIT_CART_ITEM = {
     "item": STRING_OPERATORS,
     "restaurant": STRING_OPERATORS,
 }
+
+FIELD_OPERATORS_REVIEW_SUBMIT_MAP = {
+    "author": STRING_OPERATORS,
+    "comment": STRING_OPERATORS,
+    "restaurant_name": STRING_OPERATORS,
+    "restaurant_rating": LOGICAL_OPERATORS,
+    "cuisine": STRING_OPERATORS,
+    "rating": LOGICAL_OPERATORS,
+}
