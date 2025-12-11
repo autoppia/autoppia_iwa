@@ -306,10 +306,11 @@ class ConcurrentEvaluator(IEvaluator):
                         tests_passed_count += 1
 
                 if num_tests > 0:
-                    raw_score = tests_passed_count / num_tests
+                    # Binary score: 1.0 if AT LEAST ONE test passed, 0.0 otherwise
+                    raw_score = 1.0 if tests_passed_count > 0 else 0.0
                     if self.config.debug_mode:
                         logger.debug(f"   - Tests passed: {tests_passed_count}/{num_tests}")
-                        logger.debug(f"   - Raw score: {raw_score:.4f}")
+                        logger.debug(f"   - Raw score (binary): {raw_score:.4f} (at least one test passed: {tests_passed_count > 0})")
             else:
                 if self.config.debug_mode:
                     logger.warning("   ⚠️  No tests to evaluate (empty test results)")
