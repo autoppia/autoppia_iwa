@@ -669,6 +669,133 @@ class AddressAddedEvent(Event, BaseEventValidator):
         )
 
 
+class RestaurantNextPageEvent(Event, BaseEventValidator):
+    event_name: str = "RESTAURANT_NEXT_PAGE"
+    from_page: int | None = None
+    to_page: int | None = None
+    page_size: int | None = None
+    total_items: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        from_page: int | CriterionValue | None = None
+        to_page: int | CriterionValue | None = None
+        page_size: int | CriterionValue | None = None
+        total_items: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.from_page, criteria.from_page),
+                self._validate_field(self.to_page, criteria.to_page),
+                self._validate_field(self.page_size, criteria.page_size),
+                self._validate_field(self.total_items, criteria.total_items),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "RestaurantNextPageEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            from_page=data.get("from_page"),
+            to_page=data.get("to_page"),
+            page_size=data.get("page_size"),
+            total_items=data.get("total_items"),
+        )
+
+
+class RestaurantPrevPageEvent(RestaurantNextPageEvent):
+    event_name: str = "RESTAURANT_PREV_PAGE"
+
+
+class ReviewSubmittedEvent(Event, BaseEventValidator):
+    event_name: str = "REVIEW_SUBMITTED"
+    author: str
+    rating: float
+    comment: str
+    restaurant_id: str | None = None
+    restaurant_name: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        author: str | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        restaurant_name: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.author, criteria.author),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ReviewSubmittedEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            author=data.get("author", ""),
+            rating=float(data.get("rating", 0)),
+            comment=data.get("comment", ""),
+            restaurant_id=data.get("restaurantId"),
+            restaurant_name=data.get("restaurantName"),
+        )
+
+
+class DeliveryPrioritySelectedEvent(Event, BaseEventValidator):
+    event_name: str = "DELIVERY_PRIORITY_SELECTED"
+    priority: str
+    mode: str | None = None
+    address: str | None = None
+    name: str | None = None
+    phone: str | None = None
+    total_price: float | None = None
+
+    class ValidationCriteria(BaseModel):
+        priority: str | CriterionValue | None = None
+        mode: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.priority, criteria.priority),
+                self._validate_field(self.mode, criteria.mode),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DeliveryPrioritySelectedEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            priority=data.get("priority", ""),
+            mode=data.get("mode"),
+            address=data.get("address"),
+            name=data.get("name"),
+            phone=data.get("phone"),
+            total_price=data.get("cartTotal"),
+        )
+
+
 EVENTS = [
     SearchRestaurantEvent,
     ViewRestaurantEvent,
@@ -687,6 +814,10 @@ EVENTS = [
     QuickReorderEvent,
     ViewAllRestaurantsEvent,
     EditCartItemEvent,
+    RestaurantNextPageEvent,
+    RestaurantPrevPageEvent,
+    ReviewSubmittedEvent,
+    DeliveryPrioritySelectedEvent,
 ]
 BACKEND_EVENT_TYPES = {
     "SEARCH_DELIVERY_RESTAURANT": SearchRestaurantEvent,
@@ -706,4 +837,8 @@ BACKEND_EVENT_TYPES = {
     "QUICK_REORDER": QuickReorderEvent,
     "VIEW_ALL_RESTAURANTS": ViewAllRestaurantsEvent,
     "EDIT_CART_ITEM": EditCartItemEvent,
+    "RESTAURANT_NEXT_PAGE": RestaurantNextPageEvent,
+    "RESTAURANT_PREV_PAGE": RestaurantPrevPageEvent,
+    "REVIEW_SUBMITTED": ReviewSubmittedEvent,
+    "DELIVERY_PRIORITY_SELECTED": DeliveryPrioritySelectedEvent,
 }

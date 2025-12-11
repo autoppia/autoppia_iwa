@@ -5,6 +5,7 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
     AddToCartModalOpenEvent,
     BackToAllRestaurantsEvent,
     DeleteReviewEvent,
+    DeliveryPrioritySelectedEvent,
     DropoffPreferenceEvent,
     EditCartItemEvent,
     EmptyCartEvent,
@@ -14,6 +15,9 @@ from autoppia_iwa.src.demo_webs.projects.autodelivery_7.events import (
     QuickOrderStartedEvent,
     QuickReorderEvent,
     RestaurantFilterEvent,
+    RestaurantNextPageEvent,
+    RestaurantPrevPageEvent,
+    ReviewSubmittedEvent,
     SearchRestaurantEvent,
     ViewAllRestaurantsEvent,
     ViewRestaurantEvent,
@@ -24,12 +28,15 @@ from .generation_functions import (
     generate_add_to_cart_modal_open_constraints,
     generate_address_added_constraints,
     generate_delete_review_constraints,
+    generate_delivery_priority_constraints,
     generate_dropoff_option_constraints,
     generate_edit_cart_item_constraints,
     generate_increment_item_restaurant_constraints,
     generate_place_order_constraints,
     generate_quick_reorder_constraints,
     generate_restaurant_filter_constraints,
+    generate_restaurant_pagination_constraints,
+    generate_review_submitted_constraints,
     generate_search_restaurant_constraints,
     generate_view_restaurant_constraints,
 )
@@ -509,6 +516,48 @@ ADDRESS_ADDED_USE_CASE = UseCase(
     ],
 )
 
+RESTAURANT_NEXT_PAGE_USE_CASE = UseCase(
+    name="RESTAURANT_NEXT_PAGE",
+    description="The user paginates to the next set of restaurants.",
+    event=RestaurantNextPageEvent,
+    event_source_code=RestaurantNextPageEvent.get_source_code_of_class(),
+    constraints_generator=lambda: generate_restaurant_pagination_constraints(next_page=True),
+    examples=[{"prompt": "Go to the next page of restaurants.", "prompt_for_task_generation": "Go to the next page of restaurants."}],
+)
+
+RESTAURANT_PREV_PAGE_USE_CASE = UseCase(
+    name="RESTAURANT_PREV_PAGE",
+    description="The user navigates back to the previous set of restaurants.",
+    event=RestaurantPrevPageEvent,
+    event_source_code=RestaurantPrevPageEvent.get_source_code_of_class(),
+    constraints_generator=lambda: generate_restaurant_pagination_constraints(next_page=False),
+    examples=[{"prompt": "Go back to the previous page of restaurants.", "prompt_for_task_generation": "Go back to the previous page of restaurants."}],
+)
+
+REVIEW_SUBMITTED_USE_CASE = UseCase(
+    name="REVIEW_SUBMITTED",
+    description="The user submits a new review for a restaurant.",
+    event=ReviewSubmittedEvent,
+    event_source_code=ReviewSubmittedEvent.get_source_code_of_class(),
+    constraints_generator=generate_review_submitted_constraints,
+    examples=[
+        {"prompt": "Submit a 5-star review for Sushi World.", "prompt_for_task_generation": "Submit a 5-star review for Sushi World."},
+        {"prompt": "Leave a review saying the food was amazing.", "prompt_for_task_generation": "Leave a review saying the food was amazing."},
+    ],
+)
+
+DELIVERY_PRIORITY_SELECTED_USE_CASE = UseCase(
+    name="DELIVERY_PRIORITY_SELECTED",
+    description="The user chooses a delivery priority option.",
+    event=DeliveryPrioritySelectedEvent,
+    event_source_code=DeliveryPrioritySelectedEvent.get_source_code_of_class(),
+    constraints_generator=generate_delivery_priority_constraints,
+    examples=[
+        {"prompt": "Select priority delivery for my order.", "prompt_for_task_generation": "Select priority delivery for my order."},
+        {"prompt": "Choose normal delivery speed.", "prompt_for_task_generation": "Choose normal delivery speed."},
+    ],
+)
+
 
 ALL_USE_CASES = [
     SEARCH_RESTAURANT_USE_CASE,
@@ -528,4 +577,8 @@ ALL_USE_CASES = [
     ADDRESS_ADDED_USE_CASE,
     EMPTY_CART_USE_CASE,
     PLACE_ORDER_USE_CASE,
+    RESTAURANT_NEXT_PAGE_USE_CASE,
+    RESTAURANT_PREV_PAGE_USE_CASE,
+    REVIEW_SUBMITTED_USE_CASE,
+    DELIVERY_PRIORITY_SELECTED_USE_CASE,
 ]

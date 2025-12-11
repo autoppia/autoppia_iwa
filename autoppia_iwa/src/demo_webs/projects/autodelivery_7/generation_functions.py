@@ -589,3 +589,29 @@ async def generate_edit_cart_item_constraints(task_url: str | None = None, datas
         else:
             constraints_list.append(create_constraint_dict(field, op, restaurant.get("name", "")))
     return constraints_list
+
+
+async def generate_restaurant_pagination_constraints(next_page: bool = True) -> list[dict[str, Any]]:
+    base_page = random.randint(1, 3)
+    to_page = base_page + 1 if next_page else max(1, base_page - 1)
+    return [
+        create_constraint_dict("from_page", ComparisonOperator.EQUALS, base_page),
+        create_constraint_dict("to_page", ComparisonOperator.EQUALS, to_page),
+    ]
+
+
+async def generate_review_submitted_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    restaurants = await _ensure_restaurant_dataset(task_url, dataset)
+    if not restaurants:
+        return []
+    restaurant = random.choice(restaurants)
+    sample_author = restaurant.get("reviews", [{}])[0].get("author", "Guest")
+    return [
+        create_constraint_dict("author", ComparisonOperator.EQUALS, sample_author),
+        create_constraint_dict("rating", ComparisonOperator.GREATER_EQUAL, 3),
+    ]
+
+
+async def generate_delivery_priority_constraints() -> list[dict[str, Any]]:
+    priority = random.choice(["priority", "normal"])
+    return [create_constraint_dict("priority", ComparisonOperator.EQUALS, priority)]
