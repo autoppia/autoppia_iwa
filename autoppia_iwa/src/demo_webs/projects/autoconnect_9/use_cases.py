@@ -1,15 +1,42 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
-from .events import ApplyForJobEvent, CommentOnPostEvent, ConnectWithUserEvent, FollowPageEvent, LikePostEvent, PostStatusEvent, SearchJobsEvent, SearchUsersEvent, ViewJobEvent, ViewUserProfileEvent
+from .events import (
+    ApplyForJobEvent,
+    BackToAllJobsEvent,
+    CommentOnPostEvent,
+    ConnectWithUserEvent,
+    FilterJobsEvent,
+    FollowPageEvent,
+    HidePostEvent,
+    HomeNavbarEvent,
+    JobsNavbarEvent,
+    LikePostEvent,
+    PostStatusEvent,
+    ProfileNavbarEvent,
+    SavePostEvent,
+    SearchJobsEvent,
+    SearchUsersEvent,
+    UnfollowPageEvent,
+    ViewJobEvent,
+    ViewUserProfileEvent,
+)
 from .generation_functions import (
     generate_apply_for_job_constraints,
+    generate_back_to_all_jobs_constraints,
     generate_comment_on_post_constraints,
     generate_connect_with_user_constraints,
+    generate_filter_jobs_constraints,
     generate_follow_page_constraints,
+    generate_hide_post_constraints,
+    generate_home_navbar_constraints,
+    generate_jobs_navbar_constraints,
     generate_like_post_constraints,
     generate_post_status_constraints,
+    generate_profile_navbar_constraints,
+    generate_save_post_constraints,
     generate_search_jobs_constraints,
     generate_search_users_constraints,
+    generate_unfollow_page_constraints,
     generate_view_job_constraints,
     generate_view_user_profile_constraints,
 )
@@ -44,6 +71,20 @@ VIEW_USER_PROFILE_USE_CASE = UseCase(
         {
             "prompt": "Open Jane Doe's profile from a post header.",
             "prompt_for_task_generation": "Open Jane Doe's profile from a post header.",
+        },
+    ],
+)
+
+BACK_TO_ALL_JOBS_USE_CASE = UseCase(
+    name="BACK_TO_ALL_JOBS",
+    description="The user navigates back to the main jobs list.",
+    event=BackToAllJobsEvent,
+    event_source_code=BackToAllJobsEvent.get_source_code_of_class(),
+    constraints_generator=generate_back_to_all_jobs_constraints,
+    examples=[
+        {
+            "prompt": "Go back to all jobs from a job detail page.",
+            "prompt_for_task_generation": "Go back to all jobs from a job detail page.",
         },
     ],
 )
@@ -238,6 +279,21 @@ FOLLOW_PAGE_USE_CASE = UseCase(
         },
     ],
 )
+
+UNFOLLOW_PAGE_USE_CASE = UseCase(
+    name="UNFOLLOW_PAGE",
+    description="The user unfollows a company page.",
+    event=UnfollowPageEvent,
+    event_source_code=UnfollowPageEvent.get_source_code_of_class(),
+    constraints_generator=generate_unfollow_page_constraints,
+    examples=[
+        {
+            "prompt": "Unfollow the Adobe company page.",
+            "prompt_for_task_generation": "Unfollow the <company> company page.",
+        },
+    ],
+)
+
 SEARCH_JOBS_USE_CASE = UseCase(
     name="SEARCH_JOBS",
     description="The user searches for jobs.",
@@ -309,6 +365,24 @@ SEARCH_JOBS_USE_CASE = UseCase(
     ],
 )
 
+FILTER_JOBS_USE_CASE = UseCase(
+    name="FILTER_JOBS",
+    description="The user applies filters to job listings.",
+    event=FilterJobsEvent,
+    event_source_code=FilterJobsEvent.get_source_code_of_class(),
+    constraints_generator=generate_filter_jobs_constraints,
+    examples=[
+        {
+            "prompt": "Filter jobs to show remote roles only.",
+            "prompt_for_task_generation": "Filter jobs to show remote roles only.",
+        },
+        {
+            "prompt": "Filter jobs with salary between 100000 and 125000.",
+            "prompt_for_task_generation": "Filter jobs with salary between 100000 and 125000.",
+        },
+    ],
+)
+
 VIEW_JOB_USE_CASE = UseCase(
     name="VIEW_JOB",
     description="The user views a job posting in detail.",
@@ -331,15 +405,88 @@ VIEW_JOB_USE_CASE = UseCase(
     ],
 )
 
+HOME_NAVBAR_USE_CASE = UseCase(
+    name="HOME_NAVBAR",
+    description="The user opens the Home tab from the navbar.",
+    event=HomeNavbarEvent,
+    event_source_code=HomeNavbarEvent.get_source_code_of_class(),
+    constraints_generator=generate_home_navbar_constraints,
+    examples=[
+        {"prompt": "Go to the Home tab.", "prompt_for_task_generation": "Go to the Home tab."},
+        {"prompt": "Navigate back to Home from the navbar.", "prompt_for_task_generation": "Navigate back to Home from the navbar."},
+        {"prompt": "Open Home in navigation.", "prompt_for_task_generation": "Open Home in navigation."},
+    ],
+)
+
+JOBS_NAVBAR_USE_CASE = UseCase(
+    name="JOBS_NAVBAR",
+    description="The user opens the Jobs tab via the navbar.",
+    event=JobsNavbarEvent,
+    event_source_code=JobsNavbarEvent.get_source_code_of_class(),
+    constraints_generator=generate_jobs_navbar_constraints,
+    examples=[
+        {"prompt": "Switch to the Jobs tab.", "prompt_for_task_generation": "Switch to the Jobs tab."},
+        {"prompt": "Open Jobs from navigation.", "prompt_for_task_generation": "Open Jobs from navigation."},
+        {"prompt": "Go to the jobs section in the navbar.", "prompt_for_task_generation": "Go to the jobs section in the navbar."},
+    ],
+)
+
+PROFILE_NAVBAR_USE_CASE = UseCase(
+    name="PROFILE_NAVBAR",
+    description="The user opens the Profile tab via the navbar.",
+    event=ProfileNavbarEvent,
+    event_source_code=ProfileNavbarEvent.get_source_code_of_class(),
+    constraints_generator=generate_profile_navbar_constraints,
+    examples=[
+        {"prompt": "Open my profile tab.", "prompt_for_task_generation": "Open my profile tab."},
+        {"prompt": "Go to Profile in the navbar.", "prompt_for_task_generation": "Go to Profile in the navbar."},
+        {"prompt": "Switch to the profile view.", "prompt_for_task_generation": "Switch to the profile view."},
+    ],
+)
+
+SAVE_POST_USE_CASE = UseCase(
+    name="SAVE_POST",
+    description="The user saves a post to view later.",
+    event=SavePostEvent,
+    event_source_code=SavePostEvent.get_source_code_of_class(),
+    constraints_generator=generate_save_post_constraints,
+    examples=[
+        {"prompt": "Save this post about AI trends.", "prompt_for_task_generation": "Save this post about AI trends."},
+        {"prompt": "Bookmark the hiring announcement post.", "prompt_for_task_generation": "Bookmark the hiring announcement post."},
+        {"prompt": "Add the product launch post to my saved list.", "prompt_for_task_generation": "Add the product launch post to my saved list."},
+    ],
+)
+
+HIDE_POST_USE_CASE = UseCase(
+    name="HIDE_POST",
+    description="The user hides a post from their feed.",
+    event=HidePostEvent,
+    event_source_code=HidePostEvent.get_source_code_of_class(),
+    constraints_generator=generate_hide_post_constraints,
+    examples=[
+        {"prompt": "Hide this irrelevant post.", "prompt_for_task_generation": "Hide this irrelevant post."},
+        {"prompt": "Remove this duplicate post from my feed.", "prompt_for_task_generation": "Remove this duplicate post from my feed."},
+        {"prompt": "Hide the promotional post I keep seeing.", "prompt_for_task_generation": "Hide the promotional post I keep seeing."},
+    ],
+)
+
 ALL_USE_CASES = [
     VIEW_USER_PROFILE_USE_CASE,
     CONNECT_WITH_USER_USE_CASE,
     POST_STATUS_USE_CASE,
     LIKE_POST_USE_CASE,
     COMMENT_ON_POST_USE_CASE,
+    SAVE_POST_USE_CASE,
+    HIDE_POST_USE_CASE,
     SEARCH_USERS_USE_CASE,
     FOLLOW_PAGE_USE_CASE,
+    UNFOLLOW_PAGE_USE_CASE,
     VIEW_JOB_USE_CASE,
+    FILTER_JOBS_USE_CASE,
+    BACK_TO_ALL_JOBS_USE_CASE,
     APPLY_FOR_JOB_USE_CASE,
     SEARCH_JOBS_USE_CASE,
+    HOME_NAVBAR_USE_CASE,
+    JOBS_NAVBAR_USE_CASE,
+    PROFILE_NAVBAR_USE_CASE,
 ]

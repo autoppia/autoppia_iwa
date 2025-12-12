@@ -210,6 +210,72 @@ class CommentOnPostEvent(Event, BaseEventValidator):
         )
 
 
+class SavePostEvent(Event, BaseEventValidator):
+    event_name: str = "SAVE_POST"
+    post_id: str | None = None
+    post_content: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        post_id: str | CriterionValue | None = None
+        post_content: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.post_id, criteria.post_id),
+                self._validate_field(self.post_content, criteria.post_content),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "SavePostEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            post_id=str(data.get("postId", "")),
+            post_content=data.get("postContent", ""),
+        )
+
+
+class HidePostEvent(Event, BaseEventValidator):
+    event_name: str = "HIDE_POST"
+    post_id: str | None = None
+    reason: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        post_id: str | CriterionValue | None = None
+        reason: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.post_id, criteria.post_id),
+                self._validate_field(self.reason, criteria.reason),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "HidePostEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            post_id=str(data.get("postId", "")),
+            reason=data.get("reason", ""),
+        )
+
+
 class JobsNavbarEvent(Event, BaseEventValidator):
     event_name: str = "JOBS_NAVBAR"
     label: str
@@ -305,6 +371,39 @@ class ProfileNavbarEvent(Event, BaseEventValidator):
         )
 
 
+class BackToAllJobsEvent(Event, BaseEventValidator):
+    event_name: str = "BACK_TO_ALL_JOBS"
+    job_id: str | None = None
+    title: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        job_id: str | CriterionValue | None = None
+        title: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.job_id, criteria.job_id),
+                self._validate_field(self.title, criteria.title),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "BackToAllJobsEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            job_id=data.get("jobId"),
+            title=data.get("title"),
+        )
+
+
 class SearchUsersEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH_USERS"
     query: str
@@ -390,6 +489,31 @@ class FollowPageEvent(Event, BaseEventValidator):
         )
 
 
+class UnfollowPageEvent(Event, BaseEventValidator):
+    event_name: str = "UNFOLLOW_PAGE"
+    company: str
+
+    class ValidationCriteria(BaseModel):
+        company: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.company, criteria.company)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "UnfollowPageEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            company=data.get("company", ""),
+        )
+
+
 class SearchJobsEvent(Event, BaseEventValidator):
     event_name: str = "SEARCH_JOBS"
     query: str
@@ -440,6 +564,39 @@ class SearchJobsEvent(Event, BaseEventValidator):
         )
 
 
+class FilterJobsEvent(Event, BaseEventValidator):
+    event_name: str = "FILTER_JOBS"
+    filters: dict
+    result_count: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        filters: dict | CriterionValue | None = None
+        result_count: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.filters, criteria.filters),
+                self._validate_field(self.result_count, criteria.result_count),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "FilterJobsEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            filters=data.get("filters", {}),
+            result_count=data.get("resultCount") or data.get("result_count"),
+        )
+
+
 class ViewJobEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_JOB"
     job_title: str
@@ -480,27 +637,43 @@ class ViewJobEvent(Event, BaseEventValidator):
 EVENTS = [
     ViewUserProfileEvent,
     ConnectWithUserEvent,
+    HomeNavbarEvent,
+    JobsNavbarEvent,
+    ProfileNavbarEvent,
     PostStatusEvent,
     LikePostEvent,
     CommentOnPostEvent,
+    SavePostEvent,
+    HidePostEvent,
     ApplyForJobEvent,
     SearchUsersEvent,
     ViewAllRecommendationsEvent,
     FollowPageEvent,
+    UnfollowPageEvent,
     SearchJobsEvent,
+    FilterJobsEvent,
     ViewJobEvent,
+    BackToAllJobsEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
     "VIEW_USER_PROFILE": ViewUserProfileEvent,
     "CONNECT_WITH_USER": ConnectWithUserEvent,
+    "HOME_NAVBAR": HomeNavbarEvent,
+    "JOBS_NAVBAR": JobsNavbarEvent,
+    "PROFILE_NAVBAR": ProfileNavbarEvent,
     "POST_STATUS": PostStatusEvent,
     "LIKE_POST": LikePostEvent,
     "COMMENT_ON_POST": CommentOnPostEvent,
+    "SAVE_POST": SavePostEvent,
+    "HIDE_POST": HidePostEvent,
     "APPLY_FOR_JOB": ApplyForJobEvent,
     "SEARCH_USERS": SearchUsersEvent,
     "VIEW_ALL_RECOMMENDATIONS": ViewAllRecommendationsEvent,
     "FOLLOW_PAGE": FollowPageEvent,
+    "UNFOLLOW_PAGE": UnfollowPageEvent,
     "SEARCH_JOBS": SearchJobsEvent,
+    "FILTER_JOBS": FilterJobsEvent,
     "VIEW_JOB": ViewJobEvent,
+    "BACK_TO_ALL_JOBS": BackToAllJobsEvent,
 }

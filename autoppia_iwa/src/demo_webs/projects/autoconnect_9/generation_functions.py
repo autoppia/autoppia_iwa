@@ -22,7 +22,10 @@ from .data import (
 from .data_utils import fetch_connect_data
 
 
-async def _get_data(entity_type: str, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
+async def _get_data(entity_type: str | None = None, method: str | None = None, seed_value: int | None = None, count: int = 50) -> list[dict]:
+    if not entity_type:
+        # When called without an entity_type (e.g., preload), return empty to avoid errors.
+        return []
     return await fetch_connect_data(entity_type=entity_type, method=method, seed_value=seed_value, count=count)
 
 
@@ -348,6 +351,13 @@ async def generate_follow_page_constraints(task_url: str | None = None, dataset:
     return all_constraints
 
 
+async def generate_unfollow_page_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """
+    Generates constraints for unfollowing a company page.
+    """
+    return await generate_follow_page_constraints(task_url, dataset)
+
+
 async def generate_apply_for_job_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
 
@@ -441,3 +451,54 @@ async def generate_view_job_constraints(task_url: str | None = None, dataset: li
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
 
     return all_constraints
+
+
+async def generate_filter_jobs_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """
+    Generates constraints for filtering jobs based on current filters/result counts.
+    """
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    # Use generic dict/number constraints
+    filters_constraint = create_constraint_dict("filters", ComparisonOperator.CONTAINS, {})
+    result_count_constraint = create_constraint_dict("result_count", ComparisonOperator.GREATER_EQUAL, 0)
+    return [filters_constraint, result_count_constraint]
+
+
+async def generate_back_to_all_jobs_constraints() -> list[dict[str, Any]]:
+    """
+    Generates constraints for navigating back to the jobs list.
+    """
+    return [
+        create_constraint_dict("job_id", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("title", ComparisonOperator.CONTAINS, ""),
+    ]
+
+
+async def generate_home_navbar_constraints() -> list[dict[str, Any]]:
+    return [create_constraint_dict("label", ComparisonOperator.EQUALS, "Home")]
+
+
+async def generate_jobs_navbar_constraints() -> list[dict[str, Any]]:
+    return [create_constraint_dict("label", ComparisonOperator.EQUALS, "Jobs")]
+
+
+async def generate_profile_navbar_constraints() -> list[dict[str, Any]]:
+    return [create_constraint_dict("label", ComparisonOperator.EQUALS, "Profile")]
+
+
+_SAMPLE_POSTS = [
+    "AI trends in 2025",
+    "Hiring for backend engineers",
+    "Product launch announcement",
+    "Remote work opportunities",
+]
+
+
+async def generate_save_post_constraints() -> list[dict[str, Any]]:
+    content = random.choice(_SAMPLE_POSTS)
+    return [create_constraint_dict("post_content", ComparisonOperator.EQUALS, content)]
+
+
+async def generate_hide_post_constraints() -> list[dict[str, Any]]:
+    reasons = ["Not relevant", "Already applied", "Too promotional", "Duplicate content"]
+    return [create_constraint_dict("reason", ComparisonOperator.EQUALS, random.choice(reasons))]
