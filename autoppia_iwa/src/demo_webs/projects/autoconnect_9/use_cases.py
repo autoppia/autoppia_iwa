@@ -16,7 +16,7 @@ from .events import (
     JobsNavbarEvent,
     LikePostEvent,
     PostStatusEvent,
-    ProfileNavbarEvent,
+    RemovePostEvent,
     SavePostEvent,
     SearchJobsEvent,
     SearchUsersEvent,
@@ -42,7 +42,7 @@ from .generation_functions import (
     generate_jobs_navbar_constraints,
     generate_like_post_constraints,
     generate_post_status_constraints,
-    generate_profile_navbar_constraints,
+    generate_remove_post_constraints,
     generate_save_post_constraints,
     generate_search_jobs_constraints,
     generate_search_users_constraints,
@@ -443,19 +443,6 @@ JOBS_NAVBAR_USE_CASE = UseCase(
     ],
 )
 
-PROFILE_NAVBAR_USE_CASE = UseCase(
-    name="PROFILE_NAVBAR",
-    description="The user opens the Profile tab via the navbar.",
-    event=ProfileNavbarEvent,
-    event_source_code=ProfileNavbarEvent.get_source_code_of_class(),
-    constraints_generator=generate_profile_navbar_constraints,
-    examples=[
-        {"prompt": "Open my profile tab.", "prompt_for_task_generation": "Open my profile tab."},
-        {"prompt": "Go to Profile in the navbar.", "prompt_for_task_generation": "Go to Profile in the navbar."},
-        {"prompt": "Switch to the profile view.", "prompt_for_task_generation": "Switch to the profile view."},
-    ],
-)
-
 SAVE_POST_USE_CASE = UseCase(
     name="SAVE_POST",
     description="The user saves a post to view later.",
@@ -554,6 +541,18 @@ DELETE_POST_USE_CASE = UseCase(
     ],
 )
 
+REMOVE_POST_USE_CASE = UseCase(
+    name="REMOVE_POST",
+    description="The user removes a post from a list (e.g., saved items).",
+    event=RemovePostEvent,
+    event_source_code=RemovePostEvent.get_source_code_of_class(),
+    constraints_generator=generate_remove_post_constraints,
+    examples=[
+        {"prompt": "Remove this saved post from my list.", "prompt_for_task_generation": "Remove this saved post from my list."},
+        {"prompt": "Delete the saved post authored by Alex.", "prompt_for_task_generation": "Delete the saved post authored by Alex."},
+    ],
+)
+
 ALL_USE_CASES = [
     VIEW_USER_PROFILE_USE_CASE,
     CONNECT_WITH_USER_USE_CASE,
@@ -568,6 +567,7 @@ ALL_USE_CASES = [
     EDIT_PROFILE_USE_CASE,
     EDIT_EXPERIENCE_USE_CASE,
     DELETE_POST_USE_CASE,
+    REMOVE_POST_USE_CASE,
     SEARCH_USERS_USE_CASE,
     FOLLOW_PAGE_USE_CASE,
     UNFOLLOW_PAGE_USE_CASE,
@@ -578,5 +578,4 @@ ALL_USE_CASES = [
     SEARCH_JOBS_USE_CASE,
     HOME_NAVBAR_USE_CASE,
     JOBS_NAVBAR_USE_CASE,
-    PROFILE_NAVBAR_USE_CASE,
 ]

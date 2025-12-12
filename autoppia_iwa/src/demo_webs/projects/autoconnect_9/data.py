@@ -94,10 +94,19 @@ FIELD_OPERATORS_EDIT_EXPERIENCE_MAP = {
     "username": STRING_OPERATORS,
     "experience_count": LOGICAL_OPERATORS,
     "roles": [CONTAINS, NOT_CONTAINS, EQUALS],
+    "name": STRING_OPERATORS,
+    "experiences": [CONTAINS, NOT_CONTAINS, EQUALS],
 }
 
 FIELD_OPERATORS_DELETE_POST_MAP = {
     "post_id": STRING_OPERATORS,
     "author": STRING_OPERATORS,
     "content": STRING_OPERATORS,
+}
+
+FIELD_OPERATORS_REMOVE_POST_MAP = {
+    "post_id": STRING_OPERATORS,
+    "author": STRING_OPERATORS,
+    "content": STRING_OPERATORS,
+    "source": STRING_OPERATORS,
 }

@@ -338,39 +338,6 @@ class ApplyForJobEvent(Event, BaseEventValidator):
         )
 
 
-class ProfileNavbarEvent(Event, BaseEventValidator):
-    event_name: str = "PROFILE_NAVBAR"
-    label: str
-    username: str
-
-    class ValidationCriteria(BaseModel):
-        label: str | CriterionValue | None = None
-        username: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.label, criteria.label),
-                self._validate_field(self.username, criteria.username),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "ProfileNavbarEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            label=data.get("label", ""),
-            username=data.get("username", ""),
-        )
-
-
 class BackToAllJobsEvent(Event, BaseEventValidator):
     event_name: str = "BACK_TO_ALL_JOBS"
     job_id: str | None = None
@@ -775,11 +742,15 @@ class EditExperienceEvent(Event, BaseEventValidator):
     username: str | None = None
     experience_count: int | None = None
     roles: list[str] | None = None
+    name: str | None = None
+    experiences: list[dict] | None = None
 
     class ValidationCriteria(BaseModel):
         username: str | CriterionValue | None = None
         experience_count: int | CriterionValue | None = None
         roles: list[str] | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        experiences: list[dict] | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -789,6 +760,8 @@ class EditExperienceEvent(Event, BaseEventValidator):
                 self._validate_field(self.username, criteria.username),
                 self._validate_field(self.experience_count, criteria.experience_count),
                 self._validate_field(self.roles, criteria.roles),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.experiences, criteria.experiences),
             ]
         )
 
@@ -804,6 +777,8 @@ class EditExperienceEvent(Event, BaseEventValidator):
             username=data.get("username"),
             experience_count=data.get("experienceCount"),
             roles=data.get("roles"),
+            name=data.get("name"),
+            experiences=data.get("experiences"),
         )
 
 
@@ -844,12 +819,52 @@ class DeletePostEvent(Event, BaseEventValidator):
         )
 
 
+class RemovePostEvent(Event, BaseEventValidator):
+    event_name: str = "REMOVE_POST"
+    post_id: str | None = None
+    author: str | None = None
+    content: str | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        post_id: str | CriterionValue | None = None
+        author: str | CriterionValue | None = None
+        content: str | CriterionValue | None = None
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.post_id, criteria.post_id),
+                self._validate_field(self.author, criteria.author),
+                self._validate_field(self.content, criteria.content),
+                self._validate_field(self.source, criteria.source),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "RemovePostEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            post_id=str(data.get("postId", "")) if data.get("postId") is not None else None,
+            author=data.get("author"),
+            content=data.get("content"),
+            source=data.get("source"),
+        )
+
+
 EVENTS = [
     ViewUserProfileEvent,
     ConnectWithUserEvent,
     HomeNavbarEvent,
     JobsNavbarEvent,
-    ProfileNavbarEvent,
     PostStatusEvent,
     LikePostEvent,
     CommentOnPostEvent,
@@ -870,6 +885,7 @@ EVENTS = [
     EditProfileEvent,
     EditExperienceEvent,
     DeletePostEvent,
+    RemovePostEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -877,7 +893,6 @@ BACKEND_EVENT_TYPES = {
     "CONNECT_WITH_USER": ConnectWithUserEvent,
     "HOME_NAVBAR": HomeNavbarEvent,
     "JOBS_NAVBAR": JobsNavbarEvent,
-    "PROFILE_NAVBAR": ProfileNavbarEvent,
     "POST_STATUS": PostStatusEvent,
     "LIKE_POST": LikePostEvent,
     "COMMENT_ON_POST": CommentOnPostEvent,
@@ -898,4 +913,5 @@ BACKEND_EVENT_TYPES = {
     "EDIT_PROFILE": EditProfileEvent,
     "EDIT_EXPERIENCE": EditExperienceEvent,
     "DELETE_POST": DeletePostEvent,
+    "REMOVE_POST": RemovePostEvent,
 }

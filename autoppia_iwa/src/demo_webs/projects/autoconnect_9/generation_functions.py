@@ -483,10 +483,6 @@ async def generate_jobs_navbar_constraints() -> list[dict[str, Any]]:
     return [create_constraint_dict("label", ComparisonOperator.EQUALS, "Jobs")]
 
 
-async def generate_profile_navbar_constraints() -> list[dict[str, Any]]:
-    return [create_constraint_dict("label", ComparisonOperator.EQUALS, "Profile")]
-
-
 _SAMPLE_POSTS = [
     "AI trends in 2025",
     "Hiring for backend engineers",
@@ -535,6 +531,7 @@ async def generate_edit_experience_constraints() -> list[dict[str, Any]]:
     return [
         create_constraint_dict("username", ComparisonOperator.CONTAINS, ""),
         create_constraint_dict("experience_count", ComparisonOperator.GREATER_EQUAL, 0),
+        create_constraint_dict("name", ComparisonOperator.CONTAINS, ""),
     ]
 
 
@@ -542,4 +539,12 @@ async def generate_delete_post_constraints() -> list[dict[str, Any]]:
     return [
         create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
         create_constraint_dict("author", ComparisonOperator.CONTAINS, ""),
+    ]
+
+
+async def generate_remove_post_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("author", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
     ]
