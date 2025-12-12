@@ -6,7 +6,6 @@ from .events import (
     CancelApplicationEvent,
     CommentOnPostEvent,
     ConnectWithUserEvent,
-    DeletePostEvent,
     EditExperienceEvent,
     EditProfileEvent,
     FilterJobsEvent,
@@ -32,14 +31,10 @@ from .generation_functions import (
     generate_cancel_application_constraints,
     generate_comment_on_post_constraints,
     generate_connect_with_user_constraints,
-    generate_delete_post_constraints,
     generate_edit_experience_constraints,
     generate_edit_profile_constraints,
     generate_filter_jobs_constraints,
     generate_follow_page_constraints,
-    generate_hide_post_constraints,
-    generate_home_navbar_constraints,
-    generate_jobs_navbar_constraints,
     generate_like_post_constraints,
     generate_post_status_constraints,
     generate_remove_post_constraints,
@@ -47,9 +42,7 @@ from .generation_functions import (
     generate_search_jobs_constraints,
     generate_search_users_constraints,
     generate_unfollow_page_constraints,
-    generate_view_applied_jobs_constraints,
     generate_view_job_constraints,
-    generate_view_saved_posts_constraints,
     generate_view_user_profile_constraints,
 )
 
@@ -97,6 +90,14 @@ BACK_TO_ALL_JOBS_USE_CASE = UseCase(
         {
             "prompt": "Go back to all jobs from a job detail page.",
             "prompt_for_task_generation": "Go back to all jobs from a job detail page.",
+        },
+        {
+            "prompt": "Go back to all jobs from a job where location equals 'San Francisco, CA', title equals 'Senior Frontend Developer' and company equals 'Tech Innovations'.",
+            "prompt_for_task_generation": "Go back to all jobs from a job where location equals 'San Francisco, CA', title equals 'Senior Frontend Developer' and company equals 'Tech Innovations'.",
+        },
+        {
+            "prompt": "Go back to all jobs from a job where location not equals 'Data Scientist', title contains 'Frontend' and company equals 'Tech Innovations'.",
+            "prompt_for_task_generation": "Go back to all jobs from a job where location not equals 'Data Scientist', title contains 'Frontend' and company equals 'Tech Innovations'.",
         },
     ],
 )
@@ -422,7 +423,7 @@ HOME_NAVBAR_USE_CASE = UseCase(
     description="The user opens the Home tab from the navbar.",
     event=HomeNavbarEvent,
     event_source_code=HomeNavbarEvent.get_source_code_of_class(),
-    constraints_generator=generate_home_navbar_constraints,
+    constraints_generator=False,
     examples=[
         {"prompt": "Go to the Home tab.", "prompt_for_task_generation": "Go to the Home tab."},
         {"prompt": "Navigate back to Home from the navbar.", "prompt_for_task_generation": "Navigate back to Home from the navbar."},
@@ -435,13 +436,14 @@ JOBS_NAVBAR_USE_CASE = UseCase(
     description="The user opens the Jobs tab via the navbar.",
     event=JobsNavbarEvent,
     event_source_code=JobsNavbarEvent.get_source_code_of_class(),
-    constraints_generator=generate_jobs_navbar_constraints,
+    constraints_generator=False,
     examples=[
         {"prompt": "Switch to the Jobs tab.", "prompt_for_task_generation": "Switch to the Jobs tab."},
         {"prompt": "Open Jobs from navigation.", "prompt_for_task_generation": "Open Jobs from navigation."},
         {"prompt": "Go to the jobs section in the navbar.", "prompt_for_task_generation": "Go to the jobs section in the navbar."},
     ],
 )
+
 
 SAVE_POST_USE_CASE = UseCase(
     name="SAVE_POST",
@@ -461,7 +463,7 @@ HIDE_POST_USE_CASE = UseCase(
     description="The user hides a post from their feed.",
     event=HidePostEvent,
     event_source_code=HidePostEvent.get_source_code_of_class(),
-    constraints_generator=generate_hide_post_constraints,
+    constraints_generator=generate_save_post_constraints,
     examples=[
         {"prompt": "Hide this irrelevant post.", "prompt_for_task_generation": "Hide this irrelevant post."},
         {"prompt": "Remove this duplicate post from my feed.", "prompt_for_task_generation": "Remove this duplicate post from my feed."},
@@ -474,7 +476,7 @@ VIEW_SAVED_POSTS_USE_CASE = UseCase(
     description="The user views their saved posts list.",
     event=ViewSavedPostsEvent,
     event_source_code=ViewSavedPostsEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_saved_posts_constraints,
+    constraints_generator=False,
     examples=[
         {"prompt": "Open my saved posts.", "prompt_for_task_generation": "Open my saved posts."},
         {"prompt": "View the saved items from the sidebar.", "prompt_for_task_generation": "View the saved items from the sidebar."},
@@ -486,7 +488,7 @@ VIEW_APPLIED_JOBS_USE_CASE = UseCase(
     description="The user views jobs they have applied to.",
     event=ViewAppliedJobsEvent,
     event_source_code=ViewAppliedJobsEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_applied_jobs_constraints,
+    constraints_generator=False,
     examples=[
         {"prompt": "Show my applied jobs list.", "prompt_for_task_generation": "Show my applied jobs list."},
         {"prompt": "View the roles I already applied to.", "prompt_for_task_generation": "View the roles I already applied to."},
@@ -525,19 +527,7 @@ EDIT_EXPERIENCE_USE_CASE = UseCase(
     constraints_generator=generate_edit_experience_constraints,
     examples=[
         {"prompt": "Add a new experience entry to my profile.", "prompt_for_task_generation": "Add a new experience entry to my profile."},
-        {"prompt": "Edit my current experience details.", "prompt_for_task_generation": "Edit my current experience details."},
-    ],
-)
-
-DELETE_POST_USE_CASE = UseCase(
-    name="DELETE_POST",
-    description="The user deletes one of their own posts.",
-    event=DeletePostEvent,
-    event_source_code=DeletePostEvent.get_source_code_of_class(),
-    constraints_generator=generate_delete_post_constraints,
-    examples=[
-        {"prompt": "Delete my recent post about remote work.", "prompt_for_task_generation": "Delete my recent post about remote work."},
-        {"prompt": "Remove the post I created earlier today.", "prompt_for_task_generation": "Remove the post I created earlier today."},
+        {"prompt": "Edit my current experience to name equal 'Alex'.", "prompt_for_task_generation": "Edit my current experience to name equals 'Alex'."},
     ],
 )
 
@@ -566,7 +556,6 @@ ALL_USE_CASES = [
     CANCEL_APPLICATION_USE_CASE,
     EDIT_PROFILE_USE_CASE,
     EDIT_EXPERIENCE_USE_CASE,
-    DELETE_POST_USE_CASE,
     REMOVE_POST_USE_CASE,
     SEARCH_USERS_USE_CASE,
     FOLLOW_PAGE_USE_CASE,

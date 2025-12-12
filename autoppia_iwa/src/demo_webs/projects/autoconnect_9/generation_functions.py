@@ -9,12 +9,16 @@ from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
     FIELD_OPERATORS_APPLY_FOR_JOB_MAP,
-    FIELD_OPERATORS_CANCEL_APPLICATION_MAP,
+    FIELD_OPERATORS_BACK_TO_ALL_JOBS_MAP,
     FIELD_OPERATORS_COMMENT_ON_POST_MAP,
     FIELD_OPERATORS_CONNECT_WITH_USER_MAP,
+    FIELD_OPERATORS_EDIT_EXPERIENCE_MAP,
+    FIELD_OPERATORS_EDIT_PROFILE_MAP,
+    FIELD_OPERATORS_FILTER_JOBS_MAP,
     FIELD_OPERATORS_FOLLOW_PAGE_MAP,
     FIELD_OPERATORS_LIKE_POST_MAP,
     FIELD_OPERATORS_POST_STATUS_MAP,
+    FIELD_OPERATORS_SAVE_POST_MAP,
     FIELD_OPERATORS_SEARCH_JOBS_MAP,
     FIELD_OPERATORS_SEARCH_USERS_MAP,
     FIELD_OPERATORS_VIEW_JOB_MAP,
@@ -51,7 +55,7 @@ async def _ensure_entity_dataset(
 ) -> list[dict[str, Any]]:
     """Ensure dataset is available for a specific entity type."""
     existing = _extract_entity_dataset(dataset, entity_type)
-    if existing is not None:
+    if existing:
         return existing
     v2_seed = await resolve_v2_seed_from_url(task_url)
     return await _get_data(entity_type, method=method, seed_value=v2_seed)
@@ -342,11 +346,10 @@ async def generate_follow_page_constraints(task_url: str | None = None, dataset:
     """
     Generates constraints for following a company page based on the provided user profile data.
     """
-    from .data import COMPANIES
 
-    dataset = COMPANIES
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="recommendations")
     field_operators = FIELD_OPERATORS_FOLLOW_PAGE_MAP
-    field_map = {"company": "name"}
+    field_map = {"recommendation": "title"}
     all_constraints = _generate_constraints(dataset, field_operators, field_map)
 
     return all_constraints
@@ -454,97 +457,253 @@ async def generate_view_job_constraints(task_url: str | None = None, dataset: li
     return all_constraints
 
 
-async def generate_filter_jobs_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+async def generate_filter_jobs_constraints() -> list[dict[str, Any]]:
     """
     Generates constraints for filtering jobs based on current filters/result counts.
     """
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
-    # Use generic dict/number constraints
-    filters_constraint = create_constraint_dict("filters", ComparisonOperator.CONTAINS, {})
-    result_count_constraint = create_constraint_dict("result_count", ComparisonOperator.GREATER_EQUAL, 0)
-    return [filters_constraint, result_count_constraint]
+    constraints_list = []
+    filter_options_data = {
+        "experience": ["2+ years", "3+ years", "4+ years", "5+ years", "6+ years"],
+        "salary": ["0-50000", "50000-75000", "75000-100000", "100000-125000", "125000-150000", "150000+"],
+        "location": ["Austin, TX", "Boston, MA", "Chicago, IL", "Denver, CO", "Los Angeles, CA", "New York, NY", "Remote", "Remote (US)", "San Francisco, CA", "Seattle, WA"],
+        "remote": [True, False],
+    }
+
+    possible_fields = ["experience", "salary", "location", "remote"]
+    selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_FILTER_JOBS_MAP.get(field, [])
+        op = ComparisonOperator(random.choice(allowed_ops))
+        if field == "experience":
+            field_value = random.choice(filter_options_data["experience"])
+            value = _generate_constraint_value(op, field_value, field, [{"experience": e} for e in filter_options_data["experience"]])
+            constraint = create_constraint_dict(field, op, value)
+            constraints_list.append(constraint)
+        if field == "salary":
+            field_value = random.choice(filter_options_data["salary"])
+            value = _generate_constraint_value(op, field_value, field, [{"salary": s} for s in filter_options_data["salary"]])
+            constraint = create_constraint_dict(field, op, value)
+            constraints_list.append(constraint)
+        if field == "remote":
+            field_value = random.choice(filter_options_data["remote"])
+            value = _generate_constraint_value(op, field_value, field, [{"remote": r} for r in filter_options_data["remote"]])
+            constraint = create_constraint_dict(field, op, value)
+            constraints_list.append(constraint)
+        if field == "location":
+            field_value = random.choice(filter_options_data["location"])
+            value = _generate_constraint_value(op, field_value, field, [{"location": e} for e in filter_options_data["location"]])
+            constraint = create_constraint_dict(field, op, value)
+            constraints_list.append(constraint)
+
+    for constraint in constraints_list:
+        if constraint["field"] == "salary":
+            raw_value = str(constraint["value"])
+
+            # Extract min salary
+            cleaned = raw_value.replace("$", "").replace(",", "").strip()
+            if "-" in cleaned:
+                parts = cleaned.split("-")
+                try:
+                    min_salary = int(parts[0])
+                except ValueError:
+                    continue
+            elif "+" in cleaned:
+                parts = cleaned.split("+")
+                try:
+                    min_salary = int(parts[0])
+                except ValueError:
+                    continue
+            else:
+                try:
+                    min_salary = int(cleaned)
+                except ValueError:
+                    continue
+
+                # Match with filter option
+            for option in filter_options_data["salary"]:
+                if "-" in option:
+                    start, end = map(int, option.split("-"))
+                    if start <= min_salary <= end:
+                        constraint["value"] = option
+                        break
+                elif "+" in option:
+                    base = int(option.replace("+", ""))
+                    if min_salary >= base:
+                        constraint["value"] = option
+                        break
+
+    return constraints_list
 
 
-async def generate_back_to_all_jobs_constraints() -> list[dict[str, Any]]:
+async def generate_back_to_all_jobs_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
     Generates constraints for navigating back to the jobs list.
     """
-    return [
-        create_constraint_dict("job_id", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("title", ComparisonOperator.CONTAINS, ""),
-    ]
+    constraints_list = []
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    job = random.choice(dataset)
+    possible_fields = ["location", "title", "company"]
+    selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_BACK_TO_ALL_JOBS_MAP.get(field, [])
+        op = ComparisonOperator(random.choice(allowed_ops))
+        if field == "location":
+            field_value = job[field]
+            value = _generate_constraint_value(op, field_value, field, dataset)
+            constraint = create_constraint_dict(field, op, value)
+            constraints_list.append(constraint)
+        if field == "title":
+            field_value = job[field]
+            value = _generate_constraint_value(op, field_value, field, dataset)
+            constraint = create_constraint_dict(field, op, value)
+            constraints_list.append(constraint)
+        if field == "company":
+            field_value = job[field]
+            value = _generate_constraint_value(op, field_value, field, dataset)
+            constraint = create_constraint_dict(field, op, value)
+            constraints_list.append(constraint)
+
+    return constraints_list
 
 
-async def generate_home_navbar_constraints() -> list[dict[str, Any]]:
-    return [create_constraint_dict("label", ComparisonOperator.EQUALS, "Home")]
+async def generate_save_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints_list = []
+    dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="posts")
 
+    transformed_posts = []
 
-async def generate_jobs_navbar_constraints() -> list[dict[str, Any]]:
-    return [create_constraint_dict("label", ComparisonOperator.EQUALS, "Jobs")]
+    for post in dataset:
+        new_post = {}
+        for key, value in post.items():
+            if key == "user" and isinstance(value, dict):
+                # Flatten user fields with prefix
+                for u_key, u_value in value.items():
+                    new_post[f"user_{u_key}"] = u_value
+            else:
+                new_post[key] = value
+        transformed_posts.append(new_post)
 
+    post = random.choice(transformed_posts)
+    possible_fields = ["author", "content"]
+    for field in possible_fields:
+        allowed_op = FIELD_OPERATORS_SAVE_POST_MAP.get(field, [])
+        op = ComparisonOperator(random.choice(allowed_op))
+        if field == "author":
+            field_value = post["user_name"]
+            value = _generate_constraint_value(op, field_value, field, transformed_posts)
+            if value is not None:
+                constraint = create_constraint_dict(field, op, value)
+                constraints_list.append(constraint)
 
-_SAMPLE_POSTS = [
-    "AI trends in 2025",
-    "Hiring for backend engineers",
-    "Product launch announcement",
-    "Remote work opportunities",
-]
+        if field == "content":
+            field_value = post[field]
+            value = _generate_constraint_value(op, field_value, field, transformed_posts)
+            if value is not None:
+                constraint = create_constraint_dict(field, op, value)
+                constraints_list.append(constraint)
 
-
-async def generate_save_post_constraints() -> list[dict[str, Any]]:
-    content = random.choice(_SAMPLE_POSTS)
-    return [create_constraint_dict("post_content", ComparisonOperator.EQUALS, content)]
-
-
-async def generate_hide_post_constraints() -> list[dict[str, Any]]:
-    reasons = ["Not relevant", "Already applied", "Too promotional", "Duplicate content"]
-    return [create_constraint_dict("reason", ComparisonOperator.EQUALS, random.choice(reasons))]
-
-
-async def generate_view_saved_posts_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("count", ComparisonOperator.GREATER_EQUAL, 0),
-        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
-    ]
-
-
-async def generate_view_applied_jobs_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("count", ComparisonOperator.GREATER_EQUAL, 0),
-    ]
+    return constraints_list
 
 
 async def generate_cancel_application_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
-    constraints = _generate_constraints(dataset, FIELD_OPERATORS_CANCEL_APPLICATION_MAP, {"job_title": "title"})
+    constraints = await generate_apply_for_job_constraints(task_url, dataset)
     return constraints
 
 
-async def generate_edit_profile_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("username", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("updated", ComparisonOperator.CONTAINS, {}),
-    ]
+async def generate_edit_profile_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraint_list = []
+    dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    possible_fields = ["name", "bio", "about", "title"]
+    selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
+    random_user = random.choice(dataset)
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_EDIT_PROFILE_MAP.get(field, [])
+        op = ComparisonOperator(random.choice(allowed_ops))
+        if field == "name":
+            field_value = random_user[field]
+            value = _generate_constraint_value(op, field_value, field, dataset)
+            constraint = create_constraint_dict(field, op, value)
+            constraint_list.append(constraint)
+        if field == "bio":
+            field_value = random_user[field]
+            value = _generate_constraint_value(op, field_value, field, dataset)
+            constraint = create_constraint_dict(field, op, value)
+            constraint_list.append(constraint)
+        if field == "about":
+            field_value = random_user[field]
+            value = _generate_constraint_value(op, field_value, field, dataset)
+            constraint = create_constraint_dict(field, op, value)
+            constraint_list.append(constraint)
+        if field == "title":
+            field_value = random_user[field]
+            value = _generate_constraint_value(op, field_value, field, dataset)
+            constraint = create_constraint_dict(field, op, value)
+            constraint_list.append(constraint)
+
+    return constraint_list
 
 
-async def generate_edit_experience_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("username", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("experience_count", ComparisonOperator.GREATER_EQUAL, 0),
-        create_constraint_dict("name", ComparisonOperator.CONTAINS, ""),
-    ]
+async def generate_edit_experience_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraint_list = []
+    dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    possible_fields = ["name", "company", "duration", "title", "location", "description"]
+    selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
+    random_user = random.choice(dataset)
+
+    experiences = random_user.get("experience", [])
+    picked_exp = None
+    if len(experiences) > 0:
+        picked_exp = random.choice(experiences)  # experiences[0]
+
+    for field in selected_fields:
+        allowed_ops = FIELD_OPERATORS_EDIT_EXPERIENCE_MAP.get(field, [])
+        op = ComparisonOperator(random.choice(allowed_ops))
+
+        if field == "name":
+            field_value = random_user["name"]
+
+        elif field in ["company", "duration", "title", "location", "description"]:
+            if not picked_exp:
+                continue  # skip if no experience exists
+            field_value = picked_exp[field]
+
+        else:
+            continue
+
+        # Generate constraint and append
+        value = _generate_constraint_value(op, field_value, field, dataset)
+        constraint = create_constraint_dict(field, op, value)
+        constraint_list.append(constraint)
+
+    return constraint_list
+
+    # for field in selected_fields:
+    #     allowed_ops = FIELD_OPERATORS_EDIT_PROFILE_MAP.get(field, [])
+    #     op = ComparisonOperator(random.choice(allowed_ops))
+    #     if field == "name":
+    #         field_value = random_user[field]
+    #         value = _generate_constraint_value(op, field_value, field, dataset)
+    #         constraint = create_constraint_dict(field, op, value)
+    #         constraint_list.append(constraint)
+    #     if field == "company":
+    #         field_value = random_user["experience"]
+    #         value = _generate_constraint_value(op, field_value, field, dataset)
+    #         constraint = create_constraint_dict(field, op, value)
+    #         constraint_list.append(constraint)
+    #     if field == "about":
+    #         field_value = random_user[field]
+    #         value = _generate_constraint_value(op, field_value, field, dataset)
+    #         constraint = create_constraint_dict(field, op, value)
+    #         constraint_list.append(constraint)
+    #     if field == "title":
+    #         field_value = random_user[field]
+    #         value = _generate_constraint_value(op, field_value, field, dataset)
+    #         constraint = create_constraint_dict(field, op, value)
+    #         constraint_list.append(constraint)
+    #
+    # return constraint_list
 
 
-async def generate_delete_post_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("author", ComparisonOperator.CONTAINS, ""),
-    ]
-
-
-async def generate_remove_post_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("author", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
-    ]
+async def generate_remove_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints = await generate_save_post_constraints(task_url, dataset)
+    return constraints
