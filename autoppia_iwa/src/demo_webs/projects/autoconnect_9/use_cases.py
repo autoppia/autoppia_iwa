@@ -3,8 +3,12 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 from .events import (
     ApplyForJobEvent,
     BackToAllJobsEvent,
+    CancelApplicationEvent,
     CommentOnPostEvent,
     ConnectWithUserEvent,
+    DeletePostEvent,
+    EditExperienceEvent,
+    EditProfileEvent,
     FilterJobsEvent,
     FollowPageEvent,
     HidePostEvent,
@@ -17,14 +21,20 @@ from .events import (
     SearchJobsEvent,
     SearchUsersEvent,
     UnfollowPageEvent,
+    ViewAppliedJobsEvent,
     ViewJobEvent,
+    ViewSavedPostsEvent,
     ViewUserProfileEvent,
 )
 from .generation_functions import (
     generate_apply_for_job_constraints,
     generate_back_to_all_jobs_constraints,
+    generate_cancel_application_constraints,
     generate_comment_on_post_constraints,
     generate_connect_with_user_constraints,
+    generate_delete_post_constraints,
+    generate_edit_experience_constraints,
+    generate_edit_profile_constraints,
     generate_filter_jobs_constraints,
     generate_follow_page_constraints,
     generate_hide_post_constraints,
@@ -37,7 +47,9 @@ from .generation_functions import (
     generate_search_jobs_constraints,
     generate_search_users_constraints,
     generate_unfollow_page_constraints,
+    generate_view_applied_jobs_constraints,
     generate_view_job_constraints,
+    generate_view_saved_posts_constraints,
     generate_view_user_profile_constraints,
 )
 
@@ -470,6 +482,78 @@ HIDE_POST_USE_CASE = UseCase(
     ],
 )
 
+VIEW_SAVED_POSTS_USE_CASE = UseCase(
+    name="VIEW_SAVED_POSTS",
+    description="The user views their saved posts list.",
+    event=ViewSavedPostsEvent,
+    event_source_code=ViewSavedPostsEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_saved_posts_constraints,
+    examples=[
+        {"prompt": "Open my saved posts.", "prompt_for_task_generation": "Open my saved posts."},
+        {"prompt": "View the saved items from the sidebar.", "prompt_for_task_generation": "View the saved items from the sidebar."},
+    ],
+)
+
+VIEW_APPLIED_JOBS_USE_CASE = UseCase(
+    name="VIEW_APPLIED_JOBS",
+    description="The user views jobs they have applied to.",
+    event=ViewAppliedJobsEvent,
+    event_source_code=ViewAppliedJobsEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_applied_jobs_constraints,
+    examples=[
+        {"prompt": "Show my applied jobs list.", "prompt_for_task_generation": "Show my applied jobs list."},
+        {"prompt": "View the roles I already applied to.", "prompt_for_task_generation": "View the roles I already applied to."},
+    ],
+)
+
+CANCEL_APPLICATION_USE_CASE = UseCase(
+    name="CANCEL_APPLICATION",
+    description="The user cancels a job application.",
+    event=CancelApplicationEvent,
+    event_source_code=CancelApplicationEvent.get_source_code_of_class(),
+    constraints_generator=generate_cancel_application_constraints,
+    examples=[
+        {"prompt": "Cancel my application for the Product Designer job.", "prompt_for_task_generation": "Cancel my application for the Product Designer job."},
+        {"prompt": "Withdraw the application I sent to Stripe.", "prompt_for_task_generation": "Withdraw the application I sent to Stripe."},
+    ],
+)
+
+EDIT_PROFILE_USE_CASE = UseCase(
+    name="EDIT_PROFILE",
+    description="The user edits their profile information.",
+    event=EditProfileEvent,
+    event_source_code=EditProfileEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_constraints,
+    examples=[
+        {"prompt": "Update my profile bio and headline.", "prompt_for_task_generation": "Update my profile bio and headline."},
+        {"prompt": "Change my displayed name on the profile.", "prompt_for_task_generation": "Change my displayed name on the profile."},
+    ],
+)
+
+EDIT_EXPERIENCE_USE_CASE = UseCase(
+    name="EDIT_EXPERIENCE",
+    description="The user edits or adds job experience entries.",
+    event=EditExperienceEvent,
+    event_source_code=EditExperienceEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_experience_constraints,
+    examples=[
+        {"prompt": "Add a new experience entry to my profile.", "prompt_for_task_generation": "Add a new experience entry to my profile."},
+        {"prompt": "Edit my current experience details.", "prompt_for_task_generation": "Edit my current experience details."},
+    ],
+)
+
+DELETE_POST_USE_CASE = UseCase(
+    name="DELETE_POST",
+    description="The user deletes one of their own posts.",
+    event=DeletePostEvent,
+    event_source_code=DeletePostEvent.get_source_code_of_class(),
+    constraints_generator=generate_delete_post_constraints,
+    examples=[
+        {"prompt": "Delete my recent post about remote work.", "prompt_for_task_generation": "Delete my recent post about remote work."},
+        {"prompt": "Remove the post I created earlier today.", "prompt_for_task_generation": "Remove the post I created earlier today."},
+    ],
+)
+
 ALL_USE_CASES = [
     VIEW_USER_PROFILE_USE_CASE,
     CONNECT_WITH_USER_USE_CASE,
@@ -478,6 +562,12 @@ ALL_USE_CASES = [
     COMMENT_ON_POST_USE_CASE,
     SAVE_POST_USE_CASE,
     HIDE_POST_USE_CASE,
+    VIEW_SAVED_POSTS_USE_CASE,
+    VIEW_APPLIED_JOBS_USE_CASE,
+    CANCEL_APPLICATION_USE_CASE,
+    EDIT_PROFILE_USE_CASE,
+    EDIT_EXPERIENCE_USE_CASE,
+    DELETE_POST_USE_CASE,
     SEARCH_USERS_USE_CASE,
     FOLLOW_PAGE_USE_CASE,
     UNFOLLOW_PAGE_USE_CASE,

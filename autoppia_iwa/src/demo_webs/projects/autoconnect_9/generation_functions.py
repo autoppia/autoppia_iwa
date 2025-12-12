@@ -9,6 +9,7 @@ from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
     FIELD_OPERATORS_APPLY_FOR_JOB_MAP,
+    FIELD_OPERATORS_CANCEL_APPLICATION_MAP,
     FIELD_OPERATORS_COMMENT_ON_POST_MAP,
     FIELD_OPERATORS_CONNECT_WITH_USER_MAP,
     FIELD_OPERATORS_FOLLOW_PAGE_MAP,
@@ -502,3 +503,43 @@ async def generate_save_post_constraints() -> list[dict[str, Any]]:
 async def generate_hide_post_constraints() -> list[dict[str, Any]]:
     reasons = ["Not relevant", "Already applied", "Too promotional", "Duplicate content"]
     return [create_constraint_dict("reason", ComparisonOperator.EQUALS, random.choice(reasons))]
+
+
+async def generate_view_saved_posts_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("count", ComparisonOperator.GREATER_EQUAL, 0),
+        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
+    ]
+
+
+async def generate_view_applied_jobs_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("count", ComparisonOperator.GREATER_EQUAL, 0),
+    ]
+
+
+async def generate_cancel_application_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_entity_dataset(task_url, dataset, entity_type="jobs")
+    constraints = _generate_constraints(dataset, FIELD_OPERATORS_CANCEL_APPLICATION_MAP, {"job_title": "title"})
+    return constraints
+
+
+async def generate_edit_profile_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("username", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("updated", ComparisonOperator.CONTAINS, {}),
+    ]
+
+
+async def generate_edit_experience_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("username", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("experience_count", ComparisonOperator.GREATER_EQUAL, 0),
+    ]
+
+
+async def generate_delete_post_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("author", ComparisonOperator.CONTAINS, ""),
+    ]
