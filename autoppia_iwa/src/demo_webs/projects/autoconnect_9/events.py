@@ -773,10 +773,16 @@ class UnhidePostEvent(Event, BaseEventValidator):
     event_name: str = "UNHIDE_POST"
     post_id: str | None = None
     source: str | None = None
+    author: str | None = None
+    post_content: str | None = None
+    reason: str | None = None
 
     class ValidationCriteria(BaseModel):
         post_id: str | CriterionValue | None = None
         source: str | CriterionValue | None = None
+        author: str | CriterionValue | None = None
+        post_content: str | CriterionValue | None = None
+        reason: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -785,6 +791,9 @@ class UnhidePostEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.post_id, criteria.post_id),
                 self._validate_field(self.source, criteria.source),
+                self._validate_field(self.author, criteria.author),
+                self._validate_field(self.post_content, criteria.post_content),
+                self._validate_field(self.reason, criteria.reason),
             ]
         )
 
@@ -799,6 +808,9 @@ class UnhidePostEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             post_id=str(data.get("postId", "")) if data.get("postId") is not None else None,
             source=data.get("source"),
+            author=data.get("author"),
+            post_content=data.get("postContent"),
+            reason=data.get("reason"),
         )
 
 
