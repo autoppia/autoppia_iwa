@@ -643,12 +643,27 @@ async def generate_edit_profile_constraints(task_url: str | None = None, dataset
     return constraint_list
 
 
+def _get_experience_data_for_user(user: dict) -> list[dict[str, Any]]:
+    return [
+        {
+            "title": experience.get("title"),  # will resume here
+            "duration": experience.get("duration"),
+            "description": experience.get("description"),
+            "company": experience.get("company"),
+            "location": experience.get("location"),
+            "restaurant": user.get("name"),
+        }
+        for experience in user.get("experience", [])
+    ]
+
+
 async def generate_edit_experience_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     constraint_list = []
     dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
-    possible_fields = ["name", "company", "duration", "title", "location", "description"]
+    possible_fields = ["company", "duration", "title", "location", "description"]
     selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
-    random_user = random.choice(dataset)
+    # Select Emily Patel explicitly
+    random_user = next((user for user in dataset if user.get("name", "").lower() == "emily patel"), None)
 
     experiences = random_user.get("experience", [])
     picked_exp = None
@@ -658,18 +673,7 @@ async def generate_edit_experience_constraints(task_url: str | None = None, data
     for field in selected_fields:
         allowed_ops = FIELD_OPERATORS_EDIT_EXPERIENCE_MAP.get(field, [])
         op = ComparisonOperator(random.choice(allowed_ops))
-
-        if field == "name":
-            field_value = random_user["name"]
-
-        elif field in ["company", "duration", "title", "location", "description"]:
-            if not picked_exp:
-                continue  # skip if no experience exists
-            field_value = picked_exp[field]
-
-        else:
-            continue
-
+        field_value = picked_exp[field]
         # Generate constraint and append
         value = _generate_constraint_value(op, field_value, field, dataset)
         constraint = create_constraint_dict(field, op, value)
@@ -677,57 +681,36 @@ async def generate_edit_experience_constraints(task_url: str | None = None, data
 
     return constraint_list
 
-    # for field in selected_fields:
-    #     allowed_ops = FIELD_OPERATORS_EDIT_PROFILE_MAP.get(field, [])
-    #     op = ComparisonOperator(random.choice(allowed_ops))
-    #     if field == "name":
-    #         field_value = random_user[field]
-    #         value = _generate_constraint_value(op, field_value, field, dataset)
-    #         constraint = create_constraint_dict(field, op, value)
-    #         constraint_list.append(constraint)
-    #     if field == "company":
-    #         field_value = random_user["experience"]
-    #         value = _generate_constraint_value(op, field_value, field, dataset)
-    #         constraint = create_constraint_dict(field, op, value)
-    #         constraint_list.append(constraint)
-    #     if field == "about":
-    #         field_value = random_user[field]
-    #         value = _generate_constraint_value(op, field_value, field, dataset)
-    #         constraint = create_constraint_dict(field, op, value)
-    #         constraint_list.append(constraint)
-    #     if field == "title":
-    #         field_value = random_user[field]
-    #         value = _generate_constraint_value(op, field_value, field, dataset)
-    #         constraint = create_constraint_dict(field, op, value)
-    #         constraint_list.append(constraint)
-    #
-    # return constraint_list
+
+async def generate_remove_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints = await generate_save_post_constraints(task_url, dataset)
+    return constraints
 
 
-async def generate_remove_post_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("author", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
-    ]
+async def generate_unhide_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints = await generate_save_post_constraints(task_url, dataset)
+    return constraints
 
 
-async def generate_view_hidden_posts_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("count", ComparisonOperator.GREATER_EQUAL, 0),
-        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
-    ]
+async def generate_add_experience_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraint_list = []
+    dataset = await _ensure_entity_dataset(task_url=task_url, dataset=dataset, entity_type="users")
+    possible_fields = ["company", "duration", "title", "location", "description"]
+    # selected_fields = random.sample(possible_fields, random.randint(1, len(possible_fields)))
+    random_user = random.choice(dataset)
 
+    experiences = random_user.get("experience", [])
+    picked_exp = None
+    if len(experiences) > 0:
+        picked_exp = random.choice(experiences)  # experiences[0]
 
-async def generate_unhide_post_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
-    ]
+    for field in possible_fields:
+        allowed_ops = FIELD_OPERATORS_EDIT_EXPERIENCE_MAP.get(field, [])
+        op = ComparisonOperator(random.choice(allowed_ops))
+        field_value = picked_exp[field]
+        # Generate constraint and append
+        value = _generate_constraint_value(op, field_value, field, dataset)
+        constraint = create_constraint_dict(field, op, value)
+        constraint_list.append(constraint)
 
-
-async def generate_add_experience_constraints() -> list[dict[str, Any]]:
-    return [
-        create_constraint_dict("username", ComparisonOperator.CONTAINS, ""),
-        create_constraint_dict("name", ComparisonOperator.CONTAINS, ""),
-    ]
+    return constraint_list

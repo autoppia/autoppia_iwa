@@ -235,7 +235,7 @@ class SavePostEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
             author=data.get("author", ""),
-            content=data.get("content", ""),
+            content=data.get("postContent", ""),
         )
 
 
@@ -645,14 +645,18 @@ class EditProfileEvent(Event, BaseEventValidator):
         )
 
 
-class EditExperienceEvent(Event, BaseEventValidator):
-    event_name: str = "EDIT_EXPERIENCE"
-    name: str | None = None
-    title: str | None = None
+class experiences(BaseModel):
     company: str | None = None
+    destination: str | None = None
     duration: str | None = None
     location: str | None = None
-    description: str | None = None
+    title: str | None = None
+
+
+class EditExperienceEvent(Event, BaseEventValidator):
+    event_name: str = "EDIT_EXPERIENCE"
+    experiences: list[experiences]
+    name: str | None = None
 
     class ValidationCriteria(BaseModel):
         name: str | CriterionValue | None = None
@@ -665,58 +669,49 @@ class EditExperienceEvent(Event, BaseEventValidator):
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.name, criteria.name),
-                self._validate_field(self.title, criteria.title),
-                self._validate_field(self.company, criteria.company),
-                self._validate_field(self.duration, criteria.duration),
-                self._validate_field(self.location, criteria.location),
-                self._validate_field(self.description, criteria.description),
-            ]
-        )
+
+        if len(self.experiences) == 0:
+            return False
+
+        for experience in self.experiences:
+            if (
+                self._validate_field(experience.title, criteria.title)
+                and self._validate_field(experience.location, criteria.location)
+                and self._validate_field(experience.duration, criteria.duration)
+                and self._validate_field(experience.description, criteria.description)
+                and self._validate_field(experience.company, criteria.company)
+            ):
+                return True
+        return False
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "EditExperienceEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
-        experience_data = data.get("experience")
+        # experience_data = data.get("experience")
+        experience_data = [experiences(**experience) for experience in data.get("experiences", [])]
+
         return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            name=data.get("name"),
-            title=experience_data.get("title"),
-            company=experience_data.get("company"),
-            duration=experience_data.get("duration"),
-            location=experience_data.get("location"),
-            description=experience_data.get("description"),
+            event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, name=data.get("name"), experiences=experience_data
         )
 
 
 class RemovePostEvent(Event, BaseEventValidator):
     event_name: str = "REMOVE_POST"
-    post_id: str | None = None
     author: str | None = None
     content: str | None = None
-    source: str | None = None
 
     class ValidationCriteria(BaseModel):
-        post_id: str | CriterionValue | None = None
         author: str | CriterionValue | None = None
         content: str | CriterionValue | None = None
-        source: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.post_id, criteria.post_id),
                 self._validate_field(self.author, criteria.author),
                 self._validate_field(self.content, criteria.content),
-                self._validate_field(self.source, criteria.source),
             ]
         )
 
@@ -729,71 +724,48 @@ class RemovePostEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            post_id=str(data.get("postId", "")) if data.get("postId") is not None else None,
             author=data.get("author"),
             content=data.get("content"),
-            source=data.get("source"),
         )
 
 
 class ViewHiddenPostsEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_HIDDEN_POSTS"
-    count: int | None = None
-    source: str | None = None
 
     class ValidationCriteria(BaseModel):
-        count: int | CriterionValue | None = None
-        source: str | CriterionValue | None = None
+        pass
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
-        return all(
-            [
-                self._validate_field(self.count, criteria.count),
-                self._validate_field(self.source, criteria.source),
-            ]
-        )
 
     @classmethod
     def parse(cls, backend_event: BackendEvent) -> "ViewHiddenPostsEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            count=data.get("count"),
-            source=data.get("source"),
         )
 
 
 class UnhidePostEvent(Event, BaseEventValidator):
     event_name: str = "UNHIDE_POST"
-    post_id: str | None = None
-    source: str | None = None
     author: str | None = None
     post_content: str | None = None
-    reason: str | None = None
 
     class ValidationCriteria(BaseModel):
-        post_id: str | CriterionValue | None = None
-        source: str | CriterionValue | None = None
         author: str | CriterionValue | None = None
         post_content: str | CriterionValue | None = None
-        reason: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.post_id, criteria.post_id),
-                self._validate_field(self.source, criteria.source),
                 self._validate_field(self.author, criteria.author),
                 self._validate_field(self.post_content, criteria.post_content),
-                self._validate_field(self.reason, criteria.reason),
             ]
         )
 
@@ -806,36 +778,36 @@ class UnhidePostEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            post_id=str(data.get("postId", "")) if data.get("postId") is not None else None,
-            source=data.get("source"),
             author=data.get("author"),
             post_content=data.get("postContent"),
-            reason=data.get("reason"),
         )
 
 
 class AddExperienceEvent(Event, BaseEventValidator):
     event_name: str = "ADD_EXPERIENCE"
-    username: str | None = None
-    name: str | None = None
-    experience: dict | None = None
-    experience_count: int | None = None
+    company: str | None = None
+    description: str | None = None
+    duration: str | None = None
+    title: str | None = None
+    location: str | None = None
 
     class ValidationCriteria(BaseModel):
-        username: str | CriterionValue | None = None
-        name: str | CriterionValue | None = None
-        experience: dict | CriterionValue | None = None
-        experience_count: int | CriterionValue | None = None
+        company: str | CriterionValue | None = None
+        description: str | CriterionValue | None = None
+        duration: str | CriterionValue | None = None
+        title: str | CriterionValue | None = None
+        location: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.username, criteria.username),
-                self._validate_field(self.name, criteria.name),
-                self._validate_field(self.experience, criteria.experience),
-                self._validate_field(self.experience_count, criteria.experience_count),
+                self._validate_field(self.company, criteria.company),
+                self._validate_field(self.description, criteria.description),
+                self._validate_field(self.duration, criteria.duration),
+                self._validate_field(self.title, criteria.title),
+                self._validate_field(self.location, criteria.location),
             ]
         )
 
@@ -843,15 +815,17 @@ class AddExperienceEvent(Event, BaseEventValidator):
     def parse(cls, backend_event: BackendEvent) -> "AddExperienceEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data or {}
+        experience_data = data.get("experience")
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            username=data.get("username"),
-            name=data.get("name"),
-            experience=data.get("experience"),
-            experience_count=data.get("experienceCount"),
+            company=experience_data.get("company"),
+            description=experience_data.get("description"),
+            duration=experience_data.get("duration"),
+            location=experience_data.get("location"),
+            title=experience_data.get("title"),
         )
 
 

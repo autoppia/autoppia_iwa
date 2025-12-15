@@ -47,7 +47,6 @@ from .generation_functions import (
     generate_search_users_constraints,
     generate_unfollow_page_constraints,
     generate_unhide_post_constraints,
-    generate_view_hidden_posts_constraints,
     generate_view_job_constraints,
     generate_view_user_profile_constraints,
 )
@@ -527,11 +526,12 @@ EDIT_PROFILE_USE_CASE = UseCase(
 
 EDIT_EXPERIENCE_USE_CASE = UseCase(
     name="EDIT_EXPERIENCE",
-    description="The user edits job experience entries.",
+    description="The user edits or adds job experience entries.",
     event=EditExperienceEvent,
     event_source_code=EditExperienceEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_experience_constraints,
     examples=[
+        {"prompt": "Edit an experience to my profile.", "prompt_for_task_generation": "Edit an experience to my profile."},
         {"prompt": "Edit my current experience to name equal 'Alex'.", "prompt_for_task_generation": "Edit my current experience to name equals 'Alex'."},
         {"prompt": "Update the description of my experience.", "prompt_for_task_generation": "Update the description of my experience."},
     ],
@@ -556,7 +556,10 @@ REMOVE_POST_USE_CASE = UseCase(
     event_source_code=RemovePostEvent.get_source_code_of_class(),
     constraints_generator=generate_remove_post_constraints,
     examples=[
-        {"prompt": "Remove this saved post from my list.", "prompt_for_task_generation": "Remove this saved post from my list."},
+        {
+            "prompt": "Remove saved post from my list that content contains 'Just wrapped up!'.",
+            "prompt_for_task_generation": "Remove saved post from my list that content contains 'Just wrapped up!'.",
+        },
         {"prompt": "Delete the saved post authored by Alex.", "prompt_for_task_generation": "Delete the saved post authored by Alex."},
     ],
 )
@@ -566,10 +569,10 @@ VIEW_HIDDEN_POSTS_USE_CASE = UseCase(
     description="The user views hidden posts.",
     event=ViewHiddenPostsEvent,
     event_source_code=ViewHiddenPostsEvent.get_source_code_of_class(),
-    constraints_generator=generate_view_hidden_posts_constraints,
+    constraints_generator=False,
     examples=[
         {"prompt": "Open my hidden posts list.", "prompt_for_task_generation": "Open my hidden posts list."},
-        {"prompt": "View the posts I hid earlier.", "prompt_for_task_generation": "View the posts I hid earlier."},
+        {"prompt": "View the posts I hide earlier.", "prompt_for_task_generation": "View the posts I hide earlier."},
     ],
 )
 
@@ -580,7 +583,7 @@ UNHIDE_POST_USE_CASE = UseCase(
     event_source_code=UnhidePostEvent.get_source_code_of_class(),
     constraints_generator=generate_unhide_post_constraints,
     examples=[
-        {"prompt": "Unhide the post I hid.", "prompt_for_task_generation": "Unhide the post I hid."},
+        {"prompt": "Unhide the post where content contains 'Just wrapped up'.", "prompt_for_task_generation": "Unhide the post where content contains 'Just wrapped up'."},
         {"prompt": "Restore a hidden post to my feed.", "prompt_for_task_generation": "Restore a hidden post to my feed."},
     ],
 )
