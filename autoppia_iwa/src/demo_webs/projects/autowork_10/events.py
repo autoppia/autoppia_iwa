@@ -275,10 +275,20 @@ class QuickHireEvent(Event, BaseEventValidator):
     event_name: str = "QUICK_HIRE"
     expert_name: str | None = None
     expert_slug: str | None = None
+    country: str | None = None
+    role: str | None = None
+    rate: str | None = None
+    rating: float | None = None
+    jobs: int | None = None
 
     class ValidationCriteria(BaseModel):
         expert_name: str | CriterionValue | None = None
         expert_slug: str | CriterionValue | None = None
+        country: str | CriterionValue | None = None
+        role: str | CriterionValue | None = None
+        rate: str | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        jobs: int | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -287,6 +297,11 @@ class QuickHireEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.expert_name, criteria.expert_name),
                 self._validate_field(self.expert_slug, criteria.expert_slug),
+                self._validate_field(self.country, criteria.country),
+                self._validate_field(self.role, criteria.role),
+                self._validate_field(self.rate, criteria.rate),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.jobs, criteria.jobs),
             ]
         )
 
@@ -301,6 +316,11 @@ class QuickHireEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             expert_name=data.get("expertName"),
             expert_slug=data.get("expertSlug"),
+            country=data.get("country"),
+            role=data.get("role"),
+            rate=data.get("rate"),
+            rating=data.get("rating"),
+            jobs=data.get("jobs"),
         )
 
 
@@ -628,6 +648,30 @@ class NavbarClickEvent(Event, BaseEventValidator):
             ]
         )
 
+
+class NavbarJobsClickEvent(NavbarClickEvent):
+    event_name: str = "NAVBAR_JOBS_CLICK"
+
+
+class NavbarHiresClickEvent(NavbarClickEvent):
+    event_name: str = "NAVBAR_HIRES_CLICK"
+
+
+class NavbarExpertsClickEvent(NavbarClickEvent):
+    event_name: str = "NAVBAR_EXPERTS_CLICK"
+
+
+class NavbarFavoritesClickEvent(NavbarClickEvent):
+    event_name: str = "NAVBAR_FAVORITES_CLICK"
+
+
+class NavbarHireLaterClickEvent(NavbarClickEvent):
+    event_name: str = "NAVBAR_HIRE_LATER_CLICK"
+
+
+class NavbarProfileClickEvent(NavbarClickEvent):
+    event_name: str = "NAVBAR_PROFILE_CLICK"
+
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "NavbarClickEvent":
         base_event = Event.parse(backend_event)
@@ -647,11 +691,15 @@ class FavoriteExpertSelectedEvent(Event, BaseEventValidator):
     expert_name: str | None = None
     expert_slug: str | None = None
     source: str | None = None
+    country: str | None = None
+    role: str | None = None
 
     class ValidationCriteria(BaseModel):
         expert_name: str | CriterionValue | None = None
         expert_slug: str | CriterionValue | None = None
         source: str | CriterionValue | None = None
+        country: str | CriterionValue | None = None
+        role: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -661,6 +709,8 @@ class FavoriteExpertSelectedEvent(Event, BaseEventValidator):
                 self._validate_field(self.expert_name, criteria.expert_name),
                 self._validate_field(self.expert_slug, criteria.expert_slug),
                 self._validate_field(self.source, criteria.source),
+                self._validate_field(self.country, criteria.country),
+                self._validate_field(self.role, criteria.role),
             ]
         )
 
@@ -676,6 +726,8 @@ class FavoriteExpertSelectedEvent(Event, BaseEventValidator):
             expert_name=data.get("expertName"),
             expert_slug=data.get("expertSlug"),
             source=data.get("source"),
+            country=data.get("country"),
+            role=data.get("role"),
         )
 
 
@@ -727,6 +779,7 @@ class ContactExpertOpenedEvent(FavoriteExpertSelectedEvent):
 class ContactExpertMessageSentEvent(FavoriteExpertSelectedEvent):
     event_name: str = "CONTACT_EXPERT_MESSAGE_SENT"
     message_length: int | None = None
+    message: str | None = None
 
     class ValidationCriteria(FavoriteExpertSelectedEvent.ValidationCriteria):
         message_length: int | CriterionValue | None = None
@@ -754,6 +807,9 @@ class ContactExpertMessageSentEvent(FavoriteExpertSelectedEvent):
             expert_slug=data.get("expertSlug"),
             source=data.get("source"),
             message_length=data.get("messageLength") or data.get("message_length") or data.get("length"),
+            message=data.get("message"),
+            country=data.get("country"),
+            role=data.get("role"),
         )
 
 
@@ -1026,6 +1082,12 @@ EVENTS = [
     NavbarClickEvent,
     FavoriteExpertSelectedEvent,
     FavoriteExpertRemovedEvent,
+    NavbarJobsClickEvent,
+    NavbarHiresClickEvent,
+    NavbarExpertsClickEvent,
+    NavbarFavoritesClickEvent,
+    NavbarHireLaterClickEvent,
+    NavbarProfileClickEvent,
     BrowseFavoriteExpertEvent,
     ContactExpertOpenedEvent,
     ContactExpertMessageSentEvent,
@@ -1060,6 +1122,12 @@ BACKEND_EVENT_TYPES = {
     "HIRE_LATER_START": HireLaterStartEvent,
     "QUICK_HIRE": QuickHireEvent,
     "NAVBAR_CLICK": NavbarClickEvent,
+    "NAVBAR_JOBS_CLICK": NavbarJobsClickEvent,
+    "NAVBAR_HIRES_CLICK": NavbarHiresClickEvent,
+    "NAVBAR_EXPERTS_CLICK": NavbarExpertsClickEvent,
+    "NAVBAR_FAVORITES_CLICK": NavbarFavoritesClickEvent,
+    "NAVBAR_HIRE_LATER_CLICK": NavbarHireLaterClickEvent,
+    "NAVBAR_PROFILE_CLICK": NavbarProfileClickEvent,
     "FAVORITE_EXPERT_SELECTED": FavoriteExpertSelectedEvent,
     "FAVORITE_EXPERT_REMOVED": FavoriteExpertRemovedEvent,
     "BROWSE_FAVORITE_EXPERT": BrowseFavoriteExpertEvent,
