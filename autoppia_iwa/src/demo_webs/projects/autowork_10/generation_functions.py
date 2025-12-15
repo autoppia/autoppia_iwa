@@ -19,9 +19,9 @@ from .data import (
     FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD,
     FIELD_OPERATORS_MAP_FAVORITE_EXPERT,
     FIELD_OPERATORS_MAP_HIRE_BUTTON,
-    FIELD_OPERATORS_MAP_HIRE_LATER_ACTION,
     FIELD_OPERATORS_MAP_HIRING_CONSULTANT,
     FIELD_OPERATORS_MAP_HIRING_TEAM,
+    FIELD_OPERATORS_MAP_JOB_DESCRIPTION,
     FIELD_OPERATORS_MAP_NAVBAR_CLICK,
     FIELD_OPERATORS_MAP_POSTING_A_JOB,
     FIELD_OPERATORS_MAP_PROJECT_SIZE,
@@ -252,16 +252,8 @@ async def generate_hire_consultation_constraint(task_url: str | None = None, dat
     return constraints_list
 
 
-async def generate_hire_later_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_expert_dataset(task_url, dataset)
-    field_operators = {"expert_name": ["equals", "not_equals"], "expert_slug": ["equals", "not_equals"]}
-    field_map = {"expert_name": "name", "expert_slug": "slug"}
-    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=1, field_map=field_map)
-    return constraints_list
-
-
 async def generate_quick_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    return await generate_hire_later_constraint(task_url, dataset)
+    return await generate_book_consultant_constraint(task_url, dataset)
 
 
 async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
@@ -487,29 +479,75 @@ async def generate_submit_job_constraint() -> list[dict[str, Any]]:
 
 
 async def generate_budget_type_constraint() -> list[dict[str, Any]]:
-    dataset = JOBS
-    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_BUDGET_TYPE, {"budget_type": "budgetType"})
+    constraint = []
+    field = "budget_type"
+    allowed_ops = FIELD_OPERATORS_MAP_BUDGET_TYPE.get(field, None)
+    op = ComparisonOperator(random.choice(allowed_ops))
+    budget_type_data = ["hourly", "fixed"]
+    field_value = random.choice(budget_type_data)
+    budget_type_dataset = [{"budget_type": p} for p in budget_type_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=budget_type_dataset)
+    constraint.append(create_constraint_dict(field, op, value))
+    return constraint
 
 
 async def generate_project_size_constraint() -> list[dict[str, Any]]:
-    dataset = JOBS
-    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_PROJECT_SIZE, {"scope": "scope"})
+    constraint = []
+    field = "scope"
+    scope_data = ["Small", "Medium", "Large"]
+    allowed_ops = FIELD_OPERATORS_MAP_PROJECT_SIZE.get(field, None)
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(scope_data)
+    scope_dataset = [{"scope": s} for s in scope_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=scope_dataset)
+    constraint.append(create_constraint_dict(field, op, value))
+    return constraint
 
 
 async def generate_timeline_constraint() -> list[dict[str, Any]]:
-    dataset = JOBS
-    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_TIMELINE, {"duration": "duration"})
+    constraint = []
+    duration_data = ["3 to 6 months", "More than 6 months"]
+    field = "duration"
+    allowed_ops = FIELD_OPERATORS_MAP_TIMELINE.get(field, None)
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(duration_data)
+    scope_dataset = [{"duration": d} for d in duration_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=scope_dataset)
+    constraint.append(create_constraint_dict(field, op, value))
+    return constraint
 
 
 async def generate_rate_range_constraint() -> list[dict[str, Any]]:
-    dataset = JOBS
-    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_RATE_RANGE, {"rate_from": "rate_from", "rate_to": "rate_to", "budget_type": "budgetType"})
+    constraints: list[dict[str, Any]] = []
+    from_ops = FIELD_OPERATORS_MAP_RATE_RANGE["rate_from"]
+    to_ops = FIELD_OPERATORS_MAP_RATE_RANGE["rate_to"]
+    rate_constraints = generate_to_and_from_constraints(from_ops, to_ops)
+    constraints.extend(rate_constraints)
+    return constraints
 
 
 async def generate_write_job_description_constraint() -> list[dict[str, Any]]:
-    return [
-        {"field": "description_length", "operator": "greater_equal", "value": 0},
+    constraint = []
+    job_descriptions_data = [
+        "Design, develop, and maintain both client and server applications using modern frameworks.",
+        "Analyze datasets to extract insights, build predictive models, and optimize decision-making.",
+        "Create intuitive user interfaces and improve user experience through design prototypes.",
+        "Automate CI/CD pipelines, monitor infrastructure, and ensure system scalability.",
+        "Implement security measures to protect systems from cyber threats and data breaches.",
+        "Manage product lifecycle from ideation to launch, coordinating with cross-functional teams.",
+        "Develop mobile applications for iOS and Android with optimized performance.",
+        "Design scalable and secure cloud solutions for enterprise and startup needs.",
+        "Build and deploy machine learning models for real-world production environments.",
+        "Write clear documentation, tutorials, and guides for technical and non-technical audiences.",
     ]
+    field = "description"
+    allowed_ops = FIELD_OPERATORS_MAP_JOB_DESCRIPTION.get(field, None)
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(job_descriptions_data)
+    scope_dataset = [{"description": d} for d in job_descriptions_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=scope_dataset)
+    constraint.append(create_constraint_dict(field, op, value))
+    return constraint
 
 
 async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
@@ -632,20 +670,6 @@ async def generate_favorite_expert_removed_constraint(task_url: str | None = Non
 async def generate_browse_favorite_expert_constraint() -> list[dict[str, Any]]:
     dataset = [{"source": s} for s in ["favorites_empty_state", "favorites_page"]]
     return _generate_constraints(dataset, FIELD_OPERATORS_MAP_BROWSE_FAVORITE_EXPERT)
-
-
-async def generate_hire_later_added_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    dataset = await _ensure_expert_dataset(task_url, dataset)
-    field_map = {"expert_name": "name", "expert_slug": "slug"}
-    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_HIRE_LATER_ACTION, field_map=field_map)
-
-
-async def generate_hire_later_removed_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    return await generate_hire_later_added_constraint(task_url, dataset)
-
-
-async def generate_hire_later_start_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    return await generate_hire_later_added_constraint(task_url, dataset)
 
 
 async def generate_contact_expert_opened_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

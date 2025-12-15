@@ -238,70 +238,82 @@ class HireLaterEvent(Event, BaseEventValidator):
     """User opts to hire later instead of starting the hiring flow."""
 
     event_name: str = "HIRE_LATER"
-    expert_name: str | None = None
-    expert_slug: str | None = None
+    country: str | None = None
+    name: str | None = None
+    role: str | None = None
 
     class ValidationCriteria(BaseModel):
-        expert_name: str | CriterionValue | None = None
-        expert_slug: str | CriterionValue | None = None
+        country: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        role: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.expert_name, criteria.expert_name),
-                self._validate_field(self.expert_slug, criteria.expert_slug),
+                self._validate_field(self.country, criteria.country),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.role, criteria.role),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "HireLaterEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            expert_name=data.get("expertName"),
-            expert_slug=data.get("expertSlug"),
+            country=data.get("country"),
+            name=data.get("expertName"),
+            role=data.get("role"),
         )
+
+
+class HireLaterRemovalEvent(HireLaterEvent):
+    event_name: str = "HIRE_LATER_REMOVED"
+
+
+class HireLaterStartEvent(HireLaterEvent):
+    event_name: str = "HIRE_LATER_START"
 
 
 class QuickHireEvent(Event, BaseEventValidator):
     """User triggers quick hire from expert information."""
 
     event_name: str = "QUICK_HIRE"
-    expert_name: str | None = None
-    expert_slug: str | None = None
     country: str | None = None
-    role: str | None = None
+    name: str | None = None
+    jobs: int | None = None
     rate: str | None = None
     rating: float | None = None
-    jobs: int | None = None
+    role: str | None = None
+    slug: str | None = None
 
     class ValidationCriteria(BaseModel):
-        expert_name: str | CriterionValue | None = None
-        expert_slug: str | CriterionValue | None = None
         country: str | CriterionValue | None = None
-        role: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        jobs: int | CriterionValue | None = None
         rate: str | CriterionValue | None = None
         rating: float | CriterionValue | None = None
-        jobs: int | CriterionValue | None = None
+        role: str | CriterionValue | None = None
+        slug: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.expert_name, criteria.expert_name),
-                self._validate_field(self.expert_slug, criteria.expert_slug),
                 self._validate_field(self.country, criteria.country),
-                self._validate_field(self.role, criteria.role),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.jobs, criteria.jobs),
                 self._validate_field(self.rate, criteria.rate),
                 self._validate_field(self.rating, criteria.rating),
-                self._validate_field(self.jobs, criteria.jobs),
+                self._validate_field(self.role, criteria.role),
+                self._validate_field(self.slug, criteria.slug),
             ]
         )
 
@@ -314,13 +326,13 @@ class QuickHireEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            expert_name=data.get("expertName"),
-            expert_slug=data.get("expertSlug"),
             country=data.get("country"),
-            role=data.get("role"),
+            name=data.get("expertName"),
+            jobs=data.get("jobs"),
             rate=data.get("rate"),
             rating=data.get("rating"),
-            jobs=data.get("jobs"),
+            role=data.get("role"),
+            slug=data.get("expertSlug"),
         )
 
 
@@ -563,12 +575,10 @@ class SetRateRangeEvent(Event, BaseEventValidator):
     event_name: str = "SET_RATE_RANGE"
     rate_from: str | None = None
     rate_to: str | None = None
-    budget_type: str | None = None
 
     class ValidationCriteria(BaseModel):
         rate_from: str | CriterionValue | None = None
         rate_to: str | CriterionValue | None = None
-        budget_type: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -577,7 +587,6 @@ class SetRateRangeEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.rate_from, criteria.rate_from),
                 self._validate_field(self.rate_to, criteria.rate_to),
-                self._validate_field(self.budget_type, criteria.budget_type),
             ]
         )
 
@@ -592,26 +601,22 @@ class SetRateRangeEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             rate_from=data.get("rateFrom"),
             rate_to=data.get("rateTo"),
-            budget_type=data.get("budgetType"),
         )
 
 
 class WriteJobDescriptionEvent(Event, BaseEventValidator):
     event_name: str = "WRITE_JOB_DESCRIPTION"
-    description_length: int | None = None
-    step: int | None = None
+    description: str | None = None
 
     class ValidationCriteria(BaseModel):
-        description_length: int | CriterionValue | None = None
-        step: int | CriterionValue | None = None
+        description: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                self._validate_field(self.description_length, criteria.description_length),
-                self._validate_field(self.step, criteria.step),
+                self._validate_field(self.description, criteria.description),
             ]
         )
 
@@ -624,8 +629,7 @@ class WriteJobDescriptionEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
-            description_length=data.get("descriptionLength") or data.get("length"),
-            step=data.get("step"),
+            description=data.get("description"),
         )
 
 
@@ -766,10 +770,6 @@ class HireLaterAddedEvent(FavoriteExpertSelectedEvent):
 
 class HireLaterRemovedEvent(FavoriteExpertSelectedEvent):
     event_name: str = "HIRE_LATER_REMOVED"
-
-
-class HireLaterStartEvent(FavoriteExpertSelectedEvent):
-    event_name: str = "HIRE_LATER_START"
 
 
 class ContactExpertOpenedEvent(FavoriteExpertSelectedEvent):
