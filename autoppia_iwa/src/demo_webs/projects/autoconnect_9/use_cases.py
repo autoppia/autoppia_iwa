@@ -1,6 +1,7 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
+    AddExperienceEvent,
     ApplyForJobEvent,
     BackToAllJobsEvent,
     CancelApplicationEvent,
@@ -20,12 +21,15 @@ from .events import (
     SearchJobsEvent,
     SearchUsersEvent,
     UnfollowPageEvent,
+    UnhidePostEvent,
     ViewAppliedJobsEvent,
+    ViewHiddenPostsEvent,
     ViewJobEvent,
     ViewSavedPostsEvent,
     ViewUserProfileEvent,
 )
 from .generation_functions import (
+    generate_add_experience_constraints,
     generate_apply_for_job_constraints,
     generate_back_to_all_jobs_constraints,
     generate_cancel_application_constraints,
@@ -42,6 +46,8 @@ from .generation_functions import (
     generate_search_jobs_constraints,
     generate_search_users_constraints,
     generate_unfollow_page_constraints,
+    generate_unhide_post_constraints,
+    generate_view_hidden_posts_constraints,
     generate_view_job_constraints,
     generate_view_user_profile_constraints,
 )
@@ -521,13 +527,25 @@ EDIT_PROFILE_USE_CASE = UseCase(
 
 EDIT_EXPERIENCE_USE_CASE = UseCase(
     name="EDIT_EXPERIENCE",
-    description="The user edits or adds job experience entries.",
+    description="The user edits job experience entries.",
     event=EditExperienceEvent,
     event_source_code=EditExperienceEvent.get_source_code_of_class(),
     constraints_generator=generate_edit_experience_constraints,
     examples=[
-        {"prompt": "Add a new experience entry to my profile.", "prompt_for_task_generation": "Add a new experience entry to my profile."},
         {"prompt": "Edit my current experience to name equal 'Alex'.", "prompt_for_task_generation": "Edit my current experience to name equals 'Alex'."},
+        {"prompt": "Update the description of my experience.", "prompt_for_task_generation": "Update the description of my experience."},
+    ],
+)
+
+ADD_EXPERIENCE_USE_CASE = UseCase(
+    name="ADD_EXPERIENCE",
+    description="The user adds a new experience entry to their profile.",
+    event=AddExperienceEvent,
+    event_source_code=AddExperienceEvent.get_source_code_of_class(),
+    constraints_generator=generate_add_experience_constraints,
+    examples=[
+        {"prompt": "Add a new experience entry to my profile.", "prompt_for_task_generation": "Add a new experience entry to my profile."},
+        {"prompt": "Create a new job experience on my profile.", "prompt_for_task_generation": "Create a new job experience on my profile."},
     ],
 )
 
@@ -540,6 +558,30 @@ REMOVE_POST_USE_CASE = UseCase(
     examples=[
         {"prompt": "Remove this saved post from my list.", "prompt_for_task_generation": "Remove this saved post from my list."},
         {"prompt": "Delete the saved post authored by Alex.", "prompt_for_task_generation": "Delete the saved post authored by Alex."},
+    ],
+)
+
+VIEW_HIDDEN_POSTS_USE_CASE = UseCase(
+    name="VIEW_HIDDEN_POSTS",
+    description="The user views hidden posts.",
+    event=ViewHiddenPostsEvent,
+    event_source_code=ViewHiddenPostsEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_hidden_posts_constraints,
+    examples=[
+        {"prompt": "Open my hidden posts list.", "prompt_for_task_generation": "Open my hidden posts list."},
+        {"prompt": "View the posts I hid earlier.", "prompt_for_task_generation": "View the posts I hid earlier."},
+    ],
+)
+
+UNHIDE_POST_USE_CASE = UseCase(
+    name="UNHIDE_POST",
+    description="The user restores a previously hidden post.",
+    event=UnhidePostEvent,
+    event_source_code=UnhidePostEvent.get_source_code_of_class(),
+    constraints_generator=generate_unhide_post_constraints,
+    examples=[
+        {"prompt": "Unhide the post I hid.", "prompt_for_task_generation": "Unhide the post I hid."},
+        {"prompt": "Restore a hidden post to my feed.", "prompt_for_task_generation": "Restore a hidden post to my feed."},
     ],
 )
 
@@ -556,7 +598,10 @@ ALL_USE_CASES = [
     CANCEL_APPLICATION_USE_CASE,
     EDIT_PROFILE_USE_CASE,
     EDIT_EXPERIENCE_USE_CASE,
+    ADD_EXPERIENCE_USE_CASE,
     REMOVE_POST_USE_CASE,
+    VIEW_HIDDEN_POSTS_USE_CASE,
+    UNHIDE_POST_USE_CASE,
     SEARCH_USERS_USE_CASE,
     FOLLOW_PAGE_USE_CASE,
     UNFOLLOW_PAGE_USE_CASE,

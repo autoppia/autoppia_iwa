@@ -704,6 +704,30 @@ async def generate_edit_experience_constraints(task_url: str | None = None, data
     # return constraint_list
 
 
-async def generate_remove_post_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    constraints = await generate_save_post_constraints(task_url, dataset)
-    return constraints
+async def generate_remove_post_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("author", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
+    ]
+
+
+async def generate_view_hidden_posts_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("count", ComparisonOperator.GREATER_EQUAL, 0),
+        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
+    ]
+
+
+async def generate_unhide_post_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("post_id", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("source", ComparisonOperator.CONTAINS, ""),
+    ]
+
+
+async def generate_add_experience_constraints() -> list[dict[str, Any]]:
+    return [
+        create_constraint_dict("username", ComparisonOperator.CONTAINS, ""),
+        create_constraint_dict("name", ComparisonOperator.CONTAINS, ""),
+    ]

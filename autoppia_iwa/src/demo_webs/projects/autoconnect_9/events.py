@@ -697,20 +697,26 @@ class EditExperienceEvent(Event, BaseEventValidator):
 
 class RemovePostEvent(Event, BaseEventValidator):
     event_name: str = "REMOVE_POST"
+    post_id: str | None = None
     author: str | None = None
     content: str | None = None
+    source: str | None = None
 
     class ValidationCriteria(BaseModel):
+        post_id: str | CriterionValue | None = None
         author: str | CriterionValue | None = None
         content: str | CriterionValue | None = None
+        source: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
+                self._validate_field(self.post_id, criteria.post_id),
                 self._validate_field(self.author, criteria.author),
                 self._validate_field(self.content, criteria.content),
+                self._validate_field(self.source, criteria.source),
             ]
         )
 
@@ -723,8 +729,117 @@ class RemovePostEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
+            post_id=str(data.get("postId", "")) if data.get("postId") is not None else None,
             author=data.get("author"),
             content=data.get("content"),
+            source=data.get("source"),
+        )
+
+
+class ViewHiddenPostsEvent(Event, BaseEventValidator):
+    event_name: str = "VIEW_HIDDEN_POSTS"
+    count: int | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        count: int | CriterionValue | None = None
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.count, criteria.count),
+                self._validate_field(self.source, criteria.source),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ViewHiddenPostsEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            count=data.get("count"),
+            source=data.get("source"),
+        )
+
+
+class UnhidePostEvent(Event, BaseEventValidator):
+    event_name: str = "UNHIDE_POST"
+    post_id: str | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        post_id: str | CriterionValue | None = None
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.post_id, criteria.post_id),
+                self._validate_field(self.source, criteria.source),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "UnhidePostEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            post_id=str(data.get("postId", "")) if data.get("postId") is not None else None,
+            source=data.get("source"),
+        )
+
+
+class AddExperienceEvent(Event, BaseEventValidator):
+    event_name: str = "ADD_EXPERIENCE"
+    username: str | None = None
+    name: str | None = None
+    experience: dict | None = None
+    experience_count: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        username: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        experience: dict | CriterionValue | None = None
+        experience_count: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.username, criteria.username),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.experience, criteria.experience),
+                self._validate_field(self.experience_count, criteria.experience_count),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "AddExperienceEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            username=data.get("username"),
+            name=data.get("name"),
+            experience=data.get("experience"),
+            experience_count=data.get("experienceCount"),
         )
 
 
@@ -753,6 +868,9 @@ EVENTS = [
     EditProfileEvent,
     EditExperienceEvent,
     RemovePostEvent,
+    ViewHiddenPostsEvent,
+    UnhidePostEvent,
+    AddExperienceEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -780,4 +898,7 @@ BACKEND_EVENT_TYPES = {
     "EDIT_PROFILE": EditProfileEvent,
     "EDIT_EXPERIENCE": EditExperienceEvent,
     "REMOVE_POST": RemovePostEvent,
+    "VIEW_HIDDEN_POSTS": ViewHiddenPostsEvent,
+    "UNHIDE_POST": UnhidePostEvent,
+    "ADD_EXPERIENCE": AddExperienceEvent,
 }
