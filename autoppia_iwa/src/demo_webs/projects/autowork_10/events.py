@@ -234,6 +234,76 @@ class CancelHireEvent(Event, BaseEventValidator):
         )
 
 
+class HireLaterEvent(Event, BaseEventValidator):
+    """User opts to hire later instead of starting the hiring flow."""
+
+    event_name: str = "HIRE_LATER"
+    expert_name: str | None = None
+    expert_slug: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        expert_name: str | CriterionValue | None = None
+        expert_slug: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.expert_name, criteria.expert_name),
+                self._validate_field(self.expert_slug, criteria.expert_slug),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "HireLaterEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            expert_name=data.get("expertName"),
+            expert_slug=data.get("expertSlug"),
+        )
+
+
+class QuickHireEvent(Event, BaseEventValidator):
+    """User triggers quick hire from expert information."""
+
+    event_name: str = "QUICK_HIRE"
+    expert_name: str | None = None
+    expert_slug: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        expert_name: str | CriterionValue | None = None
+        expert_slug: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.expert_name, criteria.expert_name),
+                self._validate_field(self.expert_slug, criteria.expert_slug),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "QuickHireEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            expert_name=data.get("expertName"),
+            expert_slug=data.get("expertSlug"),
+        )
+
+
 class PostAJobEvent(Event, BaseEventValidator):
     """event triggered when someone click on post a job button"""
 
@@ -361,6 +431,408 @@ class AddSkillEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             skill=backend_event.data.get("skill"),
         )
+
+
+class RemoveSkillEvent(Event, BaseEventValidator):
+    """event triggered when someone removes a selected skill"""
+
+    event_name: str = "REMOVE_SKILL"
+    skill: str
+
+    class ValidationCriteria(BaseModel):
+        skill: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+        return all(
+            [
+                self._validate_field(self.skill, criteria.skill),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "RemoveSkillEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            skill=backend_event.data.get("skill"),
+        )
+
+
+class ChooseBudgetTypeEvent(Event, BaseEventValidator):
+    event_name: str = "CHOOSE_BUDGET_TYPE"
+    budget_type: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        budget_type: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.budget_type, criteria.budget_type)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ChooseBudgetTypeEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            budget_type=data.get("budgetType"),
+        )
+
+
+class ChooseProjectSizeEvent(Event, BaseEventValidator):
+    event_name: str = "CHOOSE_PROJECT_SIZE"
+    scope: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        scope: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.scope, criteria.scope)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ChooseProjectSizeEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            scope=data.get("scope"),
+        )
+
+
+class ChooseTimelineEvent(Event, BaseEventValidator):
+    event_name: str = "CHOOSE_PROJECT_TIMELINE"
+    duration: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        duration: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.duration, criteria.duration)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ChooseTimelineEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            duration=data.get("duration"),
+        )
+
+
+class SetRateRangeEvent(Event, BaseEventValidator):
+    event_name: str = "SET_RATE_RANGE"
+    rate_from: str | None = None
+    rate_to: str | None = None
+    budget_type: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        rate_from: str | CriterionValue | None = None
+        rate_to: str | CriterionValue | None = None
+        budget_type: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.rate_from, criteria.rate_from),
+                self._validate_field(self.rate_to, criteria.rate_to),
+                self._validate_field(self.budget_type, criteria.budget_type),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "SetRateRangeEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            rate_from=data.get("rateFrom"),
+            rate_to=data.get("rateTo"),
+            budget_type=data.get("budgetType"),
+        )
+
+
+class WriteJobDescriptionEvent(Event, BaseEventValidator):
+    event_name: str = "WRITE_JOB_DESCRIPTION"
+    description_length: int | None = None
+    step: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        description_length: int | CriterionValue | None = None
+        step: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.description_length, criteria.description_length),
+                self._validate_field(self.step, criteria.step),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "WriteJobDescriptionEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            description_length=data.get("descriptionLength") or data.get("length"),
+            step=data.get("step"),
+        )
+
+
+class NavbarClickEvent(Event, BaseEventValidator):
+    event_name: str = "NAVBAR_CLICK"
+    label: str | None = None
+    href: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        label: str | CriterionValue | None = None
+        href: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.label, criteria.label),
+                self._validate_field(self.href, criteria.href),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "NavbarClickEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            label=data.get("label"),
+            href=data.get("href"),
+        )
+
+
+class FavoriteExpertSelectedEvent(Event, BaseEventValidator):
+    event_name: str = "FAVORITE_EXPERT_SELECTED"
+    expert_name: str | None = None
+    expert_slug: str | None = None
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        expert_name: str | CriterionValue | None = None
+        expert_slug: str | CriterionValue | None = None
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.expert_name, criteria.expert_name),
+                self._validate_field(self.expert_slug, criteria.expert_slug),
+                self._validate_field(self.source, criteria.source),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "FavoriteExpertSelectedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            expert_name=data.get("expertName"),
+            expert_slug=data.get("expertSlug"),
+            source=data.get("source"),
+        )
+
+
+class FavoriteExpertRemovedEvent(FavoriteExpertSelectedEvent):
+    event_name: str = "FAVORITE_EXPERT_REMOVED"
+
+
+class BrowseFavoriteExpertEvent(Event, BaseEventValidator):
+    event_name: str = "BROWSE_FAVORITE_EXPERT"
+    source: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        source: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.source, criteria.source)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "BrowseFavoriteExpertEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            source=data.get("source"),
+        )
+
+
+class HireLaterAddedEvent(FavoriteExpertSelectedEvent):
+    event_name: str = "HIRE_LATER_ADDED"
+
+
+class HireLaterRemovedEvent(FavoriteExpertSelectedEvent):
+    event_name: str = "HIRE_LATER_REMOVED"
+
+
+class HireLaterStartEvent(FavoriteExpertSelectedEvent):
+    event_name: str = "HIRE_LATER_START"
+
+
+class ContactExpertOpenedEvent(FavoriteExpertSelectedEvent):
+    event_name: str = "CONTACT_EXPERT_OPENED"
+
+
+class ContactExpertMessageSentEvent(FavoriteExpertSelectedEvent):
+    event_name: str = "CONTACT_EXPERT_MESSAGE_SENT"
+    message_length: int | None = None
+
+    class ValidationCriteria(FavoriteExpertSelectedEvent.ValidationCriteria):
+        message_length: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                super()._validate_criteria(criteria),
+                self._validate_field(self.message_length, criteria.message_length),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ContactExpertMessageSentEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            expert_name=data.get("expertName"),
+            expert_slug=data.get("expertSlug"),
+            source=data.get("source"),
+            message_length=data.get("messageLength") or data.get("message_length") or data.get("length"),
+        )
+
+
+class EditAboutEvent(Event, BaseEventValidator):
+    event_name: str = "EDIT_ABOUT"
+    username: str | None = None
+    length: int | None = None
+
+    class ValidationCriteria(BaseModel):
+        username: str | CriterionValue | None = None
+        length: int | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.username, criteria.username),
+                self._validate_field(self.length, criteria.length),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "EditAboutEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            username=data.get("username"),
+            length=data.get("length"),
+        )
+
+
+class EditProfileNameEvent(Event, BaseEventValidator):
+    event_name: str = "EDIT_PROFILE_NAME"
+    username: str | None = None
+    value: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        username: str | CriterionValue | None = None
+        value: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.username, criteria.username),
+                self._validate_field(self.value, criteria.value),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "EditProfileNameEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            user_id=base_event.user_id,
+            web_agent_id=base_event.web_agent_id,
+            username=data.get("username"),
+            value=data.get("value"),
+        )
+
+
+class EditProfileTitleEvent(EditProfileNameEvent):
+    event_name: str = "EDIT_PROFILE_TITLE"
+
+
+class EditProfileLocationEvent(EditProfileNameEvent):
+    event_name: str = "EDIT_PROFILE_LOCATION"
+
+
+class EditProfileEmailEvent(EditProfileNameEvent):
+    event_name: str = "EDIT_PROFILE_EMAIL"
 
 
 class SubmitJobEvent(Event, BaseEventValidator):
@@ -546,6 +1018,22 @@ class ClosePostAJobWindowEvent(Event, BaseEventValidator):
 EVENTS = [
     BookAConsultationEvent,
     HireButtonClickedEvent,
+    HireLaterEvent,
+    HireLaterAddedEvent,
+    HireLaterRemovedEvent,
+    HireLaterStartEvent,
+    QuickHireEvent,
+    NavbarClickEvent,
+    FavoriteExpertSelectedEvent,
+    FavoriteExpertRemovedEvent,
+    BrowseFavoriteExpertEvent,
+    ContactExpertOpenedEvent,
+    ContactExpertMessageSentEvent,
+    EditAboutEvent,
+    EditProfileNameEvent,
+    EditProfileTitleEvent,
+    EditProfileLocationEvent,
+    EditProfileEmailEvent,
     SelectHiringTeamEvent,
     PostAJobEvent,
     WriteJobTitleEvent,
@@ -555,11 +1043,33 @@ EVENTS = [
     HireConsultantEvent,
     AddSkillEvent,
     SearchSkillEvent,
+    RemoveSkillEvent,
+    ChooseBudgetTypeEvent,
+    ChooseProjectSizeEvent,
+    ChooseTimelineEvent,
+    SetRateRangeEvent,
+    WriteJobDescriptionEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
     "BOOK_A_CONSULTATION": BookAConsultationEvent,
     "HIRE_BTN_CLICKED": HireButtonClickedEvent,
+    "HIRE_LATER": HireLaterEvent,
+    "HIRE_LATER_ADDED": HireLaterAddedEvent,
+    "HIRE_LATER_REMOVED": HireLaterRemovedEvent,
+    "HIRE_LATER_START": HireLaterStartEvent,
+    "QUICK_HIRE": QuickHireEvent,
+    "NAVBAR_CLICK": NavbarClickEvent,
+    "FAVORITE_EXPERT_SELECTED": FavoriteExpertSelectedEvent,
+    "FAVORITE_EXPERT_REMOVED": FavoriteExpertRemovedEvent,
+    "BROWSE_FAVORITE_EXPERT": BrowseFavoriteExpertEvent,
+    "CONTACT_EXPERT_OPENED": ContactExpertOpenedEvent,
+    "CONTACT_EXPERT_MESSAGE_SENT": ContactExpertMessageSentEvent,
+    "EDIT_ABOUT": EditAboutEvent,
+    "EDIT_PROFILE_NAME": EditProfileNameEvent,
+    "EDIT_PROFILE_TITLE": EditProfileTitleEvent,
+    "EDIT_PROFILE_LOCATION": EditProfileLocationEvent,
+    "EDIT_PROFILE_EMAIL": EditProfileEmailEvent,
     "SELECT_HIRING_TEAM": SelectHiringTeamEvent,
     "HIRE_CONSULTANT": HireConsultantEvent,
     "CANCEL_HIRE": CancelHireEvent,
@@ -569,4 +1079,10 @@ BACKEND_EVENT_TYPES = {
     "CLOSE_POST_A_JOB_WINDOW": ClosePostAJobWindowEvent,
     "ADD_SKILL": AddSkillEvent,
     "SEARCH_SKILL": SearchSkillEvent,
+    "REMOVE_SKILL": RemoveSkillEvent,
+    "CHOOSE_BUDGET_TYPE": ChooseBudgetTypeEvent,
+    "CHOOSE_PROJECT_SIZE": ChooseProjectSizeEvent,
+    "CHOOSE_PROJECT_TIMELINE": ChooseTimelineEvent,
+    "SET_RATE_RANGE": SetRateRangeEvent,
+    "WRITE_JOB_DESCRIPTION": WriteJobDescriptionEvent,
 }

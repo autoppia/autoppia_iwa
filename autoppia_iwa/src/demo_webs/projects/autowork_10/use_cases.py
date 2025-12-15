@@ -4,26 +4,40 @@ from .events import (
     AddSkillEvent,
     BookAConsultationEvent,
     CancelHireEvent,
+    ChooseBudgetTypeEvent,
+    ChooseProjectSizeEvent,
+    ChooseTimelineEvent,
     ClosePostAJobWindowEvent,
     HireButtonClickedEvent,
     HireConsultantEvent,
+    HireLaterEvent,
     PostAJobEvent,
+    QuickHireEvent,
     SearchSkillEvent,
     SelectHiringTeamEvent,
+    SetRateRangeEvent,
     SubmitJobEvent,
+    WriteJobDescriptionEvent,
     WriteJobTitleEvent,
 )
 from .generation_functions import (
     generate_add_skill_constraint,
     generate_book_consultant_constraint,
+    generate_budget_type_constraint,
     generate_cancel_hire_constraint,
     generate_close_posting_job_constraint,
     generate_hire_button_clicked_constraint,
     generate_hire_consultation_constraint,
+    generate_hire_later_constraint,
     generate_job_posting_constraint,
+    generate_project_size_constraint,
+    generate_quick_hire_constraint,
+    generate_rate_range_constraint,
     generate_search_skill_constraint,
     generate_select_hiring_team_constraint,
     generate_submit_job_constraint,
+    generate_timeline_constraint,
+    generate_write_job_description_constraint,
     generate_write_job_title_constraint,
 )
 
@@ -109,6 +123,33 @@ SELECT_HIRING_TEAM_USE_CASE = UseCase(
     additional_prompt_info=ADDITIONAL_PROMPT_INFO,
 )
 
+HIRE_LATER_USE_CASE = UseCase(
+    name="HIRE_LATER",
+    description="The user opts to hire later instead of starting hiring now.",
+    event=HireLaterEvent,
+    event_source_code=HireLaterEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_later_constraint,
+    examples=[
+        {
+            "prompt": "Decide to hire later for expert Jane Doe.",
+            "prompt_for_task_generation": "Decide to hire later for expert Jane Doe.",
+        },
+    ],
+)
+
+QUICK_HIRE_USE_CASE = UseCase(
+    name="QUICK_HIRE",
+    description="The user triggers quick hire directly from expert information.",
+    event=QuickHireEvent,
+    event_source_code=QuickHireEvent.get_source_code_of_class(),
+    constraints_generator=generate_quick_hire_constraint,
+    examples=[
+        {
+            "prompt": "Quick hire the expert John Smith.",
+            "prompt_for_task_generation": "Quick hire the expert John Smith.",
+        },
+    ],
+)
 HIRE_CONSULTATION_USE_CASE = UseCase(
     name="HIRE_CONSULTANT",
     description="The user confirm hiring of a chosen consultation",
@@ -284,6 +325,76 @@ SUBMIT_JOB_USE_CASE = UseCase(
     ],
 )
 
+CHOOSE_BUDGET_TYPE_USE_CASE = UseCase(
+    name="CHOOSE_BUDGET_TYPE",
+    description="The user selects a budget type for the job.",
+    event=ChooseBudgetTypeEvent,
+    event_source_code=ChooseBudgetTypeEvent.get_source_code_of_class(),
+    constraints_generator=generate_budget_type_constraint,
+    examples=[
+        {
+            "prompt": "Choose hourly as the budget type.",
+            "prompt_for_task_generation": "Choose hourly as the budget type.",
+        },
+    ],
+)
+
+CHOOSE_PROJECT_SIZE_USE_CASE = UseCase(
+    name="CHOOSE_PROJECT_SIZE",
+    description="The user chooses the project size.",
+    event=ChooseProjectSizeEvent,
+    event_source_code=ChooseProjectSizeEvent.get_source_code_of_class(),
+    constraints_generator=generate_project_size_constraint,
+    examples=[
+        {
+            "prompt": "Select Large project size.",
+            "prompt_for_task_generation": "Select Large project size.",
+        },
+    ],
+)
+
+CHOOSE_TIMELINE_USE_CASE = UseCase(
+    name="CHOOSE_PROJECT_TIMELINE",
+    description="The user chooses expected project timeline.",
+    event=ChooseTimelineEvent,
+    event_source_code=ChooseTimelineEvent.get_source_code_of_class(),
+    constraints_generator=generate_timeline_constraint,
+    examples=[
+        {
+            "prompt": "Choose 3 to 6 months timeline.",
+            "prompt_for_task_generation": "Choose 3 to 6 months timeline.",
+        },
+    ],
+)
+
+SET_RATE_RANGE_USE_CASE = UseCase(
+    name="SET_RATE_RANGE",
+    description="The user sets the hourly rate range.",
+    event=SetRateRangeEvent,
+    event_source_code=SetRateRangeEvent.get_source_code_of_class(),
+    constraints_generator=generate_rate_range_constraint,
+    examples=[
+        {
+            "prompt": "Set hourly rate from 20 to 40.",
+            "prompt_for_task_generation": "Set hourly rate from 20 to 40.",
+        },
+    ],
+)
+
+WRITE_JOB_DESCRIPTION_USE_CASE = UseCase(
+    name="WRITE_JOB_DESCRIPTION",
+    description="The user writes the job description.",
+    event=WriteJobDescriptionEvent,
+    event_source_code=WriteJobDescriptionEvent.get_source_code_of_class(),
+    constraints_generator=generate_write_job_description_constraint,
+    examples=[
+        {
+            "prompt": "Write a job description of at least 120 characters.",
+            "prompt_for_task_generation": "Write a job description of at least 120 characters.",
+        },
+    ],
+)
+
 CLOSE_JOB_POSTING_USE_CASE = UseCase(
     name="CLOSE_POST_A_JOB_WINDOW",
     description="The user closes the posting of job window",
@@ -317,6 +428,8 @@ CLOSE_JOB_POSTING_USE_CASE = UseCase(
 ALL_USE_CASES = [
     BOOK_A_CONSULTATION_USE_CASE,
     HIRE_BUTTON_CLICKED_USE_CASE,
+    HIRE_LATER_USE_CASE,
+    QUICK_HIRE_USE_CASE,
     SELECT_HIRING_TEAM_USE_CASE,
     HIRE_CONSULTATION_USE_CASE,
     CANCEL_HIRE_USE_CASE,
@@ -324,6 +437,11 @@ ALL_USE_CASES = [
     WRITING_JOB_TITLE_USE_CASE,
     SEARCH_SKILL_USE_CASE,
     ADD_SKILL_USE_CASE,
+    CHOOSE_BUDGET_TYPE_USE_CASE,
+    CHOOSE_PROJECT_SIZE_USE_CASE,
+    CHOOSE_TIMELINE_USE_CASE,
+    SET_RATE_RANGE_USE_CASE,
+    WRITE_JOB_DESCRIPTION_USE_CASE,
     SUBMIT_JOB_USE_CASE,
     CLOSE_JOB_POSTING_USE_CASE,
 ]

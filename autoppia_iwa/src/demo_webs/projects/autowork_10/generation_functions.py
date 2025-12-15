@@ -10,14 +10,25 @@ from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
     FIELD_OPERATORS_MAP_ADD_SKILL,
+    FIELD_OPERATORS_MAP_BROWSE_FAVORITE_EXPERT,
+    FIELD_OPERATORS_MAP_BUDGET_TYPE,
     FIELD_OPERATORS_MAP_CANCEL_HIRE,
     FIELD_OPERATORS_MAP_CLOSE_JOB_POSTING,
+    FIELD_OPERATORS_MAP_CONTACT_EXPERT_MESSAGE,
+    FIELD_OPERATORS_MAP_EDIT_ABOUT,
+    FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD,
+    FIELD_OPERATORS_MAP_FAVORITE_EXPERT,
     FIELD_OPERATORS_MAP_HIRE_BUTTON,
+    FIELD_OPERATORS_MAP_HIRE_LATER_ACTION,
     FIELD_OPERATORS_MAP_HIRING_CONSULTANT,
     FIELD_OPERATORS_MAP_HIRING_TEAM,
+    FIELD_OPERATORS_MAP_NAVBAR_CLICK,
     FIELD_OPERATORS_MAP_POSTING_A_JOB,
+    FIELD_OPERATORS_MAP_PROJECT_SIZE,
+    FIELD_OPERATORS_MAP_RATE_RANGE,
     FIELD_OPERATORS_MAP_SEARCH_SKILL,
     FIELD_OPERATORS_MAP_SUBMIT_JOB,
+    FIELD_OPERATORS_MAP_TIMELINE,
     FIELD_OPERATORS_MAP_WRITING_A_JOB_TITLE,
     FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP,
     POPULAR_SKILLS,
@@ -239,6 +250,18 @@ async def generate_hire_consultation_constraint(task_url: str | None = None, dat
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
 
     return constraints_list
+
+
+async def generate_hire_later_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
+    field_operators = {"expert_name": ["equals", "not_equals"], "expert_slug": ["equals", "not_equals"]}
+    field_map = {"expert_name": "name", "expert_slug": "slug"}
+    constraints_list = _generate_constraints(dataset, field_operators, min_constraints=1, field_map=field_map)
+    return constraints_list
+
+
+async def generate_quick_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return await generate_hire_later_constraint(task_url, dataset)
 
 
 async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
@@ -463,6 +486,32 @@ async def generate_submit_job_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
+async def generate_budget_type_constraint() -> list[dict[str, Any]]:
+    dataset = JOBS
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_BUDGET_TYPE, {"budget_type": "budgetType"})
+
+
+async def generate_project_size_constraint() -> list[dict[str, Any]]:
+    dataset = JOBS
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_PROJECT_SIZE, {"scope": "scope"})
+
+
+async def generate_timeline_constraint() -> list[dict[str, Any]]:
+    dataset = JOBS
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_TIMELINE, {"duration": "duration"})
+
+
+async def generate_rate_range_constraint() -> list[dict[str, Any]]:
+    dataset = JOBS
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_RATE_RANGE, {"rate_from": "rate_from", "rate_to": "rate_to", "budget_type": "budgetType"})
+
+
+async def generate_write_job_description_constraint() -> list[dict[str, Any]]:
+    return [
+        {"field": "description_length", "operator": "greater_equal", "value": 0},
+    ]
+
+
 async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
@@ -556,6 +605,75 @@ async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     return constraints_list
+
+
+async def generate_navbar_click_constraint() -> list[dict[str, Any]]:
+    dataset = [
+        {"label": "Jobs", "href": "/jobs"},
+        {"label": "Hires", "href": "/hires"},
+        {"label": "Experts", "href": "/experts"},
+        {"label": "Favorites", "href": "/favorites"},
+        {"label": "Hire later", "href": "/hire-later"},
+        {"label": "Profile", "href": "/profile/alexsmith"},
+    ]
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_NAVBAR_CLICK)
+
+
+async def generate_favorite_expert_selected_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
+    field_map = {"expert_name": "name", "expert_slug": "slug"}
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_FAVORITE_EXPERT, field_map=field_map)
+
+
+async def generate_favorite_expert_removed_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return await generate_favorite_expert_selected_constraint(task_url, dataset)
+
+
+async def generate_browse_favorite_expert_constraint() -> list[dict[str, Any]]:
+    dataset = [{"source": s} for s in ["favorites_empty_state", "favorites_page"]]
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_BROWSE_FAVORITE_EXPERT)
+
+
+async def generate_hire_later_added_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
+    field_map = {"expert_name": "name", "expert_slug": "slug"}
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_HIRE_LATER_ACTION, field_map=field_map)
+
+
+async def generate_hire_later_removed_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return await generate_hire_later_added_constraint(task_url, dataset)
+
+
+async def generate_hire_later_start_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return await generate_hire_later_added_constraint(task_url, dataset)
+
+
+async def generate_contact_expert_opened_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
+    field_map = {"expert_name": "name", "expert_slug": "slug"}
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_FAVORITE_EXPERT, field_map=field_map)
+
+
+async def generate_contact_expert_message_sent_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    base_dataset = await _ensure_expert_dataset(task_url, dataset)
+    dataset = [{**item, "message_length": random.randint(20, 200)} for item in base_dataset]
+    field_map = {"expert_name": "name", "expert_slug": "slug"}
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_CONTACT_EXPERT_MESSAGE, field_map=field_map)
+
+
+async def generate_edit_about_constraint() -> list[dict[str, Any]]:
+    dataset = [{"username": "alexsmith", "length": 120}, {"username": "guest", "length": 80}]
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_EDIT_ABOUT)
+
+
+async def generate_edit_profile_field_constraint() -> list[dict[str, Any]]:
+    dataset = [
+        {"username": "alexsmith", "value": "Alex Smith"},
+        {"username": "alexsmith", "value": "Project Manager"},
+        {"username": "alexsmith", "value": "San Francisco, CA"},
+        {"username": "alexsmith", "value": "alexsmith@autowork.com"},
+    ]
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD)
 
 
 def generate_to_and_from_constraints(from_op: ComparisonOperator, to_op: ComparisonOperator) -> Any:
