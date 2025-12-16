@@ -817,10 +817,12 @@ class EditAboutEvent(Event, BaseEventValidator):
     event_name: str = "EDIT_ABOUT"
     username: str | None = None
     length: int | None = None
+    about: str | None = None
 
     class ValidationCriteria(BaseModel):
         username: str | CriterionValue | None = None
         length: int | CriterionValue | None = None
+        about: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
@@ -829,6 +831,7 @@ class EditAboutEvent(Event, BaseEventValidator):
             [
                 self._validate_field(self.username, criteria.username),
                 self._validate_field(self.length, criteria.length),
+                self._validate_field(self.about, criteria.about),
             ]
         )
 
@@ -843,6 +846,7 @@ class EditAboutEvent(Event, BaseEventValidator):
             web_agent_id=base_event.web_agent_id,
             username=data.get("username"),
             length=data.get("length"),
+            about=data.get("about"),
         )
 
 
