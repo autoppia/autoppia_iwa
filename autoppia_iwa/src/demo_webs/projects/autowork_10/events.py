@@ -741,27 +741,6 @@ class FavoriteExpertRemovedEvent(FavoriteExpertSelectedEvent):
 
 class BrowseFavoriteExpertEvent(Event, BaseEventValidator):
     event_name: str = "BROWSE_FAVORITE_EXPERT"
-    source: str | None = None
-
-    class ValidationCriteria(BaseModel):
-        source: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return self._validate_field(self.source, criteria.source)
-
-    @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "BrowseFavoriteExpertEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            user_id=base_event.user_id,
-            web_agent_id=base_event.web_agent_id,
-            source=data.get("source"),
-        )
 
 
 class HireLaterAddedEvent(FavoriteExpertSelectedEvent):
@@ -772,91 +751,56 @@ class HireLaterRemovedEvent(FavoriteExpertSelectedEvent):
     event_name: str = "HIRE_LATER_REMOVED"
 
 
-class ContactExpertOpenedEvent(FavoriteExpertSelectedEvent):
+class ContactExpertOpenedEvent(HireButtonClickedEvent):
     event_name: str = "CONTACT_EXPERT_OPENED"
 
 
-class ContactExpertMessageSentEvent(FavoriteExpertSelectedEvent):
+class ContactExpertMessageSentEvent(Event, BaseEventValidator):
     event_name: str = "CONTACT_EXPERT_MESSAGE_SENT"
-    message_length: int | None = None
+    name: str | None = None
+    role: str | None = None
+    country: str | None = None
     message: str | None = None
 
-    class ValidationCriteria(FavoriteExpertSelectedEvent.ValidationCriteria):
-        message_length: int | CriterionValue | None = None
+    class ValidationCriteria(BaseModel):
+        country: str | CriterionValue | None = None
+        name: str | CriterionValue | None = None
+        role: str | CriterionValue | None = None
+        message: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if not criteria:
             return True
         return all(
             [
-                super()._validate_criteria(criteria),
-                self._validate_field(self.message_length, criteria.message_length),
+                self._validate_field(self.country, criteria.country),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.role, criteria.role),
+                self._validate_field(self.message, criteria.message),
             ]
         )
 
     @classmethod
     def parse(cls, backend_event: "BackendEvent") -> "ContactExpertMessageSentEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
+        data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
-            user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
-            expert_name=data.get("expertName"),
-            expert_slug=data.get("expertSlug"),
-            source=data.get("source"),
-            message_length=data.get("messageLength") or data.get("message_length") or data.get("length"),
-            message=data.get("message"),
+            user_id=base_event.user_id,
             country=data.get("country"),
+            name=data.get("expertName"),
             role=data.get("role"),
-        )
-
-
-class EditAboutEvent(Event, BaseEventValidator):
-    event_name: str = "EDIT_ABOUT"
-    username: str | None = None
-    length: int | None = None
-    about: str | None = None
-
-    class ValidationCriteria(BaseModel):
-        username: str | CriterionValue | None = None
-        length: int | CriterionValue | None = None
-        about: str | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        return all(
-            [
-                self._validate_field(self.username, criteria.username),
-                self._validate_field(self.length, criteria.length),
-                self._validate_field(self.about, criteria.about),
-            ]
-        )
-
-    @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "EditAboutEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data or {}
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            user_id=base_event.user_id,
-            web_agent_id=base_event.web_agent_id,
-            username=data.get("username"),
-            length=data.get("length"),
-            about=data.get("about"),
+            message=data.get("message"),
         )
 
 
 class EditProfileNameEvent(Event, BaseEventValidator):
     event_name: str = "EDIT_PROFILE_NAME"
-    username: str | None = None
     value: str | None = None
 
     class ValidationCriteria(BaseModel):
-        username: str | CriterionValue | None = None
         value: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
@@ -864,7 +808,6 @@ class EditProfileNameEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.username, criteria.username),
                 self._validate_field(self.value, criteria.value),
             ]
         )
@@ -878,9 +821,12 @@ class EditProfileNameEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
-            username=data.get("username"),
             value=data.get("value"),
         )
+
+
+class EditAboutEvent(EditProfileNameEvent):
+    event_name: str = "EDIT_ABOUT"
 
 
 class EditProfileTitleEvent(EditProfileNameEvent):

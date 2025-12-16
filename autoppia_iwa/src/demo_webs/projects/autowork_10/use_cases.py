@@ -3,11 +3,21 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 from .events import (
     AddSkillEvent,
     BookAConsultationEvent,
+    BrowseFavoriteExpertEvent,
     CancelHireEvent,
     ChooseBudgetTypeEvent,
     ChooseProjectSizeEvent,
     ChooseTimelineEvent,
     ClosePostAJobWindowEvent,
+    ContactExpertMessageSentEvent,
+    ContactExpertOpenedEvent,
+    EditAboutEvent,
+    EditProfileEmailEvent,
+    EditProfileLocationEvent,
+    EditProfileNameEvent,
+    EditProfileTitleEvent,
+    FavoriteExpertRemovedEvent,
+    FavoriteExpertSelectedEvent,
     HireButtonClickedEvent,
     HireConsultantEvent,
     HireLaterEvent,
@@ -32,6 +42,12 @@ from .generation_functions import (
     generate_budget_type_constraint,
     generate_cancel_hire_constraint,
     generate_close_posting_job_constraint,
+    generate_content_expert_message_sent_constraint,
+    generate_edit_about_constraint,
+    generate_edit_profile_email_constraint,
+    generate_edit_profile_location_constraint,
+    generate_edit_profile_name_constraint,
+    generate_edit_profile_title_constraint,
     generate_hire_button_clicked_constraint,
     generate_hire_consultation_constraint,
     generate_job_posting_constraint,
@@ -635,6 +651,223 @@ NAVBAR_PROFILE_CLICK_USE_USE = UseCase(
         },
     ],
 )
+
+CONTACT_EXPERT_OPENED_USE_CASE = UseCase(
+    name="CONTACT_EXPERT_OPENED",
+    description="The user click a contact for contacting with expert.",
+    event=ContactExpertOpenedEvent,
+    event_source_code=ContactExpertOpenedEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+        {
+            "prompt": "Contact an expert where name not equals 'Chris Martinez' and role contains 'Austra'.",
+            "prompt_for_task_generation": "Contact an expert where name not equals 'Chris Martinez' and role contains 'Austra'.",
+        },
+        {
+            "prompt": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+    ],
+)
+
+CONTACT_EXPERT_MESSAGE_SENT_USE_CASE = UseCase(
+    name="CONTACT_EXPERT_MESSAGE_SENT",
+    description="The user sends a message to an expert after opening the contact expert flow.",
+    event=ContactExpertMessageSentEvent,
+    event_source_code=ContactExpertMessageSentEvent.get_source_code_of_class(),
+    constraints_generator=generate_content_expert_message_sent_constraint,
+    examples=[
+        {
+            "prompt": "Send a message to an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Send a message to an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+        {
+            "prompt": "Send a message to an expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+            "prompt_for_task_generation": "Send a message to an expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+        },
+        {
+            "prompt": "Send a message to an expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+            "prompt_for_task_generation": "Send a message to an expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+        },
+    ],
+)
+
+EDIT_PROFILE_NAME_USE_CASE = UseCase(
+    name="EDIT_PROFILE_NAME",
+    description="The user edits and updates their profile name.",
+    event=EditProfileNameEvent,
+    event_source_code=EditProfileNameEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_name_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile name where name equals 'Emily Patel'.",
+            "prompt_for_task_generation": "Edit profile name where name equals 'Emily Patel'.",
+        },
+        {
+            "prompt": "Edit profile name where name not equals 'John Doe'.",
+            "prompt_for_task_generation": "Edit profile name where name not equals 'John Doe'.",
+        },
+        {
+            "prompt": "Edit profile name where name contains 'Alex'.",
+            "prompt_for_task_generation": "Edit profile name where name contains 'Alex'.",
+        },
+    ],
+)
+
+EDIT_PROFILE_TITLE_USE_CASE = UseCase(
+    name="EDIT_PROFILE_TITLE",
+    description="The user edits and updates their profile title.",
+    event=EditProfileTitleEvent,
+    event_source_code=EditProfileTitleEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_title_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile title where title equals 'Senior Software Engineer'.",
+            "prompt_for_task_generation": "Edit profile title where title equals 'Senior Software Engineer'.",
+        },
+        {
+            "prompt": "Edit profile title where title not equals 'Junior Developer'.",
+            "prompt_for_task_generation": "Edit profile title where title not equals 'Junior Developer'.",
+        },
+        {
+            "prompt": "Edit profile title where title contains 'Engineer'.",
+            "prompt_for_task_generation": "Edit profile title where title contains 'Engineer'.",
+        },
+    ],
+)
+
+EDIT_PROFILE_LOCATION_USE_CASE = UseCase(
+    name="EDIT_PROFILE_LOCATION",
+    description="The user edits and updates their profile location.",
+    event=EditProfileLocationEvent,
+    event_source_code=EditProfileLocationEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_location_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile location where location equals 'New York, USA'.",
+            "prompt_for_task_generation": "Edit profile location where location equals 'New York, USA'.",
+        },
+        {
+            "prompt": "Edit profile location where location not equals 'London, UK'.",
+            "prompt_for_task_generation": "Edit profile location where location not equals 'London, UK'.",
+        },
+        {
+            "prompt": "Edit profile location where location contains 'California'.",
+            "prompt_for_task_generation": "Edit profile location where location contains 'California'.",
+        },
+    ],
+)
+
+EDIT_PROFILE_ABOUT_USE_CASE = UseCase(
+    name="EDIT_ABOUT",
+    description="The user edits and updates their profile 'About' or description section.",
+    event=EditAboutEvent,
+    event_source_code=EditAboutEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_about_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile about where description equals 'Passionate AI developer with 5 years experience'.",
+            "prompt_for_task_generation": "Edit profile about where description equals 'Passionate AI developer with 5 years experience'.",
+        },
+        {
+            "prompt": "Edit profile about where description not equals 'Junior UX designer'.",
+            "prompt_for_task_generation": "Edit profile about where description not equals 'Junior UX designer'.",
+        },
+        {
+            "prompt": "Edit profile about where description contains 'machine learning'.",
+            "prompt_for_task_generation": "Edit profile about where description contains 'machine learning'.",
+        },
+    ],
+)
+EDIT_PROFILE_EMAIL_USE_CASE = UseCase(
+    name="EDIT_PROFILE_EMAIL",
+    description="The user edits and updates their profile email address.",
+    event=EditProfileEmailEvent,
+    event_source_code=EditProfileEmailEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_email_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile email where email equals 'emily.patel@example.com'.",
+            "prompt_for_task_generation": "Edit profile email where email equals 'emily.patel@example.com'.",
+        },
+        {
+            "prompt": "Edit profile email where email not equals 'john.doe@example.com'.",
+            "prompt_for_task_generation": "Edit profile email where email not equals 'john.doe@example.com'.",
+        },
+        {
+            "prompt": "Edit profile email where email contains 'gmail.com'.",
+            "prompt_for_task_generation": "Edit profile email where email contains 'gmail.com'.",
+        },
+    ],
+)
+
+BROWSE_FAVORITE_USE_CASE = UseCase(
+    name="BROWSE_FAVORITE_EXPERT",
+    description="The user edits and updates their profile email address.",
+    event=BrowseFavoriteExpertEvent,
+    event_source_code=BrowseFavoriteExpertEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "Browse to select the favorite expert.",
+            "prompt_for_task_generation": "Browse to select the favorite expert.",
+        },
+        {
+            "prompt": "Go to select the favorite expert.",
+            "prompt_for_task_generation": "Go to select the favorite expert.",
+        },
+    ],
+)
+
+FAVORITE_EXPERT_SELECTED_USE_CASE = UseCase(
+    name="FAVORITE_EXPERT_SELECTED",
+    description="The user selects an expert to mark them as favorite.",
+    event=FavoriteExpertSelectedEvent,
+    event_source_code=FavoriteExpertSelectedEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Select favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Select favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+        {
+            "prompt": "Select favorite expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+            "prompt_for_task_generation": "Select favorite expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+        },
+        {
+            "prompt": "Select favorite expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+            "prompt_for_task_generation": "Select favorite expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+        },
+    ],
+)
+
+FAVORITE_EXPERT_REMOVED_USE_CASE = UseCase(
+    name="FAVORITE_EXPERT_REMOVED",
+    description="The user removes an expert from their favorites.",
+    event=FavoriteExpertRemovedEvent,
+    event_source_code=FavoriteExpertRemovedEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Remove favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Remove favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+        {
+            "prompt": "Remove favorite expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+            "prompt_for_task_generation": "Remove favorite expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+        },
+        {
+            "prompt": "Remove favorite expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+            "prompt_for_task_generation": "Remove favorite expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+        },
+    ],
+)
+
+
 #
 # NAVBAR_PROFILE_CLICK_USE_USE = UseCase(
 #     name="NAVBAR_EXPERTS_CLICK",
@@ -682,4 +915,14 @@ ALL_USE_CASES = [
     NAVBAR_HIRE_LATER_CLICK_USE_USE,
     NAVBAR_PROFILE_CLICK_USE_USE,
     NAVBAR_HIRES_CLICK_USE_USE,
+    CONTACT_EXPERT_OPENED_USE_CASE,
+    CONTACT_EXPERT_MESSAGE_SENT_USE_CASE,
+    EDIT_PROFILE_NAME_USE_CASE,
+    EDIT_PROFILE_ABOUT_USE_CASE,
+    EDIT_PROFILE_EMAIL_USE_CASE,
+    EDIT_PROFILE_TITLE_USE_CASE,
+    EDIT_PROFILE_LOCATION_USE_CASE,
+    BROWSE_FAVORITE_USE_CASE,
+    FAVORITE_EXPERT_SELECTED_USE_CASE,
+    FAVORITE_EXPERT_REMOVED_USE_CASE,
 ]
