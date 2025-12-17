@@ -515,6 +515,181 @@ class ClearSelectionEvent(Event, BaseEventValidator):
     event_name: str = "CLEAR_SELECTION"
 
 
+# ---------------------------------------------------------------------------
+# Pagination
+# ---------------------------------------------------------------------------
+
+
+class EmailsNextPageEvent(Event, BaseEventValidator):
+    event_name: str = "EMAILS_NEXT_PAGE"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EmailsNextPageEvent":
+        base = Event.parse(backend_event)
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+        )
+
+
+class EmailsPrevPageEvent(EmailsNextPageEvent):
+    event_name: str = "EMAILS_PREV_PAGE"
+
+
+# ---------------------------------------------------------------------------
+# Templates
+# ---------------------------------------------------------------------------
+
+
+class TemplatesViewedEvent(Event, BaseEventValidator):
+    event_name: str = "VIEW_TEMPLATES"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "TemplatesViewedEvent":
+        base = Event.parse(backend_event)
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+        )
+
+
+class TemplateSelectedEvent(Event, BaseEventValidator):
+    event_name: str = "TEMPLATE_SELECTED"
+    template_name: str | None = None
+    subject: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        template_name: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.template_name, criteria.template_name),
+                self._validate_field(self.subject, criteria.subject),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "TemplateSelectedEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            template_name=data.get("template_name"),
+            subject=data.get("subject"),
+        )
+
+
+class TemplateBodyEditedEvent(Event, BaseEventValidator):
+    event_name: str = "TEMPLATE_BODY_EDITED"
+    template_name: str | None = None
+    subject: str | None = None
+    body: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        template_name: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        body: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.template_name, criteria.template_name),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.body, criteria.body),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "TemplateBodyEditedEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            template_name=data.get("template_name"),
+            subject=data.get("subject"),
+            body=data.get("body"),
+        )
+
+
+class TemplateSentEvent(Event, BaseEventValidator):
+    event_name: str = "TEMPLATE_SENT"
+    template_name: str | None = None
+    subject: str | None = None
+    to: str | None = None
+    body: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        template_name: str | CriterionValue | None = None
+        subject: str | CriterionValue | None = None
+        to: str | CriterionValue | None = None
+        body: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.template_name, criteria.template_name),
+                self._validate_field(self.subject, criteria.subject),
+                self._validate_field(self.to, criteria.to),
+                self._validate_field(self.body, criteria.body),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "TemplateSentEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            template_name=data.get("template_name"),
+            subject=data.get("subject"),
+            to=data.get("to"),
+            body=data.get("body"),
+        )
+
+
+class TemplateSavedDraftEvent(TemplateSentEvent):
+    event_name: str = "TEMPLATE_SAVED_DRAFT"
+
+
+class TemplateCanceledEvent(TemplateSentEvent):
+    event_name: str = "TEMPLATE_CANCELED"
+
+
 EVENTS = [
     ViewEmailEvent,
     StarEmailEvent,
@@ -533,6 +708,14 @@ EVENTS = [
     ThemeChangedEvent,
     SearchEmailEvent,
     ClearSelectionEvent,
+    EmailsNextPageEvent,
+    EmailsPrevPageEvent,
+    TemplatesViewedEvent,
+    TemplateSelectedEvent,
+    TemplateBodyEditedEvent,
+    TemplateSentEvent,
+    TemplateSavedDraftEvent,
+    TemplateCanceledEvent,
 ]
 BACKEND_EVENT_TYPES = {
     "VIEW_EMAIL": ViewEmailEvent,
@@ -552,4 +735,12 @@ BACKEND_EVENT_TYPES = {
     "THEME_CHANGED": ThemeChangedEvent,
     "SEARCH_EMAIL": SearchEmailEvent,
     "CLEAR_SELECTION": ClearSelectionEvent,
+    "EMAILS_NEXT_PAGE": EmailsNextPageEvent,
+    "EMAILS_PREV_PAGE": EmailsPrevPageEvent,
+    "VIEW_TEMPLATES": TemplatesViewedEvent,
+    "TEMPLATE_SELECTED": TemplateSelectedEvent,
+    "TEMPLATE_BODY_EDITED": TemplateBodyEditedEvent,
+    "TEMPLATE_SENT": TemplateSentEvent,
+    "TEMPLATE_SAVED_DRAFT": TemplateSavedDraftEvent,
+    "TEMPLATE_CANCELED": TemplateCanceledEvent,
 }

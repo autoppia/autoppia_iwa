@@ -141,18 +141,7 @@ def _find_line_number(text: str, needle: str) -> int:
     return 0
 
 
-DYNAMIC_RULES = {
-    "D1": {
-        "title": "D1 - Structural variability via seed/layout",
-        "patterns": ["SeedContext.tsx", "useSeedLayout.ts", "LayoutProvider.tsx"],
-        "keywords": ["seed", "layout"],
-    },
-    "D3": {
-        "title": "D3 - Dynamic UI tokens (ids/text/labels)",
-        "patterns": ["dynamicTokens.ts", "dynamicCopy.ts", "tokenFactory.ts", "DynamicText.ts"],
-        "keywords": ["variant", "seed", "text"],
-    },
-}
+DYNAMIC_RULES = {}
 
 
 def _analyze_dynamic_layers(

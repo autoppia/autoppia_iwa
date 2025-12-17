@@ -302,6 +302,63 @@ class QuickReorderEvent(Event, BaseEventValidator):
         )
 
 
+class ViewAllRestaurantsEvent(Event, BaseEventValidator):
+    """Event triggered when user goes back to all restaurants list."""
+
+    event_name: str = "VIEW_ALL_RESTAURANTS"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        return True
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ViewAllRestaurantsEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
+class EditCartItemEvent(Event, BaseEventValidator):
+    """Event triggered when editing an item from the cart."""
+
+    event_name: str = "EDIT_CART_ITEM"
+    item: str
+    restaurant: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        item: str | CriterionValue | None = None
+        restaurant: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.item, criteria.item),
+                self._validate_field(self.restaurant, criteria.restaurant),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "EditCartItemEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            item=data.get("itemName", ""),
+            restaurant=data.get("restaurantName"),
+        )
+
+
 class DropoffPreferenceEvent(Event, BaseEventValidator):
     event_name: str = "DROPOFF_PREFERENCE"
     delivery_preference: str
@@ -612,6 +669,125 @@ class AddressAddedEvent(Event, BaseEventValidator):
         )
 
 
+class RestaurantNextPageEvent(Event, BaseEventValidator):
+    event_name: str = "RESTAURANT_NEXT_PAGE"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "RestaurantNextPageEvent":
+        base = Event.parse(backend_event)
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+        )
+
+
+class RestaurantPrevPageEvent(RestaurantNextPageEvent):
+    event_name: str = "RESTAURANT_PREV_PAGE"
+
+
+class ReviewSubmittedEvent(Event, BaseEventValidator):
+    event_name: str = "REVIEW_SUBMITTED"
+    author: str
+    rating: int
+    comment: str
+    cuisine: str
+    restaurant_name: str
+    restaurant_rating: float
+
+    class ValidationCriteria(BaseModel):
+        author: str | CriterionValue | None = None
+        rating: int | CriterionValue | None = None
+        restaurant_name: str | CriterionValue | None = None
+        cuisine: str | CriterionValue | None = None
+        comment: str | CriterionValue | None = None
+        restaurant_rating: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.author, criteria.author),
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.restaurant_name, criteria.restaurant_name),
+                self._validate_field(self.cuisine, criteria.cuisine),
+                self._validate_field(self.comment, criteria.comment),
+                self._validate_field(self.restaurant_rating, criteria.restaurant_rating),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ReviewSubmittedEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            author=data.get("author", ""),
+            rating=data.get("rating", 0),
+            comment=data.get("comment", ""),
+            restaurant_name=data.get("restaurantName"),
+            restaurant_rating=data.get("restaurantRating"),
+            cuisine=data.get("cuisine"),
+        )
+
+
+class DeliveryPrioritySelectedEvent(Event, BaseEventValidator):
+    event_name: str = "DELIVERY_PRIORITY_SELECTED"
+    items: list[CheckoutItem]
+    priority: str
+
+    class ValidationCriteria(BaseModel):
+        item: str | CriterionValue | None = None
+        quantity: int | CriterionValue | None = None
+        price: float | CriterionValue | None = None
+        priority: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+        # Validate event-level fields (priority, name)
+        if criteria.priority is not None and not self._validate_field(self.priority, criteria.priority):
+            return False
+
+        if criteria.name is not None and not self._validate_field(self.name, criteria.name):
+            return False
+
+        if len(self.items) == 0:
+            return False
+
+        for item in self.items:
+            if self._validate_field(item.name, criteria.item) and self._validate_field(item.quantity, criteria.quantity) and self._validate_field(item.price, criteria.price):
+                return True
+        return False
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "DeliveryPrioritySelectedEvent":
+        base = Event.parse(backend_event)
+        data = backend_event.data
+        items = [CheckoutItem(**item) for item in data.get("items", [])]
+        return cls(
+            event_name=base.event_name,
+            timestamp=base.timestamp,
+            web_agent_id=base.web_agent_id,
+            user_id=base.user_id,
+            items=items,
+            priority=data.get("priority", ""),
+        )
+
+
 EVENTS = [
     SearchRestaurantEvent,
     ViewRestaurantEvent,
@@ -628,6 +804,12 @@ EVENTS = [
     PlaceOrderEvent,
     QuickOrderStartedEvent,
     QuickReorderEvent,
+    ViewAllRestaurantsEvent,
+    EditCartItemEvent,
+    RestaurantNextPageEvent,
+    RestaurantPrevPageEvent,
+    ReviewSubmittedEvent,
+    DeliveryPrioritySelectedEvent,
 ]
 BACKEND_EVENT_TYPES = {
     "SEARCH_DELIVERY_RESTAURANT": SearchRestaurantEvent,
@@ -645,4 +827,10 @@ BACKEND_EVENT_TYPES = {
     "ADDRESS_ADDED": AddressAddedEvent,
     "QUICK_ORDER_STARTED": QuickOrderStartedEvent,
     "QUICK_REORDER": QuickReorderEvent,
+    "VIEW_ALL_RESTAURANTS": ViewAllRestaurantsEvent,
+    "EDIT_CART_ITEM": EditCartItemEvent,
+    "RESTAURANT_NEXT_PAGE": RestaurantNextPageEvent,
+    "RESTAURANT_PREV_PAGE": RestaurantPrevPageEvent,
+    "REVIEW_SUBMITTED": ReviewSubmittedEvent,
+    "DELIVERY_PRIORITY_SELECTED": DeliveryPrioritySelectedEvent,
 }

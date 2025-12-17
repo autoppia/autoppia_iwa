@@ -1,11 +1,16 @@
 from ...classes import UseCase
 from .events import (
+    AboutFeatureClickEvent,
     AboutPageViewEvent,
     BookRestaurantEvent,
     CollapseMenuEvent,
+    ContactCardClickEvent,
     ContactEvent,
+    ContactPageViewEvent,
     CountrySelectedEvent,
     DateDropdownOpenedEvent,
+    HelpCategorySelectedEvent,
+    HelpFaqToggledEvent,
     HelpPageViewEvent,
     OccasionSelectedEvent,
     PeopleDropdownOpenedEvent,
@@ -17,11 +22,15 @@ from .events import (
     ViewRestaurantEvent,
 )
 from .generation_functions import (
+    generate_about_feature_click_constraints,
     generate_book_restaurant_constraints,
     generate_collapse_menu_constraints,
+    generate_contact_card_click_constraints,
     generate_contact_constraints,
     generate_country_selected_constraints,
     generate_date_dropdown_opened_constraints,
+    generate_help_category_selected_constraints,
+    generate_help_faq_toggled_constraints,
     generate_occasion_selected_constraints,
     generate_people_dropdown_opened_constraints,
     generate_reservation_complete_constraints,
@@ -511,6 +520,56 @@ HELP_PAGE_USE_CASE = UseCase(
     ],
 )
 
+ABOUT_FEATURE_CLICK_USE_CASE = UseCase(
+    name="ABOUT_FEATURE_CLICK",
+    description="Triggered when a user clicks a highlighted feature on the About page.",
+    event=AboutFeatureClickEvent,
+    event_source_code=AboutFeatureClickEvent.get_source_code_of_class(),
+    constraints_generator=generate_about_feature_click_constraints,
+    examples=[
+        {"prompt": "Click the live availability feature on the About page.", "prompt_for_task_generation": "Click the live availability feature on the About page."},
+    ],
+)
+
+CONTACT_PAGE_VIEW_USE_CASE = UseCase(
+    name="CONTACT_PAGE_VIEW",
+    description="Triggered when the Contact page is viewed.",
+    event=ContactPageViewEvent,
+    event_source_code=ContactPageViewEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[
+        {"prompt": "Open the contact page.", "prompt_for_task_generation": "Open the contact page."},
+        {"prompt": "Go to the content page.", "prompt_for_task_generation": "Go to the content page."},
+    ],
+)
+
+CONTACT_CARD_CLICK_USE_CASE = UseCase(
+    name="CONTACT_CARD_CLICK",
+    description="Triggered when a specific contact card (email/phone/chat) is clicked.",
+    event=ContactCardClickEvent,
+    event_source_code=ContactCardClickEvent.get_source_code_of_class(),
+    constraints_generator=generate_contact_card_click_constraints,
+    examples=[{"prompt": "Click the phone contact card on the contact page.", "prompt_for_task_generation": "Click the phone contact card."}],
+)
+
+HELP_CATEGORY_SELECTED_USE_CASE = UseCase(
+    name="HELP_CATEGORY_SELECTED",
+    description="Triggered when a help/support category is selected.",
+    event=HelpCategorySelectedEvent,
+    event_source_code=HelpCategorySelectedEvent.get_source_code_of_class(),
+    constraints_generator=generate_help_category_selected_constraints,
+    examples=[{"prompt": "Select the Payments category in Help.", "prompt_for_task_generation": "Select the Payments category in Help."}],
+)
+
+HELP_FAQ_TOGGLED_USE_CASE = UseCase(
+    name="HELP_FAQ_TOGGLED",
+    description="Triggered when a FAQ item is expanded or collapsed.",
+    event=HelpFaqToggledEvent,
+    event_source_code=HelpFaqToggledEvent.get_source_code_of_class(),
+    constraints_generator=generate_help_faq_toggled_constraints,
+    examples=[{"prompt": "Expand the refund FAQ.", "prompt_for_task_generation": "Expand the refund FAQ."}],
+)
+
 ###############################################################################
 # UPDATED FINAL LIST: ALL_USE_CASES
 ###############################################################################
@@ -531,4 +590,9 @@ ALL_USE_CASES = [
     CONTACT_INFO_USE_CASE,
     ABOUT_PAGE_USE_CASE,
     HELP_PAGE_USE_CASE,
+    ABOUT_FEATURE_CLICK_USE_CASE,
+    CONTACT_PAGE_VIEW_USE_CASE,
+    CONTACT_CARD_CLICK_USE_CASE,
+    HELP_CATEGORY_SELECTED_USE_CASE,
+    HELP_FAQ_TOGGLED_USE_CASE,
 ]

@@ -15,8 +15,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
-import aiohttp
+import requests
 from tqdm import tqdm
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
@@ -29,7 +30,7 @@ from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.llms.interfaces import LLMConfig
 from autoppia_iwa.src.llms.service import LLMFactory
-from autoppia_iwa.src.web_agents.random.agent import RandomClickerWebAgent
+from autoppia_iwa.src.web_agents.examples.random_clicker.agent import RandomClickerWebAgent
 
 from ..deck.models import WebProjectDeck
 from ..dynamic.dynamic_validation import DynamicGateConfig, DynamicValidationOutcome, run_dynamic_validation
@@ -649,10 +650,10 @@ async def _check_frontend_health(url: str) -> tuple[bool, str]:
     if not url:
         return False, "frontend_url not configured"
     try:
-        async with aiohttp.ClientSession() as session, session.get(url, timeout=5) as resp:
-            if resp.status == 200:
-                return True, "HTTP 200"
-            return False, f"Status {resp.status}"
+        resp = requests.get(url, timeout=5)
+        if resp.status_code == 200:
+            return True, "HTTP 200"
+        return False, f"Status {resp.status_code}"
     except Exception as exc:
         return False, str(exc)
 
@@ -684,13 +685,15 @@ def _check_task_prompts(
         if constraints:
             for constraint in constraints:
                 value = constraint.get("value")
+                field = constraint.get("field")
+                if _is_sensitive_field(field):
+                    continue
                 values = value if isinstance(value, list) else [value]
                 for val in values:
                     if val is None:
                         continue
                     sval = str(val).strip().lower()
                     if sval and sval not in prompt_lower:
-                        field = constraint.get("field")
                         constraint_failures.append(f"{task.id}:{field}->{val}")
                         prompt_states[task.id] = "PROMPT_FAIL"
 
@@ -973,6 +976,16 @@ def _strip_code_fences(text: str) -> str:
     return stripped
 
 
+SENSITIVE_FIELD_KEYS = {"password", "pass", "pwd", "token", "otp", "secret"}
+
+
+def _is_sensitive_field(field: str | None) -> bool:
+    if not field:
+        return False
+    lower = field.lower()
+    return any(key in lower for key in SENSITIVE_FIELD_KEYS)
+
+
 def _parse_llm_json_response(raw_response: Any) -> dict[str, Any]:
     if isinstance(raw_response, dict):
         return raw_response
@@ -1163,122 +1176,155 @@ def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     parser.add_argument("--deck", type=Path, help="Optional path to deck file when validating a single project")
     parser.add_argument("--config", type=Path, help="Path to config YAML/JSON to auto-generate the IWA module before verification.")
     parser.add_argument("--force-config", action="store_true", help="Overwrite existing module directory when --config is provided.")
+    parser.add_argument("--code-checks", "--code_checks", action="store_true", help="Run code checks (procedural/deck/frontend). If neither flag is provided, both code and results checks run.")
+    parser.add_argument("--results-checks", "--results_checks", action="store_true", help="Run results checks (LLM/dynamic/agent). If neither flag is provided, both code and results checks run.")
+    parser.add_argument("--frontend-root", type=Path, help="Override the frontend/demo webs root directory (defaults to modules/webs_demo or ../autoppia_webs_demo).")
+    parser.add_argument("--frontend-port", type=int, help="Override the frontend_url port (e.g., 8000 to hit a local dev server).")
+    parser.add_argument("--frontend-base-url", help="Override the entire frontend_url (e.g., http://localhost:8000).")
     return parser.parse_args(list(argv))
 
 
-def run_full_verification(project_slug: str, deck_path: Path | None = None) -> tuple[ProjectReport, dict[str, dict], WebProject | None]:
-    total_steps = 7
+def run_full_verification(
+    project_slug: str,
+    deck_path: Path | None = None,
+    *,
+    enable_code_checks: bool = True,
+    enable_results_checks: bool = True,
+    frontend_root: Path | None = None,
+    override_frontend_url: str | None = None,
+    override_frontend_port: int | None = None,
+) -> tuple[ProjectReport, dict[str, dict], WebProject | None]:
+    total_steps = 1  # procedural/deck/use-case checks always run to load the project
+    if enable_code_checks:
+        total_steps += 1  # frontend reachability probe
+    if enable_results_checks:
+        total_steps += 4  # task/test pipeline, dynamic, random, semantic
+    if enable_code_checks:
+        total_steps += 1  # frontend static analysis
+
     phase_bar = tqdm(total=total_steps, desc=f"{project_slug} phases", unit="phase", leave=False)
+    step_idx = 1
     try:
-        print(f"  [1/{total_steps}] Metadata & deck checks…")
+        print(f"  [{step_idx}/{total_steps}] Metadata & deck checks…")
         report, web_project = verify_project(project_slug, deck_path=deck_path)
         print(f"    -> {'PASS' if report.ok else 'ISSUES DETECTED'} (see report below)")
         phase_bar.update(1)
+        step_idx += 1
         task_summaries: dict[str, dict] = {}
 
         if not web_project:
             report.add(False, "Load WebProject for task validation", "No WebProject available", section=SECTION_PROCEDURAL)
-            report.frontend_dir = _locate_frontend_dir(None)
+            report.frontend_dir = _locate_frontend_dir(None, frontend_root)
             analysis = analyze_frontend(project_slug, report.frontend_dir)
             _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
             report.web_analysis = analysis
             return report, task_summaries, None
 
-        print(f"  [2/{total_steps}] Frontend reachability probe…")
-        frontend_ok, frontend_detail = asyncio.run(_check_frontend_health(getattr(web_project, "frontend_url", "")))
-        report.add(
-            frontend_ok,
-            "Frontend health check",
-            frontend_detail if frontend_ok else f"Unreachable: {frontend_detail}",
-            section=SECTION_PROCEDURAL,
-        )
-        print(f"    -> {'Reachable' if frontend_ok else 'Unavailable'} ({frontend_detail})")
-        phase_bar.update(1)
-        if not frontend_ok:
-            print("    -> Skipping remaining phases because frontend is unreachable.")
-            report.frontend_dir = _locate_frontend_dir(web_project)
-            analysis = analyze_frontend(project_slug, report.frontend_dir)
-            _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
-            report.web_analysis = analysis
-            return report, task_summaries, web_project
+        _apply_frontend_overrides(web_project, override_frontend_url, override_frontend_port)
+
+        if enable_code_checks:
+            print(f"  [{step_idx}/{total_steps}] Frontend reachability probe…")
+            frontend_ok, frontend_detail = asyncio.run(_check_frontend_health(getattr(web_project, "frontend_url", "")))
+            report.add(
+                frontend_ok,
+                "Frontend health check",
+                frontend_detail if frontend_ok else f"Unreachable: {frontend_detail}",
+                section=SECTION_PROCEDURAL,
+            )
+            print(f"    -> {'Reachable' if frontend_ok else 'Unavailable'} ({frontend_detail})")
+            phase_bar.update(1)
+            step_idx += 1
+            if not frontend_ok:
+                print("    -> Skipping remaining phases because frontend is unreachable.")
+                report.frontend_dir = _locate_frontend_dir(web_project, frontend_root)
+                analysis = analyze_frontend(project_slug, report.frontend_dir)
+                _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
+                report.web_analysis = analysis
+                return report, task_summaries, web_project
 
         tasks_for_checks: list[Task] = []
         generation_error = None
 
-        print(f"  [3/{total_steps}] Task generation & prompt/test validation…")
-        try:
-            tasks_for_checks = asyncio.run(_generate_tasks_via_pipeline(web_project))
-            if tasks_for_checks:
-                report.add(True, "Generate tasks via pipeline", section=SECTION_LLM_TASKS)
-                print(f"    -> Generated {len(tasks_for_checks)} tasks via pipeline")
-            else:
-                generation_error = "Pipeline returned no tasks (LLM unavailable or misconfigured)"
+        if enable_results_checks:
+            print(f"  [{step_idx}/{total_steps}] Task generation & prompt/test validation…")
+            try:
+                tasks_for_checks = asyncio.run(_generate_tasks_via_pipeline(web_project))
+                if tasks_for_checks:
+                    report.add(True, "Generate tasks via pipeline", section=SECTION_LLM_TASKS)
+                    print(f"    -> Generated {len(tasks_for_checks)} tasks via pipeline")
+                else:
+                    generation_error = "Pipeline returned no tasks (LLM unavailable or misconfigured)"
+                    report.add(False, "Generate tasks via pipeline", generation_error, section=SECTION_LLM_TASKS)
+                    print(f"    -> Failed: {generation_error}")
+            except Exception as exc:
+                generation_error = str(exc)
                 report.add(False, "Generate tasks via pipeline", generation_error, section=SECTION_LLM_TASKS)
                 print(f"    -> Failed: {generation_error}")
-        except Exception as exc:
-            generation_error = str(exc)
-            report.add(False, "Generate tasks via pipeline", generation_error, section=SECTION_LLM_TASKS)
-            print(f"    -> Failed: {generation_error}")
-        if tasks_for_checks:
-            tasks_for_checks = _limit_tasks_per_use_case(tasks_for_checks, TASKS_PER_USE_CASE)
-            for task in tasks_for_checks:
-                _ensure_task_entry(task_summaries, task)
-            _check_task_prompts(tasks_for_checks, report, task_summaries, section=SECTION_LLM_TASKS)
-            asyncio.run(_llm_validate_tasks(tasks_for_checks, LLM_SAMPLE_SIZE, report, task_summaries, section=SECTION_LLM_TASKS))
-            _run_llm_test_generation_pipeline(web_project, tasks_for_checks, report, task_summaries)
-        else:
-            report.add(False, "Task validation skipped", generation_error or "No tasks available", section=SECTION_LLM_TASKS)
-            print("    -> Skipping downstream phases (no tasks)")
-        phase_bar.update(1)
-
-        print(f"  [4/{total_steps}] Dynamic mutation validation…")
-        _execute_dynamic_gate(report, web_project)
-        phase_bar.update(1)
-
-        print(f"  [5/{total_steps}] RandomClicker evaluation…")
-        if tasks_for_checks:
-            random_results, random_errors = asyncio.run(_evaluate_tasks_with_agent(web_project, tasks_for_checks, RandomClickerWebAgent(id="random_clicker", name="RandomClicker")))
-            anomalies = [task.id for task, result in random_results if getattr(result, "final_score", 0) >= 1]
-            for task, result in random_results:
-                entry = _ensure_task_entry(task_summaries, task)
-                entry["random_status"] = "RANDOM_OK" if getattr(result, "final_score", 0) == 0 else "RANDOM_ANOMALY"
-                entry["random_score"] = getattr(result, "final_score", 0)
-            report.add(
-                not anomalies,
-                "RandomClicker evaluation",
-                None if not anomalies else f"Unexpected success on tasks: {', '.join(anomalies)}",
-                section=SECTION_LLM_TASKS,
-            )
-            report.random_stats = {
-                "attempts": len(random_results),
-                "successes": len(anomalies),
-                "errors": len(random_errors),
-            }
-            if random_errors:
-                report.add(False, "RandomClicker execution errors", "; ".join(random_errors), section=SECTION_LLM_TASKS)
-                print(f"    -> RandomClicker errors: {'; '.join(random_errors)}")
-            if anomalies:
-                print(f"    -> RandomClicker anomalies on tasks: {', '.join(anomalies)}")
+            if tasks_for_checks:
+                tasks_for_checks = _limit_tasks_per_use_case(tasks_for_checks, TASKS_PER_USE_CASE)
+                for task in tasks_for_checks:
+                    _ensure_task_entry(task_summaries, task)
+                _check_task_prompts(tasks_for_checks, report, task_summaries, section=SECTION_LLM_TASKS)
+                asyncio.run(_llm_validate_tasks(tasks_for_checks, LLM_SAMPLE_SIZE, report, task_summaries, section=SECTION_LLM_TASKS))
+                _run_llm_test_generation_pipeline(web_project, tasks_for_checks, report, task_summaries)
             else:
-                print("    -> RandomClicker produced 0 successes (expected)")
-        else:
-            print("    -> Skipped (no tasks)")
-        phase_bar.update(1)
+                report.add(False, "Task validation skipped", generation_error or "No tasks available", section=SECTION_LLM_TASKS)
+                print("    -> Skipping downstream phases (no tasks)")
+            phase_bar.update(1)
+            step_idx += 1
 
-        print(f"  [6/{total_steps}] Semantic review of successful solutions…")
-        if tasks_for_checks:
-            success_pairs: list[tuple[Task, Any]] = []
-            asyncio.run(_semantic_check_solutions(success_pairs, task_summaries))
-        else:
-            print("    -> Skipped (no agent successes)")
-        phase_bar.update(1)
+            print(f"  [{step_idx}/{total_steps}] Dynamic mutation validation…")
+            _execute_dynamic_gate(report, web_project)
+            phase_bar.update(1)
+            step_idx += 1
 
-        print(f"  [7/{total_steps}] Frontend source analysis & screenshots…")
-        report.frontend_dir = _locate_frontend_dir(web_project)
-        analysis = analyze_frontend(project_slug, report.frontend_dir)
-        _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
-        report.web_analysis = analysis
-        phase_bar.update(1)
+            print(f"  [{step_idx}/{total_steps}] RandomClicker evaluation…")
+            if tasks_for_checks:
+                random_results, random_errors = asyncio.run(_evaluate_tasks_with_agent(web_project, tasks_for_checks, RandomClickerWebAgent(id="random_clicker", name="RandomClicker")))
+                anomalies = [task.id for task, result in random_results if getattr(result, "final_score", 0) >= 1]
+                for task, result in random_results:
+                    entry = _ensure_task_entry(task_summaries, task)
+                    entry["random_status"] = "RANDOM_OK" if getattr(result, "final_score", 0) == 0 else "RANDOM_ANOMALY"
+                    entry["random_score"] = getattr(result, "final_score", 0)
+                report.add(
+                    not anomalies,
+                    "RandomClicker evaluation",
+                    None if not anomalies else f"Unexpected success on tasks: {', '.join(anomalies)}",
+                    section=SECTION_LLM_TASKS,
+                )
+                report.random_stats = {
+                    "attempts": len(random_results),
+                    "successes": len(anomalies),
+                    "errors": len(random_errors),
+                }
+                if random_errors:
+                    report.add(False, "RandomClicker execution errors", "; ".join(random_errors), section=SECTION_LLM_TASKS)
+                    print(f"    -> RandomClicker errors: {'; '.join(random_errors)}")
+                if anomalies:
+                    print(f"    -> RandomClicker anomalies on tasks: {', '.join(anomalies)}")
+                else:
+                    print("    -> RandomClicker produced 0 successes (expected)")
+            else:
+                print("    -> Skipped (no tasks)")
+            phase_bar.update(1)
+            step_idx += 1
+
+            print(f"  [{step_idx}/{total_steps}] Semantic review of successful solutions…")
+            if tasks_for_checks:
+                success_pairs: list[tuple[Task, Any]] = []
+                asyncio.run(_semantic_check_solutions(success_pairs, task_summaries))
+            else:
+                print("    -> Skipped (no agent successes)")
+            phase_bar.update(1)
+            step_idx += 1
+
+        if enable_code_checks:
+            print(f"  [{step_idx}/{total_steps}] Frontend source analysis & screenshots…")
+            report.frontend_dir = _locate_frontend_dir(web_project, frontend_root)
+            analysis = analyze_frontend(project_slug, report.frontend_dir)
+            _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
+            report.web_analysis = analysis
+            phase_bar.update(1)
         return report, task_summaries, web_project
     finally:
         phase_bar.close()
@@ -1306,15 +1352,55 @@ def _print_task_summary(task_summaries: dict[str, dict]) -> None:
             print(f"    Semantic notes: {info['semantic_details']}")
 
 
-def _locate_frontend_dir(web_project: WebProject | None) -> Path | None:
+def _locate_frontend_dir(web_project: WebProject | None, frontend_root: Path | None = None) -> Path | None:
     if web_project is None:
         return None
     project_id = (getattr(web_project, "id", "") or "").lower()
-    root = Path("modules") / "webs_demo"
-    if not root.exists():
+    if not project_id:
         return None
-    candidates = [path for path in root.iterdir() if path.is_dir() and project_id and project_id in path.name.lower()]
-    return candidates[0] if candidates else None
+
+    candidate_roots: list[Path] = []
+    if frontend_root:
+        candidate_roots.append(Path(frontend_root))
+    env_root = os.getenv("AUTOPPIA_WEB_FRONTENDS_ROOT")
+    if env_root:
+        candidate_roots.append(Path(env_root))
+    candidate_roots.append(Path("modules") / "webs_demo")
+    candidate_roots.append(PROJECT_BASE_DIR.parent.parent / "autoppia_webs_demo")
+
+    seen: set[Path] = set()
+    for root in candidate_roots:
+        root = Path(root)
+        if root in seen:
+            continue
+        seen.add(root)
+        if not root.exists():
+            continue
+        matches = [path for path in root.iterdir() if path.is_dir() and project_id in path.name.lower()]
+        if matches:
+            return matches[0]
+    return None
+
+
+def _apply_frontend_overrides(web_project: WebProject, override_url: str | None, override_port: int | None) -> None:
+    """Override frontend_url via CLI flags without mutating the module files."""
+    if not web_project:
+        return
+    if override_url:
+        web_project.frontend_url = override_url
+        return
+    if override_port and getattr(web_project, "frontend_url", ""):
+        parsed = urlsplit(web_project.frontend_url)
+        scheme = parsed.scheme or "http"
+        host = parsed.hostname or ""
+        auth = ""
+        if parsed.username:
+            auth = parsed.username
+            if parsed.password:
+                auth += f":{parsed.password}"
+            auth += "@"
+        netloc = f"{auth}{host}:{override_port}"
+        web_project.frontend_url = urlunsplit((scheme, netloc, parsed.path, parsed.query, parsed.fragment))
 
 
 def _attach_screenshot_reviews(analysis: WebProjectAnalysis, project_id: str | None) -> None:
@@ -1342,6 +1428,8 @@ def _write_codex_report(
     web_project: WebProject | None,
     frontend_dir: Path | None,
     frontend_analysis: WebProjectAnalysis | None,
+    frontend_root: Path | None,
+    run_code_checks: bool,
 ) -> None:
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
@@ -1397,81 +1485,97 @@ def _write_codex_report(
         next_steps.extend(task_issue_lines)
 
     lines.extend(["", "## Web Project Analysis"])
-    if frontend_analysis is None:
-        frontend_dir = frontend_dir or _locate_frontend_dir(web_project)
+    if frontend_analysis is None and run_code_checks:
+        frontend_dir = frontend_dir or _locate_frontend_dir(web_project, frontend_root)
         frontend_analysis = analyze_frontend(project_slug, frontend_dir)
 
     lines.append("### Source Discovery")
-    codex_lines: list[str] = []
-    if frontend_dir is None:
-        codex_lines.append("- `Frontend directory`: ❌ Could not locate matching directory in modules/webs_demo")
-        next_steps.append("- Web Project / Source Discovery: Frontend directory missing")
-    else:
-        codex_lines.append(f"- `Frontend directory`: ✅ {frontend_dir}")
-        file_checks = [
-            ("SeedContext.tsx", frontend_dir / "src" / "context" / "SeedContext.tsx"),
-            ("Events module", frontend_dir / "src" / "library" / "events.ts"),
-            ("Log-event API route", frontend_dir / "src" / "app" / "api" / "log-event" / "route.ts"),
-            ("Dynamic data provider", frontend_dir / "src" / "utils" / "dynamicDataProvider.ts"),
-        ]
-        for label, path in file_checks:
-            verdict = "✅ Found" if path.exists() else "❌ Missing"
-            codex_lines.append(f"- `{label}`: {verdict}{' — ' + str(path) if verdict.startswith('❌') else ''}")
-            if verdict.startswith("❌"):
-                next_steps.append(f"- Web Project / {label}: Missing file {path}")
-    for issue in frontend_analysis.issues:
-        codex_lines.append(f"- ⚠️ {issue}")
-        next_steps.append(f"- Web Project / Source Discovery: {issue}")
-    if codex_lines:
-        lines.extend(codex_lines)
-    else:
-        lines.append("- ⚪ Not run")
-
-    lines.append("")
-    lines.append("### Event Emissions")
-    if frontend_analysis.event_results:
-        for result in frontend_analysis.event_results:
-            if result.passed:
-                refs = ", ".join(result.references[:3])
-                if len(result.references) > 3:
-                    refs += " ..."
-                lines.append(f"- `{result.event_name}`: ✅ {refs}")
-            else:
-                lines.append(f"- `{result.event_name}`: ❌ No emission detected in frontend code")
-                next_steps.append(f"- Web Project / Event `{result.event_name}`: Ensure logEvent is triggered in React")
-    else:
-        lines.append("- ⚪ Not run (no events defined)")
-
-    lines.append("")
-    lines.append("### Dynamic Layers (D1-D3)")
-    if frontend_analysis.dynamic_layers:
-        for layer in frontend_analysis.dynamic_layers:
-            flag = "✅" if layer.passed else "❌"
-            detail = f" — {layer.evidence}" if layer.evidence else ""
-            lines.append(f"- `{layer.title}`: {flag}{detail}")
-            if not layer.passed:
-                next_steps.append(f"- Web Project / {layer.title}: {layer.evidence or 'Implement missing dynamic layer'}")
-    else:
-        lines.append("- ⚪ Not run")
-
-    lines.append("")
-    lines.append("### Screenshots")
-    screenshot_reviews = frontend_analysis.screenshots if frontend_analysis else []
-    if screenshot_reviews:
-        lines.append(f"- `Analyzed`: {len(screenshot_reviews)} screenshot(s)")
-        for review in screenshot_reviews[:10]:
-            lines.append(f"  - {review.filename} ({review.resolution}, {review.size_kb:.0f}KB): {review.summary}")
-        if len(screenshot_reviews) > 10:
-            lines.append(f"  - … {len(screenshot_reviews) - 10} more")
-    else:
-        base_url = getattr(web_project, "frontend_url", "") if web_project else ""
-        missing_cmd = (
-            f"`python -m modules.web_verification project-screenshots --project-slug {project_slug} --browser firefox`"
-            if base_url
-            else "`python -m modules.web_verification project-screenshots --project-slug <slug>`"
+    if not run_code_checks:
+        lines.append("- `Frontend directory`: ⚪ Not run (code checks disabled)")
+        lines.extend(
+            [
+                "",
+                "### Event Emissions",
+                "- ⚪ Not run (code checks disabled)",
+                "",
+                "### Dynamic Layers (D1-D3)",
+                "- ⚪ Not run (code checks disabled)",
+                "",
+                "### Screenshots",
+                "- ⚪ Not run (code checks disabled)",
+            ]
         )
-        lines.append(f"- `Screenshots`: ❌ None — run {missing_cmd}")
-        next_steps.append(f"- Web Project / Screenshots: Capture screenshots via {missing_cmd}")
+    else:
+        codex_lines: list[str] = []
+        if frontend_dir is None:
+            codex_lines.append("- `Frontend directory`: ❌ Could not locate matching directory in modules/webs_demo")
+            next_steps.append("- Web Project / Source Discovery: Frontend directory missing")
+        else:
+            codex_lines.append(f"- `Frontend directory`: ✅ {frontend_dir}")
+            file_checks = [
+                ("SeedContext.tsx", frontend_dir / "src" / "context" / "SeedContext.tsx"),
+                ("Events module", frontend_dir / "src" / "library" / "events.ts"),
+                ("Log-event API route", frontend_dir / "src" / "app" / "api" / "log-event" / "route.ts"),
+                ("Dynamic data provider", frontend_dir / "src" / "utils" / "dynamicDataProvider.ts"),
+            ]
+            for label, path in file_checks:
+                verdict = "✅ Found" if path.exists() else "❌ Missing"
+                codex_lines.append(f"- `{label}`: {verdict}{' — ' + str(path) if verdict.startswith('❌') else ''}")
+                if verdict.startswith("❌"):
+                    next_steps.append(f"- Web Project / {label}: Missing file {path}")
+        for issue in frontend_analysis.issues:
+            codex_lines.append(f"- ⚠️ {issue}")
+            next_steps.append(f"- Web Project / Source Discovery: {issue}")
+        if codex_lines:
+            lines.extend(codex_lines)
+        else:
+            lines.append("- ⚪ Not run")
+
+        lines.append("")
+        lines.append("### Event Emissions")
+        if frontend_analysis.event_results:
+            for result in frontend_analysis.event_results:
+                if result.passed:
+                    refs = ", ".join(result.references[:3])
+                    if len(result.references) > 3:
+                        refs += " ..."
+                    lines.append(f"- `{result.event_name}`: ✅ {refs}")
+                else:
+                    lines.append(f"- `{result.event_name}`: ❌ No emission detected in frontend code")
+                    next_steps.append(f"- Web Project / Event `{result.event_name}`: Ensure logEvent is triggered in React")
+        else:
+            lines.append("- ⚪ Not run (no events defined)")
+
+        lines.append("")
+        lines.append("### Dynamic Layers (D1-D3)")
+        if frontend_analysis.dynamic_layers:
+            for layer in frontend_analysis.dynamic_layers:
+                flag = "✅" if layer.passed else "❌"
+                detail = f" — {layer.evidence}" if layer.evidence else ""
+                lines.append(f"- `{layer.title}`: {flag}{detail}")
+                if not layer.passed:
+                    next_steps.append(f"- Web Project / {layer.title}: {layer.evidence or 'Implement missing dynamic layer'}")
+        else:
+            lines.append("- ⚪ Not run")
+
+        lines.append("")
+        lines.append("### Screenshots")
+        screenshot_reviews = frontend_analysis.screenshots if frontend_analysis else []
+        if screenshot_reviews:
+            lines.append(f"- `Analyzed`: {len(screenshot_reviews)} screenshot(s)")
+            for review in screenshot_reviews[:10]:
+                lines.append(f"  - {review.filename} ({review.resolution}, {review.size_kb:.0f}KB): {review.summary}")
+            if len(screenshot_reviews) > 10:
+                lines.append(f"  - … {len(screenshot_reviews) - 10} more")
+        else:
+            base_url = getattr(web_project, "frontend_url", "") if web_project else ""
+            missing_cmd = (
+                f"`python -m modules.web_verification project-screenshots --project-slug {project_slug} --browser firefox`"
+                if base_url
+                else "`python -m modules.web_verification project-screenshots --project-slug <slug>`"
+            )
+            lines.append(f"- `Screenshots`: ❌ None — run {missing_cmd}")
+            next_steps.append(f"- Web Project / Screenshots: Capture screenshots via {missing_cmd}")
 
     lines.extend(["", "## Agent Results"])
     if report.random_stats:
@@ -1517,6 +1621,11 @@ def _print_final_summary(entries: list[tuple[str, ProjectReport]], overall_statu
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv if argv is not None else sys.argv[1:])
     project_slugs = args.projects or _list_all_projects()
+    run_code_checks = args.code_checks
+    run_results_checks = args.results_checks
+    if not run_code_checks and not run_results_checks:
+        run_code_checks = True
+        run_results_checks = True
 
     if args.config:
         try:
@@ -1538,7 +1647,15 @@ def main(argv: Iterable[str] | None = None) -> int:
 
     for slug in project_slugs:
         print(f"\n=== Verifying '{slug}' ===")
-        report, task_summaries, web_project = run_full_verification(slug, deck_path=deck_override)
+        report, task_summaries, web_project = run_full_verification(
+            slug,
+            deck_path=deck_override,
+            enable_code_checks=run_code_checks,
+            enable_results_checks=run_results_checks,
+            frontend_root=args.frontend_root,
+            override_frontend_url=args.frontend_base_url,
+            override_frontend_port=args.frontend_port,
+        )
         print(report.render())
         _print_task_summary(task_summaries)
         _write_codex_report(
@@ -1548,6 +1665,8 @@ def main(argv: Iterable[str] | None = None) -> int:
             web_project,
             report.frontend_dir,
             report.web_analysis,
+            args.frontend_root,
+            run_code_checks,
         )
         overall_ok = overall_ok and report.ok
         project_summaries.append((slug, report))

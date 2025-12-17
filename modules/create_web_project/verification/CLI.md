@@ -70,6 +70,9 @@ This document explains every command and maps it back to the underlying “phase
 
 * **Full verification**: `python -m modules.web_verification verify <slug> --deck path/to/deck.deck.json`
 * **Deck-only fast path**: `python -m modules.web_verification run-deck path/to/deck.deck.json --project-slug <slug> --base-url https://preview/...`
+* **Selective gates**: append `--code-checks` to run only procedural/deck/frontend analysis or `--results-checks` to run the LLM/dynamic/agent gates. Omit both flags to run everything.
+* **External demo-web roots**: use `--frontend-root /path/to/autoppia_webs_demo` (or set `AUTOPPIA_WEB_FRONTENDS_ROOT`) when frontend sources live outside this repo.
+* **Frontend endpoint overrides**: use `--frontend-port 8000` to swap the port on the module’s `frontend_url`, or `--frontend-base-url http://localhost:8000` to override the whole URL.
 * **Screenshot utilities**:
   * `python -m modules.web_verification flow-screenshots --project autozone …`
   * `python -m modules.web_verification project-screenshots --project-slug dining_4 …`

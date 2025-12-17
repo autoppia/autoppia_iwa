@@ -2,6 +2,12 @@
 Web verification utilities (deck module generation, screenshot capture, etc.).
 """
 
+import sys as _sys
+
+# Provide a stable alias so callers can import `modules.web_verification` even
+# though the canonical package path lives under modules.create_web_project.verification.
+_sys.modules.setdefault("modules.web_verification", _sys.modules[__name__])
+
 from .phases.procedural.module_generator import ConfigError, ModuleGenerator, generate_module_from_config, load_config
 from .phases.procedural.run_deck_pipeline import evaluate_project
 from .phases.procedural.verify_project import (

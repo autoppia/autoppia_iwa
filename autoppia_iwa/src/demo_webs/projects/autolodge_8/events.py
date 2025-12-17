@@ -241,6 +241,32 @@ class AddToWishlistEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
+class RemoveFromWishlistEvent(Event, BaseEventValidator, HotelInfo):
+    """Event triggered when a user removes a hotel from their wishlist."""
+
+    event_name: str = "REMOVE_FROM_WISHLIST"
+
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return HotelInfo._validate_criteria(self, criteria)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "RemoveFromWishlistEvent":
+        base_event = Event.parse(backend_event)
+        hotel_info = HotelInfo.parse({"hotel": backend_event.data or {}})
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            **hotel_info.model_dump(),
+        )
+
+
 class ShareHotelEvent(Event, BaseEventValidator, HotelInfo):
     """Event triggered when a user views a hotel listing"""
 
@@ -273,8 +299,8 @@ class ShareHotelEvent(Event, BaseEventValidator, HotelInfo):
         )
 
 
-class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
-    event_name: str = "INCREASE_NUMBER_OF_GUESTS"
+class EditNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
+    event_name: str = "EDIT_NUMBER_OF_GUESTS"
     guests_to: int
 
     class ValidationCriteria(HotelInfo.ValidationCriteria):
@@ -289,7 +315,7 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
         )
 
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "IncreaseNumberOfGuestsEvent":
+    def parse(cls, backend_event: BackendEvent) -> "EditNumberOfGuestsEvent":
         base_event = Event.parse(backend_event)
         hotel_info = HotelInfo.parse(backend_event.data or {})
         return cls(
@@ -299,6 +325,103 @@ class IncreaseNumberOfGuestsEvent(Event, BaseEventValidator, HotelInfo):
             user_id=base_event.user_id,
             guests_to=(backend_event.data or {}).get("to", 0),
             **hotel_info.model_dump(),
+        )
+
+
+class SubmitHotelReviewEvent(Event, BaseEventValidator, HotelInfo):
+    """Event triggered when a user submits a review/rating for a hotel"""
+
+    event_name: str = "SUBMIT_REVIEW"
+    comment: str | None = None
+    name: str | None = None
+    rating: float | None = None
+
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
+        name: str | CriterionValue | None = None
+        rating: float | CriterionValue | None = None
+        comment: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                HotelInfo._validate_criteria(self, criteria),
+                self._validate_field(self.comment, criteria.comment),
+                self._validate_field(self.name, criteria.name),
+                self._validate_field(self.rating, criteria.rating),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "SubmitHotelReviewEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        hotel_info = HotelInfo.parse(
+            {
+                "hotel": {
+                    "title": data.get("title"),
+                    "location": data.get("location"),
+                    "price": data.get("price"),
+                    "rating": data.get("rating"),
+                    "reviews": data.get("reviews"),
+                    "guests": data.get("guests"),
+                    "maxGuests": data.get("maxGuests"),
+                    "datesFrom": data.get("datesFrom") or (data.get("dates") or {}).get("from"),
+                    "datesTo": data.get("datesTo") or (data.get("dates") or {}).get("to"),
+                    "baths": data.get("baths", 0),
+                    "bedrooms": data.get("bedrooms", 0),
+                    "beds": data.get("beds", 0),
+                    "host": {"name": data.get("host_name", "")},
+                    "amenities": data.get("amenities", []),
+                }
+            }
+        )
+
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            comment=data.get("comment"),
+            rating=data.get("rating"),
+            name=data.get("name"),
+            **hotel_info.model_dump(),
+        )
+
+
+class ApplyFilterEvent(Event, BaseEventValidator):
+    """Event triggered when user filters hotels list."""
+
+    event_name: str = "APPLY_FILTERS"
+    rating: float | None = None
+    region: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        rating: float | CriterionValue | None = None
+        region: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.rating, criteria.rating),
+                self._validate_field(self.region, criteria.region),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "ApplyFilterEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            rating=data.get("rating"),
+            region=data.get("region"),
         )
 
 
@@ -423,26 +546,59 @@ class ConfirmAndPayEvent(Event, BaseEventValidator, HotelInfo):
             ]
         )
 
+
+class PaymentMethodSelectedEvent(Event, BaseEventValidator, HotelInfo):
+    """Event when user selects payment method."""
+
+    event_name: str = "PAYMENT_METHOD_SELECTED"
+    method: str | None = None
+
+    class ValidationCriteria(HotelInfo.ValidationCriteria):
+        method: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                HotelInfo._validate_criteria(self, criteria),
+                self._validate_field(self.method, criteria.method),
+                self._validate_field(self.hotel_id, criteria.hotel_id),
+                self._validate_field(self.title, criteria.title),
+            ]
+        )
+
     @classmethod
-    def parse(cls, backend_event: BackendEvent) -> "ConfirmAndPayEvent":
+    def parse(cls, backend_event: BackendEvent) -> "PaymentMethodSelectedEvent":
         base_event = Event.parse(backend_event)
-        data = backend_event.data
-        hotel = HotelInfo.parse(data)
+        data = backend_event.data or {}
+        hotel_info = HotelInfo.parse(
+            {
+                "hotel": {
+                    "title": data.get("title"),
+                    "location": data.get("location"),
+                    "price": data.get("price"),
+                    "rating": data.get("rating"),
+                    "reviews": data.get("reviews"),
+                    "guests": data.get("guests"),
+                    "maxGuests": data.get("maxGuests"),
+                    "datesFrom": data.get("datesFrom") or (data.get("dates") or {}).get("from"),
+                    "datesTo": data.get("datesTo") or (data.get("dates") or {}).get("to"),
+                    "baths": data.get("baths", 0),
+                    "bedrooms": data.get("bedrooms", 0),
+                    "beds": data.get("beds", 0),
+                    "host": {"name": data.get("host_name", "")},
+                    "amenities": data.get("amenities", []),
+                }
+            }
+        )
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            nights=data.get("nights"),
-            price_subtotal=data.get("priceSubtotal"),
-            total=data.get("total"),
-            card_number=data.get("cardNumber", ""),
-            expiration=data.get("expiration", ""),
-            cvv=data.get("cvv", ""),
-            country=data.get("country", ""),
-            guests_set=data.get("guests_set"),
-            zipcode=data.get("zip"),
-            **hotel.model_dump(),
+            method=data.get("method"),
+            **hotel_info.model_dump(),
         )
 
 
@@ -498,6 +654,137 @@ class BackToAllHotelsEvent(Event, BaseEventValidator, HotelInfo):
         return cls(event_name=base_event.event_name, timestamp=base_event.timestamp, web_agent_id=base_event.web_agent_id, user_id=base_event.user_id, **hotel.model_dump())
 
 
+class WishlistOpenedEvent(Event, BaseEventValidator):
+    """User opens wishlist page."""
+
+    event_name: str = "WISHLIST_OPENED"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "WishlistOpenedEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
+class BookFromWishlistEvent(Event, BaseEventValidator):
+    """User proceeds to book from wishlist."""
+
+    event_name: str = "BOOK_FROM_WISHLIST"
+    hotel_id: int | None = None
+    title: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        hotel_id: int | CriterionValue | None = None
+        title: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.hotel_id, criteria.hotel_id),
+                self._validate_field(self.title, criteria.title),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "BookFromWishlistEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            hotel_id=data.get("hotelId") or data.get("id"),
+            title=data.get("title"),
+        )
+
+
+class PopularHotelsViewedEvent(Event, BaseEventValidator):
+    """User views popular hotels page."""
+
+    event_name: str = "POPULAR_HOTELS_VIEWED"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "PopularHotelsViewedEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
+class HelpViewedEvent(Event, BaseEventValidator):
+    """User opens help page."""
+
+    event_name: str = "HELP_VIEWED"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "HelpViewedEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
+class FaqOpenedEvent(Event, BaseEventValidator):
+    """User opens an FAQ item."""
+
+    event_name: str = "FAQ_OPENED"
+    question: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        question: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.question, criteria.question)
+
+    @classmethod
+    def parse(cls, backend_event: BackendEvent) -> "FaqOpenedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data or {}
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            question=data.get("question"),
+        )
+
+
 # =============================================================================
 #                    AVAILABLE EVENTS AND USE CASES
 # =============================================================================
@@ -505,25 +792,43 @@ class BackToAllHotelsEvent(Event, BaseEventValidator, HotelInfo):
 EVENTS = [
     SearchHotelEvent,
     ViewHotelEvent,
+    SubmitHotelReviewEvent,
+    ApplyFilterEvent,
     ReserveHotelEvent,
-    IncreaseNumberOfGuestsEvent,
+    EditNumberOfGuestsEvent,
     EditCheckInOutDatesEvent,
+    PaymentMethodSelectedEvent,
     ConfirmAndPayEvent,
     MessageHostEvent,
     AddToWishlistEvent,
+    RemoveFromWishlistEvent,
     ShareHotelEvent,
     BackToAllHotelsEvent,
+    WishlistOpenedEvent,
+    BookFromWishlistEvent,
+    PopularHotelsViewedEvent,
+    HelpViewedEvent,
+    FaqOpenedEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
     "SEARCH_HOTEL": SearchHotelEvent,
     "VIEW_HOTEL": ViewHotelEvent,
+    "SUBMIT_HOTEL_REVIEW": SubmitHotelReviewEvent,
+    "APPLY_FILTERS": ApplyFilterEvent,
     "RESERVE_HOTEL": ReserveHotelEvent,
-    "INCREASE_NUMBER_OF_GUESTS": IncreaseNumberOfGuestsEvent,
+    "EDIT_NUMBER_OF_GUESTS": EditNumberOfGuestsEvent,
     "EDIT_CHECK_IN_OUT_DATES": EditCheckInOutDatesEvent,
+    "PAYMENT_METHOD_SELECTED": PaymentMethodSelectedEvent,
     "CONFIRM_AND_PAY": ConfirmAndPayEvent,
     "MESSAGE_HOST": MessageHostEvent,
     "ADD_TO_WISHLIST": AddToWishlistEvent,
+    "REMOVE_FROM_WISHLIST": RemoveFromWishlistEvent,
     "SHARE_HOTEL": ShareHotelEvent,
     "BACK_TO_ALL_HOTELS": BackToAllHotelsEvent,
+    "WISHLIST_OPENED": WishlistOpenedEvent,
+    "BOOK_FROM_WISHLIST": BookFromWishlistEvent,
+    "POPULAR_HOTELS_VIEWED": PopularHotelsViewedEvent,
+    "HELP_VIEWED": HelpViewedEvent,
+    "FAQ_OPENED": FaqOpenedEvent,
 }
