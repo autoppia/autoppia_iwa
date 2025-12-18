@@ -26,10 +26,10 @@ def parse_constraints_str(constraints_str: str) -> list[dict[str, Any]]:
         value_str = op_value[1]
 
         # Convert value based on type
-        if field in ["year", "page_count"]:
+        if field in ["year", "page_count", "total_items", "quantity"]:
             # For integer numeric fields
             value = [int(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else int(value_str)
-        elif field in ["price", "rating"]:
+        elif field in ["price", "rating", "total_amount"]:
             # For float numeric fields
             value = [float(item) for item in value_str.strip("[]").split(", ")] if "[" in value_str and "]" in value_str else float(value_str)
         elif field == "genres":

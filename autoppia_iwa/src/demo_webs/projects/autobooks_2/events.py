@@ -282,6 +282,98 @@ class AddToReadingListEvent(BookDetailEvent):
     event_name: str = "ADD_TO_READING_LIST"
 
 
+class RemoveFromReadingListEvent(BookDetailEvent):
+    """Event triggered when a book removed from reading list"""
+
+    event_name: str = "REMOVE_FROM_READING_LIST"
+
+
+class AddToCartBookEvent(BookDetailEvent):
+    """Event triggered when a user adds a book to cart (demo_webs v2 naming)."""
+
+    event_name: str = "ADD_TO_CART_BOOK"
+    quantity: int | None = None
+    price: float | None = None
+
+    class ValidationCriteria(BookDetailEvent.ValidationCriteria):
+        quantity: int | CriterionValue | None = None
+        price: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+
+        base_ok = super()._validate_criteria(criteria)  # type: ignore[arg-type]
+        if not base_ok:
+            return False
+
+        return all(
+            [
+                self._validate_field(self.quantity, criteria.quantity),
+                self._validate_field(self.price, criteria.price),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "AddToCartBookEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        genres = _extract_genres(data, "genres")
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            book_name=data.get("name", ""),
+            book_year=data.get("year"),
+            book_genres=genres,
+            book_rating=data.get("rating"),
+            quantity=data.get("quantity"),
+            price=data.get("price"),
+        )
+
+
+class RemoveFromCartBookEvent(AddToCartBookEvent):
+    """Event triggered when a user removes a book from cart (demo_webs v2 naming)."""
+
+    event_name: str = "REMOVE_FROM_CART_BOOK"
+
+
+class ViewCartBookEvent(Event, BaseEventValidator):
+    """Event triggered when a user views the cart page (demo_webs v2 naming)."""
+
+    event_name: str = "VIEW_CART_BOOK"
+    total_items: int | None = None
+    total_amount: float | None = None
+
+    class ValidationCriteria(BaseModel):
+        total_items: int | CriterionValue | None = None
+        total_amount: float | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.total_items, criteria.total_items),
+                self._validate_field(self.total_amount, criteria.total_amount),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ViewCartBookEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            total_items=data.get("total_items"),
+            total_amount=data.get("total_amount"),
+        )
+
+
 class AddBookEvent(Event, BaseEventValidator):
     """Event triggered when a user adds a new book"""
 
@@ -807,6 +899,10 @@ EVENTS = [
     ShareBookEvent,
     OpenPreviewEvent,
     AddToReadingListEvent,
+    RemoveFromReadingListEvent,
+    AddToCartBookEvent,
+    RemoveFromCartBookEvent,
+    ViewCartBookEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -827,4 +923,8 @@ BACKEND_EVENT_TYPES = {
     "SHARE_BOOK": ShareBookEvent,
     "OPEN_PREVIEW": OpenPreviewEvent,
     "ADD_TO_READING_LIST": AddToReadingListEvent,
+    "REMOVE_FROM_READING_LIST": RemoveFromReadingListEvent,
+    "ADD_TO_CART_BOOK": AddToCartBookEvent,
+    "REMOVE_FROM_CART_BOOK": RemoveFromCartBookEvent,
+    "VIEW_CART_BOOK": ViewCartBookEvent,
 }
