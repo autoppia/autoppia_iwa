@@ -2,10 +2,17 @@
 
 This directory contains all tools for **creating and validating** new web projects for IWA.
 
+## 🚀 ¿Quieres Subir una Web?
+
+**👉 Lee primero: [`HOW_TO_SUBMIT.md`](HOW_TO_SUBMIT.md)**
+
+Esta es la guía completa y única que necesitas para crear y subir tu web.
+
 ## 📁 Structure
 
 ```
 modules/create_web_project/
+├── HOW_TO_SUBMIT.md   # 📖 GUÍA PRINCIPAL - Lee esto primero
 ├── template/          # 📝 Template for community contributions
 │   └── projects/
 │       └── autodining/    # Complete reference implementation
