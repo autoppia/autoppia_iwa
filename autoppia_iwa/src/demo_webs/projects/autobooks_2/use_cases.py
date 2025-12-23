@@ -4,6 +4,7 @@ from .data_utils import fetch_books_data
 from .events import (
     AddBookEvent,
     AddCommentEvent,
+    AddToCartBookEvent,
     AddToReadingListEvent,
     BookDetailEvent,
     ContactEvent,
@@ -16,9 +17,12 @@ from .events import (
     OpenPreviewEvent,
     PurchaseBookEvent,
     RegistrationEvent,
+    RemoveFromCartBookEvent,
+    RemoveFromReadingListEvent,
     SearchBookEvent,
     ShareBookEvent,
     ShoppingCartEvent,
+    ViewCartBookEvent,
 )
 from .generation_functions import (
     generate_add_book_constraints,
@@ -549,6 +553,71 @@ ADD_TO_READING_LIST_USE_CASE = UseCase(
         {
             "prompt": "Add to reading list a highest-rated 'Lidia Matticchio Bastianich' book",
             "prompt_for_task_generation": "Add to reading list a highest-rated <author> book",
+        },
+    ],
+)
+
+
+def _get_remove_from_reading_list_info(books_data: list[dict]) -> str:
+    """Generate remove from reading list info dynamically from API data."""
+    book_names = _generate_book_names_list(books_data)
+    return f"""
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **remove** a book from the reading list (e.g., "Remove from reading list...", "Remove from wishlist...").
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{book_names}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Remove from reading list a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Remove from reading list a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Remove from reading list a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+REMOVE_FROM_READING_LIST_INFO_TEMPLATE = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to **remove** a book from the reading list (e.g., "Remove from reading list...", "Remove from wishlist...").
+4. Only use the books name defined below.
+
+BOOKS NAMES:
+{BOOKS_NAMES_PLACEHOLDER}
+
+For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
+- CORRECT: "Remove from reading list a book not written by Diana Gabaldon that was published after 2004"
+- INCORRECT: "Remove from reading list a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
+- INCORRECT: "Remove from reading list a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
+"""
+
+
+REMOVE_FROM_READING_LIST_USE_CASE = UseCase(
+    name="REMOVE_FROM_READING_LIST",
+    description="The user explicitly requests to remove a book from their reading list / wishlist based on constraints.",
+    event=RemoveFromReadingListEvent,
+    event_source_code=RemoveFromReadingListEvent.get_source_code_of_class(),
+    additional_prompt_info=None,  # Will be populated dynamically from API
+    constraints_generator=generate_book_constraints,
+    examples=[
+        {
+            "prompt": "Remove 'The Housemaid Is Watching' from my reading list",
+            "prompt_for_task_generation": "Remove <book> from my reading list",
+        },
+        {
+            "prompt": "Remove a Science book from 2022 from my wishlist",
+            "prompt_for_task_generation": "Remove a <genre> book from <year> from my wishlist",
+        },
+        {
+            "prompt": "Remove a book with rating above 4.5 from my reading list",
+            "prompt_for_task_generation": "Remove a book with rating above <rating> from my reading list",
         },
     ],
 )
@@ -1085,6 +1154,100 @@ SHOPPING_CART_USE_CASE = UseCase(
 )
 
 
+VIEW_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Be phrased as a request to view the shopping cart (e.g., "View cart...", "Open cart...", "Go to cart page...").
+2. Explicitly mention the cart in the prompt (e.g., "shopping cart", "cart").
+3. If constraints include total_items or total_amount, they MUST be referenced directly in the prompt.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+
+VIEW_CART_BOOK_USE_CASE = UseCase(
+    name="VIEW_CART_BOOK",
+    description="The user views the cart page.",
+    event=ViewCartBookEvent,
+    event_source_code=ViewCartBookEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    additional_prompt_info=VIEW_CART_BOOK_ADDITIONAL_PROMPT_INFO,
+    examples=[
+        {
+            "prompt": "Open my cart and review the items",
+            "prompt_for_task_generation": "Open my cart and review the items",
+        },
+        {
+            "prompt": "Go to the cart page",
+            "prompt_for_task_generation": "Go to the cart page",
+        },
+    ],
+)
+
+
+ADD_TO_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to add a book to the shopping cart (e.g., "Add to cart...", "Put in cart...").
+4. Explicitly mention the cart in the prompt (e.g., "shopping cart", "cart").
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+
+ADD_TO_CART_BOOK_USE_CASE = UseCase(
+    name="ADD_TO_CART_BOOK",
+    description="The user adds a book to the cart (demo event naming).",
+    event=AddToCartBookEvent,
+    event_source_code=AddToCartBookEvent.get_source_code_of_class(),
+    constraints_generator=generate_book_constraints,
+    additional_prompt_info=ADD_TO_CART_BOOK_ADDITIONAL_PROMPT_INFO,
+    replace_func=replace_book_placeholders,
+    examples=[
+        {
+            "prompt": "Add 'Fourth Wing' to my cart",
+            "prompt_for_task_generation": "Add <book> to my cart",
+        },
+        {
+            "prompt": "Put a Science book from 2022 into the shopping cart",
+            "prompt_for_task_generation": "Put a <genre> book from <year> into the shopping cart",
+        },
+    ],
+)
+
+
+REMOVE_FROM_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above - not just some of them
+2. Include ONLY the constraints mentioned above - do not add any other criteria
+3. Be phrased as a request to remove a book from the shopping cart (e.g., "Remove from cart...", "Delete from cart...").
+4. Explicitly mention the cart in the prompt (e.g., "shopping cart", "cart").
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+
+REMOVE_FROM_CART_BOOK_USE_CASE = UseCase(
+    name="REMOVE_FROM_CART_BOOK",
+    description="The user removes a book from the cart (demo event naming).",
+    event=RemoveFromCartBookEvent,
+    event_source_code=RemoveFromCartBookEvent.get_source_code_of_class(),
+    constraints_generator=generate_book_constraints,
+    additional_prompt_info=REMOVE_FROM_CART_BOOK_ADDITIONAL_PROMPT_INFO,
+    replace_func=replace_book_placeholders,
+    examples=[
+        {
+            "prompt": "Remove 'The Housemaid Is Watching' from my cart",
+            "prompt_for_task_generation": "Remove <book> from my cart",
+        },
+        {
+            "prompt": "Delete a Comics book with less than 400 pages from the shopping cart",
+            "prompt_for_task_generation": "Delete a <genre> book with less than <page_count> pages from the shopping cart",
+        },
+    ],
+)
+
+
 PURCHASE_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
@@ -1150,6 +1313,7 @@ async def update_use_cases_prompt_info(
     SHARE_BOOK_USE_CASE.additional_prompt_info = _get_share_book_info(books_data)
     OPEN_PREVIEW_USE_CASE.additional_prompt_info = _get_open_preview_info(books_data)
     ADD_TO_READING_LIST_USE_CASE.additional_prompt_info = _get_add_to_reading_list_info(books_data)
+    REMOVE_FROM_READING_LIST_USE_CASE.additional_prompt_info = _get_remove_from_reading_list_info(books_data)
     FILTER_BOOK_USE_CASE.additional_prompt_info = _get_filter_book_info(books_data)
 
 
@@ -1170,8 +1334,12 @@ ALL_USE_CASES = [
     BOOK_DETAIL_USE_CASE,
     EDIT_BOOK_USE_CASE,
     SHOPPING_CART_USE_CASE,
+    VIEW_CART_BOOK_USE_CASE,
+    ADD_TO_CART_BOOK_USE_CASE,
+    REMOVE_FROM_CART_BOOK_USE_CASE,
     PURCHASE_BOOK_USE_CASE,
     SHARE_BOOK_USE_CASE,
     OPEN_PREVIEW_USE_CASE,
     ADD_TO_READING_LIST_USE_CASE,
+    REMOVE_FROM_READING_LIST_USE_CASE,
 ]
