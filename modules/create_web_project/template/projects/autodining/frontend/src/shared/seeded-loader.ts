@@ -1,4 +1,17 @@
-import { getApiBaseUrl } from "./data-generator";
+function getApiBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
+  const origin = typeof window !== "undefined" ? window.location?.origin : undefined;
+  const envIsLocal = envUrl && (envUrl.includes("localhost") || envUrl.includes("127.0.0.1"));
+  const originIsLocal = origin && (origin.includes("localhost") || origin.includes("127.0.0.1"));
+
+  if (envUrl && (!(envIsLocal) || originIsLocal)) {
+    return envUrl;
+  }
+  if (origin) {
+    return `${origin}/api`;
+  }
+  return envUrl || "http://app:8090";
+}
 
 export interface SeededLoadOptions {
   projectKey: string;
@@ -11,18 +24,22 @@ export interface SeededLoadOptions {
 }
 
 export function isDbLoadModeEnabled(): boolean {
-  const raw = (process.env.NEXT_PUBLIC_ENABLE_DB_MODE || process.env.ENABLE_DB_MODE || "").toString().toLowerCase();
+  const raw = (process.env.NEXT_PUBLIC_ENABLE_DYNAMIC_V2_DB_MODE || process.env.ENABLE_DYNAMIC_V2_DB_MODE || "").toString().toLowerCase();
   return raw === "true";
 }
 
 export function getSeedValueFromEnv(defaultSeed: number = 1): number {
-  const raw = (process.env.NEXT_PUBLIC_DATA_SEED_VALUE || process.env.DATA_SEED_VALUE || "").toString();
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || parsed <= 0) return defaultSeed;
-  return Math.floor(parsed);
+  // Always return default seed (v2-seed comes from URL parameter, not env vars)
+  return defaultSeed;
 }
 
 export async function fetchSeededSelection<T = any>(options: SeededLoadOptions): Promise<T[]> {
+  // Si el modo DB está deshabilitado, NO hacer ninguna llamada HTTP
+  if (!isDbLoadModeEnabled()) {
+    console.log(`[seeded-loader] DB mode disabled, skipping API call for ${options.entityType}`);
+    return [] as T[];
+  }
+
   const baseUrl = getApiBaseUrl();
   const seed = options.seedValue ?? getSeedValueFromEnv(1);
   const limit = options.limit ?? 50;
@@ -64,3 +81,5 @@ export async function fetchPoolInfo(projectKey: string, entityType: string): Pro
     return null;
   }
 }
+
+

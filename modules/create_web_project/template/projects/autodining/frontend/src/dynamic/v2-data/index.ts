@@ -1,17 +1,16 @@
+/**
+ * V2 Data Loading System
+ * 
+ * Loads different data subsets based on v2 seed.
+ */
+
 export {
   dynamicDataProvider,
-  getMovies,
-  getMovieById,
-  getFeaturedMovies,
-  getRelatedMovies,
-  getMoviesByGenre,
-  getAvailableGenres,
-  getAvailableYears,
-  searchMovies,
+  initializeRestaurants,
+  getRestaurants,
   isDynamicModeEnabled,
-  getLayoutConfig,
 } from "./data-provider";
-export type { MovieSearchFilters } from "./data-provider";
+export type { RestaurantData } from "./data-provider";
 
 // Export whenReady function
 export const whenReady = () => dynamicDataProvider.whenReady();

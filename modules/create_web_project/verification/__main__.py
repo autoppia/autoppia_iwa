@@ -23,6 +23,7 @@ COMMANDS: dict[str, tuple[str, str]] = {
     "project-screenshots": ("Auto-discover a project's pages and capture screenshots.", "modules.web_verification.cli.visual.project_screenshots"),
     "analyze-sandbox": ("Summarize miner/agent datasets for unresolved or trivial tasks.", "modules.web_verification.cli.bootstrap_analyze_sandbox"),
     "generate-module": ("Bootstrap a demo_webs module from a YAML/JSON config.", "modules.web_verification.cli.bootstrap_generate_module"),
+    "verify-template": ("Verify that the autodining template matches web_4_autodining.", "modules.web_verification.cli.bootstrap_verify_template"),
 }
 
 
