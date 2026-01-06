@@ -139,7 +139,7 @@ python -m modules.web_verification generate-module \
 - `generation_functions.py` - Constraint generators
 - `pages.json` - Page definitions (optional)
 
-**Implementation**: `phases/procedural/module_generator.py`  
+**Implementation**: `phases/procedural/module_generator.py`
 **CLI Wrapper**: `cli/bootstrap_generate_module.py`
 
 ---
@@ -178,7 +178,7 @@ python -m modules.web_verification verify-template
 ✅ Template validation PASSED
 ```
 
-**Implementation**: `phases/procedural/template_validation.py`  
+**Implementation**: `phases/procedural/template_validation.py`
 **CLI Wrapper**: `cli/bootstrap_verify_template.py`
 
 ---
@@ -212,7 +212,7 @@ python -m modules.web_verification analyze-sandbox data/sandbox_results.jsonl \
 - Agent memorization
 - Seed variability
 
-**Implementation**: `phases/sandbox/__init__.py`  
+**Implementation**: `phases/sandbox/__init__.py`
 **CLI Wrapper**: `cli/bootstrap_analyze_sandbox.py`
 
 ---
@@ -238,7 +238,7 @@ python -m modules.web_verification flow-screenshots \
   --base-url http://localhost:8000
 ```
 
-**Implementation**: `phases/visual/screenshot_capture.py`  
+**Implementation**: `phases/visual/screenshot_capture.py`
 **CLI Wrapper**: `cli/visual/flow_screenshots.py`
 
 ---
@@ -270,7 +270,7 @@ python -m modules.web_verification project-screenshots \
 - Captures screenshots
 - Saves to output directory
 
-**Implementation**: `phases/visual/site_capture.py`  
+**Implementation**: `phases/visual/site_capture.py`
 **CLI Wrapper**: `cli/visual/project_screenshots.py`
 
 ---
@@ -402,4 +402,3 @@ def format_results(result):
 ---
 
 **Last Updated**: 2025-01-27
-

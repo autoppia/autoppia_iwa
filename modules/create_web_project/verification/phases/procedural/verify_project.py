@@ -40,11 +40,7 @@ from .frontend_analysis import (
     ScreenshotReview,
     WebProjectAnalysis,
     analyze_frontend,
-    SeedContextValidation,
-    TestsStructureValidation,
-    VariantJsonValidation,
 )
-from .template_validation import TemplateValidationResult, validate_template
 from .module_generator import ConfigError as ModuleConfigError, generate_module_from_config
 
 PROJECTS_BASE = PROJECT_BASE_DIR / "src" / "demo_webs" / "projects"
@@ -172,17 +168,14 @@ class ProjectReport:
         else:
             frontend_dir = self.web_analysis.frontend_dir
             lines.append(f"- Frontend source: {'✅ ' + str(frontend_dir) if frontend_dir else '❌ Not located'}")
-            
+
             # Event coverage (requires 100%)
             if self.web_analysis.event_coverage:
                 coverage = self.web_analysis.event_coverage
                 if coverage.total_events > 0:
                     coverage_ok = coverage.coverage_percent >= 100.0
                     flag = "✅" if coverage_ok else "❌"
-                    lines.append(
-                        f"- Event coverage: {flag} {coverage.used_events}/{coverage.total_events} "
-                        f"({coverage.coverage_percent:.1f}%) - {'PASS' if coverage_ok else 'FAIL (requires 100%)'}"
-                    )
+                    lines.append(f"- Event coverage: {flag} {coverage.used_events}/{coverage.total_events} ({coverage.coverage_percent:.1f}%) - {'PASS' if coverage_ok else 'FAIL (requires 100%)'}")
                     if coverage.unused_events:
                         preview = ", ".join(coverage.unused_events[:5])
                         suffix = " ..." if len(coverage.unused_events) > 5 else ""
@@ -201,23 +194,23 @@ class ProjectReport:
                         lines.append(f"    Missing: {preview}{suffix}")
                 else:
                     lines.append("- Event emissions: ⚪ No events defined")
-            
+
             # Dynamic usage statistics (V1/V3 real usage counts)
             if self.web_analysis.dynamic_usage:
                 usage = self.web_analysis.dynamic_usage
-                lines.append(f"- Dynamic system usage:")
+                lines.append("- Dynamic system usage:")
                 lines.append(f"    V1 addWrapDecoy: {usage.v1_add_wrap_decoy} usos")
                 lines.append(f"    V1 changeOrderElements: {usage.v1_change_order} usos")
                 lines.append(f"    V3 IDs (getVariant): {usage.v3_ids} usos")
                 lines.append(f"    V3 Classes (getVariant): {usage.v3_classes} usos")
                 lines.append(f"    V3 Texts (getVariant): {usage.v3_texts} usos")
                 lines.append(f"    Total V1: {usage.total_v1} | Total V3: {usage.total_v3}")
-            
+
             for layer in self.web_analysis.dynamic_layers:
                 flag = "✅" if layer.passed else "❌"
                 detail = f" ({layer.evidence})" if layer.evidence else ""
                 lines.append(f"- {layer.title}: {flag}{detail}")
-            
+
             # MEDIA PRIORITY: SeedContext validation
             if self.web_analysis.seed_context:
                 sc = self.web_analysis.seed_context
@@ -225,7 +218,7 @@ class ProjectReport:
                     lines.append("- SeedContext: ✅ Properly implemented")
                 else:
                     lines.append(f"- SeedContext: ❌ Issues: {', '.join(sc.issues[:3])}")
-            
+
             # MEDIA PRIORITY: Tests structure validation
             if self.web_analysis.tests_structure:
                 ts = self.web_analysis.tests_structure
@@ -234,7 +227,7 @@ class ProjectReport:
                     lines.append(f"- Tests structure: ✅ All files exist{readme_note}")
                 else:
                     lines.append(f"- Tests structure: ❌ Issues: {', '.join(ts.issues[:3])}")
-            
+
             # MEDIA PRIORITY: Variant JSONs validation
             if self.web_analysis.variant_jsons:
                 vj = self.web_analysis.variant_jsons
@@ -242,10 +235,10 @@ class ProjectReport:
                     if vj.id_variants_keys > 0 and vj.class_variants_keys > 0 and vj.text_variants_keys > 0:
                         lines.append(f"- Variant JSONs: ✅ IDs: {vj.id_variants_keys}, Classes: {vj.class_variants_keys}, Texts: {vj.text_variants_keys} keys")
                     else:
-                        lines.append(f"- Variant JSONs: ⚠️  Files exist but some are empty")
+                        lines.append("- Variant JSONs: ⚠️  Files exist but some are empty")
                 else:
                     lines.append(f"- Variant JSONs: ❌ Issues: {', '.join(vj.issues[:3])}")
-            
+
             for issue in self.web_analysis.issues:
                 lines.append(f"- ⚠️ {issue}")
         lines.append("\n==== Random Baseline ====")
@@ -479,17 +472,17 @@ def _find_template_config(project_slug: str) -> Path | None:
     """Try to find config.yaml in template directory for this project."""
     template_base = Path(__file__).resolve().parents[4] / "template" / "projects"
     possible_names = [project_slug, project_slug.replace("_", ""), project_slug.split("_")[0]]
-    
+
     for name in possible_names:
         config_path = template_base / name / "config.yaml"
         if config_path.exists():
             return config_path
-    
+
     # Also try autodining as fallback (most common template)
     autodining_config = template_base / "autodining" / "config.yaml"
     if autodining_config.exists():
         return autodining_config
-    
+
     return None
 
 
@@ -1321,7 +1314,7 @@ def run_full_verification(
             analysis = analyze_frontend(project_slug, report.frontend_dir)
             _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
             report.web_analysis = analysis
-            
+
             # HIGH PRIORITY: Enforce 100% event coverage
             if analysis.event_coverage and analysis.event_coverage.total_events > 0:
                 coverage_ok = analysis.event_coverage.coverage_percent >= 100.0
@@ -1341,11 +1334,11 @@ def run_full_verification(
                         f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
                         section=SECTION_PROCEDURAL,
                     )
-            
+
             # HIGH PRIORITY: Run Node.js tests if frontend_dir is available
             if report.frontend_dir:
                 _run_node_tests(report.frontend_dir, report)
-            
+
             # MEDIA PRIORITY: Validate SeedContext, tests structure, and variant JSONs
             if analysis.seed_context:
                 _validate_seed_context_checks(analysis.seed_context, report)
@@ -1353,7 +1346,7 @@ def run_full_verification(
                 _validate_tests_structure_checks(analysis.tests_structure, report)
             if analysis.variant_jsons:
                 _validate_variant_jsons_checks(analysis.variant_jsons, report)
-            
+
             return report, task_summaries, None
 
         _apply_frontend_overrides(web_project, override_frontend_url, override_frontend_port)
@@ -1376,7 +1369,7 @@ def run_full_verification(
                 analysis = analyze_frontend(project_slug, report.frontend_dir)
                 _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
                 report.web_analysis = analysis
-                
+
                 # HIGH PRIORITY: Enforce 100% event coverage
                 if analysis.event_coverage and analysis.event_coverage.total_events > 0:
                     coverage_ok = analysis.event_coverage.coverage_percent >= 100.0
@@ -1396,11 +1389,11 @@ def run_full_verification(
                             f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
                             section=SECTION_PROCEDURAL,
                         )
-                
+
                 # HIGH PRIORITY: Run Node.js tests if frontend_dir is available
                 if report.frontend_dir:
                     _run_node_tests(report.frontend_dir, report)
-                
+
                 # MEDIA PRIORITY: Validate SeedContext, tests structure, and variant JSONs
                 if analysis.seed_context:
                     _validate_seed_context_checks(analysis.seed_context, report)
@@ -1408,7 +1401,7 @@ def run_full_verification(
                     _validate_tests_structure_checks(analysis.tests_structure, report)
                 if analysis.variant_jsons:
                     _validate_variant_jsons_checks(analysis.variant_jsons, report)
-                
+
                 return report, task_summaries, web_project
 
         tasks_for_checks: list[Task] = []
@@ -1493,7 +1486,7 @@ def run_full_verification(
             analysis = analyze_frontend(project_slug, report.frontend_dir)
             _attach_screenshot_reviews(analysis, getattr(web_project, "id", project_slug) if web_project else project_slug)
             report.web_analysis = analysis
-            
+
             # HIGH PRIORITY: Enforce 100% event coverage
             if analysis.event_coverage and analysis.event_coverage.total_events > 0:
                 coverage_ok = analysis.event_coverage.coverage_percent >= 100.0
@@ -1513,11 +1506,11 @@ def run_full_verification(
                         f"All {analysis.event_coverage.used_events}/{analysis.event_coverage.total_events} events are used",
                         section=SECTION_PROCEDURAL,
                     )
-            
+
             # HIGH PRIORITY: Run Node.js tests if frontend_dir is available
             if report.frontend_dir:
                 _run_node_tests(report.frontend_dir, report)
-            
+
             # MEDIA PRIORITY: Validate SeedContext, tests structure, and variant JSONs
             if analysis.seed_context:
                 _validate_seed_context_checks(analysis.seed_context, report)
@@ -1525,7 +1518,7 @@ def run_full_verification(
                 _validate_tests_structure_checks(analysis.tests_structure, report)
             if analysis.variant_jsons:
                 _validate_variant_jsons_checks(analysis.variant_jsons, report)
-            
+
             phase_bar.update(1)
         return report, task_summaries, web_project
     finally:
@@ -1564,14 +1557,9 @@ def _validate_seed_context_checks(seed_context, report: ProjectReport) -> None:
             section=SECTION_PROCEDURAL,
         )
         return
-    
-    all_checks_passed = (
-        seed_context.has_seed_provider and
-        seed_context.has_use_seed and
-        seed_context.uses_search_params and
-        seed_context.reads_seed_from_url
-    )
-    
+
+    all_checks_passed = seed_context.has_seed_provider and seed_context.has_use_seed and seed_context.uses_search_params and seed_context.reads_seed_from_url
+
     if not all_checks_passed:
         issues_str = "; ".join(seed_context.issues) if seed_context.issues else "Missing required features"
         report.add(
@@ -1599,9 +1587,9 @@ def _validate_tests_structure_checks(tests_structure, report: ProjectReport) -> 
             section=SECTION_PROCEDURAL,
         )
         return
-    
+
     all_tests_exist = tests_structure.has_dynamic_test and tests_structure.has_events_test
-    
+
     if not all_tests_exist:
         missing = []
         if not tests_structure.has_dynamic_test:
@@ -1622,7 +1610,7 @@ def _validate_tests_structure_checks(tests_structure, report: ProjectReport) -> 
             f"All required test files exist{readme_note}",
             section=SECTION_PROCEDURAL,
         )
-    
+
     if not tests_structure.has_readme:
         report.add(
             False,
@@ -1634,12 +1622,8 @@ def _validate_tests_structure_checks(tests_structure, report: ProjectReport) -> 
 
 def _validate_variant_jsons_checks(variant_jsons, report: ProjectReport) -> None:
     """MEDIA PRIORITY: Validate variant JSON files."""
-    all_exist = (
-        variant_jsons.id_variants_exists and
-        variant_jsons.class_variants_exists and
-        variant_jsons.text_variants_exists
-    )
-    
+    all_exist = variant_jsons.id_variants_exists and variant_jsons.class_variants_exists and variant_jsons.text_variants_exists
+
     if not all_exist:
         missing = []
         if not variant_jsons.id_variants_exists:
@@ -1656,12 +1640,8 @@ def _validate_variant_jsons_checks(variant_jsons, report: ProjectReport) -> None
         )
     else:
         # Check if JSONs have content
-        has_content = (
-            variant_jsons.id_variants_keys > 0 and
-            variant_jsons.class_variants_keys > 0 and
-            variant_jsons.text_variants_keys > 0
-        )
-        
+        has_content = variant_jsons.id_variants_keys > 0 and variant_jsons.class_variants_keys > 0 and variant_jsons.text_variants_keys > 0
+
         if not has_content:
             empty = []
             if variant_jsons.id_variants_keys == 0:
@@ -1683,7 +1663,7 @@ def _validate_variant_jsons_checks(variant_jsons, report: ProjectReport) -> None
                 f"IDs: {variant_jsons.id_variants_keys} keys, Classes: {variant_jsons.class_variants_keys} keys, Texts: {variant_jsons.text_variants_keys} keys",
                 section=SECTION_PROCEDURAL,
             )
-    
+
     if variant_jsons.issues:
         for issue in variant_jsons.issues:
             report.add(
@@ -1697,12 +1677,12 @@ def _validate_variant_jsons_checks(variant_jsons, report: ProjectReport) -> None
 def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
     """
     HIGH PRIORITY: Execute Node.js tests (test-dynamic-system.js and test-events.js) if they exist.
-    
+
     This integrates the Node.js test suite into the Python verification pipeline.
     """
     if not frontend_dir or not frontend_dir.exists():
         return
-    
+
     tests_dir = frontend_dir / "tests"
     if not tests_dir.exists():
         report.add(
@@ -1712,10 +1692,10 @@ def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
             section=SECTION_PROCEDURAL,
         )
         return
-    
+
     dynamic_test = tests_dir / "test-dynamic-system.js"
     events_test = tests_dir / "test-events.js"
-    
+
     # Test 1: Dynamic system test
     if dynamic_test.exists():
         try:
@@ -1727,12 +1707,12 @@ def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
                 timeout=60,
             )
             output = result.stdout + result.stderr
-            
+
             # Parse output for pass/fail
             # Look for patterns like "✅ SISTEMA DINÁMICO: VALIDACIÓN EXITOSA" or "⚠️  SISTEMA DINÁMICO: REQUIERE ATENCIÓN"
             passed = "✅ SISTEMA DINÁMICO: VALIDACIÓN EXITOSA" in output or "✅" in output[-200:]
             failed = "❌" in output or "⚠️" in output or result.returncode != 0
-            
+
             if failed and not passed:
                 # Extract error summary (last 500 chars usually contain summary)
                 error_summary = output[-500:] if len(output) > 500 else output
@@ -1777,7 +1757,7 @@ def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
             f"test-dynamic-system.js not found in {tests_dir}",
             section=SECTION_PROCEDURAL,
         )
-    
+
     # Test 2: Events test
     if events_test.exists():
         try:
@@ -1789,11 +1769,11 @@ def _run_node_tests(frontend_dir: Path | None, report: ProjectReport) -> None:
                 timeout=30,
             )
             output = result.stdout + result.stderr
-            
+
             # Parse output for 100% coverage
             passed = "✅ Cobertura de eventos: 100%" in output or ("✅" in output and "100%" in output)
             failed = "❌" in output or result.returncode != 0
-            
+
             if failed and not passed:
                 error_summary = output[-300:] if len(output) > 300 else output
                 report.add(
@@ -1852,7 +1832,7 @@ def _locate_frontend_dir(web_project: WebProject | None, frontend_root: Path | N
     env_root = os.getenv("AUTOPPIA_WEB_FRONTENDS_ROOT")
     if env_root:
         candidate_roots.append(Path(env_root))
-    
+
     # Check template directory first (for template-based projects)
     template_base = Path(__file__).resolve().parents[4] / "template" / "projects"
     possible_template_names = [project_id, project_id.replace("_", ""), project_id.split("_")[0]]
@@ -1861,12 +1841,12 @@ def _locate_frontend_dir(web_project: WebProject | None, frontend_root: Path | N
         if template_frontend.exists():
             candidate_roots.insert(0, template_frontend)  # Priority: check template first
             break
-    
+
     # Also check autodining template as fallback
     autodining_template = template_base / "autodining" / "frontend"
     if autodining_template.exists():
         candidate_roots.insert(0, autodining_template)
-    
+
     candidate_roots.append(Path("modules") / "webs_demo")
     candidate_roots.append(PROJECT_BASE_DIR.parent.parent / "autoppia_webs_demo")
 
@@ -1878,11 +1858,11 @@ def _locate_frontend_dir(web_project: WebProject | None, frontend_root: Path | N
         seen.add(root)
         if not root.exists():
             continue
-        
+
         # If it's already a frontend directory (from template), return it directly
         if root.name == "frontend" and (root / "src").exists() and (root / "package.json").exists():
             return root
-        
+
         # Otherwise, search for matching project directories
         matches = [path for path in root.iterdir() if path.is_dir() and project_id in path.name.lower()]
         if matches:
