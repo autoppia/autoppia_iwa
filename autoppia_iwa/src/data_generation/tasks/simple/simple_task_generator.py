@@ -128,8 +128,13 @@ class SimpleTaskGenerator:
         # Generate initial constraints with URL that includes seed (if applicable)
         dataset = None
         if hasattr(use_case, "generate_constraints_async"):
-            dataset = await self._preload_dataset_for_use_case(use_case, constraint_ctx.v2_seed)
-            constraints_info = await use_case.generate_constraints_async(task_url=constraint_ctx.url, dataset=dataset)
+            try:
+                dataset = await self._preload_dataset_for_use_case(use_case, constraint_ctx.v2_seed)
+                constraints_info = await use_case.generate_constraints_async(task_url=constraint_ctx.url, dataset=dataset)
+            except Exception as e:
+                # If constraint generation fails, skip this use case instead of crashing the validator
+                logger.warning(f"Skipping use case '{use_case.name}' due to constraint generation error: {e}")
+                return []  # Return empty list to skip this use case
         else:
             constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
             additional_system_prompt = constraints_info
