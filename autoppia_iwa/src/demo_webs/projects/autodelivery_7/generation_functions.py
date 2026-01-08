@@ -70,7 +70,9 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
 
     elif operator == ComparisonOperator.NOT_EQUALS:
-        valid = [v[field] for v in dataset if v.get(field) != field_value]
+        # Only consider entries that actually include the field to avoid KeyError
+        valid = [v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) != field_value]
+        valid = [x for x in valid if x is not None]
         return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.CONTAINS and isinstance(field_value, str):
@@ -81,11 +83,17 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
 
     elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        valid = [v[field] for v in dataset if isinstance(v.get(field), str) and field_value not in v.get(field, "")]
+        valid = [
+            v.get(field)
+            for v in dataset
+            if isinstance(v, dict) and field in v and isinstance(v.get(field), str) and field_value not in v.get(field, "")
+        ]
+        valid = [x for x in valid if x is not None]
         return random.choice(valid) if valid else None
 
     elif operator == ComparisonOperator.IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        # Use get() and guard for missing fields to avoid KeyError
+        all_values = list({v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) is not None})
         if not all_values:
             return [field_value]
         random.shuffle(all_values)
@@ -95,7 +103,8 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return list(set(subset))
 
     elif operator == ComparisonOperator.NOT_IN_LIST:
-        all_values = list({v.get(field) for v in dataset if field in v})
+        # Use get() and guard for missing fields to avoid KeyError
+        all_values = list({v.get(field) for v in dataset if isinstance(v, dict) and field in v and v.get(field) is not None})
         if field_value in all_values:
             all_values.remove(field_value)
         return random.sample(all_values, min(2, len(all_values))) if all_values else []
@@ -344,11 +353,12 @@ async def generate_delete_review_constraints(task_url: str | None = None, datase
         if not allowed_ops:
             continue
         operator = ComparisonOperator(random.choice(allowed_ops))
-        field_values = [d[field] for d in delete_review_dict if field in d]
+        # Use get() to avoid KeyError when some entries lack the field
+        field_values = [d.get(field) for d in delete_review_dict if d.get(field) is not None]
         if not field_values:
             continue
         field_value = random.choice(field_values)
-        dataset = [{field: d[field]} for d in delete_review_dict if field in d]
+        dataset = [{field: d.get(field)} for d in delete_review_dict if d.get(field) is not None]
         value = _generate_constraint_value(operator, field_value, field, dataset)
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
@@ -564,8 +574,13 @@ async def generate_quick_reorder_constraints(task_url: str | None = None, datase
             continue
         operator = ComparisonOperator(random.choice(allowed_ops))
         value_source = menu_item.get("name") if field == "item" else restaurant.get("name")
-        # Use menu items dataset for "item" field, restaurants dataset for "restaurant" field
-        field_dataset = all_menu_items if field == "item" else restaurants
+        # Use menu items dataset for "item" field, and normalized restaurant-name dataset for "restaurant" field
+        if field == "item":
+            field_dataset = all_menu_items
+        elif field == "restaurant":
+            field_dataset = [{"restaurant": r.get("name")} for r in restaurants if r.get("name")]
+        else:
+            field_dataset = restaurants
         value = _generate_constraint_value(operator, value_source, field, field_dataset)
         if value is not None:
             constraints_list.append(create_constraint_dict(field, operator, value))
