@@ -1,6 +1,7 @@
 # concurrent_evaluator.py
 import asyncio
 import contextlib
+import os
 import time
 from collections import defaultdict
 
@@ -498,6 +499,27 @@ class ConcurrentEvaluator(IEvaluator):
                 context.set_default_timeout(self.config.browser_timeout)
                 page = await context.new_page()
 
+                # Optional network debugging for log-event and webs_server traffic
+                debug_network = os.getenv("IWA_DEBUG_NETWORK", "").lower() in ("1", "true", "yes")
+                network_log: dict[str, list[str]] = {"requests": [], "responses": []}
+
+                if debug_network:
+
+                    def _on_request(req):
+                        url = req.url
+                        if "log-event" in url or ":8090" in url:
+                            entry = f"{req.method} {url}"
+                            network_log["requests"].append(entry)
+
+                    def _on_response(res):
+                        url = res.url
+                        if "log-event" in url or ":8090" in url:
+                            entry = f"{res.status} {url}"
+                            network_log["responses"].append(entry)
+
+                    page.on("request", _on_request)
+                    page.on("response", _on_response)
+
                 dynamic_config = self.config.dynamic_phase_config
                 dynamic_enabled = dynamic_config.any_enabled() if dynamic_config else False
                 if dynamic_enabled:
@@ -544,6 +566,10 @@ class ConcurrentEvaluator(IEvaluator):
                         break
 
                 _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions", web_agent_id=web_agent_id)
+
+                if debug_network:
+                    logger.info(f"[NETWORK DEBUG] Requests: {network_log['requests']}")
+                    logger.info(f"[NETWORK DEBUG] Responses: {network_log['responses']}")
 
                 return action_results, action_execution_times
 

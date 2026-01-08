@@ -13,7 +13,7 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
+from autoppia_iwa.src.web_agents.cua import FixedAutobooksAgent
 
 # from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
@@ -56,29 +56,16 @@ SOTA_AGENTS = [
     # CLAUDE_CUA_AGENT,
 ]
 
-# Active agents to run. Configure your local simple_api agent here.
+# Active agents to run.
+# For this smoke-style test, we use a fixed agent that always returns
+# the same hard-coded trajectory designed for a single Autobooks task.
 AGENTS = [
-    ApifiedWebAgent(id="1", name="AutoppiaAgent1", host="127.0.0.1", port=7000, timeout=120),
-    # ApifiedWebAgent(id="2", name="AutoppiaAgent2", host="127.0.0.1", port=7000, timeout=120),
-    # ApifiedWebAgent(id="2", name="BrowserUse-OpenAI", host="127.0.0.1", port=5000, timeout=120),
+    FixedAutobooksAgent(id="1", name="FixedAutobooksAgent"),
 ]
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
-    # "autocinema",
-    # "autobooks",
-    # "autozone",
-    # "autodining",
-    # "autocrm",
-    "automail",
-    # "autodelivery",
-    # "autolodge",
-    # "autoconnect",
-    # "autowork",
-    # "autocalendar",
-    # "autolist",
-    # "autodrive",
-    # add more project ids here
+    "autobooks",
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
@@ -123,17 +110,17 @@ CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
     # Tasks
-    use_cached_tasks=False,  # load project tasks from JSON cache if available
+    use_cached_tasks=True,  # load project tasks from JSON cache (autoppia_books_tasks.json)
     prompts_per_use_case=1,
-    num_use_cases=0,  # 0 = all use-cases
+    num_use_cases=0,  # ignored when using cache
     use_cases=USE_CASES,
     # Execution
-    runs=1,  # how many runs do you want?
+    runs=1,  # single run is enough for this fixed agent
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
     use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
-    # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
-    dynamic=True,
+    # Dynamic mode: disabled for this simple fixed-task test to avoid seed constraints.
+    dynamic=False,
     # TODO REVISAR PORQUE SOLO DEBEIRA HABER UNO
     # dynamic_phase_config=DynamicPhaseConfig(
     #     enable_d1_structure=True,
