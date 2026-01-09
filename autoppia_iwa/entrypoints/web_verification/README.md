@@ -207,27 +207,6 @@ python -m autoppia_iwa.entrypoints.web_verification.run \
     --no-dynamic-verification
 ```
 
-### From PyCharm
-
-1. **Create Run Configuration**:
-   - Go to `Run` → `Edit Configurations...`
-   - Click `+` → `Python`
-   - Set:
-     - **Name**: `Web Verification Pipeline`
-     - **Script path**: `path/to/autoppia_iwa/autoppia_iwa/entrypoints/web_verification/run.py`
-     - **Parameters**: `--project-id autocrm [other options]`
-     - **Working directory**: `path/to/autoppia_iwa`
-     - **Python interpreter**: Select your project interpreter
-
-2. **Run or Debug**:
-   - Click `Run` or `Debug` button
-   - Use breakpoints in the pipeline code for debugging
-
-3. **Alternative: Use Wrapper Script**:
-   - Create a wrapper script at project root (e.g., `run_web_verification.py`)
-   - Configure it to call the pipeline module
-   - Run the wrapper script from PyCharm
-
 ## Output Structure
 
 Results are saved as JSON files in the output directory (default: `./verification_results/`).
@@ -407,14 +386,3 @@ Step 3: Dynamic Verification → Evaluate with Seeds
 Results JSON
 ```
 
-## Dependencies
-
-- `autoppia_iwa`: Core IWA framework
-- `loguru`: Logging
-- `aiohttp`: Async HTTP client for IWAP API
-- `pydantic`: Data validation
-- LLM service (via DIContainer)
-
-## License
-
-Part of the Autoppia IWA project.
