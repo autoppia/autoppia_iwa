@@ -211,61 +211,7 @@ python -m autoppia_iwa.entrypoints.web_verification.run \
 
 Results are saved as JSON files in the output directory (default: `./verification_results/`).
 
-### File Naming
-- Format: `verification_{project_id}.json`
-- Example: `verification_autocrm.json`
-
-### Result Structure
-
-```json
-{
-  "project_id": "autocrm",
-  "project_name": "AutoCRM",
-  "use_cases": {
-    "ADD_NEW_MATTER": {
-      "tasks": [
-        {
-          "task_id": "...",
-          "prompt": "...",
-          "constraints": [...],
-          "constraints_str": "...",
-          "seed": 123,
-          "llm_review": {
-            "valid": true,
-            "reasoning": "..."
-          }
-        }
-      ],
-      "llm_reviews": [...],
-      "doability_check": {
-        "doable": true,
-        "success_rate": 0.75,
-        "tasks_with_solutions": 3,
-        "total_tasks": 4
-      },
-      "iwap_match_result": {
-        "matched": true,
-        "match_type": "tests",
-        "actions": [...],
-        "api_prompt": "...",
-        "api_tests": [...],
-        "api_start_url": "..."
-      },
-      "dynamic_verification": {
-        "all_passed": true,
-        "passed_count": 5,
-        "total_count": 5,
-        "results": {
-          "1": {...},
-          "50": {...},
-          ...
-        },
-        "summary": "..."
-      }
-    }
-  }
-}
-```
+File naming: `verification_{project_id}.json` (for example `verification_autocrm.json`), written under the configured `--output-dir`.
 
 ## Examples
 
@@ -290,10 +236,7 @@ python -m autoppia_iwa.entrypoints.web_verification.run \
     --verbose
 ```
 
-Useful when:
-- IWAP API is under development
-- Testing pipeline without network access
-- Debugging pipeline logic
+Useful when the IWAP API is unavailable or when you want to exercise Step 3 (dynamic verification) even if the live API cannot return solutions.
 
 ### Example 3: Custom Seed Values
 
@@ -385,4 +328,3 @@ Step 3: Dynamic Verification → Evaluate with Seeds
   ↓
 Results JSON
 ```
-

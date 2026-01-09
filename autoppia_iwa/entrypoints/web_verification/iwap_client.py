@@ -403,11 +403,7 @@ class IWAPClient:
             # Compare all candidate tests against our constraints
             for normalized_test in candidates:
                 for our_constraint in our_constraints_list:
-                    if (
-                        normalized_test["field"] == our_constraint["field"]
-                        and normalized_test["operator"] == our_constraint["operator"]
-                        and normalized_test["value"] == our_constraint["value"]
-                    ):
+                    if normalized_test["field"] == our_constraint["field"] and normalized_test["operator"] == our_constraint["operator"] and normalized_test["value"] == our_constraint["value"]:
                         return True
 
         return False
