@@ -267,6 +267,7 @@ class IWAPClient:
 
                         # Print summary of response
                         if isinstance(data, dict):
+                            data = data.get("data", {})
                             tasks = data.get("tasks", [])
                             total = data.get("total", len(tasks))
                             print(f"   Response: {len(tasks)} tasks returned (total: {total})")
