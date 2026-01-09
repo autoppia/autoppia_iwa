@@ -235,9 +235,11 @@ class IWAPClient:
             "key": self.api_key,
             "website": website,
             "useCase": use_case_name,
-            # "page": page,
-            # "limit": limit,
         }
+        if page is not None:
+            params["page"] = page
+        if limit is not None:
+            params["limit"] = limit
 
         try:
             # Print API call details for debugging
@@ -247,8 +249,10 @@ class IWAPClient:
             print(f"     - key: {self.api_key}")
             print(f"     - website: {website}")
             print(f"     - useCase: {use_case_name}")
-            # print(f"     - page: {page}")
-            # print(f"     - limit: {limit}")
+            if page is not None:
+                print(f"     - page: {page}")
+            if limit is not None:
+                print(f"     - limit: {limit}")
 
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
                 logger.info(f"Querying IWAP API: {endpoint} with params: website={website}, useCase={use_case_name}, page={page}, limit={limit}")
@@ -367,33 +371,46 @@ class IWAPClient:
 
         # Check if any API test matches our constraints
         for test in api_tests:
-            # Extract test criteria from API test
-            # API test structure may vary, try common fields
+            candidates = []
+
+            # Direct test fields
             test_field = test.get("field", "")
             test_operator = test.get("operator", "")
             test_value = test.get("value", "")
-
-            # Also check for nested structures (e.g., test.criteria.field)
-            if not test_field and "event_criteria" in test:
-                criteria = test.get("event_criteria", {})
-                for field, rule in criteria.items():
-                    test_field = field
-                    test_operator = rule.get("operator", "equals") if isinstance(rule, dict) else "equals"
-                    test_value = rule.get("value") if isinstance(rule, dict) else rule
-
-                    # Normalize for comparison
-                    normalized_test = {
+            if test_field or test_operator or test_value:
+                candidates.append(
+                    {
                         "field": test_field.lower().strip() if test_field else "",
                         "operator": str(test_operator).lower().strip() if test_operator else "",
                         "value": str(test_value).lower().strip() if test_value is not None else "",
                     }
+                )
 
-                    # Check if this test matches any of our constraints
-                    for our_constraint in our_constraints_list:
-                        if normalized_test["field"] == our_constraint["field"] and normalized_test["operator"] == our_constraint["operator"] and normalized_test["value"] == our_constraint["value"]:
-                            return True
+            # Nested event criteria
+            if "event_criteria" in test:
+                criteria = test.get("event_criteria", {}) or {}
+                for field, rule in criteria.items():
+                    test_operator = rule.get("operator", "equals") if isinstance(rule, dict) else "equals"
+                    test_value = rule.get("value") if isinstance(rule, dict) else rule
+                    candidates.append(
+                        {
+                            "field": field.lower().strip() if field else "",
+                            "operator": str(test_operator).lower().strip() if test_operator else "",
+                            "value": str(test_value).lower().strip() if test_value is not None else "",
+                        }
+                    )
 
-            return False
+            # Compare all candidate tests against our constraints
+            for normalized_test in candidates:
+                for our_constraint in our_constraints_list:
+                    if (
+                        normalized_test["field"] == our_constraint["field"]
+                        and normalized_test["operator"] == our_constraint["operator"]
+                        and normalized_test["value"] == our_constraint["value"]
+                    ):
+                        return True
+
+        return False
 
     def _intent_matches_prompt(self, api_intent: str, our_prompt: str) -> bool:
         """

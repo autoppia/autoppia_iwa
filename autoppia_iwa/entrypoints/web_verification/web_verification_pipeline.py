@@ -204,22 +204,28 @@ class WebVerificationPipeline:
                 review_result["task_id"] = task.id
                 use_case_results["llm_reviews"].append(review_result)
 
-        # Step 2: IWAP API call - only if ALL LLM reviews are valid
-        if self.llm_reviewer and self.iwap_client:
-            all_reviews_valid = all(review.get("valid", False) for review in use_case_results.get("llm_reviews", []))
+        # Step 2: IWAP API call - proceed if enabled and (LLM reviews are valid or review is disabled)
+        if self.iwap_client:
+            all_reviews_valid = True
+            if self.llm_reviewer:
+                llm_reviews = use_case_results.get("llm_reviews", [])
+                all_reviews_valid = all(review.get("valid", False) for review in llm_reviews) and len(llm_reviews) > 0
 
-            if all_reviews_valid and len(use_case_results.get("llm_reviews", [])) > 0:
+            if all_reviews_valid:
                 print("\n" + "=" * 80)
                 print("🔄 STEP 2: IWAP API CALL")
                 print("=" * 80)
                 print(f"Use Case: {use_case.name}")
                 print(f"Project ID: {self.web_project.id}")
-                print(f"Total Tasks Reviewed: {len(use_case_results.get('llm_reviews', []))}")
-                print("All LLM Reviews: VALID ✓")
+                if self.llm_reviewer:
+                    print(f"Total Tasks Reviewed: {len(use_case_results.get('llm_reviews', []))}")
+                    print("All LLM Reviews: VALID ✓")
+                else:
+                    print("LLM Review: DISABLED (proceeding without gating)")
                 print("Calling IWAP API...")
                 print("-" * 80)
 
-                logger.info(f"Step 2: All LLM reviews are valid for use case {use_case.name}, querying IWAP API")
+                logger.info(f"Step 2: Proceeding to IWAP for use case {use_case.name} (LLM review {'enabled' if self.llm_reviewer else 'disabled'})")
                 iwap_result = await self.iwap_client.get_tasks_with_solutions(
                     project_id=self.web_project.id,
                     use_case_name=use_case.name,
@@ -358,7 +364,7 @@ class WebVerificationPipeline:
                 print("Reason: Not all LLM reviews are valid")
                 print("=" * 80 + "\n")
                 logger.info(f"Step 2: Skipping IWAP API call for use case {use_case.name} because not all LLM reviews are valid")
-        elif not self.iwap_client:
+        else:
             print("\n" + "=" * 80)
             print("⏭️  STEP 2: SKIPPED")
             print("=" * 80)

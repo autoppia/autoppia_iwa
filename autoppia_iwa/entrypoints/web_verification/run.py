@@ -55,9 +55,9 @@ def parse_args():
 
     parser.add_argument(
         "--dynamic",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
         default=True,
-        help="Enable dynamic seed generation (default: True)",
+        help="Enable or disable dynamic seed generation (default: enabled)",
     )
 
     parser.add_argument(

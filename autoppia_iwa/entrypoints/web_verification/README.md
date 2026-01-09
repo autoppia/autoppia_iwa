@@ -1,6 +1,24 @@
 # Web Verification Pipeline
 
-A comprehensive pipeline for verifying web automation tasks by generating tasks, reviewing them with LLM, checking their doability via IWAP API, and validating solutions across different dynamic seeds.
+A concise, three-step pipeline that:
+- Generates web tasks with constraints (tests) and reviews them with an LLM
+- Checks if anyone has solved the use case via the IWAP API (with mock fallback)
+- Replays found solutions across multiple dynamic seeds to prove they generalize
+
+## Quick start
+
+```bash
+# Fast path with defaults (dynamic seeds on, writes one JSON result)
+python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm
+
+# Use mock IWAP when offline and keep logs verbose
+python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --iwap-use-mock --verbose
+
+# Skip LLM review and dynamic verification for speed
+python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --no-llm-review --no-dynamic-verification
+```
+
+**Outputs**: One JSON per project is written to `./verification_results/verification_<project_id>.json` (overwritten on rerun unless you change `--output-dir`).
 
 ## Overview
 
@@ -319,6 +337,13 @@ python -m autoppia_iwa.entrypoints.web_verification.run \
 Useful for:
 - Faster execution when LLM review is not needed
 - Testing other pipeline steps independently
+
+## Practical tips
+
+- Use `--iwap-use-mock` when offline or the leaderboard service is flaky; the pipeline still exercises matching and dynamic verification.
+- Keep seeds short while debugging (for example, `--seeds "1,5"`); expand once the flow is stable.
+- Skip `--no-dynamic-verification` when you only need generation + IWAP matching and want faster cycles.
+- Change `--output-dir` if you want to keep historical runs; otherwise a single JSON per project is overwritten by default.
 
 ## Troubleshooting
 
