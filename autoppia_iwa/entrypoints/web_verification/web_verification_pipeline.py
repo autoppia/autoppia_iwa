@@ -293,6 +293,32 @@ class WebVerificationPipeline:
 
                 logger.info(f"IWAP API response for {use_case.name}: success={iwap_result.get('success', False) if iwap_result else False}")
 
+                # Store Step 2 execution status (even if no doability check was performed)
+                if iwap_result and iwap_result.get("success", False):
+                    # Step 2 executed successfully
+                    match_result = use_case_results.get("iwap_match_result", {})
+                    if match_result.get("matched", False):
+                        # Solution found - could be considered "doable"
+                        use_case_results["iwap_status"] = {
+                            "executed": True,
+                            "matched": True,
+                            "reason": "Solution found from IWAP API",
+                        }
+                    else:
+                        # No solution found
+                        use_case_results["iwap_status"] = {
+                            "executed": True,
+                            "matched": False,
+                            "reason": match_result.get("reason", "No solution found"),
+                        }
+                else:
+                    # Step 2 failed
+                    use_case_results["iwap_status"] = {
+                        "executed": True,
+                        "success": False,
+                        "reason": iwap_result.get("error", "API call failed") if iwap_result else "No response",
+                    }
+
                 # Step 3: Dynamic verification - evaluate solution with different seeds (if we got a solution)
                 match_result = use_case_results.get("iwap_match_result", {})
 
@@ -341,18 +367,45 @@ class WebVerificationPipeline:
                             print("=" * 80 + "\n")
                         else:
                             logger.warning("No reference task available for dynamic verification")
+                            # Store skip reason for Step 3
+                            use_case_results["dynamic_verification"] = {
+                                "skipped": True,
+                                "reason": "No reference task available (missing api_prompt or api_start_url)",
+                                "all_passed": False,
+                                "passed_count": 0,
+                                "total_count": 0,
+                            }
                     else:
                         logger.info("Dynamic verification is disabled")
+                        # Store skip reason for Step 3
+                        use_case_results["dynamic_verification"] = {
+                            "skipped": True,
+                            "reason": "Dynamic verification is disabled",
+                            "all_passed": False,
+                            "passed_count": 0,
+                            "total_count": 0,
+                        }
                 else:
                     print("\n" + "=" * 80)
                     print("⏭️  STEP 3: SKIPPED")
                     print("=" * 80)
                     print(f"Use Case: {use_case.name}")
+                    skip_reason = ""
                     if not match_result.get("matched", False):
-                        print("Reason: No solution found from IWAP API")
+                        skip_reason = "No solution found from IWAP API"
+                        print(f"Reason: {skip_reason}")
                     else:
-                        print("Reason: No actions in solution")
+                        skip_reason = "No actions in solution"
+                        print(f"Reason: {skip_reason}")
                     print("=" * 80 + "\n")
+                    # Store skip reason for Step 3
+                    use_case_results["dynamic_verification"] = {
+                        "skipped": True,
+                        "reason": skip_reason,
+                        "all_passed": False,
+                        "passed_count": 0,
+                        "total_count": 0,
+                    }
             else:
                 invalid_count = sum(1 for review in use_case_results.get("llm_reviews", []) if not review.get("valid", False))
                 print("\n" + "=" * 80)
@@ -364,6 +417,21 @@ class WebVerificationPipeline:
                 print("Reason: Not all LLM reviews are valid")
                 print("=" * 80 + "\n")
                 logger.info(f"Step 2: Skipping IWAP API call for use case {use_case.name} because not all LLM reviews are valid")
+                # Store skip reason for Step 2
+                use_case_results["iwap_status"] = {
+                    "skipped": True,
+                    "reason": "Not all LLM reviews are valid",
+                    "invalid_reviews": invalid_count,
+                    "total_reviews": len(use_case_results.get("llm_reviews", [])),
+                }
+                # Also mark Step 3 as skipped since Step 2 was skipped
+                use_case_results["dynamic_verification"] = {
+                    "skipped": True,
+                    "reason": "Step 2 skipped (not all LLM reviews are valid)",
+                    "all_passed": False,
+                    "passed_count": 0,
+                    "total_count": 0,
+                }
         else:
             print("\n" + "=" * 80)
             print("⏭️  STEP 2: SKIPPED")
@@ -372,6 +440,19 @@ class WebVerificationPipeline:
             print("Reason: IWAP client is disabled (--no-iwap flag used)")
             print("=" * 80 + "\n")
             logger.info(f"Step 2: Skipping IWAP API call for use case {use_case.name} because IWAP client is disabled")
+            # Store skip reason for Step 2
+            use_case_results["iwap_status"] = {
+                "skipped": True,
+                "reason": "IWAP client is disabled",
+            }
+            # Also mark Step 3 as skipped since Step 2 was skipped
+            use_case_results["dynamic_verification"] = {
+                "skipped": True,
+                "reason": "Step 2 skipped (IWAP client disabled)",
+                "all_passed": False,
+                "passed_count": 0,
+                "total_count": 0,
+            }
 
         # Note: IWAP doability check is now done per-task in Step 2 (when LLM review is valid)
         # Keeping this for backward compatibility if needed, but it's now integrated into Step 2
@@ -563,26 +644,58 @@ class WebVerificationPipeline:
                 avg_score = sum(r.get("score", 0.0) for r in reviews) / len(reviews) if reviews else 0.0
                 summary_lines.append(f"  LLM Reviews: {valid_reviews}/{len(reviews)} valid (avg score: {avg_score:.2f})")
 
-            # Doability check
-            doability = use_case_data.get("doability_check")
-            if doability:
-                is_doable = doability.get("doable", False)
-                success_rate = doability.get("success_rate", 0.0)
-                summary_lines.append(f"  Doability: {'✓ Doable' if is_doable else '✗ Not doable'} (success rate: {success_rate:.2%})")
+            # Step 2: IWAP API / Doability check
+            iwap_status = use_case_data.get("iwap_status")
+            if iwap_status:
+                if iwap_status.get("skipped", False):
+                    # Step 2 was skipped
+                    reason = iwap_status.get("reason", "Unknown reason")
+                    summary_lines.append(f"  Step 2 (IWAP): ⏭️ Skipped ({reason})")
+                elif iwap_status.get("executed", False):
+                    # Step 2 was executed
+                    if iwap_status.get("matched", False):
+                        summary_lines.append("  Step 2 (IWAP): ✓ Executed (solution found)")
+                    elif iwap_status.get("matched") is False:
+                        reason = iwap_status.get("reason", "No solution found")
+                        summary_lines.append(f"  Step 2 (IWAP): ✓ Executed ({reason})")
+                    elif not iwap_status.get("success", True):
+                        reason = iwap_status.get("reason", "API call failed")
+                        summary_lines.append(f"  Step 2 (IWAP): ✗ Failed ({reason})")
+                    else:
+                        summary_lines.append("  Step 2 (IWAP): ✓ Executed")
+                else:
+                    summary_lines.append("  Step 2 (IWAP): ⏭️ Not executed")
+            else:
+                # Check for legacy doability_check format
+                doability = use_case_data.get("doability_check")
+                if doability:
+                    is_doable = doability.get("doable", False)
+                    success_rate = doability.get("success_rate", 0.0)
+                    summary_lines.append(f"  Step 2 (IWAP): {'✓ Doable' if is_doable else '✗ Not doable'} (success rate: {success_rate:.2%})")
+                else:
+                    summary_lines.append("  Step 2 (IWAP): ⏭️ Not executed")
 
-            # Dynamic verification
+            # Step 3: Dynamic verification
             dynamic_verification = use_case_data.get("dynamic_verification")
             if dynamic_verification:
                 # dynamic_verification is a dict, not a list
                 if isinstance(dynamic_verification, dict):
-                    all_passed = dynamic_verification.get("all_passed", False)
-                    passed_count = dynamic_verification.get("passed_count", 0)
-                    total_count = dynamic_verification.get("total_count", 0)
-                    summary_lines.append(f"  Dynamic Verification: {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
+                    skipped = dynamic_verification.get("skipped", False)
+                    if skipped:
+                        reason = dynamic_verification.get("reason", "Unknown reason")
+                        summary_lines.append(f"  Step 3 (Dynamic): ⏭️ Skipped ({reason})")
+                    else:
+                        all_passed = dynamic_verification.get("all_passed", False)
+                        passed_count = dynamic_verification.get("passed_count", 0)
+                        total_count = dynamic_verification.get("total_count", 0)
+                        summary_lines.append(f"  Step 3 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
                 elif isinstance(dynamic_verification, list):
                     # Handle legacy list format if it exists
                     all_passed = all(dr.get("all_passed", False) for dr in dynamic_verification if isinstance(dr, dict))
-                    summary_lines.append(f"  Dynamic Verification: {'✓ Passed' if all_passed else '✗ Failed'}")
+                    summary_lines.append(f"  Step 3 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'}")
+            else:
+                # No dynamic verification data at all
+                summary_lines.append("  Step 3 (Dynamic): ⏭️ Skipped (no data)")
 
         summary_lines.append(f"\n{'=' * 60}\n")
         return "\n".join(summary_lines)
