@@ -358,4 +358,3 @@ Los siguientes checks **no bloquean** pero se reportan:
 
 **Última actualización**: 2025-01-27
 **Versión**: Incluye mejoras de prioridad ALTA y MEDIA
-

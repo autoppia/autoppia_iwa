@@ -83,11 +83,7 @@ def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, f
         return field_value
 
     elif operator == ComparisonOperator.NOT_CONTAINS and isinstance(field_value, str):
-        valid = [
-            v.get(field)
-            for v in dataset
-            if isinstance(v, dict) and field in v and isinstance(v.get(field), str) and field_value not in v.get(field, "")
-        ]
+        valid = [v.get(field) for v in dataset if isinstance(v, dict) and field in v and isinstance(v.get(field), str) and field_value not in v.get(field, "")]
         valid = [x for x in valid if x is not None]
         return random.choice(valid) if valid else None
 

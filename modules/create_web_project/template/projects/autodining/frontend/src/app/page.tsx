@@ -134,7 +134,7 @@ function RestaurantCard({
 
   return (
     dyn.v1.addWrapDecoy(`restaurant-card-${r.id}`, (
-      <div 
+      <div
         className="w-[320px] flex-shrink-0 rounded-xl overflow-hidden shadow-lg bg-white hover:-translate-y-1 transition-all duration-300 hover:shadow-xl"
         id={dyn.v3.getVariant("restaurant-card", ID_VARIANTS_MAP, `restaurant-card-${r.id}`)}
       >
@@ -150,17 +150,17 @@ function RestaurantCard({
 
             {/* Badges at top */}
             {dyn.v1.addWrapDecoy(`restaurant-card-badges-${r.id}`, (
-              <div 
+              <div
                 className="absolute top-0 left-0 right-0 p-3 flex justify-between items-start z-10"
                 id={dyn.v3.getVariant("restaurant-badges", ID_VARIANTS_MAP, `restaurant-badges-${r.id}`)}
               >
-                <span 
+                <span
                   className="px-3 py-1.5 rounded-full bg-orange-500/90 backdrop-blur-sm text-white text-xs font-bold shadow-lg"
                   id={dyn.v3.getVariant("restaurant-cuisine-badge", ID_VARIANTS_MAP, `restaurant-cuisine-${r.id}`)}
                 >
                   {r.cuisine}
                 </span>
-                <span 
+                <span
                   className="px-3 py-1.5 rounded-full bg-yellow-500/90 backdrop-blur-sm text-white text-xs font-bold shadow-lg"
                   id={dyn.v3.getVariant("restaurant-price-badge", ID_VARIANTS_MAP, `restaurant-price-${r.id}`)}
                 >
@@ -171,13 +171,13 @@ function RestaurantCard({
 
             {/* Content overlay at bottom */}
             {dyn.v1.addWrapDecoy(`restaurant-card-content-${r.id}`, (
-              <div 
+              <div
                 className="absolute bottom-0 left-0 right-0 p-4 text-white"
                 id={dyn.v3.getVariant("restaurant-card-content", ID_VARIANTS_MAP, `restaurant-content-${r.id}`)}
               >
                 <SeedLink href={`/restaurant/${encodeURIComponent(r.id)}`}>
                   {dyn.v1.addWrapDecoy(`restaurant-card-title-${r.id}`, (
-                    <h3 
+                    <h3
                       className="font-bold text-xl mb-0 hover:text-[#46a758] transition-colors drop-shadow-lg"
                       id={dyn.v3.getVariant("restaurant-name", ID_VARIANTS_MAP, `restaurant-name-${r.id}`)}
                     >
@@ -187,7 +187,7 @@ function RestaurantCard({
                 </SeedLink>
                 <div className="mb-3">
                   {dyn.v1.addWrapDecoy(`restaurant-card-rating-${r.id}`, (
-                    <div 
+                    <div
                       className="flex items-center gap-2 mb-0"
                       id={dyn.v3.getVariant("restaurant-rating", ID_VARIANTS_MAP, `restaurant-rating-${r.id}`)}
                     >
@@ -199,7 +199,7 @@ function RestaurantCard({
                     </div>
                   ))}
                   <div className="flex items-center justify-between">
-                    <span 
+                    <span
                       className="text-xs text-gray-200 opacity-80 font-bold"
                       id={dyn.v3.getVariant("restaurant-area", ID_VARIANTS_MAP, `restaurant-area-${r.id}`)}
                     >
@@ -305,7 +305,7 @@ function CardScroller({
 
   return (
     dyn.v1.addWrapDecoy(`card-scroller-${title}`, (
-      <div 
+      <div
         className="relative group"
         id={dyn.v3.getVariant("card-scroller", ID_VARIANTS_MAP, `card-scroller-${title}`)}
       >
@@ -314,9 +314,9 @@ function CardScroller({
           dyn.v1.addWrapDecoy(`card-scroller-left-btn-${title}`, (
             <button
               onClick={() => scroll("left")}
-              className="absolute -left-5 top-1/2 -translate-y-1/2 z-20 
+              className="absolute -left-5 top-1/2 -translate-y-1/2 z-20
                 w-12 h-12 flex items-center justify-center
-                bg-white/95 backdrop-blur-sm border-2 border-gray-200 
+                bg-white/95 backdrop-blur-sm border-2 border-gray-200
                 rounded-full shadow-xl hover:shadow-2xl
                 hover:bg-emerald-50 hover:border-emerald-400 hover:scale-110
                 transition-all duration-300 ease-out"
@@ -334,9 +334,9 @@ function CardScroller({
           dyn.v1.addWrapDecoy(`card-scroller-right-btn-${title}`, (
             <button
               onClick={() => scroll("right")}
-              className="absolute -right-5 top-1/2 -translate-y-1/2 z-20 
+              className="absolute -right-5 top-1/2 -translate-y-1/2 z-20
                 w-12 h-12 flex items-center justify-center
-                bg-white/95 backdrop-blur-sm border-2 border-gray-200 
+                bg-white/95 backdrop-blur-sm border-2 border-gray-200
                 rounded-full shadow-xl hover:shadow-2xl
                 hover:bg-emerald-50 hover:border-emerald-400 hover:scale-110
                 transition-all duration-300 ease-out"
@@ -787,8 +787,8 @@ function HomePageContent() {
               {/* Expensive Restaurants ($$$$) */}
               {expensiveRestaurants.length > 0 && (
                 dyn.v1.addWrapDecoy("section-expensive", (
-                  <section 
-                    id={dyn.v3.getVariant("section_expensive", ID_VARIANTS_MAP, "section_expensive")} 
+                  <section
+                    id={dyn.v3.getVariant("section_expensive", ID_VARIANTS_MAP, "section_expensive")}
                     className="px-6"
                   >
                 <div className="mb-6">
@@ -817,8 +817,8 @@ function HomePageContent() {
               {/* Medium Price Restaurants ($$-$$$) */}
               {mediumRestaurants.length > 0 && (
                 dyn.v1.addWrapDecoy("section-medium", (
-                  <section 
-                    id={dyn.v3.getVariant("section_medium", ID_VARIANTS_MAP, "section_medium")} 
+                  <section
+                    id={dyn.v3.getVariant("section_medium", ID_VARIANTS_MAP, "section_medium")}
                     className="px-6 mt-8"
                   >
                 <div className="mb-6">
@@ -847,8 +847,8 @@ function HomePageContent() {
               {/* Cheap Restaurants ($) */}
               {cheapRestaurants.length > 0 && (
                 dyn.v1.addWrapDecoy("section-cheap", (
-                  <section 
-                    id={dyn.v3.getVariant("section_cheap", ID_VARIANTS_MAP, "section_cheap")} 
+                  <section
+                    id={dyn.v3.getVariant("section_cheap", ID_VARIANTS_MAP, "section_cheap")}
                     className="px-6 mt-8"
                   >
                 <div className="mb-6">

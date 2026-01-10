@@ -1,6 +1,6 @@
 /**
  * Universal Data Generation Utility
- * 
+ *
  * This utility provides consistent data generation across all web projects.
  * It can generate data for different project types (Django, Next.js, etc.)
  * and handle various data structures.
@@ -85,7 +85,7 @@ export async function generateProjectData(
   }
 
   const startTime = Date.now();
-  
+
   try {
     const baseUrl = getApiBaseUrl();
     const response = await fetch(`${baseUrl}/datasets/generate`, {
@@ -159,4 +159,3 @@ export function getApiBaseUrl(): string {
   }
   return envUrl || "http://app:8090";
 }
-
