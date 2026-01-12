@@ -284,32 +284,63 @@ class IWAPClient:
                             "data": data,
                         }
                     else:
+                        # Improvement 4: Only use mock if explicitly enabled, otherwise show the actual error
                         error_text = await response.text()
                         print(f"   ✗ API call failed with status {response.status}")
                         print(f"   Error: {error_text[:200]}")  # Print first 200 chars
-                        print("   ⚠️  API not available, using mock response for testing...")
-                        logger.warning(f"IWAP API returned status {response.status}: {error_text}. Using mock response.")
-                        # Return mock response when API fails (for testing)
-                        mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
-                        print("   ✓ Mock response generated!")
-                        return mock_response
+
+                        if self.use_mock:
+                            print("   ⚠️  Mock mode enabled, using mock response...")
+                            logger.warning(f"IWAP API returned status {response.status}: {error_text}. Using mock response (mock mode enabled).")
+                            mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
+                            print("   ✓ Mock response generated!")
+                            return mock_response
+                        else:
+                            # Return error response
+                            logger.error(f"IWAP API returned status {response.status}: {error_text}, returning error.")
+                            return {
+                                "success": False,
+                                "error": f"HTTP {response.status}: {error_text[:200]}",
+                                "status_code": response.status,
+                                "website": website,
+                                "use_case": use_case_name,
+                            }
 
         except aiohttp.ClientError as e:
             print(f"   ✗ Network/Client Error: {e}")
-            print("   ⚠️  API not available, using mock response for testing...")
-            logger.warning(f"IWAP API request error: {e}. Using mock response.")
-            # Return mock response when API fails (for testing)
-            mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20)
-            print("   ✓ Mock response generated!")
-            return mock_response
+            # Improvement 4: Only use mock if explicitly enabled
+            if self.use_mock:
+                print("   ⚠️  Mock mode enabled, using mock response...")
+                logger.warning(f"IWAP API request error: {e}. Using mock response (mock mode enabled).")
+                mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
+                print("   ✓ Mock response generated!")
+                return mock_response
+            else:
+                logger.error(f"IWAP API request error: {e}, returning error.")
+                return {
+                    "success": False,
+                    "error": f"Network/Client Error: {e!s}",
+                    "website": website,
+                    "use_case": use_case_name,
+                }
         except Exception as e:
             print(f"   ✗ Unexpected Error: {e}")
-            print("   ⚠️  API not available, using mock response for testing...")
-            logger.warning(f"Error querying IWAP API: {e}. Using mock response.")
-            # Return mock response when API fails (for testing)
-            mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20)
-            print("   ✓ Mock response generated!")
-            return mock_response
+            # Improvement 4: Only use mock if explicitly enabled
+            if self.use_mock:
+                print("   ⚠️  Mock mode enabled, using mock response...")
+                logger.warning(f"Error querying IWAP API: {e}. Using mock response (mock mode enabled).")
+                mock_response = self._generate_mock_response(project_id, use_case_name or "", page or 1, limit or 20, our_tasks or [])
+                print("   ✓ Mock response generated!")
+                return mock_response
+            else:
+                print("   ✗ Mock mode disabled. Returning error response.")
+                logger.error(f"Error querying IWAP API: {e}. Mock mode disabled, returning error.")
+                return {
+                    "success": False,
+                    "error": f"Unexpected Error: {e!s}",
+                    "website": website,
+                    "use_case": use_case_name,
+                }
 
     def _normalize_string(self, s: str) -> str:
         """Normalize string for comparison (lowercase, strip whitespace)"""
@@ -324,8 +355,20 @@ class IWAPClient:
             our_constraints: List of constraint dictionaries from our generated task
 
         Returns:
-            True if any test matches our constraints
+            True if any test matches our constraints, or if event_criteria exists but is empty (use case has no criteria)
         """
+        # Improvement 2: If no constraints on our side and API has empty event_criteria, consider it a match
+        if not our_constraints:
+            # Check if API tests have empty event_criteria (meaning use case has no criteria)
+            for test in api_tests:
+                if "event_criteria" in test:
+                    event_criteria = test.get("event_criteria", {}) or {}
+                    # If event_criteria exists but is empty, it means the use case has no criteria
+                    # This is valid - take the solution without comparing
+                    if not event_criteria or len(event_criteria) == 0:
+                        logger.info("API test has empty event_criteria (use case has no criteria). Accepting solution without comparison.")
+                        return True
+
         if not api_tests or not our_constraints:
             return False
 
@@ -390,6 +433,11 @@ class IWAPClient:
             # Nested event criteria
             if "event_criteria" in test:
                 criteria = test.get("event_criteria", {}) or {}
+                # Improvement 2: If event_criteria exists but is empty, accept solution without comparing
+                if not criteria or len(criteria) == 0:
+                    # Empty event_criteria means use case has no criteria - valid case
+                    logger.info("Test has empty event_criteria (use case has no criteria). Accepting as valid match.")
+                    return True
                 for field, rule in criteria.items():
                     test_operator = rule.get("operator", "equals") if isinstance(rule, dict) else "equals"
                     test_value = rule.get("value") if isinstance(rule, dict) else rule
@@ -402,10 +450,27 @@ class IWAPClient:
                     )
 
             # Compare all candidate tests against our constraints
-            for normalized_test in candidates:
-                for our_constraint in our_constraints_list:
+            # for normalized_test in candidates:
+            #     for our_constraint in our_constraints_list:
+            #         if normalized_test["field"] == our_constraint["field"] and normalized_test["operator"] == our_constraint["operator"] and normalized_test["value"] == our_constraint["value"]:
+            #             return True
+            # Compare all our_constraints against candidates (AND logic)
+            all_constraints_matched = True
+
+            for our_constraint in our_constraints_list:
+                matched = False
+
+                for normalized_test in candidates:
                     if normalized_test["field"] == our_constraint["field"] and normalized_test["operator"] == our_constraint["operator"] and normalized_test["value"] == our_constraint["value"]:
-                        return True
+                        matched = True
+                        break
+
+                if not matched:
+                    all_constraints_matched = False
+                    break
+
+            if all_constraints_matched:
+                return True
 
         return False
 
@@ -479,6 +544,34 @@ class IWAPClient:
                 api_intent = task_data.get("intent", "")
                 solution = api_task_item.get("solution", {})
                 api_actions = solution.get("actions", [])
+
+                # Improvement 2: Check if API has empty event_criteria (use case has no criteria)
+                # If event_criteria exists but is empty, it means the use case has no criteria
+                # In this case, we accept the solution without comparing constraints
+                has_empty_event_criteria = False
+                for test in api_tests:
+                    if "event_criteria" in test:
+                        event_criteria = test.get("event_criteria", {}) or {}
+                        if not event_criteria or len(event_criteria) == 0:
+                            has_empty_event_criteria = True
+                            logger.info("API test has empty event_criteria (use case has no criteria). Accepting solution without comparison.")
+                            break
+
+                # If API has empty event_criteria, take the solution without comparing
+                # This handles the case where the use case has no event criteria
+                if has_empty_event_criteria:
+                    return {
+                        "matched": True,
+                        "match_type": "empty_criteria",
+                        "reason": "API has empty event_criteria (use case has no criteria). Accepting solution without comparison.",
+                        "actions": api_actions,
+                        "api_task_id": task_data.get("taskId"),
+                        "api_intent": api_intent,
+                        "api_prompt": api_intent,  # Use intent as prompt
+                        "api_tests": api_tests,
+                        "api_start_url": task_data.get("startUrl", ""),
+                        "api_web_version": task_data.get("webVersion", ""),
+                    }
 
                 # Step 1: Check if tests match our constraints
                 if self._tests_match_constraints(api_tests, our_constraints):

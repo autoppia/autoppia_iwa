@@ -282,7 +282,6 @@ class WebVerificationPipeline:
                             reason = match_result.get("reason", "Unknown reason")
                             print("✗ NO MATCH FOUND")
                             print(f"  ⚠️  WARNING: {reason}")
-                            print(f"  ⚠️  WARNING: {reason}")
                     else:
                         error = iwap_result.get("error", "Unknown error")
                         print(f"Error: {error}")
@@ -458,15 +457,185 @@ class WebVerificationPipeline:
         # Keeping this for backward compatibility if needed, but it's now integrated into Step 2
         return use_case_results
 
+    def _format_results_for_storage(self) -> dict[str, Any]:
+        """
+        Format results in a minimal, readable structure
+
+        Returns:
+            Simplified results dictionary with:
+            - Generated tasks with matched data
+            - Dynamic verification results by seed (not actions)
+            - Summary section
+        """
+        formatted_results = {
+            "project_id": self.web_project.id,
+            "project_name": self.web_project.name,
+            "use_cases": {},
+            "summary": {},
+        }
+
+        # Process each use case
+        for use_case_name, use_case_data in self.results["use_cases"].items():
+            formatted_use_case = {
+                "use_case_name": use_case_name,
+                "tasks": [],
+            }
+
+            # Get generated tasks
+            tasks = use_case_data.get("tasks", [])
+            llm_reviews = use_case_data.get("llm_reviews", [])
+            match_result = use_case_data.get("iwap_match_result", {})
+            dynamic_verification = use_case_data.get("dynamic_verification", {})
+
+            # Format each task
+            for idx, task_info in enumerate(tasks):
+                task_id = task_info.get("task_id", "")
+
+                # Get LLM review for this task
+                llm_review = None
+                if idx < len(llm_reviews):
+                    llm_review = llm_reviews[idx]
+
+                formatted_task = {
+                    "task_id": task_id,
+                    "prompt": task_info.get("prompt", ""),
+                    "seed": task_info.get("seed"),
+                    "constraints": task_info.get("constraints_str", ""),
+                    "llm_review": {
+                        "valid": llm_review.get("valid", False) if llm_review else None,
+                        "score": llm_review.get("score") if llm_review else None,
+                    }
+                    if llm_review
+                    else None,
+                }
+
+                formatted_use_case["tasks"].append(formatted_task)
+
+            # Add matched data at use case level (only if matched)
+            if match_result.get("matched", False):
+                matched_data = {
+                    "match_type": match_result.get("match_type", ""),
+                    "api_task_id": match_result.get("api_task_id", ""),
+                    "api_prompt": match_result.get("api_prompt", ""),
+                    "api_start_url": match_result.get("api_start_url", ""),
+                }
+
+                # Add dynamic verification results by seed (not actions)
+                if dynamic_verification and not dynamic_verification.get("skipped", False):
+                    seed_results = {}
+                    results_by_seed = dynamic_verification.get("results", {})
+                    for seed, seed_result in results_by_seed.items():
+                        evaluation = seed_result.get("evaluation", {})
+                        if evaluation:  # Only include if evaluation exists
+                            seed_results[str(seed)] = {
+                                "score": evaluation.get("final_score", 0.0),
+                                "tests_passed": evaluation.get("tests_passed", 0),
+                                "total_tests": evaluation.get("total_tests", 0),
+                                "success": evaluation.get("success", False),
+                            }
+                        else:
+                            # If no evaluation, include basic success status
+                            seed_results[str(seed)] = {
+                                "score": 0.0,
+                                "success": seed_result.get("success", False),
+                                "error": seed_result.get("error"),
+                            }
+
+                    matched_data["dynamic_verification"] = {
+                        "seeds_tested": dynamic_verification.get("seeds_tested", []),
+                        "results_by_seed": seed_results,
+                        "all_passed": dynamic_verification.get("all_passed", False),
+                        "passed_count": dynamic_verification.get("passed_count", 0),
+                        "total_count": dynamic_verification.get("total_count", 0),
+                    }
+                elif dynamic_verification and dynamic_verification.get("skipped", False):
+                    matched_data["dynamic_verification"] = {
+                        "skipped": True,
+                        "reason": dynamic_verification.get("reason", ""),
+                    }
+
+                formatted_use_case["matched"] = matched_data
+
+            formatted_results["use_cases"][use_case_name] = formatted_use_case
+
+        # Calculate and add summary
+        formatted_results["summary"] = self._calculate_summary()
+
+        return formatted_results
+
+    def _calculate_summary(self) -> dict[str, Any]:
+        """
+        Calculate summary statistics for all use cases
+
+        Returns:
+            Dictionary with summary information:
+            - task_generation: Pass | Fail
+            - number_of_tasks_generated: int
+            - llm_review: Pass | Fail
+            - dynamic_verification: Pass | Fail
+        """
+        total_tasks = 0
+        all_tasks_generated = True
+        all_llm_reviews_passed = True
+        all_dynamic_verification_passed = True
+        has_dynamic_verification = False
+
+        for _use_case_name, use_case_data in self.results["use_cases"].items():
+            tasks = use_case_data.get("tasks", [])
+            total_tasks += len(tasks)
+
+            # Check if tasks were generated
+            if not tasks or use_case_data.get("error"):
+                all_tasks_generated = False
+
+            # Check LLM reviews
+            llm_reviews = use_case_data.get("llm_reviews", [])
+            if llm_reviews:
+                # LLM review is enabled - check if all are valid
+                for review in llm_reviews:
+                    if not review.get("valid", False):
+                        all_llm_reviews_passed = False
+                        break
+            elif self.llm_reviewer:
+                # LLM reviewer is enabled but no reviews (shouldn't happen, but handle it)
+                all_llm_reviews_passed = False
+            # If LLM reviewer is disabled, consider it as passed (not applicable)
+
+            # Check dynamic verification
+            dynamic_verification = use_case_data.get("dynamic_verification", {})
+            if dynamic_verification and not dynamic_verification.get("skipped", False):
+                # Dynamic verification was executed
+                has_dynamic_verification = True
+                # Check if all seeds passed (if all seed results have score=1.0, then Pass)
+                if not dynamic_verification.get("all_passed", False):
+                    all_dynamic_verification_passed = False
+            # If skipped, we don't count it as failed (it's just not applicable)
+
+        # Determine summary status
+        # Dynamic verification: Pass if all seeds passed (all_passed=True), else Fail
+        # If no dynamic verification was executed, we can't determine pass/fail
+
+        summary = {
+            "task_generation": "Pass" if all_tasks_generated and total_tasks > 0 else "Fail",
+            "number_of_tasks_generated": total_tasks,
+            "llm_review": "Pass" if (all_llm_reviews_passed or not self.llm_reviewer) else "Fail",
+            "dynamic_verification": "Pass" if (all_dynamic_verification_passed and has_dynamic_verification) else ("Fail" if has_dynamic_verification else "N/A"),
+        }
+
+        return summary
+
     async def _save_results(self):
-        """Save verification results to file"""
+        """Save verification results to file in minimal, readable format"""
         output_dir = Path(self.config.output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         output_file = output_dir / f"verification_{self.web_project.id}.json"
 
-        # Convert results to JSON-serializable format
-        results_dict = self._serialize_results(self.results)
+        # Format results in minimal structure
+        formatted_results = self._format_results_for_storage()
+
+        # Convert to JSON-serializable format
+        results_dict = self._serialize_results(formatted_results)
 
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(results_dict, f, indent=2, ensure_ascii=False)
@@ -688,11 +857,11 @@ class WebVerificationPipeline:
                         all_passed = dynamic_verification.get("all_passed", False)
                         passed_count = dynamic_verification.get("passed_count", 0)
                         total_count = dynamic_verification.get("total_count", 0)
-                        summary_lines.append(f"  Step 3 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
+                        summary_lines.append(f"  Step 3 (Dynamic): {'✗ Failed, because all evaluations passed' if all_passed else '✓ Passed'} ({passed_count}/{total_count} seeds)")
                 elif isinstance(dynamic_verification, list):
                     # Handle legacy list format if it exists
                     all_passed = all(dr.get("all_passed", False) for dr in dynamic_verification if isinstance(dr, dict))
-                    summary_lines.append(f"  Step 3 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'}")
+                    summary_lines.append(f"  Step 3 (Dynamic): {'✗ Failed' if all_passed else '✓ Passed'}")
             else:
                 # No dynamic verification data at all
                 summary_lines.append("  Step 3 (Dynamic): ⏭️ Skipped (no data)")

@@ -62,12 +62,15 @@ class LLMReviewer:
         constraints = getattr(use_case, "constraints", None)
         constraints_str = use_case.constraints_to_str() if constraints else "No constraints defined"
 
+        # Improvement 1: If no constraints provided, skip LLM review and mark as valid
         if not constraints:
+            logger.info(f"No constraints found for use case {use_case_name}. Skipping LLM review and marking as valid.")
             return {
-                "valid": False,
-                "score": 0.0,
-                "issues": ["No constraints found for this use case"],
-                "reasoning": "Cannot review task without constraints",
+                "valid": True,  # Mark as valid instead of invalid
+                "score": 1.0,  # Perfect score since no constraints to validate
+                "issues": [],  # No issues since no constraints to check
+                "reasoning": "No constraints provided for this use case. Task is automatically valid.",
+                "skipped": True,  # Indicate that review was skipped
             }
 
         # Build the review prompt

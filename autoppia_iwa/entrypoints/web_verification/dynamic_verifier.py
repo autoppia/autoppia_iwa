@@ -293,9 +293,19 @@ class DynamicVerifier:
         if normalized["type"] == "TypeAction":
             if "value" in normalized and "text" not in normalized:
                 normalized["text"] = normalized.pop("value")
-            if "text" not in normalized or not normalized.get("text"):
-                # TypeAction requires text field
-                logger.warning(f"TypeAction missing 'text' field, skipping action: {normalized}")
+            # Improvement 3: Handle empty text - skip actions with empty text
+            text_value = normalized.get("text")
+            if "text" not in normalized or not text_value or (isinstance(text_value, str) and not text_value.strip()):
+                # TypeAction requires non-empty text field
+                logger.warning(f"TypeAction has empty or missing 'text' field, skipping action: {normalized}")
+                return None
+
+        # Improvement 3: Handle SelectDropDownOptionAction - ensure it has non-empty 'text' field
+        if normalized["type"] == "SelectDropDownOptionAction":
+            text_value = normalized.get("text")
+            if "text" not in normalized or not text_value or (isinstance(text_value, str) and not text_value.strip()):
+                # SelectDropDownOptionAction requires non-empty text field
+                logger.warning(f"SelectDropDownOptionAction has empty or missing 'text' field, skipping action: {normalized}")
                 return None
 
         # Handle ClickAction: ensure it has selector or (x, y) coordinates
