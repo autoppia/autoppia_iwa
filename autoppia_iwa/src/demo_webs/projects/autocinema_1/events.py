@@ -379,44 +379,6 @@ class AddToWatchlistEvent(FilmDetailEvent):
     event_name: str = "ADD_TO_WATCHLIST"
 
 
-class AddProductToWatchlistEvent(FilmDetailEvent):
-    """Event triggered when a user adds a specific film to a watchlist-like collection."""
-
-    event_name: str = "ADD_PRODUCT_TO_WATCHLIST"
-
-
-class RateFilmEvent(FilmEvent):
-    """Event triggered when a user rates a film."""
-
-    event_name: str = "RATE_FILM"
-    new_rating: float | None = None
-
-    class ValidationCriteria(FilmEvent.ValidationCriteria):
-        rating_value: float | CriterionValue | None = None
-
-    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
-        if not criteria:
-            return True
-        if criteria.rating_value is not None and not self._validate_field(self.new_rating, criteria.rating_value):
-            return False
-        return self._validate_film_criteria(criteria)
-
-    @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "RateFilmEvent":
-        base_event = Event.parse(backend_event)
-        data = backend_event.data
-        film_data = FilmEvent._extract_film_data(data)
-        rating_value = data.get("new_rating", data.get("rating"))
-        return cls(
-            event_name=base_event.event_name,
-            timestamp=base_event.timestamp,
-            web_agent_id=base_event.web_agent_id,
-            user_id=base_event.user_id,
-            new_rating=rating_value,
-            **film_data,
-        )
-
-
 class RemoveFromWatchlistEvent(FilmDetailEvent):
     """Event triggered when a user removes a film from a watchlist."""
 
@@ -783,8 +745,6 @@ EVENTS = [
     WatchTrailer,
     ShareFilmEvent,
     AddToWatchlistEvent,
-    AddProductToWatchlistEvent,
-    RateFilmEvent,
     RemoveFromWatchlistEvent,
 ]
 
@@ -802,8 +762,6 @@ BACKEND_EVENT_TYPES = {
     "CONTACT": ContactEvent,
     "FILTER_FILM": FilterFilmEvent,
     "ADD_TO_WATCHLIST": AddToWatchlistEvent,
-    "ADD_PRODUCT_TO_WATCHLIST": AddProductToWatchlistEvent,
-    "RATE_FILM": RateFilmEvent,
     "REMOVE_FROM_WATCHLIST": RemoveFromWatchlistEvent,
     "SHARE_MOVIE": ShareFilmEvent,
     "WATCH_TRAILER": WatchTrailer,
