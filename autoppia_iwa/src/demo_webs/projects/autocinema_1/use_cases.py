@@ -7,7 +7,6 @@ from .data_utils import fetch_movies_data
 from .events import (
     AddCommentEvent,
     AddFilmEvent,
-    AddProductToWatchlistEvent,
     AddToWatchlistEvent,
     ContactEvent,
     DeleteFilmEvent,
@@ -17,7 +16,6 @@ from .events import (
     FilterFilmEvent,
     LoginEvent,
     LogoutEvent,
-    RateFilmEvent,
     RegistrationEvent,
     RemoveFromWatchlistEvent,
     SearchFilmEvent,
@@ -335,53 +333,6 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
     ],
 )
 
-
-# Secondary watchlist use case (not yet implemented in frontend) to validate event coverage
-ADD_PRODUCT_TO_WATCHLIST_USE_CASE = UseCase(
-    name="ADD_PRODUCT_TO_WATCHLIST",
-    description="Add a specific film to a product watchlist with the given constraints (expected to fail until frontend wires the event).",
-    event=AddProductToWatchlistEvent,
-    event_source_code=AddProductToWatchlistEvent.get_source_code_of_class(),
-    additional_prompt_info=None,  # will be populated dynamically by update_use_cases_prompt_info
-    constraints_generator=generate_film_constraints,
-    examples=[
-        {
-            "prompt": "Add the film '<movie>' to the product watchlist",
-            "prompt_for_task_generation": "Add the film '<movie>' to the product watchlist",
-        },
-        {
-            "prompt": "Save a movie directed by '<director>' to the product watchlist",
-            "prompt_for_task_generation": "Save a movie directed by '<director>' to the product watchlist",
-        },
-        {
-            "prompt": "Add a <genre> movie released after <year> to the product watchlist",
-            "prompt_for_task_generation": "Add a <genre> movie released after <year> to the product watchlist",
-        },
-    ],
-)
-
-RATE_FILM_USE_CASE = UseCase(
-    name="RATE_FILM",
-    description="Rate a film with the provided value while satisfying the given film constraints.",
-    event=RateFilmEvent,
-    event_source_code=RateFilmEvent.get_source_code_of_class(),
-    additional_prompt_info=None,  # populated from API data
-    constraints_generator=generate_film_constraints,
-    examples=[
-        {
-            "prompt": "Rate the movie '<movie>' with a score of <rating>",
-            "prompt_for_task_generation": "Rate the movie '<movie>' with a score of <rating>",
-        },
-        {
-            "prompt": "Give a rating of <rating> to the film directed by <director>",
-            "prompt_for_task_generation": "Give a rating of <rating> to the film directed by <director>",
-        },
-        {
-            "prompt": "Rate a <genre> movie released after <year> with a score higher than <rating>",
-            "prompt_for_task_generation": "Rate a <genre> movie released after <year> with a score higher than <rating>",
-        },
-    ],
-)
 
 REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
     name="REMOVE_FROM_WATCHLIST",
@@ -1049,9 +1000,7 @@ ALL_USE_CASES = [
     ADD_FILM_USE_CASE,
     EDIT_USER_PROFILE_USE_CASE,
     ADD_TO_WATCHLIST_USE_CASE,
-    ADD_PRODUCT_TO_WATCHLIST_USE_CASE,
     REMOVE_FROM_WATCHLIST_USE_CASE,
-    RATE_FILM_USE_CASE,
     SHARE_FILM_USE_CASE,
     WATCH_TRAILER_USE_CASE,
 ]

@@ -21,7 +21,6 @@ from .events import (
     RemoveFromReadingListEvent,
     SearchBookEvent,
     ShareBookEvent,
-    ShoppingCartEvent,
     ViewCartBookEvent,
 )
 from .generation_functions import (
@@ -565,7 +564,7 @@ def _get_remove_from_reading_list_info(books_data: list[dict]) -> str:
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above - not just some of them
 2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **remove** a book from the reading list (e.g., "Remove from reading list...", "Remove from wishlist...").
+3. Be phrased as a request to **remove from reading list** (use phrases like "Remove from reading list...", "Delete from reading list..." etc.).
 4. Only use the books name defined below.
 
 BOOKS NAMES:
@@ -580,44 +579,29 @@ ALL prompts must follow this pattern exactly, each phrased slightly differently 
 """
 
 
-REMOVE_FROM_READING_LIST_INFO_TEMPLATE = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above - not just some of them
-2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to **remove** a book from the reading list (e.g., "Remove from reading list...", "Remove from wishlist...").
-4. Only use the books name defined below.
-
-BOOKS NAMES:
-{BOOKS_NAMES_PLACEHOLDER}
-
-For example, if the constraints are "author not_equals Diana Gabaldon AND year greater_than 2004":
-- CORRECT: "Remove from reading list a book not written by Diana Gabaldon that was published after 2004"
-- INCORRECT: "Remove from reading list a book written by Christopher Nolan" (you added a random author, and missed the year constraint)
-- INCORRECT: "Remove from reading list a book not written by Diana Gabaldon that was published after 2004 with a high rating" (adding an extra constraint about rating)
-
-ALL prompts must follow this pattern exactly, each phrased slightly differently but ALL containing EXACTLY the same constraint criteria.
-"""
-
-
 REMOVE_FROM_READING_LIST_USE_CASE = UseCase(
     name="REMOVE_FROM_READING_LIST",
-    description="The user explicitly requests to remove a book from their reading list / wishlist based on constraints.",
+    description="The user explicitly requests to remove a specific book from reading list that meets certain criteria.",
     event=RemoveFromReadingListEvent,
     event_source_code=RemoveFromReadingListEvent.get_source_code_of_class(),
-    additional_prompt_info=None,  # Will be populated dynamically from API
+    additional_prompt_info=None,
     constraints_generator=generate_book_constraints,
     examples=[
         {
-            "prompt": "Remove 'The Housemaid Is Watching' from my reading list",
-            "prompt_for_task_generation": "Remove <book> from my reading list",
+            "prompt": "Remove from reading list 'The Housemaid Is Watching' book",
+            "prompt_for_task_generation": "Remove from reading list <book> book",
         },
         {
-            "prompt": "Remove a Science book from 2022 from my wishlist",
-            "prompt_for_task_generation": "Remove a <genre> book from <year> from my wishlist",
+            "prompt": "Remove from reading list a book 'Art of Computer Programming, the, Volumes 1-4B, Boxed Set' by Donald Knuth",
+            "prompt_for_task_generation": "Remove from reading list a book <book> by <author>",
         },
         {
-            "prompt": "Remove a book with rating above 4.5 from my reading list",
-            "prompt_for_task_generation": "Remove a book with rating above <rating> from my reading list",
+            "prompt": "Remove from reading list a Science book from 2022",
+            "prompt_for_task_generation": "Remove from reading list a <genre> book from <year>",
+        },
+        {
+            "prompt": "Remove from reading list a book with rating above 4.5",
+            "prompt_for_task_generation": "Remove from reading list a book with rating above <rating>",
         },
     ],
 )
@@ -1109,16 +1093,93 @@ ADD_COMMENT_USE_CASE = UseCase(
     ],
 )
 
-SHOPPING_CART_ADDITIONAL_PROMPT_INFO = """
+# SHOPPING_CART_ADDITIONAL_PROMPT_INFO = """
+# CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+# 1. Include ALL constraints mentioned above — not just some of them.
+# 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+# 3. Be phrased as a request to add/remove/view items in the shopping cart (e.g., "Add to cart...", "Remove from cart...", "View cart...").
+# 4. Explicitly mention the shopping cart in the prompt (e.g., "shopping cart", "cart").
+# 5. If constraints include book_name or quantity, they MUST be referenced directly in the prompt.
+# 6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
+# Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
+# 7. Only add a book into the shopping cart, do not include anything like "remove 'The Housemaid' from the shopping cart "...
+#
+# For example, if the constraints are "book_name equals 'Inception' AND quantity equals 2":
+# - CORRECT: "Add 2 copies of Inception to the shopping cart."
+# - CORRECT: "Update the cart to include 2 Inception books."
+# - INCORRECT: "Put some books in the cart" (missing specific constraints).
+# - INCORRECT: "Add Inception to my list" (doesn't mention cart).
+#
+# ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+# """
+#
+# SHOPPING_CART_USE_CASE = UseCase(
+#     name="SHOPPING_CART",
+#     description="The user interacts with the shopping cart by adding, removing, or viewing items.",
+#     event=ShoppingCartEvent,
+#     event_source_code=ShoppingCartEvent.get_source_code_of_class(),
+#     constraints_generator=generate_book_constraints,
+#     additional_prompt_info=SHOPPING_CART_ADDITIONAL_PROMPT_INFO,
+#     replace_func=replace_book_placeholders,
+#     examples=[
+#         {
+#             "prompt": "Login with username: <username> and password: <password>. After logging in, add 'Fourth Win' to your shopping cart.",
+#             "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, add '<book>' to your shopping cart.",
+#         },
+#         {
+#             "prompt": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
+#             "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a book with page_count greater than or equal to <page_count>, with genre '<genre>' into your shopping cart.",
+#         },
+#         {
+#             "prompt": "Authenticate using username: <username> and password: <password>. After that, add a 'Comics' genre book with less than 400 pages to your shopping cart.",
+#             "prompt_for_task_generation": "Authenticate using username: <username> and password: <password>. After that, add a '<genre>' genre book with less than <page_count> pages to your shopping cart.",
+#         },
+#     ],
+# )
+
+
+VIEW_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
-3. Be phrased as a request to add/remove/view items in the shopping cart (e.g., "Add to cart...", "Remove from cart...", "View cart...").
+3. Be phrased as a request to view the shopping cart (e.g., "View cart...", "Show cart...", "Display cart...").
+4. Explicitly mention the shopping cart in the prompt (e.g., "shopping cart", "cart").
+5. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc.
+
+ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
+"""
+
+VIEW_CART_BOOK_USE_CASE = UseCase(
+    name="VIEW_CART_BOOK",
+    description="The user views the shopping cart to see items added.",
+    event=ViewCartBookEvent,
+    event_source_code=ViewCartBookEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    additional_prompt_info=VIEW_CART_BOOK_ADDITIONAL_PROMPT_INFO,
+    replace_func=replace_book_placeholders,
+    examples=[
+        {
+            "prompt": "Login with username: <username> and password: <password>. After logging in, view your shopping cart.",
+            "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, view your shopping cart.",
+        },
+        {
+            "prompt": "First sign in with username: <username> and password: <password>. Then display your shopping cart.",
+            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then display your shopping cart.",
+        },
+    ],
+)
+
+
+ADD_TO_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
+CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to add items to the shopping cart (e.g., "Add to cart...", "Add book to cart...").
 4. Explicitly mention the shopping cart in the prompt (e.g., "shopping cart", "cart").
 5. If constraints include book_name or quantity, they MUST be referenced directly in the prompt.
 6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
-7. Only add a book into the shopping cart, do not include anything like "remove 'The Housemaid' from the shopping cart "...
 
 For example, if the constraints are "book_name equals 'Inception' AND quantity equals 2":
 - CORRECT: "Add 2 copies of Inception to the shopping cart."
@@ -1129,13 +1190,13 @@ For example, if the constraints are "book_name equals 'Inception' AND quantity e
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
-SHOPPING_CART_USE_CASE = UseCase(
-    name="SHOPPING_CART",
-    description="The user interacts with the shopping cart by adding, removing, or viewing items.",
-    event=ShoppingCartEvent,
-    event_source_code=ShoppingCartEvent.get_source_code_of_class(),
+ADD_TO_CART_BOOK_USE_CASE = UseCase(
+    name="ADD_TO_CART_BOOK",
+    description="The user adds a book to the shopping cart.",
+    event=AddToCartBookEvent,
+    event_source_code=AddToCartBookEvent.get_source_code_of_class(),
     constraints_generator=generate_book_constraints,
-    additional_prompt_info=SHOPPING_CART_ADDITIONAL_PROMPT_INFO,
+    additional_prompt_info=ADD_TO_CART_BOOK_ADDITIONAL_PROMPT_INFO,
     replace_func=replace_book_placeholders,
     examples=[
         {
@@ -1146,90 +1207,32 @@ SHOPPING_CART_USE_CASE = UseCase(
             "prompt": "First sign in with username: <username> and password: <password>. Then place a book with page count greater than or equal to 704, with genre 'Education' into your shopping cart.",
             "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then place a book with page_count greater than or equal to <page_count>, with genre '<genre>' into your shopping cart.",
         },
-        {
-            "prompt": "Authenticate using username: <username> and password: <password>. After that, add a 'Comics' genre book with less than 400 pages to your shopping cart.",
-            "prompt_for_task_generation": "Authenticate using username: <username> and password: <password>. After that, add a '<genre>' genre book with less than <page_count> pages to your shopping cart.",
-        },
-    ],
-)
-
-
-VIEW_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be phrased as a request to view the shopping cart (e.g., "View cart...", "Open cart...", "Go to cart page...").
-2. Explicitly mention the cart in the prompt (e.g., "shopping cart", "cart").
-3. If constraints include total_items or total_amount, they MUST be referenced directly in the prompt.
-
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-"""
-
-
-VIEW_CART_BOOK_USE_CASE = UseCase(
-    name="VIEW_CART_BOOK",
-    description="The user views the cart page.",
-    event=ViewCartBookEvent,
-    event_source_code=ViewCartBookEvent.get_source_code_of_class(),
-    constraints_generator=False,
-    additional_prompt_info=VIEW_CART_BOOK_ADDITIONAL_PROMPT_INFO,
-    examples=[
-        {
-            "prompt": "Open my cart and review the items",
-            "prompt_for_task_generation": "Open my cart and review the items",
-        },
-        {
-            "prompt": "Go to the cart page",
-            "prompt_for_task_generation": "Go to the cart page",
-        },
-    ],
-)
-
-
-ADD_TO_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
-CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above - not just some of them
-2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to add a book to the shopping cart (e.g., "Add to cart...", "Put in cart...").
-4. Explicitly mention the cart in the prompt (e.g., "shopping cart", "cart").
-
-ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
-"""
-
-
-ADD_TO_CART_BOOK_USE_CASE = UseCase(
-    name="ADD_TO_CART_BOOK",
-    description="The user adds a book to the cart (demo event naming).",
-    event=AddToCartBookEvent,
-    event_source_code=AddToCartBookEvent.get_source_code_of_class(),
-    constraints_generator=generate_book_constraints,
-    additional_prompt_info=ADD_TO_CART_BOOK_ADDITIONAL_PROMPT_INFO,
-    replace_func=replace_book_placeholders,
-    examples=[
-        {
-            "prompt": "Add 'Fourth Wing' to my cart",
-            "prompt_for_task_generation": "Add <book> to my cart",
-        },
-        {
-            "prompt": "Put a Science book from 2022 into the shopping cart",
-            "prompt_for_task_generation": "Put a <genre> book from <year> into the shopping cart",
-        },
     ],
 )
 
 
 REMOVE_FROM_CART_BOOK_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Include ALL constraints mentioned above - not just some of them
-2. Include ONLY the constraints mentioned above - do not add any other criteria
-3. Be phrased as a request to remove a book from the shopping cart (e.g., "Remove from cart...", "Delete from cart...").
-4. Explicitly mention the cart in the prompt (e.g., "shopping cart", "cart").
+1. Include ALL constraints mentioned above — not just some of them.
+2. Include ONLY the constraints mentioned above — do not add any other fields or conditions.
+3. Be phrased as a request to remove items from the shopping cart (e.g., "Remove from cart...", "Delete from cart...", "Remove book from cart...").
+4. Explicitly mention the shopping cart in the prompt (e.g., "shopping cart", "cart").
+5. If constraints include book_name, they MUST be referenced directly in the prompt.
+6. Begin with a creative instruction to log in using username '<username>' and password '<password>' (**strictly** containing both the username and password placeholders).
+Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the removal request.
+
+For example, if the constraints are "book_name equals 'Inception'":
+- CORRECT: "Remove Inception from the shopping cart."
+- CORRECT: "Delete Inception from your cart."
+- INCORRECT: "Remove some books from the cart" (missing specific constraints).
+- INCORRECT: "Remove Inception from my list" (doesn't mention cart).
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
 """
 
-
 REMOVE_FROM_CART_BOOK_USE_CASE = UseCase(
     name="REMOVE_FROM_CART_BOOK",
-    description="The user removes a book from the cart (demo event naming).",
+    description="The user removes a book from the shopping cart.",
     event=RemoveFromCartBookEvent,
     event_source_code=RemoveFromCartBookEvent.get_source_code_of_class(),
     constraints_generator=generate_book_constraints,
@@ -1237,12 +1240,12 @@ REMOVE_FROM_CART_BOOK_USE_CASE = UseCase(
     replace_func=replace_book_placeholders,
     examples=[
         {
-            "prompt": "Remove 'The Housemaid Is Watching' from my cart",
-            "prompt_for_task_generation": "Remove <book> from my cart",
+            "prompt": "Login with username: <username> and password: <password>. After logging in, remove 'Fourth Win' from your shopping cart.",
+            "prompt_for_task_generation": "Login with username: <username> and password: <password>. After logging in, remove '<book>' from your shopping cart.",
         },
         {
-            "prompt": "Delete a Comics book with less than 400 pages from the shopping cart",
-            "prompt_for_task_generation": "Delete a <genre> book with less than <page_count> pages from the shopping cart",
+            "prompt": "First sign in with username: <username> and password: <password>. Then remove a book with genre 'Education' from your shopping cart.",
+            "prompt_for_task_generation": "First sign in with username: <username> and password: <password>. Then remove a book with genre '<genre>' from your shopping cart.",
         },
     ],
 )
@@ -1333,13 +1336,12 @@ ALL_USE_CASES = [
     EDIT_USER_PROFILE_USE_CASE,
     BOOK_DETAIL_USE_CASE,
     EDIT_BOOK_USE_CASE,
-    SHOPPING_CART_USE_CASE,
-    VIEW_CART_BOOK_USE_CASE,
-    ADD_TO_CART_BOOK_USE_CASE,
-    REMOVE_FROM_CART_BOOK_USE_CASE,
     PURCHASE_BOOK_USE_CASE,
     SHARE_BOOK_USE_CASE,
     OPEN_PREVIEW_USE_CASE,
     ADD_TO_READING_LIST_USE_CASE,
     REMOVE_FROM_READING_LIST_USE_CASE,
+    VIEW_CART_BOOK_USE_CASE,
+    ADD_TO_CART_BOOK_USE_CASE,
+    REMOVE_FROM_CART_BOOK_USE_CASE,
 ]
