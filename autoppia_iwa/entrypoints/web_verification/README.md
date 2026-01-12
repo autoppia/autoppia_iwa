@@ -25,8 +25,8 @@ python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --n
 The Web Verification Pipeline is a three-step process designed to:
 
 1. **Generate and Review Tasks**: Create multiple tasks per use case with constraints (tests) and validate them using GPT
-2. **Check Doability**: Query the IWAP API to determine if tasks have been successfully solved by others
-3. **Dynamic Verification**: Evaluate solutions from the IWAP API against tasks with different seed values to ensure dynamic functionality works correctly
+2. **IWAP Use Case Doability Check**: Query the IWAP API to check if the use case is doable (has any successful solution). We don't compare specific constraints - we just need to know if the use case has been solved before.
+3. **Dynamic Verification**: Take the successful solution from Step 2 and test it with different seed values to ensure the solution works across different dynamic content variations
 
 ## Pipeline Steps
 
@@ -50,47 +50,63 @@ The Web Verification Pipeline is a three-step process designed to:
 - List of generated tasks with their constraints
 - LLM review results for each task (valid/invalid)
 
-### Step 2: IWAP Doability Check
+### Step 2: IWAP Use Case Doability Check
 
-**Purpose**: Query the IWAP API to find solutions for the use case and assess doability.
+**Purpose**: Check if the use case is doable by finding ANY successful solution for it in the IWAP database.
+
+**Important**: We don't compare specific constraints. We only check if the use case has been successfully solved before. For example:
+- Use case: "Search movie"
+- We don't care if constraints are "year 1986" or "director pepe"
+- We only care: has someone successfully solved "Search movie" before?
 
 **Process**:
 - Only executes if all LLM reviews for the use case are valid
 - Calls IWAP API endpoint: `GET /api/v1/tasks/with-solutions`
+  - API already filters by `use_case_name`, so all returned tasks are for the same use case
 - Searches for tasks with:
   - `evaluation.score = 1` and `evaluation.passed = True`
-  - Matching tests/constraints or intent/prompt
-- Extracts solution actions from matched tasks
-- Calculates doability metrics:
-  - Number of tasks with solutions
-  - Success rate
-  - Whether the use case is "doable"
+  - These are successful solutions for this use case
+- Takes the **first successful solution** found (we don't match specific constraints)
+- Extracts from the successful solution:
+  - **Solution actions**: The sequence of actions that solved the task
+  - **API prompt**: The prompt from the successful task
+  - **API tests**: The test criteria from the successful task
+  - **API start URL**: The starting URL (will be modified with different seeds in Step 3)
 
 **Output**:
-- Doability assessment (doable/not doable)
-- Success rate
-- Matched solution actions (if found)
-- API prompt, tests, and start URL from matched task
+- Doability assessment: `matched=True` if use case is doable (has successful solution)
+- Solution actions: Actions to test with different seeds in Step 3
+- API prompt: Prompt to use for creating tasks with different seeds
+- API tests: Test criteria to validate against
+- API start URL: Base URL to modify with different seeds
+- Total solutions found: Number of successful solutions available for this use case
 
 **Mock Mode**:
 - Can use mock responses when API is unavailable or for testing
-- Mock responses use generated task constraints for realistic data
+- Mock responses generate realistic solution data
 - Enable with `--iwap-use-mock` flag
 
 ### Step 3: Dynamic Verification
 
-**Purpose**: Verify that solutions from IWAP API work correctly across different seed values.
+**Purpose**: Verify that the solution from Step 2 works correctly across different seed values.
 
 **Process**:
-- Only executes if a solution was found in Step 2
-- Takes the solution actions from the matched IWAP API task
+- Only executes if a solution was found in Step 2 (use case is doable)
+- Takes the solution actions, prompt, and tests from the successful IWAP task
 - For each seed value in the configured list (default: [1, 50, 100, 200, 300]):
-  - Creates a task using the API prompt and tests
-  - Updates the task URL with the current seed value
-  - Normalizes and updates NavigateAction URLs to match the seed
-  - Evaluates the solution actions against the seeded task using `ConcurrentEvaluator`
-  - Records evaluation results (score, tests passed, success)
+  1. Creates a new task using:
+     - The **API prompt** from Step 2 (not our generated prompt)
+     - The **API tests** from Step 2 (not our generated constraints)
+     - A URL with the current seed value (e.g., `?seed=50`)
+  2. Updates all NavigateAction URLs in the solution to use the current seed
+  3. Evaluates the solution actions against the seeded task using `ConcurrentEvaluator`
+  4. Records evaluation results (score, tests passed, success)
 - Aggregates results across all seeds
+
+**Why this matters**: 
+- Proves that the use case solution works regardless of the seed value
+- Validates that the dynamic system doesn't break existing solutions
+- Ensures the use case is truly doable across different dynamic content variations
 
 **Output**:
 - Evaluation results for each seed
@@ -110,9 +126,10 @@ The Web Verification Pipeline is a three-step process designed to:
 - **Configurable Timeout**: Adjustable timeout for LLM calls (default: 30 seconds)
 
 ### IWAP Integration
-- **Flexible Matching**: Matches tasks by:
-  - Test/constraint comparison (primary)
-  - Intent/prompt similarity (fallback)
+- **Use Case Doability Check**: Checks if use case is doable by finding ANY successful solution
+  - Does NOT compare specific constraints
+  - Takes the first successful solution found (score=1, passed=True)
+  - Uses that solution's prompt and actions for dynamic verification
 - **Robust Error Handling**: Falls back to mock responses when API is unavailable
 - **Mock Support**: Built-in mock response generator for testing without live API
 - **Debugging**: Extensive print statements for API call debugging

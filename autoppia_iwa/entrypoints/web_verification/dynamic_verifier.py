@@ -55,7 +55,7 @@ class DynamicVerifier:
         For each seed, creates a task from API prompt with that seed and evaluates the solution against it.
 
         Args:
-            api_prompt: Prompt from IWAP API (intent)
+            api_prompt: Prompt from IWAP API
             api_tests: Tests from IWAP API
             api_start_url: Start URL from IWAP API
             use_case: Use case object

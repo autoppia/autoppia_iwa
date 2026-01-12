@@ -169,7 +169,7 @@ class IWAPClient:
                 "taskId": f"mock-task-{use_case_name}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
                 "website": website,
                 "useCase": use_case_name,
-                "intent": mock_prompt,
+                "prompt": mock_prompt,
                 "startUrl": f"{base_url}/?seed=1",
                 "webVersion": "1.0",
                 "tests": mock_tests,
@@ -474,37 +474,52 @@ class IWAPClient:
 
         return False
 
-    def _intent_matches_prompt(self, api_intent: str, our_prompt: str) -> bool:
+    def _prompt_matches(self, api_prompt: str, our_prompt: str) -> bool:
         """
-        Check if API intent matches our prompt (fuzzy matching)
+        Check if API prompt matches our prompt (fuzzy matching)
+        
+        Note: This method is kept for backward compatibility but is no longer used
+        since we don't compare prompts anymore - we just check if use case is doable.
 
         Args:
-            api_intent: Intent string from API
+            api_prompt: Prompt string from API
             our_prompt: Prompt string from our generated task
 
         Returns:
-            True if intent matches prompt (case-insensitive, normalized)
+            True if prompts match (case-insensitive, normalized)
         """
-        if not api_intent or not our_prompt:
+        if not api_prompt or not our_prompt:
             return False
 
-        normalized_intent = self._normalize_string(api_intent)
-        normalized_prompt = self._normalize_string(our_prompt)
+        normalized_api_prompt = self._normalize_string(api_prompt)
+        normalized_our_prompt = self._normalize_string(our_prompt)
 
-        # Check if intent is contained in prompt or vice versa
-        # Or if they are very similar (simple heuristic)
-        return normalized_intent in normalized_prompt or normalized_prompt in normalized_intent or normalized_intent == normalized_prompt
+        # Check if prompts are similar (simple heuristic)
+        return normalized_api_prompt in normalized_our_prompt or normalized_our_prompt in normalized_api_prompt or normalized_api_prompt == normalized_our_prompt
 
     def process_api_response_for_tasks(self, api_response: dict[str, Any], our_tasks: list[Any]) -> dict[str, Any]:
         """
-        Process IWAP API response and match with our generated tasks
+        IWAP Use Case Doability Check
+        
+        Process IWAP API response to check if the use case is doable.
+        We don't compare specific constraints - we just need ANY successful solution
+        for this use case. The API already filters by use_case_name, so all tasks
+        here are for the same use case.
+        
+        We take the first successful solution and use its prompt and actions to
+        test with different seeds in the dynamic verification step.
 
         Args:
             api_response: Response from get_tasks_with_solutions
-            our_tasks: List of Task objects we generated
+            our_tasks: List of Task objects we generated (not used for matching, only for reference)
 
         Returns:
-            Dictionary with matching results and actions
+            Dictionary with doability check results:
+            - matched: True if use case is doable (has successful solution)
+            - actions: Solution actions to test with different seeds
+            - api_prompt: Prompt from successful task (to use for testing)
+            - api_tests: Tests from successful task
+            - api_start_url: Start URL from successful task (will be modified with different seeds)
         """
         if not api_response or not api_response.get("success", False):
             return {
@@ -520,6 +535,7 @@ class IWAPClient:
         api_tasks = api_data.get("tasks", []) if isinstance(api_data, dict) else []
 
         # Filter tasks with evaluation score = 1 and passed = True
+        # These are successful solutions for this use case
         passed_tasks = []
         for api_task_item in api_tasks:
             evaluation = api_task_item.get("evaluation", {})
@@ -529,85 +545,43 @@ class IWAPClient:
         if not passed_tasks:
             return {
                 "matched": False,
-                "reason": "No tasks with evaluation score=1 and passed=True found",
+                "reason": "No successful solutions found for this use case (no tasks with score=1 and passed=True)",
                 "actions": None,
             }
 
-        # Try to match each of our tasks with passed API tasks
-        for our_task in our_tasks:
-            our_constraints = our_task.use_case.constraints if our_task.use_case and our_task.use_case.constraints else []
-            our_prompt = our_task.prompt if hasattr(our_task, "prompt") else ""
+        # Take the first successful solution - we don't care about specific constraints
+        # All tasks here are for the same use case (already filtered by API)
+        # What matters: does this use case have a working solution?
+        first_successful_task = passed_tasks[0]
+        task_data = first_successful_task.get("task", {})
+        solution = first_successful_task.get("solution", {})
+        api_actions = solution.get("actions", [])
+        
+        if not api_actions:
+            return {
+                "matched": False,
+                "reason": "No actions found in solution",
+                "actions": None,
+            }
 
-            for api_task_item in passed_tasks:
-                task_data = api_task_item.get("task", {})
-                api_tests = task_data.get("tests", [])
-                api_intent = task_data.get("intent", "")
-                solution = api_task_item.get("solution", {})
-                api_actions = solution.get("actions", [])
+        # Extract the prompt and other data we need for testing with different seeds
+        api_prompt = task_data.get("prompt", "")
+        api_tests = task_data.get("tests", [])
+        api_start_url = task_data.get("startUrl", "")
 
-                # Improvement 2: Check if API has empty event_criteria (use case has no criteria)
-                # If event_criteria exists but is empty, it means the use case has no criteria
-                # In this case, we accept the solution without comparing constraints
-                has_empty_event_criteria = False
-                for test in api_tests:
-                    if "event_criteria" in test:
-                        event_criteria = test.get("event_criteria", {}) or {}
-                        if not event_criteria or len(event_criteria) == 0:
-                            has_empty_event_criteria = True
-                            logger.info("API test has empty event_criteria (use case has no criteria). Accepting solution without comparison.")
-                            break
-
-                # If API has empty event_criteria, take the solution without comparing
-                # This handles the case where the use case has no event criteria
-                if has_empty_event_criteria:
-                    return {
-                        "matched": True,
-                        "match_type": "empty_criteria",
-                        "reason": "API has empty event_criteria (use case has no criteria). Accepting solution without comparison.",
-                        "actions": api_actions,
-                        "api_task_id": task_data.get("taskId"),
-                        "api_intent": api_intent,
-                        "api_prompt": api_intent,  # Use intent as prompt
-                        "api_tests": api_tests,
-                        "api_start_url": task_data.get("startUrl", ""),
-                        "api_web_version": task_data.get("webVersion", ""),
-                    }
-
-                # Step 1: Check if tests match our constraints
-                if self._tests_match_constraints(api_tests, our_constraints):
-                    return {
-                        "matched": True,
-                        "match_type": "tests",
-                        "reason": "Tests from API match our constraints",
-                        "actions": api_actions,
-                        "api_task_id": task_data.get("taskId"),
-                        "api_intent": api_intent,
-                        "api_prompt": api_intent,  # Use intent as prompt
-                        "api_tests": api_tests,
-                        "api_start_url": task_data.get("startUrl", ""),
-                        "api_web_version": task_data.get("webVersion", ""),
-                    }
-
-                # Step 2: Check if intent matches our prompt
-                if self._intent_matches_prompt(api_intent, our_prompt):
-                    return {
-                        "matched": True,
-                        "match_type": "intent",
-                        "reason": "Intent from API matches our prompt",
-                        "actions": api_actions,
-                        "api_task_id": task_data.get("taskId"),
-                        "api_intent": api_intent,
-                        "api_prompt": api_intent,  # Use intent as prompt
-                        "api_tests": api_tests,
-                        "api_start_url": task_data.get("startUrl", ""),
-                        "api_web_version": task_data.get("webVersion", ""),
-                    }
-
-        # No matches found
+        # Use case is doable - we found a successful solution
+        # We'll use this prompt and solution to test with different seeds
         return {
-            "matched": False,
-            "reason": "Nobody has been able to solve this use case (no matching tests or intent found)",
-            "actions": None,
+            "matched": True,
+            "match_type": "use_case_doable",
+            "reason": f"Use case is doable - found {len(passed_tasks)} successful solution(s). Using first solution for dynamic verification with different seeds.",
+            "actions": api_actions,
+            "api_task_id": task_data.get("taskId"),
+            "api_prompt": api_prompt,  # This is the prompt we'll use for testing
+            "api_tests": api_tests,
+            "api_start_url": api_start_url,  # We'll modify this URL with different seeds
+            "api_web_version": task_data.get("webVersion", ""),
+            "total_solutions_found": len(passed_tasks),
         }
 
     async def check_use_case_doability(self, project_id: str, use_case_name: str, min_success_rate: float = 0.5) -> dict[str, Any]:

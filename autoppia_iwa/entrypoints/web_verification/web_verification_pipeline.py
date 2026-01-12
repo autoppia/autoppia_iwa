@@ -213,7 +213,7 @@ class WebVerificationPipeline:
 
             if all_reviews_valid:
                 print("\n" + "=" * 80)
-                print("🔄 STEP 2: IWAP API CALL")
+                print("🔄 STEP 2: IWAP USE CASE DOABILITY CHECK")
                 print("=" * 80)
                 print(f"Use Case: {use_case.name}")
                 print(f"Project ID: {self.web_project.id}")
@@ -222,10 +222,11 @@ class WebVerificationPipeline:
                     print("All LLM Reviews: VALID ✓")
                 else:
                     print("LLM Review: DISABLED (proceeding without gating)")
-                print("Calling IWAP API...")
+                print("Checking if use case is doable (has successful solution)...")
+                print("Note: We don't compare specific constraints, just check if use case has been solved before")
                 print("-" * 80)
 
-                logger.info(f"Step 2: Proceeding to IWAP for use case {use_case.name} (LLM review {'enabled' if self.llm_reviewer else 'disabled'})")
+                logger.info(f"Step 2: IWAP Use Case Doability Check for {use_case.name} (LLM review {'enabled' if self.llm_reviewer else 'disabled'})")
                 iwap_result = await self.iwap_client.get_tasks_with_solutions(
                     project_id=self.web_project.id,
                     use_case_name=use_case.name,
@@ -248,39 +249,43 @@ class WebVerificationPipeline:
                         print(f"Website: {iwap_result.get('website', 'N/A')}")
                         print(f"Use Case: {iwap_result.get('use_case', 'N/A')}")
 
-                        # Process API response and match with our generated tasks
+                        # Process API response and check use case doability
                         print("\n" + "-" * 80)
-                        print("🔍 PROCESSING API RESPONSE AND MATCHING WITH OUR TASKS")
+                        print("🔍 CHECKING USE CASE DOABILITY")
                         print("-" * 80)
+                        print("Looking for ANY successful solution for this use case...")
+                        print("(We don't compare specific constraints, just check if use case is doable)")
 
-                        # Get our generated tasks
+                        # Get our generated tasks (passed for reference, not for matching)
                         our_tasks = tasks  # tasks list from Step 1
 
-                        # Process and match
-                        match_result = self.iwap_client.process_api_response_for_tasks(iwap_result, our_tasks)
+                        # Process and check doability
+                        doability_result = self.iwap_client.process_api_response_for_tasks(iwap_result, our_tasks)
 
-                        # Store match result
-                        use_case_results["iwap_match_result"] = match_result
+                        # Store doability result
+                        use_case_results["iwap_match_result"] = doability_result  # Keep key for backward compatibility
+                        use_case_results["iwap_doability_result"] = doability_result  # New clearer key
 
-                        # Print match results
-                        if match_result.get("matched", False):
-                            match_type = match_result.get("match_type", "unknown")
-                            reason = match_result.get("reason", "")
-                            actions = match_result.get("actions", [])
-                            api_task_id = match_result.get("api_task_id", "N/A")
-                            api_intent = match_result.get("api_intent", "N/A")
+                        # Print doability results
+                        if doability_result.get("matched", False):
+                            match_type = doability_result.get("match_type", "unknown")
+                            reason = doability_result.get("reason", "")
+                            actions = doability_result.get("actions", [])
+                            api_task_id = doability_result.get("api_task_id", "N/A")
+                            api_prompt = doability_result.get("api_prompt", "N/A")
+                            total_solutions = doability_result.get("total_solutions_found", 0)
 
-                            print("✓ MATCH FOUND!")
-                            print(f"  Match Type: {match_type}")
+                            print("✓ USE CASE IS DOABLE!")
                             print(f"  Reason: {reason}")
-                            print(f"  API Task ID: {api_task_id}")
-                            print(f"  API Intent: {api_intent}")
+                            print(f"  Total Solutions Found: {total_solutions}")
+                            print(f"  Using Solution From Task ID: {api_task_id}")
+                            print(f"  Solution Prompt: {api_prompt[:80]}..." if len(api_prompt) > 80 else f"  Solution Prompt: {api_prompt}")
                             print(f"  Actions Found: {len(actions) if actions else 0} actions")
                             if actions:
                                 print(f"  First Action: {actions[0] if len(actions) > 0 else 'N/A'}")
                         else:
-                            reason = match_result.get("reason", "Unknown reason")
-                            print("✗ NO MATCH FOUND")
+                            reason = doability_result.get("reason", "Unknown reason")
+                            print("✗ USE CASE NOT DOABLE")
                             print(f"  ⚠️  WARNING: {reason}")
                     else:
                         error = iwap_result.get("error", "Unknown error")
@@ -290,25 +295,27 @@ class WebVerificationPipeline:
 
                 print("=" * 80 + "\n")
 
-                logger.info(f"IWAP API response for {use_case.name}: success={iwap_result.get('success', False) if iwap_result else False}")
+                logger.info(f"IWAP Use Case Doability Check for {use_case.name}: success={iwap_result.get('success', False) if iwap_result else False}")
 
-                # Store Step 2 execution status (even if no doability check was performed)
+                # Store Step 2 execution status (IWAP Use Case Doability Check)
                 if iwap_result and iwap_result.get("success", False):
                     # Step 2 executed successfully
-                    match_result = use_case_results.get("iwap_match_result", {})
-                    if match_result.get("matched", False):
-                        # Solution found - could be considered "doable"
+                    doability_result = use_case_results.get("iwap_match_result", {})  # Backward compatibility key
+                    if doability_result.get("matched", False):
+                        # Use case is doable - solution found
                         use_case_results["iwap_status"] = {
                             "executed": True,
                             "matched": True,
-                            "reason": "Solution found from IWAP API",
+                            "doable": True,
+                            "reason": "Use case is doable - successful solution found from IWAP API",
                         }
                     else:
-                        # No solution found
+                        # Use case is not doable - no solution found
                         use_case_results["iwap_status"] = {
                             "executed": True,
                             "matched": False,
-                            "reason": match_result.get("reason", "No solution found"),
+                            "doable": False,
+                            "reason": doability_result.get("reason", "No successful solution found for this use case"),
                         }
                 else:
                     # Step 2 failed
@@ -318,22 +325,25 @@ class WebVerificationPipeline:
                         "reason": iwap_result.get("error", "API call failed") if iwap_result else "No response",
                     }
 
-                # Step 3: Dynamic verification - evaluate solution with different seeds (if we got a solution)
-                match_result = use_case_results.get("iwap_match_result", {})
+                # Step 3: Dynamic verification - evaluate solution from Step 2 with different seeds
+                # (only if use case is doable and we have a solution)
+                doability_result = use_case_results.get("iwap_match_result", {})  # Backward compatibility key
 
-                if match_result.get("matched", False) and match_result.get("actions"):
-                    solution_actions = match_result.get("actions", [])
-                    api_prompt = match_result.get("api_prompt", "")
-                    api_tests = match_result.get("api_tests", [])
-                    api_start_url = match_result.get("api_start_url", "")
+                if doability_result.get("matched", False) and doability_result.get("actions"):
+                    # Use case is doable - we have a solution to test with different seeds
+                    solution_actions = doability_result.get("actions", [])
+                    api_prompt = doability_result.get("api_prompt", "")
+                    api_tests = doability_result.get("api_tests", [])
+                    api_start_url = doability_result.get("api_start_url", "")
 
                     print("\n" + "=" * 80)
                     print("🔄 STEP 3: DYNAMIC VERIFICATION")
                     print("=" * 80)
                     print(f"Use Case: {use_case.name}")
-                    print(f"Using API Task Prompt: {api_prompt[:100]}..." if len(api_prompt) > 100 else f"Using API Task Prompt: {api_prompt}")
+                    print(f"Using Solution Prompt: {api_prompt[:100]}..." if len(api_prompt) > 100 else f"Using Solution Prompt: {api_prompt}")
                     print(f"Evaluating solution with {len(solution_actions)} actions against different seeds")
                     print(f"Seeds to test: {self.config.seed_values}")
+                    print("Note: Testing if solution works across different dynamic content variations")
                     print("=" * 80 + "\n")
 
                     # manual testing
@@ -390,8 +400,8 @@ class WebVerificationPipeline:
                     print("=" * 80)
                     print(f"Use Case: {use_case.name}")
                     skip_reason = ""
-                    if not match_result.get("matched", False):
-                        skip_reason = "No solution found from IWAP API"
+                    if not doability_result.get("matched", False):
+                        skip_reason = "Use case is not doable - no successful solution found from IWAP API"
                         print(f"Reason: {skip_reason}")
                     else:
                         skip_reason = "No actions in solution"
@@ -415,7 +425,7 @@ class WebVerificationPipeline:
                 print(f"Invalid Reviews: {invalid_count}")
                 print("Reason: Not all LLM reviews are valid")
                 print("=" * 80 + "\n")
-                logger.info(f"Step 2: Skipping IWAP API call for use case {use_case.name} because not all LLM reviews are valid")
+                logger.info(f"Step 2: Skipping IWAP Use Case Doability Check for {use_case.name} because not all LLM reviews are valid")
                 # Store skip reason for Step 2
                 use_case_results["iwap_status"] = {
                     "skipped": True,
@@ -438,7 +448,7 @@ class WebVerificationPipeline:
             print(f"Use Case: {use_case.name}")
             print("Reason: IWAP client is disabled (--no-iwap flag used)")
             print("=" * 80 + "\n")
-            logger.info(f"Step 2: Skipping IWAP API call for use case {use_case.name} because IWAP client is disabled")
+            logger.info(f"Step 2: Skipping IWAP Use Case Doability Check for {use_case.name} because IWAP client is disabled")
             # Store skip reason for Step 2
             use_case_results["iwap_status"] = {
                 "skipped": True,
