@@ -1,6 +1,6 @@
 /**
  * V2 Data Loading System for web_4_autodining
- * 
+ *
  * Loads different data subsets based on v2 seed.
  */
 
@@ -83,7 +83,7 @@ export class DynamicDataProvider {
 
   public async reload(seed?: number): Promise<void> {
     if (!this.isEnabled) return;
-    
+
     const v2Seed = seed ?? 1;
     await initializeRestaurants(v2Seed);
     this.restaurants = getRestaurants();

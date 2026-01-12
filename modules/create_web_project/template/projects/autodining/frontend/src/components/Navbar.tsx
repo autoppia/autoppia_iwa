@@ -12,11 +12,11 @@ interface NavbarProps {
   onSearchClick?: () => void;
 }
 
-export default function Navbar({ 
+export default function Navbar({
   showSearch = false,
   searchInputId,
   searchButtonId,
-  onSearchClick 
+  onSearchClick
 }: NavbarProps) {
   const dyn = useDynamicSystem();
 
@@ -31,7 +31,7 @@ export default function Navbar({
   const orderedNavLinks = navOrder.map((idx) => navLinks[idx]);
 
   return (
-    <nav 
+    <nav
       className="w-full border-b bg-white sticky top-0 z-10"
       id={dyn.v3.getVariant("navbar", ID_VARIANTS_MAP, "navbar")}
     >
@@ -42,7 +42,7 @@ export default function Navbar({
             <div className="flex items-center gap-3 ml-0">
               <SeedLink href="/">
                 {dyn.v1.addWrapDecoy("navbar-logo-link", (
-                  <div 
+                  <div
                     className="bg-[#46a758] px-3 py-1 rounded flex items-center h-9"
                     id={dyn.v3.getVariant("navbar-logo", ID_VARIANTS_MAP, "navbar-logo")}
                   >
@@ -59,7 +59,7 @@ export default function Navbar({
 
           {/* Navigation links - right */}
           {dyn.v1.addWrapDecoy("navbar-links-container", (
-            <div 
+            <div
               className="flex items-center gap-6 mr-0"
               id={dyn.v3.getVariant("navbar-links", ID_VARIANTS_MAP, "navbar-links")}
             >

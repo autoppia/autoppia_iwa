@@ -38,7 +38,7 @@ Comprehensive test suite that validates the dynamic anti-scraping system (V1 and
 - For a given `(seed, key, count)` combination, the function `selectVariantIndex()` always returns the same `variantIndex`
 - Tests multiple seed/key combinations to ensure consistency
 
-**Why it matters**: 
+**Why it matters**:
 - **Critical requirement**: Same seed must always produce the same variant
 - Enables reproducible testing and debugging
 - Ensures users see consistent results when sharing URLs with the same seed
@@ -94,7 +94,7 @@ seed=3  → variantIndex: 1  ✅ Different
 - V3 Classes: 15 uses
 - V3 Texts: 30 uses
 
-**Why it matters**: 
+**Why it matters**:
 - Ensures the dynamic system is actually being used in the codebase
 - Prevents "dead" variant definitions (keys in JSON that are never used)
 - Validates that the anti-scraping system has sufficient coverage
@@ -141,7 +141,7 @@ Standalone test focused exclusively on event coverage validation.
 - Same as Test 6 in `test-dynamic-system.js`, but as a separate, focused test
 - Useful for quick event validation without running the full dynamic system test suite
 
-**Why it exists**: 
+**Why it exists**:
 - Can be run independently for faster feedback on event coverage
 - Useful in CI/CD pipelines where you only want to check events
 
@@ -248,4 +248,3 @@ When adding new dynamic features:
 1. Update minimum requirements if needed
 2. Ensure new features are used in code (Test 5 will catch this)
 3. Add new events to `EVENT_TYPES` and use them (Test 6 will catch unused events)
-

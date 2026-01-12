@@ -49,7 +49,7 @@ function SeedInitializer({
     } else {
       onSeedFromUrl(null);
     }
-    
+
     // Log enable_dynamic if present (user explicitly set it)
     const enableDynamic = searchParams.get("enable_dynamic");
     if (enableDynamic) {
@@ -73,7 +73,7 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
   // Initialize seed from localStorage on mount (client-side only)
   useEffect(() => {
     if (isInitialized) return;
-    
+
     // Try localStorage only on client-side
     if (typeof window !== "undefined") {
       try {
@@ -108,11 +108,11 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
   // Re-run when seed OR enable_dynamic changes
   useEffect(() => {
     let cancelled = false;
-    
+
     // Use sync version for immediate update
     const syncResolved = resolveSeedsSync(seed);
     setResolvedSeeds(syncResolved);
-    
+
     // Fetch from centralized service (async, updates when ready)
     resolveSeeds(seed).then((resolved) => {
       // Only update if this effect hasn't been cancelled (seed hasn't changed)
@@ -124,7 +124,7 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
         console.warn("[SeedContext] Failed to resolve seeds from API, using local:", error);
       }
     });
-    
+
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("autodining_seed_base", seed.toString());
@@ -132,7 +132,7 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("Error saving seed to localStorage:", error);
       }
     }
-    
+
     // Cleanup: cancel if seed changes before async completes
     return () => {
       cancelled = true;
@@ -147,18 +147,18 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
   const getNavigationUrl = useCallback((path: string): string => {
     if (!path) return path;
     if (path.startsWith("http")) return path;
-    
-    const currentParams = typeof window !== "undefined" 
+
+    const currentParams = typeof window !== "undefined"
       ? new URLSearchParams(window.location.search)
       : new URLSearchParams();
-    
+
     // If path already has query params
     const [base, queryString] = path.split("?");
     const params = new URLSearchParams(queryString || "");
-    
+
     // Always preserve seed
     params.set("seed", seed.toString());
-    
+
     // ONLY preserve enable_dynamic if user explicitly set it in URL
     // If not in URL, don't add it (will use env vars as default)
     const enableDynamic = currentParams.get("enable_dynamic");
@@ -167,7 +167,7 @@ export const SeedProvider = ({ children }: { children: React.ReactNode }) => {
       params.set("enable_dynamic", enableDynamic);
     }
     // If not present, don't add it - will use env vars
-    
+
     const query = params.toString();
     return query ? `${base}?${query}` : base;
   }, [seed]);
@@ -190,4 +190,3 @@ export const useSeed = () => {
   }
   return context;
 };
-

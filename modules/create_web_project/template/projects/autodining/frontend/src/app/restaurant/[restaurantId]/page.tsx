@@ -243,16 +243,16 @@ export default function RestaurantPage() {
       )}
       {/* Banner Image */}
       {dyn.v1.addWrapDecoy("restaurant-banner", (
-        <div 
+        <div
           className="w-full h-[340px] bg-gray-200"
           id={dyn.v3.getVariant("restaurant-banner", ID_VARIANTS_MAP, "restaurant-banner")}
         >
           <div className="relative w-full h-full">
             {r && (
-              <Image 
-                src={r.image} 
-                alt={r.name} 
-                fill 
+              <Image
+                src={r.image}
+                alt={r.name}
+                fill
                 className="object-cover"
                 id={dyn.v3.getVariant("restaurant-banner-image", ID_VARIANTS_MAP, "restaurant-banner-image")}
               />
@@ -261,28 +261,28 @@ export default function RestaurantPage() {
         </div>
       ), "restaurant-banner-wrap")}
       {/* Info and reservation */}
-      <div 
+      <div
         className="flex flex-col md:flex-row justify-between gap-10 px-4 md:px-8 w-full max-w-[1400px] mx-auto"
         id={dyn.v3.getVariant("restaurant-info-section", ID_VARIANTS_MAP, "restaurant-info-section")}
       >
         {/* Info (details section, tags, desc, photos) */}
-        <div 
+        <div
           className="pt-8 md:pt-12 pb-10 flex-1 min-w-0"
           id={dyn.v3.getVariant("restaurant-details", ID_VARIANTS_MAP, "restaurant-details")}
         >
           {/* Title & details row */}
-          <h1 
+          <h1
             className="text-4xl font-bold mb-2"
             id={dyn.v3.getVariant("restaurant-name", ID_VARIANTS_MAP, "restaurant-name")}
           >
             {r?.name ?? "Loading..."}
           </h1>
           {dyn.v1.addWrapDecoy("restaurant-meta", (
-                <div 
+                <div
                   className="flex items-center gap-4 text-lg mb-4"
                   id={dyn.v3.getVariant("restaurant-meta", ID_VARIANTS_MAP, "restaurant-meta")}
                 >
-                  <span 
+                  <span
                     className="flex items-center text-[#46a758] text-xl font-semibold"
                     id={dyn.v3.getVariant("rating-stars", ID_VARIANTS_MAP, "rating-stars")}
                   >
@@ -295,7 +295,7 @@ export default function RestaurantPage() {
                       </span>
                     ))}
                   </span>
-                  <span 
+                  <span
                     className="text-base flex items-center gap-2"
                     id={dyn.v3.getVariant("rating-value", ID_VARIANTS_MAP, "rating-value")}
                   >
@@ -306,13 +306,13 @@ export default function RestaurantPage() {
                       {`${r?.reviews ?? 0} Reviews`}
                     </span>
                   </span>
-                  <span 
+                  <span
                     className="text-base flex items-center gap-2"
                     id={dyn.v3.getVariant("price-range", ID_VARIANTS_MAP, "price-range")}
                   >
                     💵 {r?.price ?? "$$"}
                   </span>
-                  <span 
+                  <span
                     className="text-base flex items-center gap-2"
                     id={dyn.v3.getVariant("cuisine-type", ID_VARIANTS_MAP, "cuisine-type")}
                   >
@@ -322,7 +322,7 @@ export default function RestaurantPage() {
           ), "restaurant-meta-wrap")}
           {/* Tags/Pills */}
           {(r?.tags || []).length > 0 && (
-            <div 
+            <div
               className="flex flex-wrap gap-2 mb-4"
               id={dyn.v3.getVariant("restaurant-tags", ID_VARIANTS_MAP, "restaurant-tags")}
             >
@@ -339,7 +339,7 @@ export default function RestaurantPage() {
           )}
           {/* Description */}
           {r?.desc && dyn.v1.addWrapDecoy("restaurant-description", (
-                <div 
+                <div
                   className="mb-8 text-lg text-gray-700 leading-relaxed"
                   id={dyn.v3.getVariant("restaurant-description", ID_VARIANTS_MAP, "restaurant-description")}
                 >
@@ -349,13 +349,13 @@ export default function RestaurantPage() {
           {/* Photos Grid */}
           {r?.photos && r.photos.length > 0 && (
             <>
-              <h2 
+              <h2
                 className="text-2xl font-bold mb-5 mt-10"
                 id={dyn.v3.getVariant("photos-title", ID_VARIANTS_MAP, "photos-title")}
               >
                 Photos
               </h2>
-              <div 
+              <div
                 className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-12"
                 id={dyn.v3.getVariant("restaurant-photos-grid", ID_VARIANTS_MAP, "restaurant-photos-grid")}
               >
@@ -373,25 +373,25 @@ export default function RestaurantPage() {
           )}
           {/* Menu Section */}
           {dyn.v1.addWrapDecoy("menu-section", (
-                <section 
+                <section
                   className="w-full mb-10"
                   id={dyn.v3.getVariant("menu-section", ID_VARIANTS_MAP, "menu-section")}
                 >
-                  <h2 
+                  <h2
                     className="text-2xl font-bold mb-4 mt-8"
                     id={dyn.v3.getVariant("menu-title", ID_VARIANTS_MAP, "menu-title")}
                   >
                     Menu
                   </h2>
-                  <div 
+                  <div
                     className="bg-white border rounded-lg p-6"
                     id={dyn.v3.getVariant("menu-container", ID_VARIANTS_MAP, "menu-container")}
                   >
-                    <div 
+                    <div
                       className="flex gap-6 border-b mb-6 pb-2"
                       id={dyn.v3.getVariant("menu-tabs", ID_VARIANTS_MAP, "menu-tabs")}
                     >
-                      <button 
+                      <button
                         className="border-b-2 border-[#46a758] text-[#46a758] font-semibold px-4 py-2 -mb-px bg-white"
                         id={dyn.v3.getVariant("menu-tab", ID_VARIANTS_MAP, "menu-tab")}
                       >
@@ -487,7 +487,7 @@ export default function RestaurantPage() {
                       onClick={handleToggleMenu}
                       id={dyn.v3.getVariant("menu-toggle-button", ID_VARIANTS_MAP, "menu-toggle-button")}
                     >
-                      {showFullMenu 
+                      {showFullMenu
                         ? dyn.v3.getVariant("collapse_menu", TEXT_VARIANTS_MAP, "Collapse Menu")
                         : dyn.v3.getVariant("view_full_menu", TEXT_VARIANTS_MAP, "View Full Menu")
                       }
@@ -500,22 +500,22 @@ export default function RestaurantPage() {
           ), "menu-section-wrap")}
           {/* Additional Info Section */}
           {dyn.v1.addWrapDecoy("restaurant-info-cards", (
-                <section 
+                <section
                   className="w-full mb-10 mt-10"
                   id={dyn.v3.getVariant("restaurant-info-section", ID_VARIANTS_MAP, "restaurant-info-section")}
                 >
-                  <h2 
+                  <h2
                     className="text-2xl font-bold mb-6"
                     id={dyn.v3.getVariant("about-place-title", ID_VARIANTS_MAP, "about-place-title")}
                   >
                     About This Place
                   </h2>
-                  <div 
+                  <div
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
                     id={dyn.v3.getVariant("info-cards-grid", ID_VARIANTS_MAP, "info-cards-grid")}
                   >
                     {dyn.v1.addWrapDecoy("info-card-cuisine", (
-                      <div 
+                      <div
                         className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200"
                         id={dyn.v3.getVariant("info-card-cuisine", ID_VARIANTS_MAP, "info-card-cuisine")}
                       >
@@ -528,7 +528,7 @@ export default function RestaurantPage() {
                       </div>
                     ), "info-card-cuisine-wrap")}
                     {dyn.v1.addWrapDecoy("info-card-price", (
-                      <div 
+                      <div
                         className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200"
                         id={dyn.v3.getVariant("info-card-price", ID_VARIANTS_MAP, "info-card-price")}
                       >
@@ -539,7 +539,7 @@ export default function RestaurantPage() {
                       </div>
                     ), "info-card-price-wrap")}
                     {dyn.v1.addWrapDecoy("info-card-location", (
-                      <div 
+                      <div
                         className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200"
                         id={dyn.v3.getVariant("info-card-location", ID_VARIANTS_MAP, "info-card-location")}
                       >
@@ -554,7 +554,7 @@ export default function RestaurantPage() {
                       </div>
                     ), "info-card-location-wrap")}
                     {dyn.v1.addWrapDecoy("info-card-times", (
-                      <div 
+                      <div
                         className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200"
                         id={dyn.v3.getVariant("info-card-times", ID_VARIANTS_MAP, "info-card-times")}
                       >
@@ -570,32 +570,32 @@ export default function RestaurantPage() {
 
           {/* Reviews Section - Simplified */}
           {dyn.v1.addWrapDecoy("reviews-section", (
-                <section 
+                <section
                   className="w-full mb-10"
                   id={dyn.v3.getVariant("reviews-section", ID_VARIANTS_MAP, "reviews-section")}
                 >
-                  <h2 
+                  <h2
                     className="text-2xl font-bold mb-6"
                     id={dyn.v3.getVariant("reviews-title", ID_VARIANTS_MAP, "reviews-title")}
                   >
                     Customer Reviews
                   </h2>
-                  <div 
+                  <div
                     className="bg-white border-2 border-gray-200 rounded-xl p-8 shadow-sm"
                     id={dyn.v3.getVariant("reviews-container", ID_VARIANTS_MAP, "reviews-container")}
                   >
-                    <div 
+                    <div
                       className="flex items-center gap-6 mb-6"
                       id={dyn.v3.getVariant("reviews-header", ID_VARIANTS_MAP, "reviews-header")}
                     >
-                      <div 
+                      <div
                         className="text-5xl font-bold text-gray-900"
                         id={dyn.v3.getVariant("reviews-rating", ID_VARIANTS_MAP, "reviews-rating")}
                       >
                         {r?.rating?.toFixed(1) ?? "4.5"}
                       </div>
                       <div>
-                        <div 
+                        <div
                           className="flex items-center text-[#46a758] text-2xl mb-2"
                           id={dyn.v3.getVariant("reviews-stars", ID_VARIANTS_MAP, "reviews-stars")}
                         >
@@ -603,7 +603,7 @@ export default function RestaurantPage() {
                             <span key={i}>★</span>
                           ))}
                         </div>
-                        <div 
+                        <div
                           className="text-gray-600 text-base font-medium"
                           id={dyn.v3.getVariant("reviews-count", ID_VARIANTS_MAP, "reviews-count")}
                         >
@@ -611,7 +611,7 @@ export default function RestaurantPage() {
                         </div>
                       </div>
                     </div>
-                    <p 
+                    <p
                       className="text-gray-700 text-lg leading-relaxed"
                       id={dyn.v3.getVariant("reviews-description", ID_VARIANTS_MAP, "reviews-description")}
                     >
@@ -622,11 +622,11 @@ export default function RestaurantPage() {
           ), "reviews-section-wrap")}
         </div>
         {/* Reservation Box - sticky and always visible */}
-        <div 
+        <div
           className="rounded-xl border-2 border-gray-200 bg-white shadow-lg p-6 w-full max-w-sm md:sticky md:top-8 self-start"
           id={dyn.v3.getVariant("reservation-box", ID_VARIANTS_MAP, "reservation-box")}
         >
-              <h2 
+              <h2
                 className="font-bold text-xl mb-4 text-center text-gray-900"
                 id={dyn.v3.getVariant("reservation-title", ID_VARIANTS_MAP, "reservation-title")}
               >
@@ -637,7 +637,7 @@ export default function RestaurantPage() {
             <div
               id={dyn.v3.getVariant("people-select-container", ID_VARIANTS_MAP, "people-select-container")}
             >
-              <label 
+              <label
                 className="block text-sm font-medium text-gray-700 mb-1.5"
                 htmlFor={dyn.v3.getVariant("people_picker", ID_VARIANTS_MAP, "people_picker")}
               >
@@ -667,8 +667,8 @@ export default function RestaurantPage() {
                     <ChevronDownIcon className="h-4 w-4 text-gray-400" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent 
-                  className="w-full p-1" 
+                <PopoverContent
+                  className="w-full p-1"
                   align="start"
                   id={dyn.v3.getVariant("people-picker-content", ID_VARIANTS_MAP, "people-picker-content")}
                 >
@@ -692,14 +692,14 @@ export default function RestaurantPage() {
               </Popover>
             </div>
             {/* Date/time row */}
-            <div 
+            <div
               className="grid grid-cols-2 gap-3"
               id={dyn.v3.getVariant("date-time-row", ID_VARIANTS_MAP, "date-time-row")}
             >
               <div
                 id={dyn.v3.getVariant("date-picker-container", ID_VARIANTS_MAP, "date-picker-container")}
               >
-                <label 
+                <label
                   className="block text-sm font-medium text-gray-700 mb-1.5"
                   htmlFor={dyn.v3.getVariant("date_picker", ID_VARIANTS_MAP, "date_picker")}
                 >
@@ -724,8 +724,8 @@ export default function RestaurantPage() {
                       </div>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-auto p-0" 
+                  <PopoverContent
+                    className="w-auto p-0"
                     align="start"
                     id={dyn.v3.getVariant("date-picker-content", ID_VARIANTS_MAP, "date-picker-content")}
                   >
@@ -744,7 +744,7 @@ export default function RestaurantPage() {
               <div
                 id={dyn.v3.getVariant("time-picker-container", ID_VARIANTS_MAP, "time-picker-container")}
               >
-                <label 
+                <label
                   className="block text-sm font-medium text-gray-700 mb-1.5"
                   htmlFor={dyn.v3.getVariant("time_picker", ID_VARIANTS_MAP, "time_picker")}
                 >
@@ -770,8 +770,8 @@ export default function RestaurantPage() {
                       <ChevronDownIcon className="h-4 w-4 text-gray-400" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-36 p-1" 
+                  <PopoverContent
+                    className="w-36 p-1"
                     align="start"
                     id={dyn.v3.getVariant("time-picker-content", ID_VARIANTS_MAP, "time-picker-content")}
                   >
