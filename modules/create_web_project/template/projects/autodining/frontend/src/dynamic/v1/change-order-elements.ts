@@ -1,6 +1,6 @@
 /**
  * Utilities to generate dynamic ordering of elements (V1)
- * 
+ *
  * Generates different orders based on the seed without hardcoding every permutation
  * This functionality belongs to V1 because it modifies element structure/order
  */
@@ -9,7 +9,7 @@ import { selectVariantIndex } from "../shared/core";
 
 /**
  * Generates a dynamic order for an array of elements
- * 
+ *
  * @param seed - Base seed (1-999)
  * @param key - Unique identifier for this set of elements (e.g. "featured-restaurants", "booking-cards")
  * @param count - Number of elements (e.g. 3, 4, 6)
@@ -27,17 +27,17 @@ export function generateDynamicOrder(
 
   // For other seeds, generate dynamic order
   // Use a deterministic hash function to generate the order
-  
+
   // Generate multiple order variants using different offsets
   const orderVariants: number[][] = [];
-  
+
   // Generate variants using different strategies:
   // 1. Rotations
   for (let offset = 0; offset < count; offset++) {
     const rotated = Array.from({ length: count }, (_, i) => (i + offset) % count);
     orderVariants.push(rotated);
   }
-  
+
   // 2. Pair swaps
   for (let i = 0; i < count - 1; i++) {
     const swapped = Array.from({ length: count }, (_, j) => {
@@ -50,7 +50,7 @@ export function generateDynamicOrder(
       orderVariants.push(swapped);
     }
   }
-  
+
   // 3. Partial reversals
   for (let split = 1; split < count; split++) {
     const reversed = [
@@ -61,21 +61,21 @@ export function generateDynamicOrder(
       orderVariants.push(reversed);
     }
   }
-  
+
   // 4. Deterministic shuffle using hash
   const hashBased = generateHashBasedOrder(seed, key, count);
   if (!arraysEqual(hashBased, Array.from({ length: count }, (_, j) => j))) {
     orderVariants.push(hashBased);
   }
-  
+
   // Remove duplicates
   const uniqueVariants = removeDuplicateOrders(orderVariants);
-  
+
   // If there are no variants, return original order
   if (uniqueVariants.length === 0) {
     return Array.from({ length: count }, (_, i) => i);
   }
-  
+
   // Select variant using selectVariantIndex
   const variantIndex = selectVariantIndex(seed, key, uniqueVariants.length);
   return uniqueVariants[variantIndex];
@@ -93,14 +93,14 @@ function generateHashBasedOrder(seed: number, key: string, count: number): numbe
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
-  
+
   // Generate order using deterministic Fisher-Yates shuffle
   const order = Array.from({ length: count }, (_, i) => i);
   for (let i = count - 1; i > 0; i--) {
     const j = Math.abs(hash + i * 7919) % (i + 1);
     [order[i], order[j]] = [order[j], order[i]];
   }
-  
+
   return order;
 }
 
@@ -118,7 +118,7 @@ function arraysEqual(a: number[], b: number[]): boolean {
 function removeDuplicateOrders(orders: number[][]): number[][] {
   const seen = new Set<string>();
   const unique: number[][] = [];
-  
+
   for (const order of orders) {
     const key = order.join(',');
     if (!seen.has(key)) {
@@ -126,7 +126,6 @@ function removeDuplicateOrders(orders: number[][]): number[][] {
       unique.push(order);
     }
   }
-  
+
   return unique;
 }
-

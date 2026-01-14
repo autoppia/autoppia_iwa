@@ -38,5 +38,3 @@ export function writeString(key: string, value: string): void {
     // ignore
   }
 }
-
-

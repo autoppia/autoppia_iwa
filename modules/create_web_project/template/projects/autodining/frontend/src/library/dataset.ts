@@ -34,6 +34,3 @@ export const countries = [
   { code: "US", name: "United States", dial: "+1", flag: "🇺🇸" },
   { code: "VN", name: "Vietnam", dial: "+84", flag: "🇻🇳" },
 ];
-
-
-

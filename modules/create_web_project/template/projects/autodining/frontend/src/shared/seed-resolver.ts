@@ -1,7 +1,7 @@
 /**
  * Centralized seed resolution service client.
  * Calls webs_server API to resolve seeds, with local fallback for SSR/offline.
- * 
+ *
  * Supports enable_dynamic URL parameter: ?enable_dynamic=v1,v2
  */
 
@@ -17,12 +17,12 @@ const boolFromEnv = (value?: string | undefined | null): boolean => {
  */
 function parseEnableDynamicFromUrl(): { v1: boolean; v2: boolean; v3: boolean } | null {
   if (typeof window === "undefined") return null;
-  
+
   const params = new URLSearchParams(window.location.search);
   const enableDynamic = params.get("enable_dynamic");
-  
+
   if (!enableDynamic) return null;
-  
+
   const parts = enableDynamic.toLowerCase().split(",").map(s => s.trim());
   return {
     v1: parts.includes("v1"),
@@ -34,7 +34,7 @@ function parseEnableDynamicFromUrl(): { v1: boolean; v2: boolean; v3: boolean } 
 /**
  * Get enabled flags from URL parameter or environment variables.
  * Priority: URL parameter > Environment variables
- * 
+ *
  * If enable_dynamic is in URL, use it.
  * If not in URL, use environment variables (default deployment config).
  */
@@ -44,7 +44,7 @@ function getEnabledFlagsInternal(): { v1: boolean; v2: boolean; v3: boolean } {
   if (urlFlags) {
     return urlFlags;
   }
-  
+
   // Fallback to environment variables (deployment default)
   // These are set when deploying: v1=true, v2=true, v3=true by default
   return {
@@ -127,7 +127,7 @@ function resolveSeedsLocal(
 /**
  * Resolve seeds using centralized webs_server API.
  * Falls back to local calculation if API is unavailable.
- * 
+ *
  * Enabled flags are determined from URL parameter ?enable_dynamic=v1,v2
  * or from environment variables if URL parameter is not present.
  */
@@ -193,4 +193,3 @@ export const seedResolverConfig = {
   base: BASE_SEED,
   getEnabledFlags,
 };
-

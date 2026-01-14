@@ -47,18 +47,38 @@ $SUDO apt-get upgrade -y || handle_error "System update failed (upgrade)"
 
 # Install Python 3.11 and essential dependencies
 echo -e "\e[34m[INFO]\e[0m Installing base packages and libraries..."
+
+# Detect Ubuntu version for package name compatibility
+if [ -f /etc/os-release ]; then
+  . /etc/os-release
+  UBUNTU_VERSION=$(echo "$VERSION_ID" | cut -d. -f1)
+else
+  UBUNTU_VERSION="22"
+fi
+
+# Use t64 packages for Ubuntu 24.04+ (transición arquitectura)
+if [ "$UBUNTU_VERSION" -ge 24 ]; then
+  ASOUND_PKG="libasound2t64"
+  GLES_PKG="libgles2"
+  AVIF_PKG="libavif16"
+else
+  ASOUND_PKG="libasound2"
+  GLES_PKG="libgles2-mesa"
+  AVIF_PKG="libavif13"
+fi
+
 $SUDO apt-get install -y \
   ca-certificates curl git unzip tar wget sqlite3 pkg-config \
   build-essential cmake \
-  libnss3 libnss3-dev libasound2 libatk1.0-0 libatk-bridge2.0-0 \
+  libnss3 libnss3-dev "$ASOUND_PKG" libatk1.0-0 libatk-bridge2.0-0 \
   libcups2 libx11-xcb1 libxcomposite1 libxcursor1 libxdamage1 \
   libxrandr2 libgbm1 libpango-1.0-0 libgtk-3-0 \
   libvpx-dev libevent-dev libopus0 libgstreamer1.0-0 \
   libgstreamer-plugins-base1.0-0 libgstreamer-plugins-good1.0-0 \
   libgstreamer-plugins-bad1.0-0 libwebp-dev libharfbuzz-dev \
-  libsecret-1-dev libhyphen0 libflite1 libgles2-mesa libx264-dev libgtk-4-bin \
+  libsecret-1-dev libhyphen0 libflite1 "$GLES_PKG" libx264-dev libgtk-4-bin \
   libgtk-4-common libgtk-4-dev libgtk-4-1 libgraphene-1.0-0 \
-  libgraphene-1.0-dev libwoff1 libgstreamer-gl1.0-0 libavif13 libenchant-2-2 \
+  libgraphene-1.0-dev libwoff1 libgstreamer-gl1.0-0 "$AVIF_PKG" libenchant-2-2 \
   libmanette-0.2-0 || handle_error "Failed to install base dependencies"
 
 # Ensure Python >= 3.11

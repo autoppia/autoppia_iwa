@@ -1,6 +1,6 @@
 /**
  * Variant Selector for V3 Anti-Scraping
- * 
+ *
  * Selects variants from local component dictionaries or global JSON files
  * Always returns the first variant (original) for seed=1
  */
@@ -19,13 +19,13 @@ export const TEXT_VARIANTS_MAP: Record<string, string[]> = textVariantsJson as R
 
 /**
  * Get a variant from a dictionary or global JSONs
- * 
+ *
  * Works for IDs, classes, and texts - all use the same structure!
- * 
+ *
  * Simple logic:
  * - If you pass a dictionary, it searches there
  * - If you don't pass a dictionary, it searches in id-variants.json, class-variants.json, and text-variants.json
- * 
+ *
  * @param seed - The seed value
  * @param key - The key to look up
  * @param variants - Optional dictionary to search in (can be local component dict or global JSON like ID_VARIANTS_MAP)
@@ -69,4 +69,3 @@ export function getVariant(
   const variantIndex = selectVariantIndex(seed, key, selectedVariants.length);
   return selectedVariants[variantIndex] || selectedVariants[0];
 }
-

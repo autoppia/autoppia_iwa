@@ -14,10 +14,9 @@ interface SeedLinkProps extends Omit<ComponentProps<typeof Link>, 'href'> {
  */
 export function SeedLink({ href, preserveSeed = true, ...props }: SeedLinkProps) {
   const { getNavigationUrl } = useSeed();
-  
+
   // If preserveSeed is false or href starts with http (external link), use original href
   const finalHref = (!preserveSeed || href.startsWith('http')) ? href : getNavigationUrl(href);
-  
+
   return <Link href={finalHref} {...props} />;
 }
-
