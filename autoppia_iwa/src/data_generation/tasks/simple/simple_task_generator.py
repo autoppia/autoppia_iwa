@@ -126,15 +126,25 @@ class SimpleTaskGenerator:
         constraint_ctx = await self._build_constraint_context(base_url, dynamic)
 
         # Generate initial constraints with URL that includes seed (if applicable)
+        # Dataset is optional - if server is not available, we can still generate constraints using GPT
         dataset = None
         if hasattr(use_case, "generate_constraints_async"):
             try:
+                # Try to preload dataset, but don't fail if server is not available
                 dataset = await self._preload_dataset_for_use_case(use_case, constraint_ctx.v2_seed)
+                if dataset is None:
+                    logger.debug(f"Dataset not available for use case '{use_case.name}', generating constraints without dataset")
+                # Generate constraints - dataset can be None, generator should handle it
                 constraints_info = await use_case.generate_constraints_async(task_url=constraint_ctx.url, dataset=dataset)
             except Exception as e:
-                # If constraint generation fails, skip this use case instead of crashing the validator
-                logger.warning(f"Skipping use case '{use_case.name}' due to constraint generation error: {e}")
-                return []  # Return empty list to skip this use case
+                # If constraint generation fails, try without dataset as fallback
+                logger.warning(f"Constraint generation failed for '{use_case.name}': {e}. Attempting without dataset...")
+                try:
+                    constraints_info = await use_case.generate_constraints_async(task_url=constraint_ctx.url, dataset=None)
+                except Exception as e2:
+                    # If it still fails, skip this use case
+                    logger.warning(f"Skipping use case '{use_case.name}' due to constraint generation error: {e2}")
+                    return []  # Return empty list to skip this use case
         else:
             constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
             additional_system_prompt = constraints_info
@@ -205,6 +215,9 @@ class SimpleTaskGenerator:
     async def _preload_dataset_for_use_case(self, use_case: UseCase, v2_seed: int) -> Any:
         """
         Attempt to pre-load the dataset for a given use case if its generator supports it and the loader signature is compatible.
+        
+        Returns None if dataset cannot be loaded (server unavailable, etc.) - this is OK,
+        constraints can still be generated using GPT without the dataset.
         """
         generator = use_case.constraints_generator
         if not generator:
@@ -220,7 +233,12 @@ class SimpleTaskGenerator:
         if not module_name:
             return None
 
-        return await self._load_dataset_for_module(module_name, v2_seed)
+        try:
+            return await self._load_dataset_for_module(module_name, v2_seed)
+        except Exception as e:
+            # Don't propagate errors - dataset is optional
+            logger.debug(f"Could not preload dataset for use case '{use_case.name}': {e}. Will generate constraints without dataset.")
+            return None
 
     async def _load_dataset_for_module(self, module_name: str, v2_seed: int) -> Any:
         """
