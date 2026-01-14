@@ -43,6 +43,10 @@ class SearchLocationEvent(Event, BaseEventValidator):
         )
 
 
+class EnterLocationEvent(SearchLocationEvent):
+    event_name: str = "ENTER_LOCATION"
+
+
 class SearchDestinationEvent(Event, BaseEventValidator):
     """event triggered when someone enter destination"""
 
@@ -73,6 +77,10 @@ class SearchDestinationEvent(Event, BaseEventValidator):
             user_id=base_event.user_id,
             destination=data.get("value"),
         )
+
+
+class EnterDestinationEvent(SearchDestinationEvent):
+    event_name: str = "ENTER_DESTINATION"
 
 
 class SeePricesEvent(Event, BaseEventValidator):
@@ -430,6 +438,16 @@ class ReserveRideEvent(Event, BaseEventValidator):
         )
 
 
+class TripDetailsEvent(ReserveRideEvent):
+    event_name: str = "TRIP_DETAILS"
+
+
+class CancelReservationEvent(ReserveRideEvent):
+    """event triggered when user cancels a reservation"""
+
+    event_name: str = "CANCEL_RESERVATION"
+
+
 def parse_datetime(value: str | None) -> datetime | dt_time | None:
     if not value:
         return None
@@ -460,21 +478,29 @@ def parse_datetime(value: str | None) -> datetime | dt_time | None:
 EVENTS = [
     SearchLocationEvent,
     SearchDestinationEvent,
+    EnterLocationEvent,
+    EnterDestinationEvent,
     NextPickupEvent,
     SelectDateEvent,
     SelectTimeEvent,
     SelectCarEvent,
     SearchRideEvent,
     ReserveRideEvent,
+    TripDetailsEvent,
+    CancelReservationEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
     "SEARCH_LOCATION": SearchLocationEvent,
     "SEARCH_DESTINATION": SearchDestinationEvent,
+    "ENTER_LOCATION": EnterLocationEvent,
+    "ENTER_DESTINATION": EnterDestinationEvent,
     "NEXT_PICKUP": NextPickupEvent,
     "SELECT_TIME": SelectTimeEvent,
     "SELECT_DATE": SelectDateEvent,
     "SEARCH": SearchRideEvent,
     "SELECT_CAR": SelectCarEvent,
     "RESERVE_RIDE": ReserveRideEvent,
+    "TRIP_DETAILS": TripDetailsEvent,
+    "CANCEL_RESERVATION": CancelReservationEvent,
 }
