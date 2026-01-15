@@ -905,16 +905,26 @@ class WebVerificationPipeline:
                         passed_count = dynamic_verification.get("passed_count", 0)
                         total_count = dynamic_verification.get("total_count", 0)
                         seeds_tested = dynamic_verification.get("seeds_tested", [])
+                        
+                        # Try to get results_by_seed first, fallback to results
                         results_by_seed = dynamic_verification.get("results_by_seed", {})
+                        if not results_by_seed:
+                            # Fallback: use original results structure
+                            original_results = dynamic_verification.get("results", {})
+                            results_by_seed = {}
+                            for seed_key, seed_result in original_results.items():
+                                results_by_seed[str(seed_key)] = seed_result
                         
                         # Build detailed seed results
                         seed_details = []
                         for seed in seeds_tested:
                             seed_result = results_by_seed.get(str(seed), {})
-                            # Try to get score from evaluation or directly from seed_result
-                            score = seed_result.get("score", 0.0)
-                            if "evaluation" in seed_result:
-                                score = seed_result["evaluation"].get("final_score", score)
+                            # Get score: prefer from evaluation.final_score, fallback to score field
+                            score = 0.0
+                            if "evaluation" in seed_result and isinstance(seed_result["evaluation"], dict):
+                                score = seed_result["evaluation"].get("final_score", 0.0)
+                            elif "score" in seed_result:
+                                score = seed_result.get("score", 0.0)
                             status = "✓" if score == 1.0 else "✗"
                             seed_details.append(f"{seed}: {status}")
                         
@@ -952,5 +962,118 @@ class WebVerificationPipeline:
                 # No dynamic verification data at all
                 summary_lines.append("  Step 3 (Dynamic): ⏭️ Skipped (no data)")
 
+        # Add final conclusion summary
+        summary_lines.append(f"\n{'=' * 60}")
+        summary_lines.append("📊 FINAL CONCLUSION")
+        summary_lines.append(f"{'=' * 60}")
+        
+        # Categorize use cases
+        categories = self._categorize_use_cases()
+        
+        # Task Generation Quality
+        summary_lines.append("\n✅ Task Generation Quality:")
+        if categories["generation_ok"]:
+            summary_lines.append(f"  ✓ Good generation ({len(categories['generation_ok'])}): {', '.join(categories['generation_ok'])}")
+        if categories["generation_failed"]:
+            summary_lines.append(f"  ✗ Failed generation ({len(categories['generation_failed'])}): {', '.join(categories['generation_failed'])}")
+        
+        # Solution Availability (IWAP)
+        summary_lines.append("\n🔍 Solution Availability (IWAP):")
+        if categories["has_solution"]:
+            summary_lines.append(f"  ✓ Has solutions ({len(categories['has_solution'])}): {', '.join(categories['has_solution'])}")
+        if categories["no_solution"]:
+            summary_lines.append(f"  ✗ No solutions found ({len(categories['no_solution'])}): {', '.join(categories['no_solution'])}")
+        
+        # Dynamic System Effectiveness
+        summary_lines.append("\n🔄 Dynamic System Effectiveness:")
+        if categories["truly_dynamic"]:
+            summary_lines.append(f"  ✓ Truly dynamic - solution fails with different seeds ({len(categories['truly_dynamic'])}): {', '.join(categories['truly_dynamic'])}")
+        if categories["not_dynamic"]:
+            summary_lines.append(f"  ⚠️  Not truly dynamic - same solution works for all seeds ({len(categories['not_dynamic'])}): {', '.join(categories['not_dynamic'])}")
+        if categories["dynamic_partial"]:
+            summary_lines.append(f"  ⚠️  Partially dynamic - solution works for some seeds ({len(categories['dynamic_partial'])}): {', '.join(categories['dynamic_partial'])}")
+        if categories["dynamic_untested"]:
+            summary_lines.append(f"  ⏭️  Dynamic not tested ({len(categories['dynamic_untested'])}): {', '.join(categories['dynamic_untested'])}")
+        
+        # Overall Status
+        summary_lines.append("\n📈 Overall Status:")
+        total_use_cases = len(self.results["use_cases"])
+        summary_lines.append(f"  Total Use Cases: {total_use_cases}")
+        summary_lines.append(f"  - Good generation: {len(categories['generation_ok'])}/{total_use_cases}")
+        summary_lines.append(f"  - Has solutions: {len(categories['has_solution'])}/{total_use_cases}")
+        summary_lines.append(f"  - Truly dynamic: {len(categories['truly_dynamic'])}/{total_use_cases}")
+        summary_lines.append(f"  - Needs review (not dynamic): {len(categories['not_dynamic'])}/{total_use_cases}")
+        
         summary_lines.append(f"\n{'=' * 60}\n")
         return "\n".join(summary_lines)
+    
+    def _categorize_use_cases(self) -> dict[str, list[str]]:
+        """
+        Categorize use cases based on their verification results.
+        
+        Returns:
+            Dictionary with categorized use case names
+        """
+        categories = {
+            "generation_ok": [],
+            "generation_failed": [],
+            "has_solution": [],
+            "no_solution": [],
+            "truly_dynamic": [],
+            "not_dynamic": [],
+            "dynamic_partial": [],
+            "dynamic_untested": [],
+        }
+        
+        for use_case_name, use_case_data in self.results["use_cases"].items():
+            # Task Generation Quality
+            llm_reviews = use_case_data.get("llm_reviews", [])
+            if llm_reviews:
+                all_valid = all(r.get("valid", False) for r in llm_reviews)
+                if all_valid and len(llm_reviews) > 0:
+                    categories["generation_ok"].append(use_case_name)
+                else:
+                    categories["generation_failed"].append(use_case_name)
+            else:
+                # No LLM reviews means generation might have failed or was skipped
+                tasks = use_case_data.get("tasks", [])
+                if tasks:
+                    categories["generation_ok"].append(use_case_name)
+                else:
+                    categories["generation_failed"].append(use_case_name)
+            
+            # Solution Availability (IWAP)
+            iwap_status = use_case_data.get("iwap_status", {})
+            if iwap_status.get("matched", False) or iwap_status.get("executed", False) and iwap_status.get("matched") is not False:
+                # Check if it actually found a solution (not just executed)
+                if iwap_status.get("matched", False):
+                    categories["has_solution"].append(use_case_name)
+                else:
+                    categories["no_solution"].append(use_case_name)
+            else:
+                categories["no_solution"].append(use_case_name)
+            
+            # Dynamic System Effectiveness
+            dynamic_verification = use_case_data.get("dynamic_verification", {})
+            if dynamic_verification and not dynamic_verification.get("skipped", False):
+                passed_count = dynamic_verification.get("passed_count", 0)
+                total_count = dynamic_verification.get("total_count", 0)
+                needs_review = dynamic_verification.get("needs_review", False)
+                
+                if needs_review and passed_count == total_count and total_count >= 3:
+                    # Same solution works for all seeds - not truly dynamic
+                    categories["not_dynamic"].append(use_case_name)
+                elif passed_count == 0 and total_count > 0:
+                    # Solution fails for all seeds - truly dynamic (different seeds = different DOM)
+                    categories["truly_dynamic"].append(use_case_name)
+                elif 0 < passed_count < total_count:
+                    # Solution works for some seeds but not all - partially dynamic
+                    categories["dynamic_partial"].append(use_case_name)
+                else:
+                    # Edge case
+                    categories["dynamic_untested"].append(use_case_name)
+            else:
+                # Dynamic verification was skipped
+                categories["dynamic_untested"].append(use_case_name)
+        
+        return categories
