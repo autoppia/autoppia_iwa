@@ -107,6 +107,11 @@ class LLMReviewer:
             {"role": "user", "content": user_prompt},
         ]
 
+        # Log the prompt being sent to LLM for debugging
+        logger.debug(f"LLM Review Prompt for task {task.id}:")
+        logger.debug(f"  System: {system_prompt[:200]}...")
+        logger.debug(f"  User: {user_prompt[:500]}...")
+
         try:
             raw_response = await asyncio.wait_for(
                 self.llm_service.async_predict(messages=messages, json_format=True, return_raw=False),
@@ -116,6 +121,14 @@ class LLMReviewer:
             result = self._parse_llm_response(raw_response)
 
             logger.info(f"LLM review completed for task {task.id}: valid={result.get('valid')}, score={result.get('score', 0.0):.2f}")
+            
+            # Add detailed logging for invalid reviews
+            if not result.get('valid', False):
+                issues = result.get('issues', [])
+                reasoning = result.get('reasoning', 'No reasoning provided')
+                logger.warning(f"LLM review INVALID for task {task.id}")
+                logger.warning(f"  Issues found: {issues}")
+                logger.warning(f"  Reasoning: {reasoning}")
 
             return result
 

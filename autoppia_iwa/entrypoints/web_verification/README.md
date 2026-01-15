@@ -20,15 +20,51 @@ python -m autoppia_iwa.entrypoints.web_verification.run --project-id autocrm --n
 
 **Outputs**: One JSON per project is written to `./verification_results/verification_<project_id>.json` (overwritten on rerun unless you change `--output-dir`).
 
+## Pre-Validation
+
+Before running the pipeline, the system automatically validates the project setup to ensure everything is correctly configured:
+
+- **Project Structure**: Validates that the project has ID, name, and valid URLs
+- **Events**: Checks that events are defined and properly registered
+- **Use Cases**: Verifies that use cases exist and each has a valid event associated
+- **Event Registry**: Ensures all use case events are registered in the EventRegistry
+- **Examples**: Warns if use cases are missing examples
+
+If validation fails, the pipeline stops immediately with clear error messages. This prevents wasting time on a misconfigured project.
+
 ## Overview
 
 The Web Verification Pipeline is a three-step process designed to:
 
+0. **Pre-Validation**: Automatically validates project setup (events, use cases, URLs) before proceeding
 1. **Generate and Review Tasks**: Create multiple tasks per use case with constraints (tests) and validate them using GPT
 2. **IWAP Use Case Doability Check**: Query the IWAP API to check if the use case is doable (has any successful solution). We don't compare specific constraints - we just need to know if the use case has been solved before.
 3. **Dynamic Verification**: Take the successful solution from Step 2 and test it with different seed values to ensure the solution works across different dynamic content variations
 
 ## Pipeline Steps
+
+### Step 0: Pre-Validation
+
+**Purpose**: Validate project configuration before running the pipeline.
+
+**Process**:
+- Validates project has ID, name, and valid URLs (frontend and backend)
+- Checks that events are defined and properly structured
+- Verifies use cases exist and each has a valid event associated
+- Ensures all use case events are registered in the EventRegistry
+- Validates that use case events match the project's events list
+- Warns if use cases are missing examples
+
+**Output**:
+- Validation status (pass/fail)
+- List of errors (if any)
+- List of warnings (if any)
+- Project summary (events count, use cases count, URLs)
+
+**Behavior**:
+- If validation fails: Pipeline stops immediately with error messages
+- If validation passes: Pipeline continues to Step 1
+- Warnings don't stop execution but indicate potential issues
 
 ### Step 1: Task Generation and LLM Review
 

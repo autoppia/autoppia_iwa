@@ -233,8 +233,8 @@ class IWAPClient:
 
         params = {
             "key": self.api_key,
-            "website": website,
-            "useCase": use_case_name,
+            "website": website.lower() if website else None,
+            "useCase": use_case_name.lower() if use_case_name else None,
         }
         if page is not None:
             params["page"] = page
@@ -534,12 +534,23 @@ class IWAPClient:
         api_data = api_wrapper_data.get("data", api_wrapper_data)  # Handle both structures
         api_tasks = api_data.get("tasks", []) if isinstance(api_data, dict) else []
 
+        # Debug: Log what we received
+        logger.debug(f"API response structure: success={api_response.get('success')}, data keys={list(api_wrapper_data.keys()) if isinstance(api_wrapper_data, dict) else 'not dict'}")
+        logger.debug(f"API tasks count: {len(api_tasks)}")
+        if api_tasks:
+            logger.debug(f"First task structure: {list(api_tasks[0].keys()) if isinstance(api_tasks[0], dict) else 'not dict'}")
+            if isinstance(api_tasks[0], dict):
+                logger.debug(f"First task evaluation: {api_tasks[0].get('evaluation', {})}")
+
         # Filter tasks with evaluation score = 1 and passed = True
         # These are successful solutions for this use case
         passed_tasks = []
         for api_task_item in api_tasks:
             evaluation = api_task_item.get("evaluation", {})
-            if evaluation.get("score") == 1 and evaluation.get("passed") is True:
+            score = evaluation.get("score")
+            passed = evaluation.get("passed")
+            logger.debug(f"Task evaluation: score={score}, passed={passed}")
+            if score == 1 and passed is True:
                 passed_tasks.append(api_task_item)
 
         if not passed_tasks:

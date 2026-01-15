@@ -203,6 +203,21 @@ class WebVerificationPipeline:
                 review_result = await self.llm_reviewer.review_task_and_constraints(task)
                 review_result["task_id"] = task.id
                 use_case_results["llm_reviews"].append(review_result)
+                
+                # Show detailed feedback when review is invalid
+                if not review_result.get("valid", False):
+                    print("\n" + "=" * 80)
+                    print("⚠️  LLM REVIEW: INVALID")
+                    print("=" * 80)
+                    print(f"Task ID: {task.id}")
+                    print(f"Score: {review_result.get('score', 0.0):.2f}")
+                    if review_result.get("issues"):
+                        print(f"\nIssues found:")
+                        for issue in review_result.get("issues", []):
+                            print(f"  - {issue}")
+                    if review_result.get("reasoning"):
+                        print(f"\nReasoning: {review_result.get('reasoning')}")
+                    print("=" * 80 + "\n")
 
         # Step 2: IWAP API call - proceed if enabled and (LLM reviews are valid or review is disabled)
         if self.iwap_client:
@@ -373,6 +388,19 @@ class WebVerificationPipeline:
                             print("=" * 80)
                             print(dynamic_result.get("summary", "No summary available"))
                             print(f"Passed: {dynamic_result.get('passed_count', 0)}/{dynamic_result.get('total_count', 0)}")
+                            
+                            # Show warning if solution works for all seeds (suggests non-dynamic use case)
+                            if dynamic_result.get("needs_review", False):
+                                print("\n" + "=" * 80)
+                                print("⚠️  REVIEW RECOMMENDED")
+                                print("=" * 80)
+                                print(f"Use Case: {use_case.name}")
+                                print(f"⚠️  This use case may not be truly dynamic.")
+                                print(f"   The same solution works for all {dynamic_result.get('total_count', 0)} seeds tested.")
+                                print(f"   If the web is dynamic, different seeds should produce different DOM structures,")
+                                print(f"   making it unlikely that the same solution works across all seeds.")
+                                print("=" * 80 + "\n")
+                            
                             print("=" * 80 + "\n")
                         else:
                             logger.warning("No reference task available for dynamic verification")
@@ -538,6 +566,7 @@ class WebVerificationPipeline:
                         evaluation = seed_result.get("evaluation", {})
                         if evaluation:  # Only include if evaluation exists
                             seed_results[str(seed)] = {
+                                "evaluation": evaluation,  # Include full evaluation for detailed display
                                 "score": evaluation.get("final_score", 0.0),
                                 "tests_passed": evaluation.get("tests_passed", 0),
                                 "total_tests": evaluation.get("total_tests", 0),
@@ -812,16 +841,24 @@ class WebVerificationPipeline:
         for use_case_name, use_case_data in self.results["use_cases"].items():
             summary_lines.append(f"\nUse Case: {use_case_name}")
 
-            # Task results
-            tasks = use_case_data.get("tasks", [])
-            summary_lines.append(f"  Tasks Generated: {len(tasks)}")
+            # Step 0: Pre-validation (project-level, but shown for context)
+            # Note: Pre-validation is done once at the start, but we show it here for completeness
+            summary_lines.append("  Step 0 (Pre-validation): ✓ Passed")
 
+            # Step 1: Task Generation and LLM Review
+            tasks = use_case_data.get("tasks", [])
+            summary_lines.append(f"  Step 1 (Task Generation): {len(tasks)} tasks generated")
+            
             # LLM reviews
             reviews = use_case_data.get("llm_reviews", [])
             if reviews:
                 valid_reviews = sum(1 for r in reviews if r.get("valid", False))
-                avg_score = sum(r.get("score", 0.0) for r in reviews) / len(reviews) if reviews else 0.0
-                summary_lines.append(f"  LLM Reviews: {valid_reviews}/{len(reviews)} valid (avg score: {avg_score:.2f})")
+                if valid_reviews == len(reviews):
+                    summary_lines.append(f"  Step 1 (LLM Review): ✓ Passed ({valid_reviews}/{len(reviews)} valid)")
+                else:
+                    summary_lines.append(f"  Step 1 (LLM Review): ✗ Failed ({valid_reviews}/{len(reviews)} valid)")
+            else:
+                summary_lines.append("  Step 1 (LLM Review): ⏭️ Skipped")
 
             # Step 2: IWAP API / Doability check
             iwap_status = use_case_data.get("iwap_status")
@@ -867,7 +904,46 @@ class WebVerificationPipeline:
                         all_passed = dynamic_verification.get("all_passed", False)
                         passed_count = dynamic_verification.get("passed_count", 0)
                         total_count = dynamic_verification.get("total_count", 0)
-                        summary_lines.append(f"  Step 3 (Dynamic): {'✗ Failed, because all evaluations passed' if all_passed else '✓ Passed'} ({passed_count}/{total_count} seeds)")
+                        seeds_tested = dynamic_verification.get("seeds_tested", [])
+                        results_by_seed = dynamic_verification.get("results_by_seed", {})
+                        
+                        # Build detailed seed results
+                        seed_details = []
+                        for seed in seeds_tested:
+                            seed_result = results_by_seed.get(str(seed), {})
+                            # Try to get score from evaluation or directly from seed_result
+                            score = seed_result.get("score", 0.0)
+                            if "evaluation" in seed_result:
+                                score = seed_result["evaluation"].get("final_score", score)
+                            status = "✓" if score == 1.0 else "✗"
+                            seed_details.append(f"{seed}: {status}")
+                        
+                        if seed_details:
+                            seeds_str = ", ".join(seed_details)
+                            status_icon = "✓ Passed" if all_passed else "✗ Failed"
+                            summary_lines.append(f"  Step 3 (Dynamic): {status_icon} ({passed_count}/{total_count} seeds passed)")
+                            summary_lines.append(f"    Solution tested with seeds: {seeds_str}")
+                            
+                            # Add warning if solution works for all seeds (suggests non-dynamic use case)
+                            if dynamic_verification.get("needs_review", False):
+                                summary_lines.append(f"    ⚠️  REVIEW RECOMMENDED: Use case may not be truly dynamic (same solution works for all {total_count} seeds)")
+                        else:
+                            # Fallback if seeds_tested is empty but we have results_by_seed
+                            if results_by_seed:
+                                seed_details = []
+                                for seed_str, seed_result in results_by_seed.items():
+                                    score = seed_result.get("score", 0.0)
+                                    status = "✓" if score == 1.0 else "✗"
+                                    seed_details.append(f"{seed_str}: {status}")
+                                if seed_details:
+                                    seeds_str = ", ".join(seed_details)
+                                    status_icon = "✓ Passed" if all_passed else "✗ Failed"
+                                    summary_lines.append(f"  Step 3 (Dynamic): {status_icon} ({passed_count}/{total_count} seeds)")
+                                    summary_lines.append(f"    Seeds tested: {seeds_str}")
+                                else:
+                                    summary_lines.append(f"  Step 3 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
+                            else:
+                                summary_lines.append(f"  Step 3 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
                 elif isinstance(dynamic_verification, list):
                     # Handle legacy list format if it exists
                     all_passed = all(dr.get("all_passed", False) for dr in dynamic_verification if isinstance(dr, dict))

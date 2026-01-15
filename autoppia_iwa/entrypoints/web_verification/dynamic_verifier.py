@@ -142,6 +142,9 @@ class DynamicVerifier:
             passed_count = sum(1 for r in results.values() if r.get("evaluation", {}).get("final_score", 0) == 1.0)
             total_count = len(results)
             summary = f"Dynamic verification: {passed_count}/{total_count} seeds passed evaluation. Solution works correctly with {passed_count} different seed values."
+            # Warning: If solution works for all seeds, the use case might not be truly dynamic
+            if passed_count == total_count and total_count >= 3:
+                summary += f"\n⚠️  WARNING: This use case may not be truly dynamic. The same solution works for all {total_count} seeds, suggesting the dynamic system might not be affecting this use case."
         else:
             passed_count = sum(1 for r in results.values() if r.get("success", False) and r.get("llm_review", {}).get("valid", True))
             total_count = len(results)
@@ -155,6 +158,7 @@ class DynamicVerifier:
             "passed_count": passed_count,
             "total_count": total_count,
             "summary": summary,
+            "needs_review": all_passed and passed_count == total_count and total_count >= 3,  # Flag for summary
         }
 
     async def _generate_and_review_task_with_seed(self, use_case, seed: int) -> dict[str, Any]:
