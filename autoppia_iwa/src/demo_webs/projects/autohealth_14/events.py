@@ -6,26 +6,80 @@ from autoppia_iwa.src.demo_webs.projects.criterion_helper import CriterionValue
 
 class BookAppointmentEvent(Event, BaseEventValidator):
     event_name: str = "BOOK_APPOINTMENT"
+    # Core appointment fields (semantic values for prompts)
     date: str | None = None
     doctor_name: str | None = None
     speciality: str | None = None
     time: str | None = None
+    # Patient information fields (semantic values for prompts)
+    patient_name: str | None = None
+    patient_email: str | None = None
+    patient_phone: str | None = None
+    reason_for_visit: str | None = None
+    # Insurance fields
+    insurance_provider: str | None = None
+    insurance_number: str | None = None
+    # Emergency contact fields
+    emergency_contact: str | None = None
+    emergency_phone: str | None = None
+    # Additional fields
+    notes: str | None = None
+    # Action and source metadata
+    action: str | None = None  # "open_booking_modal" or "confirm_booking"
+    success: bool | None = None  # True when booking confirmed
+    source: str | None = None  # "appointments_table", "doctors_page", etc.
 
     class ValidationCriteria(BaseModel):
+        # Core appointment fields
         date: str | CriterionValue | None = None
         doctor_name: str | CriterionValue | None = None
         speciality: str | CriterionValue | None = None
         time: str | CriterionValue | None = None
+        # Patient information fields
+        patient_name: str | CriterionValue | None = None
+        patient_email: str | CriterionValue | None = None
+        patient_phone: str | CriterionValue | None = None
+        reason_for_visit: str | CriterionValue | None = None
+        # Insurance fields
+        insurance_provider: str | CriterionValue | None = None
+        insurance_number: str | CriterionValue | None = None
+        # Emergency contact fields
+        emergency_contact: str | CriterionValue | None = None
+        emergency_phone: str | CriterionValue | None = None
+        # Additional fields
+        notes: str | CriterionValue | None = None
+        # Action and source metadata
+        action: str | CriterionValue | None = None
+        success: bool | CriterionValue | None = None
+        source: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if criteria is None:
             return True
         return all(
             [
+                # Core appointment fields
                 self._validate_field(self.date, criteria.date),
                 self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.speciality, criteria.speciality),
                 self._validate_field(self.time, criteria.time),
+                # Patient information fields
+                self._validate_field(self.patient_name, criteria.patient_name),
+                self._validate_field(self.patient_email, criteria.patient_email),
+                self._validate_field(self.patient_phone, criteria.patient_phone),
+                self._validate_field(self.reason_for_visit, criteria.reason_for_visit),
+                # Insurance fields
+                self._validate_field(self.insurance_provider, criteria.insurance_provider),
+                self._validate_field(self.insurance_number, criteria.insurance_number),
+                # Emergency contact fields
+                self._validate_field(self.emergency_contact, criteria.emergency_contact),
+                self._validate_field(self.emergency_phone, criteria.emergency_phone),
+                # Additional fields
+                self._validate_field(self.notes, criteria.notes),
+                # Action and source metadata
+                self._validate_field(self.action, criteria.action),
+                self._validate_field(self.success, criteria.success),
+                self._validate_field(self.source, criteria.source),
             ]
         )
 
@@ -39,10 +93,28 @@ class BookAppointmentEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
+            # Core appointment fields (map camelCase to snake_case)
             date=data.get("date"),
             doctor_name=data.get("doctorName"),
             speciality=data.get("specialty"),
             time=data.get("time"),
+            # Patient information fields
+            patient_name=data.get("patientName"),
+            patient_email=data.get("patientEmail"),
+            patient_phone=data.get("patientPhone"),
+            reason_for_visit=data.get("reasonForVisit"),
+            # Insurance fields
+            insurance_provider=data.get("insuranceProvider"),
+            insurance_number=data.get("insuranceNumber"),
+            # Emergency contact fields
+            emergency_contact=data.get("emergencyContact"),
+            emergency_phone=data.get("emergencyPhone"),
+            # Additional fields
+            notes=data.get("notes"),
+            # Action and source metadata
+            action=data.get("action"),
+            success=data.get("success"),
+            source=data.get("source"),
         )
 
 

@@ -39,7 +39,7 @@ from .generation_functions import (
 
 BOOK_APPOINTMENT_USE_CASE = UseCase(
     name="BOOK_APPOINTMENT",
-    description="The user booked an appointment with a doctor for a given date, time, and speciality",
+    description="The user booked an appointment with a doctor for a given date, time, and speciality, including patient details when confirmed. Uses semantic values (doctor names, specialty names, patient names) for natural prompts.",
     event=BookAppointmentEvent,
     event_source_code=BookAppointmentEvent.get_source_code_of_class(),
     constraints_generator=generate_book_appointment_constraints,
@@ -49,12 +49,16 @@ BOOK_APPOINTMENT_USE_CASE = UseCase(
             "prompt_for_task_generation": "Book an appointment where doctor_name equals 'Dr. Alice Thompson' and date equals '2025-09-20' and time equals '9:00 AM' and speciality equals 'Cardiology'",
         },
         {
-            "prompt": "Book an appointment where doctor_name not equals 'Dr. Clara Nguyen' and date not equals '2025-09-21' and time equals '9:00 AM' and speciality equals 'Cardiology'",
-            "prompt_for_task_generation": "Book an appointment where doctor_name not equals 'Dr. Clara Nguyen' and date not equals '2025-09-21' and time equals '9:00 AM' and speciality equals 'Cardiology'",
+            "prompt": "Book an appointment where doctor_name equals 'Dr. Daniel Roberts' and patient_name equals 'John Doe' and patient_email contains '@gmail.com' and reason_for_visit equals 'Chest pain'",
+            "prompt_for_task_generation": "Book an appointment where doctor_name equals 'Dr. Daniel Roberts' and patient_name equals 'John Doe' and patient_email contains '@gmail.com' and reason_for_visit equals 'Chest pain'",
         },
         {
-            "prompt": "Book an appointment where doctor_name contains 'Daniel' and date less than '2025-09-25' and time greater than '10:00 AM' and speciality equals 'Orthopedics'",
-            "prompt_for_task_generation": "Book an appointment where doctor_name contains 'Daniel' and date less than '2025-09-25' and time greater than '10:00 AM' and speciality equals 'Orthopedics'",
+            "prompt": "Book an appointment where doctor_name contains 'Nguyen' and speciality equals 'Dermatology' and patient_name equals 'Emma Wilson' and reason_for_visit contains 'skin rash'",
+            "prompt_for_task_generation": "Book an appointment where doctor_name contains 'Nguyen' and speciality equals 'Dermatology' and patient_name equals 'Emma Wilson' and reason_for_visit contains 'skin rash'",
+        },
+        {
+            "prompt": "Book an appointment where doctor_name equals 'Dr. Michael Smith' and date equals '2025-09-25' and time equals '2:30 PM' and speciality equals 'Pediatrics' and patient_phone starts with '+1'",
+            "prompt_for_task_generation": "Book an appointment where doctor_name equals 'Dr. Michael Smith' and date equals '2025-09-25' and time equals '2:30 PM' and speciality equals 'Pediatrics' and patient_phone starts with '+1'",
         },
     ],
 )

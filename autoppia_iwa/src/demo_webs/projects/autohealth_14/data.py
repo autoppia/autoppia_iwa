@@ -180,10 +180,24 @@ LIST_OPERATORS = [CONTAINS, NOT_CONTAINS, IN_LIST, NOT_IN_LIST]
 EQUALITY_OPERATORS = [EQUALS, NOT_EQUALS]
 
 FIELD_OPERATORS_MAP_BOOK_APPOINTMENT = {
+    # Core appointment fields (semantic values for prompts)
     "date": EQUALITY_OPERATORS,
     "doctor_name": STRING_OPERATORS,
     "speciality": STRING_OPERATORS,
     "time": [EQUALS],
+    # Patient information fields (semantic values for prompts)
+    "patient_name": STRING_OPERATORS,
+    "patient_email": STRING_OPERATORS,
+    "patient_phone": EQUALITY_OPERATORS,
+    "reason_for_visit": STRING_OPERATORS,
+    # Insurance fields
+    "insurance_provider": STRING_OPERATORS,
+    "insurance_number": EQUALITY_OPERATORS,
+    # Emergency contact fields
+    "emergency_contact": STRING_OPERATORS,
+    "emergency_phone": EQUALITY_OPERATORS,
+    # Additional fields
+    "notes": STRING_OPERATORS,
 }
 
 FIELD_OPERATORS_MAP_APPOINTMENT_BOOKED_SUCCESSFULLY = {

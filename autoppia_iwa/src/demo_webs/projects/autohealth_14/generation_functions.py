@@ -260,11 +260,55 @@ def _generate_constraints(
 
 
 async def generate_book_appointment_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """
+    Generate constraints for book_appointment use case.
+    Prioritizes semantic values (doctor_name, specialty, patient_name) over technical IDs
+    to ensure prompts are natural and human-readable.
+    """
     appointments_data = await _get_appointments_data(task_url, dataset)
-    selected_fields = ["doctor_name", "time"]
     field_operators = FIELD_OPERATORS_MAP_BOOK_APPOINTMENT
-    constraints_list = _generate_constraints(appointments_data, field_operators, selected_fields=selected_fields)
-
+    
+    # Core appointment fields (always required for verification)
+    # These use semantic values: doctor_name, speciality, date, time
+    core_fields = ["doctor_name", "speciality", "date", "time"]
+    core_constraints = _generate_constraints(
+        appointments_data, 
+        field_operators, 
+        selected_fields=core_fields
+    )
+    
+    # Patient information fields (semantic values for prompts)
+    # Use field_map with MODIFIED_* datasets because patient data comes from form inputs
+    field_map = {
+        "patient_name": {"field": "patient_name", "dataset": MODIFIED_PATIENT_NAMES},
+        "patient_email": {"field": "email", "dataset": MODIFIED_PATIENT_EMAILS},
+        "patient_phone": {"field": "contact", "dataset": MODIFIED_PATIENT_PHONES},
+        "reason_for_visit": {"field": "reason", "dataset": MODIFIED_REASON_FOR_VISIT},
+        "insurance_provider": {"field": "provider", "dataset": MODIFIED_INSURANCE_PROVIDER},
+        "insurance_number": {"field": "number", "dataset": MODIFIED_INSURANCE_NUMBER},
+        "emergency_contact": {"field": "name", "dataset": MODIFIED_EMERGENCY_CONTACT},
+        "emergency_phone": {"field": "phone", "dataset": MODIFIED_EMERGENCY_PHONE},
+        "notes": {"field": "notes", "dataset": MODIFIED_NOTES},
+    }
+    
+    # Select a subset of patient fields (2-4 fields) to avoid too many constraints
+    # Prioritize fields that are most commonly used in prompts
+    patient_field_candidates = ["patient_name", "patient_email", "patient_phone", "reason_for_visit"]
+    import random
+    num_patient_fields = random.randint(2, min(4, len(patient_field_candidates)))
+    selected_patient_fields = random.sample(patient_field_candidates, num_patient_fields)
+    
+    # Generate constraints for selected patient fields
+    patient_constraints = _generate_constraints(
+        appointments_data,
+        field_operators,
+        selected_fields=selected_patient_fields,
+        field_map=field_map
+    )
+    
+    # Combine core and patient constraints
+    constraints_list = core_constraints + patient_constraints
+    
     return constraints_list
 
 
