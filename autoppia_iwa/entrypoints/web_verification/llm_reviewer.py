@@ -61,6 +61,9 @@ class LLMReviewer:
         # Get constraints
         constraints = getattr(use_case, "constraints", None)
         constraints_str = use_case.constraints_to_str() if constraints else "No constraints defined"
+        
+        # Extract available fields from event ValidationCriteria
+        available_fields_info = self._extract_available_fields(use_case, use_case_name)
 
         # Improvement 1: If no constraints provided, skip LLM review and mark as valid
         if not constraints:
@@ -189,6 +192,11 @@ class LLMReviewer:
             "Invalid Prompts:\n"
             "  - 'Delete matter where status equals Active' ✗ (prompt says 'equals Active' but constraint says 'not_in_list [Archived, On Hold]' - not equivalent, Active might not be the only valid option)\n"
             "Note: If prompt specifies a value that may not satisfy constraint (Active may not be the only non-Archived/On-Hold option), it's invalid.\n\n"
+            "❌ EXAMPLE 10: Invalid field or operator for use case (INVALID)\n"
+            "Available fields: genres [contains, not_contains, in_list, not_in_list]\n"
+            "Constraint: genres equals Sci-Fi\n"
+            "Invalid: The field 'genres' does NOT support 'equals' operator. Only [contains, not_contains, in_list, not_in_list] are valid.\n"
+            "Note: Check that constraint fields and operators match the available fields list provided.\n\n"
             "Respond strictly in JSON with the following schema:\n"
             "{\n"
             '  "valid": boolean,  // TRUE if prompt includes ALL constraints correctly, FALSE otherwise\n'
@@ -210,7 +218,9 @@ class LLMReviewer:
             "   - 'contains' → prompt indicates partial match\n"
             "   - 'not_equals/not_contains' → prompt indicates exclusion\n"
             "   (If operators are wrong → valid=false, score=0.0)\n"
-            "3. Do constraint values match? (If NO → valid=false, score=0.0)\n\n"
+            "3. Do constraint values match? (If NO → valid=false, score=0.0)\n"
+            "4. Are constraint FIELDS among the available fields? (If NO → valid=false, score=0.0)\n"
+            "5. Are constraint OPERATORS supported by the field? (If NO → valid=false, score=0.0)\n\n"
             "DO NOT EVALUATE:\n"
             "- Whether constraints are too specific or complex (e.g., 'too many constraints')\n"
             "- Whether constraints may not be fulfillable in some seeds\n"
@@ -227,22 +237,33 @@ class LLMReviewer:
             "1. Prompt MUST include ALL constraints from the constraint list\n"
             "2. Constraint operators MUST be accurately represented (equals, contains, greater_than, etc.)\n"
             "3. Constraint values MUST match (exact values for equals, equivalent content for text fields)\n"
-            "4. Prompt CAN include extra information (authentication, context) if not contradicting constraints\n"
-            "5. Prompt CAN use verb synonyms (Show/Share, Modify/Edit) - use case name is intent, not exact verb\n"
-            "6. Prompt CAN be more specific than constraint if it satisfies the constraint\n"
-            "7. Contradictions (prompt says X but constraint says not_X or different_X) are INVALID\n"
-            "8. Missing constraints are INVALID\n\n"
-            "If ALL constraints are present and correctly represented → valid=true, score=1.0\n"
-            "If ANY constraint is missing or misrepresented → valid=false, score=0.0"
+            "4. Constraint FIELDS must be among the available fields for this use case (check the field list provided)\n"
+            "5. Constraint OPERATORS should be appropriate for the field type (will be provided in field list)\n"
+            "6. Prompt CAN include extra information (authentication, context) if not contradicting constraints\n"
+            "7. Prompt CAN use verb synonyms (Show/Share, Modify/Edit) - use case name is intent, not exact verb\n"
+            "8. Prompt CAN be more specific than constraint if it satisfies the constraint\n"
+            "9. Contradictions (prompt says X but constraint says not_X or different_X) are INVALID\n"
+            "10. Missing constraints are INVALID\n"
+            "11. Constraints with fields NOT in the available fields list are INVALID\n"
+            "12. Constraints with operators NOT supported by the field type are INVALID (e.g., 'equals' on a list field like genres)\n\n"
+            "VALIDATION OF CONSTRAINT WELL-FORMEDNESS:\n"
+            "- If a constraint uses a field NOT in the available fields → valid=false, score=0.0\n"
+            "- If a constraint uses an operator NOT supported by that field → valid=false, score=0.0\n"
+            "- Example: 'genres equals Sci-Fi' where genres only supports [contains, not_contains, in_list, not_in_list] → INVALID\n"
+            "- Example: 'name equals Old' where name supports [equals, not_equals, contains, not_contains] → VALID\n\n"
+            "If ALL constraints are present, correctly represented, AND well-formed → valid=true, score=1.0\n"
+            "If ANY constraint is missing, misrepresented, OR uses invalid field/operator → valid=false, score=0.0"
         )
 
         user_prompt = (
             f"Use Case: {use_case_name}\n"
             f"Use Case Description: {use_case_desc}\n\n"
+            f"{available_fields_info}\n"
             f"Constraints (these are the validation criteria):\n{constraints_str}\n\n"
             f"Task Prompt:\n{task.prompt}\n\n"
             "Review whether the task prompt accurately represents all the constraints. "
-            "The prompt should include all constraints in natural language."
+            "The prompt should include all constraints in natural language. "
+            "Verify that constraint fields are among the available fields listed above and that operators are appropriate for each field type."
         )
 
         messages = [
@@ -263,7 +284,20 @@ class LLMReviewer:
 
             result = self._parse_llm_response(raw_response)
 
-            logger.info(f"LLM review completed for task {task.id}: valid={result.get('valid')}, score={result.get('score', 0.0):.2f}")
+            # Verify binary score
+            valid = result.get('valid', False)
+            score = result.get('score', 0.0)
+            
+            # Final validation: ensure score matches valid field
+            if (valid and score != 1.0) or (not valid and score != 0.0):
+                logger.error(
+                    f"LLM review for task {task.id} has inconsistent valid/score: "
+                    f"valid={valid}, score={score}. This should not happen after parsing correction."
+                )
+                # Force consistency
+                result['score'] = 1.0 if valid else 0.0
+            
+            logger.info(f"LLM review completed for task {task.id}: valid={result.get('valid')}, score={result.get('score', 0.0):.1f}")
             
             # Add detailed logging for invalid reviews
             if not result.get('valid', False):
@@ -272,6 +306,9 @@ class LLMReviewer:
                 logger.warning(f"LLM review INVALID for task {task.id}")
                 logger.warning(f"  Issues found: {issues}")
                 logger.warning(f"  Reasoning: {reasoning}")
+            else:
+                # Log valid reviews at debug level
+                logger.debug(f"LLM review VALID for task {task.id}: {result.get('reasoning', 'No reasoning')[:100]}...")
 
             return result
 
@@ -293,37 +330,185 @@ class LLMReviewer:
             }
 
     def _parse_llm_response(self, raw_response: Any) -> dict[str, Any]:
-        """Parse LLM JSON response, handling various formats"""
+        """
+        Parse LLM JSON response, handling various formats and enforcing binary scores.
+        
+        This method ensures that:
+        1. The response is valid JSON
+        2. The score is strictly binary (1.0 or 0.0) based on the valid field
+        3. Any intermediate scores are corrected
+        """
         import json
         import re
 
-        if isinstance(raw_response, dict):
-            return raw_response
+        result = None
 
-        if not isinstance(raw_response, str):
+        if isinstance(raw_response, dict):
+            result = raw_response
+        elif isinstance(raw_response, str):
+            # Try to extract JSON from response
+            cleaned = raw_response.strip()
+
+            # Remove code fences if present
+            code_fence_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", cleaned, re.DOTALL)
+            if code_fence_match:
+                cleaned = code_fence_match.group(1)
+
+            # Try to find JSON object
+            json_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+            if json_match:
+                cleaned = json_match.group(0)
+
+            try:
+                result = json.loads(cleaned)
+            except json.JSONDecodeError:
+                # Fallback: return a default structure
+                logger.warning(f"Could not parse LLM response as JSON: {raw_response[:200]}")
+                return {
+                    "valid": False,
+                    "score": 0.0,
+                    "issues": ["Could not parse LLM response"],
+                    "reasoning": f"Raw response: {raw_response[:200]}",
+                }
+        else:
             raise ValueError("LLM response is not a JSON string or dict")
 
-        # Try to extract JSON from response
-        cleaned = raw_response.strip()
+        # CRITICAL: Enforce binary scores based on valid field
+        if result:
+            valid = result.get("valid", False)
+            score = result.get("score", 0.0)
+            
+            # Calculate expected binary score
+            expected_score = 1.0 if valid else 0.0
+            
+            # Check if score is not binary or doesn't match valid field
+            if score != expected_score:
+                original_score = score
+                result["score"] = expected_score
+                logger.warning(
+                    f"LLM Reviewer returned non-binary score. "
+                    f"Correcting: valid={valid}, original_score={original_score:.2f}, corrected_score={expected_score:.1f}"
+                )
+            
+            # Ensure score is exactly 1.0 or 0.0 (no floating point errors)
+            if result["score"] not in [0.0, 1.0]:
+                result["score"] = 1.0 if result["score"] > 0.5 else 0.0
+                logger.warning(f"Score was not exactly 0.0 or 1.0, rounded to {result['score']}")
 
-        # Remove code fences if present
-        code_fence_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", cleaned, re.DOTALL)
-        if code_fence_match:
-            cleaned = code_fence_match.group(1)
-
-        # Try to find JSON object
-        json_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-        if json_match:
-            cleaned = json_match.group(0)
-
+        return result
+    
+    def _extract_available_fields(self, use_case, use_case_name: str) -> str:
+        """
+        Extract available fields and their allowed operators from the use case event.
+        
+        This information helps the LLM understand what fields are valid for this use case
+        and what operators can be used with each field.
+        
+        Args:
+            use_case: UseCase object with event information
+            use_case_name: Name of the use case for logging
+            
+        Returns:
+            Formatted string with available fields information
+        """
         try:
-            return json.loads(cleaned)
-        except json.JSONDecodeError:
-            # Fallback: return a default structure
-            logger.warning(f"Could not parse LLM response as JSON: {raw_response[:200]}")
-            return {
-                "valid": False,
-                "score": 0.0,
-                "issues": ["Could not parse LLM response"],
-                "reasoning": f"Raw response: {raw_response[:200]}",
-            }
+            event_class = getattr(use_case, "event", None)
+            if not event_class:
+                return "Available fields: (not available for this use case)"
+            
+            # Try to get ValidationCriteria from event class
+            if hasattr(event_class, "ValidationCriteria"):
+                validation_criteria = event_class.ValidationCriteria
+                
+                # Get fields from ValidationCriteria
+                if hasattr(validation_criteria, "model_fields"):
+                    fields = list(validation_criteria.model_fields.keys())
+                    
+                    if fields:
+                        # Try to infer operators from field types
+                        field_info = []
+                        for field_name in fields:
+                            field_obj = validation_criteria.model_fields.get(field_name)
+                            if field_obj:
+                                # Get field type
+                                field_type = str(field_obj.annotation) if hasattr(field_obj, 'annotation') else 'unknown'
+                                
+                                # Infer operators based on type
+                                operators = self._infer_operators_from_type(field_type, field_name)
+                                
+                                field_info.append(f"  - {field_name}: {operators}")
+                        
+                        return (
+                            "Available fields for this use case:\n" + 
+                            "\n".join(field_info) + "\n"
+                        )
+            
+            # Fallback: try to extract from event_source_code
+            event_source = getattr(use_case, "event_source_code", "")
+            if event_source and "class ValidationCriteria" in event_source:
+                # Simple extraction of field names from source code
+                import re
+                criteria_section = event_source.split("class ValidationCriteria")[1].split("def _validate_criteria")[0]
+                field_matches = re.findall(r'(\w+):\s*(?:str|int|float|bool)', criteria_section)
+                
+                if field_matches:
+                    # Remove duplicates and common base fields
+                    fields = [f for f in set(field_matches) if f not in ['event_name', 'timestamp', 'web_agent_id', 'user_id']]
+                    
+                    # Infer operators for each field
+                    field_info = []
+                    for field_name in fields:
+                        # Try to get type from source code
+                        type_match = re.search(rf'{field_name}:\s*(str|int|float|bool)', criteria_section)
+                        field_type = type_match.group(1) if type_match else 'str'
+                        operators = self._infer_operators_from_type(field_type, field_name)
+                        field_info.append(f"  - {field_name}: {operators}")
+                    
+                    return (
+                        "Available fields for this use case:\n" + 
+                        "\n".join(field_info) + "\n"
+                    )
+            
+            return "Available fields: (could not extract from event)"
+            
+        except Exception as e:
+            logger.debug(f"Could not extract available fields for {use_case_name}: {e}")
+            return "Available fields: (extraction failed)"
+    
+    def _infer_operators_from_type(self, field_type: str, field_name: str) -> str:
+        """
+        Infer likely operators based on field type and name.
+        
+        Args:
+            field_type: String representation of field type
+            field_name: Name of the field
+            
+        Returns:
+            String describing likely operators
+        """
+        # List/array fields (like genres, amenities) - check first
+        # Note: In ValidationCriteria, field might be 'genre' (singular) but in constraints it's 'genres' (plural)
+        if 'list' in field_type.lower() or any(x in field_name.lower() for x in ['genre', 'amenity', 'amenities', 'tag', 'categories', 'skill']):
+            return "[contains, not_contains, in_list, not_in_list]"
+        
+        # String fields
+        if 'str' in field_type.lower():
+            # Check if it's a name/title field (usually equals/contains)
+            if any(x in field_name.lower() for x in ['name', 'title', 'email', 'username', 'query', 'subject', 'message', 'content', 'body', 'description', 'director', 'author', 'cast']):
+                return "[equals, not_equals, contains, not_contains]"
+            # Generic string
+            return "[equals, not_equals, contains, not_contains]"
+        
+        # Numeric fields
+        elif any(x in field_type.lower() for x in ['int', 'float']):
+            # Check if it's a year/rating/count field
+            if any(x in field_name.lower() for x in ['year', 'rating', 'price', 'count', 'duration', 'quantity', 'hour', 'minute', 'reviews', 'bookings', 'page']):
+                return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal, in_list, not_in_list]"
+            return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal]"
+        
+        # Boolean fields
+        elif 'bool' in field_type.lower():
+            return "[equals, not_equals]"
+        
+        # Default
+        return "[equals, not_equals, contains, not_contains]"
