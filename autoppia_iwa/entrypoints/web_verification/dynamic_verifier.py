@@ -563,6 +563,9 @@ class DynamicVerifier:
 
             # Serialize constraints
             serialized_constraints = self._serialize_constraints(constraints) if constraints else None
+            
+            # Serialize actions for analysis
+            serialized_actions = self._serialize_actions(updated_actions) if updated_actions else []
 
             return {
                 "success": True,
@@ -572,6 +575,7 @@ class DynamicVerifier:
                 "constraints_str": constraints_str,
                 "seed": seed_value,
                 "v2_seed": v2_seed_value,
+                "actions": serialized_actions,  # Include actions executed
                 "evaluation": {
                     "final_score": score,
                     "tests_passed": tests_passed,
@@ -621,4 +625,50 @@ class DynamicVerifier:
 
             serialized.append(serialized_constraint)
 
+        return serialized
+    
+    def _serialize_actions(self, actions: list[BaseAction]) -> list[dict[str, Any]]:
+        """
+        Serialize actions list to JSON-compatible format
+        
+        Args:
+            actions: List of BaseAction objects
+            
+        Returns:
+            List of serialized action dictionaries
+        """
+        serialized = []
+        for action in actions:
+            try:
+                # Get action dict using model_dump if available, otherwise __dict__
+                if hasattr(action, 'model_dump'):
+                    action_dict = action.model_dump()
+                elif hasattr(action, 'dict'):
+                    action_dict = action.dict()
+                else:
+                    action_dict = action.__dict__.copy()
+                
+                # Clean up the dict to remove None values and make it more readable
+                cleaned_dict = {}
+                for key, value in action_dict.items():
+                    if value is not None and key not in ['_sa_instance_state']:
+                        # Special handling for selector
+                        if key == 'selector' and isinstance(value, dict):
+                            # Include only relevant fields from selector
+                            cleaned_dict['selector'] = {
+                                'type': value.get('type'),
+                                'value': value.get('value'),
+                            }
+                        else:
+                            cleaned_dict[key] = value
+                
+                serialized.append(cleaned_dict)
+            except Exception as e:
+                logger.warning(f"Error serializing action {action}: {e}")
+                # Fallback: just include type
+                serialized.append({
+                    "type": str(type(action).__name__),
+                    "error": f"Could not serialize: {e}"
+                })
+        
         return serialized
