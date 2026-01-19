@@ -1,11 +1,11 @@
 # 🧪 Technical Test - Web Agents Developer
 
-Hello! 👋 
+Hello! 👋
 
 This technical test is designed to evaluate your skills in **React**, **Python/Backend**, and **critical thinking**. The goal is to demonstrate how you approach real problems and structure your code.
 
-**⏱️ Estimated time**: ~2 hours  
-**💡 Strongly recommend using AI** (Cursor, Claude Code, ChatGPT, Copilot, etc.) - it's part of real work  
+**⏱️ Estimated time**: ~2 hours
+**💡 Strongly recommend using AI** (Cursor, Claude Code, ChatGPT, Copilot, etc.) - it's part of real work
 **📝 Delivery format**: Git repository with descriptive commits
 
 ---
@@ -150,12 +150,12 @@ The main objective of this part is to understand how task evaluation works. Crea
    cd autoppia_webs_demo
    ./scripts/setup.sh --demo=autocinema --web_port=8000
    ```
-   
+
    **Important**: This script automatically deploys:
    - The autocinema demo web (port 8000)
    - The webs_server backend (port 8090)
    - PostgreSQL database for events
-   
+
    If any of these fails, events won't be saved and the test will fail!
 
 2. **Start your agent** on a port (expected in configs: `127.0.0.1:7000`)
@@ -190,7 +190,7 @@ The main objective of this part is to understand how task evaluation works. Crea
 ### Objective
 Run the full benchmark against web1 (autocinema) to see how your agent performs on multiple tasks. You need to understand how the benchmark works.
 
-**Important**: 
+**Important**:
 - You **MUST** have an OpenAI API key configured in `.env` for this part (see "Configure Environment Variables" section)
 - Read the benchmark documentation in `autoppia_iwa/autoppia_iwa/entrypoints/benchmark/README.md` to understand how the benchmark works
 
@@ -308,5 +308,3 @@ Remember:
 
   Have fun with it. We care much more about your process than a perfect result.
 ---
-
-

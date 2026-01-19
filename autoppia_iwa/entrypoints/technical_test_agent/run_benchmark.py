@@ -6,6 +6,7 @@ El agente esperado está hardcodeado para el formulario de contacto de autocinem
 """
 
 import asyncio
+
 from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
@@ -75,24 +76,24 @@ async def main():
     logger.info("  - This is expected for the technical test")
     logger.info("=" * 80)
     logger.info("")
-    
+
     if not CFG.projects:
         logger.error("No valid projects found!")
         return
-    
+
     if not CFG.agents:
         logger.error("No agents configured!")
         return
-    
+
     benchmark = Benchmark(CFG)
     results = await benchmark.run()
-    
+
     logger.info("")
     logger.info("=" * 80)
     logger.info("BENCHMARK COMPLETED")
     logger.info("=" * 80)
-    logger.info(f"Results saved to: data/outputs/benchmark/")
-    
+    logger.info("Results saved to: data/outputs/benchmark/")
+
     return results
 
 

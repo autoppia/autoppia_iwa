@@ -477,7 +477,7 @@ class IWAPClient:
     def _prompt_matches(self, api_prompt: str, our_prompt: str) -> bool:
         """
         Check if API prompt matches our prompt (fuzzy matching)
-        
+
         Note: This method is kept for backward compatibility but is no longer used
         since we don't compare prompts anymore - we just check if use case is doable.
 
@@ -500,12 +500,12 @@ class IWAPClient:
     def process_api_response_for_tasks(self, api_response: dict[str, Any], our_tasks: list[Any]) -> dict[str, Any]:
         """
         IWAP Use Case Doability Check
-        
+
         Process IWAP API response to check if the use case is doable.
         We don't compare specific constraints - we just need ANY successful solution
         for this use case. The API already filters by use_case_name, so all tasks
         here are for the same use case.
-        
+
         We take the first successful solution and use its prompt and actions to
         test with different seeds in the dynamic verification step.
 
@@ -567,7 +567,7 @@ class IWAPClient:
         task_data = first_successful_task.get("task", {})
         solution = first_successful_task.get("solution", {})
         api_actions = solution.get("actions", [])
-        
+
         if not api_actions:
             return {
                 "matched": False,

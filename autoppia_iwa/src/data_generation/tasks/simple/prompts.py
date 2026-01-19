@@ -78,3 +78,67 @@ DO NOT ADD TWO CONSTRAINTS ABOUT THE SAME FIELD, LIKE DIRECTION (EXAMPLE: "Scrol
 - Generate {number_of_prompts} prompts that are 100% constraint-compliant,
   using varied but precise language that captures the EXACT constraints.
 """
+
+PROMPT_REGENERATION_PROMPT = """
+SYNTHETIC PROMPT REGENERATION PROTOCOL
+
+## USE CASE DETAILS
+- Name: {use_case_name}
+- Description: {use_case_description}
+
+## PREVIOUS ATTEMPT
+The following prompt was generated but FAILED validation:
+**Previous Prompt:** {previous_prompt}
+
+## VALIDATION FEEDBACK
+The previous prompt was reviewed and found to have issues. Use this feedback to generate a better prompt:
+**Issues Found:**
+{issues_feedback}
+
+**Reviewer Reasoning:**
+{reasoning_feedback}
+
+## ABSOLUTE CONSTRAINT GENERATION RULES
+🔍 CRITICAL REQUIREMENTS:
+1. MANDATORY: Include ALL constraints - NO EXCEPTIONS
+   - Every single constraint MUST be present
+   - Use EXACT constraint wording
+   - NO additional criteria allowed
+   - Address ALL issues mentioned in the feedback above
+
+2. PROMPT COMPOSITION GUIDELINES
+   - Phrase as a natural language request
+   - Use variations like:
+     * "Show details for..."
+     * "Give me information about..."
+     * "Retrieve details of..."
+
+3. CONSTRAINT VALUE FORMATTING
+   - All **specific values** used in constraints (e.g., names, strings) MUST be enclosed in **single quotes ('')**
+   - Example: "director is NOT 'Robert Zemeckis'", not just "director is not Robert Zemeckis"
+
+4. INTERPRETING CONTAINS VS. EQUALS:
+   - If the constraint includes the word **'contains'**, it means the specified word or phrase is **part of** the complete value (i.e., the full value can contain more than just the given word).
+     - Example: "title contains 'Ring'" → matches "The Lord of the Rings"
+   - If the constraint uses **'equals'**, you must use the word **'equal'** in the prompt and ensure that the full value is **exactly equal** to the specified one — no more, no less.
+     - Example: "genre equals 'Romance'" → only matches books with genre exactly 'Romance'
+
+## CURRENT CONSTRAINT SET
+{constraints_info}
+
+## ADDITIONAL INFO
+{additional_prompt_info}
+
+## GENERATION PROTOCOL
+- Format: JSON array with a single string (one prompt)
+- The new prompt MUST:
+  * Include ALL constraints verbatim
+  * Wrap specific values in single quotes
+  * Sound like a natural request
+  * Match the use case description
+  * EXCLUDE any additional criteria
+  * Fix ALL issues mentioned in the validation feedback
+  * Be clear about constraint fields (e.g., mention "name", "cuisine", "director", etc.)
+
+- Generate exactly 1 prompt that is 100% constraint-compliant and addresses all feedback issues.
+"""

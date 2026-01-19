@@ -4,6 +4,7 @@ Validates an agent that fills the contact form with subject='Job Position' and m
 """
 
 import asyncio
+
 from loguru import logger
 
 from autoppia_iwa.src.bootstrap import AppBootstrap
@@ -32,7 +33,7 @@ async def create_contact_task(project) -> Task:
     contact_use_case = next((uc for uc in project.use_cases if uc.name == "CONTACT"), None)
     if not contact_use_case:
         raise ValueError(f"CONTACT use case not found in project {project.name}")
-    
+
     # Create test that checks for contact event with specific subject and message
     test = CheckEventTest(
         event_name="CONTACT",
@@ -41,21 +42,16 @@ async def create_contact_task(project) -> Task:
             "message": {"operator": "contains", "value": "I am the best developer"},
         },
     )
-    
-    task = Task(
-        use_case=contact_use_case,
-        prompt=CONTACT_PROMPT,
-        url=project.frontend_url,
-        tests=[test]
-    )
-    
+
+    task = Task(use_case=contact_use_case, prompt=CONTACT_PROMPT, url=project.frontend_url, tests=[test])
+
     return task
 
 
 async def test_contact_task():
     """Test the contact form task with the agent."""
     AppBootstrap()
-    
+
     logger.info("=" * 80)
     logger.info("TECHNICAL TEST - CONTACT FORM TASK EVALUATION")
     logger.info("=" * 80)
@@ -64,58 +60,48 @@ async def test_contact_task():
     logger.info(f"Agent: http://{AGENT_HOST}:{AGENT_PORT}")
     logger.info("=" * 80)
     logger.info("")
-    
+
     # Get project
     project = next((p for p in demo_web_projects if p.id.lower() == PROJECT_ID.lower()), None)
     if not project:
         logger.error(f"Project '{PROJECT_ID}' not found")
         return
-    
+
     logger.info(f"Found project: {project.name}")
     logger.info(f"Frontend URL: {project.frontend_url}")
-    
+
     # Create task
     task = await create_contact_task(project)
     logger.info(f"Task created with ID: {task.id}")
     logger.info(f"Task URL: {task.url}")
-    
+
     # Create agent
-    agent = ApifiedWebAgent(
-        id="technical_test_agent",
-        name="Technical Test Agent",
-        host=AGENT_HOST,
-        port=AGENT_PORT,
-        timeout=AGENT_TIMEOUT
-    )
-    
+    agent = ApifiedWebAgent(id="technical_test_agent", name="Technical Test Agent", host=AGENT_HOST, port=AGENT_PORT, timeout=AGENT_TIMEOUT)
+
     # Reset database
     backend = BackendDemoWebService(project)
     await backend.reset_database(web_agent_id=agent.id)
     logger.info("Database reset")
-    
+
     try:
         # Get solution from agent
         logger.info("Sending task to agent...")
         prepared_task = task.prepare_for_agent(agent.id)
         solution = await agent.solve_task(prepared_task)
-        
-        task_solution = TaskSolution(
-            task_id=task.id,
-            actions=solution.actions or [],
-            web_agent_id=agent.id
-        )
+
+        task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
         task_solution.actions = task_solution.replace_web_agent_id()
-        
+
         logger.info(f"Agent returned {len(task_solution.actions)} actions")
-        
+
         if len(task_solution.actions) == 0:
             logger.warning("⚠️  Agent returned no actions!")
-        
+
         # Evaluate solution
         logger.info("Evaluating solution...")
         evaluator = ConcurrentEvaluator(project, EvaluatorConfig())
         eval_result = await evaluator.evaluate_single_task_solution(task, task_solution)
-        
+
         # Print results
         logger.info("")
         logger.info("=" * 80)
@@ -125,24 +111,24 @@ async def test_contact_task():
         logger.info(f"Success: {'✅ YES' if eval_result.final_score == 1.0 else '❌ NO'}")
         logger.info(f"Number of actions: {len(task_solution.actions)}")
         logger.info("")
-        
+
         if eval_result.final_score == 1.0:
             logger.info("🎉 SUCCESS! The agent successfully completed the contact form task.")
         else:
             logger.warning("⚠️  The agent did not complete the task successfully.")
             logger.info("Check the test results for more details:")
             for i, test_result in enumerate(eval_result.test_results):
-                logger.info(f"  - Test {i+1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
-        
+                logger.info(f"  - Test {i + 1}: {'✅ PASSED' if test_result.success else '❌ FAILED'}")
+
         logger.info("=" * 80)
-        
+
         return {
             "success": eval_result.final_score == 1.0,
             "score": eval_result.final_score,
             "num_actions": len(task_solution.actions),
-            "test_results": [{"success": tr.success, "extra_data": tr.extra_data} for tr in eval_result.test_results]
+            "test_results": [{"success": tr.success, "extra_data": tr.extra_data} for tr in eval_result.test_results],
         }
-        
+
     except Exception as e:
         logger.error(f"Error during test: {e}", exc_info=True)
         raise

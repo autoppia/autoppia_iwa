@@ -61,7 +61,7 @@ class LLMReviewer:
         # Get constraints
         constraints = getattr(use_case, "constraints", None)
         constraints_str = use_case.constraints_to_str() if constraints else "No constraints defined"
-        
+
         # Extract available fields from event ValidationCriteria
         available_fields_info = self._extract_available_fields(use_case, use_case_name)
 
@@ -285,24 +285,21 @@ class LLMReviewer:
             result = self._parse_llm_response(raw_response)
 
             # Verify binary score
-            valid = result.get('valid', False)
-            score = result.get('score', 0.0)
-            
+            valid = result.get("valid", False)
+            score = result.get("score", 0.0)
+
             # Final validation: ensure score matches valid field
             if (valid and score != 1.0) or (not valid and score != 0.0):
-                logger.error(
-                    f"LLM review for task {task.id} has inconsistent valid/score: "
-                    f"valid={valid}, score={score}. This should not happen after parsing correction."
-                )
+                logger.error(f"LLM review for task {task.id} has inconsistent valid/score: valid={valid}, score={score}. This should not happen after parsing correction.")
                 # Force consistency
-                result['score'] = 1.0 if valid else 0.0
-            
+                result["score"] = 1.0 if valid else 0.0
+
             logger.info(f"LLM review completed for task {task.id}: valid={result.get('valid')}, score={result.get('score', 0.0):.1f}")
-            
+
             # Add detailed logging for invalid reviews
-            if not result.get('valid', False):
-                issues = result.get('issues', [])
-                reasoning = result.get('reasoning', 'No reasoning provided')
+            if not result.get("valid", False):
+                issues = result.get("issues", [])
+                reasoning = result.get("reasoning", "No reasoning provided")
                 logger.warning(f"LLM review INVALID for task {task.id}")
                 logger.warning(f"  Issues found: {issues}")
                 logger.warning(f"  Reasoning: {reasoning}")
@@ -332,7 +329,7 @@ class LLMReviewer:
     def _parse_llm_response(self, raw_response: Any) -> dict[str, Any]:
         """
         Parse LLM JSON response, handling various formats and enforcing binary scores.
-        
+
         This method ensures that:
         1. The response is valid JSON
         2. The score is strictly binary (1.0 or 0.0) based on the valid field
@@ -377,37 +374,34 @@ class LLMReviewer:
         if result:
             valid = result.get("valid", False)
             score = result.get("score", 0.0)
-            
+
             # Calculate expected binary score
             expected_score = 1.0 if valid else 0.0
-            
+
             # Check if score is not binary or doesn't match valid field
             if score != expected_score:
                 original_score = score
                 result["score"] = expected_score
-                logger.warning(
-                    f"LLM Reviewer returned non-binary score. "
-                    f"Correcting: valid={valid}, original_score={original_score:.2f}, corrected_score={expected_score:.1f}"
-                )
-            
+                logger.warning(f"LLM Reviewer returned non-binary score. Correcting: valid={valid}, original_score={original_score:.2f}, corrected_score={expected_score:.1f}")
+
             # Ensure score is exactly 1.0 or 0.0 (no floating point errors)
             if result["score"] not in [0.0, 1.0]:
                 result["score"] = 1.0 if result["score"] > 0.5 else 0.0
                 logger.warning(f"Score was not exactly 0.0 or 1.0, rounded to {result['score']}")
 
         return result
-    
+
     def _extract_available_fields(self, use_case, use_case_name: str) -> str:
         """
         Extract available fields and their allowed operators from the use case event.
-        
+
         This information helps the LLM understand what fields are valid for this use case
         and what operators can be used with each field.
-        
+
         Args:
             use_case: UseCase object with event information
             use_case_name: Name of the use case for logging
-            
+
         Returns:
             Formatted string with available fields information
         """
@@ -415,15 +409,15 @@ class LLMReviewer:
             event_class = getattr(use_case, "event", None)
             if not event_class:
                 return "Available fields: (not available for this use case)"
-            
+
             # Try to get ValidationCriteria from event class
             if hasattr(event_class, "ValidationCriteria"):
                 validation_criteria = event_class.ValidationCriteria
-                
+
                 # Get fields from ValidationCriteria
                 if hasattr(validation_criteria, "model_fields"):
                     fields = list(validation_criteria.model_fields.keys())
-                    
+
                     if fields:
                         # Try to infer operators from field types
                         field_info = []
@@ -431,84 +425,79 @@ class LLMReviewer:
                             field_obj = validation_criteria.model_fields.get(field_name)
                             if field_obj:
                                 # Get field type
-                                field_type = str(field_obj.annotation) if hasattr(field_obj, 'annotation') else 'unknown'
-                                
+                                field_type = str(field_obj.annotation) if hasattr(field_obj, "annotation") else "unknown"
+
                                 # Infer operators based on type
                                 operators = self._infer_operators_from_type(field_type, field_name)
-                                
+
                                 field_info.append(f"  - {field_name}: {operators}")
-                        
-                        return (
-                            "Available fields for this use case:\n" + 
-                            "\n".join(field_info) + "\n"
-                        )
-            
+
+                        return "Available fields for this use case:\n" + "\n".join(field_info) + "\n"
+
             # Fallback: try to extract from event_source_code
             event_source = getattr(use_case, "event_source_code", "")
             if event_source and "class ValidationCriteria" in event_source:
                 # Simple extraction of field names from source code
                 import re
+
                 criteria_section = event_source.split("class ValidationCriteria")[1].split("def _validate_criteria")[0]
-                field_matches = re.findall(r'(\w+):\s*(?:str|int|float|bool)', criteria_section)
-                
+                field_matches = re.findall(r"(\w+):\s*(?:str|int|float|bool)", criteria_section)
+
                 if field_matches:
                     # Remove duplicates and common base fields
-                    fields = [f for f in set(field_matches) if f not in ['event_name', 'timestamp', 'web_agent_id', 'user_id']]
-                    
+                    fields = [f for f in set(field_matches) if f not in ["event_name", "timestamp", "web_agent_id", "user_id"]]
+
                     # Infer operators for each field
                     field_info = []
                     for field_name in fields:
                         # Try to get type from source code
-                        type_match = re.search(rf'{field_name}:\s*(str|int|float|bool)', criteria_section)
-                        field_type = type_match.group(1) if type_match else 'str'
+                        type_match = re.search(rf"{field_name}:\s*(str|int|float|bool)", criteria_section)
+                        field_type = type_match.group(1) if type_match else "str"
                         operators = self._infer_operators_from_type(field_type, field_name)
                         field_info.append(f"  - {field_name}: {operators}")
-                    
-                    return (
-                        "Available fields for this use case:\n" + 
-                        "\n".join(field_info) + "\n"
-                    )
-            
+
+                    return "Available fields for this use case:\n" + "\n".join(field_info) + "\n"
+
             return "Available fields: (could not extract from event)"
-            
+
         except Exception as e:
             logger.debug(f"Could not extract available fields for {use_case_name}: {e}")
             return "Available fields: (extraction failed)"
-    
+
     def _infer_operators_from_type(self, field_type: str, field_name: str) -> str:
         """
         Infer likely operators based on field type and name.
-        
+
         Args:
             field_type: String representation of field type
             field_name: Name of the field
-            
+
         Returns:
             String describing likely operators
         """
         # List/array fields (like genres, amenities) - check first
         # Note: In ValidationCriteria, field might be 'genre' (singular) but in constraints it's 'genres' (plural)
-        if 'list' in field_type.lower() or any(x in field_name.lower() for x in ['genre', 'amenity', 'amenities', 'tag', 'categories', 'skill']):
+        if "list" in field_type.lower() or any(x in field_name.lower() for x in ["genre", "amenity", "amenities", "tag", "categories", "skill"]):
             return "[contains, not_contains, in_list, not_in_list]"
-        
+
         # String fields
-        if 'str' in field_type.lower():
+        if "str" in field_type.lower():
             # Check if it's a name/title field (usually equals/contains)
-            if any(x in field_name.lower() for x in ['name', 'title', 'email', 'username', 'query', 'subject', 'message', 'content', 'body', 'description', 'director', 'author', 'cast']):
+            if any(x in field_name.lower() for x in ["name", "title", "email", "username", "query", "subject", "message", "content", "body", "description", "director", "author", "cast"]):
                 return "[equals, not_equals, contains, not_contains]"
             # Generic string
             return "[equals, not_equals, contains, not_contains]"
-        
+
         # Numeric fields
-        elif any(x in field_type.lower() for x in ['int', 'float']):
+        elif any(x in field_type.lower() for x in ["int", "float"]):
             # Check if it's a year/rating/count field
-            if any(x in field_name.lower() for x in ['year', 'rating', 'price', 'count', 'duration', 'quantity', 'hour', 'minute', 'reviews', 'bookings', 'page']):
+            if any(x in field_name.lower() for x in ["year", "rating", "price", "count", "duration", "quantity", "hour", "minute", "reviews", "bookings", "page"]):
                 return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal, in_list, not_in_list]"
             return "[equals, not_equals, greater_than, less_than, greater_equal, less_equal]"
-        
+
         # Boolean fields
-        elif 'bool' in field_type.lower():
+        elif "bool" in field_type.lower():
             return "[equals, not_equals]"
-        
+
         # Default
         return "[equals, not_equals, contains, not_contains]"

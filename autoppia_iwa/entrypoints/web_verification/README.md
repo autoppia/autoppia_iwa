@@ -139,7 +139,7 @@ The Web Verification Pipeline is a three-step process designed to:
   4. Records evaluation results (score, tests passed, success)
 - Aggregates results across all seeds
 
-**Why this matters**: 
+**Why this matters**:
 - Proves that the use case solution works regardless of the seed value
 - Validates that the dynamic system doesn't break existing solutions
 - Ensures the use case is truly doable across different dynamic content variations

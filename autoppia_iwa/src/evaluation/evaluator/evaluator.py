@@ -234,17 +234,14 @@ class ConcurrentEvaluator(IEvaluator):
             stats.browser_setup_time = browser_execution_start - browser_setup_start
 
             execution_history, action_execution_times, early_stop_reason = await self._evaluate_in_browser(task, web_agent_id, actions, is_web_real)
-            
+
             # If execution stopped early due to consecutive failures, mark task as failed
             task_failed_due_to_consecutive_failures = False
             if early_stop_reason:
                 stats.had_errors = True
                 stats.error_message = early_stop_reason
                 task_failed_due_to_consecutive_failures = True
-                _log_evaluation_event(
-                    f"Task marked as FAILED: {early_stop_reason}",
-                    context=f"ACTION EXECUTION | agent={web_agent_id}"
-                )
+                _log_evaluation_event(f"Task marked as FAILED: {early_stop_reason}", context=f"ACTION EXECUTION | agent={web_agent_id}")
 
             if self.config.should_record_gif:
                 _log_gif_creation("🎬 GIF ENABLED", web_agent_id=web_agent_id)
@@ -498,7 +495,7 @@ class ConcurrentEvaluator(IEvaluator):
     async def _evaluate_in_browser(self, task: Task, web_agent_id: str, actions: list[BaseAction], is_web_real: bool) -> tuple[list[ActionExecutionResult], list[float], str | None]:
         """
         Executes all actions in a Playwright browser context and returns the results + times + early stop reason.
-        
+
         Returns:
             Tuple of (action_results, action_execution_times, early_stop_reason)
             early_stop_reason is None if execution completed normally, or a string explaining why it stopped early
@@ -554,18 +551,14 @@ class ConcurrentEvaluator(IEvaluator):
                         if result and not result.successfully_executed:
                             consecutive_failures += 1
                             _log_action_execution(
-                                f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')} "
-                                f"(Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
-                                web_agent_id=web_agent_id
+                                f"❌ Action {i + 1} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')} (Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
+                                web_agent_id=web_agent_id,
                             )
-                            
+
                             # Check if we've reached the maximum consecutive failures
                             if consecutive_failures >= max_consecutive_failures:
                                 early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
-                                _log_action_execution(
-                                    f"🛑 Stopping execution: {early_stop_reason}",
-                                    web_agent_id=web_agent_id
-                                )
+                                _log_action_execution(f"🛑 Stopping execution: {early_stop_reason}", web_agent_id=web_agent_id)
                                 break
                         else:
                             # Reset counter on success
@@ -579,28 +572,18 @@ class ConcurrentEvaluator(IEvaluator):
 
                     except Exception as e:
                         consecutive_failures += 1
-                        _log_action_execution(
-                            f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e} "
-                            f"(Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
-                            web_agent_id=web_agent_id
-                        )
+                        _log_action_execution(f"❌ Action {i + 1}/{len(actions)} EXCEPTION: {e} (Consecutive failures: {consecutive_failures}/{max_consecutive_failures})", web_agent_id=web_agent_id)
                         elapsed = time.time() - start_time_action
                         action_execution_times.append(elapsed)
-                        
+
                         # Check if exception counts as reaching the limit
                         if consecutive_failures >= max_consecutive_failures:
                             early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
-                            _log_action_execution(
-                                f"🛑 Stopping execution: {early_stop_reason}",
-                                web_agent_id=web_agent_id
-                            )
+                            _log_action_execution(f"🛑 Stopping execution: {early_stop_reason}", web_agent_id=web_agent_id)
                             break
 
                 if early_stop_reason:
-                    _log_action_execution(
-                        f"🏁 Finished executing {len(action_results)}/{len(actions)} actions (stopped early due to consecutive failures)",
-                        web_agent_id=web_agent_id
-                    )
+                    _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions (stopped early due to consecutive failures)", web_agent_id=web_agent_id)
                 else:
                     _log_action_execution(f"🏁 Finished executing {len(action_results)}/{len(actions)} actions", web_agent_id=web_agent_id)
 
