@@ -21,7 +21,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification,
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
-from autoppia_iwa.src.evaluation.evaluator.utils import run_partial_tests
+from autoppia_iwa.src.evaluation.shared.utils import run_partial_tests
 from autoppia_iwa.src.execution.actions.actions import NavigateAction
 from autoppia_iwa.src.execution.actions.base import BaseAction
 from autoppia_iwa.src.execution.browser_executor import PlaywrightBrowserExecutor

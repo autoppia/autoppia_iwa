@@ -13,7 +13,7 @@ from autoppia_iwa.src.data_generation.tasks.classes import BrowserSpecification,
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluationResult, EvaluationStats, EvaluatorConfig
-from autoppia_iwa.src.evaluation.evaluator.utils import (
+from autoppia_iwa.src.evaluation.shared.utils import (
     display_single_evaluation_summary,
     extract_seed_from_url,
     generate_feedback,
