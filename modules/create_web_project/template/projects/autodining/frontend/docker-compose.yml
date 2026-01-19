@@ -1,32 +1,35 @@
 services:
   web:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: web_4_autodining/Dockerfile
       args:
-        ENABLE_DYNAMIC_HTML: ${ENABLE_DYNAMIC_HTML:-false}
-        ENABLE_DATA_GENERATION: ${ENABLE_DATA_GENERATION:-false}
-        ENABLE_DB_MODE: ${ENABLE_DB_MODE:-false}
+        ENABLE_DYNAMIC_V1: ${ENABLE_DYNAMIC_V1:-false}
+        ENABLE_DYNAMIC_V2_AI_GENERATE: ${ENABLE_DYNAMIC_V2_AI_GENERATE:-false}
+        ENABLE_DYNAMIC_V2_DB_MODE: ${ENABLE_DYNAMIC_V2_DB_MODE:-false}
+        ENABLE_DYNAMIC_V3: ${ENABLE_DYNAMIC_V3:-false}
+        ENABLE_DYNAMIC_V4: ${ENABLE_DYNAMIC_V4:-false}
+        API_URL: ${API_URL:-http://app:8090}
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8090}
-        API_URL: ${API_URL:-http://app:8080}
-        NEXT_PUBLIC_ENABLE_DB_MODE: ${NEXT_PUBLIC_ENABLE_DB_MODE:-false}
-        DATA_SEED_VALUE: ${DATA_SEED_VALUE:-}
-        NEXT_PUBLIC_DATA_SEED_VALUE: ${NEXT_PUBLIC_DATA_SEED_VALUE:-}
-
+        GIT_COMMIT_HASH: ${GIT_COMMIT_HASH:-unknown}
     ports:
       - "127.0.0.1:${WEB_PORT}:8003"
     restart: always
     environment:
-      - API_URL=${API_URL:-http://app:8080}
+      - API_URL=${API_URL:-http://app:8090}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8090}
       - PORT=8003
       - NODE_ENV=production
-      - ENABLE_DYNAMIC_HTML=${ENABLE_DYNAMIC_HTML:-false}
-      - ENABLE_DATA_GENERATION=${ENABLE_DATA_GENERATION:-false}
-      - ENABLE_DB_MODE=${ENABLE_DB_MODE:-false}
-      - NEXT_PUBLIC_ENABLE_DB_MODE=${NEXT_PUBLIC_ENABLE_DB_MODE:-false}
-      - DATA_SEED_VALUE=${DATA_SEED_VALUE:-}
-      - NEXT_PUBLIC_DATA_SEED_VALUE=${NEXT_PUBLIC_DATA_SEED_VALUE:-}
+      - ENABLE_DYNAMIC_V1=${ENABLE_DYNAMIC_V1:-false}
+      - NEXT_PUBLIC_ENABLE_DYNAMIC_V1=${ENABLE_DYNAMIC_V1:-false}
+      - ENABLE_DYNAMIC_V2_AI_GENERATE=${ENABLE_DYNAMIC_V2_AI_GENERATE:-false}
+      - NEXT_PUBLIC_ENABLE_DYNAMIC_V2_AI_GENERATE=${ENABLE_DYNAMIC_V2_AI_GENERATE:-false}
+      - ENABLE_DYNAMIC_V2_DB_MODE=${ENABLE_DYNAMIC_V2_DB_MODE:-false}
+      - NEXT_PUBLIC_ENABLE_DYNAMIC_V2_DB_MODE=${ENABLE_DYNAMIC_V2_DB_MODE:-false}
+      - ENABLE_DYNAMIC_V3=${ENABLE_DYNAMIC_V3:-false}
+      - NEXT_PUBLIC_ENABLE_DYNAMIC_V3=${ENABLE_DYNAMIC_V3:-false}
+      - ENABLE_DYNAMIC_V4=${ENABLE_DYNAMIC_V4:-false}
+      - NEXT_PUBLIC_ENABLE_DYNAMIC_V4=${ENABLE_DYNAMIC_V4:-false}
     networks:
       - apps_net
 

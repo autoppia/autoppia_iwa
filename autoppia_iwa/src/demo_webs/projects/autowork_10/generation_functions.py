@@ -10,14 +10,23 @@ from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
     FIELD_OPERATORS_MAP_ADD_SKILL,
+    FIELD_OPERATORS_MAP_BROWSE_FAVORITE_EXPERT,
+    FIELD_OPERATORS_MAP_BUDGET_TYPE,
     FIELD_OPERATORS_MAP_CANCEL_HIRE,
     FIELD_OPERATORS_MAP_CLOSE_JOB_POSTING,
+    FIELD_OPERATORS_MAP_CONTACT_EXPERT_MESSAGE_SENT,
+    FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD,
+    FIELD_OPERATORS_MAP_FAVORITE_EXPERT,
     FIELD_OPERATORS_MAP_HIRE_BUTTON,
     FIELD_OPERATORS_MAP_HIRING_CONSULTANT,
     FIELD_OPERATORS_MAP_HIRING_TEAM,
+    FIELD_OPERATORS_MAP_JOB_DESCRIPTION,
     FIELD_OPERATORS_MAP_POSTING_A_JOB,
+    FIELD_OPERATORS_MAP_PROJECT_SIZE,
+    FIELD_OPERATORS_MAP_RATE_RANGE,
     FIELD_OPERATORS_MAP_SEARCH_SKILL,
     FIELD_OPERATORS_MAP_SUBMIT_JOB,
+    FIELD_OPERATORS_MAP_TIMELINE,
     FIELD_OPERATORS_MAP_WRITING_A_JOB_TITLE,
     FIELD_OPERATORS_USER_BOOK_CONSULTANT_MAP,
     POPULAR_SKILLS,
@@ -214,6 +223,41 @@ async def generate_hire_button_clicked_constraint(task_url: str | None = None, d
     return constraints_list
 
 
+async def generate_content_expert_message_sent_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraint = await generate_hire_button_clicked_constraint(task_url, dataset)
+    messages = [
+        "Hi, I'd like to connect with you.",
+        "Hello! I need your expert guidance.",
+        "Hi, could you help me with this?",
+        "Hello, I'd appreciate your advice.",
+        "Hi, can we discuss this briefly?",
+        "Hello! I have a quick question.",
+        "Hi, I'm seeking your expertise.",
+        "Hello, I'd value your insight.",
+        "Hi, may I get your opinion?",
+        "Hello! I'd love your guidance.",
+        "Hi, can I consult you on this?",
+        "Hello, I need expert input.",
+        "Hi, I'm reaching out for advice.",
+        "Hello! Could we connect?",
+        "Hi, I'd like to ask something.",
+        "Hello, I need your help.",
+        "Hi, can you guide me?",
+        "Hello! Quick help needed.",
+        "Hi, seeking expert advice.",
+        "Hello, can we connect briefly?",
+    ]
+    field = "message"
+    allowed_ops = FIELD_OPERATORS_MAP_CONTACT_EXPERT_MESSAGE_SENT[field]
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(messages)
+    messages_dataset = [{"message": m} for m in messages]
+    value = _generate_constraint_value(op, field_value, field, dataset=messages_dataset)
+    if value is None:
+        constraint.append(create_constraint_dict(field, op, value))
+    return constraint
+
+
 async def generate_select_hiring_team_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     field_mapping = {
         "team": {"field": "team", "dataset": [{"team": t} for t in ["Microsoft", "Apple", "Google"]]},
@@ -239,6 +283,10 @@ async def generate_hire_consultation_constraint(task_url: str | None = None, dat
     constraints_list = _generate_constraints(dataset, field_operators, min_constraints=2, field_map=field_mapping, selected_fields=selected_fields)
 
     return constraints_list
+
+
+async def generate_quick_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return await generate_book_consultant_constraint(task_url, dataset)
 
 
 async def generate_cancel_hire_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
@@ -463,6 +511,78 @@ async def generate_submit_job_constraint() -> list[dict[str, Any]]:
     return constraints_list
 
 
+async def generate_budget_type_constraint() -> list[dict[str, Any]]:
+    constraint = []
+    field = "budget_type"
+    allowed_ops = FIELD_OPERATORS_MAP_BUDGET_TYPE.get(field, None)
+    op = ComparisonOperator(random.choice(allowed_ops))
+    budget_type_data = ["hourly", "fixed"]
+    field_value = random.choice(budget_type_data)
+    budget_type_dataset = [{"budget_type": p} for p in budget_type_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=budget_type_dataset)
+    constraint.append(create_constraint_dict(field, op, value))
+    return constraint
+
+
+async def generate_project_size_constraint() -> list[dict[str, Any]]:
+    constraint = []
+    field = "scope"
+    scope_data = ["Small", "Medium", "Large"]
+    allowed_ops = FIELD_OPERATORS_MAP_PROJECT_SIZE.get(field, None)
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(scope_data)
+    scope_dataset = [{"scope": s} for s in scope_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=scope_dataset)
+    constraint.append(create_constraint_dict(field, op, value))
+    return constraint
+
+
+async def generate_timeline_constraint() -> list[dict[str, Any]]:
+    constraint = []
+    duration_data = ["3 to 6 months", "More than 6 months"]
+    field = "duration"
+    allowed_ops = FIELD_OPERATORS_MAP_TIMELINE.get(field, None)
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(duration_data)
+    scope_dataset = [{"duration": d} for d in duration_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=scope_dataset)
+    constraint.append(create_constraint_dict(field, op, value))
+    return constraint
+
+
+async def generate_rate_range_constraint() -> list[dict[str, Any]]:
+    constraints: list[dict[str, Any]] = []
+    from_ops = FIELD_OPERATORS_MAP_RATE_RANGE["rate_from"]
+    to_ops = FIELD_OPERATORS_MAP_RATE_RANGE["rate_to"]
+    rate_constraints = generate_to_and_from_constraints(from_ops, to_ops)
+    constraints.extend(rate_constraints)
+    return constraints
+
+
+async def generate_write_job_description_constraint() -> list[dict[str, Any]]:
+    constraint = []
+    job_descriptions_data = [
+        "Design, develop, and maintain both client and server applications using modern frameworks.",
+        "Analyze datasets to extract insights, build predictive models, and optimize decision-making.",
+        "Create intuitive user interfaces and improve user experience through design prototypes.",
+        "Automate CI/CD pipelines, monitor infrastructure, and ensure system scalability.",
+        "Implement security measures to protect systems from cyber threats and data breaches.",
+        "Manage product lifecycle from ideation to launch, coordinating with cross-functional teams.",
+        "Develop mobile applications for iOS and Android with optimized performance.",
+        "Design scalable and secure cloud solutions for enterprise and startup needs.",
+        "Build and deploy machine learning models for real-world production environments.",
+        "Write clear documentation, tutorials, and guides for technical and non-technical audiences.",
+    ]
+    field = "description"
+    allowed_ops = FIELD_OPERATORS_MAP_JOB_DESCRIPTION.get(field, None)
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(job_descriptions_data)
+    scope_dataset = [{"description": d} for d in job_descriptions_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=scope_dataset)
+    constraint.append(create_constraint_dict(field, op, value))
+    return constraint
+
+
 async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
     constraints_list = []
     possible_field = list(FIELD_OPERATORS_MAP_SUBMIT_JOB.keys())
@@ -556,6 +676,205 @@ async def generate_close_posting_job_constraint() -> list[dict[str, Any]]:
             constraints_list.append(constraint)
 
     return constraints_list
+
+
+async def generate_favorite_expert_selected_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    dataset = await _ensure_expert_dataset(task_url, dataset)
+    field_map = {"expert_name": "name", "expert_slug": "slug"}
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_FAVORITE_EXPERT, field_map=field_map)
+
+
+async def generate_favorite_expert_removed_constraint(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return await generate_favorite_expert_selected_constraint(task_url, dataset)
+
+
+async def generate_browse_favorite_expert_constraint() -> list[dict[str, Any]]:
+    dataset = [{"source": s} for s in ["favorites_empty_state", "favorites_page"]]
+    return _generate_constraints(dataset, FIELD_OPERATORS_MAP_BROWSE_FAVORITE_EXPERT)
+
+
+async def generate_edit_about_constraint() -> list[dict[str, Any]]:
+    constraint_list = []
+    about_data = [
+        "Passionate software developer with 5 years of experience in web and mobile applications.",
+        "Data scientist specializing in machine learning, AI, and big data analytics.",
+        "Marketing professional with a focus on digital campaigns and brand strategy.",
+        "UI/UX designer dedicated to creating intuitive and engaging user experiences.",
+        "Project manager experienced in agile methodologies and cross-functional team leadership.",
+        "Content writer with a love for storytelling and SEO optimization.",
+        "Frontend developer skilled in React, Next.js, and responsive web design.",
+        "Backend engineer experienced with Node.js, Python, and database management.",
+        "Entrepreneur with experience in startups, product development, and business strategy.",
+        "HR professional focused on talent acquisition, employee engagement, and culture building.",
+        "Software engineer passionate about cloud computing, DevOps, and automation.",
+        "Graphic designer specializing in branding, illustrations, and visual storytelling.",
+        "AI researcher exploring NLP, computer vision, and deep learning models.",
+        "Finance professional skilled in investment analysis, risk management, and budgeting.",
+        "Educator with experience in curriculum development and online learning platforms.",
+        "Full-stack developer with expertise in modern web technologies and APIs.",
+        "Consultant providing strategic guidance in technology, operations, and management.",
+        "Healthcare professional focusing on patient care, medical research, and wellness.",
+        "Product manager experienced in market research, roadmap planning, and user insights.",
+        "Blockchain developer exploring smart contracts, DeFi, and decentralized applications.",
+    ]
+    field = "value"
+    allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(about_data)
+    about_dataset = [{"about": n} for n in about_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=about_dataset)
+    if value is None:
+        constraint_list.append(create_constraint_dict(field, op, value))
+    return constraint_list
+
+
+async def generate_edit_profile_name_constraint() -> list[dict[str, Any]]:
+    constraint_list = []
+    user_names = [
+        "Emily Johnson",
+        "Michael Brown",
+        "Sarah Williams",
+        "Daniel Smith",
+        "Jessica Taylor",
+        "David Miller",
+        "Sophia Anderson",
+        "James Wilson",
+        "Olivia Martinez",
+        "Robert Thompson",
+        "Emma Davis",
+        "John Harris",
+        "Ava Clark",
+        "William Lewis",
+        "Mia Robinson",
+        "Benjamin Walker",
+        "Charlotte Young",
+        "Lucas Hall",
+        "Amelia King",
+        "Ethan Wright",
+    ]
+    field = "value"
+    allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(user_names)
+    messages_dataset = [{"name": n} for n in user_names]
+    value = _generate_constraint_value(op, field_value, field, dataset=messages_dataset)
+    if value is None:
+        constraint_list.append(create_constraint_dict(field, op, value))
+    return constraint_list
+
+
+async def generate_edit_profile_title_constraint() -> list[dict[str, Any]]:
+    constraint_list = []
+    title_data = [
+        "Web Developers Jobs",
+        "AI/ML Engineers Jobs",
+        "Front End Developers Jobs",
+        "Backend Developers Jobs",
+        "Laravel Developers Jobs",
+        "DevOps Jobs",
+        "Product Managers Jobs",
+        "Project Managers Jobs",
+        "Data Scientists Jobs",
+        "Mobile App Developers Jobs",
+        "UI/UX Designers Jobs",
+        "Blockchain Developers Jobs",
+        "Cloud Engineers Jobs",
+        "Cybersecurity Analysts Jobs",
+        "Game Developers Jobs",
+        "Database Administrators Jobs",
+        "Software Testers Jobs",
+        "Embedded Systems Engineers Jobs",
+    ]
+    field = "value"
+    allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(title_data)
+    title_dataset = [{"title": t} for t in title_data]
+    value = _generate_constraint_value(op, field_value, field, dataset=title_dataset)
+    if value is None:
+        constraint_list.append(create_constraint_dict(field, op, value))
+    return constraint_list
+
+
+async def generate_edit_profile_location_constraint() -> list[dict[str, Any]]:
+    constraint_list = []
+    locations = [
+        "New York, NY, USA",
+        "San Francisco, CA, USA",
+        "Los Angeles, CA, USA",
+        "Chicago, IL, USA",
+        "Austin, TX, USA",
+        "Seattle, WA, USA",
+        "Boston, MA, USA",
+        "Denver, CO, USA",
+        "Toronto, ON, Canada",
+        "Vancouver, BC, Canada",
+        "London, UK",
+        "Manchester, UK",
+        "Berlin, Germany",
+        "Munich, Germany",
+        "Paris, France",
+        "Amsterdam, Netherlands",
+        "Stockholm, Sweden",
+        "Zurich, Switzerland",
+        "Sydney, Australia",
+        "Melbourne, Australia",
+        "Dubai, UAE",
+        "Abu Dhabi, UAE",
+        "Singapore",
+        "Tokyo, Japan",
+        "Seoul, South Korea",
+        "Karachi, Pakistan",
+        "Lahore, Pakistan",
+        "Islamabad, Pakistan",
+        "Delhi, India",
+        "Bangalore, India",
+    ]
+
+    field = "value"
+    allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(locations)
+    location_dataset = [{"location": t} for t in locations]
+    value = _generate_constraint_value(op, field_value, field, dataset=location_dataset)
+    if value is None:
+        constraint_list.append(create_constraint_dict(field, op, value))
+    return constraint_list
+
+
+async def generate_edit_profile_email_constraint() -> list[dict[str, Any]]:
+    constraint_list = []
+    emails = [
+        "emily.johnson@example.com",
+        "michael.brown@example.com",
+        "sarah.williams@example.com",
+        "daniel.smith@example.com",
+        "jessica.taylor@example.com",
+        "david.miller@example.com",
+        "sophia.anderson@example.com",
+        "james.wilson@example.com",
+        "olivia.martinez@example.com",
+        "robert.thompson@example.com",
+        "emma.davis@example.com",
+        "john.harris@example.com",
+        "ava.clark@example.com",
+        "william.lewis@example.com",
+        "mia.robinson@example.com",
+        "benjamin.walker@example.com",
+        "charlotte.young@example.com",
+        "lucas.hall@example.com",
+        "amelia.king@example.com",
+        "ethan.wright@example.com",
+    ]
+    field = "value"
+    allowed_ops = FIELD_OPERATORS_MAP_EDIT_PROFILE_FIELD[field]
+    op = ComparisonOperator(random.choice(allowed_ops))
+    field_value = random.choice(emails)
+    email_dataset = [{"email": e} for e in emails]
+    value = _generate_constraint_value(op, field_value, field, dataset=email_dataset)
+    if value is None:
+        constraint_list.append(create_constraint_dict(field, op, value))
+    return constraint_list
 
 
 def generate_to_and_from_constraints(from_op: ComparisonOperator, to_op: ComparisonOperator) -> Any:

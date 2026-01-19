@@ -1,6 +1,9 @@
 from autoppia_iwa.src.demo_webs.classes import UseCase
 
 from .events import (
+    CancelReservationEvent,
+    EnterDestinationEvent,
+    EnterLocationEvent,
     NextPickupEvent,
     ReserveRideEvent,
     SearchDestinationEvent,
@@ -9,6 +12,7 @@ from .events import (
     SelectCarEvent,
     SelectDateEvent,
     SelectTimeEvent,
+    TripDetailsEvent,
 )
 from .generation_functions import (
     generate_enter_destination_constraints,
@@ -22,10 +26,10 @@ from .generation_functions import (
 )
 
 ENTER_LOCATION_USE_CASE = UseCase(
-    name="SEARCH_LOCATION",
+    name="ENTER_LOCATION",
     description="The user enters a location value (e.g., city, country, or region)",
-    event=SearchLocationEvent,
-    event_source_code=SearchLocationEvent.get_source_code_of_class(),
+    event=EnterLocationEvent,
+    event_source_code=EnterLocationEvent.get_source_code_of_class(),
     constraints_generator=generate_enter_location_constraints,
     examples=[
         {
@@ -47,10 +51,10 @@ ENTER_LOCATION_USE_CASE = UseCase(
     ],
 )
 ENTER_DESTINATION_USE_CASE = UseCase(
-    name="SEARCH_DESTINATION",
+    name="ENTER_DESTINATION",
     description="The user enters a destination value (e.g., city, country, or region)",
-    event=SearchDestinationEvent,
-    event_source_code=SearchDestinationEvent.get_source_code_of_class(),
+    event=EnterDestinationEvent,
+    event_source_code=EnterDestinationEvent.get_source_code_of_class(),
     constraints_generator=generate_enter_destination_constraints,
     examples=[
         {
@@ -71,6 +75,59 @@ ENTER_DESTINATION_USE_CASE = UseCase(
         },
     ],
 )
+
+SEARCH_DESTINATION_USE_CASE = UseCase(
+    name="SEARCH_DESTINATION",
+    description="The user search a destination value (e.g., city, country, or region)",
+    event=SearchDestinationEvent,
+    event_source_code=SearchDestinationEvent.get_source_code_of_class(),
+    constraints_generator=generate_enter_destination_constraints,
+    examples=[
+        {
+            "prompt": "Search destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+            "prompt_for_task_generation": "Search destination equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+        },
+        {
+            "prompt": "Search destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt_for_task_generation": "Search destination not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+        },
+        {
+            "prompt": "Search destination contains '1001 Castro Street'",
+            "prompt_for_task_generation": "Search destination contains '1001 Castro Street'",
+        },
+        {
+            "prompt": "Search destination not contains '1000 Chestnut Street Apartments'",
+            "prompt_for_task_generation": "Search destination not contains '1000 Chestnut Street Apartments'",
+        },
+    ],
+)
+
+SEARCH_LOCATION_USE_CASE = UseCase(
+    name="SEARCH_LOCATION",
+    description="The user searches a location value (e.g., city, country, or region)",
+    event=SearchLocationEvent,
+    event_source_code=SearchDestinationEvent.get_source_code_of_class(),
+    constraints_generator=generate_enter_destination_constraints,
+    examples=[
+        {
+            "prompt": "Search location equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+            "prompt_for_task_generation": "Search location equals '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA'",
+        },
+        {
+            "prompt": "Search location not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt_for_task_generation": "Search location not equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+        },
+        {
+            "prompt": "Search location contains '1001 Castro Street'",
+            "prompt_for_task_generation": "Search location contains '1001 Castro Street'",
+        },
+        {
+            "prompt": "Search location not contains '1000 Chestnut Street Apartments'",
+            "prompt_for_task_generation": "Search location not contains '1000 Chestnut Street Apartments'",
+        },
+    ],
+)
+
 SELECT_DATE_USE_CASE = UseCase(
     name="SELECT_DATE",
     description="The user selects a specific date for their trip or booking",
@@ -265,13 +322,78 @@ RESERVE_RIDE_USE_CASE = UseCase(
 )
 
 
+TRIP_DETAILS_USE_CASE = UseCase(
+    name="TRIP_DETAILS",
+    description="The user views details of a trip, including trip information, ride details, driver information, and location details.",
+    event=TripDetailsEvent,
+    event_source_code=TripDetailsEvent.get_source_code_of_class(),
+    constraints_generator=generate_reserve_ride_constraints,
+    examples=[
+        {
+            "prompt": "View trip details where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt_for_task_generation": "View trip details where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+        },
+        {
+            "prompt": "View trip details where ride name contains 'Comfort' and where total price is 31.5 and scheduled time equals '2025-07-18 13:00:00'",
+            "prompt_for_task_generation": "View trip details where ride name contains 'Comfort' and where total price is 31.5 and scheduled time equals '2025-07-18 13:00:00'",
+        },
+        {
+            "prompt": "View trip details where ride name is 'AutoDriverXL' and seats greater than '4' and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
+            "prompt_for_task_generation": "View trip details where ride name is 'AutoDriverXL' and seats greater than '4' and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
+        },
+        {
+            "prompt": "View trip details where discount percentage equals '12%' and old price equals 35.0",
+            "prompt_for_task_generation": "View trip details where discount percentage equals '12%' and old price equals 35.0",
+        },
+        {
+            "prompt": "View trip details with pickup '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA' and scheduled at '2025-07-18 13:00:00'",
+            "prompt_for_task_generation": "View trip details with pickup '100 Van Ness - 100 Van Ness Ave, San Francisco, CA 94102, USA' and scheduled at '2025-07-18 13:00:00'",
+        },
+        {
+            "prompt": "View trip details where ride name is equals 'AutoDriverX' where eta equals '1 min away · 1:39 PM'",
+            "prompt_for_task_generation": "View trip details where ride name is equals 'AutoDriverX' where eta equals '1 min away · 1:39 PM'",
+        },
+    ],
+)
+
+CANCEL_RESERVATION_USE_CASE = UseCase(
+    name="CANCEL_RESERVATION",
+    description="The user cancels a trip reservation, including the trip ID and cancellation reason.",
+    event=CancelReservationEvent,
+    event_source_code=CancelReservationEvent.get_source_code_of_class(),
+    constraints_generator=generate_reserve_ride_constraints,
+    examples=[
+        {
+            "prompt": "Cancel ride reservation where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+            "prompt_for_task_generation": "Cancel ride reservation where ride name is not equals 'AutoDriverX' and pickup equals '1 Hotel San Francisco - 8 Mission St, San Francisco, CA 94105, USA'",
+        },
+        {
+            "prompt": "Cancel ride reservation where ride name contains 'Comfort' and where total price is 31.5 and scheduled time equals '2025-07-18 13:00:00'",
+            "prompt_for_task_generation": "Cancel ride reservation where ride name contains 'Comfort' and where total price is 31.5 and scheduled time equals '2025-07-18 13:00:00'",
+        },
+        {
+            "prompt": "Cancel ride reservation where ride name is 'AutoDriverXL' and seats greater than '4' and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
+            "prompt_for_task_generation": "Cancel ride reservation where ride name is 'AutoDriverXL' and seats greater than '4' and dropoff '1000 Chestnut Street Apartments - 1000 Chestnut St, San Francisco, CA 94109, USA'",
+        },
+        {
+            "prompt": "Cancel ride reservation where discount percentage equals '12%' and old price equals 35.0",
+            "prompt_for_task_generation": "Cancel ride reservation where discount percentage equals '12%' and old price equals 35.0",
+        },
+    ],
+)
+
+
 ALL_USE_CASES = [
     ENTER_LOCATION_USE_CASE,
     ENTER_DESTINATION_USE_CASE,
+    SEARCH_LOCATION_USE_CASE,
+    SEARCH_DESTINATION_USE_CASE,
     SELECT_DATE_USE_CASE,
     SELECT_TIME_USE_CASE,
     NEXT_PICKUP_USE_CASE,
     SEARCH_RIDE_USE_CASE,
     SELECT_CAR_USE_CASE,
     RESERVE_RIDE_USE_CASE,
+    TRIP_DETAILS_USE_CASE,
+    CANCEL_RESERVATION_USE_CASE,
 ]

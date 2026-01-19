@@ -1,9 +1,21 @@
 
-# Dining Hours – Fullstack (Next.js)
+# Autodining Template – Fullstack (Next.js)
 
-Dining Hours is a fullstack e-commerce web application built using **Next.js** (App Router), styled with **TailwindCSS**, and equipped with a custom event logging system that captures frontend interactions and writes them to a local file: `event-log.json`.
+This is the **canonical template** for creating new web projects for IWA. It is a complete copy of the production `web_4_autodining` project, including:
 
-This version is fully Dockerized, allowing seamless setup and deployment with minimal local dependencies.
+- ✅ **Dynamic System (v1/v2/v3)**: Complete anti-scraping implementation
+  - V1: DOM structure modification (add-wrap-decoy, change-order-elements)
+  - V3: Attribute and text variation (IDs, classes, texts via variant-selector)
+  - Shared: Core functions (selectVariantIndex, hashString)
+- ✅ **Seed System**: URL-based seed management with SeedContext
+- ✅ **Event Logging**: Backend integration for event tracking (100% coverage)
+- ✅ **Tests**: Automated validation tests for dynamic system and events
+  - `tests/test-dynamic-system.js` - Validates dynamic system (7 tests)
+  - `tests/test-events.js` - Validates event coverage (100% required)
+
+Built using **Next.js** (App Router), styled with **TailwindCSS**, and fully Dockerized.
+
+**Note**: This template is a functional copy of `web_4_autodining`. All tests pass and the dynamic system is fully implemented in the codebase.
 
 ---
 ## Prerequisites
@@ -42,6 +54,38 @@ cd web_4_autodining
 ## Event-log.json
 - All the events will be stored in the file which is named as event-log.json
 
+
+## Project Structure
+
+```
+frontend/
+├── src/
+│   ├── dynamic/              # Dynamic anti-scraping system
+│   │   ├── v1/               # DOM structure modification
+│   │   ├── v2-data/          # Data loading with seeds
+│   │   ├── v3/               # Attribute/text variation
+│   │   └── shared/           # Core functions (selectVariantIndex, etc.)
+│   ├── context/
+│   │   └── SeedContext.tsx   # Seed management
+│   ├── library/
+│   │   └── events.ts         # Event logging
+│   └── app/                  # Next.js pages
+├── tests/                    # Automated tests
+│   ├── test-dynamic-system.js
+│   ├── test-events.js
+│   └── README.md
+└── docker-compose.yml
+```
+
+## Running Tests
+
+```bash
+# Test dynamic system
+node tests/test-dynamic-system.js
+
+# Test event coverage
+node tests/test-events.js
+```
 
 ## Entrypoint Script – entrypoint.sh
 This script is executed automatically when the container starts. It:

@@ -379,6 +379,12 @@ class AddToWatchlistEvent(FilmDetailEvent):
     event_name: str = "ADD_TO_WATCHLIST"
 
 
+class RemoveFromWatchlistEvent(FilmDetailEvent):
+    """Event triggered when a user removes a film from a watchlist."""
+
+    event_name: str = "REMOVE_FROM_WATCHLIST"
+
+
 class ShareFilmEvent(FilmDetailEvent):
     event_name: str = "SHARE_MOVIE"
 
@@ -739,6 +745,7 @@ EVENTS = [
     WatchTrailer,
     ShareFilmEvent,
     AddToWatchlistEvent,
+    RemoveFromWatchlistEvent,
 ]
 
 BACKEND_EVENT_TYPES = {
@@ -755,6 +762,7 @@ BACKEND_EVENT_TYPES = {
     "CONTACT": ContactEvent,
     "FILTER_FILM": FilterFilmEvent,
     "ADD_TO_WATCHLIST": AddToWatchlistEvent,
+    "REMOVE_FROM_WATCHLIST": RemoveFromWatchlistEvent,
     "SHARE_MOVIE": ShareFilmEvent,
     "WATCH_TRAILER": WatchTrailer,
 }

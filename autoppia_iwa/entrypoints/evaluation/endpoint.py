@@ -44,7 +44,7 @@ from autoppia_iwa.src.web_agents.classes import TaskSolution
 DEFAULT_PORT: int = 5060
 DEFAULT_HOST: str = "0.0.0.0"
 DEFAULT_TIMEOUT_SECONDS: float = float(os.getenv("EVAL_ENDPOINT_TIMEOUT", 60))
-SUCCESS_THRESHOLD: float = 0.25  # Same threshold as benchmark
+SUCCESS_THRESHOLD: float = 0.0  # Binary score: 1.0 if at least one test passed, 0.0 otherwise
 
 
 # =====================
@@ -174,7 +174,7 @@ class EvaluationEndpointService:
 
             eval_result: EvaluationResult = await evaluator.evaluate_single_task_solution(task, task_solution)
             stats = getattr(eval_result, "stats", None)
-            success = float(eval_result.final_score) >= float(SUCCESS_THRESHOLD)
+            success = float(eval_result.final_score) > float(SUCCESS_THRESHOLD)
 
             response = EvaluationResponse(
                 success=success,

@@ -1,8 +1,28 @@
 import os
 from pathlib import Path
 
-from distutils.util import strtobool
-from dotenv import load_dotenv
+try:
+    from distutils.util import strtobool
+except ImportError:
+    # Python 3.12+ removed distutils, use alternative
+    def strtobool(val: str) -> int:
+        """Convert a string representation of truth to 1 or 0."""
+        val = val.lower()
+        if val in ("y", "yes", "t", "true", "on", "1"):
+            return 1
+        elif val in ("n", "no", "f", "false", "off", "0"):
+            return 0
+        else:
+            raise ValueError(f"invalid truth value {val!r}")
+
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    # dotenv is optional - environment variables can be set directly
+    def load_dotenv():
+        pass
+
 
 # Load environment variables from the autoppia_iwa project .env, not the caller CWD.
 # This ensures DEMO_WEB_SERVICE_PORT and related settings come from this repo.

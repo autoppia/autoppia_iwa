@@ -1,5 +1,5 @@
 import random
-from random import choice
+from random import choice, randint, sample
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
@@ -16,10 +16,46 @@ from .data import (
     FIELD_OPERATORS_SEARCH_MAP,
     FIELD_OPERATORS_SEND_OR_DRAFT_EMAIL_MAP,
     FIELD_OPERATORS_STARRED_MAP,
+    FIELD_OPERATORS_TEMPLATE_BODY_EDITED_MAP,
+    FIELD_OPERATORS_TEMPLATE_SELECTED_MAP,
+    FIELD_OPERATORS_TEMPLATE_SENT_MAP,
     FIELD_OPERATORS_VIEW_EMAIL_MAP,
     get_all_email_words,
 )
 from .data_utils import fetch_emails_data
+
+TEMPLATES = [
+    {
+        "id": "intro",
+        "name": "Warm Introduction",
+        "subject": "Introduction & Next Steps",
+        "body": "Hi <name>,\n\nIt was great connecting with you. I'm sharing a quick summary of what we discussed and suggested next steps. Please let me know if you'd like me to adjust anything.\n\nThanks,\nMe",
+    },
+    {
+        "id": "follow-up",
+        "name": "Friendly Follow Up",
+        "subject": "Quick follow-up on our last conversation",
+        "body": "Hello <name>,\n\nI wanted to check in on the items we talked about last week. I'm happy to help keep things moving.\n\nBest,\nMe",
+    },
+    {
+        "id": "meeting-recap",
+        "name": "Meeting Recap",
+        "subject": "Recap: key notes from our meeting",
+        "body": "Hi <name>,\n\nHere's a concise recap of today's discussion and the action items we agreed on. Feel free to add or adjust anything I might have missed.\n\nRegards,\nMe",
+    },
+    {
+        "id": "thank-you",
+        "name": "Thank You",
+        "subject": "Thank you for your time",
+        "body": "Hi <name>,\n\nThank you for the thoughtful conversation. I appreciated your insights and look forward to collaborating soon.\n\nWarm regards,\nMe",
+    },
+    {
+        "id": "reminder",
+        "name": "Gentle Reminder",
+        "subject": "Friendly reminder",
+        "body": "Hello <name>,\n\nThis is a quick reminder about the pending items we discussed. Please let me know if there's anything you need from my side.\n\nThanks,\nMe",
+    },
+]
 
 
 async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
@@ -447,5 +483,84 @@ async def generate_theme_changed_constraints() -> list[dict[str, Any]]:
     value = field_value if operator == ComparisonOperator.EQUALS else random.choice([theme for theme in themes if theme != field_value])
 
     constraints_list.append(create_constraint_dict(field, operator, value))
+
+    return constraints_list
+
+
+async def generate_template_selection_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    template = choice(TEMPLATES)
+    possible_fields = ["template_name", "subject"]
+    for field in possible_fields:
+        field_map = {
+            "template_name": "name",
+        }
+        allowed_ops = FIELD_OPERATORS_TEMPLATE_SELECTED_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        operator = ComparisonOperator(choice(allowed_ops))
+        mapped_field = field_map.get(field, field)
+        field_value = template.get(mapped_field)
+        value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+        constraint = create_constraint_dict(mapped_field, operator, value)
+        constraints_list.append(constraint)
+
+    return constraints_list
+    # return [create_constraint_dict("template_name", ComparisonOperator.EQUALS, template["name"])]
+
+
+async def generate_template_body_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    template = choice(TEMPLATES)
+    possible_fields = ["template_name", "subject", "body"]
+    num_fields = randint(1, len(possible_fields))
+    selected_fields = sample(possible_fields, num_fields)
+    for field in selected_fields:
+        field_map = {
+            "template_name": "name",
+        }
+        allowed_ops = FIELD_OPERATORS_TEMPLATE_BODY_EDITED_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        operator = ComparisonOperator(choice(allowed_ops))
+        mapped_field = field_map.get(field, field)
+        field_value = template.get(mapped_field)
+        value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+        constraint = create_constraint_dict(mapped_field, operator, value)
+        constraints_list.append(constraint)
+
+    return constraints_list
+
+
+async def generate_sent_template_constraints() -> list[dict[str, Any]]:
+    constraints_list = []
+    template = choice(TEMPLATES)
+    to_emails = [{"to": email} for email in LIST_OF_EMAILS]
+    sample_email = choice(to_emails)
+    possible_fields = ["template_name", "subject", "body", "to"]
+    num_fields = randint(1, len(possible_fields))
+    selected_fields = sample(possible_fields, num_fields)
+    for field in selected_fields:
+        field_map = {
+            "template_name": "name",
+        }
+        allowed_ops = FIELD_OPERATORS_TEMPLATE_SENT_MAP.get(field, [])
+        if not allowed_ops:
+            continue
+
+        operator = ComparisonOperator(choice(allowed_ops))
+        mapped_field = field_map.get(field, field)
+        if field == "to":
+            field_value = sample_email.get(field)
+            value = _generate_constraint_value(operator, field_value, mapped_field, to_emails)
+            constraint = create_constraint_dict(mapped_field, operator, value)
+            constraints_list.append(constraint)
+        else:
+            field_value = template.get(mapped_field)
+            value = _generate_constraint_value(operator, field_value, mapped_field, TEMPLATES)
+            constraint = create_constraint_dict(mapped_field, operator, value)
+            constraints_list.append(constraint)
 
     return constraints_list

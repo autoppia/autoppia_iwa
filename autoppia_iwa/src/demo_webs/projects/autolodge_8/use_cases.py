@@ -1,24 +1,38 @@
 from ...classes import UseCase
 from .events import (
     AddToWishlistEvent,
+    ApplyFilterEvent,
     BackToAllHotelsEvent,
+    BookFromWishlistEvent,
     ConfirmAndPayEvent,
     EditCheckInOutDatesEvent,
-    IncreaseNumberOfGuestsEvent,
+    EditNumberOfGuestsEvent,
+    FaqOpenedEvent,
+    HelpViewedEvent,
     MessageHostEvent,
+    PaymentMethodSelectedEvent,
+    PopularHotelsViewedEvent,
+    RemoveFromWishlistEvent,
     ReserveHotelEvent,
     SearchHotelEvent,
     ShareHotelEvent,
+    SubmitHotelReviewEvent,
     ViewHotelEvent,
+    WishlistOpenedEvent,
 )
 from .generation_functions import (
+    generate_apply_filter_constraints,
+    generate_book_from_wishlist_constraints,
     generate_confirm_and_pay_constraints,
     generate_edit_checkin_checkout_constraints,
-    generate_increase_guests_constraints,
+    generate_edit_guests_constraints,
+    generate_faq_opened_constraints,
     generate_message_host_constraints,
+    generate_payment_method_selected_constraints,
     generate_reserve_hotel_constraints,
     generate_search_hotel_constraints,
     generate_share_hotel_constraints,
+    generate_submit_hotel_review_constraints,
     generate_view_hotel_constraints,
 )
 
@@ -75,6 +89,7 @@ SEARCH_HOTEL_USE_CASE = UseCase(
         },
     ],
 )
+
 
 ###############################################################################
 # VIEW_HOTEL_USE_CASE
@@ -174,6 +189,20 @@ ADD_TO_WISHLIST_USE_CASE = UseCase(
     ],
 )
 
+REMOVE_FROM_WISHLIST_USE_CASE = UseCase(
+    name="REMOVE_FROM_WISHLIST",
+    description="Triggered when the user removes a hotel listing from their wishlist.",
+    event=RemoveFromWishlistEvent,
+    event_source_code=RemoveFromWishlistEvent.get_source_code_of_class(),
+    constraints_generator=generate_view_hotel_constraints,
+    examples=[
+        {"prompt": "Remove the Lahore hotel from my wishlist.", "prompt_for_task_generation": "Remove the Lahore hotel from my wishlist."},
+        {"prompt": "Delete that bookmarked villa with the hot tub.", "prompt_for_task_generation": "Delete that bookmarked villa with the hot tub."},
+        {"prompt": "Clear the city center apartment from favorites.", "prompt_for_task_generation": "Clear the city center apartment from favorites."},
+        {"prompt": "Take the mountain view lodge off my saved list.", "prompt_for_task_generation": "Take the mountain view lodge off my saved list."},
+    ],
+)
+
 SHARE_HOTEL_INFO = """
 CRITICAL REQUIREMENTS:
 1. The prompt should clearly indicate the intent to share a hotel with someone via email or other means.
@@ -251,26 +280,18 @@ We need to increase the number of guests where guests_to is less than or equal t
 Increase number of guests and update availability where guests_to is less than or equal to '2'...
 """
 
-INCREASE_NUMBER_OF_GUESTS_USE_CASE = UseCase(
-    name="INCREASE_NUMBER_OF_GUESTS",
-    description="Triggered when the user increases the number of guests for a booking or search.",
-    event=IncreaseNumberOfGuestsEvent,
-    event_source_code=IncreaseNumberOfGuestsEvent.get_source_code_of_class(),
-    constraints_generator=generate_increase_guests_constraints,
-    additional_prompt_info=INCREASE_NUMBER_OF_GUESTS_INFO,
+
+EDIT_NUMBER_OF_GUESTS_USE_CASE = UseCase(
+    name="EDIT_NUMBER_OF_GUESTS",
+    description="Triggered when the user edits the number of guests to a specific value.",
+    event=EditNumberOfGuestsEvent,
+    event_source_code=EditNumberOfGuestsEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_guests_constraints,
     examples=[
-        {
-            "prompt": "Increase number of guests where guests_to is 3.",
-            "prompt_for_task_generation": "Increase number of guests where guests_to is 3.",
-        },
-        {
-            "prompt": "Increase guests count to 4.",
-            "prompt_for_task_generation": "Increase guests count to 4.",
-        },
-        {
-            "prompt": "Increase number of guests where guests are greater than 4.",
-            "prompt_for_task_generation": "Increase number of guests where guests are greater than 4.",
-        },
+        {"prompt": "Set total guests to 4 for this booking.", "prompt_for_task_generation": "Set total guests to 4 for this booking."},
+        {"prompt": "Change the guests count to 2.", "prompt_for_task_generation": "Change the guests count to 2."},
+        {"prompt": "Update guests where guests_to equals 3.", "prompt_for_task_generation": "Update guests where guests_to equals 3."},
+        {"prompt": "Adjust the guest number to match the constraint.", "prompt_for_task_generation": "Adjust the guest number to match the constraint."},
     ],
 )
 ###############################################################################
@@ -562,15 +583,119 @@ BACK_TO_ALL_HOTELS_USE_CASE = UseCase(
     ],
 )
 
+# SUBMIT_HOTEL_REVIEW_USE_CASE
+SUBMIT_HOTEL_REVIEW_USE_CASE = UseCase(
+    name="SUBMIT_REVIEW",
+    description="Triggered when the user submits a hotel review and rating.",
+    event=SubmitHotelReviewEvent,
+    event_source_code=SubmitHotelReviewEvent.get_source_code_of_class(),
+    constraints_generator=generate_submit_hotel_review_constraints,
+    examples=[
+        {
+            "prompt": "Submit a review saying 'Great stay' with rating equal to 5.0.",
+            "prompt_for_task_generation": "Submit a review saying 'Great stay' with rating equal to 5.0.",
+        },
+        {
+            "prompt": "Leave a 4-star review mentioning the cozy rooms.",
+            "prompt_for_task_generation": "Leave a 4-star review mentioning the cozy rooms.",
+        },
+        {
+            "prompt": "Post feedback that the service was excellent with a perfect score.",
+            "prompt_for_task_generation": "Post feedback that the service was excellent with a perfect score.",
+        },
+        {
+            "prompt": "Add a review noting the rooftop pool and give it 4.5 stars.",
+            "prompt_for_task_generation": "Add a review noting the rooftop pool and give it 4.5 stars.",
+        },
+    ],
+)
+
+APPLY_FILTERS_USE_CASE = UseCase(
+    name="APPLY_FILTERS",
+    description="User applies filters like rating, price cap, and region on the hotel list.",
+    event=ApplyFilterEvent,
+    event_source_code=ApplyFilterEvent.get_source_code_of_class(),
+    constraints_generator=generate_apply_filter_constraints,
+    examples=[
+        {
+            "prompt": "Apply filters for rating at least 4.5, and region contains Italy.",
+            "prompt_for_task_generation": "Apply filters for rating at least 4.5, and region contains Italy.",
+        }
+    ],
+)
+
+PAYMENT_METHOD_SELECTED_USE_CASE = UseCase(
+    name="PAYMENT_METHOD_SELECTED",
+    description="User chooses a payment method during checkout.",
+    event=PaymentMethodSelectedEvent,
+    event_source_code=PaymentMethodSelectedEvent.get_source_code_of_class(),
+    constraints_generator=generate_payment_method_selected_constraints,
+    examples=[{"prompt": "Select cash on arrival for the Alpine lodge.", "prompt_for_task_generation": "Select cash on arrival for the Alpine lodge."}],
+)
+
+WISHLIST_OPENED_USE_CASE = UseCase(
+    name="WISHLIST_OPENED",
+    description="User opens the wishlist to view saved hotels.",
+    event=WishlistOpenedEvent,
+    event_source_code=WishlistOpenedEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[{"prompt": "Open my wishlist to see saved stays.", "prompt_for_task_generation": "Open my wishlist to see saved stays."}],
+)
+
+BOOK_FROM_WISHLIST_USE_CASE = UseCase(
+    name="BOOK_FROM_WISHLIST",
+    description="User initiates booking from a wishlist item.",
+    event=BookFromWishlistEvent,
+    event_source_code=BookFromWishlistEvent.get_source_code_of_class(),
+    constraints_generator=generate_book_from_wishlist_constraints,
+    examples=[{"prompt": "Book the chalet I saved in wishlist.", "prompt_for_task_generation": "Book the chalet I saved in wishlist."}],
+)
+
+POPULAR_HOTELS_VIEWED_USE_CASE = UseCase(
+    name="POPULAR_HOTELS_VIEWED",
+    description="User views the popular hotels page (rating >= 4.5).",
+    event=PopularHotelsViewedEvent,
+    event_source_code=PopularHotelsViewedEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[{"prompt": "Show me popular high-rated stays.", "prompt_for_task_generation": "Show me popular high-rated stays."}],
+)
+
+HELP_VIEWED_USE_CASE = UseCase(
+    name="HELP_VIEWED",
+    description="User opens the help/FAQ page.",
+    event=HelpViewedEvent,
+    event_source_code=HelpViewedEvent.get_source_code_of_class(),
+    constraints_generator=None,
+    examples=[{"prompt": "Open the help page for booking questions.", "prompt_for_task_generation": "Open the help page for booking questions."}],
+)
+
+FAQ_OPENED_USE_CASE = UseCase(
+    name="FAQ_OPENED",
+    description="User expands a specific FAQ item.",
+    event=FaqOpenedEvent,
+    event_source_code=FaqOpenedEvent.get_source_code_of_class(),
+    constraints_generator=generate_faq_opened_constraints,
+    examples=[{"prompt": "Open the FAQ about payment options.", "prompt_for_task_generation": "Open the FAQ about payment options."}],
+)
+
 ALL_USE_CASES = [
     SEARCH_HOTEL_USE_CASE,
     VIEW_HOTEL_USE_CASE,
-    INCREASE_NUMBER_OF_GUESTS_USE_CASE,
+    EDIT_NUMBER_OF_GUESTS_USE_CASE,
     RESERVE_HOTEL_USE_CASE,
     EDIT_CHECK_IN_OUT_DATES_USE_CASE,
     CONFIRM_AND_PAY_USE_CASE,
     MESSAGE_HOST_USE_CASE,
     SHARE_HOTEL_USE_CASE,
     ADD_TO_WISHLIST_USE_CASE,
+    REMOVE_FROM_WISHLIST_USE_CASE,
     BACK_TO_ALL_HOTELS_USE_CASE,
+    SUBMIT_HOTEL_REVIEW_USE_CASE,
+    APPLY_FILTERS_USE_CASE,
+    PAYMENT_METHOD_SELECTED_USE_CASE,
+    WISHLIST_OPENED_USE_CASE,
+    BOOK_FROM_WISHLIST_USE_CASE,
+    POPULAR_HOTELS_VIEWED_USE_CASE,
+    HELP_VIEWED_USE_CASE,
+    FAQ_OPENED_USE_CASE,
 ]

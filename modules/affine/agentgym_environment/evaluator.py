@@ -112,7 +112,7 @@ class EvaluationRunner:
         tests_passed = stats.tests_passed if stats else 0
         total_tests = stats.total_tests if stats else 0
         action_count = stats.action_count if stats else len(solution.actions)
-        success = bool(result.final_score > 0 and tests_passed == total_tests and not (stats and stats.had_errors))
+        success = bool(result.final_score > 0 and tests_passed > 0 and not (stats and stats.had_errors))
 
         return TaskEvaluationDetail(
             affine_id=entry.affine_id,

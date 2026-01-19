@@ -3,27 +3,62 @@ from autoppia_iwa.src.demo_webs.classes import UseCase
 from .events import (
     AddSkillEvent,
     BookAConsultationEvent,
+    BrowseFavoriteExpertEvent,
     CancelHireEvent,
+    ChooseBudgetTypeEvent,
+    ChooseProjectSizeEvent,
+    ChooseTimelineEvent,
     ClosePostAJobWindowEvent,
+    ContactExpertMessageSentEvent,
+    ContactExpertOpenedEvent,
+    EditAboutEvent,
+    EditProfileEmailEvent,
+    EditProfileLocationEvent,
+    EditProfileNameEvent,
+    EditProfileTitleEvent,
+    FavoriteExpertRemovedEvent,
+    FavoriteExpertSelectedEvent,
     HireButtonClickedEvent,
     HireConsultantEvent,
+    HireLaterEvent,
+    NavbarExpertsClickEvent,
+    NavbarFavoritesClickEvent,
+    NavbarHireLaterClickEvent,
+    NavbarHiresClickEvent,
+    NavbarJobsClickEvent,
+    NavbarProfileClickEvent,
     PostAJobEvent,
+    QuickHireEvent,
     SearchSkillEvent,
     SelectHiringTeamEvent,
+    SetRateRangeEvent,
     SubmitJobEvent,
+    WriteJobDescriptionEvent,
     WriteJobTitleEvent,
 )
 from .generation_functions import (
     generate_add_skill_constraint,
     generate_book_consultant_constraint,
+    generate_budget_type_constraint,
     generate_cancel_hire_constraint,
     generate_close_posting_job_constraint,
+    generate_content_expert_message_sent_constraint,
+    generate_edit_about_constraint,
+    generate_edit_profile_email_constraint,
+    generate_edit_profile_location_constraint,
+    generate_edit_profile_name_constraint,
+    generate_edit_profile_title_constraint,
     generate_hire_button_clicked_constraint,
     generate_hire_consultation_constraint,
     generate_job_posting_constraint,
+    generate_project_size_constraint,
+    generate_quick_hire_constraint,
+    generate_rate_range_constraint,
     generate_search_skill_constraint,
     generate_select_hiring_team_constraint,
     generate_submit_job_constraint,
+    generate_timeline_constraint,
+    generate_write_job_description_constraint,
     generate_write_job_title_constraint,
 )
 
@@ -109,6 +144,92 @@ SELECT_HIRING_TEAM_USE_CASE = UseCase(
     additional_prompt_info=ADDITIONAL_PROMPT_INFO,
 )
 
+HIRE_LATER_USE_CASE = UseCase(
+    name="HIRE_LATER",
+    description="The user opts to hire later instead of starting hiring now.",
+    event=HireLaterEvent,
+    event_source_code=HireLaterEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Decide to hire later for expert Jane Doe.",
+            "prompt_for_task_generation": "Decide to hire later for expert Jane Doe.",
+        },
+        {
+            "prompt": "Decide to hire later for expert that name is not equals 'Sophia Davis'.",
+            "prompt_for_task_generation": "Decide to hire later for expert that name is not equals 'Sophia Davis'.",
+        },
+        {
+            "prompt": "Decide to hire later for expert that role is 'Mobile Developer'.",
+            "prompt_for_task_generation": "Decide to hire later for expert that role is 'Mobile Developer'.",
+        },
+    ],
+)
+
+HIRE_LATER_REMOVED_USE_CASE = UseCase(
+    name="HIRE_LATER_REMOVED",
+    description="The user remove the expert who is in hire later page.",
+    event=HireLaterEvent,
+    event_source_code=HireLaterEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Decide to remove expert Jane Doe from hire later page.",
+            "prompt_for_task_generation": "Decide to remove expert Jane Doe from hire later page.",
+        },
+        {
+            "prompt": "Decide to remove expert that name is not equals 'Sophia Davis' from hire later page.",
+            "prompt_for_task_generation": "Decide to remove expert that name is not equals 'Sophia Davis' from hire later page.",
+        },
+        {
+            "prompt": "Decide to remove expert that role is 'Mobile Developer' from hire later page.",
+            "prompt_for_task_generation": "Decide to remove expert that role is 'Mobile Developer' from hire later page.",
+        },
+    ],
+)
+
+HIRE_LATER_START_USE_CASE = UseCase(
+    name="HIRE_LATER_START",
+    description="The user start hiring the expert who is in hire later page.",
+    event=HireLaterEvent,
+    event_source_code=HireLaterEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Decide to start hiring of expert that is in hire later page.",
+            "prompt_for_task_generation": "Decide to start hiring of expert that is in hire later page.",
+        },
+        {
+            "prompt": "Decide to start hiring of expert that name is not equals 'Sophia Davis' and is in hire later page.",
+            "prompt_for_task_generation": "Decide to start hiring of expert that name is not equals 'Sophia Davis' and is in hire later page.",
+        },
+        {
+            "prompt": "Decide to start hiring of expert that role is 'Mobile Developer' and in the later hire page.",
+            "prompt_for_task_generation": "Decide to start hiring of expert that role is 'Mobile Developer' and in the later hire page.",
+        },
+    ],
+)
+QUICK_HIRE_USE_CASE = UseCase(
+    name="QUICK_HIRE",
+    description="The user triggers quick hire directly from expert information.",
+    event=QuickHireEvent,
+    event_source_code=QuickHireEvent.get_source_code_of_class(),
+    constraints_generator=generate_quick_hire_constraint,
+    examples=[
+        {
+            "prompt": "Quick hire the expert John Smith.",
+            "prompt_for_task_generation": "Quick hire the expert John Smith.",
+        },
+        {
+            "prompt": "Quick hire the expert that role is 'DevOps Engineer'.",
+            "prompt_for_task_generation": "Quick hire the expert that role is 'DevOps Engineer'.",
+        },
+        {
+            "prompt": "Quick hire the expert that country is 'Germany'.",
+            "prompt_for_task_generation": "Quick hire the expert that country is 'Germany'.",
+        },
+    ],
+)
 HIRE_CONSULTATION_USE_CASE = UseCase(
     name="HIRE_CONSULTANT",
     description="The user confirm hiring of a chosen consultation",
@@ -284,6 +405,120 @@ SUBMIT_JOB_USE_CASE = UseCase(
     ],
 )
 
+CHOOSE_BUDGET_TYPE_USE_CASE = UseCase(
+    name="CHOOSE_BUDGET_TYPE",
+    description="The user selects a budget type for the job.",
+    event=ChooseBudgetTypeEvent,
+    event_source_code=ChooseBudgetTypeEvent.get_source_code_of_class(),
+    constraints_generator=generate_budget_type_constraint,
+    examples=[
+        {
+            "prompt": "Choose hourly as the budget type.",
+            "prompt_for_task_generation": "Choose hourly as the budget type.",
+        },
+        {
+            "prompt": "Choose fixed as the budget type.",
+            "prompt_for_task_generation": "Choose fixed as the budget type.",
+        },
+        {
+            "prompt": "Choose a budget type that is not equals to 'fixed'",
+            "prompt_for_task_generation": "Choose a budget type that is not equals to 'fixed'",
+        },
+        {
+            "prompt": "Choose a budget type that is not equals to 'hourly'",
+            "prompt_for_task_generation": "Choose a budget type that is not equals to 'hourly'",
+        },
+    ],
+)
+
+CHOOSE_PROJECT_SIZE_USE_CASE = UseCase(
+    name="CHOOSE_PROJECT_SIZE",
+    description="The user chooses the project size.",
+    event=ChooseProjectSizeEvent,
+    event_source_code=ChooseProjectSizeEvent.get_source_code_of_class(),
+    constraints_generator=generate_project_size_constraint,
+    examples=[
+        {
+            "prompt": "Select Large project size.",
+            "prompt_for_task_generation": "Select Large project size.",
+        },
+        {
+            "prompt": "Select Small project size.",
+            "prompt_for_task_generation": "Select Small project size.",
+        },
+        {
+            "prompt": "Select Medium project size.",
+            "prompt_for_task_generation": "Select Medium project size.",
+        },
+    ],
+)
+
+CHOOSE_TIMELINE_USE_CASE = UseCase(
+    name="CHOOSE_PROJECT_TIMELINE",
+    description="The user chooses expected project timeline.",
+    event=ChooseTimelineEvent,
+    event_source_code=ChooseTimelineEvent.get_source_code_of_class(),
+    constraints_generator=generate_timeline_constraint,
+    examples=[
+        {
+            "prompt": "Choose '3 to 6 months' timeline.",
+            "prompt_for_task_generation": "Choose '3 to 6 months' timeline.",
+        },
+        {
+            "prompt": "Choose 'More than 6 months' timeline.",
+            "prompt_for_task_generation": "Choose 'More than 6 months' timeline.",
+        },
+        {
+            "prompt": "Choose timeline that is not equals 'More than 6 months'.",
+            "prompt_for_task_generation": "Choose timeline that is not equals 'More than 6 months'.",
+        },
+    ],
+)
+
+SET_RATE_RANGE_USE_CASE = UseCase(
+    name="SET_RATE_RANGE",
+    description="The user sets the hourly rate range.",
+    event=SetRateRangeEvent,
+    event_source_code=SetRateRangeEvent.get_source_code_of_class(),
+    constraints_generator=generate_rate_range_constraint,
+    examples=[
+        {
+            "prompt": "Set hourly rate from 20 to 40.",
+            "prompt_for_task_generation": "Set hourly rate from 20 to 40.",
+        },
+        {
+            "prompt": "Set hourly rate where from is less than 15, and to is equals to 30.",
+            "prompt_for_task_generation": "Set hourly rate where from is less than 15, and to is equals to 30.",
+        },
+        {
+            "prompt": "Set hourly rate where from is greater than 20, and to is equals to 40.",
+            "prompt_for_task_generation": "Set hourly rate where from is greater than 20, and to is equals to 40.",
+        },
+    ],
+)
+
+WRITE_JOB_DESCRIPTION_USE_CASE = UseCase(
+    name="WRITE_JOB_DESCRIPTION",
+    description="The user writes the job description.",
+    event=WriteJobDescriptionEvent,
+    event_source_code=WriteJobDescriptionEvent.get_source_code_of_class(),
+    constraints_generator=generate_write_job_description_constraint,
+    examples=[
+        {
+            "prompt": "Write a job description that contains 'Create intuitive user'.",
+            "prompt_for_task_generation": "Write a job description that contains 'Create intuitive user'.",
+        },
+        {
+            "prompt": "Write a job description that is not equals 'Develop mobile applications for iOS and Android with optimized performance.'.",
+            "prompt_for_task_generation": "Write a job description that is not equals 'Develop mobile applications for iOS and Android with optimized performance.'.",
+        },
+        {
+            "prompt": "Write a job description that is equals 'Automate CI/CD pipelines, monitor infrastructure, and ensure system scalability.'.",
+            "prompt_for_task_generation": "Write a job description that is equals 'Automate CI/CD pipelines, monitor infrastructure, and ensure system scalability.'.",
+        },
+    ],
+)
+
 CLOSE_JOB_POSTING_USE_CASE = UseCase(
     name="CLOSE_POST_A_JOB_WINDOW",
     description="The user closes the posting of job window",
@@ -313,10 +548,352 @@ CLOSE_JOB_POSTING_USE_CASE = UseCase(
         },
     ],
 )
+NAVBAR_JOB_CLICK_USE_USE = UseCase(
+    name="NAVBAR_JOBS_CLICK",
+    description="The user click a jobs from navbar option.",
+    event=NavbarJobsClickEvent,
+    event_source_code=NavbarJobsClickEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "User clicks jobs to view all jobs.",
+            "prompt_for_task_generation": "User clicks jobs to view all jobs.",
+        },
+        {
+            "prompt": "Open the job section.",
+            "prompt_for_task_generation": "Open the job section.",
+        },
+    ],
+)
+NAVBAR_HIRES_CLICK_USE_USE = UseCase(
+    name="NAVBAR_HIRES_CLICK",
+    description="The user click a hires from navbar option.",
+    event=NavbarHiresClickEvent,
+    event_source_code=NavbarHiresClickEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "User clicks hires to view all hires.",
+            "prompt_for_task_generation": "User clicks hires to view all hires.",
+        },
+        {
+            "prompt": "Open the hire section.",
+            "prompt_for_task_generation": "Open the hire section.",
+        },
+    ],
+)
+NAVBAR_EXPERTS_CLICK_USE_USE = UseCase(
+    name="NAVBAR_EXPERTS_CLICK",
+    description="The user click an experts from navbar option.",
+    event=NavbarExpertsClickEvent,
+    event_source_code=NavbarExpertsClickEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "User clicks experts to view all experts.",
+            "prompt_for_task_generation": "User clicks experts to view all experts.",
+        },
+        {
+            "prompt": "Open the experts section.",
+            "prompt_for_task_generation": "Open the expertsd section.",
+        },
+    ],
+)
+NAVBAR_FAVORITE_CLICK_USE_USE = UseCase(
+    name="NAVBAR_FAVORITES_CLICK",
+    description="The user click favorite from navbar option.",
+    event=NavbarFavoritesClickEvent,
+    event_source_code=NavbarFavoritesClickEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "User clicks favorites to view all favorite experts.",
+            "prompt_for_task_generation": "User clicks favorites to view all favorite experts.",
+        },
+        {
+            "prompt": "Open the favorite section.",
+            "prompt_for_task_generation": "Open the favorite section.",
+        },
+    ],
+)
+NAVBAR_HIRE_LATER_CLICK_USE_USE = UseCase(
+    name="NAVBAR_HIRE_LATER_CLICK",
+    description="The user click a hire later from navbar option.",
+    event=NavbarHireLaterClickEvent,
+    event_source_code=NavbarHireLaterClickEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "User clicks hire later to view hire later experts.",
+            "prompt_for_task_generation": "User clicks hire later to view hire later experts.",
+        },
+        {
+            "prompt": "Open the hire later section.",
+            "prompt_for_task_generation": "Open the hire later section.",
+        },
+    ],
+)
+
+NAVBAR_PROFILE_CLICK_USE_USE = UseCase(
+    name="NAVBAR_PROFILE_CLICK",
+    description="The user click a profile from navbar option.",
+    event=NavbarProfileClickEvent,
+    event_source_code=NavbarProfileClickEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "User clicks profile to view user profile.",
+            "prompt_for_task_generation": "User clicks profile to view user profile.",
+        },
+        {
+            "prompt": "Open the profile section.",
+            "prompt_for_task_generation": "Open the profile section.",
+        },
+    ],
+)
+
+CONTACT_EXPERT_OPENED_USE_CASE = UseCase(
+    name="CONTACT_EXPERT_OPENED",
+    description="The user click a contact for contacting with expert.",
+    event=ContactExpertOpenedEvent,
+    event_source_code=ContactExpertOpenedEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+        {
+            "prompt": "Contact an expert where name not equals 'Chris Martinez' and role contains 'Austra'.",
+            "prompt_for_task_generation": "Contact an expert where name not equals 'Chris Martinez' and role contains 'Austra'.",
+        },
+        {
+            "prompt": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Contact an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+    ],
+)
+
+CONTACT_EXPERT_MESSAGE_SENT_USE_CASE = UseCase(
+    name="CONTACT_EXPERT_MESSAGE_SENT",
+    description="The user sends a message to an expert after opening the contact expert flow.",
+    event=ContactExpertMessageSentEvent,
+    event_source_code=ContactExpertMessageSentEvent.get_source_code_of_class(),
+    constraints_generator=generate_content_expert_message_sent_constraint,
+    examples=[
+        {
+            "prompt": "Send a message to an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Send a message to an expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+        {
+            "prompt": "Send a message to an expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+            "prompt_for_task_generation": "Send a message to an expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+        },
+        {
+            "prompt": "Send a message to an expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+            "prompt_for_task_generation": "Send a message to an expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+        },
+    ],
+)
+
+EDIT_PROFILE_NAME_USE_CASE = UseCase(
+    name="EDIT_PROFILE_NAME",
+    description="The user edits and updates their profile name.",
+    event=EditProfileNameEvent,
+    event_source_code=EditProfileNameEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_name_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile name where name equals 'Emily Patel'.",
+            "prompt_for_task_generation": "Edit profile name where name equals 'Emily Patel'.",
+        },
+        {
+            "prompt": "Edit profile name where name not equals 'John Doe'.",
+            "prompt_for_task_generation": "Edit profile name where name not equals 'John Doe'.",
+        },
+        {
+            "prompt": "Edit profile name where name contains 'Alex'.",
+            "prompt_for_task_generation": "Edit profile name where name contains 'Alex'.",
+        },
+    ],
+)
+
+EDIT_PROFILE_TITLE_USE_CASE = UseCase(
+    name="EDIT_PROFILE_TITLE",
+    description="The user edits and updates their profile title.",
+    event=EditProfileTitleEvent,
+    event_source_code=EditProfileTitleEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_title_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile title where title equals 'Senior Software Engineer'.",
+            "prompt_for_task_generation": "Edit profile title where title equals 'Senior Software Engineer'.",
+        },
+        {
+            "prompt": "Edit profile title where title not equals 'Junior Developer'.",
+            "prompt_for_task_generation": "Edit profile title where title not equals 'Junior Developer'.",
+        },
+        {
+            "prompt": "Edit profile title where title contains 'Engineer'.",
+            "prompt_for_task_generation": "Edit profile title where title contains 'Engineer'.",
+        },
+    ],
+)
+
+EDIT_PROFILE_LOCATION_USE_CASE = UseCase(
+    name="EDIT_PROFILE_LOCATION",
+    description="The user edits and updates their profile location.",
+    event=EditProfileLocationEvent,
+    event_source_code=EditProfileLocationEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_location_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile location where location equals 'New York, USA'.",
+            "prompt_for_task_generation": "Edit profile location where location equals 'New York, USA'.",
+        },
+        {
+            "prompt": "Edit profile location where location not equals 'London, UK'.",
+            "prompt_for_task_generation": "Edit profile location where location not equals 'London, UK'.",
+        },
+        {
+            "prompt": "Edit profile location where location contains 'California'.",
+            "prompt_for_task_generation": "Edit profile location where location contains 'California'.",
+        },
+    ],
+)
+
+EDIT_PROFILE_ABOUT_USE_CASE = UseCase(
+    name="EDIT_ABOUT",
+    description="The user edits and updates their profile 'About' or description section.",
+    event=EditAboutEvent,
+    event_source_code=EditAboutEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_about_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile about where description equals 'Passionate AI developer with 5 years experience'.",
+            "prompt_for_task_generation": "Edit profile about where description equals 'Passionate AI developer with 5 years experience'.",
+        },
+        {
+            "prompt": "Edit profile about where description not equals 'Junior UX designer'.",
+            "prompt_for_task_generation": "Edit profile about where description not equals 'Junior UX designer'.",
+        },
+        {
+            "prompt": "Edit profile about where description contains 'machine learning'.",
+            "prompt_for_task_generation": "Edit profile about where description contains 'machine learning'.",
+        },
+    ],
+)
+EDIT_PROFILE_EMAIL_USE_CASE = UseCase(
+    name="EDIT_PROFILE_EMAIL",
+    description="The user edits and updates their profile email address.",
+    event=EditProfileEmailEvent,
+    event_source_code=EditProfileEmailEvent.get_source_code_of_class(),
+    constraints_generator=generate_edit_profile_email_constraint,
+    examples=[
+        {
+            "prompt": "Edit profile email where email equals 'emily.patel@example.com'.",
+            "prompt_for_task_generation": "Edit profile email where email equals 'emily.patel@example.com'.",
+        },
+        {
+            "prompt": "Edit profile email where email not equals 'john.doe@example.com'.",
+            "prompt_for_task_generation": "Edit profile email where email not equals 'john.doe@example.com'.",
+        },
+        {
+            "prompt": "Edit profile email where email contains 'gmail.com'.",
+            "prompt_for_task_generation": "Edit profile email where email contains 'gmail.com'.",
+        },
+    ],
+)
+
+BROWSE_FAVORITE_USE_CASE = UseCase(
+    name="BROWSE_FAVORITE_EXPERT",
+    description="The user edits and updates their profile email address.",
+    event=BrowseFavoriteExpertEvent,
+    event_source_code=BrowseFavoriteExpertEvent.get_source_code_of_class(),
+    constraints_generator=False,
+    examples=[
+        {
+            "prompt": "Browse to select the favorite expert.",
+            "prompt_for_task_generation": "Browse to select the favorite expert.",
+        },
+        {
+            "prompt": "Go to select the favorite expert.",
+            "prompt_for_task_generation": "Go to select the favorite expert.",
+        },
+    ],
+)
+
+FAVORITE_EXPERT_SELECTED_USE_CASE = UseCase(
+    name="FAVORITE_EXPERT_SELECTED",
+    description="The user selects an expert to mark them as favorite.",
+    event=FavoriteExpertSelectedEvent,
+    event_source_code=FavoriteExpertSelectedEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Select favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Select favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+        {
+            "prompt": "Select favorite expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+            "prompt_for_task_generation": "Select favorite expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+        },
+        {
+            "prompt": "Select favorite expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+            "prompt_for_task_generation": "Select favorite expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+        },
+    ],
+)
+
+FAVORITE_EXPERT_REMOVED_USE_CASE = UseCase(
+    name="FAVORITE_EXPERT_REMOVED",
+    description="The user removes an expert from their favorites.",
+    event=FavoriteExpertRemovedEvent,
+    event_source_code=FavoriteExpertRemovedEvent.get_source_code_of_class(),
+    constraints_generator=generate_hire_button_clicked_constraint,
+    examples=[
+        {
+            "prompt": "Remove favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+            "prompt_for_task_generation": "Remove favorite expert where name equals 'Nicole Thompson' and role equals 'UX Researcher'.",
+        },
+        {
+            "prompt": "Remove favorite expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+            "prompt_for_task_generation": "Remove favorite expert where name not equals 'Chris Martinez' and role contains 'Australia'.",
+        },
+        {
+            "prompt": "Remove favorite expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+            "prompt_for_task_generation": "Remove favorite expert where name equals 'Daniel Kim' and role equals 'Product Designer'.",
+        },
+    ],
+)
+
+
+#
+# NAVBAR_PROFILE_CLICK_USE_USE = UseCase(
+#     name="NAVBAR_EXPERTS_CLICK",
+#     description="The user click a  from navbar option.",
+#     event=NavbarProfileClickEvent,
+#     event_source_code=PostAJobEvent.get_source_code_of_class(),
+#     constraints_generator=False,
+#     examples=[
+#         {
+#             "prompt": "User clicks profile to view user profile.",
+#             "prompt_for_task_generation": "User clicks profile to view user profile.",
+#         },
+#         {
+#             "prompt": "Open the profile section.",
+#             "prompt_for_task_generation": "Open the profile section.",
+#         },
+#     ],
+# )
 
 ALL_USE_CASES = [
     BOOK_A_CONSULTATION_USE_CASE,
     HIRE_BUTTON_CLICKED_USE_CASE,
+    HIRE_LATER_USE_CASE,
+    HIRE_LATER_REMOVED_USE_CASE,
+    HIRE_LATER_START_USE_CASE,
+    QUICK_HIRE_USE_CASE,
     SELECT_HIRING_TEAM_USE_CASE,
     HIRE_CONSULTATION_USE_CASE,
     CANCEL_HIRE_USE_CASE,
@@ -324,6 +901,28 @@ ALL_USE_CASES = [
     WRITING_JOB_TITLE_USE_CASE,
     SEARCH_SKILL_USE_CASE,
     ADD_SKILL_USE_CASE,
+    CHOOSE_BUDGET_TYPE_USE_CASE,
+    CHOOSE_PROJECT_SIZE_USE_CASE,
+    CHOOSE_TIMELINE_USE_CASE,
+    SET_RATE_RANGE_USE_CASE,
+    WRITE_JOB_DESCRIPTION_USE_CASE,
     SUBMIT_JOB_USE_CASE,
     CLOSE_JOB_POSTING_USE_CASE,
+    NAVBAR_PROFILE_CLICK_USE_USE,
+    NAVBAR_JOB_CLICK_USE_USE,
+    NAVBAR_EXPERTS_CLICK_USE_USE,
+    NAVBAR_FAVORITE_CLICK_USE_USE,
+    NAVBAR_HIRE_LATER_CLICK_USE_USE,
+    NAVBAR_PROFILE_CLICK_USE_USE,
+    NAVBAR_HIRES_CLICK_USE_USE,
+    CONTACT_EXPERT_OPENED_USE_CASE,
+    CONTACT_EXPERT_MESSAGE_SENT_USE_CASE,
+    EDIT_PROFILE_NAME_USE_CASE,
+    EDIT_PROFILE_ABOUT_USE_CASE,
+    EDIT_PROFILE_EMAIL_USE_CASE,
+    EDIT_PROFILE_TITLE_USE_CASE,
+    EDIT_PROFILE_LOCATION_USE_CASE,
+    BROWSE_FAVORITE_USE_CASE,
+    FAVORITE_EXPERT_SELECTED_USE_CASE,
+    FAVORITE_EXPERT_REMOVED_USE_CASE,
 ]

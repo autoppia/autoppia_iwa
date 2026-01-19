@@ -2,10 +2,17 @@
 
 This directory contains all tools for **creating and validating** new web projects for IWA.
 
+## 🚀 ¿Quieres Subir una Web?
+
+**👉 Lee primero: [`HOW_TO_SUBMIT.md`](HOW_TO_SUBMIT.md)**
+
+Esta es la guía completa y única que necesitas para crear y subir tu web.
+
 ## 📁 Structure
 
 ```
 modules/create_web_project/
+├── HOW_TO_SUBMIT.md   # 📖 GUÍA PRINCIPAL - Lee esto primero
 ├── template/          # 📝 Template for community contributions
 │   └── projects/
 │       └── autodining/    # Complete reference implementation
@@ -46,29 +53,42 @@ The autodining template includes **ALL** features of production webs:
 ```
 src/
 ├── dynamic/
-│   ├── v1-layouts/          # Layout variants (10 layouts)
-│   │   ├── layouts.ts
+│   ├── v1/                  # DOM Structure Modification
+│   │   ├── add-wrap-decoy.ts      # Adds wrappers and decoys
+│   │   ├── change-order-elements.ts # Reorders elements
 │   │   └── index.ts
 │   ├── v2-data/             # Data loading with seeds
 │   │   ├── data-provider.ts
 │   │   └── index.ts
-│   └── v3-dynamic/          # Anti-scraping (IDs, classes, text)
-│       ├── data/
-│       │   ├── semantic-ids.json
-│       │   ├── class-variants.json
-│       │   └── text-variants.json
-│       ├── hooks/
-│       │   └── useV3Attributes.ts
-│       └── utils/
-│           ├── id-generator.ts
-│           ├── text-selector.ts
-│           └── class-selector.ts
+│   ├── v3/                   # Anti-scraping (IDs, classes, text)
+│   │   ├── data/
+│   │   │   ├── id-variants.json
+│   │   │   ├── class-variants.json
+│   │   │   └── text-variants.json
+│   │   ├── utils/
+│   │   │   └── variant-selector.ts
+│   │   └── index.ts
+│   └── shared/               # Core dynamic system
+│       ├── core.ts           # selectVariantIndex, hashString
+│       ├── flags.ts
+│       └── index.ts
+```
+
+### **Tests** ✅
+
+```
+tests/
+├── README.md                 # Test documentation
+├── test-dynamic-system.js    # Dynamic system validation (7 tests)
+└── test-events.js            # Event coverage validation (100% required)
 ```
 
 ### **Seed System** ✅
 
 ```
 src/
+├── context/
+│   └── SeedContext.tsx       # Seed management (reads from URL)
 ├── shared/
 │   ├── seed-resolver.ts     # Calls /seeds/resolve endpoint
 │   ├── seeded-loader.ts     # Loads data with seeds
@@ -147,9 +167,14 @@ If approved:
 - `useSeedRouter.ts` - Router with seed preservation
 
 ✅ **Dynamic System (v1/v2/v3):**
-- `v1-layouts/` - 10 layout variants
+- `v1/` - DOM structure modification (add-wrap-decoy, change-order-elements)
 - `v2-data/` - Data loading with seeds
-- `v3-dynamic/` - Anti-scraping (IDs, classes, text variants)
+- `v3/` - Anti-scraping (IDs, classes, text variants via variant-selector)
+- `shared/core.ts` - Core functions (selectVariantIndex, hashString)
+
+✅ **Tests:**
+- `tests/test-dynamic-system.js` - Validates dynamic system (7 tests)
+- `tests/test-events.js` - Validates event coverage (100% required)
 
 ✅ **Core:**
 - Event logging (`library/events.ts`)
@@ -184,7 +209,10 @@ Real webs like `autocinema` have:
 
 | Component | Template | Real Webs | Purpose |
 |-----------|----------|-----------|---------|
-| dynamic/ | ✅ Complete | ✅ Complete | v1/v2/v3 system |
+| dynamic/v1/ | ✅ Complete | ✅ Complete | DOM structure modification |
+| dynamic/v3/ | ✅ Complete | ✅ Complete | Attribute/text variation |
+| dynamic/shared/ | ✅ Complete | ✅ Complete | Core functions (selectVariantIndex) |
+| tests/ | ✅ Complete | ✅ Complete | Automated validation |
 | seed-resolver.ts | ✅ Yes | ✅ Yes | Seed resolution |
 | SeedContext | ✅ Yes | ✅ Yes | Seed management |
 | Events | ✅ Basic | ✅ Custom | Backend logging |

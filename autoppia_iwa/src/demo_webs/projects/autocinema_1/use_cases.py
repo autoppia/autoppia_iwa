@@ -17,6 +17,7 @@ from .events import (
     LoginEvent,
     LogoutEvent,
     RegistrationEvent,
+    RemoveFromWatchlistEvent,
     SearchFilmEvent,
     ShareFilmEvent,
     WatchTrailer,
@@ -328,6 +329,30 @@ ADD_TO_WATCHLIST_USE_CASE = UseCase(
         {
             "prompt": "Add to wishlist a highest-rated James Cameron film",
             "prompt_for_task_generation": "Add to wishlist a highest-rated <director> film",
+        },
+    ],
+)
+
+
+REMOVE_FROM_WATCHLIST_USE_CASE = UseCase(
+    name="REMOVE_FROM_WATCHLIST",
+    description="Remove a film from the watchlist using the provided constraints (used to validate removal events).",
+    event=RemoveFromWatchlistEvent,
+    event_source_code=RemoveFromWatchlistEvent.get_source_code_of_class(),
+    additional_prompt_info=None,  # populated dynamically
+    constraints_generator=generate_film_constraints,
+    examples=[
+        {
+            "prompt": "Remove the film '<movie>' from the watchlist",
+            "prompt_for_task_generation": "Remove the film '<movie>' from the watchlist",
+        },
+        {
+            "prompt": "Remove a <genre> movie directed by <director> from the watchlist",
+            "prompt_for_task_generation": "Remove a <genre> movie directed by <director> from the watchlist",
+        },
+        {
+            "prompt": "Remove any movie released before <year> from the watchlist",
+            "prompt_for_task_generation": "Remove any movie released before <year> from the watchlist",
         },
     ],
 )
@@ -950,6 +975,9 @@ async def update_use_cases_prompt_info(
     # Update use cases that need movie data
     FILM_DETAIL_USE_CASE.additional_prompt_info = _get_film_detail_info(movies_data)
     ADD_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
+    ADD_PRODUCT_TO_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
+    RATE_FILM_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
+    REMOVE_FROM_WATCHLIST_USE_CASE.additional_prompt_info = _get_add_to_watchlist_info(movies_data)
     SHARE_FILM_USE_CASE.additional_prompt_info = _get_share_film_info(movies_data)
     WATCH_TRAILER_USE_CASE.additional_prompt_info = _get_watch_trailer_info(movies_data)
     FILTER_FILM_USE_CASE.additional_prompt_info = _get_filter_film_info(movies_data)
@@ -972,6 +1000,7 @@ ALL_USE_CASES = [
     ADD_FILM_USE_CASE,
     EDIT_USER_PROFILE_USE_CASE,
     ADD_TO_WATCHLIST_USE_CASE,
+    REMOVE_FROM_WATCHLIST_USE_CASE,
     SHARE_FILM_USE_CASE,
     WATCH_TRAILER_USE_CASE,
 ]

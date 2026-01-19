@@ -130,6 +130,30 @@ CONTACT_MESSAGES = [
     "I am reaching out to report a technical bug I encountered.",
     "Thank you for your services. I just wanted to share my appreciation.",
 ]
+
+HELP_CATEGORIES = [
+    "Reservations",
+    "Payments",
+    "Account",
+    "Cancellations",
+    "Feedback",
+]
+
+FAQ_QUESTIONS = [
+    "How do I modify a reservation?",
+    "Can I get a refund?",
+    "How do I change my password?",
+    "Is there a cancellation fee?",
+    "How do I contact support?",
+]
+
+ABOUT_FEATURES = [
+    "Curated chefs",
+    "Live availability",
+    "Trusted reviews",
+]
+
+CONTACT_CARD_TYPES = ["Email", "Phone", "Chat", "Office"]
 OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED = {
     "selected_date": [EQUALS, GREATER_EQUAL, LESS_EQUAL],
 }
@@ -190,3 +214,8 @@ OPERATORS_ALLOWED_CONTACT = {
     "message": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
     "subject": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS],
 }
+
+OPERATORS_ALLOWED_HELP_CATEGORY_SELECTED = {"category": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}
+OPERATORS_ALLOWED_HELP_FAQ_TOGGLED = {"question": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}
+OPERATORS_ALLOWED_ABOUT_FEATURE_CLICK = {"feature": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}
+OPERATORS_ALLOWED_CONTACT_CARD_CLICK = {"card_type": [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]}

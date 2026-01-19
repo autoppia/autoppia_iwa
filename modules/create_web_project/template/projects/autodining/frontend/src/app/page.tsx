@@ -1,6 +1,7 @@
 "use client";
+import React, { useState, useRef, useEffect, useMemo, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { SeedLink } from "@/components/ui/SeedLink";
-import { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -16,44 +17,79 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import React from "react";
 import { useSeed } from "@/context/SeedContext";
 import { EVENT_TYPES, logEvent } from "@/library/events";
-import { getRestaurants, initializeRestaurants } from "@/library/dataset";
+import { getRestaurants, initializeRestaurants } from "@/dynamic/v2-data";
+import type { RestaurantData } from "@/dynamic/v2-data";
 import { useSearchParams } from "next/navigation";
-import { useSeedVariation } from "@/library/utils";
+import { useDynamicSystem } from "@/dynamic/shared";
+import { ID_VARIANTS_MAP, CLASS_VARIANTS_MAP, TEXT_VARIANTS_MAP } from "@/dynamic/v3";
 import { isDataGenerationEnabled } from "@/shared/data-generator";
+import { buildBookingHref } from "@/utils/bookingPaths";
+import Navbar from "@/components/Navbar";
+import fallbackRestaurants from "@/data/original/restaurants_1.json";
 
-// UI restaurant type with required fields
 type UiRestaurant = {
   id: string;
   name: string;
+  image: string;
   cuisine: string;
   area: string;
   reviews: number;
-  stars: number;
+  rating: number; // rating con decimales (ej: 4.6, 4.8)
+  stars: number; // stars entero 1-5 ya redondeado
   price: string;
   bookings: number;
-  image: string;
   times: string[];
 };
 
-// List will be populated only after data generation/DB fetch completes
+// Default restaurants array from jsonData (fallback when dynamic data unavailable)
+// Usar el JSON actualizado directamente que ya tiene rating y stars separados
+const defaultRestaurants = (fallbackRestaurants as any[]).map(
+  (item, index) => ({
+    id: `restaurant-${item.id ?? index + 1}`,
+    name: item.namepool,
+    image: item.image || `/images/restaurant${(index % 19) + 1}.jpg`,
+    rating: item.rating ?? 4.5,
+    stars: item.stars ?? 5,
+    reviews: item.reviews ?? 0,
+    cuisine: item.cuisine,
+    price: item.price ?? "$$",
+    bookings: item.bookings ?? 0,
+    area: item.area,
+    times: ["1:00 PM"],
+  })
+);
+
+const staticById = new Map(
+  (fallbackRestaurants as any[]).map((item, index) => [
+    item.id ?? `restaurant-${index + 1}`,
+    {
+      rating: item.rating ?? 4.5,
+      stars: item.stars ?? 5,
+      reviews: item.reviews ?? 0,
+      bookings: item.bookings ?? 0,
+      price: item.price ?? "$$",
+      area: item.area,
+      cuisine: item.cuisine,
+    },
+  ])
+);
 
 function StarRating({ count }: { count: number }) {
+  // count ya viene como entero (1-5) del JSON, no necesitamos round
+  // Solo asegurar que esté en el rango válido
+  const clamped = Math.max(1, Math.min(5, Math.floor(count)));
   return (
-    <span className="text-[#46a758] text-xl align-middle mr-1">
+    <span className="text-lg align-middle mr-1">
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i}>{i < count ? "★" : "☆"}</span>
+        <span
+          key={i}
+          className={i < clamped ? "text-yellow-400" : "text-gray-400"}
+        >
+          ★
+        </span>
       ))}
-    </span>
-  );
-}
-
-function StarNumber({ rating }: { rating: number }) {
-  return (
-    <span className="text-[#46a758] font-bold inline-flex items-center ml-1 mr-1">
-      <span className="text-lg">★</span> {rating.toFixed(2)}
     </span>
   );
 }
@@ -70,7 +106,8 @@ function RestaurantCard({
     cuisine: string;
     area: string;
     reviews: number;
-    stars: number;
+    rating: number; // rating con decimales
+    stars: number; // stars entero 1-5
     price: string;
     bookings: number;
     image: string;
@@ -80,89 +117,139 @@ function RestaurantCard({
   people: number;
   time: string;
 }) {
-  const { seed } = useSeed();
+  const dyn = useDynamicSystem();
+  const personLabel = dyn.v3.getVariant("person", undefined, "Guest");
+  const peopleLabel = dyn.v3.getVariant("people", undefined, "Guests");
 
   const formattedDate = date ? format(date, "yyyy-MM-dd") : "2025-05-20";
 
-  // Use seed-based variations with event support
-  const restaurantCardVariation = useSeedVariation("restaurantCard");
-  const bookButtonVariation = useSeedVariation("bookButton");
-  const imageContainerVariation = useSeedVariation("imageContainer");
-  const cardContainerVariation = useSeedVariation("cardContainer");
+  const viewDetailsLabel = dyn.v3.getVariant("see_details", TEXT_VARIANTS_MAP, "View details");
+  const bookNowLabel = dyn.v3.getVariant("reserve_now", TEXT_VARIANTS_MAP, "Book now");
 
-  // Create layout based on seed
-  const layout = {
-    wrap: seed % 2 === 0, // Even seeds wrap, odd seeds don't
-    justify: ["flex-start", "center", "flex-end", "space-between", "space-around"][seed % 5],
-    marginTop: ["mt-4", "mt-6", "mt-8", "mt-10", "mt-12"][seed % 5],
-  };
+  // Usar rating para el número y stars para las estrellas
+  const ratingValue = r.rating ?? 4.5; // Para mostrar el número (con decimales)
+  const starsCount = r.stars ?? 5; // Para mostrar las estrellas (ya viene redondeado)
+  const reviewsCount = r.reviews || 0;
+  const priceTag = r.price || "$$";
 
   return (
-    <div
-      className={`w-[255px] flex-shrink-0 rounded-xl border shadow-sm bg-white overflow-hidden`}
-      data-testid={restaurantCardVariation.dataTestId}
-      style={restaurantCardVariation.style}
-    >
-      <div className="w-full h-40 overflow-hidden">
-        <img
-          src={r.image}
-          alt={r.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold text-lg">{r.name}</h3>
-          <div className="flex items-center">
-            <StarRating count={r.stars} />
-            <span className="text-sm text-gray-600">({r.reviews})</span>
+    dyn.v1.addWrapDecoy(`restaurant-card-${r.id}`, (
+      <div
+        className="w-[320px] flex-shrink-0 rounded-xl overflow-hidden shadow-lg bg-white hover:-translate-y-1 transition-all duration-300 hover:shadow-xl"
+        id={dyn.v3.getVariant("restaurant-card", ID_VARIANTS_MAP, `restaurant-card-${r.id}`)}
+      >
+        {dyn.v1.addWrapDecoy(`restaurant-card-image-${r.id}`, (
+          <div className="relative w-full h-[280px] overflow-hidden">
+            <img
+              src={r.image}
+              alt={r.name}
+              className="w-full h-full object-cover"
+              id={dyn.v3.getVariant("restaurant-image", ID_VARIANTS_MAP, `restaurant-image-${r.id}`)}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+            {/* Badges at top */}
+            {dyn.v1.addWrapDecoy(`restaurant-card-badges-${r.id}`, (
+              <div
+                className="absolute top-0 left-0 right-0 p-3 flex justify-between items-start z-10"
+                id={dyn.v3.getVariant("restaurant-badges", ID_VARIANTS_MAP, `restaurant-badges-${r.id}`)}
+              >
+                <span
+                  className="px-3 py-1.5 rounded-full bg-orange-500/90 backdrop-blur-sm text-white text-xs font-bold shadow-lg"
+                  id={dyn.v3.getVariant("restaurant-cuisine-badge", ID_VARIANTS_MAP, `restaurant-cuisine-${r.id}`)}
+                >
+                  {r.cuisine}
+                </span>
+                <span
+                  className="px-3 py-1.5 rounded-full bg-yellow-500/90 backdrop-blur-sm text-white text-xs font-bold shadow-lg"
+                  id={dyn.v3.getVariant("restaurant-price-badge", ID_VARIANTS_MAP, `restaurant-price-${r.id}`)}
+                >
+                  {priceTag}
+                </span>
+              </div>
+            ))}
+
+            {/* Content overlay at bottom */}
+            {dyn.v1.addWrapDecoy(`restaurant-card-content-${r.id}`, (
+              <div
+                className="absolute bottom-0 left-0 right-0 p-4 text-white"
+                id={dyn.v3.getVariant("restaurant-card-content", ID_VARIANTS_MAP, `restaurant-content-${r.id}`)}
+              >
+                <SeedLink href={`/restaurant/${encodeURIComponent(r.id)}`}>
+                  {dyn.v1.addWrapDecoy(`restaurant-card-title-${r.id}`, (
+                    <h3
+                      className="font-bold text-xl mb-0 hover:text-[#46a758] transition-colors drop-shadow-lg"
+                      id={dyn.v3.getVariant("restaurant-name", ID_VARIANTS_MAP, `restaurant-name-${r.id}`)}
+                    >
+                      {r.name}
+                    </h3>
+                  ))}
+                </SeedLink>
+                <div className="mb-3">
+                  {dyn.v1.addWrapDecoy(`restaurant-card-rating-${r.id}`, (
+                    <div
+                      className="flex items-center gap-2 mb-0"
+                      id={dyn.v3.getVariant("restaurant-rating", ID_VARIANTS_MAP, `restaurant-rating-${r.id}`)}
+                    >
+                      <StarRating count={starsCount} />
+                      <span className="text-sm font-semibold drop-shadow">
+                        {ratingValue.toFixed(1)}
+                        {reviewsCount > 0 && ` (${reviewsCount} reviews)`}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="text-xs text-gray-200 opacity-80 font-bold"
+                      id={dyn.v3.getVariant("restaurant-area", ID_VARIANTS_MAP, `restaurant-area-${r.id}`)}
+                    >
+                      {r.area}
+                    </span>
+                    <SeedLink
+                      id={dyn.v3.getVariant("view_details_button", ID_VARIANTS_MAP, `view-details-${r.id}`)}
+                      href={`/restaurant/${encodeURIComponent(r.id)}`}
+                      className={dyn.v3.getVariant("button-primary", CLASS_VARIANTS_MAP, "text-sm bg-[#46a758] hover:bg-[#3d8f4a] text-white px-4 py-2 rounded-lg font-semibold transition-colors")}
+                      onClick={() =>
+                        logEvent(EVENT_TYPES.VIEW_RESTAURANT, { restaurantId: r.id })
+                      }
+                    >
+                      {viewDetailsLabel}
+                    </SeedLink>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-        <p className="text-gray-600 text-sm mb-2">{r.cuisine}</p>
-        <p className="text-gray-500 text-xs mb-3">{r.area}</p>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">{r.price}</span>
-          <span className="text-xs text-gray-500">{r.bookings} booked today</span>
-        </div>
-        <div className={`mt-3 flex ${layout.wrap ? 'flex-wrap' : 'flex-nowrap'} ${layout.justify} gap-2`}>
-          <SeedLink
-            href={`/restaurant/${r.id}`}
-            className="text-sm text-blue-600 hover:text-blue-800"
-            onClick={() => logEvent(EVENT_TYPES.VIEW_RESTAURANT, { restaurantId: r.id })}
-          >
-            View details
-          </SeedLink>
-          <SeedLink
-            href={`/booking/${r.id}/${time}?people=${people}&date=${formattedDate}`}
-            className={`${bookButtonVariation.className} text-sm`}
-            data-testid={bookButtonVariation.dataTestId}
-            style={{ position: bookButtonVariation.position as any }}
-            onClick={() => logEvent(EVENT_TYPES.BOOK_RESTAURANT, { restaurantId: r.id })}
-          >
-            Book now
-          </SeedLink>
-        </div>
+        ))}
       </div>
-    </div>
+    ), `restaurant-card-wrap-${r.id}`)
   );
 }
 
-function CardScroller({ children, title }: { children: React.ReactNode; title: string }) {
+function CardScroller({
+  children,
+  title,
+}: {
+  children: React.ReactNode;
+  title: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
+  const tickingRef = useRef(false);
+  const rafIdRef = useRef<number | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const rafIdRef = useRef<number | null>(null);
-  const tickingRef = useRef(false);
+  const dyn = useDynamicSystem();
+  const { seed } = useSeed(); // Get seed from context for data-testid
 
-  const { seed } = useSeed();
-  const cardContainerVariation = useSeedVariation("cardContainer");
+  // LAYOUT FIJO - Sin variaciones
   const childCount = React.Children.count(children);
 
   const checkScroll = () => {
     if (ref.current) {
       const { scrollLeft, scrollWidth, clientWidth } = ref.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+      // Usar un pequeño margen para evitar problemas de precisión
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
     }
   };
 
@@ -178,23 +265,33 @@ function CardScroller({ children, title }: { children: React.ReactNode; title: s
   useEffect(() => {
     checkScroll();
     let ro: ResizeObserver | null = null;
-    if (ref.current && typeof ResizeObserver !== 'undefined') {
+    if (ref.current && typeof ResizeObserver !== "undefined") {
       ro = new ResizeObserver(() => scheduleCheck());
       ro.observe(ref.current);
     }
     window.addEventListener("resize", scheduleCheck);
+    // Verificar también cuando cambian los children
+    scheduleCheck();
     return () => {
       window.removeEventListener("resize", scheduleCheck);
       if (ro && ref.current) ro.disconnect();
       if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
       tickingRef.current = false;
     };
-  }, []);
+  }, [children]); // Agregar children como dependencia para actualizar cuando cambien
 
   const scroll = (direction: "left" | "right") => {
     if (ref.current) {
-      const scrollAmount = 300;
-      const newScrollLeft = ref.current.scrollLeft + (direction === "left" ? -scrollAmount : scrollAmount);
+      // Ancho de tarjeta (320px) + gap (16px) = 336px
+      // Scroll por el ancho exacto de una tarjeta
+      const cardWidth = 320;
+      const gap = 16;
+      const scrollAmount = cardWidth + gap;
+
+      const newScrollLeft =
+        ref.current.scrollLeft +
+        (direction === "left" ? -scrollAmount : scrollAmount);
+
       ref.current.scrollTo({ left: newScrollLeft, behavior: "smooth" });
 
       // Log scroll event
@@ -207,49 +304,80 @@ function CardScroller({ children, title }: { children: React.ReactNode; title: s
   }
 
   return (
-    <div className="relative overflow-hidden">
-      <button
-        onClick={() => scroll("left")}
-        className={`absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white border rounded-full p-2 shadow-lg hover:bg-gray-50 ${canScrollLeft ? '' : 'opacity-50 cursor-not-allowed'}`}
-        data-testid={`scroll-left-${seed}`}
-        disabled={!canScrollLeft}
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-      <button
-        onClick={() => scroll("right")}
-        className={`absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white border rounded-full p-2 shadow-lg hover:bg-gray-50 ${canScrollRight ? '' : 'opacity-50 cursor-not-allowed'}`}
-        data-testid={`scroll-right-${seed}`}
-        disabled={!canScrollRight}
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
-      {/* Scrollable Content */}
+    dyn.v1.addWrapDecoy(`card-scroller-${title}`, (
       <div
-        ref={ref}
-        className={`flex gap-4 pb-4 scroll-smooth pl-1 pr-10 overflow-x-auto overflow-y-hidden`}
-        data-testid={cardContainerVariation.dataTestId}
-        onScroll={scheduleCheck}
+        className="relative group"
+        id={dyn.v3.getVariant("card-scroller", ID_VARIANTS_MAP, `card-scroller-${title}`)}
       >
-        {children}
+        {/* Flecha izquierda - fuera del contenedor */}
+        {canScrollLeft && (
+          dyn.v1.addWrapDecoy(`card-scroller-left-btn-${title}`, (
+            <button
+              onClick={() => scroll("left")}
+              className="absolute -left-5 top-1/2 -translate-y-1/2 z-20
+                w-12 h-12 flex items-center justify-center
+                bg-white/95 backdrop-blur-sm border-2 border-gray-200
+                rounded-full shadow-xl hover:shadow-2xl
+                hover:bg-emerald-50 hover:border-emerald-400 hover:scale-110
+                transition-all duration-300 ease-out"
+              data-testid={`scroll-left-${seed ?? 1}`}
+              aria-label={dyn.v3.getVariant("scroll_left", undefined, "Scroll left")}
+              id={dyn.v3.getVariant("scroll-left-button", ID_VARIANTS_MAP, `scroll-left-${title}`)}
+            >
+              <ChevronLeft className="w-6 h-6 text-gray-700 group-hover:text-emerald-600" />
+            </button>
+          ))
+        )}
+
+        {/* Flecha derecha - fuera del contenedor */}
+        {canScrollRight && (
+          dyn.v1.addWrapDecoy(`card-scroller-right-btn-${title}`, (
+            <button
+              onClick={() => scroll("right")}
+              className="absolute -right-5 top-1/2 -translate-y-1/2 z-20
+                w-12 h-12 flex items-center justify-center
+                bg-white/95 backdrop-blur-sm border-2 border-gray-200
+                rounded-full shadow-xl hover:shadow-2xl
+                hover:bg-emerald-50 hover:border-emerald-400 hover:scale-110
+                transition-all duration-300 ease-out"
+              data-testid={`scroll-right-${seed ?? 1}`}
+              aria-label={dyn.v3.getVariant("scroll_right", undefined, "Scroll right")}
+              id={dyn.v3.getVariant("scroll-right-button", ID_VARIANTS_MAP, `scroll-right-${title}`)}
+            >
+              <ChevronRight className="w-6 h-6 text-gray-700 group-hover:text-emerald-600" />
+            </button>
+          ))
+        )}
+
+        {/* Contenedor con padding para mostrar media tarjeta del siguiente */}
+        {dyn.v1.addWrapDecoy(`card-scroller-content-${title}`, (
+          <div
+            ref={ref}
+            className="flex gap-4 pb-4 px-5 scroll-smooth overflow-x-auto overflow-y-hidden no-scrollbar"
+            onScroll={scheduleCheck}
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            }}
+            id={dyn.v3.getVariant("card-scroller-content", ID_VARIANTS_MAP, `card-scroller-content-${title}`)}
+          >
+            {children}
+          </div>
+        ))}
       </div>
-    </div>
+    ), `card-scroller-wrap-${title}`)
   );
 }
 
-function getLayoutVariant(seed: number) {
-  return {
-    marginTop: ["mt-4", "mt-6", "mt-8", "mt-10", "mt-12"][seed % 5],
-    wrapButton: seed % 3 === 0, // Every 3rd seed wraps the button
-  };
-}
+// LAYOUT FIJO - Sin variaciones
 
 // Client-only component that uses seed from context
 function HomePageContent() {
+  const router = useRouter();
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [list, setList] = useState<UiRestaurant[]>([]);
+  const [list, setList] = useState<UiRestaurant[]>(defaultRestaurants);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState("1:00 PM");
   const [people, setPeople] = useState(2);
@@ -257,20 +385,14 @@ function HomePageContent() {
   const [dateOpen, setDateOpen] = useState(false);
   const [timeOpen, setTimeOpen] = useState(false);
   const [peopleOpen, setPeopleOpen] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const dyn = useDynamicSystem();
+  const searchParams = useSearchParams();
+  const personLabel = dyn.v3.getVariant("person", undefined, "Guest");
+  const peopleLabel = dyn.v3.getVariant("people", undefined, "Guests");
 
-  const { seed } = useSeed();
-  const { marginTop, wrapButton } = useMemo(
-    () => getLayoutVariant(seed),
-    [seed]
-  );
-
-  // Use seed-based variations with event support
-  const searchBarVariation = useSeedVariation("searchBar");
-  const searchButtonVariation = useSeedVariation("searchButton");
-  const pageLayoutVariation = useSeedVariation("pageLayout");
-  const sectionLayoutVariation = useSeedVariation("sectionLayout");
-
-
+  const { seed, resolvedSeeds } = useSeed();
+  const v2Seed = resolvedSeeds.v2 ?? resolvedSeeds.base;
 
   function toLocalISO(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -301,7 +423,17 @@ function HomePageContent() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearch(value);
-    logEvent(EVENT_TYPES.SEARCH_RESTAURANT, { query: value });
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    // Only log search event after user stops typing (debounce) to avoid breaking layout
+    // The search event no longer triggers layout variations, so we can log it less frequently
+    searchTimeoutRef.current = setTimeout(() => {
+      if (value.trim()) {
+        logEvent(EVENT_TYPES.SEARCH_RESTAURANT, { query: value });
+      }
+    }, 500);
   };
 
   const handleTimeSelect = (t: string) => {
@@ -335,44 +467,141 @@ function HomePageContent() {
     "2:30 PM",
   ];
 
+  // Track the last v2Seed we used to avoid duplicate loads
+  const lastV2SeedRef = useRef<number | null>(null);
+  const lastBaseSeedRef = useRef<number | null>(null);
+
+  // Reset lastV2SeedRef when base seed changes (user changed seed in URL)
   useEffect(() => {
-    let didRun = false;
-    const runOnce = async () => {
-      if (didRun) return; // guard
-      didRun = true;
+    if (lastBaseSeedRef.current !== null && lastBaseSeedRef.current !== seed) {
+      console.log(
+        `[autodining] Base seed changed from ${lastBaseSeedRef.current} to ${seed}, resetting cache`
+      );
+      lastV2SeedRef.current = null; // Force reload with new seed
+    }
+    lastBaseSeedRef.current = seed;
+  }, [seed]);
+
+  useEffect(() => {
+    // Only load if v2Seed is valid and different from last load
+    const currentV2Seed = v2Seed ?? resolvedSeeds.base;
+    if (currentV2Seed === null || currentV2Seed === undefined) {
+      return; // Wait for valid seed
+    }
+
+    // Skip if we already loaded with this seed
+    if (lastV2SeedRef.current === currentV2Seed) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadRestaurants = async () => {
+      console.log(
+        `[autodining] V2 Data - Seed: ${currentV2Seed} (from base seed: ${seed})`
+      );
+      lastV2SeedRef.current = currentV2Seed; // Mark as loading
       setIsLoading(true);
       const genEnabled = isDataGenerationEnabled();
       if (genEnabled) setIsGenerating(true);
       try {
-        await initializeRestaurants(); // waits for DB/gen
-        const fresh = getRestaurants().map((r) => ({
-          id: r.id,
-          name: r.name,
-          image: r.image,
-          cuisine: r.cuisine ?? "International",
-          area: r.area ?? "Downtown",
-          reviews: r.reviews ?? 0,
-          stars: r.stars ?? 4,
-          price: r.price ?? "$$",
-          bookings: r.bookings ?? 0,
-          times: ["1:00 PM"],
-        }));
-        setList(fresh);
-        setIsReady(true);
+        // Pass v2Seed to initializeRestaurants when v2 is enabled
+        await initializeRestaurants(currentV2Seed); // waits for DB/gen
+
+        // Only update state if this effect hasn't been cancelled
+        if (!cancelled) {
+          const fresh = getRestaurants().map((r) => {
+            const staticDefaults =
+              staticById.get(r.id) ||
+              staticById.get(r.id?.toString().replace("restaurant-", ""));
+
+            // Priorizar valores directos del restaurante, luego defaults, luego fallback
+            const rating = (r as any).rating ?? staticDefaults?.rating ?? 4.5;
+            const stars =
+              (r as any).stars ?? staticDefaults?.stars ?? Math.round(rating);
+            const reviews = r.reviews ?? staticDefaults?.reviews ?? 64;
+            const bookings = r.bookings ?? staticDefaults?.bookings ?? 0;
+            const price = r.price ?? staticDefaults?.price ?? "$$";
+
+            return {
+              id: r.id,
+              name: r.name,
+              image: r.image,
+              cuisine: r.cuisine ?? staticDefaults?.cuisine ?? "International",
+              area: r.area ?? staticDefaults?.area ?? "Downtown",
+              reviews,
+              rating,
+              stars,
+              price,
+              bookings,
+              times: ["1:00 PM"],
+            };
+          });
+          const mapped = fresh.length > 0 ? fresh : defaultRestaurants;
+          setList(mapped);
+          setIsReady(mapped.length > 0);
+        }
       } finally {
-        setIsLoading(false);
-        setIsGenerating(false);
+        if (!cancelled) {
+          setIsLoading(false);
+          setIsGenerating(false);
+        }
       }
     };
-    runOnce();
-  }, []);
+
+    loadRestaurants();
+
+    // Cleanup: cancel if seed changes before async completes
+    return () => {
+      cancelled = true;
+    };
+  }, [v2Seed, resolvedSeeds.base, resolvedSeeds.v2, seed]);
+
+  const expensiveRestaurants = useMemo(() => {
+    const expensive = filtered
+      .filter((r) => {
+        const priceCount = (r.price || "").match(/\$/g)?.length || 0;
+        return priceCount >= 4; // $$$$ or more
+      })
+      .slice(0, 8);
+    // V1: Order restaurants dynamically
+    const order = dyn.v1.changeOrderElements("expensive-restaurants", expensive.length);
+    return order.map((idx) => expensive[idx]);
+  }, [filtered, dyn.v1]);
+
+  const mediumRestaurants = useMemo(() => {
+    const medium = filtered
+      .filter((r) => {
+        const priceCount = (r.price || "").match(/\$/g)?.length || 0;
+        return priceCount >= 2 && priceCount <= 3; // $$ or $$$
+      })
+      .slice(0, 8);
+    // V1: Order restaurants dynamically
+    const order = dyn.v1.changeOrderElements("medium-restaurants", medium.length);
+    return order.map((idx) => medium[idx]);
+  }, [filtered, dyn.v1]);
+
+  const cheapRestaurants = useMemo(() => {
+    const cheap = filtered
+      .filter((r) => {
+        const priceCount = (r.price || "").match(/\$/g)?.length || 0;
+        return priceCount === 1; // $
+      })
+      .slice(0, 8);
+    // V1: Order restaurants dynamically
+    const order = dyn.v1.changeOrderElements("cheap-restaurants", cheap.length);
+    return order.map((idx) => cheap[idx]);
+  }, [filtered, dyn.v1]);
 
   return (
     <main suppressHydrationWarning>
       {isGenerating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90">
           <div className="flex flex-col items-center gap-4">
-            <div className="h-12 w-12 rounded-full border-4 border-gray-300 border-t-[#46a758] animate-spin" aria-hidden="true" />
+            <div
+              className="h-12 w-12 rounded-full border-4 border-gray-300 border-t-[#46a758] animate-spin"
+              aria-hidden="true"
+            />
             <div className="text-gray-700 text-base font-medium text-center">
               Data is being generated by AI this may take some time
             </div>
@@ -380,300 +609,272 @@ function HomePageContent() {
         </div>
       )}
       {/* Navigation/Header */}
-      <nav className="w-full border-b bg-white sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto flex items-center justify-between h-20 px-4 gap-2">
-          <div className="flex items-center gap-3">
-            <SeedLink href="/">
-              <div className="bg-[#46a758] px-3 py-1 rounded flex items-center h-9">
-                <span className="font-bold text-white text-lg">AutoDining</span>
-              </div>
-            </SeedLink>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <SeedLink
-              className="text-sm text-gray-600 hover:text-[#46a758]"
-              href="/help"
-            >
-              Get help
-            </SeedLink>
-            <SeedLink
-              className="text-sm text-gray-600 hover:text-[#46a758]"
-              href="/about"
-            >
-              About
-            </SeedLink>
-            <SeedLink
-              className="text-sm text-gray-600 hover:text-[#46a758]"
-              href="/contact"
-            >
-              Contact
-            </SeedLink>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
-      <section className={pageLayoutVariation.className} data-testid={pageLayoutVariation.dataTestId}>
-        {(isLoading || !isReady) && (
-          <div className="text-center text-gray-500 mb-4">Loading restaurants...</div>
-        )}
-        <h1 className="text-4xl font-bold mb-6">Find your table for any occasion</h1>
+      <section className="mb-10 px-6">
+        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-700 via-emerald-600 to-lime-500 text-white px-8 py-10 shadow-2xl">
+          <div className="absolute inset-0 opacity-10 bg-[url('/images/restaurant1.jpg')] bg-cover bg-center" />
+          <div className="relative max-w-3xl space-y-3">
+            <p className="uppercase tracking-[0.3em] text-sm font-semibold">
+              Curated dining
+            </p>
+            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
+              Book standout tables, by cuisine, mood, or budget
+            </h1>
+            <p className="text-white/80 text-lg">
+              Fresh picks updated daily. Choose your vibe, we’ll handle the
+              details.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <span className="px-3 py-1 bg-white/15 rounded-full text-sm backdrop-blur-sm">
+                Trending tonight
+              </span>
+              <span className="px-3 py-1 bg-white/15 rounded-full text-sm backdrop-blur-sm">
+                Chef-owned
+              </span>
+              <span className="px-3 py-1 bg-white/15 rounded-full text-sm backdrop-blur-sm">
+                Group friendly
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* Search and Filters */}
-        <section className="flex flex-wrap gap-4 items-end">
-          <Popover open={dateOpen} onOpenChange={setDateOpen}>
-            <PopoverTrigger asChild>
-              <Button
-              id="select-date"
-                variant="outline"
-                className="w-[200px] justify-start text-left font-normal"
-                onClick={() => logEvent(EVENT_TYPES.DATE_DROPDOWN_OPENED, { action: 'open' })}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={handleDateSelect}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Popover open={timeOpen} onOpenChange={setTimeOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                id="select-time"
-                variant="outline"
-                className="w-[150px] justify-start text-left font-normal"
-                onClick={() => logEvent(EVENT_TYPES.TIME_DROPDOWN_OPENED, { action: 'open' })}
-              >
-                <ClockIcon className="mr-2 h-4 w-4" />
-                {time}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <div className="p-2">
-                {timeOptions.map((t) => (
-                  <Button
-                    key={t}
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      handleTimeSelect(t);
-                      setTimeOpen(false);
-                    }}
-                  >
-                    {t}
-                  </Button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Popover open={peopleOpen} onOpenChange={setPeopleOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                id="select-people"
-                variant="outline"
-                className="w-[150px] justify-start text-left font-normal"
-                onClick={() => logEvent(EVENT_TYPES.PEOPLE_DROPDOWN_OPENED, { action: 'open' })}
-              >
-                <UserIcon className="mr-2 h-4 w-4" />
-                {people} {people === 1 ? "person" : "people"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <div className="p-2">
-                {peopleOptions.map((n) => (
-                  <Button
-                    key={n}
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      handlePeopleSelect(n);
-                      setPeopleOpen(false);
-                    }}
-                  >
-                    {n} {n === 1 ? "person" : "people"}
-                  </Button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-          {/* Search box & button */}
+        <section
+          className="flex flex-wrap gap-4 items-end justify-between mt-6 mb-8 relative w-full px-6"
+          style={{ minHeight: "auto", visibility: "visible", display: "flex" }}
+        >
+          {/* Search input - left side */}
           <input
+            id={dyn.v3.getVariant("search_input", undefined, "search_input")}
             type="text"
-            placeholder="Location, Restaurant, or Cuisine"
-            className={`${searchBarVariation.className} min-w-[250px] flex-1`}
-            data-testid={searchBarVariation.dataTestId}
+            placeholder={
+              dyn.v3.getVariant("search_placeholder", undefined, "Search restaurant, cuisine...")
+            }
+            className="min-w-[400px] flex-1 h-9 px-4 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#46a758] focus:border-[#46a758]"
             value={search}
             onChange={handleSearchChange}
           />
-          {wrapButton ? (
-            <div data-testid={`wrapper-${seed}`}>
-              <button
-                className={searchButtonVariation.className}
-                data-testid={searchButtonVariation.dataTestId}
-                style={{ position: searchButtonVariation.position as any }}
+
+          {/* Filters - right side */}
+          <div className="flex gap-4 items-end">
+            <Popover open={dateOpen} onOpenChange={setDateOpen} modal={false}>
+              <PopoverTrigger asChild>
+                <Button
+                  id={dyn.v3.getVariant("date_picker", undefined, "date_picker")}
+                  variant="outline"
+                  className="w-[200px] justify-start text-left font-normal"
+                  onClick={() =>
+                    logEvent(EVENT_TYPES.DATE_DROPDOWN_OPENED, {
+                      action: "open",
+                    })
+                  }
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? (
+                    format(date, "PPP")
+                  ) : (
+                    <span>{dyn.v3.getVariant("date_picker", undefined, "Select date")}</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto p-0 z-[100]"
+                align="start"
+                side="bottom"
+                sideOffset={8}
               >
-                Let's go
-              </button>
-            </div>
-          ) : (
-            <button
-              className={searchButtonVariation.className}
-              data-testid={searchButtonVariation.dataTestId}
-              style={{ position: searchButtonVariation.position as any }}
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={handleDateSelect}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Popover open={timeOpen} onOpenChange={setTimeOpen} modal={false}>
+              <PopoverTrigger asChild>
+                <Button
+                  id={dyn.v3.getVariant("time_picker", undefined, "time_picker")}
+                  variant="outline"
+                  className="w-[150px] justify-start text-left font-normal"
+                  onClick={() =>
+                    logEvent(EVENT_TYPES.TIME_DROPDOWN_OPENED, {
+                      action: "open",
+                    })
+                  }
+                >
+                  <ClockIcon className="mr-2 h-4 w-4" />
+                  {time}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto p-0 z-[100]"
+                align="start"
+                side="bottom"
+                sideOffset={8}
+              >
+                <div className="p-2">
+                  {timeOptions.map((t) => (
+                    <Button
+                      key={t}
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        handleTimeSelect(t);
+                        setTimeOpen(false);
+                      }}
+                    >
+                      {t}
+                    </Button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <Popover
+              open={peopleOpen}
+              onOpenChange={setPeopleOpen}
+              modal={false}
             >
-              Let's go
-            </button>
-          )}
+              <PopoverTrigger asChild>
+                <Button
+                  id={dyn.v3.getVariant("people_picker", undefined, "people_picker")}
+                  variant="outline"
+                  className="w-[150px] justify-start text-left font-normal"
+                  onClick={() =>
+                    logEvent(EVENT_TYPES.PEOPLE_DROPDOWN_OPENED, {
+                      action: "open",
+                    })
+                  }
+                >
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  {people} {people === 1 ? personLabel : peopleLabel}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto p-0 z-[100]"
+                align="start"
+                side="bottom"
+                sideOffset={8}
+              >
+                <div className="p-2">
+                  {peopleOptions.map((n) => (
+                    <Button
+                      key={n}
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        handlePeopleSelect(n);
+                        setPeopleOpen(false);
+                      }}
+                    >
+                      {n} {n === 1 ? personLabel : peopleLabel}
+                    </Button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </section>
 
         {/* Main Content - Cards, Sections, etc. */}
-        {(isLoading || !isReady || list.length === 0) ? null : wrapButton ? (
-          <div data-testid={`section-wrapper-${seed}`}>
-            {isReady && list.length > 0 && (
-            <section className={`${sectionLayoutVariation.className} px-4 mt-${marginTop}`} data-testid={sectionLayoutVariation.dataTestId}>
-              <h2 className="text-2xl font-bold mb-4">Available for lunch now</h2>
-              <CardScroller title="Available for lunch now">
-                {filtered.map((r) => (
-                  <RestaurantCard
-                    key={r.id + "-lunch"}
-                    r={r}
-                    date={date}
-                    people={people}
-                    time={time}
-                  />
-                ))}
-              </CardScroller>
-            </section>
-            )}
-          </div>
-        ) : (
-          isLoading || !isReady || list.length === 0 ? null : (
-            <section className={`${sectionLayoutVariation.className} px-4 mt-${marginTop}`} data-testid={sectionLayoutVariation.dataTestId}>
-              <h2 className="text-2xl font-bold mb-4">Available for lunch now</h2>
-              <CardScroller title="Available for lunch now">
-                {filtered.map((r) => (
-                  <RestaurantCard
-                    key={r.id + "-lunch"}
-                    r={r}
-                    date={date}
-                    people={people}
-                    time={time}
-                  />
-                ))}
-              </CardScroller>
-            </section>
-          )
-        )}
-
-        {/* Introducing OpenDinning Icons Section */}
-        {wrapButton ? (
-          <div data-testid={`icon-section-wrapper-${seed}`}>
-            <section
-              className={`${sectionLayoutVariation.className} mt-${marginTop} rounded-xl bg-[#f7f7f6] border px-4`}
-              data-testid={sectionLayoutVariation.dataTestId}
-            >
-              <div className="flex flex-row justify-between items-center mb-1">
-                <div>
-                  <h2 className="text-2xl md:text-2xl font-bold">
-                    Introducing OpenDinning Icons
+        {isLoading || !isReady || list.length === 0 ? null : (
+          dyn.v1.addWrapDecoy("home-sections", (
+            <>
+              {/* Expensive Restaurants ($$$$) */}
+              {expensiveRestaurants.length > 0 && (
+                dyn.v1.addWrapDecoy("section-expensive", (
+                  <section
+                    id={dyn.v3.getVariant("section_expensive", ID_VARIANTS_MAP, "section_expensive")}
+                    className="px-6"
+                  >
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold mb-2">
+                    {dyn.v3.getVariant("section_expensive", undefined, "Expensive")}
                   </h2>
-                  <div className="text-base text-gray-600 mt-1 mb-3">
-                    Book the city's award-winners, hot newcomers, and hard-to-get
-                    tables.
-                  </div>
+                  <p className="text-gray-600 text-lg">
+                    Fine dining experiences for special occasions
+                  </p>
                 </div>
-                <button className="border px-5 py-2 rounded-md text-base font-semibold hover:bg-gray-100 whitespace-nowrap h-12">
-                  Explore Icon restaurants
-                </button>
-              </div>
-              <CardScroller title="Introducing OpenDinning Icons">
-                {list.slice(15, 30).map((r) => (
-                  <RestaurantCard
-                    key={r.id + "-icon"}
-                    r={r}
-                    date={date}
-                    people={people}
-                    time={time}
-                  />
-                ))}
-              </CardScroller>
-            </section>
-          </div>
-        ) : (
-          <section
-            className={`${sectionLayoutVariation.className} mt-${marginTop} rounded-xl bg-[#f7f7f6] border px-4`}
-            data-testid={sectionLayoutVariation.dataTestId}
-          >
-            <div className="flex flex-row justify-between items-center mb-1">
-              <div>
-                <h2 className="text-2xl md:text-2xl font-bold">
-                  Introducing OpenDinning Icons
-                </h2>
-                <div className="text-base text-gray-600 mt-1 mb-3">
-                  Book the city's award-winners, hot newcomers, and hard-to-get
-                  tables.
-                </div>
-              </div>
-              <button className="border px-5 py-2 rounded-md text-base font-semibold hover:bg-gray-100 whitespace-nowrap h-12">
-                Explore Icon restaurants
-              </button>
-            </div>
-            <CardScroller title="Introducing OpenDinning Icons">
-              {list.slice(15, 30).map((r) => (
-                <RestaurantCard
-                  key={r.id + "-icon"}
-                  r={r}
-                  date={date}
-                  people={people}
-                  time={time}
-                />
-              ))}
-            </CardScroller>
-          </section>
-        )}
+                <CardScroller title={dyn.v3.getVariant("section_expensive", undefined, "Expensive")}>
+                  {expensiveRestaurants.map((r) => (
+                    <RestaurantCard
+                      key={r.id + "-expensive"}
+                      r={r}
+                      date={date}
+                      people={people}
+                      time={time}
+                    />
+                  ))}
+                </CardScroller>
+                  </section>
+                ), "section-expensive-wrap")
+              )}
 
-        {/* Award Winners Section */}
-        {wrapButton ? (
-          <div data-testid={`award-section-wrapper-${seed}`}>
-            <section className={`${sectionLayoutVariation.className} mt-${marginTop} px-4`} data-testid={sectionLayoutVariation.dataTestId}>
-              <h2 className="text-2xl font-bold mb-4">Award Winners</h2>
-              <CardScroller title="Award Winners">
-                {list.slice(30, 50).map((r) => (
-                  <RestaurantCard
-                    key={r.id + "-award"}
-                    r={r}
-                    date={date}
-                    people={people}
-                    time={time}
-                  />
-                ))}
-              </CardScroller>
-            </section>
-          </div>
-        ) : (
-          <section className={`${sectionLayoutVariation.className} mt-${marginTop} px-4`} data-testid={sectionLayoutVariation.dataTestId}>
-            <h2 className="text-2xl font-bold mb-4">Award Winners</h2>
-            <CardScroller title="Award Winners">
-              {list.slice(30, 50).map((r) => (
-                <RestaurantCard
-                  key={r.id + "-award"}
-                  r={r}
-                  date={date}
-                  people={people}
-                  time={time}
-                />
-              ))}
-            </CardScroller>
-          </section>
+              {/* Medium Price Restaurants ($$-$$$) */}
+              {mediumRestaurants.length > 0 && (
+                dyn.v1.addWrapDecoy("section-medium", (
+                  <section
+                    id={dyn.v3.getVariant("section_medium", ID_VARIANTS_MAP, "section_medium")}
+                    className="px-6 mt-8"
+                  >
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold mb-2">
+                    {dyn.v3.getVariant("section_medium", undefined, "Mid ticket")}
+                  </h2>
+                  <p className="text-gray-600 text-lg">
+                    Great value restaurants for everyday dining
+                  </p>
+                </div>
+                <CardScroller title={dyn.v3.getVariant("section_medium", undefined, "Mid ticket")}>
+                  {mediumRestaurants.map((r) => (
+                    <RestaurantCard
+                      key={r.id + "-medium"}
+                      r={r}
+                      date={date}
+                      people={people}
+                      time={time}
+                    />
+                  ))}
+                </CardScroller>
+                  </section>
+                ), "section-medium-wrap")
+              )}
+
+              {/* Cheap Restaurants ($) */}
+              {cheapRestaurants.length > 0 && (
+                dyn.v1.addWrapDecoy("section-cheap", (
+                  <section
+                    id={dyn.v3.getVariant("section_cheap", ID_VARIANTS_MAP, "section_cheap")}
+                    className="px-6 mt-8"
+                  >
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold mb-2">
+                    {dyn.v3.getVariant("section_cheap", undefined, "Cheap")}
+                  </h2>
+                  <p className="text-gray-600 text-lg">
+                    Budget-friendly options without compromising quality
+                  </p>
+                </div>
+                <CardScroller title={dyn.v3.getVariant("section_cheap", undefined, "Cheap")}>
+                  {cheapRestaurants.map((r) => (
+                    <RestaurantCard
+                      key={r.id + "-cheap"}
+                      r={r}
+                      date={date}
+                      people={people}
+                      time={time}
+                    />
+                  ))}
+                </CardScroller>
+                  </section>
+                ), "section-cheap-wrap")
+              )}
+            </>
+          ), "home-sections-wrap")
         )}
       </section>
     </main>
@@ -684,15 +885,7 @@ function HomePageContent() {
 function HomePageLoading() {
   return (
     <main>
-      <nav className="w-full border-b bg-white sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto flex items-center justify-between h-20 px-4 gap-2">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#46a758] px-3 py-1 rounded flex items-center h-9">
-              <span className="font-bold text-white text-lg">AutoDining</span>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="animate-pulse">
           <div className="h-10 bg-gray-200 rounded mb-6"></div>

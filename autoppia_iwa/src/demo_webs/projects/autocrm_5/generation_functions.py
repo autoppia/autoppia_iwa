@@ -1,7 +1,7 @@
 import calendar
 import contextlib
-import datetime
 import random
+from datetime import date, datetime, timedelta
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
@@ -10,10 +10,14 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_fr
 from ..shared_utils import create_constraint_dict
 from .data import (
     ALLOWED_EVENT_COLORS,
+    FIELD_OPERATORS_MAP_BILLING_SEARCH,
     FIELD_OPERATORS_MAP_CALENDAR,
     FIELD_OPERATORS_MAP_CHANGE_USER_NAME,
+    FIELD_OPERATORS_MAP_CLIENT,
+    FIELD_OPERATORS_MAP_CLIENT_FILTERS,
     FIELD_OPERATORS_MAP_CLIENT_VIEW_MATTER,
     FIELD_OPERATORS_MAP_DOCUMENT,
+    FIELD_OPERATORS_MAP_DOCUMENT_RENAME,
     FIELD_OPERATORS_MAP_LOG,
     FIELD_OPERATORS_MAP_MATTER,
     FIELD_OPERATORS_MAP_NEW_LOG,
@@ -388,6 +392,109 @@ async def generate_document_uploaded_constraints(task_url: str | None = None, da
     return await generate_document_deleted_constraints(task_url=task_url, dataset=dataset)
 
 
+async def generate_document_renamed_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints: list[dict[str, Any]] = []
+    docs = await _ensure_crm_dataset(task_url, dataset, entity_type="files")
+    NEW_DOCUMENT_NAMES = [
+        "Report-102.pdf",
+        "Invoice-511.docx",
+        "Statement-743.xlsx",
+        "Summary-928.pdf",
+        "Agreement-337.docx",
+        "Form-684.xlsx",
+        "Proposal-219.pdf",
+        "Record-570.docx",
+        "Analysis-803.xlsx",
+        "Notes-445.pdf",
+        "Plan-122.docx",
+        "Schedule-699.xlsx",
+        "Brief-911.pdf",
+        "Memo-318.docx",
+        "Budget-472.xlsx",
+        "Guide-856.pdf",
+        "Outline-394.docx",
+        "Registry-640.xlsx",
+    ]
+    NEW_DOCUMENT_NAMES_MODIFIED = []
+
+    for name in NEW_DOCUMENT_NAMES:
+        NEW_DOCUMENT_NAMES_MODIFIED.append({"new_name": name})
+
+    if docs:
+        doc = random.choice(docs)
+        for field in ["new_name", "previous_name"]:
+            allowed_ops = FIELD_OPERATORS_MAP_DOCUMENT_RENAME.get(field, [])
+            if not allowed_ops:
+                continue
+            operator = ComparisonOperator(random.choice(allowed_ops))
+            if field == "new_name":
+                field_value = random.choice(NEW_DOCUMENT_NAMES)
+                value = _generate_constraint_value(operator, field_value, field, dataset=NEW_DOCUMENT_NAMES_MODIFIED)
+                constraint = create_constraint_dict(field, operator, value)
+                constraints.append(constraint)
+            if field == "previous_name":
+                value = _generate_constraint_value(operator, doc.get("name", "Document"), field, docs)
+                constraint = create_constraint_dict(field, operator, value)
+                constraints.append(constraint)
+    return constraints
+
+
+async def generate_billing_search_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints: list[dict[str, Any]] = []
+    logs = await _ensure_crm_dataset(task_url, dataset, entity_type="logs")
+    sample = random.choice(logs) if logs else {"matter": "Review", "description": "Review"}
+    fields = ["query", "date_filter"]
+    for field in fields:
+        allowed_ops = FIELD_OPERATORS_MAP_BILLING_SEARCH.get(field, [])
+        if not allowed_ops:
+            continue
+        operator = ComparisonOperator(random.choice(allowed_ops))
+        value = sample.get("matter") if field == "query" else random.choice(["Today", "This week", "Previous 2 weeks", "This month", "All", "Specific date"])
+        if value == "Specific date":
+            operator = ComparisonOperator(random.choice(FIELD_OPERATORS_MAP_BILLING_SEARCH.get("custom_date")))
+            today = datetime.today()
+
+            random_days = random.randint(0, 30)
+            random_date = today - timedelta(days=random_days)
+
+            value = random_date.strftime("%Y-%m-%d")  # format as 'YYYY-MM-DD'
+        constraints.append(create_constraint_dict(field, operator, value))
+    return constraints
+
+
+async def generate_add_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    clients = await _ensure_crm_dataset(task_url, dataset, entity_type="clients")
+    if not clients:
+        clients = [{"name": "New Client", "email": "new@example.com", "matters": 1, "status": "Active", "last": "Today"}]
+    sample = random.choice(clients)
+    constraints: list[dict[str, Any]] = []
+    for field in ["name", "email", "matters", "status", "last"]:
+        allowed_ops = FIELD_OPERATORS_MAP_CLIENT.get(field, [])
+        if not allowed_ops:
+            continue
+        op = ComparisonOperator(random.choice(allowed_ops))
+        constraints.append(create_constraint_dict(field, op, sample.get(field)))
+    return constraints
+
+
+async def generate_delete_client_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    return await generate_add_client_constraints(task_url, dataset)
+
+
+async def generate_filter_clients_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    constraints: list[dict[str, Any]] = []
+    clients = await _ensure_crm_dataset(task_url, dataset, entity_type="clients")
+    sample = random.choice(clients) if clients else {"status": "Active", "matters": 2}
+    for field in ["status", "matters"]:
+        allowed_ops = FIELD_OPERATORS_MAP_CLIENT_FILTERS.get(field, [])
+        if not allowed_ops:
+            continue
+        op = ComparisonOperator(random.choice(allowed_ops))
+        value = sample.get("status") if field == "status" else random.choice(["All", "1-2", "3-4", "5+"])
+        constraints.append(create_constraint_dict(field, op, value))
+    return constraints
+
+
 def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
     fields = ["label", "time", "date", "event_type"]
     ALLOWED_EVENT_LABELS = [
@@ -444,7 +551,7 @@ def generate_new_calendar_event_constraints() -> list[dict[str, Any]]:
         operator = ComparisonOperator(op_str)
 
         if field == "date":
-            today = datetime.date.today()
+            today = date.today()
             # choose previous (-1), current (0) or next (+1) month
             offset = random.choice([-1, 0, 1])
             total_month_index = today.year * 12 + (today.month - 1) + offset

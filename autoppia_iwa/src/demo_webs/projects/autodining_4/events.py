@@ -772,10 +772,91 @@ class AboutPageViewEvent(Event, BaseEventValidator):
     event_name: str = "ABOUT_PAGE_VIEW"
 
 
+class AboutFeatureClickEvent(Event, BaseEventValidator):
+    """Event triggered when a user clicks an about/feature highlight."""
+
+    event_name: str = "ABOUT_FEATURE_CLICK"
+    feature: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        feature: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.feature, criteria.feature)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "AboutFeatureClickEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            feature=data.get("feature", ""),
+        )
+
+
 class HelpPageViewEvent(Event, BaseEventValidator):
     """Event triggered when a help page is viewed."""
 
     event_name: str = "HELP_PAGE_VIEW"
+
+
+class HelpCategorySelectedEvent(Event, BaseEventValidator):
+    """Event triggered when a help category is selected."""
+
+    event_name: str = "HELP_CATEGORY_SELECTED"
+    category: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        category: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.category, criteria.category)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "HelpCategorySelectedEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            category=data.get("category", ""),
+        )
+
+
+class HelpFaqToggledEvent(Event, BaseEventValidator):
+    """Event triggered when a FAQ item is expanded/collapsed."""
+
+    event_name: str = "HELP_FAQ_TOGGLED"
+    question: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        question: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.question, criteria.question)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "HelpFaqToggledEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            question=data.get("question", ""),
+        )
 
 
 class ContactEvent(Event, BaseEventValidator):
@@ -806,19 +887,53 @@ class ContactEvent(Event, BaseEventValidator):
             ]
         )
 
+
+class ContactPageViewEvent(Event, BaseEventValidator):
+    """Event triggered when a user views the contact page."""
+
+    event_name: str = "CONTACT_PAGE_VIEW"
+
+    class ValidationCriteria(BaseModel):
+        pass
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        return True
+
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "ContactEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "ContactPageViewEvent":
+        base_event = Event.parse(backend_event)
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+        )
+
+
+class ContactCardClickEvent(Event, BaseEventValidator):
+    """Event triggered when a specific contact card is clicked (email/phone/chat)."""
+
+    event_name: str = "CONTACT_CARD_CLICK"
+    card_type: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        card_type: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return self._validate_field(self.card_type, criteria.card_type)
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "ContactCardClickEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
         return cls(
             event_name=base_event.event_name,
             timestamp=base_event.timestamp,
-            user_id=base_event.user_id,
             web_agent_id=base_event.web_agent_id,
-            name=data.get("name", ""),
-            message=data.get("message", ""),
-            email=data.get("email", ""),
-            subject=data.get("subject", ""),
+            user_id=base_event.user_id,
+            card_type=data.get("card_type", ""),
         )
 
 
@@ -840,7 +955,12 @@ EVENTS = [
     ReservationCompleteEvent,  # Restaurant reservation
     ScrollViewEvent,  # Generic scroll
     AboutPageViewEvent,
+    AboutFeatureClickEvent,
+    ContactPageViewEvent,
+    ContactCardClickEvent,
     HelpPageViewEvent,
+    HelpCategorySelectedEvent,
+    HelpFaqToggledEvent,
     ContactEvent,
 ]
 
@@ -858,6 +978,11 @@ BACKEND_EVENT_TYPES = {
     "RESERVATION_COMPLETE": ReservationCompleteEvent,
     "SCROLL_VIEW": ScrollViewEvent,
     "ABOUT_PAGE_VIEW": AboutPageViewEvent,
+    "ABOUT_FEATURE_CLICK": AboutFeatureClickEvent,
+    "CONTACT_PAGE_VIEW": ContactPageViewEvent,
+    "CONTACT_CARD_CLICK": ContactCardClickEvent,
     "HELP_PAGE_VIEW": HelpPageViewEvent,
+    "HELP_CATEGORY_SELECTED": HelpCategorySelectedEvent,
+    "HELP_FAQ_TOGGLED": HelpFaqToggledEvent,
     "CONTACT_FORM_SUBMIT": ContactEvent,
 }

@@ -8,15 +8,23 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_fr
 
 from ..shared_utils import create_constraint_dict, generate_mock_date_strings, generate_mock_dates
 from .data import (
+    ABOUT_FEATURES,
+    CONTACT_CARD_TYPES,
     CONTACT_MESSAGES,
     CONTACT_SUBJECTS,
     CUISINE,
+    FAQ_QUESTIONS,
+    HELP_CATEGORIES,
     NAMES,
+    OPERATORS_ALLOWED_ABOUT_FEATURE_CLICK,
     OPERATORS_ALLOWED_BOOK_RESTAURANT,
     OPERATORS_ALLOWED_CONTACT,
+    OPERATORS_ALLOWED_CONTACT_CARD_CLICK,
     OPERATORS_ALLOWED_COUNTRY_SELECTED,
     OPERATORS_ALLOWED_DATE_DROPDOWN_OPENED,
     OPERATORS_ALLOWED_FOR_RESTAURANT,
+    OPERATORS_ALLOWED_HELP_CATEGORY_SELECTED,
+    OPERATORS_ALLOWED_HELP_FAQ_TOGGLED,
     OPERATORS_ALLOWED_PEOPLE_DROPDOWN_OPENED,
     OPERATORS_ALLOWED_RESERVATION_COMPLETE,
     OPERATORS_ALLOWED_SCROLL_VIEW,
@@ -211,6 +219,14 @@ async def _generate_value_for_field(field_name: str) -> Any:
         return random.choice(MOCK_PHONE_NUMBERS)
     elif field_name == "special_request":
         return random.choice(MOCK_SPECIAL_REQUESTS)
+    elif field_name == "feature":
+        return random.choice(ABOUT_FEATURES)
+    elif field_name == "category":
+        return random.choice(HELP_CATEGORIES)
+    elif field_name == "question":
+        return random.choice(FAQ_QUESTIONS)
+    elif field_name == "card_type":
+        return random.choice(CONTACT_CARD_TYPES)
     elif field_name == "direction":
         return random.choice(SCROLL_DIRECTIONS)
     elif field_name == "section_title":
@@ -422,6 +438,54 @@ async def generate_contact_constraints():
             return []
 
     return constraint_list
+
+
+async def generate_about_feature_click_constraints() -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    field = "feature"
+    operators = OPERATORS_ALLOWED_ABOUT_FEATURE_CLICK.get(field, [])
+    if not operators:
+        return constraints_list
+    op = ComparisonOperator(random.choice(operators))
+    value = await _generate_value_for_field(field)
+    constraints_list.append(create_constraint_dict(field, op, value))
+    return constraints_list
+
+
+async def generate_help_category_selected_constraints() -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    field = "category"
+    operators = OPERATORS_ALLOWED_HELP_CATEGORY_SELECTED.get(field, [])
+    if not operators:
+        return constraints_list
+    op = ComparisonOperator(random.choice(operators))
+    value = await _generate_value_for_field(field)
+    constraints_list.append(create_constraint_dict(field, op, value))
+    return constraints_list
+
+
+async def generate_help_faq_toggled_constraints() -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    field = "question"
+    operators = OPERATORS_ALLOWED_HELP_FAQ_TOGGLED.get(field, [])
+    if not operators:
+        return constraints_list
+    op = ComparisonOperator(random.choice(operators))
+    value = await _generate_value_for_field(field)
+    constraints_list.append(create_constraint_dict(field, op, value))
+    return constraints_list
+
+
+async def generate_contact_card_click_constraints() -> list[dict[str, Any]]:
+    constraints_list: list[dict[str, Any]] = []
+    field = "card_type"
+    operators = OPERATORS_ALLOWED_CONTACT_CARD_CLICK.get(field, [])
+    if not operators:
+        return constraints_list
+    op = ComparisonOperator(random.choice(operators))
+    value = await _generate_value_for_field(field)
+    constraints_list.append(create_constraint_dict(field, op, value))
+    return constraints_list
 
 
 # --- Internal Helper ---
