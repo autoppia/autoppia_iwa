@@ -15,6 +15,7 @@ from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_i
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 
+
 # from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 
 # =========================
@@ -65,12 +66,13 @@ AGENTS = [
 
 # 2) Projects to evaluate (by id from demo_web_projects)
 PROJECT_IDS = [
+    "autohealth",
     # "autocinema",
     # "autobooks",
     # "autozone",
     # "autodining",
     # "autocrm",
-    "automail",
+    #"automail",
     # "autodelivery",
     # "autolodge",
     # "autoconnect",
@@ -82,6 +84,7 @@ PROJECT_IDS = [
 ]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
+    "BOOK_APPOINTMENT"
     # "BOOK_DETAIL"
     # "VIEW_USER_PROFILE",
     # "FILM_DETAIL",
