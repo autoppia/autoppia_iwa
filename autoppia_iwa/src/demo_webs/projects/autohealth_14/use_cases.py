@@ -291,59 +291,42 @@ VIEW_DOCTOR_PROFILE_USE_CASE = UseCase(
 )
 CONTACT_DOCTOR_ADDITIONAL_INFO = """
 CRITICAL REQUIREMENTS:
-1. The request must start with: "Contact a doctor...".
-2. Do not mention a single constraint more than once in the request.
+1. The request must start with: "Contact [DOCTOR_NAME] about [SUBJECT]...".
+2. Include patient information (name, email, phone) when specified in constraints.
+3. Include message details (subject, urgency, preferred contact method) when specified.
+4. Do not mention a single constraint more than once in the request.
 
 Correct examples:
-- Contact a doctor where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology' and rating equals '4.8'.
+- Contact Dr. Alice Thompson about 'Prescription question'. Fill in your name, email, phone, message, urgency level, and preferred contact method.
+- Contact a doctor where doctor_name equals 'Dr. Daniel Roberts' and subject equals 'Follow-up question' and patient_name equals 'John Doe' and urgency equals 'high'.
 
 Incorrect examples:
 - Retrieve doctor 'Dr. Alice Thompson'.
-
-3. Pay attention to the constraints:
-Example:
-constraints:
-{
-'doctor_name': {'operator': 'equals', 'value': 'Dr. Alice Thompson'},
-'rating': {'operator': 'equals', 'value': '4.8'},
-'speciality': {'operator': 'equals', 'value': 'Cardiology'}
-}
-Correct:
-"Contact a doctor where doctor_name equals 'Dr. Alice Thompson' and speciality equals 'Cardiology' and rating equals '4.8'."
-Incorrect:
-"Retrieve doctor 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
+- Contact doctor without subject.
 """.strip()
 CONTACT_DOCTOR_USE_CASE = UseCase(
     name="CONTACT_DOCTOR",
-    description="The user wants to contact a doctor based on their name, speciality, or rating.",
+    description="The user contacted a doctor about a subject. Fill in all required patient information including name, email, phone, message, urgency level, and preferred contact method. Uses semantic values (doctor names, specialty names, patient names) for natural prompts.",
     event=ContactDoctorEvent,
     event_source_code=ContactDoctorEvent.get_source_code_of_class(),
     additional_prompt_info=CONTACT_DOCTOR_ADDITIONAL_INFO,
     constraints_generator=generate_contact_doctor_constraints,
     examples=[
         {
-            "prompt": "Contact a doctor where doctor_name equals 'Dr. Alice Thompson'",
-            "prompt_for_task_generation": "Contact a doctor where doctor_name equals 'Dr. Alice Thompson'",
+            "prompt": "Contact Dr. Alice Thompson about 'General inquiry'. Fill in your name, email, phone, message, urgency level, and preferred contact method.",
+            "prompt_for_task_generation": "Contact Dr. Alice Thompson about 'General inquiry'. Fill in your name, email, phone, message, urgency level, and preferred contact method.",
         },
         {
-            "prompt": "Contact a doctor where speciality equals 'Dermatology'",
-            "prompt_for_task_generation": "Contact a doctor where speciality equals 'Dermatology'",
+            "prompt": "Contact a doctor where doctor_name equals 'Dr. Daniel Roberts' and subject equals 'Prescription question' and patient_name equals 'John Doe' and patient_email contains '@gmail.com' and urgency equals 'medium'",
+            "prompt_for_task_generation": "Contact a doctor where doctor_name equals 'Dr. Daniel Roberts' and subject equals 'Prescription question' and patient_name equals 'John Doe' and patient_email contains '@gmail.com' and urgency equals 'medium'",
         },
         {
-            "prompt": "Contact a doctor where rating greater than 4.7",
-            "prompt_for_task_generation": "Contact a doctor where rating greater than 4.7",
+            "prompt": "Contact a doctor where doctor_name contains 'Nguyen' and speciality equals 'Dermatology' and subject contains 'Appointment' and patient_name equals 'Emma Wilson' and preferred_contact_method equals 'email'",
+            "prompt_for_task_generation": "Contact a doctor where doctor_name contains 'Nguyen' and speciality equals 'Dermatology' and subject contains 'Appointment' and patient_name equals 'Emma Wilson' and preferred_contact_method equals 'email'",
         },
         {
-            "prompt": "Contact a doctor where speciality equals 'Pediatrics' and rating greater than 4.5",
-            "prompt_for_task_generation": "Contact a doctor where speciality equals 'Pediatrics' and rating greater than 4.5",
-        },
-        {
-            "prompt": "Contact a doctor where doctor_name not equals 'Dr. Daniel Ruiz'",
-            "prompt_for_task_generation": "Contact a doctor where doctor_name not equals 'Dr. Daniel Ruiz'",
-        },
-        {
-            "prompt": "Contact a doctor where speciality contains 'Cardio'",
-            "prompt_for_task_generation": "Contact a doctor where speciality contains 'Cardio'",
+            "prompt": "Contact Dr. Michael Smith about 'Test results inquiry'. Fill in your name, email, phone, message, urgency level, and preferred contact method.",
+            "prompt_for_task_generation": "Contact Dr. Michael Smith about 'Test results inquiry'. Fill in your name, email, phone, message, urgency level, and preferred contact method.",
         },
     ],
 )
@@ -622,6 +605,7 @@ CANCEL_VIEW_REVIEWS_USE_CASE = UseCase(
 )
 ALL_USE_CASES = [
     BOOK_APPOINTMENT_USE_CASE,
+    CONTACT_DOCTOR_USE_CASE,
     # APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE,
     # CANCEL_BOOK_APPOINTMENT_USE_CASE,
     # VIEW_PRESCRIPTION_USE_CASE,
@@ -630,7 +614,6 @@ ALL_USE_CASES = [
     # VIEW_HEALTH_METRICS_USE_CASE,
     # FILTER_BY_CATEGORY_USE_CASE,
     # VIEW_DOCTOR_PROFILE_USE_CASE,
-    # CONTACT_DOCTOR_USE_CASE,
     # DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,
     # CANCEL_CONTACT_DOCTOR_USE_CASE,
     # VIEW_REVIEWS_CLICKED_USE_CASE,

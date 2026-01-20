@@ -9,6 +9,7 @@ from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_fr
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
 from .data import (
+    EQUALITY_OPERATORS,
     FIELD_MAP_CONTACT_DOCTOR_SUCCESSFULLY,
     FIELD_OPERATORS_MAP_APPOINTMENT_BOOKED_SUCCESSFULLY,
     FIELD_OPERATORS_MAP_BOOK_APPOINTMENT,
@@ -34,6 +35,7 @@ from .data import (
     MODIFIED_PATIENT_NAMES,
     MODIFIED_PATIENT_PHONES,
     MODIFIED_REASON_FOR_VISIT,
+    STRING_OPERATORS,
 )
 from .data_utils import (
     extract_health_dataset,
@@ -395,10 +397,73 @@ async def generate_view_doctor_profile_constraints(task_url: str | None = None, 
 
 
 async def generate_contact_doctor_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """
+    Generate constraints for contact_doctor use case.
+    Prioritizes semantic values (doctor_name, specialty, subject) over technical IDs
+    to ensure prompts are natural and human-readable.
+    """
     doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operator = FIELD_OPERATORS_MAP_CONTACT_DOCTOR
-    selected_field = ["doctor_name"]
-    constraints_list = _generate_constraints(doctors_data, field_operator, selected_fields=selected_field)
+    appointments_data = await _get_appointments_data(task_url, dataset)
+    field_operators = FIELD_OPERATORS_MAP_CONTACT_DOCTOR
+    
+    # Core doctor fields (always required for verification)
+    # These use semantic values: doctor_name, speciality
+    core_fields = ["doctor_name", "speciality"]
+    core_constraints = _generate_constraints(
+        doctors_data, 
+        field_operators, 
+        selected_fields=core_fields
+    )
+    
+    # Subject field (constraint for benchmark verification)
+    # Subject is a user input, use common inquiry subjects
+    subject_values = [
+        "General inquiry",
+        "Follow-up question",
+        "Prescription question",
+        "Appointment request",
+        "Medical question",
+        "Test results inquiry"
+    ]
+    subject_constraints = [
+        create_constraint_dict("subject", ComparisonOperator(random.choice(STRING_OPERATORS)), random.choice(subject_values))
+    ]
+    
+    # Patient information fields (semantic values for prompts)
+    # Use field_map with MODIFIED_* datasets because patient data comes from form inputs
+    field_map = {
+        "patient_name": {"field": "patient_name", "dataset": MODIFIED_PATIENT_NAMES},
+        "patient_email": {"field": "email", "dataset": MODIFIED_PATIENT_EMAILS},
+        "patient_phone": {"field": "contact", "dataset": MODIFIED_PATIENT_PHONES},
+    }
+    
+    # Select a subset of patient fields (2-3 fields) to avoid too many constraints
+    patient_field_candidates = ["patient_name", "patient_email", "patient_phone"]
+    num_patient_fields = random.randint(2, min(3, len(patient_field_candidates)))
+    selected_patient_fields = random.sample(patient_field_candidates, num_patient_fields)
+    
+    # Generate constraints for selected patient fields
+    patient_constraints = _generate_constraints(
+        appointments_data,
+        field_operators,
+        selected_fields=selected_patient_fields,
+        field_map=field_map
+    )
+    
+    # Message fields (urgency, preferred_contact_method, appointment_request)
+    # These are enum-like fields, so we'll generate simple constraints
+    urgency_values = ["low", "medium", "high"]
+    preferred_contact_method_values = ["email", "phone", "either"]
+    
+    message_constraints = [
+        create_constraint_dict("urgency", ComparisonOperator(random.choice(STRING_OPERATORS)), random.choice(urgency_values)),
+        create_constraint_dict("preferred_contact_method", ComparisonOperator(random.choice(STRING_OPERATORS)), random.choice(preferred_contact_method_values)),
+        create_constraint_dict("appointment_request", ComparisonOperator(random.choice(EQUALITY_OPERATORS)), random.choice([True, False]))
+    ]
+    
+    # Combine all constraints
+    constraints_list = core_constraints + subject_constraints + patient_constraints + message_constraints
+    
     return constraints_list
 
 

@@ -256,7 +256,21 @@ FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE = {
     "rating": LOGICAL_OPERATORS,
 }
 
-FIELD_OPERATORS_MAP_CONTACT_DOCTOR = {**FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE}
+FIELD_OPERATORS_MAP_CONTACT_DOCTOR = {
+    # Doctor Information (constraints for benchmark verification)
+    "doctor_name": STRING_OPERATORS,
+    "speciality": STRING_OPERATORS,
+    # Patient Information
+    "patient_name": STRING_OPERATORS,
+    "patient_email": STRING_OPERATORS,
+    "patient_phone": EQUALITY_OPERATORS,
+    # Message Information (constraints for benchmark verification)
+    "subject": STRING_OPERATORS,
+    "message": STRING_OPERATORS,
+    "urgency": STRING_OPERATORS,  # "low" | "medium" | "high"
+    "preferred_contact_method": STRING_OPERATORS,  # "email" | "phone" | "either"
+    "appointment_request": EQUALITY_OPERATORS,
+}
 
 FIELD_MAP_CONTACT_DOCTOR_SUCCESSFULLY = {
     "doctor_name": STRING_OPERATORS,
