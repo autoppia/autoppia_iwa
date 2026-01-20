@@ -76,7 +76,7 @@ def _generate_allowed_genres_list(movies_data: list[dict]) -> list[str]:
 ###############################################################################
 REGISTRATION_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to register using username '<username>', email <email> and password '<password> (**strictly** containing the username, email and password placeholders)'.
+1. Be sure to add instruction to register using username equals '<username>', email equals <email> and password equals '<password> (**strictly** containing the username, email and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 All email must finish with @gmail.com, so pay attention to the constraints.
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -91,20 +91,20 @@ REGISTRATION_USE_CASE = UseCase(
     additional_prompt_info=REGISTRATION_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Register with the following username:<username>,email:<email> and password:<password>",
-            "prompt_for_task_generation": "Register with the following username:<username>,email:<email> and password:<password>",
+            "prompt": "Register where username equals <username>, email equals <email> and password equals <password>",
+            "prompt_for_task_generation": "Register where username equals <username>, email equals <email> and password equals <password>",
         },
         {
-            "prompt": "Create a new account with username:<username>,email:<email> and password:<password>",
-            "prompt_for_task_generation": "Create a new account with username:<username>,email:<email> and password:<password>",
+            "prompt": "Create a new account where username equals <username>, email equals <email> and password equals <password>",
+            "prompt_for_task_generation": "Create a new account where username equals <username>, email equals <email> and password equals <password>",
         },
         {
-            "prompt": "Fill the registration form with username:<username>, email:<email> and password:<password>",
-            "prompt_for_task_generation": "Fill the registration form with username:<username>, email:<email> and password:<password>",
+            "prompt": "Fill the registration form where username equals <username>, email equals <email> and password equals <password>",
+            "prompt_for_task_generation": "Fill the registration form where username equals <username>, email equals <email> and password equals <password>",
         },
         {
-            "prompt": "Sign up for an account with username:<username>,email:<email> and password:<password>",
-            "prompt_for_task_generation": "Sign up for an account with username:<username>,email:<email> and password:<password>",
+            "prompt": "Sign up for an account where username equals <username>, email equals <email> and password equals <password>",
+            "prompt_for_task_generation": "Sign up for an account where username equals <username>, email equals <email> and password equals <password>",
         },
     ],
 )
@@ -114,7 +114,7 @@ REGISTRATION_USE_CASE = UseCase(
 ###############################################################################
 LOGIN_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to login using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+1. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -129,20 +129,20 @@ LOGIN_USE_CASE = UseCase(
     additional_prompt_info=LOGIN_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Login for the following username:<username> and password:<password>",
-            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>",
+            "prompt": "Login where username equals <username> and password equals <password>",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>",
         },
         {
-            "prompt": "Login with a specific username:<username> and password:<password>",
-            "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>",
+            "prompt": "Login with a specific username equals <username> and password equals <password>",
+            "prompt_for_task_generation": "Login with a specific username equals <username> and password equals <password>",
         },
         {
-            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>",
-            "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>",
+            "prompt": "Fill the Login Form where username equals <username> and password equals <password>",
+            "prompt_for_task_generation": "Fill the Login Form where username equals <username> and password equals <password>",
         },
         {
-            "prompt": "Sign in to the website username:<username> and password:<password>",
-            "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>",
+            "prompt": "Sign in to the website where username equals <username> and password equals <password>",
+            "prompt_for_task_generation": "Sign in to the website where username equals <username> and password equals <password>",
         },
     ],
 )
@@ -152,7 +152,7 @@ LOGIN_USE_CASE = UseCase(
 ###############################################################################
 LOGOUT_ADDITIONAL_PROMPT_INFO = """"
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
-1. Be sure to add instruction to login using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+1. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
 Examples include: "First, authenticate with...", "Initiate session using...", "After successful login with...", "Once logged in as...", etc. Followed by the book addition request.
 
 ALL prompts must follow this pattern exactly, each phrased slightly differently but containing EXACTLY the same constraint criteria.
@@ -167,24 +167,24 @@ LOGOUT_USE_CASE = UseCase(
     additional_prompt_info=LOGOUT_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Login for the following username:<username> and password:<password>, then logout",
-            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>, then logout",
+            "prompt": "Login where username equals <username> and password equals <password>, then logout",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>, then logout",
         },
         {
-            "prompt": "Login with a specific username:<username> and password:<password>, then sign out from the system",
-            "prompt_for_task_generation": "Login with a specific username:<username> and password:<password>, then sign out from the system",
+            "prompt": "Login with a specific username equals <username> and password equals <password>, then sign out from the system",
+            "prompt_for_task_generation": "Login with a specific username equals <username> and password equals <password>, then sign out from the system",
         },
         {
-            "prompt": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
-            "prompt_for_task_generation": "Fill the Login Form with a specific username:<username> and password:<password>, once logged in, logout from my account",
+            "prompt": "Fill the Login Form where username equals <username> and password equals <password>, once logged in, logout from my account",
+            "prompt_for_task_generation": "Fill the Login Form where username equals <username> and password equals <password>, once logged in, logout from my account",
         },
         {
-            "prompt": "Sign in to the website username:<username> and password:<password>, after that please log me out",
-            "prompt_for_task_generation": "Sign in to the website username:<username> and password:<password>, after that please log me out",
+            "prompt": "Sign in to the website where username equals <username> and password equals <password>, after that please log me out",
+            "prompt_for_task_generation": "Sign in to the website where username equals <username> and password equals <password>, after that please log me out",
         },
         {
-            "prompt": "Authenticate with username:<username> and password:<password>, then end my session",
-            "prompt_for_task_generation": "Authenticate with username:<username> and password:<password>, then end my session",
+            "prompt": "Authenticate where username equals <username> and password equals <password>, then end my session",
+            "prompt_for_task_generation": "Authenticate where username equals <username> and password equals <password>, then end my session",
         },
     ],
 )
@@ -791,8 +791,8 @@ EDIT_PROFILE_ADDITIONAL_PROMPT_INFO = """
 CRITICAL REQUIREMENT: EVERY prompt you generate MUST:
 1. Include ALL constraints mentioned above — not just some of them.
 2. Include ONLY the constraints mentioned above — do not add any other criteria or filters.
-3. Begin with "Login for the following username:<username> and password:<password>".
-4. Be sure to add instruction to login using username '<username>' and password '<password> (**strictly** containing both the username and password placeholders)'.
+3. Begin with "Login for the following username equals <username> and password equals <password>".
+4. Be sure to add instruction to login using username equals '<username>' and password equals '<password> (**strictly** containing both the username and password placeholders)'.
 5. Be phrased as a request to edit or modify a user profile (use phrases like "Edit...", "Modify...", "Update...", "Change...", etc.).
 
 For example, if the constraints are "username equals 'filmfan' AND password equals 'pass123' AND bio contains 'cinema'":
@@ -812,32 +812,32 @@ EDIT_USER_PROFILE_USE_CASE = UseCase(
     additional_prompt_info=EDIT_PROFILE_ADDITIONAL_PROMPT_INFO,
     examples=[
         {
-            "prompt": "Login for the following username:user1 and password:pass123. Update your first name to John.",
-            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your first name to <first_name>.",
+            "prompt": "Login where username equals user1 and password equals pass123. Update your first name to John.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Update your first name to <first_name>.",
         },
         {
-            "prompt": "Login for the following username:filmfan and password:pass456. Modify your bio to include your passion for cinema.",
-            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Modify your bio to include <bio_content>.",
+            "prompt": "Login where username equals filmfan and password equals pass456. Modify your bio to include your passion for cinema.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Modify your bio to include <bio_content>.",
         },
         {
-            "prompt": "Login for the following username:movielover and password:pass789. Change your location to New York, USA.",
-            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your location to <location>.",
+            "prompt": "Login where username equals movielover and password equals pass789. Change your location to New York, USA.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Change your location to <location>.",
         },
         {
-            "prompt": "Login for the following username:cinephile and password:pass321. Edit your website to https://myfilmblog.example.com.",
-            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Edit your website to <website>.",
+            "prompt": "Login where username equals cinephile and password equals pass321. Edit your website to https://myfilmblog.example.com.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Edit your website to <website>.",
         },
         {
-            "prompt": "Login for the following username:director101 and password:pass654. Update your favorite genre to Sci-Fi.",
-            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Update your favorite genre to <genre>.",
+            "prompt": "Login where username equals director101 and password equals pass654. Update your favorite genre to Sci-Fi.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Update your favorite genre to <genre>.",
         },
         {
-            "prompt": "Login for the following username:producer and password:pass987. Change your last name to Smith.",
-            "prompt_for_task_generation": "Login for the following username:<username> and password:<password>. Change your last name to <last_name>.",
+            "prompt": "Login where username equals producer and password equals pass987. Change your last name to Smith.",
+            "prompt_for_task_generation": "Login where username equals <username> and password equals <password>. Change your last name to <last_name>.",
         },
         {
-            "prompt": "Login for the following username:user<web_agent_id> and password:password123. Modify yourprofile to ensure that your location does NOT contain the word 'a' and that your website contains 'https://cinephileworld.example.org'    ",
-            "prompt_for_task_generation": "Login for the following username:user<web_agent_id> and password:password123. Modify yourprofile to ensure that your location does NOT contain the word 'a' and that your website contains <website>  ",
+            "prompt": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains 'https://cinephileworld.example.org'",
+            "prompt_for_task_generation": "Login where username equals user<web_agent_id> and password equals password123. Modify your profile to ensure that your location does NOT contain 'a' and that your website contains <website>",
         },
     ],
 )
