@@ -26,8 +26,8 @@ SYNTHETIC PROMPT GENERATION PROTOCOL
 4. INTERPRETING CONTAINS VS. EQUALS:
    - If the constraint includes the word **'contains'**, it means the specified word or phrase is **part of** the complete value (i.e., the full value can contain more than just the given word).
      - Example: "title contains 'Ring'" → matches "The Lord of the Rings"
-   - If the constraint uses **'equals'**, you must use the word **'equal'** in the prompt and ensure that the full value is **exactly equal** to the specified one — no more, no less.
-     - Example: "genre equals 'Romance'" → only matches books with genre exactly 'Romance'
+   - If the constraint uses **'equals'**, literal word equals (or equal to) between the field name and the value and ensure that the full value is **exactly equal** to the specified one — no more, no less.
+     - Example: "genre equals 'Romance'" → only matches books with genre equals 'Romance'
 
 ## CONSTRAINT REPRESENTATION EXAMPLE
 If constraints are "director not_equals Robert Zemeckis AND year greater_than 2010":
