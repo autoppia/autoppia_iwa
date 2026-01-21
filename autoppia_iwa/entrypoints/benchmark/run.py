@@ -131,6 +131,7 @@ CFG = BenchmarkConfig(
     prompts_per_use_case=1,
     num_use_cases=0,  # 0 = all use-cases
     use_cases=USE_CASES,
+    max_constraints=1, # max number of constraints per task
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents

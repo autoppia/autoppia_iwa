@@ -79,7 +79,7 @@ class UseCase(BaseModel):
                 self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
 
-    async def generate_constraints_async(self, task_url: str | None = None, dataset: list[dict] | None = None):
+    async def generate_constraints_async(self, task_url: str | None = None, dataset: list[dict] | None = None, max_constraints: int | None = None):
         """
         Async version that awaits async constraints generators when provided.
 
@@ -107,6 +107,10 @@ class UseCase(BaseModel):
                 self.constraints = await result
             else:
                 self.constraints = result
+
+            if max_constraints and self.constraints and len(self.constraints) > max_constraints:
+                self.constraints = self.constraints[:max_constraints]
+                
         return self.constraints_to_str() if self.constraints else ""
 
     def constraints_to_str(self) -> str:

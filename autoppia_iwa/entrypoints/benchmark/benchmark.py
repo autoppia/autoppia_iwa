@@ -240,6 +240,7 @@ class Benchmark:
             num_use_cases=self.config.num_use_cases,
             use_cases=self.config.use_cases,
             dynamic=self.config.dynamic,
+            max_constraints=self.config.max_constraints,
         )
 
         if tasks:

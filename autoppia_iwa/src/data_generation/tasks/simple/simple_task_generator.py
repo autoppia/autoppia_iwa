@@ -62,7 +62,7 @@ class SimpleTaskGenerator:
         self._dataset_cache: dict[tuple[str, int], Any] = {}
         self._seed_cache: dict[str, int] = {}
 
-    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5, use_cases: list[str] | None = None, dynamic: bool | None = None) -> list[Task]:
+    async def generate(self, num_use_cases: int, prompts_per_use_case: int = 5, use_cases: list[str] | None = None, dynamic: bool | None = None, max_constraints: int | None = None) -> list[Task]:
         """
         Generate tasks for all use cases in the web project.
         """
@@ -95,7 +95,7 @@ class SimpleTaskGenerator:
         for use_case in web_use_cases:
             _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
             try:
-                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic, base_url=base_url)
+                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic, base_url=base_url, max_constraints=max_constraints)
                 all_tasks.extend(tasks_for_use_case)
                 _log_task_generation(
                     f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}' (requested {prompts_per_use_case})",
@@ -111,7 +111,7 @@ class SimpleTaskGenerator:
         _log_task_generation(f"Total generated tasks across all use cases: {len(all_tasks)}", context="SUMMARY")
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5, dynamic: bool | None = None, base_url: str | None = None) -> list[Task]:
+    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 5, dynamic: bool | None = None, base_url: str | None = None, max_constraints: int | None = None) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
 
@@ -135,12 +135,12 @@ class SimpleTaskGenerator:
                 if dataset is None:
                     logger.debug(f"Dataset not available for use case '{use_case.name}', generating constraints without dataset")
                 # Generate constraints - dataset can be None, generator should handle it
-                constraints_info = await use_case.generate_constraints_async(task_url=constraint_ctx.url, dataset=dataset)
+                constraints_info = await use_case.generate_constraints_async(task_url=constraint_ctx.url, dataset=dataset, max_constraints=max_constraints)
             except Exception as e:
                 # If constraint generation fails, try without dataset as fallback
                 logger.warning(f"Constraint generation failed for '{use_case.name}': {e}. Attempting without dataset...")
                 try:
-                    constraints_info = await use_case.generate_constraints_async(task_url=constraint_ctx.url, dataset=None)
+                    constraints_info = await use_case.generate_constraints_async(task_url=constraint_ctx.url, dataset=None, max_constraints=max_constraints)
                 except Exception as e2:
                     # If it still fails, skip this use case
                     logger.warning(f"Skipping use case '{use_case.name}' due to constraint generation error: {e2}")

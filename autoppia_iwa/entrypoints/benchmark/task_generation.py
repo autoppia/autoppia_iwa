@@ -50,6 +50,7 @@ async def generate_tasks_for_project(
     num_use_cases: int,
     use_cases: list[str] | None = None,
     dynamic: bool = False,
+    max_constraints: int | None = None,
 ):
     """
     Generate tasks for the given project, preferring cache when requested.
@@ -79,6 +80,7 @@ async def generate_tasks_for_project(
             num_of_use_cases=num_use_cases,
             use_cases=use_cases,
             dynamic=dynamic,
+            max_constraints=max_constraints,
         )
 
         if tasks:

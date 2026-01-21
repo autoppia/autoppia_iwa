@@ -30,7 +30,7 @@ class BenchmarkConfig:
     use_cached_tasks: bool = False
     prompts_per_use_case: int = 1
     num_use_cases: int = 0  # 0 = use all available use-cases
-
+    max_constraints: int | None = 0 
     # Execution
     runs: int = 1
     max_parallel_agent_calls: int = 1

@@ -69,7 +69,7 @@ class TaskGenerationPipeline:
             if self.task_config.generate_global_tasks:
                 _log_task_generation("Generating global tasks")
                 global_tasks = await self.global_pipeline.generate(
-                    prompts_per_use_case=self.task_config.prompts_per_use_case, num_use_cases=self.task_config.num_use_cases, use_cases=self.task_config.use_cases, dynamic=self.task_config.dynamic
+                    prompts_per_use_case=self.task_config.prompts_per_use_case, num_use_cases=self.task_config.num_use_cases, use_cases=self.task_config.use_cases, dynamic=self.task_config.dynamic, max_constraints=self.task_config.max_constraints
                 )
 
                 _log_task_generation(f"Generated {len(global_tasks)} global tasks")

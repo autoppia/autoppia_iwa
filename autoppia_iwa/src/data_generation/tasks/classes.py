@@ -184,6 +184,7 @@ class TaskGenerationConfig(BaseModel):
     # Specific use cases to focus on, will override num_use_cases if set, for current project
     use_cases: list[str] | None = None
     dynamic: bool = False
+    max_constraints: int | None = None # max number of constraints per task, 0 = no limit
 
     @field_validator("prompts_per_use_case", mode="before")
     @classmethod
