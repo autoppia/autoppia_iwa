@@ -63,7 +63,8 @@ class GlobalTestGenerationPipeline:
             except Exception as e:
                 logger.error(f"Failed to generate tests for Task={task.id}: {e!s}")
                 logger.debug(f"Exception details: {type(e).__name__}, {e!r}")
-                raise e
+                # Don't raise - continue with other tasks instead of breaking the entire validator
+                continue
 
         return tasks
 
