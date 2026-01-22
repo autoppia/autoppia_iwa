@@ -10,9 +10,10 @@ from autoppia_iwa.config.config import DEMO_WEBS_ENDPOINT
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.execution.actions.actions import BaseAction, NavigateAction
 from autoppia_iwa.src.shared.utils import generate_random_web_agent_id
+from autoppia_iwa.src.web_agents.classes import IWebAgent
 
 
-class ApifiedWebCUA:
+class ApifiedWebCUA(IWebAgent):
     """
     HTTP wrapper for step-wise WebCUA agents exposing a /act (or /step) endpoint.
 

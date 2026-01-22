@@ -13,14 +13,29 @@ from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
-from autoppia_iwa.src.web_agents.cua import FixedAutobooksAgent
+from autoppia_iwa.src.web_agents.cua import ApifiedWebCUA
 
 # Configuración para modo STATEFUL
 PROJECT_IDS = ["autobooks"]
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 
+# ✅ IMPORTANTE: En modo stateful, los agentes DEBEN ser HTTP (ApifiedWebCUA)
+# El agente debe estar corriendo en un servidor y exponer el endpoint /act
+# 
+# Ejemplo: Si tienes un agente corriendo en http://localhost:5000
+# AGENTS = [
+#     ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="MyAgent"),
+# ]
+#
+# ⚠️ NO usar agentes Python locales (FixedAutobooksAgent, etc.) en modo stateful
+# Esos son para modo concurrent solamente.
+
 AGENTS = [
-    FixedAutobooksAgent(id="1", name="FixedAutobooksAgent"),
+    # Ejemplo: Agente HTTP corriendo localmente
+    # ApifiedWebCUA(base_url="http://localhost:5000", id="1", name="LocalAgent"),
+    
+    # O agente remoto
+    # ApifiedWebCUA(base_url="http://mi-agente.com", id="1", name="RemoteAgent"),
 ]
 
 # Configuración en modo STATEFUL

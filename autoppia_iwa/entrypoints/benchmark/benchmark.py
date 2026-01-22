@@ -113,8 +113,22 @@ class Benchmark:
     ) -> EvaluationResult:
         """
         Evalúa un agente usando AsyncStatefulEvaluator en modo iterativo.
-        Similar a evaluate_with_stateful_cua de la subnet, pero adaptado para el benchmark.
+        
+        ✅ El agente debe implementar IWebAgent con método act().
+        Típicamente es un ApifiedWebCUA (agente HTTP) corriendo en un servidor.
+        
+        El agente debe estar corriendo en un servidor HTTP y responder en:
+        POST /act con: {task, snapshot_html, url, step_index}
+        Responde: {actions: [...]}
         """
+        # Verificar que el agente tenga método act()
+        if not hasattr(agent, 'act') or not callable(getattr(agent, 'act', None)):
+            raise ValueError(
+                f"❌ El agente '{agent.name}' no implementa IWebAgent correctamente.\n"
+                f"Debe tener el método act() que recibe el estado del browser.\n"
+                f"Usa: ApifiedWebCUA(base_url='http://localhost:PORT')"
+            )
+        
         evaluator = AsyncStatefulEvaluator(
             task=task,
             web_agent_id=agent.id,
@@ -129,53 +143,57 @@ class Benchmark:
         execution_history = []
 
         try:
-            step_index = 0
+            step_index = 0  # Número de LLAMADAS al agente
+            total_actions_executed = 0  # Número de ACCIONES ejecutadas
+            
             step_result = await evaluator.reset()
             final_score = step_result.score.raw_score
             tests_passed = step_result.score.tests_passed
             total_tests = step_result.score.total_tests
 
-            while step_index < max_steps and not bool(step_result.score.success):
+            # Usar total_actions_executed como límite (igual que la subnet)
+            while total_actions_executed < max_steps and not bool(step_result.score.success):
                 snapshot = step_result.snapshot
                 html = snapshot.html or ""
                 current_url = snapshot.url or task.url
 
-                # Enriquecer la tarea con el estado actual del browser
-                enriched_task = task.model_copy(deep=True)
-                enriched_task.url = current_url
-                # Opcionalmente podríamos agregar el HTML al contexto del agente
-
                 try:
-                    # El agente decide las próximas acciones
-                    solution = await agent.solve_task(enriched_task)
-                    actions = solution.actions if solution else []
+                    # ✅ Llamar al endpoint /act del agente HTTP (IGUAL que la subnet con miners)
+                    actions = await agent.act(
+                        task=task,
+                        snapshot_html=html,
+                        url=current_url,
+                        step_index=step_index,
+                    )
                 except Exception as exc:
-                    logger.warning(f"[stateful_eval] agent {agent.name} failed: {exc}")
+                    logger.warning(f"[stateful_eval] agent {agent.name} /act failed: {exc}")
                     actions = []
 
                 if not actions:
                     # Sin acciones = agente terminó o error
                     step_result = await evaluator.step(None)
-                    step_index += 1
+                    total_actions_executed += 1
                     final_score = step_result.score.raw_score
                     tests_passed = step_result.score.tests_passed
                     total_tests = step_result.score.total_tests
+                    step_index += 1
                     continue
 
-                # ⭐ MEJORA: Ejecutar TODAS las acciones del agente en batch
-                actions_to_execute = actions[:min(len(actions), max_steps - step_index)]
+                # Calcular límite con total_actions_executed (como en subnet)
+                actions_to_execute = actions[:min(len(actions), max_steps - total_actions_executed)]
                 
                 logger.debug(
                     f"[stateful_eval] agent {agent.name} returned {len(actions)} actions, "
                     f"executing {len(actions_to_execute)}"
                 )
 
+                # Ejecutar TODAS las acciones en batch
                 for action in actions_to_execute:
                     step_result = await evaluator.step(action)
                     final_score = step_result.score.raw_score
                     tests_passed = step_result.score.tests_passed
                     total_tests = step_result.score.total_tests
-                    step_index += 1
+                    total_actions_executed += 1
                     
                     # Guardar el resultado de la acción
                     if step_result.action_result:
@@ -189,6 +207,8 @@ class Benchmark:
                 # Si completó, salir del loop principal
                 if step_result.score.success:
                     break
+                
+                step_index += 1
 
         except Exception as exc:
             logger.error(f"[stateful_eval] agent {agent.name} evaluation error: {exc}")
@@ -211,7 +231,7 @@ class Benchmark:
             stats=EvaluationStats(
                 web_agent_id=agent.id,
                 task_id=task.id,
-                action_count=len(execution_history),
+                action_count=total_actions_executed,
                 start_time=start_ts,
                 total_time=elapsed,
                 raw_score=final_score,
@@ -247,7 +267,11 @@ class Benchmark:
         run_index: int,
     ) -> TaskSolution | None:
         """
-        Resolve a single Task with a single Agent.
+        Resolve a single Task with a single Agent usando act().
+        
+        ✅ TODOS los agentes usan act() ahora (tanto concurrent como stateful).
+        En modo concurrent, llamamos act() UNA vez con el estado inicial.
+        
         Optionally uses a cached solution when configured.
         Resets the project backend DB for isolation per attempt.
         """
@@ -270,15 +294,23 @@ class Benchmark:
                 start_ts = time.time()
 
                 prepared_task = task.prepare_for_agent(agent.id)
-                solution = await agent.solve_task(prepared_task)
+                
+                # ✅ Usar act() en lugar de solve_task()
+                # En modo concurrent, llamamos UNA vez con snapshot inicial vacío
+                actions = await agent.act(
+                    task=prepared_task,
+                    snapshot_html="",  # Vacío en modo concurrent (el agente no necesita ver el HTML)
+                    url=task.url,
+                    step_index=0,  # Siempre 0 en modo concurrent
+                )
 
-                if not solution:
-                    logger.warning(f"{agent.name} returned empty solution for task {task.id}")
+                if not actions:
+                    logger.warning(f"{agent.name} returned empty actions for task {task.id}")
                     return None
 
                 task_solution = TaskSolution(
                     task_id=task.id,
-                    actions=solution.actions or [],
+                    actions=actions,
                     web_agent_id=agent.id,
                 )
                 # Normalize any embedded agent IDs inside actions if needed
