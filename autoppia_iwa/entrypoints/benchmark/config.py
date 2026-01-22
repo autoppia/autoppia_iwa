@@ -40,12 +40,12 @@ class BenchmarkConfig:
     record_gif: bool = False
 
     # Evaluator mode
-    # "concurrent": El agente genera todas las acciones de una vez (modo actual/tradicional)
-    # "iterative": El agente decide acción por acción viendo el estado del browser
-    evaluator_mode: Literal["concurrent", "iterative"] = "concurrent"
+    # "concurrent": El agente genera todas las acciones de una vez (modo tradicional)
+    # "stateful": El agente decide paso a paso viendo el estado del browser (iterativo)
+    evaluator_mode: Literal["concurrent", "stateful"] = "concurrent"
     
-    # Solo para modo iterativo: límite de acciones por tarea
-    max_iterations_per_task: int = 50
+    # Solo para modo stateful: límite de pasos por tarea
+    max_steps_per_task: int = 50
 
     # Persistence / plotting
     save_results_json: bool = True
@@ -85,11 +85,11 @@ class BenchmarkConfig:
             logger.warning("No agents configured - benchmark will not run")
         
         # Validate evaluator mode
-        if self.evaluator_mode not in ("concurrent", "iterative"):
-            raise ValueError(f"Invalid evaluator_mode: {self.evaluator_mode}. Must be 'concurrent' or 'iterative'.")
+        if self.evaluator_mode not in ("concurrent", "stateful"):
+            raise ValueError(f"Invalid evaluator_mode: {self.evaluator_mode}. Must be 'concurrent' or 'stateful'.")
         
-        if self.evaluator_mode == "iterative" and self.max_iterations_per_task <= 0:
-            raise ValueError("max_iterations_per_task must be > 0 when using iterative mode.")
+        if self.evaluator_mode == "stateful" and self.max_steps_per_task <= 0:
+            raise ValueError("max_steps_per_task must be > 0 when using stateful mode.")
 
         # Use data/outputs/ directory for all generated artifacts
         outputs_dir = self.base_dir / "data" / "outputs"

@@ -16,12 +16,7 @@ evaluation/
 │   ├── 📄 evaluator.py              # ConcurrentEvaluator
 │   └── 📄 README.md                 # Documentación específica
 │
-├── 📂 iterative_evaluator/           # 🔄 Evaluador iterativo (agentes)
-│   ├── 📄 __init__.py
-│   ├── 📄 evaluator.py              # IterativeEvaluator
-│   └── 📄 README.md                 # Documentación específica
-│
-├── 📂 stateful_evaluator/            # 🎮 Evaluador para RL/PPO
+├── 📂 stateful_evaluator/            # 🎮 Evaluador para modo iterativo/stateful
 │   ├── 📄 __init__.py
 │   ├── 📄 evaluator.py              # AsyncStatefulEvaluator, StatefulEvaluator
 │   └── 📄 README.md                 # Documentación específica
@@ -59,40 +54,17 @@ from autoppia_iwa.src.evaluation import ConcurrentEvaluator
 
 ---
 
-### 2. IterativeEvaluator 🔄
-
-**Ubicación:** `iterative_evaluator/evaluator.py`
-
-**Propósito:** Evaluar agentes de forma iterativa, acción por acción.
-
-**Uso típico:**
-- Agentes adaptativos
-- Agentes que necesitan ver resultado de cada acción
-- Evaluación de agentes de RL
-
-**Import:**
-```python
-from autoppia_iwa.src.evaluation import IterativeEvaluator
-```
-
-**Características clave:**
-- ✅ Llama al agente iterativamente
-- ✅ Enriquece task con estado del browser
-- ✅ Una acción a la vez
-- ✅ Agente puede adaptar estrategia
-
----
-
-### 3. StatefulEvaluator 🎮
+### 2. StatefulEvaluator 🎮
 
 **Ubicación:** `stateful_evaluator/evaluator.py`
 
-**Propósito:** Para Reinforcement Learning y entrenamiento de agentes.
+**Propósito:** Para evaluación iterativa paso a paso (usado en subnet y modo stateful).
 
 **Uso típico:**
+- Evaluar miners remotos en la subnet (HTTP)
+- Modo stateful del benchmark (agentes iterativos)
 - Entrenamiento de RL (PPO, DQN, etc.)
 - Testing de acciones individuales
-- Exploración interactiva
 
 **Import:**
 ```python
@@ -104,6 +76,8 @@ from autoppia_iwa.src.evaluation import AsyncStatefulEvaluator, StatefulEvaluato
 - ✅ Mantiene estado entre steps
 - ✅ Score parcial después de cada acción
 - ✅ Versiones async y sync
+- ✅ Ejecuta múltiples acciones en batch (mejora de eficiencia)
+- ✅ Usado en la subnet para miners remotos
 
 ---
 
@@ -179,7 +153,7 @@ class IEvaluator(ABC):
         ...
 ```
 
-**Nota:** `IterativeEvaluator` no implementa estos métodos (usa `evaluate_with_agent`).
+**Nota:** `StatefulEvaluator` no implementa estos métodos (usa interfaz WebCUA con `reset()` y `step()`).
 
 ---
 
@@ -191,7 +165,6 @@ Todos los evaluadores y utilidades están disponibles desde el import principal:
 # Evaluadores
 from autoppia_iwa.src.evaluation import (
     ConcurrentEvaluator,
-    IterativeEvaluator,
     AsyncStatefulEvaluator,
     StatefulEvaluator,
 )
@@ -223,24 +196,24 @@ Cada evaluador tiene su propia documentación detallada:
 
 - **General:** `evaluation/README.md`
 - **ConcurrentEvaluator:** `concurrent_evaluator/README.md`
-- **IterativeEvaluator:** `iterative_evaluator/README.md`
 - **StatefulEvaluator:** `stateful_evaluator/README.md`
 
 ---
 
 ## 🔄 Comparación Rápida
 
-| Característica | Concurrent | Iterative | Stateful |
-|---------------|-----------|-----------|----------|
-| **Input** | TaskSolution | IWebAgent | Task + actions |
-| **Llamadas al agente** | 1 | N | Manual |
-| **Estado persistente** | ❌ | ❌ | ✅ |
-| **Score parcial** | ❌ | ❌ | ✅ |
-| **Agrupación** | ✅ | ❌ | ❌ |
-| **Paralelo** | ✅ | ❌ | ❌ |
-| **Adaptativo** | ❌ | ✅ | ✅ |
-| **RL/PPO** | ❌ | ❌ | ✅ |
-| **Uso típico** | Producción | Agentes adaptativos | Entrenamiento RL |
+| Característica | Concurrent | Stateful |
+|---------------|-----------|----------|
+| **Input** | TaskSolution | Task + actions |
+| **Llamadas al agente** | 1 | N (iterativo) |
+| **Estado persistente** | ❌ | ✅ |
+| **Score parcial** | ❌ | ✅ |
+| **Agrupación** | ✅ | ❌ |
+| **Paralelo** | ✅ | ❌ |
+| **Adaptativo** | ❌ | ✅ |
+| **Batch actions** | N/A | ✅ |
+| **RL/PPO** | ❌ | ✅ |
+| **Uso típico** | Soluciones completas | Iterativo/Subnet/RL |
 
 ---
 

@@ -110,13 +110,13 @@ USE_CASES = [
 # CONFIGURACIÓN: Elige el modo de evaluación aquí
 # =====================================================
 
-# OPCIÓN 1: Modo CONCURRENT (actual/tradicional)
-# El agente genera TODAS las acciones de una vez
+# OPCIÓN 1: Modo CONCURRENT (tradicional)
+# El agente genera TODAS las acciones de una vez y se evalúan
 CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
     # Evaluator mode
-    evaluator_mode="concurrent",  # ← Modo tradicional: agente genera todas las acciones
+    evaluator_mode="concurrent",  # ← Agente genera lista completa de acciones
     # Tasks
     use_cached_tasks=True,  # load project tasks from JSON cache (autoppia_books_tasks.json)
     prompts_per_use_case=1,
@@ -140,16 +140,17 @@ CFG = BenchmarkConfig(
     plot_results=False,
 )
 
-# OPCIÓN 2: Modo ITERATIVE (adaptativo)
-# El agente decide acción por acción viendo el estado del browser
+# OPCIÓN 2: Modo STATEFUL (iterativo)
+# El agente decide paso a paso viendo el estado del browser
+# Similar a como funciona la subnet con miners remotos
 # Para usar este modo, descomenta las líneas siguientes y comenta CFG anterior:
 
 # CFG = BenchmarkConfig(
 #     projects=PROJECTS,
 #     agents=AGENTS,
 #     # Evaluator mode
-#     evaluator_mode="iterative",  # ← Modo iterativo: agente decide acción por acción
-#     max_iterations_per_task=50,  # ← Límite de acciones por tarea
+#     evaluator_mode="stateful",  # ← Modo iterativo: agente decide paso a paso
+#     max_steps_per_task=50,  # ← Límite de pasos por tarea
 #     # Tasks
 #     use_cached_tasks=True,
 #     prompts_per_use_case=1,
@@ -158,7 +159,7 @@ CFG = BenchmarkConfig(
 #     # Execution
 #     runs=1,
 #     max_parallel_agent_calls=1,
-#     use_cached_solutions=False,  # ⚠️ No compatible con modo iterativo
+#     use_cached_solutions=False,  # ⚠️ No compatible con modo stateful
 #     record_gif=True,  # Recomendado para ver la navegación adaptativa
 #     # Dynamic mode
 #     dynamic=False,
@@ -189,8 +190,8 @@ def main():
             f"{CFG.runs} runs, evaluator_mode={CFG.evaluator_mode}"
         )
         
-        if CFG.evaluator_mode == "iterative":
-            logger.info(f"Iterative mode enabled: max {CFG.max_iterations_per_task} iterations per task")
+        if CFG.evaluator_mode == "stateful":
+            logger.info(f"Stateful mode enabled: max {CFG.max_steps_per_task} steps per task")
 
         # Create and run benchmark
         benchmark = Benchmark(CFG)

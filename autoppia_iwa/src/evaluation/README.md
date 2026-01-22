@@ -14,11 +14,7 @@ evaluation/
 │   ├── __init__.py
 │   └── evaluator.py              # ConcurrentEvaluator
 │
-├── iterative_evaluator/           # Evaluador iterativo (agentes)
-│   ├── __init__.py
-│   └── evaluator.py              # IterativeEvaluator
-│
-├── stateful_evaluator/            # Evaluador para RL/PPO
+├── stateful_evaluator/            # Evaluador para modo iterativo/stateful
 │   ├── __init__.py
 │   └── evaluator.py              # AsyncStatefulEvaluator, StatefulEvaluator
 │
@@ -33,7 +29,7 @@ evaluation/
 
 ### 1. ConcurrentEvaluator
 
-**Uso:** Evaluar soluciones completas con todas las acciones ya generadas.
+**Uso:** Evaluar soluciones completas con todas las acciones ya generadas (modo tradicional).
 
 ```python
 from autoppia_iwa.src.evaluation import ConcurrentEvaluator, EvaluatorConfig
@@ -63,42 +59,9 @@ results = await evaluator.evaluate_task_solutions(task, task_solutions)
 
 ---
 
-### 2. IterativeEvaluator
+### 2. StatefulEvaluator
 
-**Uso:** Evaluar agentes de forma iterativa, ejecutando una acción a la vez.
-
-```python
-from autoppia_iwa.src.evaluation import IterativeEvaluator, EvaluatorConfig
-
-config = EvaluatorConfig(
-    should_record_gif=True,
-    max_consecutive_action_failures=2
-)
-
-evaluator = IterativeEvaluator(web_project=project, config=config)
-
-# Evaluar con un agente
-result = await evaluator.evaluate_with_agent(
-    task=task,
-    agent=agent,
-    max_iterations=50  # máximo de acciones permitidas
-)
-```
-
-**Características:**
-- Llama al agente de forma iterativa
-- Ejecuta una acción a la vez
-- Enriquece el task con el estado actual del browser
-- El agente puede adaptar su estrategia basándose en el estado
-- Se detiene cuando el agente devuelve lista vacía o alcanza max_iterations
-
-**Caso de uso típico:** Agentes que necesitan ver el resultado de cada acción antes de decidir la siguiente (agentes adaptativos).
-
----
-
-### 3. StatefulEvaluator
-
-**Uso:** Para Reinforcement Learning y entrenamiento de agentes.
+**Uso:** Para evaluación iterativa paso a paso (usado en subnet y modo stateful del benchmark).
 
 ```python
 from autoppia_iwa.src.evaluation import AsyncStatefulEvaluator, StatefulEvaluator
@@ -121,9 +84,13 @@ with StatefulEvaluator(task=task) as evaluator:
 - Mantiene estado del browser entre steps
 - Permite obtener score parcial en cada step
 - Versiones async y sync disponibles
-- Diseñado para entrenamiento de RL
+- El agente puede devolver múltiples acciones por llamada (ejecutadas en batch)
+- Usado en la subnet para evaluar miners remotos
 
-**Caso de uso típico:** Entrenar agentes de RL/PPO que necesitan feedback después de cada acción.
+**Casos de uso típicos:** 
+- Evaluar miners remotos en la subnet (HTTP)
+- Modo stateful del benchmark (agentes iterativos)
+- Entrenar agentes de RL/PPO que necesitan feedback después de cada acción
 
 ---
 
@@ -191,9 +158,9 @@ Todos los evaluadores están disponibles desde el import principal.
 ## Ejemplos Completos
 
 Ver ejemplos de uso en:
-- `entrypoints/benchmark/` - Uso de ConcurrentEvaluator
+- `entrypoints/benchmark/` - Uso de ConcurrentEvaluator y StatefulEvaluator
 - `entrypoints/test_task.py` - Uso de ConcurrentEvaluator
-- Próximamente: ejemplos de IterativeEvaluator
+- Subnet: `autoppia_web_agents_subnet/validator/evaluation/stateful_cua_eval.py` - Uso de AsyncStatefulEvaluator
 
 ---
 

@@ -1,18 +1,16 @@
 """
 Sistema de Evaluación de Autoppia IWA
 
-Este módulo proporciona tres tipos de evaluadores diferentes para distintos casos de uso:
+Este módulo proporciona dos tipos de evaluadores para distintos casos de uso:
 
 1. ConcurrentEvaluator: Para evaluar soluciones completas con todas las acciones generadas
-2. IterativeEvaluator: Para evaluar agentes de forma iterativa, acción por acción
-3. StatefulEvaluator: Para Reinforcement Learning y entrenamiento de agentes (interfaz WebCUA)
+2. StatefulEvaluator: Para evaluación iterativa paso a paso (usado en subnet y modo stateful)
 
 Además, proporciona clases comunes y utilidades compartidas.
 """
 
 # Evaluadores
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
-from autoppia_iwa.src.evaluation.iterative_evaluator import IterativeEvaluator
 from autoppia_iwa.src.evaluation.stateful_evaluator import (
     AsyncStatefulEvaluator,
     StatefulEvaluator,
@@ -40,7 +38,6 @@ from autoppia_iwa.src.evaluation.shared import (
 __all__ = [
     # Evaluadores
     "ConcurrentEvaluator",
-    "IterativeEvaluator",
     "AsyncStatefulEvaluator",
     "StatefulEvaluator",
     # Clases
