@@ -20,7 +20,7 @@ async def test_autocinema_constraints():
         generate_film_filter_constraints,
         generate_search_film_constraints,
     )
-    from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
     test_url = "http://localhost:8001/?seed=86"
 
@@ -28,7 +28,7 @@ async def test_autocinema_constraints():
 
     # 1. Resolver v2_seed
     print("\n1️⃣ Resolviendo v2_seed desde endpoint...")
-    v2_seed = await resolve_v2_seed_from_url(test_url)
+    v2_seed = get_seed_from_url(test_url)
     print(f"   ✅ seed=86 → v2_seed={v2_seed}")
 
     # 2. Cargar dataset
@@ -78,7 +78,7 @@ async def test_autobooks_constraints():
         generate_book_filter_constraints,
         generate_search_book_constraints,
     )
-    from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
     test_url = "http://localhost:8002/?seed=123"
 
@@ -86,7 +86,7 @@ async def test_autobooks_constraints():
 
     # 1. Resolver v2_seed
     print("\n1️⃣ Resolviendo v2_seed desde endpoint...")
-    v2_seed = await resolve_v2_seed_from_url(test_url)
+    v2_seed = get_seed_from_url(test_url)
     print(f"   ✅ seed=123 → v2_seed={v2_seed}")
 
     # 2. Cargar dataset
@@ -118,7 +118,7 @@ async def test_constraints_validity():
     print("=" * 80)
 
     from autoppia_iwa.src.demo_webs.projects.autocinema_1.generation_functions import _get_data, generate_film_constraints
-    from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+    from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
     test_seeds = [42, 86, 150, 200, 300]
 
@@ -126,7 +126,7 @@ async def test_constraints_validity():
 
     for seed in test_seeds:
         test_url = f"http://localhost:8001/?seed={seed}"
-        v2_seed = await resolve_v2_seed_from_url(test_url)
+        v2_seed = get_seed_from_url(test_url)
         dataset = await _get_data(seed_value=v2_seed)
         constraints = await generate_film_constraints(test_url, dataset)
 

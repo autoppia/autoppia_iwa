@@ -68,7 +68,7 @@ class _TaskStore:
         cache_dir = os.getenv("AFFINE_TASK_CACHE_DIR", str(default_cache))
         use_cached = bool(int(os.getenv("AFFINE_USE_CACHED_TASKS", "1")))
         prompts_per_use_case = int(os.getenv("AFFINE_PROMPTS_PER_USE_CASE", "1"))
-        num_use_cases = int(os.getenv("AFFINE_NUM_USE_CASES", "1"))
+        # Removed num_use_cases: use use_cases=None to get all use cases
         enable_dynamic_html = bool(int(os.getenv("AFFINE_ENABLE_DYNAMIC_HTML", "0")))
 
         tasks = await generate_tasks_for_project(
@@ -76,7 +76,6 @@ class _TaskStore:
             use_cached=use_cached,
             cache_dir=cache_dir,
             prompts_per_use_case=prompts_per_use_case,
-            num_use_cases=num_use_cases,
             use_cases=None,
             enable_dynamic_html=enable_dynamic_html,
         )

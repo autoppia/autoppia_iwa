@@ -36,9 +36,8 @@ class AgentConfig(BaseModel):
     ip: str
     port: int | None = None
     projects: list[str]
-    num_use_cases: int
     runs: int
-    use_cases: list[str] | None = None
+    use_cases: list[str] | None = None  # If None, uses all available use cases
     timeout: int = 120
     should_record_gif: bool = False
     dynamic: bool = False
@@ -81,7 +80,6 @@ async def test_your_agent(config: AgentConfig):
             agents=[agent],
             use_cached_tasks=False,
             prompts_per_use_case=1,
-            num_use_cases=config.num_use_cases,
             use_cases=config.use_cases,
             runs=config.runs,
             max_parallel_agent_calls=1,

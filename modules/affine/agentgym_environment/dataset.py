@@ -60,7 +60,6 @@ class AffineTaskDataset:
                     use_cached=self.config.use_cached_tasks,
                     cache_dir=self.config.tasks_cache_dir,
                     prompts_per_use_case=self.config.prompts_per_use_case,
-                    num_use_cases=self.config.num_use_cases,
                     use_cases=None,
                     enable_dynamic_html=self.config.enable_dynamic_html,
                 )

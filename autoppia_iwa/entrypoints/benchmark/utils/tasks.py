@@ -81,7 +81,6 @@ async def generate_tasks_for_web_project(
     use_cached_tasks: bool,
     task_cache_dir: str,
     prompts_per_use_case: int = 1,
-    num_of_use_cases: int = 1,
     use_cases: list[str] | None = None,
     dynamic: bool | None = None,
 ) -> list[Task]:
@@ -100,7 +99,7 @@ async def generate_tasks_for_web_project(
         else:
             print(f"No valid cached tasks found for '{project.name}', generating new tasks...")
 
-    config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, num_use_cases=num_of_use_cases, use_cases=use_cases, dynamic=dynamic)
+    config = TaskGenerationConfig(prompts_per_use_case=prompts_per_use_case, use_cases=use_cases, dynamic=dynamic)
 
     print(f"Generating tasks for {project.name}...")
     pipeline = TaskGenerationPipeline(web_project=project, config=config)

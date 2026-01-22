@@ -16,7 +16,7 @@ class BenchmarkConfig:
     Configure everything in code (no CLI required).
 
     Key groups:
-      • Task generation (use_cached_tasks, prompts_per_use_case, num_use_cases, use_cases)
+      • Task generation (use_cached_tasks, prompts_per_use_case, use_cases)
       • Execution controls (runs, max_parallel_agent_calls, use_cached_solutions, record_gif, enable_dynamic_html)
       • Persistence (save_results_json, plot_results, directory fields resolved in __post_init__)
       • Visualization toggles (enable_visualization, dynamic_phase_config shared with evaluator)
@@ -29,7 +29,7 @@ class BenchmarkConfig:
     # Task generation
     use_cached_tasks: bool = False
     prompts_per_use_case: int = 1
-    num_use_cases: int = 0  # 0 = use all available use-cases
+    # Removed num_use_cases: use use_cases=None to get all, or specify list for specific ones
 
     # Execution
     runs: int = 1

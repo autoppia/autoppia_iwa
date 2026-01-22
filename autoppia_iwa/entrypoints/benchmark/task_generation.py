@@ -47,7 +47,6 @@ async def generate_tasks_for_project(
     use_cached: bool,
     cache_dir: str,
     prompts_per_use_case: int,
-    num_use_cases: int,
     use_cases: list[str] | None = None,
     dynamic: bool = False,
 ):
@@ -76,7 +75,6 @@ async def generate_tasks_for_project(
             use_cached_tasks=False,  # force generation if no valid cache
             task_cache_dir=cache_dir,
             prompts_per_use_case=prompts_per_use_case,
-            num_of_use_cases=num_use_cases,
             use_cases=use_cases,
             dynamic=dynamic,
         )

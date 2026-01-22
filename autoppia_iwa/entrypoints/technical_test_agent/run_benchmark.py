@@ -45,7 +45,7 @@ CFG = BenchmarkConfig(
     # Tasks
     use_cached_tasks=False,  # Always generate fresh tasks (requires OpenAI API key in .env)
     prompts_per_use_case=1,
-    num_use_cases=0,  # 0 = todos los use cases
+    # use_cases=None means all use cases
     use_cases=USE_CASES,
     # Execution
     runs=1,

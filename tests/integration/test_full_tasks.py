@@ -20,7 +20,6 @@ async def test_full_task_generation():
     print("\n1️⃣ Configurando pipeline...")
     config = TaskGenerationConfig(
         prompts_per_use_case=2,
-        num_use_cases=3,
         use_cases=["FILM_DETAIL", "SEARCH_FILM", "FILTER_FILM"],
         dynamic=True,  # ✅ Modo dinámico
     )
@@ -119,7 +118,6 @@ async def test_autobooks_tasks():
 
     config = TaskGenerationConfig(
         prompts_per_use_case=2,
-        num_use_cases=3,
         use_cases=["BOOK_DETAIL", "SEARCH_BOOK"],
         dynamic=True,
     )

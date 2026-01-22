@@ -21,8 +21,6 @@ from autoppia_iwa.src.evaluation.evaluator.evaluator import ConcurrentEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
-from .task_generation import generate_tasks_for_project
-
 visualizer = SubnetVisualizer()
 
 
@@ -232,15 +230,16 @@ class Benchmark:
     # Per-project execution
     # ---------------------------------------------------------------------
     async def _generate_tasks_for_project(self, project: WebProject) -> list[Task]:
-        tasks = await generate_tasks_for_project(
-            project=project,
-            use_cached=self.config.use_cached_tasks,
-            cache_dir=str(self.config.tasks_cache_dir),
+        from autoppia_iwa.src.data_generation.tasks.classes import TaskGenerationConfig
+        from autoppia_iwa.src.data_generation.tasks.pipeline import TaskGenerationPipeline
+
+        config = TaskGenerationConfig(
             prompts_per_use_case=self.config.prompts_per_use_case,
-            num_use_cases=self.config.num_use_cases,
             use_cases=self.config.use_cases,
             dynamic=self.config.dynamic,
         )
+        pipeline = TaskGenerationPipeline(web_project=project, config=config)
+        tasks = await pipeline.generate()
 
         if tasks:
             try:

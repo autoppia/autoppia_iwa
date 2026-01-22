@@ -35,15 +35,15 @@ Or use the provided deployment script to deploy with PM2:
   "ip": "127.0.0.1", // or full base URL like "http://127.0.0.1:5000" or "https://agent.example.com"
   "port": 5000,       // optional; omit if ip is a full URL or you want default port
   "projects": ["DemoWeb1"],
-  "num_use_cases": 5,
   "runs": 3,
-  "use_cases": ["Login", "Checkout"],
+  "use_cases": ["Login", "Checkout"],  // optional; if null/empty, uses all available use cases
   "timeout": 120,
   "id": "1",
   "name": "TestAgent",
   "should_record_gif": false,
   "save_results_json": false,
-  "plot_results": false
+  "plot_results": false,
+  "dynamic": false  // optional; if true, tasks will include random seeds for dynamic content
 }
 ```
 

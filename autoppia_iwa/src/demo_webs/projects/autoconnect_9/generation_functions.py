@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from random import choice
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator
 from ..shared_utils import create_constraint_dict
@@ -57,7 +57,7 @@ async def _ensure_entity_dataset(
     existing = _extract_entity_dataset(dataset, entity_type)
     if existing:
         return existing
-    v2_seed = await resolve_v2_seed_from_url(task_url)
+    v2_seed = get_seed_from_url(task_url)
     return await _get_data(entity_type, method=method, seed_value=v2_seed)
 
 

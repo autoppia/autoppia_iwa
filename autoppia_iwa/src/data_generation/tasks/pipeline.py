@@ -47,9 +47,8 @@ class TaskGenerationPipeline:
         self.task_config = config
         self.llm_service = llm_service
 
-        # Initialize pipelines
-        self.global_pipeline = SimpleTaskGenerator(web_project=web_project, llm_service=llm_service)
-
+        # Initialize task generator and test pipeline
+        self.task_generator = SimpleTaskGenerator(web_project=web_project, llm_service=llm_service)
         self.global_test_pipeline = GlobalTestGenerationPipeline()
 
     async def generate(self) -> list[Task]:
@@ -65,23 +64,23 @@ class TaskGenerationPipeline:
         all_tasks = []
 
         try:
-            # 1) Generate global tasks if configured
-            if self.task_config.generate_global_tasks:
-                _log_task_generation("Generating global tasks")
-                global_tasks = await self.global_pipeline.generate(
-                    prompts_per_use_case=self.task_config.prompts_per_use_case, num_use_cases=self.task_config.num_use_cases, use_cases=self.task_config.use_cases, dynamic=self.task_config.dynamic
-                )
+            # Generate tasks
+            tasks = await self.task_generator.generate(
+                prompts_per_use_case=self.task_config.prompts_per_use_case,
+                use_cases=self.task_config.use_cases,
+                dynamic=self.task_config.dynamic
+            )
 
-                _log_task_generation(f"Generated {len(global_tasks)} global tasks")
+            _log_task_generation(f"Generated {len(tasks)} tasks")
 
-                # Add tests to tasks
-                global_tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(global_tasks)
-                all_tasks.extend(global_tasks_with_tests)
+            # Add tests to tasks
+            tasks_with_tests = await self.global_test_pipeline.add_tests_to_tasks(tasks)
+            all_tasks.extend(tasks_with_tests)
 
-                # Visualize tasks with their tests
-                visualizer = SubnetVisualizer()
-                for task in global_tasks_with_tests:
-                    visualizer.show_task_with_tests(task)
+            # Visualize tasks with their tests
+            visualizer = SubnetVisualizer()
+            for task in tasks_with_tests:
+                visualizer.show_task_with_tests(task)
 
             # Apply final task limit if configured
             if self.task_config.final_task_limit and len(all_tasks) > self.task_config.final_task_limit:

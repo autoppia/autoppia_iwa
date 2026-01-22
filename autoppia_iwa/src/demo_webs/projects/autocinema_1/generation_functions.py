@@ -2,7 +2,7 @@ import random
 from random import choice, sample
 from typing import Any
 
-from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..criterion_helper import ComparisonOperator, CriterionValue, validate_criterion
 from .data import FIELD_OPERATORS_MAP_ADD_COMMENT, FIELD_OPERATORS_MAP_CONTACT, FIELD_OPERATORS_MAP_EDIT_USER
@@ -13,11 +13,12 @@ async def _get_data(seed_value: int | None = None, count: int = 100) -> list[dic
     return await fetch_movies_data(seed_value=seed_value, count=count)
 
 
-def generate_registration_constraints():
+def generate_registration_constraints(dataset: list[dict]):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
+    # No usa dataset - constraints estáticos
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
@@ -26,11 +27,12 @@ def generate_registration_constraints():
     return parse_constraints_str(constraints_str)
 
 
-def generate_login_constraints():
+def generate_login_constraints(dataset: list[dict]):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
+    # No usa dataset - constraints estáticos
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
@@ -39,11 +41,12 @@ def generate_login_constraints():
     return parse_constraints_str(constraints_str)
 
 
-def generate_logout_constraints():
+def generate_logout_constraints(dataset: list[dict]):
     """
     Generates constraints specifically for film-related use cases.
     Returns the constraints as structured data.
     """
+    # No usa dataset - constraints estáticos
     from .utils import parse_constraints_str
 
     # Generar restricciones frescas basadas en los datos de películas
@@ -51,23 +54,17 @@ def generate_logout_constraints():
     return parse_constraints_str(constraints_str)
 
 
-async def generate_search_film_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
+async def generate_search_film_constraints(dataset: list[dict]):
     """
     Generates constraints for search film use case.
 
     Args:
-        task_url: URL with ?seed=X parameter (used if dataset is None)
-        dataset: Optional pre-loaded dataset to avoid redundant API calls
+        dataset: Dataset with movies
 
     Returns:
         List of constraint dictionaries
     """
     from .utils import parse_constraints_str
-
-    # Load dataset if not provided
-    if dataset is None:
-        v2_seed = await resolve_v2_seed_from_url(task_url)
-        dataset = await _get_data(seed_value=v2_seed)
 
     movie_names = [movie["name"] for movie in dataset]
     operators = ["equals", "not_equals"]
@@ -75,23 +72,17 @@ async def generate_search_film_constraints(task_url: str | None = None, dataset:
     return parse_constraints_str(constraints_str)
 
 
-async def generate_film_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
+async def generate_film_constraints(dataset: list[dict]):
     """
     Generates constraints for film-related use cases.
 
     Args:
-        task_url: URL with ?seed=X parameter (used if dataset is None)
-        dataset: Optional pre-loaded dataset to avoid redundant API calls
+        dataset: Dataset with movies
 
     Returns:
         List of constraint dictionaries
     """
     from .utils import build_constraints_info, parse_constraints_str
-
-    # Load dataset if not provided
-    if dataset is None:
-        v2_seed = await resolve_v2_seed_from_url(task_url)
-        dataset = await _get_data(seed_value=v2_seed)
 
     constraints_str = build_constraints_info(dataset)
 
@@ -180,24 +171,18 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
-async def generate_film_filter_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
+async def generate_film_filter_constraints(dataset: list[dict]):
     """
     Genera una combinación de constraints para filtrado de películas
     usando los años y géneros reales de las películas.
 
     Args:
-        task_url: URL with ?seed=X parameter (used if dataset is None)
-        dataset: Optional pre-loaded dataset to avoid redundant API calls
+        dataset: Dataset with movies
 
     Returns:
         List of constraint dictionaries
     """
     from random import choice
-
-    # Load dataset if not provided
-    if dataset is None:
-        v2_seed = await resolve_v2_seed_from_url(task_url)
-        dataset = await _get_data(seed_value=v2_seed)
 
     existing_years = list(set(movie["year"] for movie in dataset))
     existing_genres = list(set(genre for movie in dataset for genre in movie["genres"]))
@@ -432,23 +417,17 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
     return None
 
 
-async def generate_add_comment_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
+async def generate_add_comment_constraints(dataset: list[dict]):
     """
     Genera combinaciones de constraints para añadir comentarios.
 
     Args:
-        task_url: URL with ?seed=X parameter (used if dataset is None)
-        dataset: Optional pre-loaded dataset to avoid redundant API calls
+        dataset: Dataset with movies
 
     Returns:
         List of constraint dictionaries
     """
     from random import choice
-
-    # Load dataset if not provided
-    if dataset is None:
-        v2_seed = await resolve_v2_seed_from_url(task_url)
-        dataset = await _get_data(seed_value=v2_seed)
 
     movies = [movie["name"] for movie in dataset]
 
@@ -521,23 +500,17 @@ async def generate_add_comment_constraints(task_url: str | None = None, dataset:
     return constraints
 
 
-async def generate_edit_film_constraints(task_url: str | None = None, dataset: list[dict] | None = None):
+async def generate_edit_film_constraints(dataset: list[dict]):
     """
     Generates constraints for editing film-related use cases.
 
     Args:
-        task_url: URL with ?seed=X parameter (used if dataset is None)
-        dataset: Optional pre-loaded dataset to avoid redundant API calls
+        dataset: Dataset with movies
 
     Returns:
         List of constraint dictionaries
     """
     from random import choice, randint, uniform
-
-    # Load dataset if not provided
-    if dataset is None:
-        v2_seed = await resolve_v2_seed_from_url(task_url)
-        dataset = await _get_data(seed_value=v2_seed)
 
     movies = dataset
 
@@ -638,11 +611,12 @@ async def generate_edit_film_constraints(task_url: str | None = None, dataset: l
     return constraints
 
 
-def generate_add_film_constraints():
+def generate_add_film_constraints(dataset: list[dict]):
     """
     Generates constraints specifically for editing film-related use cases.
     Returns the constraints as structured data.
     """
+    # No usa dataset - genera constraints aleatorios
     from random import choice, randint, uniform
 
     # Campos editables
@@ -738,11 +712,12 @@ def generate_add_film_constraints():
     return constraints
 
 
-def generate_edit_profile_constraints():
+def generate_edit_profile_constraints(dataset: list[dict]):
     """
     Generates constraints specifically for editing user profiles.
     Returns the constraints as structured data.
     """
+    # No usa dataset - genera constraints aleatorios
     from random import choice
 
     # Editable profile fields (username and email are excluded as mentioned in requirements)

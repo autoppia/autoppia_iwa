@@ -25,8 +25,7 @@ Each project’s results are grouped by **use case**, and multiple runs are comb
 | ---------------------- | ----------- | ------- | ------------------------------------------------------------------ |
 | `projects`             | `List[str]` | —       | List of project IDs to generate tasks for.                         |
 | `prompts_per_use_case` | `int`       | `1`     | Number of prompts to generate per use case.                        |
-| `num_use_cases`        | `int`       | `0`     | Number of use cases to include (`0` = all).                        |
-| `selective_use_cases`  | `List[str]` | `[]`    | Specific use cases to include (optional).                          |
+| `selective_use_cases`  | `List[str]` | `[]`    | Specific use cases to include. If empty, uses all available use cases. |
 | `runs`                 | `int`       | `1`     | Number of times to regenerate tasks (results grouped across runs). |
 
 ---

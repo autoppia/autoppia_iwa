@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 from autoppia_iwa.src.demo_webs.projects.shared_utils import create_constraint_dict
 
 from .data import (
@@ -31,7 +31,7 @@ async def _ensure_task_dataset(task_url: str | None = None, dataset: list[dict[s
     """Ensure we have autolist tasks dataset available."""
     if dataset is not None:
         return dataset
-    v2_seed = await resolve_v2_seed_from_url(task_url)
+    v2_seed = get_seed_from_url(task_url)
     return await _get_data(seed_value=v2_seed)
 
 

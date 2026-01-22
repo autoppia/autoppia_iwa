@@ -144,7 +144,7 @@ CFG = BenchmarkConfig(
     # Task generation
     use_cached_tasks=False,
     prompts_per_use_case=1,
-    num_use_cases=0,  # 0 = all use cases
+    use_cases=None,  # None = all use cases, or specify list like ["USE_CASE_1", "USE_CASE_2"]
 
     # Execution
     runs=1,
@@ -168,8 +168,7 @@ CFG = BenchmarkConfig(
 | **Task Generation**        |           |         |                                             |
 | `use_cached_tasks`         | bool      | `False` | Load tasks from cache instead of generating |
 | `prompts_per_use_case`     | int       | `1`     | Number of tasks per use case                |
-| `num_use_cases`            | int       | `0`     | Use cases to test (0 = all)                 |
-| `use_cases`                | list[str] | `None`  | Specific use cases to test                  |
+| `use_cases`                | list[str] | `None`  | Specific use cases to test. If None, tests all available use cases. |
 | **Execution**              |           |         |                                             |
 | `runs`                     | int       | `1`     | Number of test runs per task                |
 | `max_parallel_agent_calls` | int       | `1`     | Concurrent agent requests                   |
@@ -485,8 +484,7 @@ Contains detailed statistics for each project:
 
 ```python
 CFG = BenchmarkConfig(
-    use_cases=["LOGIN", "SEARCH_FILM", "ADD_TO_CART"],
-    num_use_cases=3,
+    use_cases=["LOGIN", "SEARCH_FILM", "ADD_TO_CART"],  # Specific use cases to test
 )
 ```
 

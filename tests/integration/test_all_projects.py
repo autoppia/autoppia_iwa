@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test rápido para verificar que TODOS los 13 proyectos tienen resolve_v2_seed_from_url.
+Test rápido para verificar que TODOS los 13 proyectos tienen get_seed_from_url.
 """
 
 import asyncio
@@ -41,12 +41,12 @@ async def test_all_projects_have_optimization():
 
             gen_module = importlib.import_module(module_path)
 
-            # Verificar que importa resolve_v2_seed_from_url
+            # Verificar que importa get_seed_from_url
             import inspect
 
             source = inspect.getsource(gen_module)
 
-            has_resolve = "resolve_v2_seed_from_url" in source
+            has_resolve = "get_seed_from_url" in source
             has_old_extract = "extract_v2_seed_from_url" in source and "from autoppia_iwa.src.demo_webs.projects.data_provider import extract_v2_seed_from_url" in source
 
             # Verificar funciones con dataset parameter
@@ -57,7 +57,7 @@ async def test_all_projects_have_optimization():
                     if "dataset" in sig.parameters:
                         dataset_functions.append(name)
 
-            print(f"   ✅ Usa resolve_v2_seed_from_url: {has_resolve}")
+            print(f"   ✅ Usa get_seed_from_url: {has_resolve}")
             print(f"   {'❌' if has_old_extract else '✅'} Usa extract_v2_seed_from_url (obsoleto): {has_old_extract}")
             print(f"   ✅ Funciones con dataset param: {len(dataset_functions)}")
             for func_name in dataset_functions[:3]:  # Mostrar primeras 3
@@ -100,7 +100,7 @@ async def test_all_projects_have_optimization():
             if r["status"] == "NEEDS_UPDATE":
                 print(f"   • {r['project']}")
                 if not r.get("has_resolve"):
-                    print("     - Falta resolve_v2_seed_from_url")
+                    print("     - Falta get_seed_from_url")
                 if r.get("has_old_extract"):
                     print("     - Usa extract_v2_seed_from_url obsoleto")
                 if r.get("dataset_functions", 0) == 0:

@@ -20,7 +20,7 @@ class AffineEnvConfig(BaseModel):
     project_ids: list[str] = Field(default_factory=_default_project_ids, description="Demo web project ids to expose via AgentGym.")
     tasks_cache_dir: str = Field(default="data/cache/tasks/affine_env", description="Directory where per-project task caches are stored.")
     prompts_per_use_case: int = Field(default=2, gt=0, description="Number of task prompts to sample per use case when regenerating cache.")
-    num_use_cases: int = Field(default=3, gt=0, description="How many use cases to include per project when generating tasks.")
+    # Removed num_use_cases: use use_cases=None to get all, or specify list for specific ones
     enable_dynamic_html: bool = Field(default=False, description="Mirror benchmark setting for deterministic seeds.")
     use_cached_tasks: bool = Field(default=True, description="Load pre-generated tasks instead of hitting the LLM pipeline at runtime.")
 
@@ -50,7 +50,6 @@ class AffineEnvConfig(BaseModel):
             project_ids=project_ids,
             tasks_cache_dir=os.getenv("IWA_AFFINE_TASKS_CACHE_DIR", "data/cache/tasks/affine_env"),
             prompts_per_use_case=int(os.getenv("IWA_AFFINE_PROMPTS_PER_USE_CASE", "2")),
-            num_use_cases=int(os.getenv("IWA_AFFINE_NUM_USE_CASES", "3")),
             enable_dynamic_html=os.getenv("IWA_AFFINE_ENABLE_DYNAMIC_HTML", "false").lower() in {"1", "true", "yes"},
             use_cached_tasks=os.getenv("IWA_AFFINE_USE_CACHED_TASKS", "true").lower() in {"1", "true", "yes"},
             agent_request_timeout=float(os.getenv("IWA_AFFINE_AGENT_TIMEOUT", "180")),

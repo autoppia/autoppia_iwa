@@ -40,7 +40,7 @@ def test_benchmark_runs_with_stub_agent(monkeypatch, stub_agent):
         runs=1,
         max_parallel_agent_calls=1,
         prompts_per_use_case=1,
-        num_use_cases=1,
+        use_cases=None,  # Use all available use cases
         use_cached_tasks=True,
         save_results_json=False,
         plot_results=False,

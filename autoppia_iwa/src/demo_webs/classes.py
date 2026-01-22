@@ -79,29 +79,16 @@ class UseCase(BaseModel):
                 self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
 
-    async def generate_constraints_async(self, task_url: str | None = None, dataset: list[dict] | None = None):
+    async def generate_constraints_async(self, dataset: list[dict]):
         """
         Async version that awaits async constraints generators when provided.
 
         Args:
-            task_url: Optional task URL to extract seed values from
-            dataset: Optional pre-loaded dataset to pass to generators (avoids redundant API calls)
+            dataset: Dataset to pass to the generator
         """
         if self.constraints_generator:
-            # If constraints_generator accepts parameters, pass them
-            import inspect
-
-            sig = inspect.signature(self.constraints_generator)
-
-            # Build kwargs dynamically based on what the generator accepts
-            kwargs = {}
-            if "task_url" in sig.parameters:
-                kwargs["task_url"] = task_url
-            if "dataset" in sig.parameters:
-                kwargs["dataset"] = dataset
-
-            # Call generator with appropriate parameters
-            result = self.constraints_generator(**kwargs) if kwargs else self.constraints_generator()
+            # Call generator with dataset
+            result = self.constraints_generator(dataset)
 
             if asyncio.iscoroutine(result):
                 self.constraints = await result

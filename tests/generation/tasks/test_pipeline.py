@@ -62,7 +62,7 @@ def test_task_generation_pipeline_builds_tasks_and_tests():
         use_cases=[use_case],
     )
     mock_llm = MockLLMService([json.dumps(["Prompt A", "Prompt B"])])
-    config = TaskGenerationConfig(generate_global_tasks=True, prompts_per_use_case=2, num_use_cases=1)
+    config = TaskGenerationConfig(prompts_per_use_case=2, use_cases=None)
     pipeline = TaskGenerationPipeline(web_project=project, config=config, llm_service=mock_llm)
 
     async def run():
@@ -86,7 +86,7 @@ def test_global_test_generation_attaches_event_criteria():
     pipeline = SimpleTaskGenerator(web_project=project, llm_service=mock_llm)
 
     async def run():
-        tasks = await pipeline.generate(num_use_cases=1, prompts_per_use_case=1)
+        tasks = await pipeline.generate(prompts_per_use_case=1, use_cases=[use_case.name])
 
         assert len(tasks) == 1
         task = tasks[0]
@@ -117,7 +117,7 @@ def test_prompts_per_use_case_auto(monkeypatch):
     monkeypatch.setattr(pipeline, "generate_tasks_for_use_case", fake_generate_tasks)
 
     async def run():
-        await pipeline.generate(num_use_cases=0, prompts_per_use_case=0)
+        await pipeline.generate(use_cases=None, prompts_per_use_case=0)
 
     asyncio.run(run())
     assert recorded_counts == [len(use_case.examples)]

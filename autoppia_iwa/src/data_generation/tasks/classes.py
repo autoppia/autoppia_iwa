@@ -171,17 +171,11 @@ class Task(BaseModel):
 
 
 class TaskGenerationConfig(BaseModel):
-    # Database saving options
-    # save_task_in_db: bool = False
-
-    # Task generation controls
-    generate_global_tasks: bool = True  # Generate global use case tasks
 
     # Task quantity controls
     prompts_per_use_case: int | None = 1  # Number of task variations to generate per use case (<=0/None => auto)
-    num_use_cases: int = 3  # Number of use_cases to consider for global task generation
     final_task_limit: int = 50  # Total maximum tasks to return from the pipeline
-    # Specific use cases to focus on, will override num_use_cases if set, for current project
+    # Specific use cases to focus on. If None, generates for all available use cases.
     use_cases: list[str] | None = None
     dynamic: bool = False
 

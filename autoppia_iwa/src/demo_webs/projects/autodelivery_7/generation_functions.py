@@ -2,7 +2,7 @@ import random
 from typing import Any
 
 from autoppia_iwa.src.demo_webs.projects.criterion_helper import ComparisonOperator
-from autoppia_iwa.src.demo_webs.projects.data_provider import resolve_v2_seed_from_url
+from autoppia_iwa.src.demo_webs.projects.data_provider import get_seed_from_url
 
 from ..shared_utils import create_constraint_dict
 from .data import (
@@ -59,7 +59,7 @@ async def _ensure_restaurant_dataset(
     existing = _extract_entity_dataset(dataset, "restaurants")
     if existing is not None:
         return existing
-    v2_seed = await resolve_v2_seed_from_url(task_url)
+    v2_seed = get_seed_from_url(task_url)
     return await _get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=v2_seed)
 
 

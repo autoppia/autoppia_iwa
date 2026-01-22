@@ -701,8 +701,7 @@ async def _generate_tasks_via_pipeline(web_project: WebProject) -> list[Task]:
     selected_names = use_case_names[:3] if use_case_names else None
     config = TaskGenerationConfig(
         prompts_per_use_case=1,
-        num_use_cases=min(3, len(use_case_names)) if use_case_names else 1,
-        use_cases=selected_names,
+        use_cases=selected_names,  # If None, uses all available use cases
     )
     llm_service, llm_error = _obtain_llm_service()
     if llm_service is None:
