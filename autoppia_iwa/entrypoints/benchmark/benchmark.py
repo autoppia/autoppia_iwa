@@ -18,6 +18,7 @@ from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
 from autoppia_iwa.src.evaluation.classes import EvaluatorConfig
 from autoppia_iwa.src.evaluation.concurrent_evaluator import ConcurrentEvaluator
+from autoppia_iwa.src.evaluation.iterative_evaluator import IterativeEvaluator
 from autoppia_iwa.src.shared.visualizator import SubnetVisualizer
 from autoppia_iwa.src.web_agents.classes import IWebAgent, TaskSolution
 
@@ -73,7 +74,39 @@ class Benchmark:
         if len(agent_ids) != len(set(agent_ids)):
             raise ValueError("Agent IDs must be unique.")
 
-        logger.info(f"Configuration validated: {len(self.config.projects)} projects, {len(self.config.agents)} agents, {self.config.runs} runs")
+        logger.info(
+            f"Configuration validated: {len(self.config.projects)} projects, {len(self.config.agents)} agents, "
+            f"{self.config.runs} runs, evaluator_mode={self.config.evaluator_mode}"
+        )
+        
+        if self.config.evaluator_mode == "iterative":
+            logger.info(f"Iterative mode: max {self.config.max_iterations_per_task} iterations per task")
+            if self.config.use_cached_solutions:
+                logger.warning("use_cached_solutions is not compatible with iterative mode and will be ignored")
+
+    # ---------------------------------------------------------------------
+    # Evaluator creation
+    # ---------------------------------------------------------------------
+    def _create_evaluator(self, project: WebProject) -> ConcurrentEvaluator | IterativeEvaluator:
+        """
+        Crea el evaluador correcto según la configuración.
+        """
+        evaluator_config = EvaluatorConfig(
+            should_record_gif=self.config.record_gif,
+            enable_grouping_tasks=False,
+            chunk_size=20,
+            max_consecutive_action_failures=2,
+            verbose_logging=False,
+            debug_mode=False,
+            dynamic_phase_config=self.config.dynamic_phase_config,
+        )
+        
+        if self.config.evaluator_mode == "iterative":
+            logger.debug(f"Creating IterativeEvaluator for project {project.id}")
+            return IterativeEvaluator(web_project=project, config=evaluator_config)
+        else:
+            logger.debug(f"Creating ConcurrentEvaluator for project {project.id}")
+            return ConcurrentEvaluator(web_project=project, config=evaluator_config)
 
     # ---------------------------------------------------------------------
     # Artifact helpers
@@ -170,6 +203,7 @@ class Benchmark:
         """
         Evaluate all agent solutions produced for a single Task.
         Stores GIF recordings if evaluation returns them and recording is enabled.
+        Supports both concurrent and iterative evaluation modes.
         """
         # Filter out None solutions defensively
         valid_solutions = [s for s in solutions if s is not None]
@@ -177,22 +211,43 @@ class Benchmark:
             logger.warning(f"No valid solutions to evaluate for task {task.id} (run {run_index})")
             return []
 
-        evaluator = ConcurrentEvaluator(
-            project,
-            EvaluatorConfig(
-                enable_grouping_tasks=False,
-                chunk_size=20,
-                should_record_gif=self.config.record_gif,
-                dynamic_phase_config=self.config.dynamic_phase_config,
-            ),
-        )
-        results = await evaluator.evaluate_task_solutions(task, valid_solutions)
+        evaluator = self._create_evaluator(project)
+        
+        # Evaluate according to the configured mode
+        if self.config.evaluator_mode == "concurrent":
+            # MODO CONCURRENT: evaluar todas las soluciones
+            logger.debug(f"Evaluating task {task.id} with {len(valid_solutions)} solutions (CONCURRENT mode)")
+            results = await evaluator.evaluate_task_solutions(task, valid_solutions)
+            
+        elif self.config.evaluator_mode == "iterative":
+            # MODO ITERATIVE: evaluar cada agente iterativamente
+            logger.info(f"Evaluating task {task.id} with {len(valid_solutions)} agents (ITERATIVE mode)")
+            results = []
+            
+            for task_solution in valid_solutions:
+                # Encontrar el agente correspondiente
+                agent = next((a for a in self.config.agents if a.id == task_solution.web_agent_id), None)
+                if not agent:
+                    logger.warning(f"Agent {task_solution.web_agent_id} not found for task {task.id}")
+                    continue
+                
+                logger.info(f"Evaluating task {task.id} with agent {agent.name} (iterative, max {self.config.max_iterations_per_task} actions)")
+                result = await evaluator.evaluate_with_agent(
+                    task=task,
+                    agent=agent,
+                    max_iterations=self.config.max_iterations_per_task
+                )
+                results.append(result)
+        else:
+            raise ValueError(f"Invalid evaluator_mode: {self.config.evaluator_mode}")
 
+        # Store GIF recordings if enabled
         if self.config.record_gif:
             for res in results:
                 if getattr(res, "gif_recording", None):
                     agent_name = next((a.name for a in self.config.agents if a.id == res.web_agent_id), "unknown")
                     self._persist_gif_recording(res.gif_recording, agent_name, task.id, run_index, self.config.recordings_dir)
+        
         return results
 
     async def _evaluate_solutions_for_task_with_visualization(

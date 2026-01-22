@@ -392,10 +392,15 @@ class IterativeEvaluator(IEvaluator):
                 current_task = task.prepare_for_agent(web_agent_id)
 
                 # Bucle iterativo
-                iteration = 0
-                while iteration < max_iterations:
-                    iteration += 1
-                    _log_action_execution(f"🔄 Iteration {iteration}/{max_iterations} - Calling agent...", web_agent_id=web_agent_id)
+                total_actions_executed = 0
+                agent_call_count = 0
+                
+                while total_actions_executed < max_iterations:
+                    agent_call_count += 1
+                    _log_action_execution(
+                        f"🔄 Agent call #{agent_call_count} - Total actions: {total_actions_executed}/{max_iterations}",
+                        web_agent_id=web_agent_id
+                    )
 
                     # Enriquecer el task con el estado actual del browser
                     enriched_task = await self._enrich_task_with_browser_state(current_task, page)
@@ -422,32 +427,82 @@ class IterativeEvaluator(IEvaluator):
                         )
                         break
 
-                    # Tomar solo la primera acción de la lista
-                    action = task_solution.actions[0]
-                    if len(task_solution.actions) > 1:
+                    # Ejecutar TODAS las acciones que el agente devolvió
+                    actions_in_this_batch = task_solution.actions
+                    num_actions_in_batch = len(actions_in_this_batch)
+                    
+                    # Limitar si excedería max_iterations
+                    actions_remaining = max_iterations - total_actions_executed
+                    if num_actions_in_batch > actions_remaining:
                         _log_action_execution(
-                            f"⚠️  Agent returned {len(task_solution.actions)} actions, using only the first one",
+                            f"⚠️  Agent returned {num_actions_in_batch} actions, but only {actions_remaining} remaining to reach max_iterations. Executing only {actions_remaining}.",
                             web_agent_id=web_agent_id
                         )
+                        actions_in_this_batch = actions_in_this_batch[:actions_remaining]
+                        num_actions_in_batch = actions_remaining
+                    
+                    _log_action_execution(
+                        f"📦 Executing {num_actions_in_batch} action(s) from agent response",
+                        web_agent_id=web_agent_id
+                    )
 
-                    # Ejecutar la acción
-                    start_time_action = time.time()
-                    try:
-                        result = await browser_executor.execute_single_action(
-                            action, web_agent_id, iteration=iteration, is_web_real=is_web_real, should_record=self.config.should_record_gif
+                    # Ejecutar cada acción del batch
+                    for action_idx, action in enumerate(actions_in_this_batch, 1):
+                        total_actions_executed += 1
+                        
+                        _log_action_execution(
+                            f"   ▶️  Action {action_idx}/{num_actions_in_batch} (Total: {total_actions_executed}/{max_iterations}): {action.type}",
+                            web_agent_id=web_agent_id
                         )
-                        action_results.append(result)
-                        elapsed = time.time() - start_time_action
-                        action_execution_times.append(elapsed)
+                        
+                        start_time_action = time.time()
+                        try:
+                            result = await browser_executor.execute_single_action(
+                                action, web_agent_id, iteration=total_actions_executed, is_web_real=is_web_real, should_record=self.config.should_record_gif
+                            )
+                            action_results.append(result)
+                            elapsed = time.time() - start_time_action
+                            action_execution_times.append(elapsed)
 
-                        # Rastrear fallos consecutivos
-                        if result and not result.successfully_executed:
+                            # Rastrear fallos consecutivos
+                            if result and not result.successfully_executed:
+                                consecutive_failures += 1
+                                _log_action_execution(
+                                    f"      ❌ FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')} "
+                                    f"(Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
+                                    web_agent_id=web_agent_id
+                                )
+
+                                if consecutive_failures >= max_consecutive_failures:
+                                    early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
+                                    _log_action_execution(
+                                        f"🛑 Stopping execution: {early_stop_reason}",
+                                        web_agent_id=web_agent_id
+                                    )
+                                    break
+                            else:
+                                # Resetear contador en éxito
+                                consecutive_failures = 0
+                                _log_action_execution(
+                                    f"      ✅ SUCCESS in {elapsed:.2f}s",
+                                    web_agent_id=web_agent_id
+                                )
+
+                            self.action_type_timing[action.type].append(elapsed)
+
+                            # Pausa opcional entre acciones
+                            if self.config.task_delay_in_seconds > 0:
+                                await asyncio.sleep(self.config.task_delay_in_seconds)
+
+                        except Exception as e:
                             consecutive_failures += 1
                             _log_action_execution(
-                                f"❌ Action {iteration} FAILED in {elapsed:.2f}s - Error: {getattr(result, 'error', 'unknown')} "
+                                f"      ❌ EXCEPTION: {e} "
                                 f"(Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
                                 web_agent_id=web_agent_id
                             )
+                            elapsed = time.time() - start_time_action
+                            action_execution_times.append(elapsed)
 
                             if consecutive_failures >= max_consecutive_failures:
                                 early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
@@ -456,42 +511,19 @@ class IterativeEvaluator(IEvaluator):
                                     web_agent_id=web_agent_id
                                 )
                                 break
-                        else:
-                            # Resetear contador en éxito
-                            consecutive_failures = 0
-
-                        self.action_type_timing[action.type].append(elapsed)
-
-                        # Pausa opcional entre acciones
-                        if self.config.task_delay_in_seconds > 0:
-                            await asyncio.sleep(self.config.task_delay_in_seconds)
-
-                    except Exception as e:
-                        consecutive_failures += 1
-                        _log_action_execution(
-                            f"❌ Action {iteration} EXCEPTION: {e} "
-                            f"(Consecutive failures: {consecutive_failures}/{max_consecutive_failures})",
-                            web_agent_id=web_agent_id
-                        )
-                        elapsed = time.time() - start_time_action
-                        action_execution_times.append(elapsed)
-
-                        if consecutive_failures >= max_consecutive_failures:
-                            early_stop_reason = f"Task marked as failed after {consecutive_failures} consecutive action failures (limit: {max_consecutive_failures})"
-                            _log_action_execution(
-                                f"🛑 Stopping execution: {early_stop_reason}",
-                                web_agent_id=web_agent_id
-                            )
-                            break
+                    
+                    # Si hubo early stop por fallos consecutivos, salir del bucle principal
+                    if early_stop_reason:
+                        break
 
                 if early_stop_reason:
                     _log_action_execution(
-                        f"🏁 Finished executing {len(action_results)}/{max_iterations} actions (stopped early due to consecutive failures)",
+                        f"🏁 Finished: {total_actions_executed} actions executed in {agent_call_count} agent call(s) (stopped early due to consecutive failures)",
                         web_agent_id=web_agent_id
                     )
                 else:
                     _log_action_execution(
-                        f"🏁 Finished executing {len(action_results)} actions (reached max_iterations or agent finished)",
+                        f"🏁 Finished: {total_actions_executed} actions executed in {agent_call_count} agent call(s) (reached max_iterations or agent finished)",
                         web_agent_id=web_agent_id
                     )
 

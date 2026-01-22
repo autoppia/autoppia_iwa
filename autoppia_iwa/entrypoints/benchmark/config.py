@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
 
 from loguru import logger
 
@@ -18,6 +19,7 @@ class BenchmarkConfig:
     Key groups:
       • Task generation (use_cached_tasks, prompts_per_use_case, num_use_cases, use_cases)
       • Execution controls (runs, max_parallel_agent_calls, use_cached_solutions, record_gif, enable_dynamic_html)
+      • Evaluator mode (evaluator_mode, max_iterations_per_task)
       • Persistence (save_results_json, plot_results, directory fields resolved in __post_init__)
       • Visualization toggles (enable_visualization, dynamic_phase_config shared with evaluator)
     """
@@ -36,6 +38,14 @@ class BenchmarkConfig:
     max_parallel_agent_calls: int = 1
     use_cached_solutions: bool = False
     record_gif: bool = False
+
+    # Evaluator mode
+    # "concurrent": El agente genera todas las acciones de una vez (modo actual/tradicional)
+    # "iterative": El agente decide acción por acción viendo el estado del browser
+    evaluator_mode: Literal["concurrent", "iterative"] = "concurrent"
+    
+    # Solo para modo iterativo: límite de acciones por tarea
+    max_iterations_per_task: int = 50
 
     # Persistence / plotting
     save_results_json: bool = True
@@ -73,6 +83,13 @@ class BenchmarkConfig:
 
         if not self.agents:
             logger.warning("No agents configured - benchmark will not run")
+        
+        # Validate evaluator mode
+        if self.evaluator_mode not in ("concurrent", "iterative"):
+            raise ValueError(f"Invalid evaluator_mode: {self.evaluator_mode}. Must be 'concurrent' or 'iterative'.")
+        
+        if self.evaluator_mode == "iterative" and self.max_iterations_per_task <= 0:
+            raise ValueError("max_iterations_per_task must be > 0 when using iterative mode.")
 
         # Use data/outputs/ directory for all generated artifacts
         outputs_dir = self.base_dir / "data" / "outputs"
