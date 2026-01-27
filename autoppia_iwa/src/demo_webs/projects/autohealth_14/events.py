@@ -241,7 +241,6 @@ class CancelBookAppointmentEvent(Event, BaseEventValidator):
 
 class ViewPrescriptionEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_PRESCRIPTION"
-    prescription_id: str | None = None
     doctor_name: str | None = None
     dosage: str | None = None
     medicine_name: str | None = None
@@ -250,7 +249,6 @@ class ViewPrescriptionEvent(Event, BaseEventValidator):
     status: str | None = None
 
     class ValidationCriteria(BaseModel):
-        prescription_id: str | CriterionValue | None = None
         doctor_name: str | CriterionValue | None = None
         medicine_name: str | CriterionValue | None = None
         start_date: str | CriterionValue | None = None
@@ -263,7 +261,6 @@ class ViewPrescriptionEvent(Event, BaseEventValidator):
             return True
         return all(
             [
-                self._validate_field(self.prescription_id, criteria.prescription_id),
                 self._validate_field(self.doctor_name, criteria.doctor_name),
                 self._validate_field(self.medicine_name, criteria.medicine_name),
                 self._validate_field(self.start_date, criteria.start_date),
@@ -283,7 +280,6 @@ class ViewPrescriptionEvent(Event, BaseEventValidator):
             timestamp=base_event.timestamp,
             web_agent_id=base_event.web_agent_id,
             user_id=base_event.user_id,
-            prescription_id=data.get("prescriptionId"),
             doctor_name=data.get("doctorName"),
             medicine_name=data.get("medicineName"),
             start_date=data.get("startDate"),
