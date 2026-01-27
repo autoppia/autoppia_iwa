@@ -411,12 +411,40 @@ async def generate_refill_prescription_constraints(task_url: str | None = None, 
 
 
 async def generate_view_health_metrics_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """
+    Generate constraints for view_health_metrics use case.
+    Prioritizes semantic values (record_title, record_type) for natural prompts.
+    """
     medical_records_data = await _get_medical_records_data(task_url, dataset)
+    
+    # Validate that we have data before generating constraints
+    if not medical_records_data or len(medical_records_data) == 0:
+        return []
+    
     field_operators = FIELD_OPERATORS_MAP_VIEW_HEALTH_METRICS
-    selected_field = ["record_title"]
-    constraint_list = _generate_constraints(medical_records_data, field_operators, selected_fields=selected_field)
-    return constraint_list
-
+    
+    # Core fields (always required for verification)
+    # These use semantic values: record_title, record_type
+    core_fields = ["record_title", "record_type"]
+    core_constraints = _generate_constraints(
+        medical_records_data, 
+        field_operators, 
+        selected_fields=core_fields
+    )
+    
+    # Optional field (record_date) - select randomly (0-1)
+    optional_fields = ["record_date"]
+    import random
+    num_optional = random.randint(0, 1)
+    if num_optional > 0:
+        optional_constraints = _generate_constraints(
+            medical_records_data,
+            field_operators,
+            selected_fields=optional_fields
+        )
+        core_constraints.extend(optional_constraints)
+    
+    return core_constraints
 
 async def generate_filter_by_category_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     medical_records_data = await _get_medical_records_data(task_url, dataset)
