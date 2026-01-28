@@ -342,11 +342,39 @@ async def generate_appointment_booked_successfully_constraints(task_url: str | N
 
 
 async def generate_cancel_appointment_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """
+    Generate constraints for cancel_appointment use case.
+    Uses core fields (doctor_name, time) + optional fields (date, speciality).
+    """
     appointments_data = await _get_appointments_data(task_url, dataset)
+    
+    # Validate that we have data before generating constraints
+    if not appointments_data or len(appointments_data) == 0:
+        return []
+    
     field_operators = FIELD_OPERATORS_MAP_CANCEL_APPOINTMENT
-    selected_fields = ["doctor_name", "time"]
-    constraints_list = _generate_constraints(appointments_data, field_operators, selected_fields=selected_fields)
-    return constraints_list
+    
+    # Core fields (always required for verification)
+    core_fields = ["doctor_name", "time"]
+    core_constraints = _generate_constraints(
+        appointments_data, 
+        field_operators, 
+        selected_fields=core_fields
+    )
+    
+    # Optional fields (date, speciality) - select 0-2 randomly
+    optional_fields = ["date", "speciality"]
+    num_optional = random.randint(0, min(2, len(optional_fields)))
+    if num_optional > 0:
+        selected_optional = random.sample(optional_fields, num_optional)
+        optional_constraints = _generate_constraints(
+            appointments_data,
+            field_operators,
+            selected_fields=selected_optional
+        )
+        core_constraints.extend(optional_constraints)
+    
+    return core_constraints
 
 
 async def generate_view_prescription_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
