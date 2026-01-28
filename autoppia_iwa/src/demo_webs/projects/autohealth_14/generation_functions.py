@@ -25,7 +25,7 @@ from .data import (
     FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE,
     FIELD_OPERATORS_MAP_VIEW_HEALTH_METRICS,
     FIELD_OPERATORS_MAP_VIEW_PRESCRIPTION,
-    FIELD_OPERATORS_MAP_VIEW_REVIEW_CLICKED,
+    FIELD_OPERATORS_MAP_VIEW_REVIEWS,
     MODIFIED_EMERGENCY_CONTACT,
     MODIFIED_EMERGENCY_PHONE,
     MODIFIED_INSURANCE_NUMBER,
@@ -426,16 +426,46 @@ async def generate_filter_by_speciality_constraints(task_url: str | None = None,
 
 
 async def generate_refill_prescription_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """
+    Generate constraints for refill_prescription use case.
+    Only includes prescriptions with refills_remaining > 0.
+    Uses core field (medicine_name) + optional fields (doctor_name, status, dosage, category).
+    """
     prescriptions_data = await _get_prescriptions_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_REFILL_PRESCRIPTION
+
+    if not prescriptions_data or len(prescriptions_data) == 0:
+        return []
+
     ELIGIBLE_PRESCRIPTIONS_FOR_REFILL = []
     for data in prescriptions_data:
         if data.get("refills_remaining") != 0 or data.get("refillsRemaining") != 0:
             new_data = copy.deepcopy(data)
             ELIGIBLE_PRESCRIPTIONS_FOR_REFILL.append(new_data)
-    selected_field = []
-    constraints_list = _generate_constraints(ELIGIBLE_PRESCRIPTIONS_FOR_REFILL, field_operators, selected_fields=selected_field)
-    return constraints_list
+
+    if not ELIGIBLE_PRESCRIPTIONS_FOR_REFILL or len(ELIGIBLE_PRESCRIPTIONS_FOR_REFILL) == 0:
+        return []
+
+    field_operators = FIELD_OPERATORS_MAP_REFILL_PRESCRIPTION
+
+    core_fields = ["medicine_name"]
+    core_constraints = _generate_constraints(
+        ELIGIBLE_PRESCRIPTIONS_FOR_REFILL,
+        field_operators,
+        selected_fields=core_fields,
+    )
+
+    optional_fields = ["doctor_name", "status", "dosage", "category"]
+    num_optional = random.randint(0, min(2, len(optional_fields)))
+    if num_optional > 0:
+        selected_optional = random.sample(optional_fields, num_optional)
+        optional_constraints = _generate_constraints(
+            ELIGIBLE_PRESCRIPTIONS_FOR_REFILL,
+            field_operators,
+            selected_fields=selected_optional,
+        )
+        core_constraints.extend(optional_constraints)
+
+    return core_constraints
 
 
 async def generate_view_health_metrics_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
@@ -483,12 +513,36 @@ async def generate_filter_by_category_constraints(task_url: str | None = None, d
 
 
 async def generate_view_doctor_profile_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    """
+    Generate constraints for view_doctor_profile use case.
+    Uses core field (doctor_name) + optional fields (speciality, rating).
+    """
     doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operator = FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE
-    selected_field = ["doctor_name"]
-    constraints_list = _generate_constraints(doctors_data, field_operator, selected_fields=selected_field)
-    return constraints_list
 
+    if not doctors_data or len(doctors_data) == 0:
+        return []
+
+    field_operators = FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE
+
+    core_fields = ["doctor_name"]
+    core_constraints = _generate_constraints(
+        doctors_data,
+        field_operators,
+        selected_fields=core_fields,
+    )
+
+    optional_fields = ["speciality", "rating"]
+    num_optional = random.randint(0, min(2, len(optional_fields)))
+    if num_optional > 0:
+        selected_optional = random.sample(optional_fields, num_optional)
+        optional_constraints = _generate_constraints(
+            doctors_data,
+            field_operators,
+            selected_fields=selected_optional,
+        )
+        core_constraints.extend(optional_constraints)
+
+    return core_constraints
 
 async def generate_contact_doctor_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     """
@@ -637,12 +691,19 @@ async def generate_cancel_contact_doctor_constraints(task_url: str | None = None
     return constraints_list
 
 
-async def generate_view_review_clicked_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, str]]:
+async def generate_view_reviews_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     doctors_data = await _get_doctors_data(task_url, dataset)
-    field_operators = FIELD_OPERATORS_MAP_VIEW_REVIEW_CLICKED
-    selected_field = ["doctor_name"]
-    constraints_list = _generate_constraints(doctors_data, field_operators, selected_fields=selected_field)
-    return constraints_list
+    if not doctors_data or len(doctors_data) == 0:
+        return []
+    field_operators = FIELD_OPERATORS_MAP_VIEW_REVIEWS
+    core_fields = ["doctor_name"]
+    core_constraints = _generate_constraints(doctors_data, field_operators, selected_fields=core_fields)
+    optional_fields = ["rating"]
+    num_optional = random.randint(0, 1)
+    if num_optional > 0:
+        optional_constraints = _generate_constraints(doctors_data, field_operators, selected_fields=optional_fields)
+        core_constraints.extend(optional_constraints)
+    return core_constraints
 
 
 async def generate_sort_reviews_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, str]]:

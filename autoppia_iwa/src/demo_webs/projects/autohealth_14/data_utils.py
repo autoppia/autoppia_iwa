@@ -83,6 +83,10 @@ def transform_prescriptions_to_modified(prescriptions: list[dict]) -> list[dict]
             new_pres["start_date"] = new_pres.pop("startDate")
         if "refillsRemaining" in new_pres:
             new_pres["refills_remaining"] = new_pres.pop("refillsRemaining")
+        if "category" in new_pres:
+            new_pres["category"] = new_pres.pop("category")
+        if "status" in new_pres:
+            new_pres["status"] = new_pres.pop("status")
         modified.append(new_pres)
     return modified
 

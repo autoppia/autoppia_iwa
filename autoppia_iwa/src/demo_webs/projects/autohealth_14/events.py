@@ -323,8 +323,14 @@ class RefillRequestEvent(Event, BaseEventValidator):
     event_name: str = "REFILL_PRESCRIPTION"
     medicine_name: str | None = None
 
+
     class ValidationCriteria(BaseModel):
         medicine_name: str | CriterionValue | None = None
+        doctor_name: str | CriterionValue | None = None
+        dosage: str | CriterionValue | None = None
+        start_date: str | CriterionValue | None = None
+        category: str | CriterionValue | None = None
+        status: str | CriterionValue | None = None
 
     def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
         if criteria is None:
@@ -648,8 +654,8 @@ class CancelContactDoctorEvent(Event, BaseEventValidator):
         )
 
 
-class ViewReviewClickedEvent(Event, BaseEventValidator):
-    event_name: str = "VIEW_REVIEWS_CLICKED"
+class ViewReviewsEvent(Event, BaseEventValidator):
+    event_name: str = "VIEW_REVIEWS"
     doctor_name: str | None = None
     rating: float | None = None
     speciality: str | None = None
@@ -671,7 +677,7 @@ class ViewReviewClickedEvent(Event, BaseEventValidator):
         )
 
     @classmethod
-    def parse(cls, backend_event: "BackendEvent") -> "ViewReviewClickedEvent":
+    def parse(cls, backend_event: "BackendEvent") -> "ViewReviewsEvent":
         base_event = Event.parse(backend_event)
         data = backend_event.data
         data = data.get("data")
@@ -809,7 +815,7 @@ EVENTS = [
     ContactDoctorEvent,
     DoctorContactedSuccessfullyEvent,
     CancelContactDoctorEvent,
-    ViewReviewClickedEvent,
+    ViewReviewsEvent, 
     FilterReviewsEvent,
     SortReviewsEvent,
     CancelViewReviewsEvent,
@@ -828,7 +834,7 @@ BACKEND_EVENT_TYPES = {
     "CONTACT_DOCTOR": ContactDoctorEvent,
     "DOCTOR_CONTACTED_SUCCESSFULLY": DoctorContactedSuccessfullyEvent,
     "CANCEL_CONTACT_DOCTOR": CancelContactDoctorEvent,
-    "VIEW_REVIEWS_CLICKED": ViewReviewClickedEvent,
+    "VIEW_REVIEWS": ViewReviewsEvent,
     "FILTER_REVIEWS": FilterReviewsEvent,
     "SORT_REVIEWS": SortReviewsEvent,
     "CANCEL_VIEW_REVIEWS": CancelViewReviewsEvent,

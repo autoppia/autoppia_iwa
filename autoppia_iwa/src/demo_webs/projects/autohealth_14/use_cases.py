@@ -16,7 +16,7 @@ from .events import (
     ViewDoctorProfileEvent,
     ViewHealthMetricsEvent,
     ViewPrescriptionEvent,
-    ViewReviewClickedEvent,
+    ViewReviewsEvent,
 )
 from .generation_functions import (
     generate_appointment_booked_successfully_constraints,
@@ -34,7 +34,7 @@ from .generation_functions import (
     generate_view_doctor_profile_constraints,
     generate_view_health_metrics_constraints,
     generate_view_prescription_constraints,
-    generate_view_review_clicked_constraints,
+    generate_view_reviews_constraints, 
 )
 
 BOOK_APPOINTMENT_USE_CASE = UseCase(
@@ -422,7 +422,7 @@ CANCEL_CONTACT_DOCTOR_USE_CASE = UseCase(
         },
     ],
 )
-VIEW_REVIEW_CLICKED_ADDITIONAL_INFO = """
+VIEW_REVIEWS_ADDITIONAL_INFO = """
 CRITICAL REQUIREMENTS:
 1. The request must start with: "View reviews clicked...".
 2. Do not mention a single constraint more than once in the request.
@@ -446,13 +446,13 @@ Correct:
 Incorrect:
 "View reviews 'Dr. Alice Thompson' and speciality equals 'Cardiology'."
 """.strip()
-VIEW_REVIEWS_CLICKED_USE_CASE = UseCase(
-    name="VIEW_REVIEWS_CLICKED",
-    description="The user clicked to view reviews for a doctor.",
-    event=ViewReviewClickedEvent,
-    event_source_code=ViewReviewClickedEvent.get_source_code_of_class(),
-    additional_prompt_info=VIEW_REVIEW_CLICKED_ADDITIONAL_INFO,
-    constraints_generator=generate_view_review_clicked_constraints,
+VIEW_REVIEWS_USE_CASE = UseCase(
+    name="VIEW_REVIEWS",
+    description="The user viewed reviews for a doctor.",
+    event=ViewReviewsEvent,
+    event_source_code=ViewReviewsEvent.get_source_code_of_class(),
+    additional_prompt_info=VIEW_REVIEWS_ADDITIONAL_INFO,
+    constraints_generator=generate_view_reviews_constraints,
     examples=[
         {
             "prompt": "Show me reviews for 'Dr. Alice Thompson'",
@@ -610,13 +610,13 @@ ALL_USE_CASES = [
     # APPOINTMENT_BOOKED_SUCCESSFULLY_USE_CASE,
     CANCEL_BOOK_APPOINTMENT_USE_CASE,
     # FILTER_BY_SPECIALITY_USE_CASE,
-    # REFILL_PRESCRIPTION_USE_CASE,
+    REFILL_PRESCRIPTION_USE_CASE,
     VIEW_HEALTH_METRICS_USE_CASE,
     # FILTER_BY_CATEGORY_USE_CASE,
-    # VIEW_DOCTOR_PROFILE_USE_CASE,
+    VIEW_DOCTOR_PROFILE_USE_CASE,
     # DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,
     # CANCEL_CONTACT_DOCTOR_USE_CASE,
-    # VIEW_REVIEWS_CLICKED_USE_CASE,
+    VIEW_REVIEWS_USE_CASE,
     # FILTER_REVIEWS_USE_CASE,
     # SORT_REVIEWS_USE_CASE,
     # CANCEL_VIEW_REVIEWS_USE_CASE,
