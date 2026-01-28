@@ -12,7 +12,7 @@ setuptools
 tiktoken==0.7.0
 openai==1.99.9
 pytest==8.3.4
-dependency-injector==4.41.0
+dependency-injector==4.42.0
 flask>=3.1.1
 lxml==5.3.1
 pre-commit==4.1.0
