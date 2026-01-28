@@ -211,7 +211,6 @@ class SimpleTaskGenerator:
         # Shuffle them if you wish, for variety
         random.shuffle(tasks)
         return tasks
-
     async def _preload_dataset_for_use_case(self, use_case: UseCase, v2_seed: int) -> Any:
         """
         Attempt to pre-load the dataset for a given use case if its generator supports it and the loader signature is compatible.
