@@ -85,7 +85,14 @@ PROJECT_IDS = [
 PROJECTS = get_projects_by_ids(demo_web_projects, PROJECT_IDS)
 USE_CASES = [
     "BOOK_APPOINTMENT",
-    "CONTACT_DOCTOR"
+    "CONTACT_DOCTOR",
+    "VIEW_PRESCRIPTION",
+    "VIEW_HEALTH_METRICS",
+    "CANCEL_BOOK_APPOINTMENT",
+    "REFILL_PRESCRIPTION",
+    "VIEW_DOCTOR_PROFILE",
+    "VIEW_REVIEWS",
+    "UPLOAD_HEALTH_DATA",
     # "BOOK_DETAIL"
     # "VIEW_USER_PROFILE",
     # "FILM_DETAIL",
@@ -131,7 +138,7 @@ CFG = BenchmarkConfig(
     prompts_per_use_case=1,
     num_use_cases=0,  # 0 = all use-cases
     use_cases=USE_CASES,
-    max_constraints=1, # max number of constraints per task
+    max_constraints=0, # max number of constraints per task
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
