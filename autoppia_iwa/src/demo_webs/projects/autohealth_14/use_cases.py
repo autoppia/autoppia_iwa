@@ -13,6 +13,7 @@ from .events import (
     FilterReviewsEvent,
     RefillRequestEvent,
     SortReviewsEvent,
+    UploadHealthDataEvent,
     ViewDoctorProfileEvent,
     ViewHealthMetricsEvent,
     ViewPrescriptionEvent,
@@ -31,10 +32,11 @@ from .generation_functions import (
     generate_filter_reviews_constraints,
     generate_refill_prescription_constraints,
     generate_sort_reviews_constraints,
+    generate_upload_health_data_constraints,
     generate_view_doctor_profile_constraints,
     generate_view_health_metrics_constraints,
     generate_view_prescription_constraints,
-    generate_view_reviews_constraints, 
+    generate_view_reviews_constraints,
 )
 
 BOOK_APPOINTMENT_USE_CASE = UseCase(
@@ -221,6 +223,35 @@ VIEW_PRESCRIPTION_USE_CASE = UseCase(
         },
     ],
 )
+
+UPLOAD_HEALTH_DATA_ADDITIONAL_INFO = """
+CRITICAL REQUIREMENTS:
+1. The request must start with: "Upload ... health data file(s)..." or equivalent.
+2. Specify the exact number of files to upload (file_count constraint).
+
+Correct examples:
+- Upload 3 health data files to your medical records.
+- Upload 1 health data file.
+
+Incorrect examples:
+- Upload some files.
+- View medical records.
+""".strip()
+
+UPLOAD_HEALTH_DATA_USE_CASE = UseCase(
+    name="UPLOAD_HEALTH_DATA",
+    description="The user uploaded one or more health data files to medical records.",
+    event=UploadHealthDataEvent,
+    event_source_code=UploadHealthDataEvent.get_source_code_of_class(),
+    additional_prompt_info=UPLOAD_HEALTH_DATA_ADDITIONAL_INFO,
+    constraints_generator=generate_upload_health_data_constraints,
+    examples=[
+        {"prompt": "Upload 2 health data files", "prompt_for_task_generation": "Upload 2 health data files"},
+        {"prompt": "Upload 1 health data file to medical records", "prompt_for_task_generation": "Upload 1 health data file to medical records"},
+        {"prompt": "Upload 4 health data files", "prompt_for_task_generation": "Upload 4 health data files"},
+    ],
+)
+
 
 VIEW_HEALTH_METRICS_USE_CASE = UseCase(
     name="VIEW_HEALTH_METRICS",
@@ -612,6 +643,7 @@ ALL_USE_CASES = [
     # FILTER_BY_SPECIALITY_USE_CASE,
     REFILL_PRESCRIPTION_USE_CASE,
     VIEW_HEALTH_METRICS_USE_CASE,
+    UPLOAD_HEALTH_DATA_USE_CASE,
     # FILTER_BY_CATEGORY_USE_CASE,
     VIEW_DOCTOR_PROFILE_USE_CASE,
     # DOCTOR_CONTACTED_SUCCESSFULLY_USE_CASE,

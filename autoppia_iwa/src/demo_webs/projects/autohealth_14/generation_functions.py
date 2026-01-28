@@ -22,6 +22,7 @@ from .data import (
     FIELD_OPERATORS_MAP_FILTER_REVIEWS,
     FIELD_OPERATORS_MAP_REFILL_PRESCRIPTION,
     FIELD_OPERATORS_MAP_SORT_REVIEWS,
+    FIELD_OPERATORS_MAP_UPLOAD_HEALTH_DATA,
     FIELD_OPERATORS_MAP_VIEW_DOCTOR_PROFILE,
     FIELD_OPERATORS_MAP_VIEW_HEALTH_METRICS,
     FIELD_OPERATORS_MAP_VIEW_PRESCRIPTION,
@@ -466,6 +467,23 @@ async def generate_refill_prescription_constraints(task_url: str | None = None, 
         core_constraints.extend(optional_constraints)
 
     return core_constraints
+
+
+async def generate_upload_health_data_constraints(
+    task_url: str | None = None, dataset: list[dict[str, Any]] | None = None
+) -> list[dict[str, Any]]:
+    """
+    Generate constraints for upload_health_data use case.
+    No DB source; use a fixed set of file_count values (1..5), same pattern as
+    sort_order / filter_rating in SORT_REVIEWS and FILTER_REVIEWS.
+    """
+    file_count_dataset = [{"file_count": i} for i in range(1, 6)]
+    field_operators = FIELD_OPERATORS_MAP_UPLOAD_HEALTH_DATA
+    return _generate_constraints(
+        file_count_dataset,
+        field_operators,
+        selected_fields=["file_count"],
+    )
 
 
 async def generate_view_health_metrics_constraints(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:

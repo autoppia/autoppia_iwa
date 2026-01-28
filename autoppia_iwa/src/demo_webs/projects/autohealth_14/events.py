@@ -355,6 +355,45 @@ class RefillRequestEvent(Event, BaseEventValidator):
         )
 
 
+class UploadHealthDataEvent(Event, BaseEventValidator):
+    event_name: str = "UPLOAD_HEALTH_DATA"
+    file_count: int | None = None
+    file_names: list[str] | None = None
+    upload_timestamp: str | None = None
+
+    class ValidationCriteria(BaseModel):
+        file_count: int | CriterionValue | None = None
+        file_names: list[str] | CriterionValue | None = None
+        upload_timestamp: str | CriterionValue | None = None
+
+    def _validate_criteria(self, criteria: ValidationCriteria | None = None) -> bool:
+        if not criteria:
+            return True
+        return all(
+            [
+                self._validate_field(self.file_count, criteria.file_count),
+                self._validate_field(self.file_names, criteria.file_names),
+                self._validate_field(self.upload_timestamp, criteria.upload_timestamp),
+            ]
+        )
+
+    @classmethod
+    def parse(cls, backend_event: "BackendEvent") -> "UploadHealthDataEvent":
+        base_event = Event.parse(backend_event)
+        data = backend_event.data
+        data = data.get("data")
+        raw_names = data.get("fileNames") or data.get("file_names") or []
+        return cls(
+            event_name=base_event.event_name,
+            timestamp=base_event.timestamp,
+            web_agent_id=base_event.web_agent_id,
+            user_id=base_event.user_id,
+            file_count=data.get("fileCount") or data.get("file_count"),
+            file_names=raw_names if isinstance(raw_names, list) else [],
+            upload_timestamp=data.get("uploadTimestamp") or data.get("upload_timestamp"),
+        )
+
+
 class ViewHealthMetricsEvent(Event, BaseEventValidator):
     event_name: str = "VIEW_HEALTH_METRICS"
     record_title: str | None = None
@@ -809,6 +848,7 @@ EVENTS = [
     ViewPrescriptionEvent,
     FilterBySpecialityEvent,
     RefillRequestEvent,
+    UploadHealthDataEvent,
     ViewHealthMetricsEvent,
     FilterByCategoryEvent,
     ViewDoctorProfileEvent,
@@ -828,6 +868,7 @@ BACKEND_EVENT_TYPES = {
     "VIEW_PRESCRIPTION": ViewPrescriptionEvent,
     "FILTER_BY_SPECIALTY": FilterBySpecialityEvent,
     "REFILL_PRESCRIPTION": RefillRequestEvent,
+    "UPLOAD_HEALTH_DATA": UploadHealthDataEvent,
     "VIEW_HEALTH_METRICS": ViewHealthMetricsEvent,
     "FILTER_BY_CATEGORY": FilterByCategoryEvent,
     "VIEW_DOCTOR_PROFILE": ViewDoctorProfileEvent,
