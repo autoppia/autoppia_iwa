@@ -474,10 +474,14 @@ async def generate_upload_health_data_constraints(
 ) -> list[dict[str, Any]]:
     """
     Generate constraints for upload_health_data use case.
-    No DB source; use a fixed set of file_count values (1..5), same pattern as
-    sort_order / filter_rating in SORT_REVIEWS and FILTER_REVIEWS.
+    DB-first: fetch medical records, derive valid file_count values (1..min(5, len))
+    from dataset size, then generate constraints. Same pattern as other use cases.
     """
-    file_count_dataset = [{"file_count": i} for i in range(1, 6)]
+    medical_records_data = await _get_medical_records_data(task_url, dataset)
+    if not medical_records_data or len(medical_records_data) == 0:
+        return []
+    max_n = min(5, len(medical_records_data))
+    file_count_dataset = [{"file_count": n} for n in range(1, max_n + 1)]
     field_operators = FIELD_OPERATORS_MAP_UPLOAD_HEALTH_DATA
     return _generate_constraints(
         file_count_dataset,
