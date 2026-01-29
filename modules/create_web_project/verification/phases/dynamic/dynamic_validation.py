@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
@@ -473,8 +474,13 @@ async def _llm_assess_variation(llm_service, page_id: str, base_html: str, seed_
         {
             "role": "system",
             "content": (
-                "You are a consistency checker. Decide whether seeded HTML renders are both deterministic AND meaningfully different.\n"
-                "Heuristics are trustworthy signals; only contradict them if the HTML excerpts clearly show identical content.\n"
+                "You are a dynamic system validator. Your job is to verify that different seeds produce MEANINGFULLY DIFFERENT content.\n"
+                "Determinism (same seed = same result) is already verified by technical checks - you don't need to check that.\n"
+                "What you MUST verify:\n"
+                "- If heuristics show mutations (base_deltas > 0.02), the HTML excerpts should show DIFFERENT content between seeds (different IDs, classes, texts, structure).\n"
+                "- If heuristics show mutations, PASS if you see meaningful differences (different button labels, different navigation text, different class names, etc.).\n"
+                "- If heuristics show NO mutations (base_deltas < 0.01), the HTML excerpts should be IDENTICAL.\n"
+                "Heuristics are trustworthy: if they show mutations, you should PASS when you see differences. Only FAIL if heuristics show mutations but HTML is identical.\n"
                 'Respond ONLY with JSON matching the schema {"pass": bool, "reasons": ["..."]}. No prose, no markdown.'
             ),
         },
@@ -530,10 +536,36 @@ async def _llm_assess_variation_with_retry(
 
 
 def _trim_html(html: str) -> str:
-    snippet = (html or "").strip()
-    if len(snippet) > LLM_DIFF_SAMPLE_CHARS:
-        return snippet[:LLM_DIFF_SAMPLE_CHARS] + "\n... (truncated)"
-    return snippet
+    """
+    Extract body content, filter scripts/styles, then truncate for LLM review.
+    This ensures the LLM analyzes actual dynamic content, not framework scripts.
+    """
+    if not html or not html.strip():
+        return ""
+    
+    # Step 1: Extract body content only (skip head, scripts, etc.)
+    body_match = re.search(r'<body[^>]*>(.*?)</body>', html, re.DOTALL | re.IGNORECASE)
+    if body_match:
+        body_content = body_match.group(1)
+    else:
+        # Fallback: if no body tag, use the whole HTML but filter scripts
+        body_content = html
+    
+    # Step 2: Remove script and style tags (they can vary between renders)
+    # This removes both inline and external scripts/styles
+    body_content = re.sub(r'<script[^>]*>.*?</script>', '', body_content, flags=re.DOTALL | re.IGNORECASE)
+    body_content = re.sub(r'<style[^>]*>.*?</style>', '', body_content, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Step 3: Remove noscript tags (they're static fallbacks)
+    body_content = re.sub(r'<noscript[^>]*>.*?</noscript>', '', body_content, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Step 4: Clean up whitespace
+    body_content = re.sub(r'\s+', ' ', body_content).strip()
+    
+    # Step 5: Truncate to sample size
+    if len(body_content) > LLM_DIFF_SAMPLE_CHARS:
+        return body_content[:LLM_DIFF_SAMPLE_CHARS] + "\n... (truncated)"
+    return body_content
 
 
 def _expect_mutations(deck: WebProjectDeck | None) -> bool:
