@@ -1,9 +1,11 @@
 import asyncio
+import importlib
 import inspect
 import json
 import random
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
@@ -50,7 +52,6 @@ class SimpleTaskGenerator:
     ):
         self.web_project = web_project
         self.llm_service = llm_service
-        self._dataset_cache: dict[tuple[str, int], Any] = {}
 
     async def generate(self, prompts_per_use_case: int = 1, use_cases: list[str] | None = None, dynamic: bool = True) -> list[Task]:
         """
@@ -99,76 +100,78 @@ class SimpleTaskGenerator:
     async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
+        
+        Each prompt is generated independently with its own seed and constraints,
+        ensuring variety when multiple prompts are requested.
 
         Args:
             use_case: The use case to generate tasks for
-            number_of_prompts: Number of prompts to generate
+            number_of_prompts: Number of prompts to generate (each with unique seed/constraints)
         """
-        # Build task URL (with random seed if dynamic)
-        task_url = self._build_task_url_with_seed()
-
-        # Initialize dataset as empty dict (will be loaded if needed)
-        dataset: dict[str, list[dict]] = {}
-
-        # Generate initial constraints - load dataset first
-        if hasattr(use_case, "generate_constraints_async"):
-            # Extract seed from URL and load dataset
-            seed = get_seed_from_url(task_url) if self.dynamic else 1
-            dataset = await self._load_dataset(seed) or {}
-            
-            # Generate constraints with dataset
-            try:
-                constraints_info = await use_case.generate_constraints_async(dataset=dataset)
-            except Exception as e:
-                logger.error(f"Constraint generation failed for '{use_case.name}': {e}")
-                return []  # Skip this use case
-        else:
-            constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
-
-        # Build the LLM prompt using a template
-        if not use_case.additional_prompt_info:
-            use_case.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case.get_example_prompts_str()}"
-        llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
-            use_case_name=use_case.name,
-            use_case_description=use_case.description,
-            additional_prompt_info=use_case.additional_prompt_info,
-            constraints_info=constraints_info,
-            number_of_prompts=number_of_prompts,
-        )
-
-        # Call the LLM (with retry logic) and parse the list of strings result
-        prompt_list = await self._call_llm_with_retry(llm_prompt)
-        
-        # For each prompt string, create a Task
         tasks: list[Task] = []
-        seed_value_for_replace = get_seed_from_url(task_url) if self.dynamic else 1
+        
+        # Generate each prompt independently
+        for _ in range(number_of_prompts):
+            # Build task URL with unique seed for each prompt
+            task_url = self._build_task_url_with_seed()
+            seed = get_seed_from_url(task_url) if self.dynamic else 1
+            
+            # Load dataset for this specific seed
+            dataset: dict[str, list[dict]] = {}
+            
+            # Generate constraints specific to this seed's dataset
+            if hasattr(use_case, "generate_constraints_async"):
+                dataset = await self._load_dataset(seed) or {}
+                
+                try:
+                    constraints_info = await use_case.generate_constraints_async(dataset=dataset)
+                except Exception as e:
+                    logger.error(f"Constraint generation failed for '{use_case.name}': {e}")
+                    continue  # Skip this iteration
+            else:
+                constraints_info = "**IMPORTANT:** Do **NOT** invent, assume, or include any constraints. No constraints are provided for this use case."
 
-        for prompt_text in prompt_list:
-            try:
-                # Build replace kwargs once (used by both sync and async)
-                replace_kwargs: dict[str, Any] = {}
-                if use_case.replace_func:
-                    sig = inspect.signature(use_case.replace_func)
-                    if "seed_value" in sig.parameters:
-                        replace_kwargs["seed_value"] = seed_value_for_replace
-                    if "dataset" in sig.parameters:
-                        replace_kwargs["dataset"] = dataset
-                
-                # Apply replacements (async or sync)
-                if hasattr(use_case, "apply_replacements_async"):
-                    replaced_prompt = await use_case.apply_replacements_async(prompt_text, **replace_kwargs)
-                else:
-                    replaced_prompt = use_case.apply_replacements(prompt_text, **replace_kwargs)
-                
-                # Create and append task
-                tasks.append(Task(
-                    web_project_id=self.web_project.id,
-                    url=task_url,
-                    prompt=replaced_prompt,
-                    use_case=use_case,
-                ))
-            except Exception as ex:
-                logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
+            # Build the LLM prompt (always generate 1 prompt per call)
+            if not use_case.additional_prompt_info:
+                use_case.additional_prompt_info = f"GENERATE PROMPT LIKE: {use_case.get_example_prompts_str()}"
+            
+            llm_prompt = GLOBAL_TASK_GENERATION_PROMPT.format(
+                use_case_name=use_case.name,
+                use_case_description=use_case.description,
+                additional_prompt_info=use_case.additional_prompt_info,
+                constraints_info=constraints_info,
+            )
+
+            # Call the LLM and get a single prompt
+            prompt_list = await self._call_llm_with_retry(llm_prompt)
+            
+            # Process the generated prompt(s) - usually just 1
+            for prompt_text in prompt_list:
+                try:
+                    # Build replace kwargs with this seed's data
+                    replace_kwargs: dict[str, Any] = {}
+                    if use_case.replace_func:
+                        sig = inspect.signature(use_case.replace_func)
+                        if "seed_value" in sig.parameters:
+                            replace_kwargs["seed_value"] = seed
+                        if "dataset" in sig.parameters:
+                            replace_kwargs["dataset"] = dataset
+                    
+                    # Apply replacements (async or sync)
+                    if hasattr(use_case, "apply_replacements_async"):
+                        replaced_prompt = await use_case.apply_replacements_async(prompt_text, **replace_kwargs)
+                    else:
+                        replaced_prompt = use_case.apply_replacements(prompt_text, **replace_kwargs)
+                    
+                    # Create and append task
+                    tasks.append(Task(
+                        web_project_id=self.web_project.id,
+                        url=task_url,
+                        prompt=replaced_prompt,
+                        use_case=use_case,
+                    ))
+                except Exception as ex:
+                    logger.error(f"Could not assemble Task for prompt '{prompt_text}': {ex!s}")
 
         random.shuffle(tasks)
         return tasks
@@ -176,34 +179,39 @@ class SimpleTaskGenerator:
     async def _load_dataset(self, seed: int) -> dict[str, list[dict]] | None:
         """
         Load complete dataset for the current project with given seed.
-        Returns a dictionary with all entities for the project.
-        Uses cache to avoid redundant loads.
-        """
-        cache_key = (self.web_project.id, seed)
-        if cache_key in self._dataset_cache:
-            return self._dataset_cache[cache_key]
-
-        # Try to load get_all_data from project's data_utils module
-        project_module = f"autoppia_iwa.src.demo_webs.projects.{self.web_project.id}_1.data_utils"
         
+        Each project has its own `get_all_data` function in its `data_utils.py` module
+        that returns a dictionary with all relevant entities for that project. This pattern
+        allows each project to auto-manage its data loading and maintain separation of concerns.
+        """
         try:
-            import importlib
-            import inspect
+            # Find project directory using glob
+            projects_base = Path(__file__).resolve().parents[3] / "src" / "demo_webs" / "projects"
+            matching_dirs = list(projects_base.glob(f"{self.web_project.id}_*"))
             
-            data_module = importlib.import_module(project_module)
-            loader = getattr(data_module, "get_all_data", None)
-            
-            if loader is None:
+            if not matching_dirs:
+                logger.debug(f"No project directory found for {self.web_project.id}")
                 return None
-
-            # Call loader
-            dataset_result = loader(seed_value=seed)
-            dataset = await dataset_result if inspect.isawaitable(dataset_result) else dataset_result
+            
+            project_dir = matching_dirs[0].name
+            
+            # Import and call get_all_data
+            module = importlib.import_module(f"autoppia_iwa.src.demo_webs.projects.{project_dir}.data_utils")
+            get_all_data = getattr(module, "get_all_data", None)
+            
+            if not get_all_data:
+                return None
+            
+            result = get_all_data(seed_value=seed)
+            dataset = await result if inspect.isawaitable(result) else result
             
             if dataset:
-                self._dataset_cache[cache_key] = dataset
                 total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
-                _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across {len(dataset)} entities)", context="OPTIMIZATION")
+                _log_task_generation(
+                    f"Loaded dataset for {self.web_project.id} with seed={seed} "
+                    f"({total_items} items across {len(dataset)} entities)", 
+                    context="OPTIMIZATION"
+                )
             
             return dataset
             
@@ -339,16 +347,3 @@ class SimpleTaskGenerator:
 
         # Fallback: return empty array
         return "[]"
-
-    @staticmethod
-    def _assemble_task(web_project_id: str, url: str, prompt: str, use_case: UseCase) -> Task:
-        """
-        Assembles a final Task object from the prompt string and loaded page info.
-        """
-        return Task(
-            web_project_id=web_project_id,
-            prompt=prompt,
-            url=url,
-            specifications=BrowserSpecification(),
-            use_case=use_case,
-        )
