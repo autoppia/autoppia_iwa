@@ -1,9 +1,11 @@
 # Web Verification Pipeline
 
-A concise, three-step pipeline that:
-- Generates web tasks with constraints (tests) and reviews them with an LLM
-- Checks if anyone has solved the use case via the IWAP API (with mock fallback)
-- Replays found solutions across multiple dynamic seeds to prove they generalize
+A comprehensive, five-step pipeline that:
+- **Step 0**: Pre-validates project configuration (events, use cases, URLs)
+- **Step 1 (V1)**: Generates web tasks with constraints and reviews them with an LLM
+- **Step 2 (V2)**: Verifies that datasets are different with different seeds (dynamic data validation)
+- **Step 3**: Checks if anyone has solved the use case via the IWAP API (with mock fallback)
+- **Step 4 (V3)**: Replays found solutions across multiple dynamic seeds to prove they generalize
 
 ## Quick start
 
@@ -34,12 +36,13 @@ If validation fails, the pipeline stops immediately with clear error messages. T
 
 ## Overview
 
-The Web Verification Pipeline is a three-step process designed to:
+The Web Verification Pipeline is a five-step process designed to:
 
 0. **Pre-Validation**: Automatically validates project setup (events, use cases, URLs) before proceeding
-1. **Generate and Review Tasks**: Create multiple tasks per use case with constraints (tests) and validate them using GPT
-2. **IWAP Use Case Doability Check**: Query the IWAP API to check if the use case is doable (has any successful solution). We don't compare specific constraints - we just need to know if the use case has been solved before.
-3. **Dynamic Verification**: Take the successful solution from Step 2 and test it with different seed values to ensure the solution works across different dynamic content variations
+1. **Task Generation and LLM Review (V1)**: Create multiple tasks per use case with constraints (tests) and validate them using GPT
+2. **Dataset Diversity Verification (V2)**: Verify that `get_all_data()` returns different datasets with different seeds, ensuring dynamic data generation works correctly
+3. **IWAP Use Case Doability Check**: Query the IWAP API to check if the use case is doable (has any successful solution). We don't compare specific constraints - we just need to know if the use case has been solved before.
+4. **Dynamic Verification (V3)**: Take the successful solution from Step 3 and test it with different seed values to ensure the solution works across different dynamic content variations
 
 ## Pipeline Steps
 
@@ -66,7 +69,7 @@ The Web Verification Pipeline is a three-step process designed to:
 - If validation passes: Pipeline continues to Step 1
 - Warnings don't stop execution but indicate potential issues
 
-### Step 1: Task Generation and LLM Review
+### Step 1: Task Generation and LLM Review (V1)
 
 **Purpose**: Generate tasks with constraints and validate that the task prompts accurately represent their constraints.
 
@@ -86,7 +89,54 @@ The Web Verification Pipeline is a three-step process designed to:
 - List of generated tasks with their constraints
 - LLM review results for each task (valid/invalid)
 
-### Step 2: IWAP Use Case Doability Check
+### Step 2: Dataset Diversity Verification (V2)
+
+**Purpose**: Verify that the dynamic data generation system works correctly by ensuring different seeds produce different datasets.
+
+**Process**:
+- Only executes if `dynamic_enabled=True`
+- For each configured seed value (default: [1, 50, 100, 200, 300]):
+  1. Calls the project's `get_all_data(seed)` function in `data_utils.py`
+  2. Receives a dictionary with all entities (e.g., `{"movies": [...], "actors": [...]}`)
+  3. Calculates an MD5 hash of the dataset for comparison
+- Compares all datasets pairwise to verify they are different
+- Detects whether differences are due to:
+  - **Different entities**: The dataset structure changed (different keys)
+  - **Different data**: Same entities but different content (same keys, different values)
+
+**Why this matters**:
+- Validates that the `get_all_data()` function is implemented correctly
+- Ensures the seed parameter actually affects data generation
+- Catches bugs where the same data is returned regardless of seed
+- Critical for dynamic task generation to work properly
+
+**Output**:
+- Per-seed information: hash, entity count, total items, entity names
+- Pairwise comparison results showing which datasets differ
+- Overall status: `passed=True` if all datasets are different
+- Summary indicating if the dynamic system is working
+
+**Example output**:
+```
+Step 2 (V2): Dataset Diversity Verification
+Seeds tested: [1, 50, 100]
+Datasets loaded: 3/3
+
+Seed 1: loaded 50 items across 2 entities (hash: a3b4c5d6...)
+Seed 2: loaded 50 items across 2 entities (hash: e7f8g9h0...)
+Seed 3: loaded 50 items across 2 entities (hash: i1j2k3l4...)
+
+Pairwise comparisons:
+  Seed 1 vs 50: ✓ Different (same entities, different data)
+  Seed 1 vs 100: ✓ Different (same entities, different data)
+  Seed 50 vs 100: ✓ Different (same entities, different data)
+
+V2 Verification: PASSED - All 3 datasets are different. Dynamic data generation is working correctly.
+```
+
+**Note**: This step is **independent** and does not affect other steps. If V2 fails, the pipeline continues normally.
+
+### Step 3: IWAP Use Case Doability Check
 
 **Purpose**: Check if the use case is doable by finding ANY successful solution for it in the IWAP database.
 
@@ -107,11 +157,11 @@ The Web Verification Pipeline is a three-step process designed to:
   - **Solution actions**: The sequence of actions that solved the task
   - **API prompt**: The prompt from the successful task
   - **API tests**: The test criteria from the successful task
-  - **API start URL**: The starting URL (will be modified with different seeds in Step 3)
+  - **API start URL**: The starting URL (will be modified with different seeds in Step 4)
 
 **Output**:
 - Doability assessment: `matched=True` if use case is doable (has successful solution)
-- Solution actions: Actions to test with different seeds in Step 3
+- Solution actions: Actions to test with different seeds in Step 4
 - API prompt: Prompt to use for creating tasks with different seeds
 - API tests: Test criteria to validate against
 - API start URL: Base URL to modify with different seeds
@@ -122,17 +172,17 @@ The Web Verification Pipeline is a three-step process designed to:
 - Mock responses generate realistic solution data
 - Enable with `--iwap-use-mock` flag
 
-### Step 3: Dynamic Verification
+### Step 4: Dynamic Verification (V3)
 
-**Purpose**: Verify that the solution from Step 2 works correctly across different seed values.
+**Purpose**: Verify that the solution from Step 3 works correctly across different seed values.
 
 **Process**:
-- Only executes if a solution was found in Step 2 (use case is doable)
+- Only executes if a solution was found in Step 3 (use case is doable)
 - Takes the solution actions, prompt, and tests from the successful IWAP task
 - For each seed value in the configured list (default: [1, 50, 100, 200, 300]):
   1. Creates a new task using:
-     - The **API prompt** from Step 2 (not our generated prompt)
-     - The **API tests** from Step 2 (not our generated constraints)
+     - The **API prompt** from Step 3 (not our generated prompt)
+     - The **API tests** from Step 3 (not our generated constraints)
      - A URL with the current seed value (e.g., `?seed=50`)
   2. Updates all NavigateAction URLs in the solution to use the current seed
   3. Evaluates the solution actions against the seeded task using `ConcurrentEvaluator`
@@ -373,11 +423,15 @@ Useful for:
 ```
 Use Case
   ↓
-Step 1: Generate Tasks → LLM Review
+Step 0: Pre-Validation
+  ↓
+Step 1: Generate Tasks → LLM Review (V1)
+  ↓
+Step 2: Dataset Diversity → Verify Different Seeds (V2)
   ↓ (if all reviews valid)
-Step 2: IWAP API Query → Match Solution
+Step 3: IWAP API Query → Match Solution
   ↓ (if solution found)
-Step 3: Dynamic Verification → Evaluate with Seeds
+Step 4: Dynamic Verification → Evaluate with Seeds (V3)
   ↓
 Results JSON
 ```

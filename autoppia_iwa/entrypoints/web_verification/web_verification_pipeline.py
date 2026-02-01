@@ -2,10 +2,11 @@
 Web Verification Pipeline
 
 Main pipeline that orchestrates:
-1. Task generation (2 tasks per use case with constraints)
-2. GPT review of tasks and constraints (does prompt accurately represent constraints?)
-3. IWAP doability check
-4. Dynamic verification with different seeds
+0. Pre-validation (project setup, events, use cases)
+1. Task generation (2 tasks per use case with constraints) + LLM Review (V1)
+2. Dataset diversity verification - verify datasets differ with different seeds (V2)
+3. IWAP doability check (find any successful solution for use case)
+4. Dynamic verification with different seeds (V3)
 """
 
 import json
@@ -129,8 +130,9 @@ class WebVerificationPipeline:
             "use_case_description": getattr(use_case, "description", ""),
             "tasks": [],
             "llm_reviews": [],
+            "dataset_diversity_verification": None,  # V2: Will be set in Step 2
             "doability_check": None,
-            "dynamic_verification": None,  # Will be set in Step 3 if solution is available
+            "dynamic_verification": None,  # V3: Will be set in Step 4 if solution is available
         }
 
         # Step 1: Generate tasks (2 per use case) with constraints
@@ -219,7 +221,58 @@ class WebVerificationPipeline:
                         print(f"\nReasoning: {review_result.get('reasoning')}")
                     print("=" * 80 + "\n")
 
-        # Step 2: IWAP API call - proceed if enabled and (LLM reviews are valid or review is disabled)
+        # Step 2 (V2): Dataset Diversity Verification - verify that datasets are different with different seeds
+        if self.config.dynamic_enabled and self.dynamic_verifier:
+            print("\n" + "=" * 80)
+            print("🔄 STEP 2 (V2): DATASET DIVERSITY VERIFICATION")
+            print("=" * 80)
+            print(f"Use Case: {use_case.name}")
+            print(f"Project ID: {self.web_project.id}")
+            print(f"Seeds to test: {self.config.seed_values}")
+            print("Verifying that datasets are different with different seeds...")
+            print("Note: This ensures dynamic data generation is working correctly")
+            print("-" * 80)
+            
+            logger.info(f"Step 2 (V2): Dataset Diversity Verification for {use_case.name}")
+            v2_result = await self.dynamic_verifier.verify_dataset_diversity_with_seeds(
+                seed_values=self.config.seed_values,
+            )
+            
+            use_case_results["dataset_diversity_verification"] = v2_result
+            
+            # Print V2 results
+            print(f"\nV2 Verification Result: {'✓ PASSED' if v2_result.get('passed', False) else '✗ FAILED'}")
+            print(f"Seeds tested: {v2_result.get('seeds_tested', [])}")
+            print(f"Datasets loaded: {v2_result.get('loaded_count', 0)}/{v2_result.get('expected_count', 0)}")
+            print(f"All different: {'✓ YES' if v2_result.get('all_different', False) else '✗ NO'}")
+            
+            # Print comparison details
+            comparison_results = v2_result.get('comparison_results', [])
+            if comparison_results:
+                print("\nPairwise comparisons:")
+                for comparison in comparison_results:
+                    seed1 = comparison.get('seed1')
+                    seed2 = comparison.get('seed2')
+                    different = comparison.get('different')
+                    if different is None:
+                        print(f"  Seed {seed1} vs {seed2}: ⚠️  {comparison.get('reason', 'Unknown')}")
+                    elif different:
+                        print(f"  Seed {seed1} vs {seed2}: ✓ Different (hash1={comparison.get('hash1')}, hash2={comparison.get('hash2')})")
+                    else:
+                        print(f"  Seed {seed1} vs {seed2}: ✗ IDENTICAL (hash={comparison.get('hash1')})")
+            
+            # Print summary
+            print(f"\n{v2_result.get('summary', 'No summary available')}")
+            print("=" * 80 + "\n")
+        else:
+            logger.info("V2 Dataset Diversity Verification: Skipped (dynamic mode disabled or verifier unavailable)")
+            use_case_results["dataset_diversity_verification"] = {
+                "skipped": True,
+                "reason": "Dynamic mode disabled or verifier unavailable",
+                "passed": None,
+            }
+
+        # Step 3: IWAP API call - proceed if enabled and (LLM reviews are valid or review is disabled)
         if self.iwap_client:
             all_reviews_valid = True
             if self.llm_reviewer:
@@ -228,7 +281,7 @@ class WebVerificationPipeline:
 
             if all_reviews_valid:
                 print("\n" + "=" * 80)
-                print("🔄 STEP 2: IWAP USE CASE DOABILITY CHECK")
+                print("🔄 STEP 3: IWAP USE CASE DOABILITY CHECK")
                 print("=" * 80)
                 print(f"Use Case: {use_case.name}")
                 print(f"Project ID: {self.web_project.id}")
@@ -241,7 +294,7 @@ class WebVerificationPipeline:
                 print("Note: We don't compare specific constraints, just check if use case has been solved before")
                 print("-" * 80)
 
-                logger.info(f"Step 2: IWAP Use Case Doability Check for {use_case.name} (LLM review {'enabled' if self.llm_reviewer else 'disabled'})")
+                logger.info(f"Step 3: IWAP Use Case Doability Check for {use_case.name} (LLM review {'enabled' if self.llm_reviewer else 'disabled'})")
                 iwap_result = await self.iwap_client.get_tasks_with_solutions(
                     project_id=self.web_project.id,
                     use_case_name=use_case.name,
@@ -340,7 +393,7 @@ class WebVerificationPipeline:
                         "reason": iwap_result.get("error", "API call failed") if iwap_result else "No response",
                     }
 
-                # Step 3: Dynamic verification - evaluate solution from Step 2 with different seeds
+                # Step 4: Dynamic verification - evaluate solution from Step 3 with different seeds
                 # (only if use case is doable and we have a solution)
                 doability_result = use_case_results.get("iwap_match_result", {})  # Backward compatibility key
 
@@ -352,7 +405,7 @@ class WebVerificationPipeline:
                     api_start_url = doability_result.get("api_start_url", "")
 
                     print("\n" + "=" * 80)
-                    print("🔄 STEP 3: DYNAMIC VERIFICATION")
+                    print("🔄 STEP 4: DYNAMIC VERIFICATION")
                     print("=" * 80)
                     print(f"Use Case: {use_case.name}")
                     print(f"Using Solution Prompt: {api_prompt[:100]}..." if len(api_prompt) > 100 else f"Using Solution Prompt: {api_prompt}")
@@ -370,7 +423,7 @@ class WebVerificationPipeline:
                     if self.dynamic_verifier and self.config.dynamic_verification_enabled:
                         if api_prompt and api_start_url:
                             logger.info(
-                                f"Step 3: Evaluating API solution against API task with different seeds for use case {use_case.name}"  # {use_case.name}
+                                f"Step 4: Evaluating API solution against API task with different seeds for use case {use_case.name}"  # {use_case.name}
                             )
                             dynamic_result = await self.dynamic_verifier.verify_task_with_seeds(
                                 api_prompt=api_prompt,
@@ -384,7 +437,7 @@ class WebVerificationPipeline:
 
                             # Print summary
                             print("\n" + "=" * 80)
-                            print("📊 STEP 3 SUMMARY")
+                            print("📊 STEP 4 SUMMARY")
                             print("=" * 80)
                             print(dynamic_result.get("summary", "No summary available"))
                             print(f"Passed: {dynamic_result.get('passed_count', 0)}/{dynamic_result.get('total_count', 0)}")
@@ -404,17 +457,17 @@ class WebVerificationPipeline:
                             print("=" * 80 + "\n")
                         else:
                             logger.warning("No reference task available for dynamic verification")
-                            # Store skip reason for Step 3
-                            use_case_results["dynamic_verification"] = {
-                                "skipped": True,
-                                "reason": "No reference task available (missing api_prompt or api_start_url)",
-                                "all_passed": False,
-                                "passed_count": 0,
-                                "total_count": 0,
-                            }
+                        # Store skip reason for Step 4
+                        use_case_results["dynamic_verification"] = {
+                            "skipped": True,
+                            "reason": "No reference task available (missing api_prompt or api_start_url)",
+                            "all_passed": False,
+                            "passed_count": 0,
+                            "total_count": 0,
+                        }
                     else:
                         logger.info("Dynamic verification is disabled")
-                        # Store skip reason for Step 3
+                        # Store skip reason for Step 4
                         use_case_results["dynamic_verification"] = {
                             "skipped": True,
                             "reason": "Dynamic verification is disabled",
@@ -424,7 +477,7 @@ class WebVerificationPipeline:
                         }
                 else:
                     print("\n" + "=" * 80)
-                    print("⏭️  STEP 3: SKIPPED")
+                    print("⏭️  STEP 4: SKIPPED")
                     print("=" * 80)
                     print(f"Use Case: {use_case.name}")
                     skip_reason = ""
@@ -435,7 +488,7 @@ class WebVerificationPipeline:
                         skip_reason = "No actions in solution"
                         print(f"Reason: {skip_reason}")
                     print("=" * 80 + "\n")
-                    # Store skip reason for Step 3
+                    # Store skip reason for Step 4
                     use_case_results["dynamic_verification"] = {
                         "skipped": True,
                         "reason": skip_reason,
@@ -446,25 +499,25 @@ class WebVerificationPipeline:
             else:
                 invalid_count = sum(1 for review in use_case_results.get("llm_reviews", []) if not review.get("valid", False))
                 print("\n" + "=" * 80)
-                print("⏭️  STEP 2: SKIPPED")
+                print("⏭️  STEP 3: SKIPPED")
                 print("=" * 80)
                 print(f"Use Case: {use_case.name}")
                 print(f"Total Tasks Reviewed: {len(use_case_results.get('llm_reviews', []))}")
                 print(f"Invalid Reviews: {invalid_count}")
                 print("Reason: Not all LLM reviews are valid")
                 print("=" * 80 + "\n")
-                logger.info(f"Step 2: Skipping IWAP Use Case Doability Check for {use_case.name} because not all LLM reviews are valid")
-                # Store skip reason for Step 2
+                logger.info(f"Step 3: Skipping IWAP Use Case Doability Check for {use_case.name} because not all LLM reviews are valid")
+                # Store skip reason for Step 3
                 use_case_results["iwap_status"] = {
                     "skipped": True,
                     "reason": "Not all LLM reviews are valid",
                     "invalid_reviews": invalid_count,
                     "total_reviews": len(use_case_results.get("llm_reviews", [])),
                 }
-                # Also mark Step 3 as skipped since Step 2 was skipped
+                # Also mark Step 4 as skipped since Step 3 was skipped
                 use_case_results["dynamic_verification"] = {
                     "skipped": True,
-                    "reason": "Step 2 skipped (not all LLM reviews are valid)",
+                    "reason": "Step 3 skipped (not all LLM reviews are valid)",
                     "all_passed": False,
                     "passed_count": 0,
                     "total_count": 0,
@@ -476,23 +529,23 @@ class WebVerificationPipeline:
             print(f"Use Case: {use_case.name}")
             print("Reason: IWAP client is disabled (--no-iwap flag used)")
             print("=" * 80 + "\n")
-            logger.info(f"Step 2: Skipping IWAP Use Case Doability Check for {use_case.name} because IWAP client is disabled")
-            # Store skip reason for Step 2
+            logger.info(f"Step 3: Skipping IWAP Use Case Doability Check for {use_case.name} because IWAP client is disabled")
+            # Store skip reason for Step 3
             use_case_results["iwap_status"] = {
                 "skipped": True,
                 "reason": "IWAP client is disabled",
             }
-            # Also mark Step 3 as skipped since Step 2 was skipped
+            # Also mark Step 4 as skipped since Step 3 was skipped
             use_case_results["dynamic_verification"] = {
                 "skipped": True,
-                "reason": "Step 2 skipped (IWAP client disabled)",
+                "reason": "Step 3 skipped (IWAP client disabled)",
                 "all_passed": False,
                 "passed_count": 0,
                 "total_count": 0,
             }
 
-        # Note: IWAP doability check is now done per-task in Step 2 (when LLM review is valid)
-        # Keeping this for backward compatibility if needed, but it's now integrated into Step 2
+        # Note: IWAP doability check is now done per-task in Step 3 (when LLM review is valid)
+        # Keeping this for backward compatibility if needed, but it's now integrated into Step 3
         return use_case_results
 
     def _format_results_for_storage(self) -> dict[str, Any]:
@@ -767,26 +820,13 @@ class WebVerificationPipeline:
             pass
         return None
 
-    def _extract_seed_from_url(self, url: str) -> int | None:
-        """Extract v2-seed parameter from URL query string"""
-        try:
-            parsed = urlparse(url)
-            query = parse_qs(parsed.query)
-            if query.get("v2-seed"):
-                value = int(str(query["v2-seed"][0]).strip())
-                return value
-        except Exception:
-            pass
-        return None
-
-    def _print_task_details_for_review(self, task: Task, seed: int | None, constraints_str: str, seed: int | None | None = None):
+    def _print_task_details_for_review(self, task: Task, seed: int | None, constraints_str: str):
         """
         Print task details (prompt, constraints, seed) before GPT review
 
         Args:
             task: The task to print
-            seed: Base seed value from URL
-            seed: V2 seed value from URL
+            seed: Seed value from URL
             constraints_str: String representation of constraints
         """
         print("\n" + "=" * 80)
@@ -795,16 +835,11 @@ class WebVerificationPipeline:
         print(f"Task ID: {task.id}")
         print(f"Use Case: {task.use_case.name if task.use_case else 'Unknown'}")
 
-        # Print seed values
-        seed_info = []
+        # Print seed value
         if seed is not None:
-            seed_info.append(f"seed={seed}")
-        if seed is not None:
-            seed_info.append(f"v2-seed={seed}")
-        if seed_info:
-            print(f"Seed Values: {', '.join(seed_info)}")
+            print(f"Seed: {seed}")
         else:
-            print("Seed Values: None (no dynamic seed)")
+            print("Seed: None (no dynamic seed)")
 
         # Print constraints (tests)
         print("\n" + "-" * 80)
@@ -860,38 +895,61 @@ class WebVerificationPipeline:
             else:
                 summary_lines.append("  Step 1 (LLM Review): ⏭️ Skipped")
 
-            # Step 2: IWAP API / Doability check
+            # Step 2: V2 Dataset Diversity Verification
+            dataset_diversity = use_case_data.get("dataset_diversity_verification")
+            if dataset_diversity:
+                if dataset_diversity.get("skipped", False):
+                    reason = dataset_diversity.get("reason", "Unknown reason")
+                    summary_lines.append(f"  Step 2 (V2 Dataset): ⏭️ Skipped ({reason})")
+                else:
+                    passed = dataset_diversity.get("passed", False)
+                    all_different = dataset_diversity.get("all_different", False)
+                    loaded_count = dataset_diversity.get("loaded_count", 0)
+                    expected_count = dataset_diversity.get("expected_count", 0)
+                    
+                    if passed and all_different:
+                        summary_lines.append(f"  Step 2 (V2 Dataset): ✓ Passed - All datasets different ({loaded_count}/{expected_count} seeds)")
+                    elif not passed and loaded_count < expected_count:
+                        summary_lines.append(f"  Step 2 (V2 Dataset): ✗ Failed - Only {loaded_count}/{expected_count} datasets loaded")
+                    elif not all_different:
+                        summary_lines.append(f"  Step 2 (V2 Dataset): ✗ Failed - Some datasets are identical")
+                    else:
+                        summary_lines.append(f"  Step 2 (V2 Dataset): ⚠️  {dataset_diversity.get('summary', 'Unknown status')}")
+            else:
+                summary_lines.append("  Step 2 (V2 Dataset): ⏭️ Skipped (no data)")
+
+            # Step 3: IWAP API / Doability check
             iwap_status = use_case_data.get("iwap_status")
             if iwap_status:
                 if iwap_status.get("skipped", False):
-                    # Step 2 was skipped
+                    # Step 3 was skipped
                     reason = iwap_status.get("reason", "Unknown reason")
-                    summary_lines.append(f"  Step 2 (IWAP): ⏭️ Skipped ({reason})")
+                    summary_lines.append(f"  Step 3 (IWAP): ⏭️ Skipped ({reason})")
                 elif iwap_status.get("executed", False):
-                    # Step 2 was executed
+                    # Step 3 was executed
                     if iwap_status.get("matched", False):
-                        summary_lines.append("  Step 2 (IWAP): ✓ Executed (solution found)")
+                        summary_lines.append("  Step 3 (IWAP): ✓ Executed (solution found)")
                     elif iwap_status.get("matched") is False:
                         reason = iwap_status.get("reason", "No solution found")
-                        summary_lines.append(f"  Step 2 (IWAP): ✓ Executed ({reason})")
+                        summary_lines.append(f"  Step 3 (IWAP): ✓ Executed ({reason})")
                     elif not iwap_status.get("success", True):
                         reason = iwap_status.get("reason", "API call failed")
-                        summary_lines.append(f"  Step 2 (IWAP): ✗ Failed ({reason})")
+                        summary_lines.append(f"  Step 3 (IWAP): ✗ Failed ({reason})")
                     else:
-                        summary_lines.append("  Step 2 (IWAP): ✓ Executed")
+                        summary_lines.append("  Step 3 (IWAP): ✓ Executed")
                 else:
-                    summary_lines.append("  Step 2 (IWAP): ⏭️ Not executed")
+                    summary_lines.append("  Step 3 (IWAP): ⏭️ Not executed")
             else:
                 # Check for legacy doability_check format
                 doability = use_case_data.get("doability_check")
                 if doability:
                     is_doable = doability.get("doable", False)
                     success_rate = doability.get("success_rate", 0.0)
-                    summary_lines.append(f"  Step 2 (IWAP): {'✓ Doable' if is_doable else '✗ Not doable'} (success rate: {success_rate:.2%})")
+                    summary_lines.append(f"  Step 3 (IWAP): {'✓ Doable' if is_doable else '✗ Not doable'} (success rate: {success_rate:.2%})")
                 else:
-                    summary_lines.append("  Step 2 (IWAP): ⏭️ Not executed")
+                    summary_lines.append("  Step 3 (IWAP): ⏭️ Not executed")
 
-            # Step 3: Dynamic verification
+            # Step 4: Dynamic verification
             dynamic_verification = use_case_data.get("dynamic_verification")
             if dynamic_verification:
                 # dynamic_verification is a dict, not a list
@@ -899,7 +957,7 @@ class WebVerificationPipeline:
                     skipped = dynamic_verification.get("skipped", False)
                     if skipped:
                         reason = dynamic_verification.get("reason", "Unknown reason")
-                        summary_lines.append(f"  Step 3 (Dynamic): ⏭️ Skipped ({reason})")
+                        summary_lines.append(f"  Step 4 (Dynamic): ⏭️ Skipped ({reason})")
                     else:
                         all_passed = dynamic_verification.get("all_passed", False)
                         passed_count = dynamic_verification.get("passed_count", 0)
@@ -931,7 +989,7 @@ class WebVerificationPipeline:
                         if seed_details:
                             seeds_str = ", ".join(seed_details)
                             status_icon = "✓ Passed" if all_passed else "✗ Failed"
-                            summary_lines.append(f"  Step 3 (Dynamic): {status_icon} ({passed_count}/{total_count} seeds passed)")
+                            summary_lines.append(f"  Step 4 (Dynamic): {status_icon} ({passed_count}/{total_count} seeds passed)")
                             summary_lines.append(f"    Solution tested with seeds: {seeds_str}")
                             
                             # Add warning if solution works for all seeds (suggests non-dynamic use case)
@@ -948,19 +1006,19 @@ class WebVerificationPipeline:
                                 if seed_details:
                                     seeds_str = ", ".join(seed_details)
                                     status_icon = "✓ Passed" if all_passed else "✗ Failed"
-                                    summary_lines.append(f"  Step 3 (Dynamic): {status_icon} ({passed_count}/{total_count} seeds)")
+                                    summary_lines.append(f"  Step 4 (Dynamic): {status_icon} ({passed_count}/{total_count} seeds)")
                                     summary_lines.append(f"    Seeds tested: {seeds_str}")
                                 else:
-                                    summary_lines.append(f"  Step 3 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
+                                    summary_lines.append(f"  Step 4 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
                             else:
-                                summary_lines.append(f"  Step 3 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
+                                summary_lines.append(f"  Step 4 (Dynamic): {'✓ Passed' if all_passed else '✗ Failed'} ({passed_count}/{total_count} seeds)")
                 elif isinstance(dynamic_verification, list):
                     # Handle legacy list format if it exists
                     all_passed = all(dr.get("all_passed", False) for dr in dynamic_verification if isinstance(dr, dict))
-                    summary_lines.append(f"  Step 3 (Dynamic): {'✗ Failed' if all_passed else '✓ Passed'}")
+                    summary_lines.append(f"  Step 4 (Dynamic): {'✗ Failed' if all_passed else '✓ Passed'}")
             else:
                 # No dynamic verification data at all
-                summary_lines.append("  Step 3 (Dynamic): ⏭️ Skipped (no data)")
+                summary_lines.append("  Step 4 (Dynamic): ⏭️ Skipped (no data)")
 
         # Add final conclusion summary
         summary_lines.append(f"\n{'=' * 60}")
@@ -976,6 +1034,15 @@ class WebVerificationPipeline:
             summary_lines.append(f"  ✓ Good generation ({len(categories['generation_ok'])}): {', '.join(categories['generation_ok'])}")
         if categories["generation_failed"]:
             summary_lines.append(f"  ✗ Failed generation ({len(categories['generation_failed'])}): {', '.join(categories['generation_failed'])}")
+        
+        # Dataset Diversity (V2)
+        summary_lines.append("\n📊 Dataset Diversity (V2):")
+        if categories["dataset_diverse"]:
+            summary_lines.append(f"  ✓ Datasets are diverse - different data with different seeds ({len(categories['dataset_diverse'])}): {', '.join(categories['dataset_diverse'])}")
+        if categories["dataset_not_diverse"]:
+            summary_lines.append(f"  ✗ Datasets NOT diverse - same data with different seeds ({len(categories['dataset_not_diverse'])}): {', '.join(categories['dataset_not_diverse'])}")
+        if categories["dataset_untested"]:
+            summary_lines.append(f"  ⏭️  Dataset diversity not tested ({len(categories['dataset_untested'])}): {', '.join(categories['dataset_untested'])}")
         
         # Solution Availability (IWAP)
         summary_lines.append("\n🔍 Solution Availability (IWAP):")
@@ -1000,8 +1067,9 @@ class WebVerificationPipeline:
         total_use_cases = len(self.results["use_cases"])
         summary_lines.append(f"  Total Use Cases: {total_use_cases}")
         summary_lines.append(f"  - Good generation: {len(categories['generation_ok'])}/{total_use_cases}")
+        summary_lines.append(f"  - Dataset diverse (V2): {len(categories['dataset_diverse'])}/{total_use_cases}")
         summary_lines.append(f"  - Has solutions: {len(categories['has_solution'])}/{total_use_cases}")
-        summary_lines.append(f"  - Truly dynamic: {len(categories['truly_dynamic'])}/{total_use_cases}")
+        summary_lines.append(f"  - Truly dynamic (V3): {len(categories['truly_dynamic'])}/{total_use_cases}")
         summary_lines.append(f"  - Needs review (not dynamic): {len(categories['not_dynamic'])}/{total_use_cases}")
         
         summary_lines.append(f"\n{'=' * 60}\n")
@@ -1017,6 +1085,9 @@ class WebVerificationPipeline:
         categories = {
             "generation_ok": [],
             "generation_failed": [],
+            "dataset_diverse": [],
+            "dataset_not_diverse": [],
+            "dataset_untested": [],
             "has_solution": [],
             "no_solution": [],
             "truly_dynamic": [],
@@ -1041,6 +1112,19 @@ class WebVerificationPipeline:
                     categories["generation_ok"].append(use_case_name)
                 else:
                     categories["generation_failed"].append(use_case_name)
+            
+            # Dataset Diversity (V2)
+            dataset_diversity = use_case_data.get("dataset_diversity_verification", {})
+            if dataset_diversity and not dataset_diversity.get("skipped", False):
+                passed = dataset_diversity.get("passed", False)
+                all_different = dataset_diversity.get("all_different", False)
+                
+                if passed and all_different:
+                    categories["dataset_diverse"].append(use_case_name)
+                else:
+                    categories["dataset_not_diverse"].append(use_case_name)
+            else:
+                categories["dataset_untested"].append(use_case_name)
             
             # Solution Availability (IWAP)
             iwap_status = use_case_data.get("iwap_status", {})

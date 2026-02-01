@@ -5,6 +5,8 @@ This verifier evaluates solutions from IWAP API against tasks generated with dif
 ensuring the solution works correctly across different dynamic content.
 """
 
+import hashlib
+import json
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
@@ -201,16 +203,15 @@ class DynamicVerifier:
 
             task = tasks[0]
 
-            # Extract seed values from URL
+            # Extract seed value from URL
             seed_value = self._extract_seed_from_url(task.url)
-            v2_seed_value = self._extract_v2_seed_from_url(task.url)
 
             # Get constraints
             constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
             constraints_str = task.use_case.constraints_to_str() if task.use_case else ""
 
             # Print task details before LLM review
-            self._print_task_details_for_review(task, seed_value, v2_seed_value, constraints_str, is_dynamic=True)
+            self._print_task_details_for_review(task, seed_value, constraints_str, is_dynamic=True)
 
             # Review with LLM if reviewer is available
             llm_review_result = None
@@ -230,7 +231,6 @@ class DynamicVerifier:
                 "constraints": serialized_constraints,
                 "constraints_str": constraints_str,
                 "seed": seed_value,
-                "v2_seed": v2_seed_value,
                 "has_constraints": bool(constraints),
                 "llm_review": llm_review_result,
             }
@@ -370,26 +370,13 @@ class DynamicVerifier:
             pass
         return None
 
-    def _extract_v2_seed_from_url(self, url: str) -> int | None:
-        """Extract v2-seed parameter from URL query string"""
-        try:
-            parsed = urlparse(url)
-            query = parse_qs(parsed.query)
-            if query.get("v2-seed"):
-                value = int(str(query["v2-seed"][0]).strip())
-                return value
-        except Exception:
-            pass
-        return None
-
-    def _print_task_details_for_review(self, task: Task, seed: int | None, v2_seed: int | None, constraints_str: str, is_dynamic: bool = False):
+    def _print_task_details_for_review(self, task: Task, seed: int | None, constraints_str: str, is_dynamic: bool = False):
         """
         Print task details (prompt, constraints, seed) before GPT review
 
         Args:
             task: The task to print
-            seed: Base seed value from URL
-            v2_seed: V2 seed value from URL
+            seed: Seed value from URL
             constraints_str: String representation of constraints
             is_dynamic: Whether this is for dynamic verification
         """
@@ -400,16 +387,11 @@ class DynamicVerifier:
         print(f"Task ID: {task.id}")
         print(f"Use Case: {task.use_case.name if task.use_case else 'Unknown'}")
 
-        # Print seed values
-        seed_info = []
+        # Print seed value
         if seed is not None:
-            seed_info.append(f"seed={seed}")
-        if v2_seed is not None:
-            seed_info.append(f"v2-seed={v2_seed}")
-        if seed_info:
-            print(f"Seed Values: {', '.join(seed_info)}")
+            print(f"Seed: {seed}")
         else:
-            print("Seed Values: None (no dynamic seed)")
+            print("Seed: None (no dynamic seed)")
 
         # Print constraints (tests)
         print("\n" + "-" * 80)
@@ -481,9 +463,8 @@ class DynamicVerifier:
                 web_project_id=self.web_project.id,
             )
 
-            # Extract seed values from URL
+            # Extract seed value from URL
             seed_value = self._extract_seed_from_url(task.url)
-            v2_seed_value = self._extract_v2_seed_from_url(task.url)
 
             # Get constraints
             constraints = task.use_case.constraints if task.use_case and task.use_case.constraints else None
@@ -491,12 +472,11 @@ class DynamicVerifier:
 
             # Print task details before evaluation
             print("\n" + "=" * 80)
-            print(f"🔄 STEP 3: DYNAMIC VERIFICATION (Seed: {seed})")
+            print(f"🔄 STEP 4: DYNAMIC VERIFICATION (Seed: {seed})")
             print("=" * 80)
             print(f"Task ID: {task.id}")
             print(f"Use Case: {use_case.name}")
             print(f"Seed: {seed_value}")
-            print(f"V2 Seed: {v2_seed_value}")
             print(f"Constraints: {constraints_str}")
             print(f"Solution Actions: {len(base_actions)}")
             print("-" * 80)
@@ -574,7 +554,6 @@ class DynamicVerifier:
                 "constraints": serialized_constraints,
                 "constraints_str": constraints_str,
                 "seed": seed_value,
-                "v2_seed": v2_seed_value,
                 "actions": serialized_actions,  # Include actions executed
                 "evaluation": {
                     "final_score": score,
@@ -672,3 +651,148 @@ class DynamicVerifier:
                 })
         
         return serialized
+    async def verify_dataset_diversity_with_seeds(
+        self,
+        seed_values: list[int],
+    ) -> dict[str, Any]:
+        """
+        V2 Verification: Verify that datasets are different with different seeds.
+        
+        Makes 3 HTTP requests (via _load_dataset) with different seeds and verifies
+        that the returned datasets are actually different, ensuring the dynamic
+        data generation is working correctly.
+        
+        Args:
+            seed_values: List of seed values to test (should be 3)
+            
+        Returns:
+            Dictionary with verification results:
+            {
+                "seeds_tested": List[int],
+                "all_different": bool,  # True if all datasets are different
+                "datasets_info": Dict[int, Dict],  # Info per seed
+                "comparison_results": List[Dict],  # Pairwise comparisons
+                "passed": bool,  # True if all datasets are different
+                "summary": str
+            }
+        """
+        logger.info(f"V2 Verification: Testing dataset diversity for {self.web_project.name} with seeds: {seed_values}")
+        
+        datasets = {}
+        datasets_info = {}
+        
+        # Load dataset for each seed
+        for seed in seed_values:
+            try:
+                dataset = await self.task_generator._load_dataset(seed)
+                
+                if dataset is None:
+                    datasets_info[seed] = {
+                        "success": False,
+                        "error": "Dataset returned None",
+                        "hash": None,
+                        "entity_count": 0,
+                        "total_items": 0,
+                    }
+                    continue
+                
+                # Calculate hash of dataset for comparison
+                dataset_str = json.dumps(dataset, sort_keys=True)
+                dataset_hash = hashlib.md5(dataset_str.encode()).hexdigest()
+                
+                # Count entities and items
+                entity_count = len(dataset)
+                total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
+                
+                datasets[seed] = dataset
+                datasets_info[seed] = {
+                    "success": True,
+                    "hash": dataset_hash,
+                    "entity_count": entity_count,
+                    "total_items": total_items,
+                    "entities": list(dataset.keys()),
+                }
+                
+                logger.info(f"  Seed {seed}: loaded {total_items} items across {entity_count} entities (hash: {dataset_hash[:8]}...)")
+                
+            except Exception as e:
+                logger.error(f"Error loading dataset for seed {seed}: {e}")
+                datasets_info[seed] = {
+                    "success": False,
+                    "error": str(e),
+                    "hash": None,
+                    "entity_count": 0,
+                    "total_items": 0,
+                }
+        
+        # Compare datasets pairwise
+        comparison_results = []
+        all_different = True
+        
+        seed_list = sorted(datasets.keys())
+        for i in range(len(seed_list)):
+            for j in range(i + 1, len(seed_list)):
+                seed1, seed2 = seed_list[i], seed_list[j]
+                hash1 = datasets_info[seed1].get("hash")
+                hash2 = datasets_info[seed2].get("hash")
+                
+                if hash1 is None or hash2 is None:
+                    comparison_results.append({
+                        "seed1": seed1,
+                        "seed2": seed2,
+                        "different": None,
+                        "reason": "One or both datasets failed to load",
+                    })
+                    all_different = False
+                    continue
+                
+                are_different = hash1 != hash2
+                
+                # Check if entities differ
+                entities1 = set(datasets_info[seed1].get("entities", []))
+                entities2 = set(datasets_info[seed2].get("entities", []))
+                entities_differ = entities1 != entities2
+                
+                comparison_results.append({
+                    "seed1": seed1,
+                    "seed2": seed2,
+                    "different": are_different,
+                    "hash1": hash1[:8],
+                    "hash2": hash2[:8],
+                    "entities_differ": entities_differ,
+                    "entities1": list(entities1),
+                    "entities2": list(entities2),
+                })
+                
+                if not are_different:
+                    all_different = False
+                    logger.warning(f"  ⚠️  Datasets for seeds {seed1} and {seed2} are IDENTICAL (hash: {hash1[:8]})")
+                else:
+                    if entities_differ:
+                        logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (different entities)")
+                    else:
+                        logger.info(f"  ✓ Datasets for seeds {seed1} and {seed2} are different (same entities, different data)")
+        
+        # Generate summary
+        passed = all_different and len(datasets) == len(seed_values)
+        
+        if not datasets:
+            summary = f"V2 Verification: FAILED - No datasets could be loaded for any seed"
+        elif passed:
+            summary = f"V2 Verification: PASSED - All {len(seed_values)} datasets are different. Dynamic data generation is working correctly."
+        else:
+            if not all_different:
+                summary = f"V2 Verification: FAILED - Some datasets are identical. The dynamic system may not be affecting data generation for this project."
+            else:
+                summary = f"V2 Verification: FAILED - Only {len(datasets)}/{len(seed_values)} datasets loaded successfully."
+        
+        return {
+            "seeds_tested": seed_values,
+            "all_different": all_different,
+            "datasets_info": datasets_info,
+            "comparison_results": comparison_results,
+            "passed": passed,
+            "summary": summary,
+            "loaded_count": len(datasets),
+            "expected_count": len(seed_values),
+        }
