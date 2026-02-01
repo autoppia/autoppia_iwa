@@ -114,11 +114,7 @@ class SimpleTaskGenerator:
         if hasattr(use_case, "generate_constraints_async"):
             # Extract seed from URL and load dataset
             seed = get_seed_from_url(task_url) if self.dynamic else 1
-            loaded_dataset = await self._load_dataset(seed)
-            
-            # If dataset available, use it; otherwise keep empty list
-            if loaded_dataset:
-                dataset = loaded_dataset
+            dataset = await self._load_dataset(seed) or []
             
             # Generate constraints with dataset
             try:
