@@ -123,14 +123,12 @@ CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=AGENTS,
     # Tasks
-    use_cached_tasks=False,  # load project tasks from JSON cache if available
     prompts_per_use_case=1,
     # use_cases=None means all use-cases
     use_cases=USE_CASES,
     # Execution
     runs=1,  # how many runs do you want?
     max_parallel_agent_calls=1,  # limit concurrency to avoid overloading agents
-    use_cached_solutions=False,  # if True, skip calling agent when cached solution exists
     record_gif=False,  # if your evaluator returns GIFs
     # Dynamic mode: flag to enable or disable dynamic mode that assigns initial seed to the task URL.
     dynamic=True,
@@ -142,7 +140,6 @@ CFG = BenchmarkConfig(
     # ),
     # Persistence
     save_results_json=True,
-    plot_results=False,
 )
 
 

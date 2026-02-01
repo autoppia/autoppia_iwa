@@ -38,7 +38,6 @@ TASK_INDICES: list[int] = []
 
 # 3) Run options
 RECORD_GIF = True
-USE_CACHED_SOLUTIONS = False
 
 
 def main():
@@ -57,7 +56,6 @@ def main():
                 num_of_urls=1,
                 task_indices=[],
                 should_record_gif=RECORD_GIF,
-                use_cached_solutions=USE_CACHED_SOLUTIONS,
             )
             tasks_for_log = 1
         else:
@@ -68,7 +66,6 @@ def main():
                 num_of_urls=NUM_OF_URLS,
                 task_indices=TASK_INDICES,
                 should_record_gif=RECORD_GIF,
-                use_cached_solutions=USE_CACHED_SOLUTIONS,
             )
             tasks_for_log = len(TASK_INDICES) if TASK_INDICES else NUM_OF_URLS
 

@@ -14,7 +14,7 @@ from loguru import logger
 def get_seed_from_url(task_url: str | None) -> int:
     """
     Extrae el seed del parámetro ?seed=X de la URL.
-    
+
     Args:
         task_url: URL con parámetro ?seed=X (ej: "http://localhost:8001/?seed=5")
 
@@ -32,7 +32,7 @@ def get_seed_from_url(task_url: str | None) -> int:
             return 1
 
         seed = int(str(query["seed"][0]).strip())
-        
+
         # Clamp to valid range
         return max(1, min(seed, 999))
 

@@ -41,9 +41,7 @@ def test_benchmark_runs_with_stub_agent(monkeypatch, stub_agent):
         max_parallel_agent_calls=1,
         prompts_per_use_case=1,
         use_cases=None,  # Use all available use cases
-        use_cached_tasks=True,
         save_results_json=False,
-        plot_results=False,
         enable_dynamic_html=False,
     )
 

@@ -82,7 +82,6 @@ async def run_real_web_task(config: RealWebTaskConfig):
             num_of_urls=config.num_of_urls,
             task_indices=config.task_indices,
             # should_record_gif=True,
-            # use_cached_solutions=False,
         )
         benchmark = WebVoyagerBenchmark(cfg)
         response = await benchmark.run()

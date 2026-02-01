@@ -3,8 +3,6 @@ import os
 from datetime import datetime
 from typing import Any
 
-import matplotlib.pyplot as plt
-
 from .metrics import TimingMetrics, compute_statistics
 
 
@@ -99,75 +97,6 @@ def print_performance_statistics(results, agents, timing_metrics: TimingMetrics)
             # Count tasks with solutions
             num_tasks = len(results[agent.id])
             print(f"  Number of tasks with browser-use solutions cached: {num_tasks}")
-
-
-def plot_results(results, agents, timing_metrics: TimingMetrics, output_dir: str) -> str:
-    """
-    Plot average score, solution time, and evaluation time for each agent.
-    Returns the path to the saved plot image.
-    """
-    import statistics
-
-    os.makedirs(output_dir, exist_ok=True)
-
-    agent_names = [agent.name for agent in agents]
-    agent_ids = [agent.id for agent in agents]
-
-    avg_scores = []
-    solution_times = []
-    evaluation_times = []
-
-    for agent_id in agent_ids:
-        # Scores
-        if agent_id in results:
-            scores = [data["score"] for data in results[agent_id].values()]
-            avg_score = statistics.mean(scores) if scores else 0
-        else:
-            avg_score = 0
-        avg_scores.append(avg_score)
-
-        # Times
-        solution_times.append(timing_metrics.get_avg_solution_time(agent_id))
-        evaluation_times.append(timing_metrics.get_avg_evaluation_time(agent_id))
-
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
-
-    # 1) Average Scores
-    bars1 = ax1.bar(agent_names, avg_scores, color=["skyblue", "lightgreen"])
-    ax1.set_ylim(0, 10)
-    ax1.set_ylabel("Average Score")
-    ax1.set_title("Agent Performance: Average Scores")
-
-    for bar, score in zip(bars1, avg_scores, strict=False):
-        height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f"{score:.2f}", ha="center", va="bottom")
-
-    # 2) Average Solution Times
-    bars2 = ax2.bar(agent_names, solution_times, color=["coral", "khaki"])
-    ax2.set_ylabel("Average Solution Time (seconds)")
-    ax2.set_title("Agent Performance: Solution Times")
-
-    for bar, time_val in zip(bars2, solution_times, strict=False):
-        height = bar.get_height()
-        ax2.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f"{time_val:.2f}s", ha="center", va="bottom")
-
-    # 3) Average Evaluation Times
-    bars3 = ax3.bar(agent_names, evaluation_times, color=["lightblue", "lightgreen"])
-    ax3.set_ylabel("Average Evaluation Time (seconds)")
-    ax3.set_title("Agent Performance: Evaluation Times")
-
-    for bar, time_val in zip(bars3, evaluation_times, strict=False):
-        height = bar.get_height()
-        ax3.text(bar.get_x() + bar.get_width() / 2.0, height + 0.1, f"{time_val:.2f}s", ha="center", va="bottom")
-
-    plt.tight_layout()
-
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    chart_path = os.path.join(output_dir, f"stress_test_chart_{timestamp}.png")
-    plt.savefig(chart_path)
-
-    print(f"\nCharts have been saved to '{chart_path}'")
-    return chart_path
 
 
 def _has_zero_score(results: dict) -> bool:

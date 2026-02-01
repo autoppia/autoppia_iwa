@@ -11,8 +11,7 @@ from autoppia_iwa.config.config import VALIDATOR_ID
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
 from autoppia_iwa.entrypoints.benchmark.utils.logging import setup_logging
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
-from autoppia_iwa.entrypoints.benchmark.utils.results import plot_results, save_results_to_json
-from autoppia_iwa.entrypoints.benchmark.utils.solutions import ConsolidatedSolutionCache
+from autoppia_iwa.entrypoints.benchmark.utils.results import save_results_to_json
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.demo_webs_service import BackendDemoWebService
@@ -36,7 +35,6 @@ class Benchmark:
     def __init__(self, config: BenchmarkConfig, log_file: Path | str | None = None) -> None:
         self.config = config
         self._agent_call_semaphore = asyncio.Semaphore(config.max_parallel_agent_calls)
-        self._solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
         self._timing_metrics = TimingMetrics()
 
         # Per-agent global rollup across all projects and runs.
@@ -100,7 +98,6 @@ class Benchmark:
     ) -> TaskSolution | None:
         """
         Resolve a single Task with a single Agent.
-        Optionally uses a cached solution when configured.
         Resets the project backend DB for isolation per attempt.
         """
         async with self._agent_call_semaphore:
@@ -108,16 +105,6 @@ class Benchmark:
             try:
                 backend = BackendDemoWebService(project)
                 await backend.reset_database(web_agent_id=agent.id)
-
-                # Prefer cached solution if enabled and present
-                if self.config.use_cached_solutions:
-                    try:
-                        cached = await self._solution_cache.load_solution(task.id, agent.id)
-                        if cached and cached.actions:
-                            logger.info(f"Using cached solution for {agent.name} on task {task.id}")
-                            return cached
-                    except Exception as e:
-                        logger.warning(f"Failed to load cached solution for {agent.name} on task {task.id}: {e}")
 
                 start_ts = time.time()
 
@@ -138,12 +125,6 @@ class Benchmark:
 
                 solution_time = time.time() - start_ts
                 self._timing_metrics.record_solution_time(agent.id, task.id, solution_time)
-
-                # Save solution to cache with error handling
-                try:
-                    self._solution_cache.save_solution(task_solution, agent.id, agent.name)
-                except Exception as e:
-                    logger.warning(f"Failed to save solution to cache: {e}")
 
                 logger.debug(f"{agent.name} solved task {task.id} in {solution_time:.2f}s")
                 return task_solution
@@ -492,12 +473,6 @@ class Benchmark:
                                 save_results_to_json(last_run_result, self.config.agents, self._timing_metrics, str(self.config.output_dir))
                             except Exception as e:
                                 logger.error(f"Failed to save results JSON for project {project.name}: {e}")
-
-                        if self.config.plot_results:
-                            try:
-                                plot_results(last_run_result, self.config.agents, self._timing_metrics, str(self.config.output_dir))
-                            except Exception as e:
-                                logger.error(f"Failed to generate plots for project {project.name}: {e}")
                     else:
                         logger.warning(f"No successful runs for project {project.name}")
 

@@ -72,7 +72,7 @@ class SimpleTaskGenerator:
                 logger.warning(f"No matching use cases found for: {use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
                 return all_tasks
             _log_task_generation(f"Using {len(web_use_cases)} specified use cases: {[uc.name for uc in web_use_cases]}")
-        else:
+            else:
             # Use all available use cases
             web_use_cases = self.web_project.use_cases
 
@@ -106,7 +106,7 @@ class SimpleTaskGenerator:
         """
         # Build task URL (with random seed if dynamic)
         task_url = self._build_task_url_with_seed()
-        
+
         # Initialize dataset as empty list (will be loaded if needed)
         dataset: list[dict] = []
 
@@ -150,13 +150,13 @@ class SimpleTaskGenerator:
         for prompt_text in prompt_list:
             try:
                 # Build replace kwargs once (used by both sync and async)
-                replace_kwargs: dict[str, Any] = {}
+                    replace_kwargs: dict[str, Any] = {}
                 if use_case.replace_func:
                     sig = inspect.signature(use_case.replace_func)
-                    if "seed_value" in sig.parameters:
-                        replace_kwargs["seed_value"] = seed_value_for_replace
-                    if "dataset" in sig.parameters:
-                        replace_kwargs["dataset"] = dataset
+                        if "seed_value" in sig.parameters:
+                            replace_kwargs["seed_value"] = seed_value_for_replace
+                        if "dataset" in sig.parameters:
+                            replace_kwargs["dataset"] = dataset
                 
                 # Apply replacements (async or sync)
                 if hasattr(use_case, "apply_replacements_async"):
@@ -195,11 +195,11 @@ class SimpleTaskGenerator:
             import inspect
             
             gen_module = importlib.import_module(project_module)
-            loader = getattr(gen_module, "_get_data", None)
+        loader = getattr(gen_module, "_get_data", None)
             
-            if loader is None:
-                return None
-            
+        if loader is None:
+            return None
+
             # Call loader
             dataset_result = loader(seed_value=seed)
             dataset = await dataset_result if inspect.isawaitable(dataset_result) else dataset_result
@@ -217,10 +217,10 @@ class SimpleTaskGenerator:
     def _build_task_url_with_seed(self) -> str:
         """Build the task URL with random seed if dynamic generation is enabled."""
         base_url = self.web_project.frontend_url
-        
+
         if not self.dynamic:
             return base_url
-        
+
         # Add random seed to URL
         parsed = urlparse(base_url)
         query_params = parse_qs(parsed.query)
@@ -236,7 +236,7 @@ class SimpleTaskGenerator:
         """
         max_retries = 3
         retry_delay = 0.1
-        
+
         system_prompt = "You are a helpful assistant that generates user tasks as a list of strings."
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_prompt}]
 

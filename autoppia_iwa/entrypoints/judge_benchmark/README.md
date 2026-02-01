@@ -46,7 +46,6 @@ TASK_INDICES = []  # e.g. [0, 2, 5]
 
 # Run options
 RECORD_GIF = True
-USE_CACHED_SOLUTIONS = False
 ```
 
 3) Run the benchmark:
@@ -84,7 +83,6 @@ Impossible tasks (if present) are filtered using `web_voyager_impossible_tasks.j
 ## Tips & troubleshooting
 - Ensure your agent is reachable at the host/port you configured in `AGENTS`
 - If GIFs are not needed, set `RECORD_GIF = False`
-- To reuse previous agent runs, set `USE_CACHED_SOLUTIONS = True`
 - If you see no plots or JSON, check `real_web_evaluation.log` for errors
 - LLM provider setup (e.g., OpenAI API key) is managed via environment variables in `autoppia_iwa/config/config.py`
 

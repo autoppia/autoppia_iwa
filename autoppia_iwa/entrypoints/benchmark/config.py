@@ -16,10 +16,10 @@ class BenchmarkConfig:
     Configure everything in code (no CLI required).
 
     Key groups:
-      • Task generation (use_cached_tasks, prompts_per_use_case, use_cases)
-      • Execution controls (runs, max_parallel_agent_calls, use_cached_solutions, record_gif, enable_dynamic_html)
-      • Persistence (save_results_json, plot_results, directory fields resolved in __post_init__)
-      • Visualization toggles (enable_visualization, dynamic_phase_config shared with evaluator)
+      • Task generation (prompts_per_use_case, use_cases)
+      • Execution controls (runs, max_parallel_agent_calls, record_gif, enable_dynamic_html)
+      • Persistence (save_results_json, directory fields resolved in __post_init__)
+      • Dynamic features (dynamic_phase_config shared with evaluator)
     """
 
     projects: list[WebProject] = field(default_factory=list)
@@ -27,19 +27,15 @@ class BenchmarkConfig:
     use_cases: list[str] | None = None
 
     # Task generation
-    use_cached_tasks: bool = False
     prompts_per_use_case: int = 1
-    # Removed num_use_cases: use use_cases=None to get all, or specify list for specific ones
 
     # Execution
     runs: int = 1
     max_parallel_agent_calls: int = 1
-    use_cached_solutions: bool = False
     record_gif: bool = False
 
-    # Persistence / plotting
+    # Persistence
     save_results_json: bool = True
-    plot_results: bool = False
 
     # Dynamic features: array of v1, v2, v3 (or combinations)
     # v1 = assign seed, v2 = assign v2-seed, v3 = assign seed structure
@@ -47,16 +43,12 @@ class BenchmarkConfig:
     # Dynamic HTML
     dynamic_phase_config: DynamicPhaseConfig | None = None
 
-    # Visualization
-    enable_visualization: bool = True
-
     # Paths
     base_dir: Path = field(default_factory=lambda: PROJECT_BASE_DIR.parent)
     benchmark_dir: Path = field(init=False)
     cache_dir: Path = field(init=False)
     data_dir: Path = field(init=False)
     tasks_cache_dir: Path = field(init=False)
-    solutions_cache_dir: Path = field(init=False)
     output_dir: Path = field(init=False)
     per_project_results: Path = field(init=False)
     logs_dir: Path = field(init=False)
@@ -80,7 +72,6 @@ class BenchmarkConfig:
         self.cache_dir = self.benchmark_dir / "cache"
 
         self.tasks_cache_dir = self.cache_dir / "tasks"
-        self.solutions_cache_dir = self.cache_dir / "solutions"
 
         self.output_dir = self.benchmark_dir / "results"
         self.per_project_results = self.benchmark_dir / "per_project"
@@ -93,7 +84,6 @@ class BenchmarkConfig:
             self.benchmark_dir,
             self.cache_dir,
             self.tasks_cache_dir,
-            self.solutions_cache_dir,
             self.output_dir,
             self.per_project_results,
             self.logs_dir,

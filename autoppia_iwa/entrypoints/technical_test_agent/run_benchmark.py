@@ -43,20 +43,17 @@ CFG = BenchmarkConfig(
     projects=PROJECTS,
     agents=[TECHNICAL_TEST_AGENT],
     # Tasks
-    use_cached_tasks=False,  # Always generate fresh tasks (requires OpenAI API key in .env)
     prompts_per_use_case=1,
     # use_cases=None means all use cases
     use_cases=USE_CASES,
     # Execution
     runs=1,
     max_parallel_agent_calls=1,
-    use_cached_solutions=False,
     record_gif=False,
     # Dynamic mode
     dynamic=True,
     # Persistence
     save_results_json=True,
-    plot_results=False,
 )
 
 

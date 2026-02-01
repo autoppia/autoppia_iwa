@@ -9,11 +9,9 @@ from loguru import logger
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.entrypoints.benchmark.utils.metrics import TimingMetrics
 from autoppia_iwa.entrypoints.benchmark.utils.results import (
-    plot_results,
     print_performance_statistics,
     save_results_to_json,
 )
-from autoppia_iwa.entrypoints.benchmark.utils.solutions import ConsolidatedSolutionCache
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.tasks import Task
 from autoppia_iwa.src.data_generation.tests import JudgeBaseOnHTML, JudgeBaseOnScreenshot
@@ -36,16 +34,14 @@ class WebVoyagerConfig:
     agents: list[IWebAgent] = field(default_factory=list)
     task_indices: list[int] = field(default_factory=list)  # e.g., [0, 2, 5] to select specific tasks by index and override num_of_urls
     should_record_gif: bool = True
-    use_cached_solutions: bool = False
 
     base_dir: Path = PROJECT_BASE_DIR.parent
     data_dir: Path = base_dir / "data"
     tasks_cache_dir: Path = data_dir / "tasks_cache"
-    solutions_cache_dir: Path = data_dir / "solutions_cache"
     output_dir: Path = base_dir / "results"
 
     def __post_init__(self):
-        for directory in (self.tasks_cache_dir, self.solutions_cache_dir, self.output_dir):
+        for directory in (self.tasks_cache_dir, self.output_dir):
             directory.mkdir(parents=True, exist_ok=True)
 
 
@@ -65,7 +61,6 @@ class WebVoyagerBenchmark:
 
     def __init__(self, config: WebVoyagerConfig):
         self.config = config
-        self.solution_cache = ConsolidatedSolutionCache(str(config.solutions_cache_dir))
         self._visualizer = visualizer
         self.agents: list[IWebAgent] = config.agents
 
@@ -151,41 +146,18 @@ class WebVoyagerBenchmark:
     # SOLUTION GENERATION
     # ------------------------------------------------------------------------
     async def generate_solutions(self, agent: IWebAgent, tasks: list[Task], timing_metrics: TimingMetrics) -> dict[str, TaskSolution]:
-        """Generate or load solutions for a given agent and tasks."""
+        """Generate solutions for a given agent and tasks."""
         solutions = {}
         logger.info(f"\nAgent: {agent.name}")
 
         for task in tasks:
-            task_solution: TaskSolution | None = None
-
-            # Load cached solution if available
-            if self.config.use_cached_solutions and self.solution_cache.solution_exists(task.id, agent.id):
-                try:
-                    logger.info(f"  Loading cached solution for Task {task.id}...")
-                    task_solution = await self.solution_cache.load_solution(task.id, agent.id)
-                    if task_solution:
-                        logger.info(f"    Loaded cached solution with {len(task_solution.actions)} actions")
-                except Exception as e:
-                    logger.error(f"    Error loading cached solution: {e!s}")
-
-            # Generate new solution if needed
-            if task_solution is None:
-                logger.info(f"  Generating new solution for Task {task.id}...")
-                start_time = time.time()
-                solution = await agent.solve_task(task)
-                task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
-                duration = time.time() - start_time
-                timing_metrics.record_solution_time(agent.id, task.id, duration)
-                logger.info(f"    Solution generated in {duration:.2f}s with {len(task_solution.actions)} actions")
-
-                try:
-                    success = self.solution_cache.save_solution(task_solution=task_solution, agent_id=agent.id, agent_name=agent.name)
-                    if success:
-                        logger.info("Solution cached successfully for future runs")
-                    else:
-                        logger.warning("Failed to cache solution")
-                except Exception as e:
-                    logger.error(f"Error caching solution: {e!s}")
+            logger.info(f"  Generating solution for Task {task.id}...")
+            start_time = time.time()
+            solution = await agent.solve_task(task)
+            task_solution = TaskSolution(task_id=task.id, actions=solution.actions or [], web_agent_id=agent.id)
+            duration = time.time() - start_time
+            timing_metrics.record_solution_time(agent.id, task.id, duration)
+            logger.info(f"    Solution generated in {duration:.2f}s with {len(task_solution.actions)} actions")
 
             solutions[task.id] = task_solution
 
@@ -215,8 +187,6 @@ class WebVoyagerBenchmark:
         results = {agent.id: await self.evaluate_solutions(agent, tasks, all_solutions[agent.id], demo_project) for agent in self.agents}
 
         print_performance_statistics(results, self.agents, timing_metrics)
-        plot_results(results, self.agents, timing_metrics, str(self.config.output_dir))
-        # plot_task_comparison(results, self.agents, tasks, str(self.config.output_dir))
         results = save_results_to_json(results, self.agents, timing_metrics, str(self.config.output_dir))
         return results
 

@@ -42,7 +42,6 @@ Or use the provided deployment script to deploy with PM2:
   "name": "TestAgent",
   "should_record_gif": false,
   "save_results_json": false,
-  "plot_results": false,
   "dynamic": false  // optional; if true, tasks will include random seeds for dynamic content
 }
 ```

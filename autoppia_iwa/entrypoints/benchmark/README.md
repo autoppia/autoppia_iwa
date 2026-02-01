@@ -44,7 +44,6 @@ entrypoints/benchmark/
 └── utils/
     ├── logging.py         # Structured logging utilities
     ├── results.py         # Result serialization & plotting
-    ├── solutions.py       # Solution caching
     └── tasks.py           # Task generation helpers
 ```
 
@@ -84,8 +83,7 @@ For each project in PROJECT_IDS:
      For each agent in AGENTS:
        For each task:
          ├─ Send Task to agent (POST /solve_task)
-         ├─ Receive TaskSolution (list of actions)
-         └─ Cache solution (optional)
+         └─ Receive TaskSolution (list of actions)
 
   3. Evaluation
      For each solution:
@@ -142,19 +140,16 @@ CFG = BenchmarkConfig(
     agents=AGENTS,
 
     # Task generation
-    use_cached_tasks=False,
     prompts_per_use_case=1,
     use_cases=None,  # None = all use cases, or specify list like ["USE_CASE_1", "USE_CASE_2"]
 
     # Execution
     runs=1,
     max_parallel_agent_calls=1,
-    use_cached_solutions=False,
     record_gif=False,
 
     # Output
     save_results_json=True,
-    plot_results=False,
 
     # Dynamic features
     dynamic=True,  # Enable seed-based variations
@@ -166,21 +161,17 @@ CFG = BenchmarkConfig(
 | Parameter                  | Type      | Default | Description                                 |
 | -------------------------- | --------- | ------- | ------------------------------------------- |
 | **Task Generation**        |           |         |                                             |
-| `use_cached_tasks`         | bool      | `False` | Load tasks from cache instead of generating |
 | `prompts_per_use_case`     | int       | `1`     | Number of tasks per use case                |
 | `use_cases`                | list[str] | `None`  | Specific use cases to test. If None, tests all available use cases. |
 | **Execution**              |           |         |                                             |
 | `runs`                     | int       | `1`     | Number of test runs per task                |
 | `max_parallel_agent_calls` | int       | `1`     | Concurrent agent requests                   |
-| `use_cached_solutions`     | bool      | `False` | Use cached solutions                        |
 | `record_gif`               | bool      | `False` | Save execution GIFs                         |
 | **Output**                 |           |         |                                             |
 | `save_results_json`        | bool      | `True`  | Save results to JSON                        |
-| `plot_results`             | bool      | `False` | Generate performance plots                  |
 | **Features**               |           |         |                                             |
 | `dynamic`                  | bool      | `False` | Enable seed-based web variations            |
 | `dynamic_phase_config`     | object    | `None`  | Dynamic HTML mutation config                |
-| `enable_visualization`     | bool      | `True`  | Show task visualization                     |
 
 ### **Paths (Auto-configured)**
 
@@ -194,8 +185,7 @@ base_dir/               # autoppia_iwa/
     ├── logs/           # Execution logs
     ├── recordings/     # GIF recordings
     └── cache/
-        ├── tasks/      # Cached tasks
-        └── solutions/  # Cached solutions
+        └── tasks/      # Cached tasks
 ```
 
 ---
@@ -469,7 +459,6 @@ Contains detailed statistics for each project:
 ### **Cache**
 
 - **Tasks:** `data/outputs/benchmark/cache/tasks/<project>_tasks.json`
-- **Solutions:** `data/outputs/benchmark/cache/solutions/solutions.json`
 
 ### **Logs**
 
@@ -554,21 +543,9 @@ Each generated task includes:
   - `JudgeBaseOnScreenshot` - LLM judges screenshot
   - `JudgeBaseOnHTML` - LLM judges HTML changes
 
-### **Caching**
+### **Task Generation**
 
-```bash
-# First run: Generates and caches
-python -m autoppia_iwa.entrypoints.benchmark.run
-# → Generates tasks, saves to cache
-
-# Second run: Uses cache
-CFG = BenchmarkConfig(use_cached_tasks=True)
-# → Loads from cache (faster)
-
-# Regenerate:
-rm data/outputs/benchmark/cache/tasks/*
-# → Forces regeneration
-```
+Tasks are always generated fresh for each benchmark run. No caching is used.
 
 ---
 
@@ -668,7 +645,6 @@ AGENTS = [
 CFG = BenchmarkConfig(
     runs=10,
     max_parallel_agent_calls=3,
-    plot_results=True,
 )
 ```
 
@@ -776,10 +752,9 @@ Detailed results in `data/outputs/benchmark/results/`:
 ## 💡 Best Practices
 
 1. **Start small:** Test 1 project, 1 agent first
-2. **Use cache:** Set `use_cached_tasks=True` after first run
-3. **Debug with GIFs:** Enable `record_gif=True` to see what happened
-4. **Check logs:** `tail -f data/outputs/benchmark/logs/benchmark.log`
-5. **Iterate:** Adjust agent, rerun, compare scores
+2. **Debug with GIFs:** Enable `record_gif=True` to see what happened
+3. **Check logs:** `tail -f data/outputs/benchmark/logs/benchmark.log`
+4. **Iterate:** Adjust agent, rerun, compare scores
 
 ---
 
@@ -800,7 +775,7 @@ Detailed results in `data/outputs/benchmark/results/`:
 - ✅ Multi-agent evaluation (parallel execution)
 - ✅ Comprehensive testing (multiple test types)
 - ✅ Rich outputs (JSON, GIFs, plots, logs)
-- ✅ Caching (tasks and solutions)
+- ✅ Task caching for faster iterations
 - ✅ Flexible configuration (code-based)
 
 **Main file to edit:** `run.py` - Configure agents, projects, and settings here.

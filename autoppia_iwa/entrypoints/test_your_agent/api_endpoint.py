@@ -78,15 +78,12 @@ async def test_your_agent(config: AgentConfig):
         benchmark_config = BenchmarkConfig(
             projects=projects,
             agents=[agent],
-            use_cached_tasks=False,
             prompts_per_use_case=1,
             use_cases=config.use_cases,
             runs=config.runs,
             max_parallel_agent_calls=1,
-            use_cached_solutions=False,
             record_gif=config.should_record_gif,
             save_results_json=False,
-            plot_results=False,
             dynamic=config.dynamic,
         )
 
