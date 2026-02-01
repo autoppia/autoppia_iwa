@@ -1,13 +1,6 @@
 from autoppia_iwa.src.demo_webs.projects.operators import CONTAINS, EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN, NOT_CONTAINS, NOT_EQUALS
 
-COMPANIES = [
-    {"name": "Adobe", "desc": "Company • Design tools", "logo": "https://logo.clearbit.com/adobe.com"},
-    {"name": "Y Combinator", "desc": "Company • Start up accelerator", "logo": "https://logo.clearbit.com/ycombinator.com"},
-    {"name": "TED", "desc": "TEDTalks • TEDConferences", "logo": "https://logo.clearbit.com/ted.com"},
-    {"name": "Figma", "desc": "Company • Design systems", "logo": "https://logo.clearbit.com/figma.com"},
-    {"name": "Notion", "desc": "Company • Productivity", "logo": "https://logo.clearbit.com/notion.so"},
-    {"name": "Stripe", "desc": "Company • Fintech", "logo": "https://logo.clearbit.com/stripe.com"},
-]
+
 
 STRING_OPERATORS = [EQUALS, NOT_EQUALS, CONTAINS, NOT_CONTAINS]
 LOGICAL_OPERATORS = [EQUALS, NOT_EQUALS, GREATER_EQUAL, GREATER_THAN, LESS_EQUAL, LESS_THAN]
