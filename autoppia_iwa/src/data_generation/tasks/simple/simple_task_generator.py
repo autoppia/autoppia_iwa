@@ -65,17 +65,16 @@ class SimpleTaskGenerator:
         self.dynamic = dynamic
         all_tasks: list[Task] = []
 
-        # Get use cases to process
+        # Get use cases to process (default: all use cases)
+        web_use_cases = self.web_project.use_cases
+        
+        # Filter to specific use cases if requested
         if use_cases:
-            # Filter to specific use cases
             web_use_cases = [uc for uc in self.web_project.use_cases if uc.name in use_cases]
             if not web_use_cases:
                 logger.warning(f"No matching use cases found for: {use_cases}. Available: {[uc.name for uc in self.web_project.use_cases]}")
                 return all_tasks
             _log_task_generation(f"Using {len(web_use_cases)} specified use cases: {[uc.name for uc in web_use_cases]}")
-        else:
-            # Use all available use cases
-            web_use_cases = self.web_project.use_cases
 
 
         for use_case in web_use_cases:
