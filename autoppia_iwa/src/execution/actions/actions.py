@@ -1,7 +1,7 @@
 # actions.py
 import json
 from functools import wraps
-from typing import Annotated, Any, Literal
+from typing import Any, Literal
 
 from loguru import logger
 from playwright.async_api import Page, TimeoutError as PWTimeout
@@ -79,7 +79,7 @@ async def _move_mouse_to(page: Page, selector: str | None, x: int | None, y: int
 # Concrete Action Implementations
 # -------------------------------------------------------------------
 class BaseClickAction(BaseActionWithSelector):
-    type: Literal["BaseClickAction"] = "BaseClickAction"
+    """Base class for click-related actions that support both selector and coordinate-based clicks."""
 
     # Make selector optional if x,y are provided
     selector: Selector | None = Field(None, description="Selector for the element to click. Required if x, y are not provided.")
@@ -98,7 +98,8 @@ class BaseClickAction(BaseActionWithSelector):
         return values
 
     async def execute(self, page: Page | None, backend_service: Any, web_agent_id: str):
-        pass
+        """Base implementation - must be overridden by subclasses."""
+        raise NotImplementedError("BaseClickAction is abstract and should not be instantiated directly.")
 
 
 class ClickAction(BaseClickAction):
@@ -880,97 +881,3 @@ class IdleAction(BaseAction):
         pass
 
 
-# -------------------------------------------------------------------
-# Union Type to Handle All Actions by Discriminator
-# -------------------------------------------------------------------
-
-AllActionsUnion = Annotated[
-    ClickAction
-    | DoubleClickAction
-    | RightClickAction
-    | MiddleClickAction
-    | TripleClickAction
-    | MouseDownAction
-    | MouseUpAction
-    | MouseMoveAction
-    | NavigateAction
-    | TypeAction
-    | SelectAction
-    | HoverAction
-    | WaitAction
-    | ScrollAction
-    | SubmitAction
-    | AssertAction
-    | DragAndDropAction
-    | LeftClickDragAction
-    | ScreenshotAction
-    | SendKeysIWAAction
-    | HoldKeyAction
-    | GetDropDownOptionsAction
-    | SelectDropDownOptionAction
-    | UndefinedAction
-    | IdleAction,
-    Field(discriminator="type"),
-]
-
-# -------------------------------------------------------------------
-# MAPS
-# -------------------------------------------------------------------
-
-ACTION_CLASS_MAP_LOWER = {
-    "click": ClickAction,
-    "type": TypeAction,
-    "hover": HoverAction,
-    "navigate": NavigateAction,
-    "dragAndDrop": DragAndDropAction,
-    "leftclickdrag": LeftClickDragAction,
-    "submit": SubmitAction,
-    "doubleClick": DoubleClickAction,
-    "rightClick": RightClickAction,
-    "middleClick": MiddleClickAction,
-    "tripleClick": TripleClickAction,
-    "mouseDown": MouseDownAction,
-    "mouseUp": MouseUpAction,
-    "mouseMove": MouseMoveAction,
-    "scroll": ScrollAction,
-    "screenshot": ScreenshotAction,
-    "wait": WaitAction,
-    "assert": AssertAction,
-    "select": SelectAction,
-    "idle": IdleAction,
-    "undefined": UndefinedAction,
-    "sendkeysiwa": SendKeysIWAAction,
-    "holdkey": HoldKeyAction,
-    "getdropdownoptionsaction": GetDropDownOptionsAction,
-    "SelectDropDownOptionAction": SelectDropDownOptionAction,
-}
-
-ACTION_CLASS_MAP_CAPS = {
-    "ClickAction": ClickAction,
-    "TypeAction": TypeAction,
-    "HoverAction": HoverAction,
-    "NavigateAction": NavigateAction,
-    "DragAndDropAction": DragAndDropAction,
-    "LeftClickDragAction": LeftClickDragAction,
-    "SubmitAction": SubmitAction,
-    "DoubleClickAction": DoubleClickAction,
-    "RightClickAction": RightClickAction,
-    "MiddleClickAction": MiddleClickAction,
-    "TripleClickAction": TripleClickAction,
-    "MouseDownAction": MouseDownAction,
-    "MouseUpAction": MouseUpAction,
-    "MouseMoveAction": MouseMoveAction,
-    "ScrollAction": ScrollAction,
-    "ScreenshotAction": ScreenshotAction,
-    "WaitAction": WaitAction,
-    "AssertAction": AssertAction,
-    "SelectAction": SelectAction,
-    "IdleAction": IdleAction,
-    "UndefinedAction": UndefinedAction,
-    "SendKeysIWAAction": SendKeysIWAAction,
-    "HoldKeyAction": HoldKeyAction,
-    "GetDropDownOptionsAction": GetDropDownOptionsAction,
-    "SelectDropDownOptionAction": SelectDropDownOptionAction,
-}
-
-ACTION_CLASS_MAP = {**ACTION_CLASS_MAP_CAPS, **ACTION_CLASS_MAP_LOWER}
