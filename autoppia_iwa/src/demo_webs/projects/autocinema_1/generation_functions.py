@@ -50,37 +50,45 @@ def generate_logout_constraints(dataset: list[dict]):
     return parse_constraints_str(constraints_str)
 
 
-async def generate_search_film_constraints(dataset: list[dict]):
+async def generate_search_film_constraints(dataset: dict[str, list[dict]]):
     """
     Generates constraints for search film use case.
 
     Args:
-        dataset: Dataset with movies
+        dataset: Dataset dictionary with films
 
     Returns:
         List of constraint dictionaries
     """
     from .utils import parse_constraints_str
 
-    movie_names = [movie["name"] for movie in dataset]
+    films = dataset.get("films", [])
+    if not films:
+        return None
+    
+    movie_names = [movie["name"] for movie in films]
     operators = ["equals", "not_equals"]
     constraints_str = f"query {choice(operators)} {choice(movie_names)}"
     return parse_constraints_str(constraints_str)
 
 
-async def generate_film_constraints(dataset: list[dict]):
+async def generate_film_constraints(dataset: dict[str, list[dict]]):
     """
     Generates constraints for film-related use cases.
 
     Args:
-        dataset: Dataset with movies
+        dataset: Dataset dictionary with films
 
     Returns:
         List of constraint dictionaries
     """
     from .utils import build_constraints_info, parse_constraints_str
 
-    constraints_str = build_constraints_info(dataset)
+    films = dataset.get("films", [])
+    if not films:
+        return None
+    
+    constraints_str = build_constraints_info(films)
 
     # Convertir el string a la estructura de datos
     if constraints_str:
@@ -167,21 +175,25 @@ def generate_contact_constraints() -> list:
     return constraints_list
 
 
-async def generate_film_filter_constraints(dataset: list[dict]):
+async def generate_film_filter_constraints(dataset: dict[str, list[dict]]):
     """
     Genera una combinación de constraints para filtrado de películas
     usando los años y géneros reales de las películas.
 
     Args:
-        dataset: Dataset with movies
+        dataset: Dataset dictionary with films
 
     Returns:
         List of constraint dictionaries
     """
     from random import choice
 
-    existing_years = list(set(movie["year"] for movie in dataset))
-    existing_genres = list(set(genre for movie in dataset for genre in movie["genres"]))
+    films = dataset.get("films", [])
+    if not films:
+        return []
+    
+    existing_years = list(set(movie["year"] for movie in films))
+    existing_genres = list(set(genre for movie in films for genre in movie["genres"]))
 
     generation_type = choice(["single_genre", "single_year", "genre_and_year"])
 
@@ -413,19 +425,23 @@ def generate_constraint_from_solution(movie: dict, field: str, operator: Compari
     return None
 
 
-async def generate_add_comment_constraints(dataset: list[dict]):
+async def generate_add_comment_constraints(dataset: dict[str, list[dict]]):
     """
     Genera combinaciones de constraints para añadir comentarios.
 
     Args:
-        dataset: Dataset with movies
+        dataset: Dataset dictionary with films
 
     Returns:
         List of constraint dictionaries
     """
     from random import choice
 
-    movies = [movie["name"] for movie in dataset]
+    films = dataset.get("films", [])
+    if not films:
+        return []
+    
+    movies = [movie["name"] for movie in films]
 
     # Palabras y frases para generar comentarios
     comment_keywords = [
@@ -496,19 +512,23 @@ async def generate_add_comment_constraints(dataset: list[dict]):
     return constraints
 
 
-async def generate_edit_film_constraints(dataset: list[dict]):
+async def generate_edit_film_constraints(dataset: dict[str, list[dict]]):
     """
     Generates constraints for editing film-related use cases.
 
     Args:
-        dataset: Dataset with movies
+        dataset: Dataset dictionary with films
 
     Returns:
         List of constraint dictionaries
     """
     from random import choice, randint, uniform
 
-    movies = dataset
+    films = dataset.get("films", [])
+    if not films:
+        return []
+    
+    movies = films
 
     # Campos editables (sin name porque ya tenemos la película)
     editable_fields = ["director", "year", "genres", "rating", "duration", "cast"]

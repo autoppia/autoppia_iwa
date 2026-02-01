@@ -13,12 +13,11 @@ from .data import FIELD_OPERATORS_MAP_PRODUCTS
 from .data_utils import get_data, fetch_products_data
 
 
-async def _ensure_products_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    """Ensure product dataset is available."""
-    if dataset is not None:
-        return dataset
-    seed = get_seed_from_url(task_url)
-    return await get_data(seed_value=seed)
+async def _ensure_products_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Extract products data from the pre-loaded dataset."""
+    if dataset and "products" in dataset:
+        return dataset["products"]
+    return []
 
 
 def generate_constraint_value(field: str, operator: ComparisonOperator, product_data_source: dict[str, Any], all_products_data: list[dict[str, Any]] | None = None) -> Any:

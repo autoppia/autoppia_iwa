@@ -37,14 +37,12 @@ def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, An
 
 async def _ensure_restaurant_dataset(
     task_url: str | None = None,
-    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None = None,
+    dataset: dict[str, list[dict[str, Any]]] | None = None,
 ) -> list[dict[str, Any]]:
-    """Ensure we have restaurant data, optionally using a pre-loaded dataset."""
-    existing = _extract_entity_dataset(dataset, "restaurants")
-    if existing is not None:
-        return existing
-    seed = get_seed_from_url(task_url)
-    return await get_data(entity_type="restaurants", method="distribute", filter_key="cuisine", seed_value=seed)
+    """Extract restaurant data from the pre-loaded dataset."""
+    if dataset and "restaurants" in dataset:
+        return dataset["restaurants"]
+    return []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

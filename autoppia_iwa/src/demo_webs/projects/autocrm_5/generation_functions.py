@@ -39,18 +39,16 @@ def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, An
 
 async def _ensure_crm_dataset(
     task_url: str | None,
-    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None,
+    dataset: dict[str, list[dict[str, Any]]] | None,
     *,
     entity_type: str,
     method: str | None = None,
     filter_key: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Ensure dataset for CRM entity type is available."""
-    existing = _extract_entity_dataset(dataset, entity_type)
-    if existing is not None:
-        return existing
-    seed = get_seed_from_url(task_url)
-    return await get_data(entity_type=entity_type, method=method, filter_key=filter_key, seed_value=seed)
+    """Extract entity data from the pre-loaded dataset."""
+    if dataset and entity_type in dataset:
+        return dataset[entity_type]
+    return []
 
 
 def _to_float_safe(value: Any) -> float | None:

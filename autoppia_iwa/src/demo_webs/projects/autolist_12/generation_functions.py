@@ -23,12 +23,11 @@ from .data import (
 from .data_utils import get_data, fetch_tasks_data
 
 
-async def _ensure_task_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    """Ensure we have autolist tasks dataset available."""
-    if dataset is not None:
-        return dataset
-    seed = get_seed_from_url(task_url)
-    return await get_data(seed_value=seed)
+async def _ensure_task_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Extract tasks data from the pre-loaded dataset."""
+    if dataset and "tasks" in dataset:
+        return dataset["tasks"]
+    return []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, source_key: str, dataset: list[dict[str, Any]]) -> Any:

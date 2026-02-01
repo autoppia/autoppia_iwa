@@ -27,12 +27,11 @@ from .data import (
 from .data_utils import get_data, fetch_hotels_data
 
 
-async def _ensure_hotel_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    """Ensure hotel dataset is available, potentially using a pre-loaded list."""
-    if dataset is not None:
-        return dataset
-    seed = get_seed_from_url(task_url)
-    return await get_data(seed_value=seed)
+async def _ensure_hotel_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Extract hotels data from the pre-loaded dataset."""
+    if dataset and "hotels" in dataset:
+        return dataset["hotels"]
+    return []
 
 
 def _generate_constraint_value(

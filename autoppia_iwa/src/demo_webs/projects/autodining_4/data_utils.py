@@ -61,3 +61,9 @@ async def fetch_restaurant_data(seed_value: int | None = None, count: int = 100)
 async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     """Main data loader function for autodining_4."""
     return await fetch_restaurant_data(seed_value=seed_value, count=count)
+
+
+async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+    """Load complete dataset for this project."""
+    restaurants = await get_data(seed_value=seed_value, count=count)
+    return {"restaurants": restaurants}

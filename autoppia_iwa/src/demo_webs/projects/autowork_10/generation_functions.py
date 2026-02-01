@@ -34,12 +34,11 @@ from .data import (
 from .data_utils import get_data, fetch_experts_data
 
 
-async def _ensure_expert_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    """Ensure experts dataset is available."""
-    if dataset is not None:
-        return dataset
-    seed = get_seed_from_url(task_url)
-    return await get_data(seed_value=seed)
+async def _ensure_expert_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Extract experts data from the pre-loaded dataset."""
+    if dataset and "experts" in dataset:
+        return dataset["experts"]
+    return []
 
 
 def _generate_constraint_value(

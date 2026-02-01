@@ -59,3 +59,11 @@ async def get_data(
         seed_value=seed_value,
         count=count,
     )
+
+
+async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+    """Load complete dataset for this project."""
+    return {
+        "places": await get_data(entity_type="places", method="select", seed_value=seed_value, count=count),
+        "rides": await get_data(entity_type="rides", method="select", seed_value=seed_value, count=count),
+    }

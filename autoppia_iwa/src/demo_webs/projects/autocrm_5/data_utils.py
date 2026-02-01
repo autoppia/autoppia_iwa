@@ -37,3 +37,14 @@ async def get_data(
 ) -> list[dict]:
     """Main data loader function for autocrm_5."""
     return await fetch_crm_data(entity_type, method=method, filter_key=filter_key, seed_value=seed_value, count=count)
+
+
+async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
+    """Load complete dataset for this project."""
+    return {
+        "matters": await get_data(entity_type="matters", method="distribute", filter_key="status", seed_value=seed_value, count=count),
+        "clients": await get_data(entity_type="clients", method="distribute", filter_key="status", seed_value=seed_value, count=count),
+        "files": await get_data(entity_type="files", seed_value=seed_value, count=count),
+        "logs": await get_data(entity_type="logs", seed_value=seed_value, count=count),
+        "events": await get_data(entity_type="events", seed_value=seed_value, count=count),
+    }

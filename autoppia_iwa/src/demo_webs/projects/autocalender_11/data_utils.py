@@ -41,3 +41,9 @@ async def fetch_events_data(seed_value: int | None = None, count: int = 200) -> 
 async def get_data(seed_value: int | None = None, count: int = 200) -> list[dict]:
     """Main data loader function for autocalender_11."""
     return await fetch_events_data(seed_value=seed_value, count=count)
+
+
+async def get_all_data(seed_value: int | None = None, count: int = 200) -> dict[str, list[dict]]:
+    """Load complete dataset for this project."""
+    events = await get_data(seed_value=seed_value, count=count)
+    return {"events": events}

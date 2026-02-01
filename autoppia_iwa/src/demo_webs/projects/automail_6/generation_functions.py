@@ -58,12 +58,11 @@ TEMPLATES = [
 ]
 
 
-async def _ensure_email_dataset(task_url: str | None = None, dataset: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
-    """Ensure email dataset is available."""
-    if dataset is not None:
-        return dataset
-    seed = get_seed_from_url(task_url)
-    return await get_data(seed_value=seed)
+async def _ensure_email_dataset(task_url: str | None = None, dataset: dict[str, list[dict[str, Any]]] | None = None) -> list[dict[str, Any]]:
+    """Extract emails data from the pre-loaded dataset."""
+    if dataset and "emails" in dataset:
+        return dataset["emails"]
+    return []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

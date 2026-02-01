@@ -100,3 +100,29 @@ def transform_medical_records_to_modified(medical_records: list[dict]) -> list[d
             new_data["record_type"] = new_data.pop("type")
         modified.append(new_data)
     return modified
+
+
+async def get_data(
+    entity_type: str,
+    method: str | None = None,
+    filter_key: str | None = None,
+    seed_value: int | None = None,
+    count: int = 100,
+) -> list[dict]:
+    """Main data loader function for autohealth_14."""
+    return await fetch_health_data(
+        entity_type=entity_type,
+        method=method,
+        filter_key=filter_key,
+        seed_value=seed_value,
+        count=count,
+    )
+
+
+async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+    """Load complete dataset for this project."""
+    return {
+        "appointments": await get_data(entity_type="appointments", method="select", seed_value=seed_value, count=count),
+        "doctors": await get_data(entity_type="doctors", method="select", seed_value=seed_value, count=count),
+        "prescriptions": await get_data(entity_type="prescriptions", method="select", seed_value=seed_value, count=count),
+    }

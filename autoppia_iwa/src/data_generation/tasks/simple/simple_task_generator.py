@@ -107,14 +107,14 @@ class SimpleTaskGenerator:
         # Build task URL (with random seed if dynamic)
         task_url = self._build_task_url_with_seed()
 
-        # Initialize dataset as empty list (will be loaded if needed)
-        dataset: list[dict] = []
+        # Initialize dataset as empty dict (will be loaded if needed)
+        dataset: dict[str, list[dict]] = {}
 
         # Generate initial constraints - load dataset first
         if hasattr(use_case, "generate_constraints_async"):
             # Extract seed from URL and load dataset
             seed = get_seed_from_url(task_url) if self.dynamic else 1
-            dataset = await self._load_dataset(seed) or []
+            dataset = await self._load_dataset(seed) or {}
             
             # Generate constraints with dataset
             try:
@@ -173,16 +173,17 @@ class SimpleTaskGenerator:
         random.shuffle(tasks)
         return tasks
 
-    async def _load_dataset(self, seed: int) -> list[dict] | None:
+    async def _load_dataset(self, seed: int) -> dict[str, list[dict]] | None:
         """
-        Load dataset for the current project with given seed.
+        Load complete dataset for the current project with given seed.
+        Returns a dictionary with all entities for the project.
         Uses cache to avoid redundant loads.
         """
         cache_key = (self.web_project.id, seed)
         if cache_key in self._dataset_cache:
             return self._dataset_cache[cache_key]
 
-        # Try to load get_data from project's data_utils module
+        # Try to load get_all_data from project's data_utils module
         project_module = f"autoppia_iwa.src.demo_webs.projects.{self.web_project.id}_1.data_utils"
         
         try:
@@ -190,7 +191,7 @@ class SimpleTaskGenerator:
             import inspect
             
             data_module = importlib.import_module(project_module)
-            loader = getattr(data_module, "get_data", None)
+            loader = getattr(data_module, "get_all_data", None)
             
             if loader is None:
                 return None
@@ -201,7 +202,8 @@ class SimpleTaskGenerator:
             
             if dataset:
                 self._dataset_cache[cache_key] = dataset
-                _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({len(dataset)} items)", context="OPTIMIZATION")
+                total_items = sum(len(v) for v in dataset.values() if isinstance(v, list))
+                _log_task_generation(f"Loaded dataset for {self.web_project.id} with seed={seed} ({total_items} items across {len(dataset)} entities)", context="OPTIMIZATION")
             
             return dataset
             

@@ -41,17 +41,15 @@ def _extract_entity_dataset(dataset: Any, entity_type: str) -> list[dict[str, An
 
 async def _ensure_entity_dataset(
     task_url: str | None,
-    dataset: list[dict[str, Any]] | dict[str, list[dict[str, Any]]] | None,
+    dataset: dict[str, list[dict[str, Any]]] | None,
     *,
     entity_type: str,
     method: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Ensure dataset is available for a specific entity type."""
-    existing = _extract_entity_dataset(dataset, entity_type)
-    if existing:
-        return existing
-    seed = get_seed_from_url(task_url)
-    return await get_data(entity_type, method=method, seed_value=seed)
+    """Extract entity data from the pre-loaded dataset."""
+    if dataset and entity_type in dataset:
+        return dataset[entity_type]
+    return []
 
 
 def _generate_constraint_value(operator: ComparisonOperator, field_value: Any, field: str, dataset: list[dict[str, Any]]) -> Any:

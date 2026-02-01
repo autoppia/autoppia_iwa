@@ -33,3 +33,13 @@ async def get_data(entity_type: str | None = None, method: str | None = None, se
         # When called without an entity_type (e.g., preload), return empty to avoid errors.
         return []
     return await fetch_connect_data(entity_type=entity_type, method=method, seed_value=seed_value, count=count)
+
+
+async def get_all_data(seed_value: int | None = None, count: int = 50) -> dict[str, list[dict]]:
+    """Load complete dataset for this project."""
+    return {
+        "users": await get_data(entity_type="users", method="select", seed_value=seed_value, count=count),
+        "posts": await get_data(entity_type="posts", method="select", seed_value=seed_value, count=count),
+        "recommendations": await get_data(entity_type="recommendations", method="select", seed_value=seed_value, count=count),
+        "jobs": await get_data(entity_type="jobs", method="select", seed_value=seed_value, count=count),
+    }

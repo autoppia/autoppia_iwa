@@ -24,3 +24,9 @@ async def fetch_products_data(seed_value: int | None = None, count: int = 100) -
 async def get_data(seed_value: int | None = None, count: int = 100) -> list[dict]:
     """Main data loader function for autozone_3."""
     return await fetch_products_data(seed_value=seed_value, count=count)
+
+
+async def get_all_data(seed_value: int | None = None, count: int = 100) -> dict[str, list[dict]]:
+    """Load complete dataset for this project."""
+    products = await get_data(seed_value=seed_value, count=count)
+    return {"products": products}
