@@ -79,12 +79,14 @@ class UseCase(BaseModel):
                 self.constraints = result
         return self.constraints_to_str() if self.constraints else ""
 
-    async def generate_constraints_async(self, dataset: list[dict]):
+    async def generate_constraints_async(self, dataset: dict[str, list[dict]] | None = None):
         """
         Async version that awaits async constraints generators when provided.
 
         Args:
-            dataset: Dataset to pass to the generator
+            dataset: Dataset dictionary with all entities (e.g., {"films": [...], "users": [...]})
+                    to pass to the generator. Each constraint generator receives the full dataset
+                    and extracts the relevant entity list it needs.
         """
         if self.constraints_generator:
             # Call generator with dataset

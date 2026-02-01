@@ -29,14 +29,7 @@ def save_results_to_json(results, agents, timing_metrics: TimingMetrics, output_
                     "score": data["score"],
                     "solution_time": timing_metrics.solution_times.get(agent.id, {}).get(task_id, 0),
                     "evaluation_time": timing_metrics.evaluation_times.get(agent.id, {}).get(task_id, 0),
-                    "has_cached_solution": False,
                 }
-
-                # Add indicator if this is the browser-use agent with cached solution
-                if agent.name == "browser-use":
-                    # This would need to be determined based on your solution cache logic
-                    # For now, we're assuming all browser-use solutions get cached
-                    agent_tasks[task_id]["has_cached_solution"] = True
 
         # Compute statistics on the agent's scores
         score_stats = compute_statistics(agent_scores)
@@ -91,12 +84,6 @@ def print_performance_statistics(results, agents, timing_metrics: TimingMetrics)
 
         print(f"  Average solution generation time: {avg_solution:.2f} seconds")
         print(f"  Average evaluation time: {avg_evaluation:.2f} seconds")
-
-        # Print caching info for browser-use agent
-        if agent.name == "browser-use" and agent.id in results:
-            # Count tasks with solutions
-            num_tasks = len(results[agent.id])
-            print(f"  Number of tasks with browser-use solutions cached: {num_tasks}")
 
 
 def _has_zero_score(results: dict) -> bool:

@@ -72,7 +72,7 @@ class Benchmark:
     # Artifact helpers
     # ---------------------------------------------------------------------
     @staticmethod
-    def _persist_gif_refixcording(b64_gif: str, agent_name: str, task_id: str, run_index: int, recordings_dir) -> None:
+    def _persist_gif_recording(b64_gif: str, agent_name: str, task_id: str, run_index: int, recordings_dir) -> None:
         """
         Decode a base64-encoded GIF and store it under benchmark-output/recordings/<agent>/<task>_run_<n>.gif.
         """
