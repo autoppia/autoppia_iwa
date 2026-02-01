@@ -3,7 +3,7 @@ from pathlib import Path
 
 from .classes import WebProject
 from .projects.autobooks_2.main import books_project
-from .projects.autocalender_11.main import autocalendar_project
+from .projects.autocalendar_11.main import autocalendar_project
 from .projects.autocinema_1.main import cinema_project
 from .projects.autoconnect_9.main import connect_project
 from .projects.autocrm_5.main import crm_project

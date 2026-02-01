@@ -23,7 +23,7 @@ async def test_all_projects_have_optimization():
         ("autolodge_8", "hotels"),
         ("autoconnect_9", "connections"),
         ("autowork_10", "experts"),
-        ("autocalender_11", "events"),
+        ("autocalendar_11", "events"),
         ("autolist_12", "tasks"),
         ("autodrive_13", "trips"),
     ]

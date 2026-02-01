@@ -47,7 +47,7 @@ PROJECTS_BASE = PROJECT_BASE_DIR / "src" / "demo_webs" / "projects"
 DECKS_BASE = Path(__file__).resolve().parents[1] / "deck"
 DECK_ALIASES = {
     "autocrm_5": "autocrm",
-    "autocalender_11": "autocalendar",
+    "autocalendar_11": "autocalendar",
     "autoconnect_9": "autoconnect",
     "autodelivery_7": "autodelivery",
     "autodrive_13": "autodrive",
