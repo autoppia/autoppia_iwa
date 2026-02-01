@@ -5,7 +5,6 @@ from loguru import logger
 
 from autoppia_iwa.config.config import PROJECT_BASE_DIR
 from autoppia_iwa.src.demo_webs.classes import WebProject
-from autoppia_iwa.src.execution.dynamic import DynamicPhaseConfig
 from autoppia_iwa.src.web_agents.classes import IWebAgent
 
 
@@ -17,17 +16,16 @@ class BenchmarkConfig:
 
     Key groups:
       • Task generation (prompts_per_use_case, use_cases)
-      • Execution controls (runs, max_parallel_agent_calls, record_gif, enable_dynamic_html)
+      • Execution controls (runs, max_parallel_agent_calls, record_gif, dynamic)
       • Persistence (save_results_json, directory fields resolved in __post_init__)
-      • Dynamic features (dynamic_phase_config shared with evaluator)
     """
 
-    projects: list[WebProject] = field(default_factory=list)
     agents: list[IWebAgent] = field(default_factory=list)
-    use_cases: list[str] | None = None
-
     # Task generation
+    projects: list[WebProject] = field(default_factory=list)
+    use_cases: list[str] | None = None
     prompts_per_use_case: int = 1
+    dynamic: bool = False
 
     # Execution
     runs: int = 1
@@ -36,9 +34,6 @@ class BenchmarkConfig:
 
     # Persistence
     save_results_json: bool = True
-
- 
-    dynamic: bool = False
 
     # Paths
     base_dir: Path = field(default_factory=lambda: PROJECT_BASE_DIR.parent)
@@ -57,8 +52,8 @@ class BenchmarkConfig:
         if not self.agents:
             logger.warning("No agents configured - benchmark will not run")
 
-        # Use data/outputs/benchmark/ directory for all generated artifacts
-        benchmark_dir = self.base_dir / "data" / "outputs" / "benchmark"
+        # Use benchmark-output/ directory for all generated artifacts
+        benchmark_dir = self.base_dir / "benchmark-output"
         
         self.output_dir = benchmark_dir / "results"
         self.benchmark_log_file = benchmark_dir / "logs" / "benchmark.log"

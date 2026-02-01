@@ -36,13 +36,10 @@ class WebVoyagerConfig:
     should_record_gif: bool = True
 
     base_dir: Path = PROJECT_BASE_DIR.parent
-    data_dir: Path = base_dir / "data"
-    tasks_cache_dir: Path = data_dir / "tasks_cache"
     output_dir: Path = base_dir / "results"
 
     def __post_init__(self):
-        for directory in (self.tasks_cache_dir, self.output_dir):
-            directory.mkdir(parents=True, exist_ok=True)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
 
 # Define agents

@@ -18,7 +18,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, HttpUrl
 
-from autoppia_iwa.entrypoints.benchmark.task_generation import generate_tasks_for_project
+from autoppia_iwa.entrypoints.benchmark.utils.task_generation import generate_tasks_for_project
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject
 from autoppia_iwa.src.demo_webs.config import demo_web_projects

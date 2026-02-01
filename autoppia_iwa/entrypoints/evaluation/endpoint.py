@@ -27,7 +27,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from pydantic import AnyUrl, BaseModel, Field, NonNegativeFloat, constr
 
-from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
+from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.data_generation.tasks.classes import Task
 from autoppia_iwa.src.demo_webs.classes import WebProject

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 from loguru import logger
 
-from autoppia_iwa.entrypoints.benchmark.task_generation import generate_tasks_for_project, get_projects_by_ids
+from autoppia_iwa.entrypoints.benchmark.utils.task_generation import generate_tasks_for_project, get_projects_by_ids
 
 try:
     from autoppia_iwa.src.data_generation.tasks.classes import Task
@@ -57,11 +57,9 @@ class AffineTaskDataset:
             for project in selected_projects:
                 tasks = await generate_tasks_for_project(
                     project=project,
-                    use_cached=self.config.use_cached_tasks,
-                    cache_dir=self.config.tasks_cache_dir,
                     prompts_per_use_case=self.config.prompts_per_use_case,
                     use_cases=None,
-                    enable_dynamic_html=self.config.enable_dynamic_html,
+                    dynamic=self.config.enable_dynamic_html,
                 )
 
                 if not tasks:

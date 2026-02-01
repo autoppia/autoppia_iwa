@@ -27,7 +27,7 @@ if str(_project_root) not in sys.path:
 
 from loguru import logger
 
-from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
+from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.bootstrap import AppBootstrap
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 

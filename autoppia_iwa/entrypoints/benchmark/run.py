@@ -11,7 +11,7 @@ from loguru import logger
 
 from autoppia_iwa.entrypoints.benchmark.benchmark import Benchmark
 from autoppia_iwa.entrypoints.benchmark.config import BenchmarkConfig
-from autoppia_iwa.entrypoints.benchmark.task_generation import get_projects_by_ids
+from autoppia_iwa.entrypoints.benchmark.utils.task_generation import get_projects_by_ids
 from autoppia_iwa.src.demo_webs.config import demo_web_projects
 from autoppia_iwa.src.web_agents.apified_agent import ApifiedWebAgent
 

@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from autoppia_iwa.entrypoints.benchmark.task_generation import (
+from autoppia_iwa.entrypoints.benchmark.utils.task_generation import (
     generate_tasks_for_project,
     get_projects_by_ids,
 )

@@ -2,7 +2,6 @@ import asyncio
 import base64
 import json
 import time
-import traceback
 from collections import defaultdict
 from pathlib import Path
 
@@ -26,10 +25,10 @@ visualizer = SubnetVisualizer()
 class Benchmark:
     """
     High-level orchestrator for the benchmark sandbox:
-      1) Generate (or load cached) tasks for selected demo web projects.
+      1) Generate tasks for selected demo web projects.
       2) Dispatch each task to the configured web agents.
       3) Evaluate agent solutions.
-      4) Persist results, timings, and optional artifacts (GIFs/plots).
+      4) Persist results, timings, and optional artifacts (GIFs).
     """
 
     def __init__(self, config: BenchmarkConfig, log_file: Path | str | None = None) -> None:
@@ -74,7 +73,7 @@ class Benchmark:
     @staticmethod
     def _persist_gif_recording(b64_gif: str, agent_name: str, task_id: str, run_index: int, recordings_dir) -> None:
         """
-        Decode a base64-encoded GIF and store it under data/benchmark/recordings/<agent>/<task>_run_<n>.gif.
+        Decode a base64-encoded GIF and store it under benchmark-output/recordings/<agent>/<task>_run_<n>.gif.
         """
         agent_dir = recordings_dir / agent_name
         agent_dir.mkdir(exist_ok=True)
@@ -277,7 +276,7 @@ class Benchmark:
         return per_agent_results_for_run
 
     # ---------------------------------------------------------------------
-    # Global rollups and persistence
+    # Results aggregation and persistence
     # ---------------------------------------------------------------------
 
     def _save_consolidated_results(self) -> None:
@@ -298,7 +297,7 @@ class Benchmark:
         filename.write_text(json.dumps(consolidated_data, indent=2))
         logger.info(f"Consolidated results saved to {filename}")
 
-    def _accumulate_global_agent_rollup(self, project: WebProject, project_run_results: list[dict]) -> None:
+    def _accumulate_project_stats(self, project: WebProject, project_run_results: list[dict]) -> None:
         """
         Accumulate per-agent statistics for a project.
         Results are stored in self.per_project_results and saved at the end.
@@ -317,10 +316,10 @@ class Benchmark:
         # For JSON persistence (nested by use case)
         per_agent_usecase_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         per_agent_usecase_times: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-        per_agent_usecase_prompt: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-        per_agent_usecase_actions: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-        per_agent_usecase_task_ids: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-        per_agent_usecase_gifs: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_prompt: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_actions: dict[str, dict[str, list[list]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_task_ids: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+        per_agent_usecase_gifs: dict[str, dict[str, list[str | None]]] = defaultdict(lambda: defaultdict(list))
 
         # Collect data from all runs
         for run_result in project_run_results:
@@ -350,10 +349,8 @@ class Benchmark:
                     per_agent_usecase_task_ids[a_name][use_case].append(task_id)
                     per_agent_usecase_gifs[a_name][use_case].append(res.get("base64_gif", None))
 
-        # Build per-project JSON payload
-        json_root: dict = {"agents": {}}
-        project_block: dict = {}
-        response_project_block: dict = {}
+        # Build per-project stats
+        project_stats: dict = {}
 
         for agent in self.config.agents:
             a_name = agent.name
@@ -403,8 +400,8 @@ class Benchmark:
             avg_all_time = (sum(all_times) / len(all_times)) if all_times else 0.0
             rate_all = (succ_all / tot_all) if tot_all else 0.0
 
-            project_block[a_name] = {
-                "use_cases": uc_block,
+            project_stats[a_name] = {
+                "use_cases": new_uc_block,
                 "overall": {
                     "success_count": succ_all,
                     "total": tot_all,
@@ -412,13 +409,11 @@ class Benchmark:
                     "avg_solution_time": round(avg_all_time, 3),
                 },
             }
-            response_project_block = project_block.copy()
-            response_project_block[a_name].update({"use_cases": new_uc_block})
 
             logger.info(f"{a_name:<20} | {rate_all * 100:6.2f}% ({succ_all}/{tot_all}) | avg {avg_all_time:.2f}s")
 
         # Store per-project stats (will be saved in a single file at the end)
-        self.per_project_results[project.name] = response_project_block
+        self.per_project_results[project.name] = project_stats
 
     # ---------------------------------------------------------------------
     # Public API
@@ -449,15 +444,13 @@ class Benchmark:
                                 project_run_results.append(run_result)
                             else:
                                 logger.warning(f"Run {run_index} for project {project.name} returned no results")
-
-                                traceback.print_exc()
                         except Exception as e:
                             logger.error(f"Run {run_index} for project {project.name} failed: {e}", exc_info=True)
                             continue
 
                     if project_run_results:
                         # Accumulate stats for this project
-                        self._accumulate_global_agent_rollup(project, project_run_results)
+                        self._accumulate_project_stats(project, project_run_results)
                         successful_projects += 1
                     else:
                         logger.warning(f"No successful runs for project {project.name}")
