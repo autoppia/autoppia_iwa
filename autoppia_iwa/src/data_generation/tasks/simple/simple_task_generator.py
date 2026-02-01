@@ -62,7 +62,6 @@ class SimpleTaskGenerator:
             use_cases: Optional list of specific use case names to generate. If None, generates for all use cases.
             dynamic: If True, tasks will include random seeds for dynamic content
         """
-        self.dynamic = dynamic
         all_tasks: list[Task] = []
 
         # Get use cases to process (default: all use cases)
@@ -80,7 +79,7 @@ class SimpleTaskGenerator:
         for use_case in web_use_cases:
             _log_task_generation(f"Generating tasks for use case: {use_case.name}", context="USE_CASE")
             try:
-                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case)
+                tasks_for_use_case = await self.generate_tasks_for_use_case(use_case, prompts_per_use_case, dynamic=dynamic)
                 all_tasks.extend(tasks_for_use_case)
                 _log_task_generation(
                     f"Generated {len(tasks_for_use_case)} tasks for use case '{use_case.name}' (requested {prompts_per_use_case})",
@@ -96,7 +95,7 @@ class SimpleTaskGenerator:
         _log_task_generation(f"Total generated tasks across all use cases: {len(all_tasks)}", context="SUMMARY")
         return all_tasks
 
-    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1) -> list[Task]:
+    async def generate_tasks_for_use_case(self, use_case: UseCase, number_of_prompts: int = 1, dynamic: bool = True) -> list[Task]:
         """
         Generate tasks for a specific use case by calling the LLM with relevant context.
         
@@ -106,14 +105,15 @@ class SimpleTaskGenerator:
         Args:
             use_case: The use case to generate tasks for
             number_of_prompts: Number of prompts to generate (each with unique seed/constraints)
+            dynamic: If True, tasks will include random seeds for dynamic content
         """
         tasks: list[Task] = []
         
         # Generate each prompt independently
         for _ in range(number_of_prompts):
             # Build task URL with unique seed for each prompt
-            task_url = self._build_task_url_with_seed()
-            seed = get_seed_from_url(task_url) if self.dynamic else 1
+            task_url = self._build_task_url_with_seed(dynamic=dynamic)
+            seed = get_seed_from_url(task_url) if dynamic else 1
             
             # Load dataset for this specific seed
             dataset: dict[str, list[dict]] = {}
@@ -218,11 +218,11 @@ class SimpleTaskGenerator:
             logger.debug(f"Could not load dataset for {self.web_project.id}: {e}")
             return None
 
-    def _build_task_url_with_seed(self) -> str:
+    def _build_task_url_with_seed(self, dynamic: bool = True) -> str:
         """Build the task URL with random seed if dynamic generation is enabled."""
         base_url = self.web_project.frontend_url
 
-        if not self.dynamic:
+        if not dynamic:
             return base_url
 
         # Add random seed to URL
